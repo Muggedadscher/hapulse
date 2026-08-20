@@ -44,7 +44,7 @@ export function Devices() {
     const set = new Set<string>();
     for (const d of devices) for (const i of d.integrations) set.add(i);
     return [...set]
-      .map((value) => ({ value, label: integrationLabel(value) }))
+      .map((value) => ({ value, label: integrationLabel(t, value) }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [devices]);
 
@@ -59,7 +59,7 @@ export function Devices() {
           d.areaName ?? '',
           d.manufacturer ?? '',
           d.model ?? '',
-          ...d.integrations.map(integrationLabel),
+          ...d.integrations.map((i) => integrationLabel(t, i)),
           ...d.entities.map((e) => e.name),
           ...d.entities.map((e) => e.entity_id),
         ].join(' ').toLowerCase();

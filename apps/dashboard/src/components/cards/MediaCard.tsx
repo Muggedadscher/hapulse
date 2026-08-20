@@ -3,6 +3,7 @@ import { Speaker, Play, Pause } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
 import { useConnectionStore } from '../../stores/connectionStore';
+import { useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -18,6 +19,7 @@ function resolveEntityPicture(picture: string | null | undefined, baseUrl: strin
 }
 
 export function MediaCard({ entity, name }: MediaCardProps) {
+  const t = useT();
   const entityId = entity.entity_id;
   const isPlaying = entity.state === 'playing';
   const title = entity.attributes.media_title as string | undefined;
@@ -83,7 +85,7 @@ export function MediaCard({ entity, name }: MediaCardProps) {
           type="button"
           className="media-card__play-btn"
           onClick={handlePlayPause}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
+          aria-label={isPlaying ? t('cards.media.pause') : t('cards.media.play')}
         >
           {isPlaying ? <Pause size={16} strokeWidth={2} /> : <Play size={16} strokeWidth={2} />}
         </button>
@@ -102,7 +104,7 @@ export function MediaCard({ entity, name }: MediaCardProps) {
               step={0.01}
               value={volumeLevel}
               onChange={handleVolume}
-              aria-label="Volume"
+              aria-label={t('cards.media.volumeAria')}
             />
           </div>
         )}

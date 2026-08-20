@@ -20,16 +20,18 @@ import { useEntities } from '../../ha/hooks';
 import { useEntityStore } from '../../stores/entityStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { DeviceIcon, integrationLabel } from './deviceMeta';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { domainOf, deviceEntityCategory } from '@hapulse/core';
 import type { DeviceModel, DeviceEntityCategory } from '@hapulse/core';
 import './DeviceDetailsModal.css';
 
 const CATEGORY_ORDER: DeviceEntityCategory[] = ['controls', 'sensors', 'config', 'diagnostic'];
-const CATEGORY_LABELS: Record<DeviceEntityCategory, string> = {
-  controls: 'Controls',
-  sensors: 'Sensors',
-  config: 'Configuration',
-  diagnostic: 'Diagnostic',
+const CATEGORY_LABEL_KEY: Record<DeviceEntityCategory, TKey> = {
+  controls: 'devices.modal.category.controls',
+  sensors: 'devices.modal.category.sensors',
+  config: 'devices.modal.category.config',
+  diagnostic: 'devices.modal.category.diagnostic',
 };
 
 function prettyTail(entityId: string): string {
@@ -52,6 +54,7 @@ interface Ref {
 }
 
 export function DeviceDetailsModal({ device, open, onClose }: DeviceDetailsModalProps) {
+  const t = useT();
   const registries = useEntityStore((s) => s.registries);
   const editable = useSettingsStore((s) => s.customization.editingEnabled);
   const favorites = useSettingsStore(useShallow((s) => s.customization.favorites));
@@ -96,7 +99,7 @@ export function DeviceDetailsModal({ device, open, onClose }: DeviceDetailsModal
 
   const groups = CATEGORY_ORDER.map((cat) => ({
     category: cat,
-    label: CATEGORY_LABELS[cat],
+    label: t(CATEGORY_LABEL_KEY[cat]),
     entities: displayRefs.filter((r) => r.category === cat),
   })).filter((g) => g.entities.length > 0);
 
@@ -145,7 +148,7 @@ export function DeviceDetailsModal({ device, open, onClose }: DeviceDetailsModal
           )}
           <span className="device-modal__chip">
             <Boxes size={13} strokeWidth={2} aria-hidden="true" />
-            {integrationLabel(device.integration)}
+            {integrationLabel(t, device.integration)}
           </span>
           {(device.manufacturer || device.model) && (
             <span className="device-modal__chip device-modal__chip--muted">
@@ -158,7 +161,7 @@ export function DeviceDetailsModal({ device, open, onClose }: DeviceDetailsModal
           <div className="device-modal__toolbar">
             <button type="button" className="device-modal__hide-all" onClick={toggleHideAll}>
               {allHidden ? <Eye size={15} strokeWidth={2} /> : <EyeOff size={15} strokeWidth={2} />}
-              {allHidden ? 'Show all entities' : 'Hide all entities'}
+              {allHidden ? t('devices.modal.showAllEntities') : t('devices.modal.hideAllEntities')}
             </button>
           </div>
         )}

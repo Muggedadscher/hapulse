@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -11,6 +12,7 @@ interface LightCardProps {
 }
 
 export function LightCard({ entity, name }: LightCardProps) {
+  const t = useT();
   const isOn = entity.state === 'on';
   const brightness = entity.attributes.brightness as number | undefined;
   const colorTempKelvin = entity.attributes.color_temp_kelvin as number | undefined;
@@ -109,7 +111,7 @@ export function LightCard({ entity, name }: LightCardProps) {
               e.stopPropagation();
               void callService('light', isOn ? 'turn_off' : 'turn_on', {}, { entity_id: entityId });
             }}
-            aria-label={`Toggle ${name}`}
+            aria-label={t('cards.light.toggleAria', { name })}
           />
           <span className="pill-toggle__track">
             <span className="pill-toggle__knob" />
@@ -122,7 +124,7 @@ export function LightCard({ entity, name }: LightCardProps) {
         <div className="light-card__sliders" onClick={(e) => e.stopPropagation()}>
           {supportsBrightness && (
             <div className="light-card__slider-row">
-              <span className="light-card__slider-label">Brightness</span>
+              <span className="light-card__slider-label">{t('cards.light.brightness')}</span>
               <div className="light-card__track">
                 <div
                   className="light-card__fill"
@@ -136,14 +138,14 @@ export function LightCard({ entity, name }: LightCardProps) {
                   value={localBrightness}
                   onChange={handleBrightnessChange}
                   onPointerUp={handleBrightnessCommit}
-                  aria-label="Brightness"
+                  aria-label={t('cards.light.brightness')}
                 />
               </div>
             </div>
           )}
           {isOn && supportsColorTempOnly && (
             <div className="light-card__slider-row">
-              <span className="light-card__slider-label">Color Temp</span>
+              <span className="light-card__slider-label">{t('cards.light.colorTemp')}</span>
               <div className="light-card__track">
                 <div
                   className="light-card__fill light-card__fill--temp"
@@ -157,7 +159,7 @@ export function LightCard({ entity, name }: LightCardProps) {
                   value={localColorTemp}
                   onChange={handleColorTempChange}
                   onPointerUp={handleColorTempCommit}
-                  aria-label="Color Temperature"
+                  aria-label={t('cards.light.colorTemperatureAria')}
                 />
               </div>
             </div>
