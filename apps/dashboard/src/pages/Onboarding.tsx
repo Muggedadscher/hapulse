@@ -9,6 +9,7 @@ import { AlertTriangle, Lock, ChevronDown } from 'lucide-react';
 import { PulseLogo } from '../components/ui/PulseLogo';
 import { DashboardBootLoading } from '../components/ui/DashboardBootLoading';
 import { useConnectionStore } from '../stores/connectionStore';
+import { useT } from '../i18n/useT';
 import { HAAuthError, HAConnectionError } from '@hapulse/core';
 import './Onboarding.css';
 
@@ -37,6 +38,7 @@ export function Onboarding() {
     );
 
   const navigate = useNavigate();
+  const t = useT();
 
   // ---- Redirect when already connected ----
   useEffect(() => {
@@ -71,14 +73,11 @@ export function Onboarding() {
 
     const trimmedUrl = oauthUrl.trim().replace(/\/+$/, '');
     if (!trimmedUrl) {
-      setOauthError('Please enter your Home Assistant URL.');
+      setOauthError(t('onboarding.errorMissingUrl'));
       return;
     }
     if (detectMixedContent(trimmedUrl)) {
-      setOauthError(
-        'Mixed content blocked: this page is served over HTTPS but your HA URL uses HTTP. ' +
-        'Use your Nabu Casa URL (https://…ui.nabu.casa) or set up a reverse proxy with HTTPS.'
-      );
+      setOauthError(t('onboarding.oauthMixedContent'));
       return;
     }
 
@@ -88,11 +87,11 @@ export function Onboarding() {
       await signInWithHomeAssistant(trimmedUrl);
     } catch (err) {
       if (err instanceof HAAuthError) {
-        setOauthError('Sign-in failed: invalid response from Home Assistant.');
+        setOauthError(t('onboarding.signInFailed'));
       } else if (err instanceof HAConnectionError) {
-        setOauthError(`Could not reach Home Assistant: ${err.message}`);
+        setOauthError(t('onboarding.connectionError', { message: err.message }));
       } else {
-        setOauthError('Something went wrong. Check the URL and try again.');
+        setOauthError(t('onboarding.oauthGenericError'));
       }
       setOauthLoading(false);
     }
@@ -108,18 +107,15 @@ export function Onboarding() {
     const trimmedToken = token.trim();
 
     if (!trimmedUrl) {
-      setTokenError('Please enter your Home Assistant URL.');
+      setTokenError(t('onboarding.errorMissingUrl'));
       return;
     }
     if (!trimmedToken) {
-      setTokenError('Please enter your long-lived access token.');
+      setTokenError(t('onboarding.errorMissingToken'));
       return;
     }
     if (detectMixedContent(trimmedUrl)) {
-      setTokenError(
-        'Mixed content blocked: this page is served over HTTPS but your HA URL uses HTTP. ' +
-        'Use your Nabu Casa URL or set up a reverse proxy with HTTPS.'
-      );
+      setTokenError(t('onboarding.tokenMixedContent'));
       return;
     }
 
@@ -129,13 +125,11 @@ export function Onboarding() {
       navigate('/', { replace: true });
     } catch (err) {
       if (err instanceof HAAuthError) {
-        setTokenError(
-          'Token rejected — create a long-lived access token in your HA profile → Security.'
-        );
+        setTokenError(t('onboarding.tokenRejected'));
       } else if (err instanceof HAConnectionError) {
-        setTokenError(`Could not reach Home Assistant: ${(err as Error).message}`);
+        setTokenError(t('onboarding.connectionError', { message: (err as Error).message }));
       } else {
-        setTokenError('Something went wrong. Check the URL and token and try again.');
+        setTokenError(t('onboarding.tokenGenericError'));
       }
     } finally {
       setTokenLoading(false);
@@ -152,7 +146,7 @@ export function Onboarding() {
   // the brief window after a successful connect while the redirect effect above
   // navigates to "/". Keeps the loading animation seamless with the boot gate.
   if (status === 'connecting' || status === 'connected') {
-    return <DashboardBootLoading label={isAuthCallback() ? 'Finishing sign-in…' : 'Connecting…'} />;
+    return <DashboardBootLoading label={isAuthCallback() ? t('onboarding.finishingSignIn') : t('onboarding.connecting')} />;
   }
 
   return (
@@ -164,7 +158,7 @@ export function Onboarding() {
           <PulseLogo size={48} />
           <h1 className="onboarding__title">HAPulse</h1>
           <p className="onboarding__tagline">
-            your home assistant, beautifully simplified
+            {t('onboarding.tagline')}
           </p>
         </header>
 
@@ -172,13 +166,13 @@ export function Onboarding() {
         <form className="onboarding__form" onSubmit={handleOAuthSignIn} noValidate>
           <div className="onboarding__field">
             <label htmlFor="ha-url-oauth" className="onboarding__label">
-              Home Assistant URL
+              {t('onboarding.urlLabel')}
             </label>
             <input
               id="ha-url-oauth"
               type="url"
               className="onboarding__input"
-              placeholder="http://homeassistant.local:8123"
+              placeholder={t('onboarding.urlPlaceholder')}
               value={oauthUrl}
               onChange={(e) => {
                 setOauthUrl(e.target.value);
@@ -193,10 +187,7 @@ export function Onboarding() {
           {oauthMixedContent && (
             <div className="onboarding__warning" role="alert">
               <AlertTriangle size={16} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span>
-                This page is served over HTTPS — your browser will block connections to
-                plain HTTP. Use your Nabu Casa URL or a reverse-proxied HTTPS address.
-              </span>
+              <span>{t('onboarding.mixedContentWarning')}</span>
             </div>
           )}
 
@@ -215,17 +206,17 @@ export function Onboarding() {
             {oauthLoading ? (
               <>
                 <span className="spinner" aria-hidden="true" />
-                redirecting to Home Assistant…
+                {t('onboarding.oauthSubmitLoading')}
               </>
             ) : (
-              'sign in with home assistant'
+              t('onboarding.oauthSubmit')
             )}
           </button>
         </form>
 
         <p className="onboarding__oauth-hint">
           <Lock size={12} strokeWidth={2} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} aria-hidden="true" />
-          you'll sign in on your home assistant's own login page — your password never touches hapulse.
+          {t('onboarding.oauthHint')}
         </p>
 
         {/* ---- Advanced: long-lived access token ---- */}
@@ -242,7 +233,7 @@ export function Onboarding() {
               className={`onboarding__advanced-chevron${showAdvanced ? ' onboarding__advanced-chevron--open' : ''}`}
               aria-hidden="true"
             />
-            advanced: connect with an access token
+            {t('onboarding.advancedToggle')}
           </button>
 
           {showAdvanced && (
@@ -253,13 +244,13 @@ export function Onboarding() {
             >
               <div className="onboarding__field">
                 <label htmlFor="ha-url-token" className="onboarding__label">
-                  Home Assistant URL
+                  {t('onboarding.urlLabel')}
                 </label>
                 <input
                   id="ha-url-token"
                   type="url"
                   className="onboarding__input"
-                  placeholder="http://homeassistant.local:8123"
+                  placeholder={t('onboarding.urlPlaceholder')}
                   value={tokenUrl}
                   onChange={(e) => {
                     setTokenUrl(e.target.value);
@@ -274,22 +265,19 @@ export function Onboarding() {
               {tokenMixedContent && (
                 <div className="onboarding__warning" role="alert">
                   <AlertTriangle size={16} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span>
-                    This page is served over HTTPS — your browser will block connections to
-                    plain HTTP. Use your Nabu Casa URL or a reverse-proxied HTTPS address.
-                  </span>
+                  <span>{t('onboarding.mixedContentWarning')}</span>
                 </div>
               )}
 
               <div className="onboarding__field">
                 <label htmlFor="ha-token" className="onboarding__label">
-                  Long-lived access token
+                  {t('onboarding.tokenLabel')}
                 </label>
                 <input
                   id="ha-token"
                   type="password"
                   className="onboarding__input"
-                  placeholder="••••••••••••••••"
+                  placeholder={t('onboarding.tokenPlaceholder')}
                   value={token}
                   onChange={(e) => {
                     setToken(e.target.value);
@@ -315,22 +303,22 @@ export function Onboarding() {
                 {tokenLoading ? (
                   <>
                     <span className="spinner" aria-hidden="true" />
-                    connecting…
+                    {t('onboarding.tokenSubmitLoading')}
                   </>
                 ) : (
-                  'Connect with access token'
+                  t('onboarding.tokenSubmit')
                 )}
               </button>
 
               <p className="onboarding__token-hint">
                 <Lock size={12} strokeWidth={2} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} aria-hidden="true" />
-                your token is stored only in this browser
+                {t('onboarding.tokenHint')}
               </p>
             </form>
           )}
         </div>
 
-        <div className="onboarding__divider" aria-hidden="true">or</div>
+        <div className="onboarding__divider" aria-hidden="true">{t('onboarding.divider')}</div>
 
         <button
           type="button"
@@ -338,7 +326,7 @@ export function Onboarding() {
           onClick={handleDemo}
           disabled={oauthLoading || tokenLoading}
         >
-          Explore the demo home
+          {t('onboarding.demoButton')}
         </button>
       </div>
     </div>

@@ -8,6 +8,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { EditBadge } from '../components/ui/EditBadge';
+import { useT, type TKey } from '../i18n/useT';
 import { NowPlayingCard } from '../components/music/NowPlayingCard';
 import { OtherPlayersCard } from '../components/music/OtherPlayersCard';
 import { ZonesCard, type ZoneData } from '../components/music/ZonesCard';
@@ -31,15 +32,33 @@ function pickHeroPlayer(players: HassEntity[]): HassEntity | undefined {
 const SECTIONS = ['now_playing', 'zones', 'other_players'] as const;
 type SectionId = typeof SECTIONS[number];
 
-const SECTION_LABELS: Record<SectionId, string> = {
-  now_playing:   'Now Playing',
-  zones:         'Zones',
-  other_players: 'Players',
+type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
+
+const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
+  now_playing: {
+    hide: 'music.section.hide.nowPlaying',
+    show: 'music.section.show.nowPlaying',
+    hideMobile: 'music.section.hideMobile.nowPlaying',
+    showMobile: 'music.section.showMobile.nowPlaying',
+  },
+  zones: {
+    hide: 'music.section.hide.zones',
+    show: 'music.section.show.zones',
+    hideMobile: 'music.section.hideMobile.zones',
+    showMobile: 'music.section.showMobile.zones',
+  },
+  other_players: {
+    hide: 'music.section.hide.otherPlayers',
+    show: 'music.section.show.otherPlayers',
+    hideMobile: 'music.section.hideMobile.otherPlayers',
+    showMobile: 'music.section.showMobile.otherPlayers',
+  },
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function Music() {
+  const t = useT();
   const allPlayers = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities).filter((e) => e.entity_id.startsWith('media_player.'))
@@ -148,11 +167,13 @@ export function Music() {
         </div>
         <EditBadge
           hidden={hidden}
-          toggleLabel={hidden ? `show ${SECTION_LABELS[id]}` : `hide ${SECTION_LABELS[id]}`}
+          toggleLabel={hidden ? t(SECTION_TOGGLE_KEYS[id].show) : t(SECTION_TOGGLE_KEYS[id].hide)}
           onToggleHidden={() => handleToggleHidden(id)}
           mobileHidden={mobileHidden}
           onToggleMobileHidden={() => handleToggleMobileHidden(id)}
-          mobileToggleLabel={mobileHidden ? `show ${SECTION_LABELS[id]} on mobile` : `hide ${SECTION_LABELS[id]} on mobile`}
+          mobileToggleLabel={
+            mobileHidden ? t(SECTION_TOGGLE_KEYS[id].showMobile) : t(SECTION_TOGGLE_KEYS[id].hideMobile)
+          }
         />
       </div>
     );
@@ -162,13 +183,13 @@ export function Music() {
     return (
       <div className="page music-page stagger-rise">
         <div className="page__header-row">
-          <h1 className="page__title">Music</h1>
+          <h1 className="page__title">{t('music.title')}</h1>
           <PageHeaderActions />
         </div>
         <EmptyState
           icon={<Music2 size={40} strokeWidth={1.5} />}
-          title="no media players found"
-          description="Connect a media player in Home Assistant to get started."
+          title={t('music.empty.title')}
+          description={t('music.empty.description')}
         />
       </div>
     );
@@ -177,7 +198,7 @@ export function Music() {
   return (
     <div className="page music-page stagger-rise">
       <div className="page__header-row music-page__header">
-        <h1 className="page__title">Music</h1>
+        <h1 className="page__title">{t('music.title')}</h1>
         <PageHeaderActions><EditToggle /></PageHeaderActions>
       </div>
 
@@ -187,7 +208,7 @@ export function Music() {
           {wrapSection('now_playing',
             hero
               ? <NowPlayingCard entity={hero} />
-              : <div className="music-page__no-player">No player available</div>
+              : <div className="music-page__no-player">{t('music.noPlayer')}</div>
           )}
           {wrapSection('zones', <ZonesCard zones={zones} />)}
         </div>

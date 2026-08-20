@@ -3,6 +3,7 @@ import { Cpu } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDevices } from '../ha/useDevices';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
+import { useT } from '../i18n/useT';
 import { EmptyState } from '../components/ui/EmptyState';
 import { DevicesHeroCard } from '../components/devices/DevicesHeroCard';
 import { DevicesToolbar, type FilterOption } from '../components/devices/DevicesToolbar';
@@ -15,6 +16,7 @@ import './Page.css';
 import './Devices.css';
 
 export function Devices() {
+  const t = useT();
   const { state, progress, devices, summary } = useDevices();
 
   const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
@@ -70,28 +72,28 @@ export function Devices() {
   return (
     <div className="page devices-page stagger-rise">
       <div className="page__header-row">
-        <h1 className="page__title">Devices</h1>
+        <h1 className="page__title">{t('devices.title')}</h1>
         <PageHeaderActions />
       </div>
 
       {state === 'loading' ? (
         <div className="devices-loading" role="status" aria-live="polite">
           <div className="devices-loading__top">
-            <span className="devices-loading__label">Loading devices…</span>
+            <span className="devices-loading__label">{t('devices.loading')}</span>
             <span className="devices-loading__pct data-font">{progress}%</span>
           </div>
           <div className="devices-loading__bar">
             <div className="devices-loading__bar-fill" style={{ width: `${progress}%` }} />
           </div>
           <p className="devices-loading__hint">
-            Gathering devices and entities from Home Assistant.
+            {t('devices.loadingHint')}
           </p>
         </div>
       ) : devices.length === 0 ? (
         <EmptyState
           icon={<Cpu size={36} strokeWidth={1.5} />}
-          title="no devices found"
-          description="connect a Home Assistant instance with devices to see them here."
+          title={t('devices.empty.title')}
+          description={t('devices.empty.description')}
         />
       ) : (
         <>
@@ -111,7 +113,7 @@ export function Devices() {
           />
 
           {filtered.length === 0 ? (
-            <p className="devices-empty-filter">No devices match your filters.</p>
+            <p className="devices-empty-filter">{t('devices.emptyFilter')}</p>
           ) : (
             <div className={`devices-results devices-results--${view}`}>
               {filtered.map((d) => {

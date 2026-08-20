@@ -10,6 +10,7 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
+import { useT } from '../i18n/useT';
 import { useEntitiesByDomain } from '../ha/hooks';
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -76,6 +77,8 @@ function ResizeHandle({
   span: number;
   onCommit: (id: string, newSpan: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -119,8 +122,8 @@ function ResizeHandle({
       type="button"
       className="overview-resize-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag to resize — currently ${span} of ${MAX_COLS} columns`}
-      title={`Drag left / right to resize (${span} of ${MAX_COLS} columns)`}
+      aria-label={t('columnResize.ariaLabel', { span, max: MAX_COLS })}
+      title={t('columnResize.title', { span, max: MAX_COLS })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
@@ -130,6 +133,7 @@ function ResizeHandle({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function Scenes() {
+  const t = useT();
   const scenes      = useEntitiesByDomain('scene');
   const editMode    = useUIStore((s) => s.editMode);
   const registries  = useEntityStore((s) => s.registries);
@@ -230,12 +234,31 @@ export function Scenes() {
     [updateCustomization]
   );
 
-  function getSectionLabel(id: string): string {
-    if (id === 'hero') return 'Overview';
-    if (id === 'activity') return 'Activity';
+  function getToggleLabels(id: string) {
+    if (id === 'hero') {
+      return {
+        hide: t('scenes.section.hide.hero'),
+        show: t('scenes.section.show.hero'),
+        hideMobile: t('scenes.section.hideMobile.hero'),
+        showMobile: t('scenes.section.showMobile.hero'),
+      };
+    }
+    if (id === 'activity') {
+      return {
+        hide: t('scenes.section.hide.activity'),
+        show: t('scenes.section.show.activity'),
+        hideMobile: t('scenes.section.hideMobile.activity'),
+        showMobile: t('scenes.section.showMobile.activity'),
+      };
+    }
     const areaId = sectionIdToAreaId(id);
-    if (areaId === 'general') return 'General';
-    return areaMap[areaId]?.name ?? areaId;
+    const label = areaId === 'general' ? 'General' : (areaMap[areaId]?.name ?? areaId);
+    return {
+      hide: t('scenes.section.hideRoom', { label }),
+      show: t('scenes.section.showRoom', { label }),
+      hideMobile: t('scenes.section.hideMobileRoom', { label }),
+      showMobile: t('scenes.section.showMobileRoom', { label }),
+    };
   }
 
   const namedRoomCount = areaIds.filter((a) => a !== 'general').length;
@@ -271,7 +294,7 @@ export function Scenes() {
   return (
     <div className="page scenes-page stagger-rise">
       <div className="page__header-row scenes-page__header">
-        <h1 className="page__title">Scenes</h1>
+        <h1 className="page__title">{t('scenes.title')}</h1>
         <PageHeaderActions><EditToggle /></PageHeaderActions>
       </div>
 
@@ -319,15 +342,13 @@ export function Scenes() {
                 <div className="edit-section-outline">{widget}</div>
                 <EditBadge
                   hidden={isHidden}
-                  toggleLabel={
-                    isHidden
-                      ? `show ${getSectionLabel(id)}`
-                      : `hide ${getSectionLabel(id)}`
-                  }
+                  toggleLabel={isHidden ? getToggleLabels(id).show : getToggleLabels(id).hide}
                   onToggleHidden={() => handleToggleHidden(id)}
                   mobileHidden={isMobileHidden}
                   onToggleMobileHidden={() => handleToggleMobileHidden(id)}
-                  mobileToggleLabel={isMobileHidden ? `show ${getSectionLabel(id)} on mobile` : `hide ${getSectionLabel(id)} on mobile`}
+                  mobileToggleLabel={
+                    isMobileHidden ? getToggleLabels(id).showMobile : getToggleLabels(id).hideMobile
+                  }
                 />
                 <SpanDots span={currentSpan} />
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />

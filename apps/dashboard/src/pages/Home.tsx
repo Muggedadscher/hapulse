@@ -19,6 +19,7 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
+import { useT, type TKey } from '../i18n/useT';
 import {
   useRooms,
   useEntityMap,
@@ -74,6 +75,8 @@ function ResizeHandle({
   span: number;
   onCommit: (id: string, newSpan: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation(); // prevent DnD kit from activating
@@ -120,8 +123,8 @@ function ResizeHandle({
       type="button"
       className="overview-resize-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag to resize — currently ${span} of ${MAX_COLS} columns`}
-      title={`Drag left / right to resize (${span} of ${MAX_COLS} columns)`}
+      aria-label={t('columnResize.ariaLabel', { span, max: MAX_COLS })}
+      title={t('columnResize.title', { span, max: MAX_COLS })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
@@ -143,19 +146,67 @@ const SECTION_IDS = [
 
 type SectionId = (typeof SECTION_IDS)[number];
 
-const SECTION_LABELS: Record<SectionId, string> = {
-  scenes: 'Scenes',
-  hero: 'Hero Room',
-  energy: 'Energy',
-  devices: 'Devices',
-  climate: 'Climate',
-  blinds: 'Blinds',
-  security: 'Security',
-  activity: 'Activity',
-  rooms: 'Rooms',
+type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
+
+const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
+  scenes: {
+    hide: 'home.section.hide.scenes',
+    show: 'home.section.show.scenes',
+    hideMobile: 'home.section.hideMobile.scenes',
+    showMobile: 'home.section.showMobile.scenes',
+  },
+  hero: {
+    hide: 'home.section.hide.hero',
+    show: 'home.section.show.hero',
+    hideMobile: 'home.section.hideMobile.hero',
+    showMobile: 'home.section.showMobile.hero',
+  },
+  energy: {
+    hide: 'home.section.hide.energy',
+    show: 'home.section.show.energy',
+    hideMobile: 'home.section.hideMobile.energy',
+    showMobile: 'home.section.showMobile.energy',
+  },
+  devices: {
+    hide: 'home.section.hide.devices',
+    show: 'home.section.show.devices',
+    hideMobile: 'home.section.hideMobile.devices',
+    showMobile: 'home.section.showMobile.devices',
+  },
+  climate: {
+    hide: 'home.section.hide.climate',
+    show: 'home.section.show.climate',
+    hideMobile: 'home.section.hideMobile.climate',
+    showMobile: 'home.section.showMobile.climate',
+  },
+  blinds: {
+    hide: 'home.section.hide.blinds',
+    show: 'home.section.show.blinds',
+    hideMobile: 'home.section.hideMobile.blinds',
+    showMobile: 'home.section.showMobile.blinds',
+  },
+  security: {
+    hide: 'home.section.hide.security',
+    show: 'home.section.show.security',
+    hideMobile: 'home.section.hideMobile.security',
+    showMobile: 'home.section.showMobile.security',
+  },
+  activity: {
+    hide: 'home.section.hide.activity',
+    show: 'home.section.show.activity',
+    hideMobile: 'home.section.hideMobile.activity',
+    showMobile: 'home.section.showMobile.activity',
+  },
+  rooms: {
+    hide: 'home.section.hide.rooms',
+    show: 'home.section.show.rooms',
+    hideMobile: 'home.section.hideMobile.rooms',
+    showMobile: 'home.section.showMobile.rooms',
+  },
 };
 
 export function Home() {
+  const t = useT();
   const rooms = useRooms();
   const entities = useEntityMap();
   const displayName = useDisplayName();
@@ -402,16 +453,16 @@ export function Home() {
                   hidden={isHidden}
                   toggleLabel={
                     isHidden
-                      ? `show ${SECTION_LABELS[id as SectionId]}`
-                      : `hide ${SECTION_LABELS[id as SectionId]}`
+                      ? t(SECTION_TOGGLE_KEYS[id as SectionId].show)
+                      : t(SECTION_TOGGLE_KEYS[id as SectionId].hide)
                   }
                   onToggleHidden={() => handleToggleHidden(id)}
                   mobileHidden={isMobileHidden}
                   onToggleMobileHidden={() => handleToggleMobileHidden(id)}
                   mobileToggleLabel={
                     isMobileHidden
-                      ? `show ${SECTION_LABELS[id as SectionId]} on mobile`
-                      : `hide ${SECTION_LABELS[id as SectionId]} on mobile`
+                      ? t(SECTION_TOGGLE_KEYS[id as SectionId].showMobile)
+                      : t(SECTION_TOGGLE_KEYS[id as SectionId].hideMobile)
                   }
                 />
                 <SpanDots span={currentSpan} />

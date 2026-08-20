@@ -7,6 +7,7 @@
 
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { useT } from '../i18n/useT';
 import './Placeholder.css';
 
 interface PlaceholderProps {
@@ -15,6 +16,7 @@ interface PlaceholderProps {
 }
 
 export function Placeholder({ title, icon: Icon }: PlaceholderProps) {
+  const t = useT();
   return (
     <div className="placeholder-page">
       <div className="placeholder-card">
@@ -23,7 +25,7 @@ export function Placeholder({ title, icon: Icon }: PlaceholderProps) {
         </div>
         <h1 className="placeholder-card__title">{title}</h1>
         <p className="placeholder-card__body">
-          coming soon — this section isn't built yet.
+          {t('placeholder.body')}
         </p>
       </div>
     </div>
