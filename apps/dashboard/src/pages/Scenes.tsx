@@ -252,7 +252,7 @@ export function Scenes() {
       };
     }
     const areaId = sectionIdToAreaId(id);
-    const label = areaId === 'general' ? 'General' : (areaMap[areaId]?.name ?? areaId);
+    const label = areaId === 'general' ? t('scenes.section.generalLabel') : (areaMap[areaId]?.name ?? areaId);
     return {
       hide: t('scenes.section.hideRoom', { label }),
       show: t('scenes.section.showRoom', { label }),
@@ -277,7 +277,7 @@ export function Scenes() {
       );
     }
     const areaId   = sectionIdToAreaId(id);
-    const roomName = areaId === 'general' ? 'General' : (areaMap[areaId]?.name ?? areaId);
+    const roomName = areaId === 'general' ? t('scenes.section.generalLabel') : (areaMap[areaId]?.name ?? areaId);
     const roomIcon = areaId === 'general' ? 'house' : (areaMap[areaId]?.icon ?? 'house');
     const roomHaIcon = areaId === 'general' ? null : (areaMap[areaId]?.haIcon ?? null);
     const roomScenes = scenes.filter((e) => getSceneAreaId(e) === areaId);

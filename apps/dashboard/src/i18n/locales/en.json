@@ -216,6 +216,7 @@
   "scenes.section.showRoom": "show {label}",
   "scenes.section.hideMobileRoom": "hide {label} on mobile",
   "scenes.section.showMobileRoom": "show {label} on mobile",
+  "scenes.section.generalLabel": "General",
 
   "security.title": "Security",
   "security.empty.title": "nothing to secure yet",
