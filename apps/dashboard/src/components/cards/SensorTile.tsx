@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
-import { useT } from '../../i18n/useT';
+import { useLocale, useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -117,9 +117,10 @@ function sensorBarColor(deviceClass: string | undefined): string {
 
 export function SensorTile({ entity, name }: SensorTileProps) {
   const t = useT();
+  const locale = useLocale();
   const deviceClass = entity.attributes.device_class as string | undefined;
   const icon = (deviceClass && DC_ICONS[deviceClass]) ?? <Activity size={16} strokeWidth={1.75} />;
-  const value = formatEntityState(entity);
+  const value = formatEntityState(entity, locale);
 
   const isBinary  = entity.entity_id.startsWith('binary_sensor.');
   const isOn      = entity.state === 'on';

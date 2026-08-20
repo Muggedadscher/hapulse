@@ -1,5 +1,5 @@
 import { useContext, useMemo } from 'react';
-import { translate } from '@hapulse/core';
+import { translate, type Locale } from '@hapulse/core';
 import { I18nContext } from './I18nProvider';
 import type en from './locales/en.json';
 
@@ -19,4 +19,11 @@ export function useT() {
         translate(dict, fallback, locale, key, vars),
     [dict, fallback, locale],
   );
+}
+
+/** The resolved locale, for Intl.DateTimeFormat / NumberFormat call sites.
+ *  Hook: call it in a component body only — utility functions take `locale`
+ *  as a parameter instead. */
+export function useLocale(): Locale {
+  return useContext(I18nContext).locale;
 }

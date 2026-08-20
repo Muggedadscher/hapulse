@@ -3,12 +3,12 @@ import {
   Sun, Moon, CloudSun, Cloud, CloudRain, CloudLightning, CloudSnow,
   Wind, Droplets, Thermometer, Gauge, Eye, ArrowUp, ArrowDown, ChevronDown,
 } from 'lucide-react';
-import type { HassEntity, WeatherForecast } from '@hapulse/core';
+import type { HassEntity, Locale, WeatherForecast } from '@hapulse/core';
 import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { useWeatherEntity, useWeatherEntities } from '../../../ha/hooks';
 import { useSettingsStore } from '../../../stores/settingsStore';
-import { useT } from '../../../i18n/useT';
+import { useLocale, useT } from '../../../i18n/useT';
 import './WeatherModal.css';
 
 // ---------------------------------------------------------------------------
@@ -77,11 +77,11 @@ function conditionGradient(condition: string, isNight: boolean): string {
 
 type TFunction = ReturnType<typeof useT>;
 
-function formatForecastLabel(datetime: string, isHourly: boolean, t: TFunction): string {
+function formatForecastLabel(datetime: string, isHourly: boolean, t: TFunction, locale: Locale): string {
   try {
     const d = new Date(datetime);
     if (isHourly) {
-      return d.toLocaleTimeString([], { hour: 'numeric', hour12: true });
+      return d.toLocaleTimeString(locale, { hour: 'numeric' });
     }
     const today = new Date();
     const isToday =
@@ -89,7 +89,7 @@ function formatForecastLabel(datetime: string, isHourly: boolean, t: TFunction):
       d.getMonth() === today.getMonth() &&
       d.getFullYear() === today.getFullYear();
     if (isToday) return t('home.chipmodals.weather.today');
-    return d.toLocaleDateString([], { weekday: 'short' });
+    return d.toLocaleDateString(locale, { weekday: 'short' });
   } catch {
     return '';
   }
@@ -252,6 +252,7 @@ export function WeatherModal({ open, onClose }: WeatherModalProps) {
 
 function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useWeatherEntity>> }) {
   const t = useT();
+  const locale = useLocale();
   const attrs = entity.attributes;
   const condition     = (attrs.condition as string | undefined) ?? entity.state;
   const temp          = attrs.temperature as number | undefined;
@@ -354,7 +355,7 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
               <ForecastRow
                 key={i}
                 entry={entry}
-                label={formatForecastLabel(entry.datetime, isHourly, t)}
+                label={formatForecastLabel(entry.datetime, isHourly, t, locale)}
                 tempUnit={tempUnit}
               />
             ))}

@@ -9,9 +9,9 @@ import {
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { domainOf, isToggleable, formatEntityState } from '@hapulse/core';
-import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
+import type { HassEntityMap, HassEntity, Locale, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
+import { useLocale, useT } from '../../i18n/useT';
 import './DevicesCard.css';
 
 type TFunction = ReturnType<typeof useT>;
@@ -57,7 +57,7 @@ function deviceIconChip(entity: HassEntity): { icon: React.ReactNode; bg: string
   }
 }
 
-function statusLabel(entity: HassEntity, t: TFunction): string {
+function statusLabel(entity: HassEntity, t: TFunction, locale: Locale): string {
   const domain = domainOf(entity.entity_id);
   const { state } = entity;
   switch (domain) {
@@ -70,7 +70,7 @@ function statusLabel(entity: HassEntity, t: TFunction): string {
       if (state === 'paused') return t('home.devices.paused');
       return state;
     default:
-      return formatEntityState(entity);
+      return formatEntityState(entity, locale);
   }
 }
 
@@ -84,6 +84,7 @@ function findRoomName(entityId: string, rooms: Room[]): string | undefined {
 export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
   const navigate = useNavigate();
   const t = useT();
+  const locale = useLocale();
 
   // All favorited device entities (available, right domain)
   const favDevices = favorites
@@ -170,7 +171,7 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
                       <span className="device-toggle__thumb" />
                     </button>
                   ) : (
-                    <span className="device-row__status">{statusLabel(entity, t)}</span>
+                    <span className="device-row__status">{statusLabel(entity, t, locale)}</span>
                   )}
                 </div>
               </li>

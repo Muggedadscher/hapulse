@@ -3,7 +3,8 @@ import {
   Sun, Moon, CloudSun, Cloud, CloudRain, CloudLightning, CloudSnow,
   Wind, Droplets,
 } from 'lucide-react';
-import type { HassEntity, WeatherForecast } from '@hapulse/core';
+import type { HassEntity, Locale, WeatherForecast } from '@hapulse/core';
+import { useLocale } from '../../i18n/useT';
 import './home.css';
 
 interface WeatherHeroProps {
@@ -70,15 +71,16 @@ function conditionWash(condition: string, isNight: boolean): string {
   }
 }
 
-function shortDayName(isoDate: string): string {
+function shortDayName(isoDate: string, locale: Locale): string {
   try {
-    return new Date(isoDate).toLocaleDateString([], { weekday: 'short' });
+    return new Date(isoDate).toLocaleDateString(locale, { weekday: 'short' });
   } catch {
     return '';
   }
 }
 
 export function WeatherHero({ entity, isNight, favoritesSlot }: WeatherHeroProps) {
+  const locale = useLocale();
   const condition = (entity.attributes.condition as string | undefined) ?? entity.state;
   const temp = entity.attributes.temperature as number | undefined;
   const tempUnit = (entity.attributes.temperature_unit as string | undefined) ?? '°C';
@@ -138,7 +140,7 @@ export function WeatherHero({ entity, isNight, favoritesSlot }: WeatherHeroProps
           <div className="weather-hero__forecast">
             {forecastDays.map((day, i) => (
               <div key={i} className="weather-hero__forecast-day">
-                <span className="weather-hero__forecast-label">{shortDayName(day.datetime)}</span>
+                <span className="weather-hero__forecast-label">{shortDayName(day.datetime, locale)}</span>
                 <span className="weather-hero__forecast-icon">
                   {FORECAST_ICONS[day.condition] ?? <Cloud size={14} strokeWidth={1.75} />}
                 </span>

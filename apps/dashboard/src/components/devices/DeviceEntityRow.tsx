@@ -20,7 +20,7 @@ import { domainOf, formatEntityState } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { DeviceIcon } from './deviceMeta';
-import { useT } from '../../i18n/useT';
+import { useLocale, useT } from '../../i18n/useT';
 
 const TOGGLE_DOMAINS = new Set(['light', 'switch', 'fan', 'input_boolean', 'humidifier', 'siren']);
 
@@ -107,6 +107,7 @@ export function DeviceEntityRow({
   onToggleHide,
 }: DeviceEntityRowProps) {
   const t = useT();
+  const locale = useLocale();
   const id = entity.entity_id;
   const domain = domainOf(id);
   const attrs = entity.attributes;
@@ -225,7 +226,7 @@ export function DeviceEntityRow({
   }
 
   if (control === null) {
-    control = <span className="device-entity-row__value" title={entity.state}>{formatEntityState(entity)}</span>;
+    control = <span className="device-entity-row__value" title={entity.state}>{formatEntityState(entity, locale)}</span>;
   }
 
   return (
