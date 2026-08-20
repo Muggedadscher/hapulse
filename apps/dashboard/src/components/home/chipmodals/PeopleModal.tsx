@@ -116,8 +116,13 @@ export function PeopleModal({ open, onClose }: PeopleModalProps) {
 
                 {/* Last changed */}
                 {lastChanged && (
-                  <span className="people-modal__time" aria-label={t('home.chipmodals.people.lastChangedAria', { time: relativeTime(lastChanged) })}>
-                    {relativeTime(lastChanged)}
+                  <span
+                    className="people-modal__time"
+                    aria-label={t('home.chipmodals.people.lastChangedAria', {
+                      time: relativeTime(t, lastChanged),
+                    })}
+                  >
+                    {relativeTime(t, lastChanged)}
                   </span>
                 )}
               </div>

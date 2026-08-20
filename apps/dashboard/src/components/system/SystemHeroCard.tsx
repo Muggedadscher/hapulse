@@ -1,5 +1,6 @@
 import React from 'react';
 import { Monitor, CheckCircle2, AlertTriangle, AlertCircle, Battery, WifiOff } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SystemHeroCard.css';
@@ -35,6 +36,7 @@ interface SystemHeroCardProps {
 }
 
 export function SystemHeroCard({ systemMonitorEntities, lowBatteryCount, unavailableCount }: SystemHeroCardProps) {
+  const t = useT();
   const cpu = systemMonitorEntities.find((e) =>
     /processor_use/.test(e.entity_id) && !/nice/.test(e.entity_id)
   );
@@ -53,9 +55,9 @@ export function SystemHeroCard({ systemMonitorEntities, lowBatteryCount, unavail
     health === 'critical' ? AlertCircle  : Monitor;
 
   const statusLabel =
-    health === 'healthy'  ? 'All systems healthy' :
-    health === 'warning'  ? 'System under load'   :
-    health === 'critical' ? 'System critical'      : 'System status unknown';
+    health === 'healthy'  ? t('system.hero.status.healthy')  :
+    health === 'warning'  ? t('system.hero.status.warning')  :
+    health === 'critical' ? t('system.hero.status.critical') : t('system.hero.status.unknown');
 
   const gradientClass = `system-hero-card--${health}`;
 
@@ -69,7 +71,7 @@ export function SystemHeroCard({ systemMonitorEntities, lowBatteryCount, unavail
             <HealthIcon size={36} strokeWidth={1.5} />
           </div>
           <div className="system-hero-card__text">
-            <p className="system-hero-card__label">System</p>
+            <p className="system-hero-card__label">{t('system.title')}</p>
             <p className="system-hero-card__status">{statusLabel}</p>
           </div>
         </div>
@@ -77,37 +79,37 @@ export function SystemHeroCard({ systemMonitorEntities, lowBatteryCount, unavail
         <div className="system-hero-card__chips">
           {cpuVal !== null && (
             <div className={`system-hero-chip ${metricChipClass(cpuVal, 75, 90)}`}>
-              <span className="system-hero-chip__key">CPU</span>
+              <span className="system-hero-chip__key">{t('system.hero.chip.cpu')}</span>
               <span className="system-hero-chip__val">{Math.round(cpuVal)}%</span>
             </div>
           )}
           {memVal !== null && (
             <div className={`system-hero-chip ${metricChipClass(memVal, 80, 90)}`}>
-              <span className="system-hero-chip__key">RAM</span>
+              <span className="system-hero-chip__key">{t('system.hero.chip.ram')}</span>
               <span className="system-hero-chip__val">{Math.round(memVal)}%</span>
             </div>
           )}
           {diskVal !== null && (
             <div className={`system-hero-chip ${metricChipClass(diskVal, 80, 90)}`}>
-              <span className="system-hero-chip__key">Disk</span>
+              <span className="system-hero-chip__key">{t('system.hero.chip.disk')}</span>
               <span className="system-hero-chip__val">{Math.round(diskVal)}%</span>
             </div>
           )}
           {lowBatteryCount > 0 && (
             <div className="system-hero-chip system-hero-chip--warn">
               <Battery size={12} strokeWidth={2} aria-hidden="true" />
-              <span>{lowBatteryCount} low {lowBatteryCount === 1 ? 'battery' : 'batteries'}</span>
+              <span>{t('system.hero.lowBatteryCount', { count: lowBatteryCount })}</span>
             </div>
           )}
           {unavailableCount > 0 && (
             <div className="system-hero-chip system-hero-chip--critical">
               <WifiOff size={12} strokeWidth={2} aria-hidden="true" />
-              <span>{unavailableCount} unavailable</span>
+              <span>{t('system.hero.unavailableCount', { count: unavailableCount })}</span>
             </div>
           )}
           {!hasAlerts && cpuVal === null && memVal === null && diskVal === null && (
             <div className="system-hero-chip system-hero-chip--muted">
-              <span>No metrics available</span>
+              <span>{t('system.hero.noMetrics')}</span>
             </div>
           )}
         </div>

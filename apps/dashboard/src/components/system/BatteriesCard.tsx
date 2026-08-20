@@ -1,5 +1,6 @@
 import React from 'react';
 import { Battery, BatteryLow, BatteryMedium, BatteryFull, BatteryWarning } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './BatteriesCard.css';
@@ -34,6 +35,7 @@ function BatteryIcon({ pct }: { pct: number }) {
 }
 
 export function BatteriesCard({ batteries }: BatteriesCardProps) {
+  const t = useT();
   if (batteries.length === 0) return null;
 
   const lowCount = batteries.filter((e) => batteryLevel(e) <= 20).length;
@@ -48,16 +50,16 @@ export function BatteriesCard({ batteries }: BatteriesCardProps) {
           >
             <Battery size={16} strokeWidth={1.75} />
           </span>
-          <span className="batteries-card__title">Batteries</span>
+          <span className="batteries-card__title">{t('system.batteries.title')}</span>
         </div>
         {lowCount > 0 && (
           <span className="batteries-card__low-badge">
-            {lowCount} low
+            {t('system.batteries.lowCount', { count: lowCount })}
           </span>
         )}
       </div>
 
-      <ul className="bat-list" aria-label="Battery levels">
+      <ul className="bat-list" aria-label={t('system.batteries.listAria')}>
         {batteries.map((entity) => {
           const pct  = batteryLevel(entity);
           const name = (entity.attributes.friendly_name ?? entity.entity_id.split('.')[1]!)

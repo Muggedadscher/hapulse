@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './OtherPlayersCard.css';
@@ -22,6 +23,7 @@ interface PlayerRowProps {
 }
 
 function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
+  const t          = useT();
   const attrs      = entity.attributes;
   const isPlaying  = entity.state === 'playing';
   const name       = (attrs['friendly_name'] as string | undefined) ?? entity.entity_id;
@@ -46,7 +48,7 @@ function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
       aria-pressed={selected}
-      aria-label={`Select ${name}`}
+      aria-label={t('music.player.selectAria', { name })}
     >
       <div className="other-player-row__art">
         {artworkUrl ? (
@@ -68,7 +70,11 @@ function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
         type="button"
         className="other-player-row__pp"
         onClick={handlePlayPause}
-        aria-label={isPlaying ? `Pause ${name}` : `Play ${name}`}
+        aria-label={
+          isPlaying
+            ? t('music.player.pauseNamed', { name })
+            : t('music.player.playNamed', { name })
+        }
       >
         {isPlaying
           ? <Pause size={14} strokeWidth={2} />
@@ -80,6 +86,7 @@ function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
 }
 
 export function OtherPlayersCard({ players, selectedId, onSelect }: OtherPlayersCardProps) {
+  const t = useT();
   const { url } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
   return (
@@ -89,15 +96,15 @@ export function OtherPlayersCard({ players, selectedId, onSelect }: OtherPlayers
           <span className="other-players-card__icon-chip" aria-hidden="true">
             <Radio size={14} strokeWidth={1.75} />
           </span>
-          <span className="other-players-card__title">Players</span>
+          <span className="other-players-card__title">{t('music.players.title')}</span>
         </div>
         <span className="other-players-card__count">{players.length}</span>
       </div>
 
       {players.length === 0 ? (
-        <p className="other-players-card__empty">No other players</p>
+        <p className="other-players-card__empty">{t('music.players.empty')}</p>
       ) : (
-        <ul className="other-players-card__list" aria-label="Other media players">
+        <ul className="other-players-card__list" aria-label={t('music.players.listAria')}>
           {players.map((p) => (
             <PlayerRow
               key={p.entity_id}

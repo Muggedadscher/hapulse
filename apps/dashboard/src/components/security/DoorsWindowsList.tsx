@@ -6,6 +6,7 @@
 import React from 'react';
 import { DoorOpen, AppWindow } from 'lucide-react';
 import type { HassEntity, Room } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import { getRoomName } from './roomUtils';
 import './DoorsWindowsList.css';
 
@@ -21,6 +22,7 @@ interface DoorsWindowsListProps {
 }
 
 export function DoorsWindowsList({ sensors, rooms }: DoorsWindowsListProps) {
+  const t = useT();
   const sorted = [...sensors].sort((a, b) => {
     const aOpen = a.state === 'on' ? 0 : 1;
     const bOpen = b.state === 'on' ? 0 : 1;
@@ -45,7 +47,7 @@ export function DoorsWindowsList({ sensors, rooms }: DoorsWindowsListProps) {
             </div>
             <span className={`doors-list__pill ${isOpen ? 'doors-list__pill--open' : 'doors-list__pill--closed'}`}>
               {isOpen && <span className="doors-list__dot" aria-hidden="true" />}
-              {isOpen ? 'open' : 'closed'}
+              {isOpen ? t('security.sensor.open') : t('security.sensor.closed')}
             </span>
           </div>
         );

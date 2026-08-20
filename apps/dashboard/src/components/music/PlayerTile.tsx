@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './PlayerTile.css';
@@ -28,6 +29,7 @@ interface PlayerTileProps {
 }
 
 export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileProps) {
+  const t = useT();
   const { url } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
   const attrs = entity.attributes;
@@ -67,7 +69,7 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); }}}
       aria-pressed={selected}
-      aria-label={`Select ${name}`}
+      aria-label={t('music.player.selectAria', { name })}
     >
       {/* Artwork thumb */}
       <div className="player-tile__artwork">
@@ -89,7 +91,7 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
           <button
             className="player-tile__playpause"
             onClick={handlePlayPause}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isPlaying ? t('music.control.pause') : t('music.control.play')}
             type="button"
           >
             {isPlaying
@@ -115,7 +117,7 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
               value={volumeLevel}
               onChange={handleVolume}
               onClick={(e) => e.stopPropagation()}
-              aria-label="Volume"
+              aria-label={t('music.control.volume')}
               style={{ '--progress-pct': `${volumeLevel * 100}%` } as React.CSSProperties}
             />
           </div>

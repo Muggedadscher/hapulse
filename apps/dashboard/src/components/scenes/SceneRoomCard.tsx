@@ -3,6 +3,7 @@ import {
   Sparkles, Sun, Moon, Sunset, Tv,
   PartyPopper, BookOpen, Coffee, Music2,
 } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
 import { callService } from '../../ha/service';
@@ -47,6 +48,7 @@ function sceneName(e: HassEntity): string {
 }
 
 export function SceneRoomCard({ roomName, roomIcon, roomHaIcon, scenes }: SceneRoomCardProps) {
+  const t = useT();
   return (
     <Card className="scene-room-card">
       <div className="scene-room-card__header">
@@ -61,7 +63,10 @@ export function SceneRoomCard({ roomName, roomIcon, roomHaIcon, scenes }: SceneR
           </span>
           <span className="scene-room-card__title">{roomName}</span>
         </div>
-        <span className="scene-room-card__count" aria-label={`${scenes.length} scenes`}>
+        <span
+          className="scene-room-card__count"
+          aria-label={t('scenes.room.countAria', { count: scenes.length })}
+        >
           {scenes.length}
         </span>
       </div>
@@ -76,7 +81,7 @@ export function SceneRoomCard({ roomName, roomIcon, roomHaIcon, scenes }: SceneR
               type="button"
               className="scene-tile scene-tile--compact"
               onClick={() => void callService('scene', 'turn_on', {}, { entity_id: entity.entity_id })}
-              aria-label={`Activate scene: ${name}`}
+              aria-label={t('scenes.room.activateAria', { name })}
             >
               <span
                 className="scene-tile__icon"

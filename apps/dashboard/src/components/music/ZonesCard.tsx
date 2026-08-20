@@ -4,6 +4,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { RoomIcon } from '../ui/RoomIcon';
 import type { HassEntity, Room } from '@hapulse/core';
@@ -23,7 +25,10 @@ export interface ZoneData {
   players: HassEntity[];
 }
 
-function getZoneState(players: HassEntity[]) {
+type T = (key: TKey, vars?: Record<string, string | number>) => string;
+
+/** Takes the translator as a parameter: it runs outside any component body. */
+function getZoneState(players: HassEntity[], t: T) {
   const playingPlayers = players.filter((p) => p.state === 'playing');
   const isActive = playingPlayers.length > 0;
   const volPlayers = playingPlayers.filter((p) => hasFeature(p, FEATURE_VOLUME_SET));
@@ -47,7 +52,7 @@ function getZoneState(players: HassEntity[]) {
   const subline = isActive
     ? titles.length === 1
       ? titles[0]!
-      : `${playingPlayers.length} playing`
+      : t('music.zones.playingCount', { count: playingPlayers.length })
     : (players[0]?.state ?? 'idle');
 
   const firstActive = playingPlayers[0] ?? players[0];
@@ -73,9 +78,10 @@ interface ZoneRowProps {
 }
 
 function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
+  const t = useT();
   const { room, iconName, players } = zone;
   const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic } =
-    getZoneState(players);
+    getZoneState(players, t);
 
   const artworkUrl = isActive ? resolveEntityPicture(entityPic, baseUrl) : null;
 
@@ -126,7 +132,11 @@ function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
             type="button"
             className="zone-row__mute"
             onClick={handleMute}
-            aria-label={allMuted ? `Unmute ${room.name}` : `Mute ${room.name}`}
+            aria-label={
+              allMuted
+                ? t('music.zones.unmuteRoom', { room: room.name })
+                : t('music.zones.muteRoom', { room: room.name })
+            }
           >
             {allMuted ? (
               <VolumeX size={15} strokeWidth={1.75} />
@@ -142,7 +152,7 @@ function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
             step={0.01}
             value={effectiveVol}
             onChange={handleVolume}
-            aria-label={`${room.name} volume`}
+            aria-label={t('music.zones.roomVolume', { room: room.name })}
             style={{ '--progress-pct': `${effectiveVol * 100}%` } as React.CSSProperties}
           />
         </div>
@@ -159,9 +169,10 @@ interface ZoneGridCardProps {
 }
 
 function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
+  const t = useT();
   const { room, iconName, players } = zone;
   const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic } =
-    getZoneState(players);
+    getZoneState(players, t);
 
   const artworkUrl = isActive ? resolveEntityPicture(entityPic, baseUrl) : null;
 
@@ -214,7 +225,11 @@ function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
             type="button"
             className="zone-grid-card__mute"
             onClick={handleMute}
-            aria-label={allMuted ? `Unmute ${room.name}` : `Mute ${room.name}`}
+            aria-label={
+              allMuted
+                ? t('music.zones.unmuteRoom', { room: room.name })
+                : t('music.zones.muteRoom', { room: room.name })
+            }
           >
             {allMuted ? (
               <VolumeX size={13} strokeWidth={1.75} />
@@ -230,7 +245,7 @@ function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
             step={0.01}
             value={effectiveVol}
             onChange={handleVolume}
-            aria-label={`${room.name} volume`}
+            aria-label={t('music.zones.roomVolume', { room: room.name })}
             style={{ '--progress-pct': `${effectiveVol * 100}%` } as React.CSSProperties}
           />
         </div>
@@ -246,6 +261,7 @@ interface ZonesCardProps {
 }
 
 export function ZonesCard({ zones }: ZonesCardProps) {
+  const t = useT();
   const { url } = useConnectionStore(useShallow((s) => ({ url: s.url })));
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
 
@@ -258,19 +274,19 @@ export function ZonesCard({ zones }: ZonesCardProps) {
           <span className="zones-card__icon-chip" aria-hidden="true">
             <LayoutGrid size={14} strokeWidth={1.75} />
           </span>
-          <span className="zones-card__title">Zones</span>
+          <span className="zones-card__title">{t('music.zones.title')}</span>
         </div>
 
         <div className="zones-card__header-right">
           <span className="zones-card__count">
-            {activeCount} / {zones.length} playing
+            {t('music.zones.count', { active: activeCount, total: zones.length })}
           </span>
-          <div className="zones-card__view-toggle" role="group" aria-label="View mode">
+          <div className="zones-card__view-toggle" role="group" aria-label={t('music.zones.viewModeAria')}>
             <button
               type="button"
               className={`zones-card__view-btn${viewMode === 'list' ? ' zones-card__view-btn--active' : ''}`}
               onClick={() => setViewMode('list')}
-              aria-label="List view"
+              aria-label={t('music.zones.listView')}
               aria-pressed={viewMode === 'list'}
             >
               <LayoutList size={14} strokeWidth={1.75} />
@@ -279,7 +295,7 @@ export function ZonesCard({ zones }: ZonesCardProps) {
               type="button"
               className={`zones-card__view-btn${viewMode === 'grid' ? ' zones-card__view-btn--active' : ''}`}
               onClick={() => setViewMode('grid')}
-              aria-label="Grid view"
+              aria-label={t('music.zones.gridView')}
               aria-pressed={viewMode === 'grid'}
             >
               <LayoutGrid size={14} strokeWidth={1.75} />
@@ -289,9 +305,9 @@ export function ZonesCard({ zones }: ZonesCardProps) {
       </div>
 
       {zones.length === 0 ? (
-        <p className="zones-card__empty">No rooms with media players found.</p>
+        <p className="zones-card__empty">{t('music.zones.empty')}</p>
       ) : viewMode === 'list' ? (
-        <ul className="zones-card__list" aria-label="Zones">
+        <ul className="zones-card__list" aria-label={t('music.zones.listAria')}>
           {zones.map((z) => (
             <ZoneRow key={z.room.id} zone={z} baseUrl={url} />
           ))}
