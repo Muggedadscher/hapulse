@@ -44,6 +44,7 @@ import {
   exchangeHAAuthCode,
   connectWithAuthData,
   HAConnection,
+  translate,
 } from '../dist/index.js';
 
 let passed = 0;
@@ -527,6 +528,49 @@ console.log('\n── frontend/user_data methods ──');
 assert(typeof HAConnection.prototype.getUserData === 'function', 'HAConnection.prototype.getUserData exported as function');
 assert(typeof HAConnection.prototype.setUserData === 'function', 'HAConnection.prototype.setUserData exported as function');
 assert(typeof HAConnection.prototype.subscribeUserData === 'function', 'HAConnection.prototype.subscribeUserData exported as function');
+
+// ---------------------------------------------------------------------------
+// i18n — translate()
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: translate ──');
+
+const EN = {
+  'nav.devices': 'Devices',
+  'devices.count.one': '{count} device',
+  'devices.count.other': '{count} devices',
+  'greeting': 'Hello {name}',
+};
+const FR = {
+  'nav.devices': 'Appareils',
+  'devices.count.one': '{count} appareil',
+  'devices.count.other': '{count} appareils',
+};
+
+assertEqual(translate(EN, EN, 'en', 'nav.devices'), 'Devices', 'clé simple');
+assertEqual(translate(FR, EN, 'fr', 'nav.devices'), 'Appareils', 'clé traduite');
+
+// Repli : dictionnaire cible incomplet → anglais
+assertEqual(translate(FR, EN, 'fr', 'greeting', { name: 'Bap' }), 'Hello Bap',
+  'repli sur en quand la clé manque dans la locale');
+
+// Repli ultime : la clé elle-même, jamais un écran vide
+assertEqual(translate(EN, EN, 'en', 'inconnue.totale'), 'inconnue.totale',
+  'repli sur la clé quand elle est introuvable partout');
+
+// Interpolation : variable absente laissée visible, pour repérer le bug
+assertEqual(translate(EN, EN, 'en', 'greeting'), 'Hello {name}',
+  'variable non fournie laissée telle quelle');
+
+// Pluriels anglais
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 1 }), '1 device', 'en, count=1 → singulier');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 2 }), '2 devices', 'en, count=2 → pluriel');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 0 }), '0 devices', 'en, count=0 → pluriel');
+
+// Pluriels français : le cas qui attrape les vraies régressions.
+// En français 0 et 1 prennent le SINGULIER, contrairement à l'anglais.
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 0 }), '0 appareil', 'fr, count=0 → singulier');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 1 }), '1 appareil', 'fr, count=1 → singulier');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 2 }), '2 appareils', 'fr, count=2 → pluriel');
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)
