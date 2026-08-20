@@ -24,6 +24,7 @@ import { domainOf, domainIcon, formatEntityState, isToggleable } from '@hapulse/
 import type { HassEntity } from '@hapulse/core';
 import type { CustomizationSettings } from '../../stores/settingsStore';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import './favorites.css';
 
 interface FavoriteTileProps {
@@ -95,6 +96,7 @@ function isEntityActive(entity: HassEntity): boolean {
 }
 
 export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTileProps) {
+  const t = useT();
   const { entityOverrides } = customization;
   const override = entityOverrides[entity.entity_id];
   const name =
@@ -126,7 +128,7 @@ export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTi
         type="button"
         className={tileClass}
         onClick={handleToggle}
-        aria-label={`toggle ${name}`}
+        aria-label={t('home.favorites.toggleAria', { name })}
         aria-pressed={active}
       >
         <div className="favorite-tile__icon" aria-hidden="true">{icon}</div>
@@ -141,7 +143,7 @@ export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTi
       type="button"
       className={tileClass}
       onClick={handleOpenDetail}
-      aria-label={`${name} details`}
+      aria-label={t('home.favorites.detailsAria', { name })}
       aria-haspopup="dialog"
     >
       <div className="favorite-tile__icon" aria-hidden="true">{icon}</div>

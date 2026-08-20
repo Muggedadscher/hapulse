@@ -11,7 +11,10 @@ import { Card } from '../ui/Card';
 import { domainOf, isToggleable, formatEntityState } from '@hapulse/core';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import './DevicesCard.css';
+
+type TFunction = ReturnType<typeof useT>;
 
 interface DevicesCardProps {
   entities: HassEntityMap;
@@ -54,17 +57,17 @@ function deviceIconChip(entity: HassEntity): { icon: React.ReactNode; bg: string
   }
 }
 
-function statusLabel(entity: HassEntity): string {
+function statusLabel(entity: HassEntity, t: TFunction): string {
   const domain = domainOf(entity.entity_id);
   const { state } = entity;
   switch (domain) {
     case 'vacuum':
-      if (state === 'cleaning') return 'Cleaning';
-      if (state === 'returning') return 'Returning';
+      if (state === 'cleaning') return t('home.devices.cleaning');
+      if (state === 'returning') return t('home.devices.returning');
       return state;
     case 'media_player':
-      if (state === 'playing') return 'Playing';
-      if (state === 'paused') return 'Paused';
+      if (state === 'playing') return t('home.devices.playing');
+      if (state === 'paused') return t('home.devices.paused');
       return state;
     default:
       return formatEntityState(entity);
@@ -80,6 +83,7 @@ function findRoomName(entityId: string, rooms: Room[]): string | undefined {
 
 export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
   const navigate = useNavigate();
+  const t = useT();
 
   // All favorited device entities (available, right domain)
   const favDevices = favorites
@@ -100,8 +104,8 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
   const scrollable = activeDevices.length > 5;
 
   const emptySubText = favDevices.length === 0
-    ? 'Open a room, tap edit, and star a device to track it here.'
-    : 'All your favorites are off right now.';
+    ? t('home.devices.emptyHintNoFavorites')
+    : t('home.devices.emptyHintAllOff');
 
   return (
     <Card className="devices-card">
@@ -110,16 +114,16 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
           <span className="devices-card__icon-chip" aria-hidden="true">
             <Layers size={16} strokeWidth={1.75} />
           </span>
-          <span className="devices-card__title">Devices</span>
+          <span className="devices-card__title">{t('home.devices.title')}</span>
         </div>
         {activeDevices.length > 0 && (
           <button
             className="devices-card__all-link"
             onClick={() => void navigate('/devices')}
             type="button"
-            aria-label="View all devices"
+            aria-label={t('home.devices.viewAllAria')}
           >
-            All Devices
+            {t('home.devices.allDevices')}
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         )}
@@ -128,13 +132,13 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
       {activeDevices.length === 0 ? (
         <div className="devices-card__empty">
           <Star size={28} strokeWidth={1.5} className="devices-card__empty-icon" />
-          <p className="devices-card__empty-text">No active devices</p>
+          <p className="devices-card__empty-text">{t('home.devices.emptyTitle')}</p>
           <p className="devices-card__empty-sub">{emptySubText}</p>
         </div>
       ) : (
         <ul
           className={`devices-card__list card-scroll-body${scrollable ? ' devices-card__list--scrollable' : ''}`}
-          aria-label="Active favorite devices"
+          aria-label={t('home.devices.listAria')}
         >
           {activeDevices.map((entity) => {
             const chip = deviceIconChip(entity);
@@ -158,7 +162,7 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
                     <button
                       className={`device-toggle${isOn ? ' device-toggle--on' : ''}`}
                       onClick={() => handleToggle(entity)}
-                      aria-label={`${isOn ? 'Turn off' : 'Turn on'} ${name}`}
+                      aria-label={isOn ? t('home.devices.turnOffAria', { name }) : t('home.devices.turnOnAria', { name })}
                       aria-pressed={isOn}
                       role="switch"
                       type="button"
@@ -166,7 +170,7 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
                       <span className="device-toggle__thumb" />
                     </button>
                   ) : (
-                    <span className="device-row__status">{statusLabel(entity)}</span>
+                    <span className="device-row__status">{statusLabel(entity, t)}</span>
                   )}
                 </div>
               </li>

@@ -6,6 +6,7 @@ import { Minus, Plus, Thermometer, ChevronRight } from 'lucide-react';
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import './ClimateCard.css';
 
 interface ClimateCardProps {
@@ -69,6 +70,7 @@ interface ArcGaugeProps {
 }
 
 function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'var(--info)' }: ArcGaugeProps) {
+  const t = useT();
   const cx = size / 2;
   const cy = size / 2;
   const r = size * 0.38;
@@ -98,7 +100,7 @@ function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'v
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      aria-label={`Temperature gauge: ${value}° – ${label}`}
+      aria-label={t('home.climate.gaugeAria', { value, label })}
       role="img"
     >
       <path d={trackPath} fill="none" stroke="var(--border)" strokeWidth={strokeW} strokeLinecap="round" />
@@ -126,6 +128,7 @@ function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'v
 // ── ClimateCard ───────────────────────────────────────────────────────────────
 
 export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
+  const t = useT();
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   // Build list of rooms that have at least one climate entity
@@ -190,14 +193,14 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
             <span className="climate-card__icon-chip" aria-hidden="true">
               <Thermometer size={16} strokeWidth={1.75} />
             </span>
-            <span className="climate-card__title">Climate</span>
+            <span className="climate-card__title">{t('home.climate.title')}</span>
           </div>
         </div>
         <div className="climate-card__empty">
           <Thermometer size={28} strokeWidth={1.5} className="climate-card__empty-icon" />
-          <p className="climate-card__empty-text">No climate entities</p>
+          <p className="climate-card__empty-text">{t('home.climate.emptyTitle')}</p>
           <p className="climate-card__empty-sub">
-            No climate devices were found. You can hide this section via the home page edit mode.
+            {t('home.climate.emptyDescription')}
           </p>
         </div>
       </Card>
@@ -224,16 +227,16 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
           <span className={`climate-card__icon-chip climate-card__icon-chip--${chipKey}`} aria-hidden="true">
             <Thermometer size={16} strokeWidth={1.75} />
           </span>
-          <span className="climate-card__title">Climate</span>
+          <span className="climate-card__title">{t('home.climate.title')}</span>
         </div>
         {onSeeAll && (
           <button
             className="climate-card__link"
             type="button"
             onClick={onSeeAll}
-            aria-label="See all climate entities"
+            aria-label={t('home.climate.seeAllAria')}
           >
-            See All
+            {t('home.climate.seeAll')}
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         )}
@@ -248,7 +251,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
             className="climate-card__step-btn"
             onClick={handleDown}
             disabled={isOff}
-            aria-label="Lower setpoint"
+            aria-label={t('home.climate.lowerAria')}
             type="button"
           >
             <Minus size={14} strokeWidth={2.5} />
@@ -260,7 +263,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
             className="climate-card__step-btn"
             onClick={handleUp}
             disabled={isOff}
-            aria-label="Raise setpoint"
+            aria-label={t('home.climate.raiseAria')}
             type="button"
           >
             <Plus size={14} strokeWidth={2.5} />
@@ -269,7 +272,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
       </div>
 
       {/* Room list — scrollable when it exceeds the cap */}
-      <ul className="climate-card__rooms" aria-label="Room temperatures">
+      <ul className="climate-card__rooms" aria-label={t('home.climate.roomsAria')}>
         {climateRooms.map((entry) => {
           const entryKey = hvacColorKey(entry.entity);
           const isSelected = entry.name === activeRoom.name;

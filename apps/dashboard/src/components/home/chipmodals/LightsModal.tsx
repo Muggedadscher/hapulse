@@ -12,6 +12,7 @@ import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import { callService } from '../../../ha/service';
 import { applyStoredOrder } from '../../../lib/order';
+import { useT } from '../../../i18n/useT';
 import './chipmodals.css';
 
 interface LightsModalProps {
@@ -20,6 +21,7 @@ interface LightsModalProps {
 }
 
 export function LightsModal({ open, onClose }: LightsModalProps) {
+  const t = useT();
   const rooms = useEntityStore((s) => s.rooms);
   const entities = useEntityStore(
     useShallow((s) => s.entities)
@@ -85,7 +87,7 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
         type="button"
         style={{ fontSize: '0.8125rem', padding: '0.375rem 0.875rem', minHeight: '36px' }}
       >
-        turn all off
+        {t('home.chipmodals.lights.turnAllOff')}
       </button>
     </div>
   ) : null;
@@ -94,21 +96,23 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="lights"
+      title={t('home.chipmodals.lights.title')}
       icon={<Lightbulb size={20} strokeWidth={1.75} />}
     >
       {allLights.length === 0 ? (
         <EmptyState
           icon={<Lightbulb size={32} strokeWidth={1.5} />}
-          title="no lights found"
-          description="add light entities in home assistant to control them here."
+          title={t('home.chipmodals.lights.emptyTitle')}
+          description={t('home.chipmodals.lights.emptyDescription')}
         />
       ) : (
         <>
           {headerAction}
           {groups.map((group) => (
             <div key={group.roomName} className="lights-modal__group">
-              <div className="lights-modal__group-label">{group.roomName}</div>
+              <div className="lights-modal__group-label">
+                {group.roomName === 'other' ? t('home.chipmodals.lights.otherLabel') : group.roomName}
+              </div>
               <div className="lights-modal__list">
                 {group.entityIds.map((id) => {
                   const entity = entities[id];
@@ -135,7 +139,11 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
                           handleToggle(id, isOn);
                         }
                       }}
-                      aria-label={`${name}, ${isOn ? 'on' : 'off'}, toggle`}
+                      aria-label={
+                        isOn
+                          ? t('home.chipmodals.lights.rowAriaOn', { name })
+                          : t('home.chipmodals.lights.rowAriaOff', { name })
+                      }
                     >
                       <span
                         className={`lights-modal__icon ${
@@ -156,7 +164,7 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
                           </span>
                         )}
                         {!isOn && (
-                          <span className="lights-modal__state">off</span>
+                          <span className="lights-modal__state">{t('home.chipmodals.lights.offState')}</span>
                         )}
                       </div>
 
@@ -164,7 +172,7 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
                       <label
                         className="lights-modal__toggle"
                         onClick={(e) => e.stopPropagation()}
-                        aria-label={`${name} toggle`}
+                        aria-label={t('home.chipmodals.lights.toggleAria', { name })}
                       >
                         <input
                           type="checkbox"

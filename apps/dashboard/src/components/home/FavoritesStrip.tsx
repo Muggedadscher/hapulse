@@ -12,6 +12,7 @@ import type { HassEntityMap } from '@hapulse/core';
 import type { CustomizationSettings } from '../../stores/settingsStore';
 import { FavoriteTile } from './FavoriteTile';
 import { EntityDetailModal } from './EntityDetailModal';
+import { useT } from '../../i18n/useT';
 import './favorites.css';
 
 interface FavoritesStripProps {
@@ -22,6 +23,7 @@ interface FavoritesStripProps {
 }
 
 export function FavoritesStrip({ entities, customization }: FavoritesStripProps) {
+  const t = useT();
   const { favorites } = customization;
   const [detailId, setDetailId] = useState<string | null>(null);
 
@@ -37,7 +39,7 @@ export function FavoritesStrip({ entities, customization }: FavoritesStripProps)
 
   return (
     <>
-      <div className="favorites-strip" role="list" aria-label="Favorite entities">
+      <div className="favorites-strip" role="list" aria-label={t('home.favorites.listAria')}>
         {relevantIds.map((id) => {
           const entity = entities[id]!;
           return (

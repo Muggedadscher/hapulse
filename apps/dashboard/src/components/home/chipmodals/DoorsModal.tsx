@@ -6,6 +6,7 @@ import { EmptyState } from '../../ui/EmptyState';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import type { HassEntity } from '@hapulse/core';
+import { useT } from '../../../i18n/useT';
 import './chipmodals.css';
 
 const DOOR_CLASSES = new Set(['door', 'garage_door', 'opening']);
@@ -16,6 +17,7 @@ interface DoorsModalProps {
 }
 
 function SensorRow({ sensor }: { sensor: HassEntity }) {
+  const t = useT();
   const isOpen = sensor.state === 'on';
   const name =
     (sensor.attributes.friendly_name as string | undefined) ??
@@ -32,7 +34,7 @@ function SensorRow({ sensor }: { sensor: HassEntity }) {
         ].join(' ')}
       >
         {isOpen && <span className="doors-modal__dot" aria-hidden="true" />}
-        {isOpen ? 'open' : 'closed'}
+        {isOpen ? t('home.chipmodals.doors.open') : t('home.chipmodals.doors.closed')}
       </span>
     </div>
   );
@@ -73,6 +75,7 @@ function Section({ icon, label, openCount, total, sensors }: SectionProps) {
 }
 
 export function DoorsModal({ open, onClose }: DoorsModalProps) {
+  const t = useT();
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -108,21 +111,21 @@ export function DoorsModal({ open, onClose }: DoorsModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="doors & windows"
+      title={t('home.chipmodals.doors.title')}
       icon={<DoorOpen size={20} strokeWidth={1.75} />}
     >
       {sensors.length === 0 ? (
         <EmptyState
           icon={<DoorOpen size={32} strokeWidth={1.5} />}
-          title="no door or window sensors"
-          description="add door, window, or opening binary sensors in home assistant."
+          title={t('home.chipmodals.doors.emptyTitle')}
+          description={t('home.chipmodals.doors.emptyDescription')}
         />
       ) : (
         <div className="doors-modal">
           {doors.length > 0 && (
             <Section
               icon={<DoorOpen size={14} strokeWidth={1.75} />}
-              label="Doors"
+              label={t('home.chipmodals.doors.doorsLabel')}
               openCount={doors.filter((e) => e.state === 'on').length}
               total={doors.length}
               sensors={doors}
@@ -131,7 +134,7 @@ export function DoorsModal({ open, onClose }: DoorsModalProps) {
           {windows.length > 0 && (
             <Section
               icon={<Grid2x2 size={14} strokeWidth={1.75} />}
-              label="Windows"
+              label={t('home.chipmodals.doors.windowsLabel')}
               openCount={windows.filter((e) => e.state === 'on').length}
               total={windows.length}
               sensors={windows}

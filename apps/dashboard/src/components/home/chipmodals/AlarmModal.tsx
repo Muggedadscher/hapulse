@@ -5,6 +5,7 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { AlarmPanelCard } from '../../security/AlarmPanelCard';
 import { useEntityStore } from '../../../stores/entityStore';
+import { useT } from '../../../i18n/useT';
 
 interface AlarmModalProps {
   open: boolean;
@@ -12,6 +13,7 @@ interface AlarmModalProps {
 }
 
 export function AlarmModal({ open, onClose }: AlarmModalProps) {
+  const t = useT();
   const alarm = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities).find((e) =>
@@ -24,14 +26,14 @@ export function AlarmModal({ open, onClose }: AlarmModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Alarm"
+      title={t('home.chipmodals.alarm.title')}
       icon={<ShieldAlert size={20} strokeWidth={1.75} />}
     >
       {!alarm ? (
         <EmptyState
           icon={<ShieldAlert size={32} strokeWidth={1.5} />}
-          title="no alarm panel found"
-          description="add an alarm_control_panel entity in home assistant."
+          title={t('home.chipmodals.alarm.emptyTitle')}
+          description={t('home.chipmodals.alarm.emptyDescription')}
         />
       ) : (
         <div className="alarm-modal__content">

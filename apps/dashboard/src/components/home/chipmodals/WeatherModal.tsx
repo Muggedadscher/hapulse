@@ -8,6 +8,7 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { useWeatherEntity, useWeatherEntities } from '../../../ha/hooks';
 import { useSettingsStore } from '../../../stores/settingsStore';
+import { useT } from '../../../i18n/useT';
 import './WeatherModal.css';
 
 // ---------------------------------------------------------------------------
@@ -74,7 +75,9 @@ function conditionGradient(condition: string, isNight: boolean): string {
   }
 }
 
-function formatForecastLabel(datetime: string, isHourly: boolean): string {
+type TFunction = ReturnType<typeof useT>;
+
+function formatForecastLabel(datetime: string, isHourly: boolean, t: TFunction): string {
   try {
     const d = new Date(datetime);
     if (isHourly) {
@@ -85,7 +88,7 @@ function formatForecastLabel(datetime: string, isHourly: boolean): string {
       d.getDate() === today.getDate() &&
       d.getMonth() === today.getMonth() &&
       d.getFullYear() === today.getFullYear();
-    if (isToday) return 'Today';
+    if (isToday) return t('home.chipmodals.weather.today');
     return d.toLocaleDateString([], { weekday: 'short' });
   } catch {
     return '';
@@ -187,17 +190,18 @@ interface WeatherPickerProps {
 }
 
 function WeatherEntityPicker({ entities, value, onChange }: WeatherPickerProps) {
+  const t = useT();
   return (
     <div className="weather-modal__picker">
       <label className="weather-modal__picker-label" htmlFor="weather-entity-select">
-        Weather entity
+        {t('home.chipmodals.weather.entityLabel')}
       </label>
       <div className="weather-modal__picker-select">
         <select
           id="weather-entity-select"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          aria-label="Weather entity"
+          aria-label={t('home.chipmodals.weather.entityLabel')}
         >
           {entities.map((e) => (
             <option key={e.entity_id} value={e.entity_id}>
@@ -212,6 +216,7 @@ function WeatherEntityPicker({ entities, value, onChange }: WeatherPickerProps) 
 }
 
 export function WeatherModal({ open, onClose }: WeatherModalProps) {
+  const t = useT();
   const entity = useWeatherEntity();
   const weatherEntities = useWeatherEntities();
   const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
@@ -221,7 +226,7 @@ export function WeatherModal({ open, onClose }: WeatherModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Weather"
+      title={t('home.chipmodals.weather.title')}
       icon={<Sun size={20} strokeWidth={1.75} />}
     >
       {editingEnabled && weatherEntities.length > 0 && (
@@ -235,8 +240,8 @@ export function WeatherModal({ open, onClose }: WeatherModalProps) {
       {!entity ? (
         <EmptyState
           icon={<Cloud size={32} strokeWidth={1.5} />}
-          title="no weather entity found"
-          description="add a weather entity in home assistant to see forecasts."
+          title={t('home.chipmodals.weather.emptyTitle')}
+          description={t('home.chipmodals.weather.emptyDescription')}
         />
       ) : (
         <WeatherContent entity={entity} />
@@ -246,6 +251,7 @@ export function WeatherModal({ open, onClose }: WeatherModalProps) {
 }
 
 function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useWeatherEntity>> }) {
+  const t = useT();
   const attrs = entity.attributes;
   const condition     = (attrs.condition as string | undefined) ?? entity.state;
   const temp          = attrs.temperature as number | undefined;
@@ -264,7 +270,7 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
   const uvIndex       = attrs.uv_index as number | undefined;
   const cloudCoverage = attrs.cloud_coverage as number | undefined;
   const forecast      = attrs.forecast as WeatherForecast[] | undefined;
-  const name          = (attrs.friendly_name as string | undefined) ?? 'Weather';
+  const name          = (attrs.friendly_name as string | undefined) ?? t('home.chipmodals.weather.title');
 
   // Detect night: no sun entity available here, so check condition
   const isNight = condition === 'clear-night';
@@ -277,36 +283,36 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
   // Build stat list — only show what's available
   const stats: StatProps[] = [];
   if (humidity != null) {
-    stats.push({ icon: <Droplets size={14} strokeWidth={1.75} />, label: 'Humidity', value: `${humidity}%` });
+    stats.push({ icon: <Droplets size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.humidity'), value: `${humidity}%` });
   }
   if (apparentTemp != null) {
-    stats.push({ icon: <Thermometer size={14} strokeWidth={1.75} />, label: 'Feels like', value: `${Math.round(apparentTemp)}${tempUnit}` });
+    stats.push({ icon: <Thermometer size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.feelsLike'), value: `${Math.round(apparentTemp)}${tempUnit}` });
   }
   if (windSpeed != null) {
     const bearing = windBearingLabel(windBearing);
     stats.push({
       icon: <Wind size={14} strokeWidth={1.75} />,
-      label: 'Wind',
+      label: t('home.chipmodals.weather.stat.wind'),
       value: `${windSpeed} ${windUnit}${bearing ? ` ${bearing}` : ''}`,
     });
   }
   if (windGust != null) {
-    stats.push({ icon: <Wind size={14} strokeWidth={1.75} />, label: 'Gusts', value: `${windGust} ${windUnit}` });
+    stats.push({ icon: <Wind size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.gusts'), value: `${windGust} ${windUnit}` });
   }
   if (pressure != null) {
-    stats.push({ icon: <Gauge size={14} strokeWidth={1.75} />, label: 'Pressure', value: `${Math.round(pressure)} ${pressureUnit}` });
+    stats.push({ icon: <Gauge size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.pressure'), value: `${Math.round(pressure)} ${pressureUnit}` });
   }
   if (visibility != null) {
-    stats.push({ icon: <Eye size={14} strokeWidth={1.75} />, label: 'Visibility', value: `${visibility} ${visibilityUnit}` });
+    stats.push({ icon: <Eye size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.visibility'), value: `${visibility} ${visibilityUnit}` });
   }
   if (dewPoint != null) {
-    stats.push({ icon: <Thermometer size={14} strokeWidth={1.75} />, label: 'Dew point', value: `${Math.round(dewPoint)}${tempUnit}` });
+    stats.push({ icon: <Thermometer size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.dewPoint'), value: `${Math.round(dewPoint)}${tempUnit}` });
   }
   if (uvIndex != null) {
-    stats.push({ icon: <Sun size={14} strokeWidth={1.75} />, label: 'UV index', value: String(Math.round(uvIndex)) });
+    stats.push({ icon: <Sun size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.uvIndex'), value: String(Math.round(uvIndex)) });
   }
   if (cloudCoverage != null) {
-    stats.push({ icon: <Cloud size={14} strokeWidth={1.75} />, label: 'Cloud cover', value: `${cloudCoverage}%` });
+    stats.push({ icon: <Cloud size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.cloudCover'), value: `${cloudCoverage}%` });
   }
 
   return (
@@ -341,14 +347,14 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
       {forecastToShow.length > 0 && (
         <div className="weather-modal__forecast">
           <p className="weather-modal__forecast-title">
-            {isHourly ? 'Hourly Forecast' : 'Daily Forecast'}
+            {isHourly ? t('home.chipmodals.weather.hourlyForecast') : t('home.chipmodals.weather.dailyForecast')}
           </p>
           <div className="weather-modal__forecast-list">
             {forecastToShow.map((entry, i) => (
               <ForecastRow
                 key={i}
                 entry={entry}
-                label={formatForecastLabel(entry.datetime, isHourly)}
+                label={formatForecastLabel(entry.datetime, isHourly, t)}
                 tempUnit={tempUnit}
               />
             ))}

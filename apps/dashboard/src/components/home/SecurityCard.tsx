@@ -12,6 +12,7 @@ import { Card } from '../ui/Card';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { HassEntityMap } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import './SecurityCard.css';
 
 interface SecurityCardProps {
@@ -20,6 +21,7 @@ interface SecurityCardProps {
 
 export function SecurityCard({ entities }: SecurityCardProps) {
   const navigate = useNavigate();
+  const t = useT();
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -30,7 +32,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   // Alarm
   const alarm = all.find((e) => e.entity_id.startsWith('alarm_control_panel.'));
   const alarmState = alarm?.state ?? null;
-  const alarmLabel = alarmState ? alarmState.replace(/_/g, ' ') : 'Not configured';
+  const alarmLabel = alarmState ? alarmState.replace(/_/g, ' ') : t('home.security.notConfigured');
 
   /** Returns the CSS colour key for the alarm dot/value based on state. */
   function alarmColorKey(state: string | null): 'ok' | 'info' | 'danger' | 'muted' | 'warn' {
@@ -109,15 +111,15 @@ export function SecurityCard({ entities }: SecurityCardProps) {
               ? <Shield size={16} strokeWidth={1.75} />
               : <ShieldCheck size={16} strokeWidth={1.75} />}
           </span>
-          <span className="security-card__title">Security</span>
+          <span className="security-card__title">{t('home.security.title')}</span>
         </div>
         <button
           className="security-card__view-link"
           onClick={() => void navigate('/security')}
           type="button"
-          aria-label="View security details"
+          aria-label={t('home.security.detailsAria')}
         >
-          Details
+          {t('home.security.details')}
           <ChevronRight size={14} strokeWidth={2} />
         </button>
       </div>
@@ -133,7 +135,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
           <span className="security-row__icon" aria-hidden="true">
             <Shield size={15} strokeWidth={1.75} />
           </span>
-          <span className="security-row__label">Alarm</span>
+          <span className="security-row__label">{t('home.security.alarmLabel')}</span>
           <span className={`security-row__value security-row__value--${alarmColor}`}>
             {alarmLabel}
           </span>
@@ -154,15 +156,15 @@ export function SecurityCard({ entities }: SecurityCardProps) {
           </span>
           <span className="security-row__label">
             {locks.length === 1
-              ? (locks[0]!.attributes.friendly_name ?? 'Door').toString().replace(/_/g, ' ')
-              : 'Locks'}
+              ? (locks[0]!.attributes.friendly_name ?? t('home.security.doorFallback')).toString().replace(/_/g, ' ')
+              : t('home.security.locksLabel')}
           </span>
           <span
             className={`security-row__value${unlockedLocks.length > 0 ? ' security-row__value--danger' : ' security-row__value--ok'}`}
           >
             {unlockedLocks.length > 0
-              ? `${unlockedLocks.length} unlocked`
-              : 'All locked'}
+              ? t('home.security.unlockedCount', { count: unlockedLocks.length })
+              : t('home.security.allLocked')}
           </span>
         </div>
       )}
@@ -177,11 +179,11 @@ export function SecurityCard({ entities }: SecurityCardProps) {
           <span className="security-row__icon" aria-hidden="true">
             <Columns2 size={15} strokeWidth={1.75} />
           </span>
-          <span className="security-row__label">Windows</span>
+          <span className="security-row__label">{t('home.security.windowsLabel')}</span>
           <span
             className={`security-row__value${openWindows.length > 0 ? ' security-row__value--warn' : ' security-row__value--ok'}`}
           >
-            {openWindows.length > 0 ? `${openWindows.length} open` : 'All closed'}
+            {openWindows.length > 0 ? t('home.security.openCount', { count: openWindows.length }) : t('home.security.allClosed')}
           </span>
         </div>
       )}
@@ -198,11 +200,11 @@ export function SecurityCard({ entities }: SecurityCardProps) {
               ? <DoorOpen size={15} strokeWidth={1.75} />
               : <DoorClosed size={15} strokeWidth={1.75} />}
           </span>
-          <span className="security-row__label">Doors</span>
+          <span className="security-row__label">{t('home.security.doorsLabel')}</span>
           <span
             className={`security-row__value${openDoors.length > 0 ? ' security-row__value--danger' : ' security-row__value--ok'}`}
           >
-            {openDoors.length > 0 ? `${openDoors.length} open` : 'All closed'}
+            {openDoors.length > 0 ? t('home.security.openCount', { count: openDoors.length }) : t('home.security.allClosed')}
           </span>
         </div>
       )}
@@ -217,9 +219,9 @@ export function SecurityCard({ entities }: SecurityCardProps) {
           <span className="security-row__icon" aria-hidden="true">
             <Activity size={15} strokeWidth={1.75} />
           </span>
-          <span className="security-row__label">Motion</span>
+          <span className="security-row__label">{t('home.security.motionLabel')}</span>
           <span className={`security-row__value${activeMotion.length > 0 ? ' security-row__value--warn' : ''}`}>
-            {activeMotion.length > 0 ? `${activeMotion.length} detected` : 'No motion'}
+            {activeMotion.length > 0 ? t('home.security.detectedCount', { count: activeMotion.length }) : t('home.security.noMotion')}
           </span>
         </div>
       )}
@@ -231,9 +233,9 @@ export function SecurityCard({ entities }: SecurityCardProps) {
           <span className="security-row__icon" aria-hidden="true">
             <Camera size={15} strokeWidth={1.75} />
           </span>
-          <span className="security-row__label">Cameras</span>
+          <span className="security-row__label">{t('home.security.camerasLabel')}</span>
           <span className="security-row__value">
-            {cameras.length} active
+            {t('home.security.activeCount', { count: cameras.length })}
           </span>
         </div>
       )}
@@ -242,7 +244,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
       {!anyAlert && !alarmTriggered && (
         <p className="security-card__summary">
           <span className="security-card__summary-dot" aria-hidden="true" />
-          All sensors are normal
+          {t('home.security.allNormal')}
         </p>
       )}
       </div>

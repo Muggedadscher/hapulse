@@ -5,6 +5,7 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { ClimateCard } from '../../cards/ClimateCard';
 import { useEntityStore } from '../../../stores/entityStore';
+import { useT } from '../../../i18n/useT';
 import './all-modal.css';
 
 interface ClimateAllModalProps {
@@ -13,6 +14,7 @@ interface ClimateAllModalProps {
 }
 
 export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
+  const t = useT();
   const climateEntities = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities)
@@ -29,14 +31,14 @@ export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Climate"
+      title={t('home.chipmodals.climateAll.title')}
       icon={<Thermometer size={20} strokeWidth={1.75} />}
     >
       {climateEntities.length === 0 ? (
         <EmptyState
           icon={<Thermometer size={32} strokeWidth={1.5} />}
-          title="no climate entities"
-          description="add climate entities in home assistant to control them here."
+          title={t('home.chipmodals.climateAll.emptyTitle')}
+          description={t('home.chipmodals.climateAll.emptyDescription')}
         />
       ) : (
         <div className="all-modal__grid">

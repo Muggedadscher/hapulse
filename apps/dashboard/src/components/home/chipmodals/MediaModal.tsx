@@ -14,6 +14,7 @@ import { PlayerTile } from '../../music/PlayerTile';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import type { HassEntity } from '@hapulse/core';
+import { useT } from '../../../i18n/useT';
 import './chipmodals.css';
 
 interface MediaModalProps {
@@ -25,6 +26,7 @@ interface MediaModalProps {
 const ACTIVE_STATES = new Set(['playing', 'paused', 'buffering', 'on']);
 
 export function MediaModal({ open, onClose }: MediaModalProps) {
+  const t = useT();
   const navigate = useNavigate();
 
   const rooms = useEntityStore((s) => s.rooms);
@@ -92,7 +94,7 @@ export function MediaModal({ open, onClose }: MediaModalProps) {
       onClick={handleOpenMusic}
       type="button"
     >
-      open music page
+      {t('home.chipmodals.media.footerLink')}
       <ArrowRight size={14} strokeWidth={2} />
     </button>
   );
@@ -101,20 +103,20 @@ export function MediaModal({ open, onClose }: MediaModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="media"
+      title={t('home.chipmodals.media.title')}
       icon={<Music2 size={20} strokeWidth={1.75} />}
       footer={footer}
     >
       {visiblePlayers.length === 0 ? (
         <EmptyState
           icon={<Music2 size={32} strokeWidth={1.5} />}
-          title="no media players"
-          description="connect a media player in home assistant to see it here."
+          title={t('home.chipmodals.media.emptyTitle')}
+          description={t('home.chipmodals.media.emptyDescription')}
         />
       ) : (
         <div className="media-modal">
-          {renderGroup('Active', <Play size={14} strokeWidth={1.75} />, activePlayers)}
-          {renderGroup('Idle', <Moon size={14} strokeWidth={1.75} />, idlePlayers)}
+          {renderGroup(t('home.chipmodals.media.activeLabel'), <Play size={14} strokeWidth={1.75} />, activePlayers)}
+          {renderGroup(t('home.chipmodals.media.idleLabel'), <Moon size={14} strokeWidth={1.75} />, idlePlayers)}
         </div>
       )}
     </Modal>
