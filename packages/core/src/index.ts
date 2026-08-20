@@ -29,7 +29,7 @@ export {
 export type { ThemeName, ThemeMode, ResolvedMode, ThemeTokens } from './themes.js';
 
 // i18n
-export { LOCALES, LOCALE_LABELS, translate } from './i18n.js';
+export { LOCALES, LOCALE_LABELS, translate, resolveLanguage } from './i18n.js';
 export type { Dict, Locale } from './i18n.js';
 
 // Rooms

@@ -45,6 +45,7 @@ import {
   connectWithAuthData,
   HAConnection,
   translate,
+  resolveLanguage,
 } from '../dist/index.js';
 
 let passed = 0;
@@ -571,6 +572,36 @@ assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 0 }), '0 devices',
 assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 0 }), '0 appareil', 'fr, count=0 → singulier');
 assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 1 }), '1 appareil', 'fr, count=1 → singulier');
 assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 2 }), '2 appareils', 'fr, count=2 → pluriel');
+
+// ---------------------------------------------------------------------------
+// i18n — resolveLanguage()
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: resolveLanguage ──');
+
+const AVAIL = ['en', 'fr'];
+
+// Une préférence explicite gagne sur tout le reste
+assertEqual(resolveLanguage('fr', 'en', ['en-US'], AVAIL), 'fr', 'préférence explicite prioritaire');
+
+// auto : la langue de HA d'abord
+assertEqual(resolveLanguage('auto', 'fr', ['en-US'], AVAIL), 'fr', 'auto → langue HA');
+
+// auto : navigator en second, quand HA ne dit rien
+assertEqual(resolveLanguage('auto', null, ['fr-FR', 'en'], AVAIL), 'fr', 'auto → navigator');
+
+// Les balises régionales sont réduites à la langue de base
+assertEqual(resolveLanguage('auto', 'fr-CA', [], AVAIL), 'fr', 'fr-CA → fr');
+
+// Une langue HA non supportée ne doit pas gagner : on continue la chaîne
+assertEqual(resolveLanguage('auto', 'de', ['fr-FR'], AVAIL), 'fr',
+  'langue HA non supportée → on passe à navigator');
+
+// Dernier recours
+assertEqual(resolveLanguage('auto', 'de', ['ja-JP'], AVAIL), 'en', 'aucune correspondance → en');
+assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information → en');
+
+// Une préférence explicite devenue indisponible ne doit pas bloquer l'UI
+assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)

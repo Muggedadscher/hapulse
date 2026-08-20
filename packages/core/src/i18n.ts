@@ -54,3 +54,47 @@ export function translate(
   }
   return key;
 }
+
+/** Reduce a BCP-47 tag to its base language: `fr-CA` → `fr`. */
+function baseLanguage(tag: string): string {
+  return tag.split('-')[0]!.toLowerCase();
+}
+
+/**
+ * Pick the locale to display, in order of precedence:
+ *   1. an explicit user preference (anything other than 'auto')
+ *   2. the language configured in Home Assistant
+ *   3. the browser's preferred languages, in order
+ *   4. 'en'
+ *
+ * Any candidate not in `available` is skipped rather than accepted, so an
+ * unsupported Home Assistant language falls through to the browser instead of
+ * dead-ending on English.
+ */
+export function resolveLanguage(
+  pref: Locale | 'auto',
+  haLanguage: string | null | undefined,
+  navigatorLangs: readonly string[],
+  available: readonly Locale[] = LOCALES,
+): Locale {
+  const supported = (tag: string | null | undefined): Locale | undefined => {
+    if (!tag) return undefined;
+    const base = baseLanguage(tag);
+    return available.find((l) => l === base);
+  };
+
+  if (pref !== 'auto') {
+    const explicit = supported(pref);
+    if (explicit) return explicit;
+  }
+
+  const fromHA = supported(haLanguage);
+  if (fromHA) return fromHA;
+
+  for (const tag of navigatorLangs) {
+    const fromNav = supported(tag);
+    if (fromNav) return fromNav;
+  }
+
+  return 'en';
+}
