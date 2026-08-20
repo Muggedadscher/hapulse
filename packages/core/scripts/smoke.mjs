@@ -52,6 +52,8 @@ import {
   translate,
   resolveLanguage,
 } from '../dist/index.js';
+import EN_DICT from '../locales/en.json' with { type: 'json' };
+import FR_DICT from '../locales/fr.json' with { type: 'json' };
 
 let passed = 0;
 let failed = 0;
@@ -711,6 +713,26 @@ assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information 
 
 // Une préférence explicite devenue indisponible ne doit pas bloquer l'UI
 assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
+
+// ---------------------------------------------------------------------------
+// i18n — parité des dictionnaires
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: parité en/fr ──');
+
+const enKeys = Object.keys(EN_DICT).sort();
+const frKeys = Object.keys(FR_DICT).sort();
+
+const missingInFr = enKeys.filter((k) => !frKeys.includes(k));
+const extraInFr = frKeys.filter((k) => !enKeys.includes(k));
+
+assert(missingInFr.length === 0, `fr.json ne doit rien omettre (manquant: ${missingInFr.join(', ') || 'aucun'})`);
+assert(extraInFr.length === 0, `fr.json ne doit rien ajouter (en trop: ${extraInFr.join(', ') || 'aucun'})`);
+
+// Les placeholders doivent survivre à la traduction
+const placeholders = (s) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(',');
+for (const k of enKeys) {
+  assertEqual(placeholders(FR_DICT[k] ?? ''), placeholders(EN_DICT[k]), `placeholders conservés pour "${k}"`);
+}
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)

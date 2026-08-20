@@ -1,8 +1,8 @@
 /**
  * I18nProvider — resolves the display locale and exposes its dictionary.
  *
- * The dictionary is the English one until PR 2 adds fr.json; the resolution
- * chain is already in place so adding a locale is a one-line change here.
+ * English stays the fallback dictionary: a key missing from a translation shows
+ * the English string rather than a raw key.
  */
 
 import { createContext, useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -11,6 +11,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useConnectionStore } from '../stores/connectionStore';
 import { getLanguage } from '../ha/config';
 import en from '@hapulse/core/locales/en.json';
+import fr from '@hapulse/core/locales/fr.json';
 
 export interface I18nValue {
   locale: Locale;
@@ -24,8 +25,8 @@ export const I18nContext = createContext<I18nValue>({
   fallback: en,
 });
 
-/** Dictionaries by locale. PR 2 adds `fr: fr` here. */
-const DICTS: Record<Locale, Dict> = { en };
+/** Dictionaries by locale. */
+const DICTS: Record<Locale, Dict> = { en, fr };
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const pref = useSettingsStore((s) => s.language);
@@ -58,7 +59,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [pref, connectionStatus]);
 
   const value = useMemo<I18nValue>(() => {
-    const locale = resolveLanguage(pref, haLanguage, navigator.languages ?? [], ['en']);
+    const locale = resolveLanguage(pref, haLanguage, navigator.languages ?? []);
     return { locale, dict: DICTS[locale] ?? en, fallback: en };
   }, [pref, haLanguage]);
 
