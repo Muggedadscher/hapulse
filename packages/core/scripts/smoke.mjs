@@ -573,6 +573,16 @@ assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 0 }), '0 appareil'
 assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 1 }), '1 appareil', 'fr, count=1 → singulier');
 assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 2 }), '2 appareils', 'fr, count=2 → pluriel');
 
+// Non-integer and negative count values
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: -1 }), '-1 device', 'en, count=-1 → singular (negative)');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 1.5 }), '1.5 devices', 'en, count=1.5 → plural (fractional)');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: -1 }), '-1 appareil', 'fr, count=-1 → singular (negative)');
+
+// Completely empty target dictionary
+const EMPTY_FR = {};
+assertEqual(translate(EMPTY_FR, EN, 'fr', 'nav.devices'), 'Devices', 'empty dict → fallback English');
+assertEqual(translate(EMPTY_FR, EN, 'fr', 'totally.unknown'), 'totally.unknown', 'empty dict, unknown key → key itself');
+
 // ---------------------------------------------------------------------------
 // i18n — resolveLanguage()
 // ---------------------------------------------------------------------------
