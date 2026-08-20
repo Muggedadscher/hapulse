@@ -15,6 +15,7 @@ import { useRooms, useCustomization } from '../../ha/hooks';
 import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
 import { roomIconName } from '@hapulse/core';
 import type { Room } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import './RoomsMenu.css';
 
 interface RoomsMenuProps {
@@ -47,6 +48,7 @@ function applyRoomOrder(rooms: Room[], roomOrder: string[], hiddenRooms: string[
 }
 
 export function RoomsMenu({ open, onClose, triggerRef }: RoomsMenuProps) {
+  const t = useT();
   const navigate = useNavigate();
   const location = useLocation();
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -124,14 +126,14 @@ export function RoomsMenu({ open, onClose, triggerRef }: RoomsMenuProps) {
       ref={popoverRef}
       className={['rooms-menu', open ? 'rooms-menu--open' : ''].filter(Boolean).join(' ')}
       role="menu"
-      aria-label="Rooms"
+      aria-label={t('nav.rooms')}
       // Prevent mouse-down inside the popover from firing the outside-click handler
       onPointerDown={(e) => e.stopPropagation()}
     >
       <div className="rooms-menu__inner">
         {sortedRooms.length === 0 ? (
           <p className="rooms-menu__empty">
-            no rooms — set areas in home assistant
+            {t('rooms.empty')}
           </p>
         ) : (
           sortedRooms.map((room, index) => (

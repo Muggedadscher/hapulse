@@ -16,6 +16,7 @@ import React, { useEffect, useRef, useId, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { IconButton } from './IconButton';
+import { useT } from '../../i18n/useT';
 import './Modal.css';
 
 interface ModalProps {
@@ -30,6 +31,7 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, icon, children, footer, className }: ModalProps) {
+  const t = useT();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
@@ -105,7 +107,7 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
           <h2 className="modal-header__title" id={titleId}>{title}</h2>
           <span className="modal-header__close">
             <IconButton
-              label="Close"
+              label={t('common.close')}
               variant="ghost"
               size={36}
               onClick={onClose}

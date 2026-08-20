@@ -1,5 +1,76 @@
 {
   "nav.rooms": "Rooms",
   "devices.count.one": "{count} device",
-  "devices.count.other": "{count} devices"
+  "devices.count.other": "{count} devices",
+
+  "nav.overview": "Overview",
+  "nav.devices": "Devices",
+  "nav.automations": "Automations",
+  "nav.energy": "Energy",
+  "nav.security": "Security",
+  "nav.music": "Music",
+  "nav.scenes": "Scenes",
+  "nav.system": "System",
+  "nav.settings": "Settings",
+  "nav.more": "More",
+  "nav.mainNavigation": "Main navigation",
+  "nav.moreNavigation": "More navigation",
+  "nav.quickActions": "Quick actions",
+  "nav.sidebarExpand": "Expand sidebar",
+  "nav.sidebarCollapse": "Collapse sidebar",
+  "nav.editBadge.hide": "hide {label}",
+  "nav.editBadge.show": "show {label}",
+  "nav.systemStatus.critical": "System critical",
+  "nav.systemStatus.warning": "System under load",
+  "nav.systemStatus.unavailable.one": "{count} unavailable",
+  "nav.systemStatus.unavailable.other": "{count} unavailable",
+  "nav.systemStatus.lowBattery.one": "{count} low battery",
+  "nav.systemStatus.lowBattery.other": "{count} low batteries",
+  "nav.systemStatus.healthy": "All systems normal",
+  "nav.systemStatus.unknown": "System status unknown",
+  "nav.systemStatus.ariaLabel": "System status: {status}. Go to System page.",
+  "nav.systemStatus.label": "Home Status",
+  "nav.weatherGlance.ariaLabel": "Weather: {condition}{tempPart}. Click for details.",
+
+  "rooms.empty": "no rooms — set areas in home assistant",
+
+  "notifications.title": "Notifications",
+  "notifications.dismissAll": "Dismiss all notifications",
+  "notifications.dismissAllButton": "Dismiss all",
+  "notifications.empty": "No notifications",
+  "notifications.dismissOne": "Dismiss: {title}",
+  "notifications.unread.one": "Notifications ({count} unread)",
+  "notifications.unread.other": "Notifications ({count} unread)",
+
+  "common.close": "Close",
+  "common.back": "Back",
+  "common.loading": "Loading…",
+
+  "app.loading": "loading…",
+
+  "banner.reconnecting": "reconnecting to home assistant…",
+  "banner.disconnected": "connection lost — check your home assistant instance",
+
+  "editToggle.doneAria": "done editing",
+  "editToggle.editAria": "edit page",
+  "editToggle.doneTitle": "Done editing",
+  "editToggle.editTitle": "Edit page",
+
+  "sectionResize.noLimit": "no limit",
+  "sectionResize.levelOf": "{level} of {max}",
+  "sectionResize.ariaLabel": "Drag up / down to set max height — currently {desc}",
+  "sectionResize.title": "Drag up / down to set max height ({desc})",
+
+  "userAvatar.account": "Account: {name}",
+  "userAvatar.signedInSettings": "signed in as {name} — open settings",
+  "userAvatar.signedIn": "signed in as {name}",
+
+  "editBadge.mobileToggleDefault": "toggle hidden on mobile",
+  "editBadge.entityDefault": "entity",
+  "editBadge.favorite": "favorite {entity}",
+  "editBadge.unfavorite": "unfavorite {entity}",
+  "editBadge.moveLeftAria": "move left",
+  "editBadge.moveLeftTitle": "Move left",
+  "editBadge.moveRightAria": "move right",
+  "editBadge.moveRightTitle": "Move right"
 }

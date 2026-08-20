@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { Eye, EyeOff, ChevronLeft, ChevronRight, Star, Smartphone } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import './EditBadge.css';
 
 interface EditBadgeProps {
@@ -58,16 +59,21 @@ export function EditBadge({
   moveRightDisabled = false,
   favorite,
   onToggleFavorite,
-  entityName = 'entity',
+  entityName,
   mobileHidden = false,
   onToggleMobileHidden,
-  mobileToggleLabel = 'toggle hidden on mobile',
+  mobileToggleLabel,
 }: EditBadgeProps) {
+  const t = useT();
   const hasArrows = onMoveLeft !== undefined || onMoveRight !== undefined;
   const hasFavorite = onToggleFavorite !== undefined;
   const hasMobileToggle = onToggleMobileHidden !== undefined;
 
-  const starLabel = favorite ? `unfavorite ${entityName}` : `favorite ${entityName}`;
+  const resolvedEntityName = entityName ?? t('editBadge.entityDefault');
+  const resolvedMobileToggleLabel = mobileToggleLabel ?? t('editBadge.mobileToggleDefault');
+  const starLabel = favorite
+    ? t('editBadge.unfavorite', { entity: resolvedEntityName })
+    : t('editBadge.favorite', { entity: resolvedEntityName });
 
   return (
     <div className={`edit-badge${hidden ? ' edit-badge--hidden' : ''}`} role="group">
@@ -110,9 +116,9 @@ export function EditBadge({
           type="button"
           className={`edit-badge__btn edit-badge__btn--mobile${mobileHidden ? ' edit-badge__btn--mobile-hidden' : ''}`}
           onClick={(e) => { e.stopPropagation(); onToggleMobileHidden(); }}
-          aria-label={mobileToggleLabel}
+          aria-label={resolvedMobileToggleLabel}
           aria-pressed={mobileHidden === true}
-          title={mobileToggleLabel}
+          title={resolvedMobileToggleLabel}
         >
           <Smartphone size={13} strokeWidth={2} aria-hidden="true" />
         </button>
@@ -127,8 +133,8 @@ export function EditBadge({
               className="edit-badge__btn edit-badge__btn--arrow"
               onClick={(e) => { e.stopPropagation(); onMoveLeft(); }}
               disabled={moveLeftDisabled}
-              aria-label="move left"
-              title="Move left"
+              aria-label={t('editBadge.moveLeftAria')}
+              title={t('editBadge.moveLeftTitle')}
             >
               <ChevronLeft size={12} strokeWidth={2.5} aria-hidden="true" />
             </button>
@@ -139,8 +145,8 @@ export function EditBadge({
               className="edit-badge__btn edit-badge__btn--arrow"
               onClick={(e) => { e.stopPropagation(); onMoveRight(); }}
               disabled={moveRightDisabled}
-              aria-label="move right"
-              title="Move right"
+              aria-label={t('editBadge.moveRightAria')}
+              title={t('editBadge.moveRightTitle')}
             >
               <ChevronRight size={12} strokeWidth={2.5} aria-hidden="true" />
             </button>
