@@ -741,6 +741,40 @@ assert(drifted.length === 0,
   `placeholders conservés sur les ${enKeys.length} clés${drifted.length > 0 ? ` — dérive: ${drifted.join('; ')}` : ''}`);
 
 // ---------------------------------------------------------------------------
+// i18n — couverture des pluriels (en.json)
+//
+// Trouvé 3 fois à la main sur cette branche (security.hero.peopleHome.one,
+// trois clés .other orphelines, devices.hero.deviceCount) : le seul défaut
+// récidivant, sans filet jusqu'ici. Une assertion agrégée par invariant, pas
+// une par clé, pour la même raison que le bloc placeholders ci-dessus.
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: couverture des pluriels ──');
+
+const enKeySet = new Set(enKeys);
+
+// Toute clé `.one` doit avoir sa `.other`, et réciproquement.
+const unpairedPlurals = enKeys
+  .filter((k) => k.endsWith('.one') || k.endsWith('.other'))
+  .map((k) => {
+    const base = k.endsWith('.one') ? k.slice(0, -'.one'.length) : k.slice(0, -'.other'.length);
+    const sibling = k.endsWith('.one') ? `${base}.other` : `${base}.one`;
+    return enKeySet.has(sibling) ? null : `${k} (manque ${sibling})`;
+  })
+  .filter((msg) => msg !== null);
+
+assert(unpairedPlurals.length === 0,
+  `toute clé .one/.other a sa contrepartie${unpairedPlurals.length > 0 ? ` — orphelines: ${unpairedPlurals.join(', ')}` : ''}`);
+
+// Toute valeur contenant {count} doit appartenir à une paire .one/.other.
+const countOutsidePlural = enKeys
+  .filter((k) => !k.endsWith('.one') && !k.endsWith('.other'))
+  .filter((k) => /\{count\}/.test(EN_DICT[k]))
+  .map((k) => `${k} (${JSON.stringify(EN_DICT[k])})`);
+
+assert(countOutsidePlural.length === 0,
+  `{count} n'apparaît que dans des clés .one/.other${countOutsidePlural.length > 0 ? ` — hors paire: ${countOutsidePlural.join(', ')}` : ''}`);
+
+// ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)
 // ---------------------------------------------------------------------------
 
