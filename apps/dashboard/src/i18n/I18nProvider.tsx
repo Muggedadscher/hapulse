@@ -8,6 +8,7 @@
 import { createContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { resolveLanguage, type Dict, type Locale } from '@hapulse/core';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useConnectionStore } from '../stores/connectionStore';
 import { getLanguage } from '../ha/config';
 import en from './locales/en.json';
 
@@ -28,10 +29,17 @@ const DICTS: Record<Locale, Dict> = { en };
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const pref = useSettingsStore((s) => s.language);
+  const connectionStatus = useConnectionStore((s) => s.status);
   const [haLanguage, setHaLanguage] = useState<string | null>(null);
 
   // The HA-configured language only matters in 'auto' mode; fetching it is a
   // best-effort round-trip that must never block or break rendering.
+  //
+  // Also re-run when the connection status changes: on a brand-new sign-in
+  // (no persisted credentials), this provider mounts before the connection
+  // exists, so the first attempt finds `ha/config.ts` returning null. Without
+  // this dependency nothing would retry once the connection actually comes
+  // up, and HA's configured language would only take effect after a reload.
   useEffect(() => {
     if (pref !== 'auto') return;
     let cancelled = false;
@@ -47,7 +55,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [pref]);
+  }, [pref, connectionStatus]);
 
   const value = useMemo<I18nValue>(() => {
     const locale = resolveLanguage(pref, haLanguage, navigator.languages ?? [], ['en']);

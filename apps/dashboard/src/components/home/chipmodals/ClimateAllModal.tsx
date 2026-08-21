@@ -5,7 +5,7 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { ClimateCard } from '../../cards/ClimateCard';
 import { useEntityStore } from '../../../stores/entityStore';
-import { useT } from '../../../i18n/useT';
+import { useT, useLocale } from '../../../i18n/useT';
 import './all-modal.css';
 
 interface ClimateAllModalProps {
@@ -15,6 +15,7 @@ interface ClimateAllModalProps {
 
 export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
   const t = useT();
+  const locale = useLocale();
   const climateEntities = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities)
@@ -22,7 +23,7 @@ export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
         .sort((a, b) => {
           const na = (a.attributes.friendly_name as string | undefined) ?? a.entity_id;
           const nb = (b.attributes.friendly_name as string | undefined) ?? b.entity_id;
-          return na.localeCompare(nb);
+          return na.localeCompare(nb, locale);
         })
     )
   );

@@ -5,7 +5,7 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { CoverCard } from '../../cards/CoverCard';
 import { useEntityStore } from '../../../stores/entityStore';
-import { useT } from '../../../i18n/useT';
+import { useT, useLocale } from '../../../i18n/useT';
 import './all-modal.css';
 
 interface BlindsAllModalProps {
@@ -15,6 +15,7 @@ interface BlindsAllModalProps {
 
 export function BlindsAllModal({ open, onClose }: BlindsAllModalProps) {
   const t = useT();
+  const locale = useLocale();
   const coverEntities = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities)
@@ -26,7 +27,7 @@ export function BlindsAllModal({ open, onClose }: BlindsAllModalProps) {
         .sort((a, b) => {
           const na = (a.attributes.friendly_name as string | undefined) ?? a.entity_id;
           const nb = (b.attributes.friendly_name as string | undefined) ?? b.entity_id;
-          return na.localeCompare(nb);
+          return na.localeCompare(nb, locale);
         })
     )
   );

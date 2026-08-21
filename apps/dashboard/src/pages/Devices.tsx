@@ -3,7 +3,7 @@ import { Cpu } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDevices } from '../ha/useDevices';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
-import { useT } from '../i18n/useT';
+import { useT, useLocale } from '../i18n/useT';
 import { EmptyState } from '../components/ui/EmptyState';
 import { DevicesHeroCard } from '../components/devices/DevicesHeroCard';
 import { DevicesToolbar, type FilterOption } from '../components/devices/DevicesToolbar';
@@ -17,6 +17,7 @@ import './Devices.css';
 
 export function Devices() {
   const t = useT();
+  const locale = useLocale();
   const { state, progress, devices, summary } = useDevices();
 
   const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
@@ -45,8 +46,8 @@ export function Devices() {
     for (const d of devices) for (const i of d.integrations) set.add(i);
     return [...set]
       .map((value) => ({ value, label: integrationLabel(t, value) }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [devices]);
+      .sort((a, b) => a.label.localeCompare(b.label, locale));
+  }, [devices, t, locale]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -67,7 +68,7 @@ export function Devices() {
       }
       return true;
     });
-  }, [devices, search, room, integration]);
+  }, [devices, search, room, integration, t]);
 
   return (
     <div className="page devices-page stagger-rise">

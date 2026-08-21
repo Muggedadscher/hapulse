@@ -27,6 +27,21 @@ function interpolate(template: string, vars?: Record<string, string | number>): 
   );
 }
 
+/** `Intl.PluralRules` instances are locale-only (no dict/key state), so one per
+ *  locale is reused across every `translate()` call instead of being rebuilt
+ *  on every render — this dashboard re-renders plural counters continuously
+ *  as Home Assistant events stream in. */
+const pluralRulesCache = new Map<string, Intl.PluralRules>();
+
+function getPluralRules(locale: string): Intl.PluralRules {
+  let rules = pluralRulesCache.get(locale);
+  if (!rules) {
+    rules = new Intl.PluralRules(locale);
+    pluralRulesCache.set(locale, rules);
+  }
+  return rules;
+}
+
 /**
  * Resolve `key` against `dict`, falling back to `fallback`, then to the key itself.
  *
@@ -43,7 +58,7 @@ export function translate(
   const candidates: string[] = [];
 
   if (typeof vars?.count === 'number') {
-    const category = new Intl.PluralRules(locale).select(vars.count);
+    const category = getPluralRules(locale).select(vars.count);
     candidates.push(`${key}.${category}`, `${key}.other`);
   }
   candidates.push(key);

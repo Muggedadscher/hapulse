@@ -122,7 +122,7 @@ function ResizeHandle({
 
 type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
 
-const SECTION_TOGGLE_KEYS: Record<string, ToggleKeys> = {
+const SECTION_TOGGLE_KEYS = {
   hero: {
     hide: 'energy.section.hide.hero',
     show: 'energy.section.show.hero',
@@ -159,11 +159,15 @@ const SECTION_TOGGLE_KEYS: Record<string, ToggleKeys> = {
     hideMobile: 'energy.section.hideMobile.gas',
     showMobile: 'energy.section.showMobile.gas',
   },
-};
+} satisfies Record<string, ToggleKeys>;
+
+/** Section id: derived from the fixed key set above rather than `string`, so
+ *  `SECTION_TOGGLE_KEYS[id]` is known to exist and no `!` assertion is needed. */
+type SectionId = keyof typeof SECTION_TOGGLE_KEYS;
 
 /** Which sections exist depends on what the user configured in HA. */
-function availableSections(d: EnergyDashboard): string[] {
-  const ids: string[] = ['hero'];
+function availableSections(d: EnergyDashboard): SectionId[] {
+  const ids: SectionId[] = ['hero'];
   if (d.hasGrid || d.hasSolar) ids.push('usage');
   if (d.hasSolar) ids.push('solar');
   if (d.devices.length > 0) ids.push('devices');
@@ -287,7 +291,10 @@ export function Energy() {
 
   // ---- Ready ----
   const allSectionIds = availableSections(dashboard);
-  const orderedIds = applyStoredOrder(allSectionIds, energySectionOrder)
+  // applyStoredOrder (lib/order.ts) is a generic string[] reorder utility shared
+  // with other pages, so it widens to string[] — but it only ever returns a
+  // permutation of its `ids` input, so every element is still a SectionId.
+  const orderedIds = (applyStoredOrder(allSectionIds, energySectionOrder) as SectionId[])
     .filter((id) => allSectionIds.includes(id)); // drop stale ids for sources no longer configured
   const visibleIds = editMode
     ? orderedIds
@@ -343,12 +350,12 @@ export function Energy() {
                 <div className="edit-section-outline">{widget}</div>
                 <EditBadge
                   hidden={isHidden}
-                  toggleLabel={isHidden ? t(SECTION_TOGGLE_KEYS[id]!.show) : t(SECTION_TOGGLE_KEYS[id]!.hide)}
+                  toggleLabel={isHidden ? t(SECTION_TOGGLE_KEYS[id].show) : t(SECTION_TOGGLE_KEYS[id].hide)}
                   onToggleHidden={() => handleToggleHidden(id)}
                   mobileHidden={isMobileHidden}
                   onToggleMobileHidden={() => handleToggleMobileHidden(id)}
                   mobileToggleLabel={
-                    isMobileHidden ? t(SECTION_TOGGLE_KEYS[id]!.showMobile) : t(SECTION_TOGGLE_KEYS[id]!.hideMobile)
+                    isMobileHidden ? t(SECTION_TOGGLE_KEYS[id].showMobile) : t(SECTION_TOGGLE_KEYS[id].hideMobile)
                   }
                 />
                 <SpanDots span={currentSpan} />
