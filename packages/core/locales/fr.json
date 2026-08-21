@@ -1,7 +1,5 @@
 {
   "nav.rooms": "Pièces",
-  "devices.count.one": "{count} appareil",
-  "devices.count.other": "{count} appareils",
 
   "nav.overview": "Aperçu",
   "nav.devices": "Appareils",
@@ -348,6 +346,7 @@
 
   "automations.title": "Automatisations",
   "automations.emptyFilter": "Aucune automatisation ne correspond à vos filtres.",
+  "automations.section.generalLabel": "Général",
   "automations.section.hide.hero": "masquer Aperçu",
   "automations.section.show.hero": "afficher Aperçu",
   "automations.section.hideMobile.hero": "masquer Aperçu sur mobile",
@@ -555,7 +554,8 @@
   "settings.appearance.accent.reset": "réinitialiser",
   "settings.appearance.accent.hueAria": "Teinte d’accent",
 
-  "settings.language": "Langue",
+  "settings.language.label": "Langue",
+  "settings.language.groupAria": "Langue",
   "settings.language.auto": "Auto",
 
   "settings.entities.searchPlaceholder": "rechercher par nom ou par id…",
@@ -591,7 +591,7 @@
   "settings.backup.syncStatus.connected": "Vos réglages sont enregistrés dans votre Home Assistant et synchronisés entre vos appareils.",
   "settings.backup.syncStatus.pending": "Vos réglages seront synchronisés avec votre Home Assistant dès la connexion établie.",
 
-  "settings.about.version": "version 1.0.0",
+  "settings.about.version": "version {version}",
   "settings.about.tagline": "conçu pour home assistant — open source, auto-hébergé.",
 
   "devices.hero.title": "Tous les appareils",

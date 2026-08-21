@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, Sparkles } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import type { TKey } from '../../i18n/useT';
+import type { TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SceneActivityFeed.css';
@@ -14,10 +14,8 @@ interface SceneActivityFeedProps {
   entityAreaMap: Record<string, string | null>;
 }
 
-type T = (key: TKey, vars?: Record<string, string | number>) => string;
-
 /** Takes the translator as a parameter: it runs outside any component body. */
-function formatRelativeTime(t: T, iso: string | null | undefined): string {
+function formatRelativeTime(t: TFunction, iso: string | null | undefined): string {
   if (!iso || iso === 'unknown') return t('scenes.time.never');
   try {
     const delta = Date.now() - new Date(iso).getTime();

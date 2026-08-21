@@ -24,7 +24,7 @@ import type { Room, HassEntity, Locale } from '@hapulse/core';
 import { isDefaultPersistenceAdapter } from '../persistence';
 
 import { useT } from '../i18n/useT';
-import type { TKey } from '../i18n/useT';
+import type { TKey, TFunction } from '../i18n/useT';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { SectionLabel } from '../components/ui/SectionLabel';
@@ -43,7 +43,7 @@ import './Settings.css';
 
 const VALID_THEMES = new Set<string>([...THEME_NAMES, 'dusk', 'dawn', 'midnight', 'sage']);
 
-function validateImport(data: unknown, t: (key: TKey, vars?: Record<string, string | number>) => string): string | null {
+function validateImport(data: unknown, t: TFunction): string | null {
   if (typeof data !== 'object' || data === null) return t('settings.backup.error.notObject');
   const d = data as Record<string, unknown>;
   if (d['theme'] !== undefined && !VALID_THEMES.has(String(d['theme']))) {
@@ -83,7 +83,7 @@ function statusDotClass(status: StoreStatus): string {
   }
 }
 
-function statusLabel(status: StoreStatus, demo: boolean, t: (key: TKey) => string): string {
+function statusLabel(status: StoreStatus, demo: boolean, t: TFunction): string {
   if (demo) return t('settings.status.demo');
   switch (status) {
     case 'connected':    return t('settings.status.connected');
@@ -301,8 +301,12 @@ function AppearanceSection() {
     { id: 'auto', labelKey: 'settings.appearance.mode.auto' },
   ];
 
-  const LANGUAGE_OPTIONS: { id: Locale | 'auto'; label: string }[] = [
-    { id: 'auto', label: t('settings.language.auto') },
+  // Locale entries show each language's own native name (LOCALE_LABELS is not
+  // translated — "Français" reads the same regardless of UI language), so
+  // only the 'auto' entry resolves through a translation key at render time,
+  // mirroring MODE_OPTIONS.
+  const LANGUAGE_OPTIONS: { id: Locale | 'auto'; labelKey?: TKey; label?: string }[] = [
+    { id: 'auto', labelKey: 'settings.language.auto' },
     ...LOCALES.map((l) => ({ id: l, label: LOCALE_LABELS[l] })),
   ];
 
@@ -339,9 +343,9 @@ function AppearanceSection() {
             <span className="settings-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
               <Languages size={14} strokeWidth={1.75} />
             </span>
-            {t('settings.language')}
+            {t('settings.language.label')}
           </span>
-          <div className="mode-toggle" role="group" aria-label={t('settings.language')}>
+          <div className="mode-toggle" role="group" aria-label={t('settings.language.groupAria')}>
             {LANGUAGE_OPTIONS.map((l) => (
               <button
                 key={l.id}
@@ -350,7 +354,7 @@ function AppearanceSection() {
                 onClick={() => setLanguage(l.id)}
                 aria-pressed={language === l.id}
               >
-                {l.label}
+                {l.labelKey ? t(l.labelKey) : l.label}
               </button>
             ))}
           </div>
@@ -880,7 +884,7 @@ function AboutSection() {
           </span>
           <div className="about-card__title">HAPulse</div>
         </div>
-        <div className="about-card__sub">{t('settings.about.version')}</div>
+        <div className="about-card__sub">{t('settings.about.version', { version: '1.0.0' })}</div>
         <div className="about-card__sub">{t('settings.about.tagline')}</div>
         <a
           href="https://github.com/jlnbln/HAPulse"

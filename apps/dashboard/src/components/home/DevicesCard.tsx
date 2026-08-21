@@ -12,9 +12,8 @@ import { domainOf, isToggleable, formatEntityState } from '@hapulse/core';
 import type { HassEntityMap, HassEntity, Locale, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { useLocale, useT } from '../../i18n/useT';
+import type { TFunction } from '../../i18n/useT';
 import './DevicesCard.css';
-
-type TFunction = ReturnType<typeof useT>;
 
 interface DevicesCardProps {
   entities: HassEntityMap;

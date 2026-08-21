@@ -1,7 +1,5 @@
 {
   "nav.rooms": "Rooms",
-  "devices.count.one": "{count} device",
-  "devices.count.other": "{count} devices",
 
   "nav.overview": "Overview",
   "nav.devices": "Devices",
@@ -348,6 +346,7 @@
 
   "automations.title": "Automations",
   "automations.emptyFilter": "No automations match your filters.",
+  "automations.section.generalLabel": "General",
   "automations.section.hide.hero": "hide Overview",
   "automations.section.show.hero": "show Overview",
   "automations.section.hideMobile.hero": "hide Overview on mobile",
@@ -555,7 +554,8 @@
   "settings.appearance.accent.reset": "reset",
   "settings.appearance.accent.hueAria": "Accent hue",
 
-  "settings.language": "Language",
+  "settings.language.label": "Language",
+  "settings.language.groupAria": "Language",
   "settings.language.auto": "Auto",
 
   "settings.entities.searchPlaceholder": "search by name or id…",
@@ -591,7 +591,7 @@
   "settings.backup.syncStatus.connected": "Settings are saved to your Home Assistant and sync across your devices.",
   "settings.backup.syncStatus.pending": "Settings will sync to your Home Assistant once connected.",
 
-  "settings.about.version": "version 1.0.0",
+  "settings.about.version": "version {version}",
   "settings.about.tagline": "made for home assistant — open source, self-hosted.",
 
   "devices.hero.title": "All Devices",

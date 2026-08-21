@@ -1,7 +1,7 @@
 import React from 'react';
 import { Workflow, CheckCircle, XCircle, Tag } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import type { TKey } from '../../i18n/useT';
+import type { TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './AutomationHeroCard.css';
@@ -11,10 +11,8 @@ interface AutomationHeroCardProps {
   categories: string[];
 }
 
-type T = (key: TKey, vars?: Record<string, string | number>) => string;
-
 /** Takes the translator as a parameter: it runs outside any component body. */
-function formatRelativeTime(t: T, iso: string | null | undefined): string {
+function formatRelativeTime(t: TFunction, iso: string | null | undefined): string {
   if (!iso) return t('automations.time.never');
   try {
     const delta = Date.now() - new Date(iso).getTime();
