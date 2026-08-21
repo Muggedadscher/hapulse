@@ -9,7 +9,7 @@ import {
   Github, ExternalLink,
   ChevronDown, ChevronRight,
   Wifi, Hash, Sun, Palette, Download, Upload, Info,
-  LayoutGrid, Pencil, List, ShieldCheck,
+  LayoutGrid, Pencil, List, ShieldCheck, Languages,
 } from 'lucide-react';
 
 import { useSettingsStore } from '../stores/settingsStore';
@@ -19,7 +19,8 @@ import { useUIStore } from '../stores/uiStore';
 import { useRooms, useCurrentUserAvatar, useCanEdit } from '../ha/hooks';
 import { THEMES, THEME_NAMES, resolveMode } from '../theme/themes';
 import type { ThemeName, ThemeMode } from '../theme/themes';
-import type { Room, HassEntity } from '@hapulse/core';
+import { LOCALES, LOCALE_LABELS } from '@hapulse/core';
+import type { Room, HassEntity, Locale } from '@hapulse/core';
 import { isDefaultPersistenceAdapter } from '../persistence';
 
 import { useT } from '../i18n/useT';
@@ -253,6 +254,8 @@ function AppearanceSection() {
   const setTheme = useSettingsStore((s) => s.setTheme);
   const setMode = useSettingsStore((s) => s.setMode);
   const setAccentHue = useSettingsStore((s) => s.setAccentHue);
+  const language = useSettingsStore((s) => s.language);
+  const setLanguage = useSettingsStore((s) => s.setLanguage);
 
   const resolved = resolveMode(mode);
 
@@ -298,6 +301,11 @@ function AppearanceSection() {
     { id: 'auto', labelKey: 'settings.appearance.mode.auto' },
   ];
 
+  const LANGUAGE_OPTIONS: { id: Locale | 'auto'; label: string }[] = [
+    { id: 'auto', label: t('settings.language.auto') },
+    ...LOCALES.map((l) => ({ id: l, label: LOCALE_LABELS[l] })),
+  ];
+
   return (
     <section className="settings-page__section">
       <SectionLabel>{t('settings.section.appearance')}</SectionLabel>
@@ -320,6 +328,29 @@ function AppearanceSection() {
                 aria-pressed={mode === m.id}
               >
                 {t(m.labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Language row */}
+        <div className="settings-card__row settings-card__row--inline">
+          <span className="settings-card__row-label">
+            <span className="settings-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+              <Languages size={14} strokeWidth={1.75} />
+            </span>
+            {t('settings.language')}
+          </span>
+          <div className="mode-toggle" role="group" aria-label={t('settings.language')}>
+            {LANGUAGE_OPTIONS.map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                className={`mode-toggle__btn${language === l.id ? ' mode-toggle__btn--active' : ''}`}
+                onClick={() => setLanguage(l.id)}
+                aria-pressed={language === l.id}
+              >
+                {l.label}
               </button>
             ))}
           </div>

@@ -555,6 +555,9 @@
   "settings.appearance.accent.reset": "réinitialiser",
   "settings.appearance.accent.hueAria": "Teinte d’accent",
 
+  "settings.language": "Langue",
+  "settings.language.auto": "Auto",
+
   "settings.entities.searchPlaceholder": "rechercher par nom ou par id…",
   "settings.entities.searchAria": "Rechercher des entités",
   "settings.entities.uncategorised": "non catégorisé",

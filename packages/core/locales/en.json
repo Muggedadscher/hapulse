@@ -555,6 +555,9 @@
   "settings.appearance.accent.reset": "reset",
   "settings.appearance.accent.hueAria": "Accent hue",
 
+  "settings.language": "Language",
+  "settings.language.auto": "Auto",
+
   "settings.entities.searchPlaceholder": "search by name or id…",
   "settings.entities.searchAria": "Search entities",
   "settings.entities.uncategorised": "uncategorised",
