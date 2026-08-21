@@ -562,7 +562,6 @@
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
   margin-top: 0.125rem;
-  text-transform: capitalize;
 }
 
 .cover-card__buttons {
