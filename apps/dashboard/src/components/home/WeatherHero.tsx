@@ -4,7 +4,7 @@ import {
   Wind, Droplets,
 } from 'lucide-react';
 import type { HassEntity, Locale, WeatherForecast } from '@hapulse/core';
-import { useLocale } from '../../i18n/useT';
+import { useLocale, useStateLabel } from '../../i18n/useT';
 import './home.css';
 
 interface WeatherHeroProps {
@@ -81,6 +81,7 @@ function shortDayName(isoDate: string, locale: Locale): string {
 
 export function WeatherHero({ entity, isNight, favoritesSlot }: WeatherHeroProps) {
   const locale = useLocale();
+  const sl = useStateLabel();
   const condition = (entity.attributes.condition as string | undefined) ?? entity.state;
   const temp = entity.attributes.temperature as number | undefined;
   const tempUnit = (entity.attributes.temperature_unit as string | undefined) ?? '°C';
@@ -106,7 +107,7 @@ export function WeatherHero({ entity, isNight, favoritesSlot }: WeatherHeroProps
         <div className="weather-hero__left">
           <div className="weather-hero__condition-row">
             {condIcon}
-            <span className="weather-hero__condition-text">{condition.replace(/-/g, ' ')}</span>
+            <span className="weather-hero__condition-text">{sl('weather', condition)}</span>
           </div>
           <div className="weather-hero__temp">
             {temp != null ? `${Math.round(temp)}${tempUnit}` : '—'}

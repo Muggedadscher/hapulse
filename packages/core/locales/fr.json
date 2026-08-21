@@ -195,10 +195,6 @@
   "home.devices.listAria": "Appareils favoris actifs",
   "home.devices.turnOffAria": "Éteindre {name}",
   "home.devices.turnOnAria": "Allumer {name}",
-  "home.devices.cleaning": "Nettoyage",
-  "home.devices.returning": "Retour à la base",
-  "home.devices.playing": "En lecture",
-  "home.devices.paused": "En pause",
   "home.energy.title": "Énergie",
   "home.energy.titleToday": "Énergie du jour",
   "home.energy.promptText": "Configurez le tableau de bord Énergie dans Home Assistant pour voir votre consommation ici.",
@@ -743,14 +739,6 @@
   "cards.sensor.on": "Allumé",
   "cards.sensor.off": "Éteint",
 
-  "cards.vacuum.cleaning": "Nettoyage",
-  "cards.vacuum.docked": "À la base",
-  "cards.vacuum.idle": "En veille",
-  "cards.vacuum.paused": "En pause",
-  "cards.vacuum.returning": "Retour à la base",
-  "cards.vacuum.error": "Erreur",
-  "cards.vacuum.unknown": "Inconnu",
-  "cards.vacuum.unavailable": "Indisponible",
   "cards.vacuum.startCleaningAria": "Démarrer le nettoyage",
   "cards.vacuum.start": "Démarrer",
   "cards.vacuum.resume": "Reprendre",
@@ -981,5 +969,7 @@
   "settings.rooms.showAria": "Afficher {name}",
   "settings.rooms.hideAria": "Masquer {name}",
 
-  "settings.appearance.theme.selectAria": "Sélectionner le thème {name}"
+  "settings.appearance.theme.selectAria": "Sélectionner le thème {name}",
+  "entityState.unavailable": "Indisponible",
+  "entityState.unknown": "Inconnu"
 }

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SecurityHeroCard.css';
@@ -48,6 +48,7 @@ export function SecurityHeroCard({
   cameras,
 }: SecurityHeroCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const url = useConnectionStore(useShallow((s) => s.url));
 
   const alarmState = alarm?.state;
@@ -74,7 +75,7 @@ export function SecurityHeroCard({
           <div className="security-hero-card__alarm-text">
             <p className="security-hero-card__alarm-name">{alarmName}</p>
             <p className="security-hero-card__alarm-state">
-              {alarmState ? alarmState.replace(/_/g, ' ') : t('security.hero.notConfigured')}
+              {alarmState ? sl('alarm_control_panel', alarmState) : t('security.hero.notConfigured')}
             </p>
           </div>
           {people.length > 0 && (

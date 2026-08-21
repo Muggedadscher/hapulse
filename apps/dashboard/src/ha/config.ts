@@ -5,6 +5,7 @@
  * Components must go through here — never touch the HAConnection directly.
  */
 
+import type { StateTranslations } from '@hapulse/core';
 import { useConnectionStore, getLiveConnection } from '../stores/connectionStore';
 
 /** Fetch the language configured in Home Assistant (demo returns null: the
@@ -14,4 +15,13 @@ export async function getLanguage(): Promise<string | null> {
   if (demo) return null;
   const conn = getLiveConnection();
   return conn ? conn.fetchLanguage() : null;
+}
+
+/** Fetch HA's entity-state translations for `language` (demo returns an empty
+ *  map: labels then fall back to humanising the raw state). */
+export async function getEntityStateTranslations(language: string): Promise<StateTranslations> {
+  const { demo } = useConnectionStore.getState();
+  if (demo) return {};
+  const conn = getLiveConnection();
+  return conn ? conn.fetchEntityStateTranslations(language) : {};
 }

@@ -101,7 +101,6 @@
   font-weight: 700;
   color: var(--text);
   margin: 0;
-  text-transform: capitalize;
   line-height: 1.2;
 }
 

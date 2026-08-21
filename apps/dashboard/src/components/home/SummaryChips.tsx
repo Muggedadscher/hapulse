@@ -9,7 +9,7 @@ import { applyStoredOrder } from '../../lib/order';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { HassEntityMap } from '@hapulse/core';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import './home.css';
 
 const ALL_CHIP_IDS = ['people', 'lights', 'doors', 'alarm', 'media'] as const;
@@ -39,6 +39,7 @@ export function SummaryChips({
   onReorder,
 }: SummaryChipsProps) {
   const t = useT();
+  const sl = useStateLabel();
   const allEntities = Object.values(entities);
   const { url: haUrl } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
@@ -113,7 +114,7 @@ export function SummaryChips({
     {
       id: 'alarm',
       icon: <ShieldAlert size={16} strokeWidth={1.75} />,
-      label: alarmState?.replace(/_/g, ' ') ?? t('home.summaryChips.unknown'),
+      label: alarmState ? sl('alarm_control_panel', alarmState) : t('home.summaryChips.unknown'),
       active: alarmState != null && alarmState !== 'disarmed',
       alert: alarmState != null && alarmState !== 'disarmed',
     },

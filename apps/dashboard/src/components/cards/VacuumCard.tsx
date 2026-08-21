@@ -2,8 +2,7 @@ import React, { useCallback } from 'react';
 import { Bot, Play, Pause, Home, Battery } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
-import type { TKey } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -12,19 +11,9 @@ interface VacuumCardProps {
   name: string;
 }
 
-const STATE_LABEL_KEY: Record<string, TKey> = {
-  cleaning: 'cards.vacuum.cleaning',
-  docked: 'cards.vacuum.docked',
-  idle: 'cards.vacuum.idle',
-  paused: 'cards.vacuum.paused',
-  returning: 'cards.vacuum.returning',
-  error: 'cards.vacuum.error',
-  unknown: 'cards.vacuum.unknown',
-  unavailable: 'cards.vacuum.unavailable',
-};
-
 export function VacuumCard({ entity, name }: VacuumCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const entityId = entity.entity_id;
   const state = entity.state;
   const batteryLevel = entity.attributes.battery_level as number | undefined;
@@ -47,8 +36,7 @@ export function VacuumCard({ entity, name }: VacuumCardProps) {
     void callService('vacuum', 'return_to_base', {}, { entity_id: entityId });
   }, [entityId]);
 
-  const stateLabelKey = STATE_LABEL_KEY[state];
-  const displayLabel = stateLabelKey ? t(stateLabelKey) : state;
+  const displayLabel = sl('vacuum', state);
 
   return (
     <Card active={isActive} className="vacuum-card">

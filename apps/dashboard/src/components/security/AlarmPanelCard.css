@@ -70,7 +70,6 @@
   font-weight: 700;
   color: var(--text);
   margin: 0;
-  text-transform: capitalize;
   display: flex;
   align-items: center;
   gap: 0.5rem;

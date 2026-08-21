@@ -31,6 +31,8 @@ export type { ThemeName, ThemeMode, ResolvedMode, ThemeTokens } from './themes.j
 // i18n
 export { LOCALES, LOCALE_LABELS, translate, resolveLanguage } from './i18n.js';
 export type { Dict, Locale } from './i18n.js';
+export { lookupEntityState, humanizeState } from './entityStates.js';
+export type { StateTranslations, StateLookupOptions, EntityStateLabel } from './entityStates.js';
 
 // Rooms
 export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from './rooms.js';

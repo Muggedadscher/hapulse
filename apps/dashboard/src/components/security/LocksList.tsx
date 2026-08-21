@@ -7,7 +7,7 @@ import React, { useCallback } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
 import type { HassEntity, Room } from '@hapulse/core';
 import { getRoomName } from './roomUtils';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import { callService } from '../../ha/service';
 import './LocksList.css';
 
@@ -18,6 +18,7 @@ interface LockRowProps {
 
 function LockRow({ entity, roomName }: LockRowProps) {
   const t = useT();
+  const sl = useStateLabel();
   const isLocked = entity.state === 'locked';
   const name = (entity.attributes['friendly_name'] as string | undefined) ?? entity.entity_id;
   const target = { entity_id: entity.entity_id };
@@ -40,7 +41,7 @@ function LockRow({ entity, roomName }: LockRowProps) {
         {roomName && <span className="locks-row__room">{roomName}</span>}
       </div>
       <span className={`locks-row__state ${isLocked ? 'locks-row__state--locked' : 'locks-row__state--unlocked'}`}>
-        {entity.state}
+        {sl('lock', entity.state)}
       </span>
       <div className="locks-row__actions">
         <button

@@ -195,10 +195,6 @@
   "home.devices.listAria": "Active favorite devices",
   "home.devices.turnOffAria": "Turn off {name}",
   "home.devices.turnOnAria": "Turn on {name}",
-  "home.devices.cleaning": "Cleaning",
-  "home.devices.returning": "Returning",
-  "home.devices.playing": "Playing",
-  "home.devices.paused": "Paused",
   "home.energy.title": "Energy",
   "home.energy.titleToday": "Energy Today",
   "home.energy.promptText": "Set up the Energy dashboard in Home Assistant to see your usage here.",
@@ -743,14 +739,6 @@
   "cards.sensor.on": "On",
   "cards.sensor.off": "Off",
 
-  "cards.vacuum.cleaning": "Cleaning",
-  "cards.vacuum.docked": "Docked",
-  "cards.vacuum.idle": "Idle",
-  "cards.vacuum.paused": "Paused",
-  "cards.vacuum.returning": "Returning",
-  "cards.vacuum.error": "Error",
-  "cards.vacuum.unknown": "Unknown",
-  "cards.vacuum.unavailable": "Unavailable",
   "cards.vacuum.startCleaningAria": "Start cleaning",
   "cards.vacuum.start": "Start",
   "cards.vacuum.resume": "Resume",
@@ -981,5 +969,7 @@
   "settings.rooms.showAria": "Show {name}",
   "settings.rooms.hideAria": "Hide {name}",
 
-  "settings.appearance.theme.selectAria": "Select {name} theme"
+  "settings.appearance.theme.selectAria": "Select {name} theme",
+  "entityState.unavailable": "Unavailable",
+  "entityState.unknown": "Unknown"
 }

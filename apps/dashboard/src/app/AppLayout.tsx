@@ -50,7 +50,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
-import { useT } from '../i18n/useT';
+import { useT, useStateLabel } from '../i18n/useT';
 import type { TKey } from '../i18n/useT';
 import './AppLayout.css';
 
@@ -210,11 +210,12 @@ interface WeatherGlanceProps {
 
 function WeatherGlance({ onClick }: WeatherGlanceProps) {
   const t = useT();
+  const sl = useStateLabel();
   const weather = useWeatherEntity();
   if (!weather) return null;
 
   const temp = weather.attributes.temperature as number | undefined;
-  const condition = weather.state as string;
+  const condition = sl('weather', weather.state);
   const unit = (weather.attributes.temperature_unit as string | undefined) ?? '°';
   const tempPart = temp != null ? `, ${temp}${unit}` : '';
 
