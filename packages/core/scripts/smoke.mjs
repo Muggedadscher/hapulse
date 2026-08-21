@@ -32,6 +32,8 @@ import {
   startHASignIn,
   resumeHASession,
   roomIconName,
+  roomKind,
+  ROOM_KINDS,
   roomStatusIconName,
   CANONICAL_ROOM_ICONS,
   mdiIconExportName,
@@ -202,6 +204,52 @@ assertEqual(roomIconName({ name: 'Bedroom', icon: 'mdi:bed' }), 'bed', 'mdi:bed 
 assertEqual(roomIconName({ name: 'Living Room', icon: 'sofa' }), 'sofa', 'passthrough sofa → sofa');
 assertEqual(roomIconName({ name: 'Foobar' }), 'house', 'unknown name → house');
 assertEqual(roomIconName({ name: 'Master Suite', icon: 'mdi:bed-double' }), 'bed', 'mdi:bed-double → bed');
+
+// ---------------------------------------------------------------------------
+// roomKind — classification multilingue des noms de pièce
+//
+// Les noms de pièce viennent de Home Assistant dans la langue du foyer, sans
+// rapport avec la langue d'affichage : la table est multilingue d'un bloc, pas
+// par locale.
+// ---------------------------------------------------------------------------
+console.log('\n── roomKind ──');
+
+// Chaque type doit avoir une icône, sinon roomIconName renvoie undefined.
+const kindsWithoutIcon = ROOM_KINDS.filter(
+  (k) => !CANONICAL_ROOM_ICONS.includes(roomIconName({ name: `__${k}__` }))
+    && roomKind(`__${k}__`) === k,
+);
+assert(kindsWithoutIcon.length === 0,
+  `chaque type de pièce a une icône canonique${kindsWithoutIcon.length > 0 ? ` — sans icône: ${kindsWithoutIcon.join(', ')}` : ''}`);
+
+// Français. Accents, apostrophe typographique et traits d'union sont normalisés.
+assertEqual(roomKind('Cuisine'), 'kitchen', 'cuisine → kitchen');
+assertEqual(roomKind('Salle à manger'), 'kitchen', 'salle à manger → kitchen');
+assertEqual(roomKind('Séjour'), 'living', 'séjour → living (accent normalisé)');
+assertEqual(roomKind('Salle d\u2019eau'), 'bathroom',
+  'salle d’eau → bathroom (apostrophe typographique)');
+assertEqual(roomKind('Sous-sol'), 'storage', 'sous-sol → storage (trait d\'union)');
+assertEqual(roomKind('SdB'), 'bathroom', 'sdb → bathroom (casse)');
+
+// Le spécifique avant le générique : une chambre d'enfant n'est pas une chambre.
+assertEqual(roomKind('Chambre'), 'bedroom', 'chambre → bedroom');
+assertEqual(roomKind('Chambre d\'enfant'), 'kids', 'chambre d\'enfant → kids');
+assertEqual(roomKind('Chambre bébé'), 'kids', 'chambre bébé → kids');
+
+// Anglais : le refactor ne doit rien déplacer.
+assertEqual(roomKind('Kitchen'), 'kitchen', 'kitchen → kitchen');
+assertEqual(roomKind('Pantry'), 'storage', 'pantry → storage (et non kitchen)');
+assertEqual(roomKind('Guest Bedroom'), 'bedroom', 'guest bedroom → bedroom');
+assertEqual(roomKind('Atelier'), 'other', 'nom non reconnu → other');
+
+// L'icône se déduit du type, donc le français résout aussi.
+assertEqual(roomIconName({ name: 'Cuisine' }), 'utensils', 'Cuisine → utensils');
+assertEqual(roomIconName({ name: 'Grenier' }), 'triangle', 'Grenier → triangle');
+assertEqual(roomIconName({ name: 'Piscine' }), 'waves', 'Piscine → waves');
+
+// Une icône explicite de HA reste prioritaire sur le nom.
+assertEqual(roomIconName({ name: 'Cuisine', icon: 'mdi:bed' }), 'bed',
+  'icône HA prioritaire sur le nom');
 assertEqual(roomIconName({ name: 'Hallway', icon: 'door-open' }), 'door-open', 'passthrough door-open → door-open');
 
 console.log('\n── mdiIconExportName ──');

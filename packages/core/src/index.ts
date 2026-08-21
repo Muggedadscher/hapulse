@@ -35,8 +35,8 @@ export { buildRooms, roomSummary } from './rooms.js';
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';
 
 // Room icon utilities
-export { roomIconName, roomStatusIconName, CANONICAL_ROOM_ICONS } from './roomIcons.js';
-export type { RoomIconName } from './roomIcons.js';
+export { roomIconName, roomStatusIconName, roomKind, CANONICAL_ROOM_ICONS, ROOM_KINDS } from './roomIcons.js';
+export type { RoomIconName, RoomKind } from './roomIcons.js';
 
 // HA icon string → @mdi/js export name converter
 export { mdiIconExportName } from './mdiIcon.js';

@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router';
 import {
   Lightbulb, Thermometer, Droplets, Wind, Minus, Plus, ChevronRight,
 } from 'lucide-react';
-import { roomSummary } from '@hapulse/core';
-import type { Room, HassEntityMap } from '@hapulse/core';
+import { roomSummary, roomKind } from '@hapulse/core';
+import type { Room, HassEntityMap, RoomKind } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -43,23 +43,28 @@ function pickHeroRoom(rooms: Room[], entities: HassEntityMap): Room | null {
   return best ?? rooms[0] ?? null;
 }
 
-/** Room-name-based gradient — a calm tinted gradient */
+/**
+ * Room gradient — a calm tint per kind of room.
+ *
+ * Keyed on `roomKind()` rather than on the name directly, so a room called
+ * "Cuisine" or "Küche" gets the kitchen tint without this file knowing a word
+ * of either language. Kinds with no tint of their own take the default warm.
+ */
+const GRADIENT_BY_KIND: Partial<Record<RoomKind, string>> = {
+  living:   'linear-gradient(135deg, rgba(242,148,28,0.18) 0%, rgba(59,130,246,0.1) 100%)',
+  bedroom:  'linear-gradient(135deg, rgba(99,77,200,0.18) 0%, rgba(59,130,246,0.08) 100%)',
+  kitchen:  'linear-gradient(135deg, rgba(242,148,28,0.14) 0%, rgba(22,163,74,0.1) 100%)',
+  bathroom: 'linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(99,77,200,0.08) 100%)',
+  office:   'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(59,130,246,0.1) 100%)',
+  garage:   'linear-gradient(135deg, rgba(22,163,74,0.18) 0%, rgba(229,148,17,0.08) 100%)',
+  outdoor:  'linear-gradient(135deg, rgba(22,163,74,0.18) 0%, rgba(229,148,17,0.08) 100%)',
+};
+
+const DEFAULT_GRADIENT =
+  'linear-gradient(135deg, rgba(242,148,28,0.15) 0%, rgba(59,130,246,0.1) 100%)';
+
 function roomGradient(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes('living') || n.includes('lounge'))
-    return 'linear-gradient(135deg, rgba(242,148,28,0.18) 0%, rgba(59,130,246,0.1) 100%)';
-  if (n.includes('bed') || n.includes('sleep'))
-    return 'linear-gradient(135deg, rgba(99,77,200,0.18) 0%, rgba(59,130,246,0.08) 100%)';
-  if (n.includes('kitchen') || n.includes('dining'))
-    return 'linear-gradient(135deg, rgba(242,148,28,0.14) 0%, rgba(22,163,74,0.1) 100%)';
-  if (n.includes('bath') || n.includes('shower'))
-    return 'linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(99,77,200,0.08) 100%)';
-  if (n.includes('office') || n.includes('study'))
-    return 'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(59,130,246,0.1) 100%)';
-  if (n.includes('garage') || n.includes('garden') || n.includes('outdoor'))
-    return 'linear-gradient(135deg, rgba(22,163,74,0.18) 0%, rgba(229,148,17,0.08) 100%)';
-  // Default warm
-  return 'linear-gradient(135deg, rgba(242,148,28,0.15) 0%, rgba(59,130,246,0.1) 100%)';
+  return GRADIENT_BY_KIND[roomKind(name)] ?? DEFAULT_GRADIENT;
 }
 
 export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
