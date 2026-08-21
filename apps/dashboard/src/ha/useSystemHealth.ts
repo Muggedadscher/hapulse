@@ -10,12 +10,16 @@ import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import type { TKey } from '../i18n/useT';
 
 export type SystemHealth = 'healthy' | 'warning' | 'critical' | 'unknown';
 
 export interface SystemHealthInfo {
   health: SystemHealth;
-  title: string;
+  /** i18n key for the status label; consumer calls t(titleKey, { count: titleCount }). */
+  titleKey: TKey;
+  /** Present only for the pluralized branches (unavailable / lowBattery). */
+  titleCount?: number | undefined;
 }
 
 export function useSystemHealth(): SystemHealthInfo {
@@ -68,13 +72,16 @@ export function useSystemHealth(): SystemHealthInfo {
       metricsWarn || unavailable > 0 || lowBatteries > 0 ? 'warning' :
       hasMetrics ? 'healthy' : 'unknown';
 
-    const title =
-      metricsCrit ? 'System critical' :
-      metricsWarn ? 'System under load' :
-      unavailable > 0 ? `${unavailable} unavailable` :
-      lowBatteries > 0 ? `${lowBatteries} low ${lowBatteries === 1 ? 'battery' : 'batteries'}` :
-      hasMetrics ? 'All systems normal' : 'System status unknown';
+    const titleKey: TKey =
+      metricsCrit ? 'nav.systemStatus.critical' :
+      metricsWarn ? 'nav.systemStatus.warning' :
+      unavailable > 0 ? 'nav.systemStatus.unavailable' :
+      lowBatteries > 0 ? 'nav.systemStatus.lowBattery' :
+      hasMetrics ? 'nav.systemStatus.healthy' : 'nav.systemStatus.unknown';
+    const titleCount =
+      unavailable > 0 ? unavailable :
+      lowBatteries > 0 ? lowBatteries : undefined;
 
-    return { health, title };
+    return { health, titleKey, titleCount };
   }, [entities, registries, hiddenEntities]);
 }

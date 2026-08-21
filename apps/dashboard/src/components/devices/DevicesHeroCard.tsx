@@ -33,7 +33,8 @@ function Stat({ icon, value, label }: StatProps) {
 
 export function DevicesHeroCard({ summary }: { summary: DevicesSummary }) {
   const t = useT();
-  const { health, title } = useSystemHealth();
+  const { health, titleKey, titleCount } = useSystemHealth();
+  const title = t(titleKey, titleCount !== undefined ? { count: titleCount } : undefined);
   const StatusIcon =
     health === 'healthy' ? CheckCircle2 :
     health === 'warning' ? AlertTriangle :
