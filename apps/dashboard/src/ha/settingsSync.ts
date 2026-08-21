@@ -86,6 +86,7 @@ const SNAPSHOT_KEYS = [
   'customization',
   'userName',
   'sidebarCollapsed',
+  'language',
 ] as const;
 
 function isValidSnapshot(value: unknown): value is Record<string, unknown> {
@@ -241,7 +242,8 @@ export function startHASettingsSync(): void {
       state.accentHue !== prevState.accentHue ||
       state.userName !== prevState.userName ||
       state.sidebarCollapsed !== prevState.sidebarCollapsed ||
-      state.customization !== prevState.customization
+      state.customization !== prevState.customization ||
+      state.language !== prevState.language
     ) {
       schedulePush();
     }

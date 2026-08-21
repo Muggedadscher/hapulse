@@ -84,15 +84,15 @@ export function DashboardApp({ basename, accountMenu, demo = false }: DashboardA
     }
   }, [demo, basename]);
 
-  if (waitingForBoot && !booted) {
-    return <DashboardBootLoading />;
-  }
-
   return (
-    <UserMenuContext.Provider value={accountMenu}>
-      <I18nProvider>
-        <AppRouter basename={basename} />
-      </I18nProvider>
-    </UserMenuContext.Provider>
+    <I18nProvider>
+      {waitingForBoot && !booted ? (
+        <DashboardBootLoading />
+      ) : (
+        <UserMenuContext.Provider value={accountMenu}>
+          <AppRouter basename={basename} />
+        </UserMenuContext.Provider>
+      )}
+    </I18nProvider>
   );
 }
