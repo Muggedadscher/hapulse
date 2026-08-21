@@ -564,6 +564,12 @@
   font-weight: 500;
   letter-spacing: 0.01em;
   line-height: 1;
+  /* A longer translation ("Automatisations") must shrink, not push the tab bar
+     out of the viewport: ellipsis beats overflow for every future locale. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* =========================================================

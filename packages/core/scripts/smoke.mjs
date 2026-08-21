@@ -728,11 +728,17 @@ const extraInFr = frKeys.filter((k) => !enKeys.includes(k));
 assert(missingInFr.length === 0, `fr.json ne doit rien omettre (manquant: ${missingInFr.join(', ') || 'aucun'})`);
 assert(extraInFr.length === 0, `fr.json ne doit rien ajouter (en trop: ${extraInFr.join(', ') || 'aucun'})`);
 
-// Les placeholders doivent survivre à la traduction
+// Les placeholders doivent survivre à la traduction. Une seule assertion, dont le
+// message énumère toutes les clés fautives : 899 lignes de coches noieraient les
+// échecs des autres blocs, et la sortie de ce runner est son unique rapport.
 const placeholders = (s) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(',');
-for (const k of enKeys) {
-  assertEqual(placeholders(FR_DICT[k] ?? ''), placeholders(EN_DICT[k]), `placeholders conservés pour "${k}"`);
-}
+const drifted = enKeys
+  .map((k) => ({ k, en: placeholders(EN_DICT[k]), fr: placeholders(FR_DICT[k] ?? '') }))
+  .filter(({ en, fr }) => en !== fr)
+  .map(({ k, en, fr }) => `${k} (attendu ${JSON.stringify(en)}, obtenu ${JSON.stringify(fr)})`);
+
+assert(drifted.length === 0,
+  `placeholders conservés sur les ${enKeys.length} clés${drifted.length > 0 ? ` — dérive: ${drifted.join('; ')}` : ''}`);
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)
