@@ -8,6 +8,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { EditBadge } from '../components/ui/EditBadge';
+import { useT, type TKey } from '../i18n/useT';
 import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
@@ -41,15 +42,57 @@ function isMotion(e: HassEntity)  { const dc = e.attributes['device_class'] as s
 const SECTION_IDS = ['security_hero', 'alarm_panel', 'cameras', 'people', 'locks', 'doors', 'windows', 'motion'] as const;
 type SectionId = typeof SECTION_IDS[number];
 
-const SECTION_LABELS: Record<SectionId, string> = {
-  security_hero: 'Overview',
-  alarm_panel:   'Alarm Panel',
-  cameras:       'Cameras',
-  people:        'People',
-  locks:         'Locks',
-  doors:         'Doors',
-  windows:       'Windows',
-  motion:        'Motion',
+type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
+
+const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
+  security_hero: {
+    hide: 'security.section.hide.securityHero',
+    show: 'security.section.show.securityHero',
+    hideMobile: 'security.section.hideMobile.securityHero',
+    showMobile: 'security.section.showMobile.securityHero',
+  },
+  alarm_panel: {
+    hide: 'security.section.hide.alarmPanel',
+    show: 'security.section.show.alarmPanel',
+    hideMobile: 'security.section.hideMobile.alarmPanel',
+    showMobile: 'security.section.showMobile.alarmPanel',
+  },
+  cameras: {
+    hide: 'security.section.hide.cameras',
+    show: 'security.section.show.cameras',
+    hideMobile: 'security.section.hideMobile.cameras',
+    showMobile: 'security.section.showMobile.cameras',
+  },
+  people: {
+    hide: 'security.section.hide.people',
+    show: 'security.section.show.people',
+    hideMobile: 'security.section.hideMobile.people',
+    showMobile: 'security.section.showMobile.people',
+  },
+  locks: {
+    hide: 'security.section.hide.locks',
+    show: 'security.section.show.locks',
+    hideMobile: 'security.section.hideMobile.locks',
+    showMobile: 'security.section.showMobile.locks',
+  },
+  doors: {
+    hide: 'security.section.hide.doors',
+    show: 'security.section.show.doors',
+    hideMobile: 'security.section.hideMobile.doors',
+    showMobile: 'security.section.showMobile.doors',
+  },
+  windows: {
+    hide: 'security.section.hide.windows',
+    show: 'security.section.show.windows',
+    hideMobile: 'security.section.hideMobile.windows',
+    showMobile: 'security.section.showMobile.windows',
+  },
+  motion: {
+    hide: 'security.section.hide.motion',
+    show: 'security.section.show.motion',
+    hideMobile: 'security.section.hideMobile.motion',
+    showMobile: 'security.section.showMobile.motion',
+  },
 };
 
 const MAX_COLS = 4;
@@ -100,6 +143,8 @@ function ResizeHandle({
   span: number;
   onCommit: (id: string, newSpan: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -135,8 +180,8 @@ function ResizeHandle({
       type="button"
       className="overview-resize-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag to resize — currently ${span} of ${MAX_COLS} columns`}
-      title={`Drag left / right to resize (${span} of ${MAX_COLS} columns)`}
+      aria-label={t('columnResize.ariaLabel', { span, max: MAX_COLS })}
+      title={t('columnResize.title', { span, max: MAX_COLS })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
@@ -148,6 +193,7 @@ function ResizeHandle({
 // ---------------------------------------------------------------------------
 
 export function Security() {
+  const t = useT();
   const { entities, rooms } = useEntityStore(
     useShallow((s) => ({ entities: s.entities, rooms: s.rooms }))
   );
@@ -260,13 +306,13 @@ export function Security() {
     return (
       <div className="page security-page stagger-rise">
         <div className="page__header-row">
-          <h1 className="page__title">Security</h1>
+          <h1 className="page__title">{t('security.title')}</h1>
           <PageHeaderActions />
         </div>
         <EmptyState
           icon={<Shield size={40} strokeWidth={1.5} />}
-          title="nothing to secure yet"
-          description="Add an alarm panel, cameras, door sensors, or locks in Home Assistant."
+          title={t('security.empty.title')}
+          description={t('security.empty.description')}
         />
       </div>
     );
@@ -305,7 +351,7 @@ export function Security() {
       case 'doors':
         return (
           <SensorSectionCard
-            title="Doors"
+            title={t('security.section.label.doors')}
             icon={<DoorOpen size={16} strokeWidth={1.75} />}
             sensors={doors}
             rooms={rooms}
@@ -316,7 +362,7 @@ export function Security() {
       case 'windows':
         return (
           <SensorSectionCard
-            title="Windows"
+            title={t('security.section.label.windows')}
             icon={<Grid2x2 size={16} strokeWidth={1.75} />}
             sensors={windows}
             rooms={rooms}
@@ -327,7 +373,7 @@ export function Security() {
       case 'motion':
         return (
           <SensorSectionCard
-            title="Motion"
+            title={t('security.section.label.motion')}
             icon={<Activity size={16} strokeWidth={1.75} />}
             sensors={motion}
             rooms={rooms}
@@ -341,7 +387,7 @@ export function Security() {
   return (
     <div className="page security-page stagger-rise">
       <div className="page__header-row">
-        <h1 className="page__title">Security</h1>
+        <h1 className="page__title">{t('security.title')}</h1>
         <PageHeaderActions><EditToggle /></PageHeaderActions>
       </div>
 
@@ -383,11 +429,13 @@ export function Security() {
                 <div className="edit-section-outline">{widget}</div>
                 <EditBadge
                   hidden={isHidden}
-                  toggleLabel={isHidden ? `show ${SECTION_LABELS[id]}` : `hide ${SECTION_LABELS[id]}`}
+                  toggleLabel={isHidden ? t(SECTION_TOGGLE_KEYS[id].show) : t(SECTION_TOGGLE_KEYS[id].hide)}
                   onToggleHidden={() => handleToggleHidden(id)}
                   mobileHidden={isMobileHidden}
                   onToggleMobileHidden={() => handleToggleMobileHidden(id)}
-                  mobileToggleLabel={isMobileHidden ? `show ${SECTION_LABELS[id]} on mobile` : `hide ${SECTION_LABELS[id]} on mobile`}
+                  mobileToggleLabel={
+                    isMobileHidden ? t(SECTION_TOGGLE_KEYS[id].showMobile) : t(SECTION_TOGGLE_KEYS[id].hideMobile)
+                  }
                 />
                 <SpanDots span={currentSpan} />
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />

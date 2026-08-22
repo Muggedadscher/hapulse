@@ -9,6 +9,8 @@ import { persist } from 'zustand/middleware';
 import { THEME_NAMES } from '../theme/themes';
 import type { ThemeName, ThemeMode } from '../theme/themes';
 import { dynamicJSONStorage } from '../persistence/zustandStorage';
+import { LOCALES } from '@hapulse/core';
+import type { Locale } from '@hapulse/core';
 
 /**
  * Migrate a pre-v0.5 theme value (dusk/dawn/midnight/sage — which encoded both
@@ -139,6 +141,8 @@ interface SettingsState {
   userName?: string | undefined;
   /** Desktop sidebar collapsed to an icon-only rail. */
   sidebarCollapsed: boolean;
+  /** Display language. 'auto' resolves from Home Assistant, then the browser. */
+  language: Locale | 'auto';
 }
 
 interface SettingsActions {
@@ -150,6 +154,7 @@ interface SettingsActions {
   updateCustomization: (patch: Partial<CustomizationSettings>) => void;
   exportSettings: () => string;
   importSettings: (json: string) => void;
+  setLanguage(language: Locale | 'auto'): void;
 }
 
 const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
@@ -212,6 +217,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       customization: DEFAULT_CUSTOMIZATION,
       userName: undefined,
       sidebarCollapsed: false,
+      language: 'auto',
 
       setTheme(theme) {
         set({ theme });
@@ -219,6 +225,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
 
       setMode(mode) {
         set({ mode });
+      },
+
+      setLanguage(language) {
+        set({ language });
       },
 
       setAccentHue(accentHue) {
@@ -240,8 +250,12 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       },
 
       exportSettings() {
-        const { theme, mode, accentHue, customization, userName, sidebarCollapsed } = get();
-        return JSON.stringify({ theme, mode, accentHue, customization, userName, sidebarCollapsed }, null, 2);
+        const { theme, mode, accentHue, customization, userName, sidebarCollapsed, language } = get();
+        return JSON.stringify(
+          { theme, mode, accentHue, customization, userName, sidebarCollapsed, language },
+          null,
+          2
+        );
       },
 
       importSettings(json) {
@@ -276,6 +290,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               ? data.mode
               : migrated.mode;
 
+          const language: Locale | 'auto' =
+            data.language === 'auto' || (LOCALES as readonly string[]).includes(data.language as string)
+              ? (data.language as Locale | 'auto')
+              : 'auto';
+
           set({
             theme: migrated.theme,
             mode,
@@ -288,6 +307,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             },
             userName: data.userName,
             sidebarCollapsed: typeof data.sidebarCollapsed === 'boolean' ? data.sidebarCollapsed : false,
+            language,
           });
         } catch {
           console.error('[settingsStore] importSettings: invalid JSON');

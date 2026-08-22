@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SecurityHeroCard.css';
@@ -46,10 +47,12 @@ export function SecurityHeroCard({
   motionSensors,
   cameras,
 }: SecurityHeroCardProps) {
+  const t = useT();
   const url = useConnectionStore(useShallow((s) => s.url));
 
   const alarmState = alarm?.state;
-  const alarmName = (alarm?.attributes['friendly_name'] as string | undefined) ?? 'Alarm';
+  const alarmName =
+    (alarm?.attributes['friendly_name'] as string | undefined) ?? t('security.hero.alarmFallbackName');
   const gradientClass = alarmGradientClass(alarmState);
 
   const homePeople = people.filter((p) => p.state === 'home');
@@ -57,6 +60,7 @@ export function SecurityHeroCard({
   const openDoors = doorSensors.filter((s) => s.state === 'on');
   const openWindows = windowSensors.filter((s) => s.state === 'on');
   const activeMotion = motionSensors.filter((s) => s.state === 'on');
+  const firstHomeName = homePeople[0]?.attributes['friendly_name'] as string | undefined;
 
   return (
     <Card className={`security-hero-card ${gradientClass}`}>
@@ -70,7 +74,7 @@ export function SecurityHeroCard({
           <div className="security-hero-card__alarm-text">
             <p className="security-hero-card__alarm-name">{alarmName}</p>
             <p className="security-hero-card__alarm-state">
-              {alarmState ? alarmState.replace(/_/g, ' ') : 'Not configured'}
+              {alarmState ? alarmState.replace(/_/g, ' ') : t('security.hero.notConfigured')}
             </p>
           </div>
           {people.length > 0 && (
@@ -84,7 +88,11 @@ export function SecurityHeroCard({
                   <div
                     key={person.entity_id}
                     className={`security-hero-avatar${isHome ? ' security-hero-avatar--home' : ' security-hero-avatar--away'}`}
-                    title={`${name}: ${isHome ? 'Home' : 'Away'}`}
+                    title={
+                      isHome
+                        ? t('security.hero.personHomeTitle', { name })
+                        : t('security.hero.personAwayTitle', { name })
+                    }
                   >
                     {avatarUrl ? (
                       <img src={avatarUrl} alt={name} className="security-hero-avatar__img" />
@@ -99,9 +107,11 @@ export function SecurityHeroCard({
               })}
               {homePeople.length > 0 && (
                 <span className="security-hero-card__people-label">
-                  {homePeople.length === 1
-                    ? `${(homePeople[0]!.attributes['friendly_name'] as string | undefined) ?? 'Someone'} is home`
-                    : `${homePeople.length} people home`}
+                  {homePeople.length !== 1
+                    ? t('security.hero.peopleHome', { count: homePeople.length })
+                    : firstHomeName
+                      ? t('security.hero.personIsHome', { name: firstHomeName })
+                      : t('security.hero.someoneIsHome')}
                 </span>
               )}
             </div>
@@ -115,31 +125,47 @@ export function SecurityHeroCard({
               {unlockedLocks.length === 0
                 ? <Lock size={13} strokeWidth={1.75} />
                 : <LockOpen size={13} strokeWidth={1.75} />}
-              <span>{unlockedLocks.length === 0 ? 'All locked' : `${unlockedLocks.length} unlocked`}</span>
+              <span>
+                {unlockedLocks.length === 0
+                  ? t('security.hero.allLocked')
+                  : t('security.hero.unlockedCount', { count: unlockedLocks.length })}
+              </span>
             </div>
           )}
           {doorSensors.length > 0 && (
             <div className={`security-hero-chip${openDoors.length === 0 ? ' security-hero-chip--ok' : ' security-hero-chip--danger'}`}>
               <DoorOpen size={13} strokeWidth={1.75} />
-              <span>{openDoors.length === 0 ? 'Doors closed' : `${openDoors.length} open`}</span>
+              <span>
+                {openDoors.length === 0
+                  ? t('security.hero.doorsClosed')
+                  : t('security.hero.openCount', { count: openDoors.length })}
+              </span>
             </div>
           )}
           {windowSensors.length > 0 && (
             <div className={`security-hero-chip${openWindows.length === 0 ? ' security-hero-chip--ok' : ' security-hero-chip--warn'}`}>
               <Grid2x2 size={13} strokeWidth={1.75} />
-              <span>{openWindows.length === 0 ? 'Windows closed' : `${openWindows.length} open`}</span>
+              <span>
+                {openWindows.length === 0
+                  ? t('security.hero.windowsClosed')
+                  : t('security.hero.openCount', { count: openWindows.length })}
+              </span>
             </div>
           )}
           {motionSensors.length > 0 && (
             <div className={`security-hero-chip${activeMotion.length === 0 ? ' security-hero-chip--muted' : ' security-hero-chip--warn'}`}>
               <Activity size={13} strokeWidth={1.75} />
-              <span>{activeMotion.length === 0 ? 'No motion' : `${activeMotion.length} detected`}</span>
+              <span>
+                {activeMotion.length === 0
+                  ? t('security.hero.noMotion')
+                  : t('security.hero.detectedCount', { count: activeMotion.length })}
+              </span>
             </div>
           )}
           {cameras.length > 0 && (
             <div className="security-hero-chip security-hero-chip--muted">
               <Camera size={13} strokeWidth={1.75} />
-              <span>{cameras.length} camera{cameras.length !== 1 ? 's' : ''}</span>
+              <span>{t('security.hero.cameraCount', { count: cameras.length })}</span>
             </div>
           )}
         </div>

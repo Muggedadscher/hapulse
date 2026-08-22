@@ -10,6 +10,7 @@ import { Modal } from '../ui/Modal';
 import { EntityCard } from '../cards/EntityCard';
 import { useEntity } from '../../ha/hooks';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useT } from '../../i18n/useT';
 import './EntityDetailModal.css';
 
 interface EntityDetailModalProps {
@@ -51,6 +52,7 @@ function formatValue(value: unknown): string {
 }
 
 export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps) {
+  const t = useT();
   const entity = useEntity(entityId ?? '');
   const entityOverrides = useSettingsStore((s) => s.customization.entityOverrides);
 
@@ -77,7 +79,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
         </div>
 
         <div className="entity-detail__attrs">
-          <div className="entity-detail__attrs-label">attributes</div>
+          <div className="entity-detail__attrs-label">{t('home.entityDetail.attributesLabel')}</div>
           {attrRows.length > 0 ? (
             <dl className="entity-detail__attr-list">
               {attrRows.map(([key, value]) => (
@@ -88,7 +90,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
               ))}
             </dl>
           ) : (
-            <p className="entity-detail__attr-empty">no additional attributes</p>
+            <p className="entity-detail__attr-empty">{t('home.entityDetail.emptyAttrs')}</p>
           )}
         </div>
       </div>

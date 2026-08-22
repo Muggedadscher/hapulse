@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { PanelTop, ChevronUp, ChevronDown, Square, Blinds, Warehouse } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -21,6 +22,7 @@ function coverIcon(deviceClass: string | undefined): React.ReactNode {
 }
 
 export function CoverCard({ entity, name }: CoverCardProps) {
+  const t = useT();
   const entityId = entity.entity_id;
   const position = entity.attributes.current_position as number | undefined;
   const deviceClass = entity.attributes.device_class as string | undefined;
@@ -49,7 +51,7 @@ export function CoverCard({ entity, name }: CoverCardProps) {
           <div className="cover-card__name">{name}</div>
           <div className="cover-card__position">
             {position != null ? (
-              <span className="data-font">{position}% open</span>
+              <span className="data-font">{t('cards.cover.percentOpen', { percent: position })}</span>
             ) : (
               entity.state
             )}
@@ -59,17 +61,17 @@ export function CoverCard({ entity, name }: CoverCardProps) {
 
       {/* Control buttons */}
       <div className="cover-card__buttons">
-        <button type="button" className="cover-card__btn" onClick={handleOpen} aria-label="Open">
+        <button type="button" className="cover-card__btn" onClick={handleOpen} aria-label={t('cards.cover.open')}>
           <ChevronUp size={16} strokeWidth={1.75} />
-          Open
+          {t('cards.cover.open')}
         </button>
-        <button type="button" className="cover-card__btn" onClick={handleStop} aria-label="Stop">
+        <button type="button" className="cover-card__btn" onClick={handleStop} aria-label={t('cards.cover.stop')}>
           <Square size={14} strokeWidth={1.75} />
-          Stop
+          {t('cards.cover.stop')}
         </button>
-        <button type="button" className="cover-card__btn" onClick={handleClose} aria-label="Close">
+        <button type="button" className="cover-card__btn" onClick={handleClose} aria-label={t('cards.cover.close')}>
           <ChevronDown size={16} strokeWidth={1.75} />
-          Close
+          {t('cards.cover.close')}
         </button>
       </div>
     </Card>

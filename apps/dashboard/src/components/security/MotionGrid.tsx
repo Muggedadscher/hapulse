@@ -7,6 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { Activity, UserCheck } from 'lucide-react';
 import type { HassEntity, Room } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import { getRoomName, relativeTime } from './roomUtils';
 import { Card } from '../ui/Card';
 import './MotionGrid.css';
@@ -26,6 +27,7 @@ interface MotionTileProps {
 }
 
 function MotionTile({ entity, roomName, tick }: MotionTileProps) {
+  const t = useT();
   const isActive = entity.state === 'on';
   const name = (entity.attributes['friendly_name'] as string | undefined) ?? entity.entity_id;
   const lastChanged = entity.last_changed;
@@ -42,9 +44,9 @@ function MotionTile({ entity, roomName, tick }: MotionTileProps) {
           <p className="motion-tile__name">{name}</p>
           {roomName && <p className="motion-tile__room">{roomName}</p>}
           <p className={`motion-tile__state ${isActive ? 'motion-tile__state--active' : ''}`}>
-            {isActive ? 'motion' : 'clear'}
+            {isActive ? t('security.sensor.motion') : t('security.sensor.clear')}
           </p>
-          <p className="motion-tile__time">{relativeTime(lastChanged)}</p>
+          <p className="motion-tile__time">{relativeTime(t, lastChanged)}</p>
         </div>
       </div>
     </Card>

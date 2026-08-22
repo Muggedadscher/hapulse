@@ -12,6 +12,7 @@ import { IconButton } from './IconButton';
 import { useUIStore } from '../../stores/uiStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useCanEdit } from '../../ha/hooks';
+import { useT } from '../../i18n/useT';
 import './EditToggle.css';
 
 interface EditToggleProps {
@@ -19,6 +20,7 @@ interface EditToggleProps {
 }
 
 export function EditToggle({ className = '' }: EditToggleProps) {
+  const t = useT();
   const editMode = useUIStore((s) => s.editMode);
   const toggleEditMode = useUIStore((s) => s.toggleEditMode);
   const setEditMode = useUIStore((s) => s.setEditMode);
@@ -33,12 +35,12 @@ export function EditToggle({ className = '' }: EditToggleProps) {
 
   return (
     <IconButton
-      label={editMode ? 'done editing' : 'edit page'}
+      label={editMode ? t('editToggle.doneAria') : t('editToggle.editAria')}
       size={40}
       variant={editMode ? 'accent' : 'default'}
       onClick={toggleEditMode}
       aria-pressed={editMode}
-      title={editMode ? 'Done editing' : 'Edit page'}
+      title={editMode ? t('editToggle.doneTitle') : t('editToggle.editTitle')}
       className={`edit-toggle${editMode ? ' edit-toggle--active' : ''}${className ? ' ' + className : ''}`}
     >
       {editMode

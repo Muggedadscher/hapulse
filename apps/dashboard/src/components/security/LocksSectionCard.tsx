@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { LocksList } from './LocksList';
 import type { HassEntity, Room } from '@hapulse/core';
@@ -12,6 +13,7 @@ interface LocksSectionCardProps {
 }
 
 export function LocksSectionCard({ locks, rooms }: LocksSectionCardProps) {
+  const t = useT();
   const lockedCount = locks.filter((l) => l.state === 'locked').length;
   const allLocked = lockedCount === locks.length;
   const allUnlocked = lockedCount === 0;
@@ -34,9 +36,9 @@ export function LocksSectionCard({ locks, rooms }: LocksSectionCardProps) {
               ? <Lock size={16} strokeWidth={1.75} />
               : <LockOpen size={16} strokeWidth={1.75} />}
           </span>
-          <span className="locks-section-card__title">Locks</span>
+          <span className="locks-section-card__title">{t('security.locks.title')}</span>
           <span className="locks-section-card__count">
-            {lockedCount}/{locks.length} locked
+            {t('security.locks.count', { locked: lockedCount, total: locks.length })}
           </span>
         </div>
       </div>
@@ -50,7 +52,7 @@ export function LocksSectionCard({ locks, rooms }: LocksSectionCardProps) {
           disabled={allLocked}
         >
           <Lock size={15} strokeWidth={1.75} />
-          Lock All
+          {t('security.locks.lockAll')}
         </button>
         <button
           type="button"
@@ -59,7 +61,7 @@ export function LocksSectionCard({ locks, rooms }: LocksSectionCardProps) {
           disabled={allUnlocked}
         >
           <LockOpen size={15} strokeWidth={1.75} />
-          Unlock All
+          {t('security.locks.unlockAll')}
         </button>
       </div>
 

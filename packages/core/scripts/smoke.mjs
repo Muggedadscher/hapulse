@@ -13,11 +13,14 @@
  *  - resolveThemeMode / accentOverride pure theme math
  *  - buildHAAuthorizeUrl / exchangeHAAuthCode / connectWithAuthData (mobile OAuth)
  *  - HAConnection.suspend is exported
+ *  - resolveEntityAreaId() device-area fallback precedence
  */
 
 import {
   buildRooms,
   roomSummary,
+  resolveEntityAreaId,
+  buildDeviceAreaMap,
   DEMO_ENTITIES,
   DEMO_REGISTRIES,
   domainOf,
@@ -32,6 +35,8 @@ import {
   startHASignIn,
   resumeHASession,
   roomIconName,
+  roomKind,
+  ROOM_KINDS,
   roomStatusIconName,
   CANONICAL_ROOM_ICONS,
   mdiIconExportName,
@@ -44,6 +49,8 @@ import {
   exchangeHAAuthCode,
   connectWithAuthData,
   HAConnection,
+  translate,
+  resolveLanguage,
 } from '../dist/index.js';
 
 let passed = 0;
@@ -88,6 +95,54 @@ const lr = rooms.find(r => r.id === 'living_room');
 assert(lr !== undefined, 'living_room room found');
 assert(Array.isArray(lr.domains['light']) && lr.domains['light'].length > 0, 'living_room has lights in domains');
 assert(lr.entityIds.length > 0, 'living_room has entityIds');
+
+// ---------------------------------------------------------------------------
+// resolveEntityAreaId — device-area fallback precedence
+// ---------------------------------------------------------------------------
+
+console.log('\n── resolveEntityAreaId ──');
+
+const deviceAreaMap = buildDeviceAreaMap([
+  { id: 'dev_with_area', area_id: 'kitchen', name: 'Hue Kitchen Room' },
+  { id: 'dev_no_area', area_id: null, name: 'Zone device' },
+]);
+
+// Entity's own area_id wins, even if its device has a different one
+assertEqual(
+  resolveEntityAreaId({ area_id: 'living_room', device_id: 'dev_with_area' }, deviceAreaMap),
+  'living_room',
+  "entity's own area_id takes priority over its device's",
+);
+
+// No entity area_id → falls back to the device's area_id (the common case:
+// a scene entity with no area of its own, hanging off a Hue "Room" device)
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: 'dev_with_area' }, deviceAreaMap),
+  'kitchen',
+  'falls back to device area_id when entity has none',
+);
+
+// Neither the entity nor its device has an area — by design for a "Zone"
+// device spanning multiple rooms. Must not silently default to some room.
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: 'dev_no_area' }, deviceAreaMap),
+  null,
+  'null when neither entity nor device has an area (e.g. a multi-room Zone device)',
+);
+
+// No device_id at all (e.g. a helper entity) and no area_id → null, not a crash
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: null }, deviceAreaMap),
+  null,
+  'null when entity has neither an area_id nor a device_id',
+);
+
+// Unknown device_id (not in the map) → null rather than throwing
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: 'dev_unknown' }, deviceAreaMap),
+  null,
+  'null when device_id is not found in the device map',
+);
 
 // ---------------------------------------------------------------------------
 // roomSummary
@@ -202,6 +257,52 @@ assertEqual(roomIconName({ name: 'Bedroom', icon: 'mdi:bed' }), 'bed', 'mdi:bed 
 assertEqual(roomIconName({ name: 'Living Room', icon: 'sofa' }), 'sofa', 'passthrough sofa → sofa');
 assertEqual(roomIconName({ name: 'Foobar' }), 'house', 'unknown name → house');
 assertEqual(roomIconName({ name: 'Master Suite', icon: 'mdi:bed-double' }), 'bed', 'mdi:bed-double → bed');
+
+// ---------------------------------------------------------------------------
+// roomKind — classification multilingue des noms de pièce
+//
+// Les noms de pièce viennent de Home Assistant dans la langue du foyer, sans
+// rapport avec la langue d'affichage : la table est multilingue d'un bloc, pas
+// par locale.
+// ---------------------------------------------------------------------------
+console.log('\n── roomKind ──');
+
+// Chaque type doit avoir une icône, sinon roomIconName renvoie undefined.
+const kindsWithoutIcon = ROOM_KINDS.filter(
+  (k) => !CANONICAL_ROOM_ICONS.includes(roomIconName({ name: `__${k}__` }))
+    && roomKind(`__${k}__`) === k,
+);
+assert(kindsWithoutIcon.length === 0,
+  `chaque type de pièce a une icône canonique${kindsWithoutIcon.length > 0 ? ` — sans icône: ${kindsWithoutIcon.join(', ')}` : ''}`);
+
+// Français. Accents, apostrophe typographique et traits d'union sont normalisés.
+assertEqual(roomKind('Cuisine'), 'kitchen', 'cuisine → kitchen');
+assertEqual(roomKind('Salle à manger'), 'kitchen', 'salle à manger → kitchen');
+assertEqual(roomKind('Séjour'), 'living', 'séjour → living (accent normalisé)');
+assertEqual(roomKind('Salle d\u2019eau'), 'bathroom',
+  'salle d’eau → bathroom (apostrophe typographique)');
+assertEqual(roomKind('Sous-sol'), 'storage', 'sous-sol → storage (trait d\'union)');
+assertEqual(roomKind('SdB'), 'bathroom', 'sdb → bathroom (casse)');
+
+// Le spécifique avant le générique : une chambre d'enfant n'est pas une chambre.
+assertEqual(roomKind('Chambre'), 'bedroom', 'chambre → bedroom');
+assertEqual(roomKind('Chambre d\'enfant'), 'kids', 'chambre d\'enfant → kids');
+assertEqual(roomKind('Chambre bébé'), 'kids', 'chambre bébé → kids');
+
+// Anglais : le refactor ne doit rien déplacer.
+assertEqual(roomKind('Kitchen'), 'kitchen', 'kitchen → kitchen');
+assertEqual(roomKind('Pantry'), 'storage', 'pantry → storage (et non kitchen)');
+assertEqual(roomKind('Guest Bedroom'), 'bedroom', 'guest bedroom → bedroom');
+assertEqual(roomKind('Atelier'), 'other', 'nom non reconnu → other');
+
+// L'icône se déduit du type, donc le français résout aussi.
+assertEqual(roomIconName({ name: 'Cuisine' }), 'utensils', 'Cuisine → utensils');
+assertEqual(roomIconName({ name: 'Grenier' }), 'triangle', 'Grenier → triangle');
+assertEqual(roomIconName({ name: 'Piscine' }), 'waves', 'Piscine → waves');
+
+// Une icône explicite de HA reste prioritaire sur le nom.
+assertEqual(roomIconName({ name: 'Cuisine', icon: 'mdi:bed' }), 'bed',
+  'icône HA prioritaire sur le nom');
 assertEqual(roomIconName({ name: 'Hallway', icon: 'door-open' }), 'door-open', 'passthrough door-open → door-open');
 
 console.log('\n── mdiIconExportName ──');
@@ -237,7 +338,7 @@ const openDoorEntities = {
 };
 assertEqual(roomStatusIconName(hallwayRoom, openDoorEntities), 'door-open', 'status: open door → door-open');
 
-// Open window → 'air-vent'
+// Open window → 'grid-2x2'
 const bedroomRoom = rooms.find(r => r.id === 'bedroom');
 assert(bedroomRoom !== undefined, 'bedroom room found for window status test');
 const openWindowEntities = {
@@ -248,13 +349,13 @@ const openWindowEntities = {
     attributes: { ...DEMO_ENTITIES['binary_sensor.bedroom_window'].attributes, device_class: 'window' },
   },
 };
-assertEqual(roomStatusIconName(bedroomRoom, openWindowEntities), 'air-vent', 'status: open window → air-vent');
+assertEqual(roomStatusIconName(bedroomRoom, openWindowEntities), 'grid-2x2', 'status: open window → grid-2x2');
 
 // CANONICAL_ROOM_ICONS includes expected values
 assert(Array.isArray(CANONICAL_ROOM_ICONS), 'CANONICAL_ROOM_ICONS is array');
 assert(CANONICAL_ROOM_ICONS.includes('house'), 'CANONICAL_ROOM_ICONS includes house');
 assert(CANONICAL_ROOM_ICONS.includes('sofa'), 'CANONICAL_ROOM_ICONS includes sofa');
-assert(CANONICAL_ROOM_ICONS.includes('air-vent'), 'CANONICAL_ROOM_ICONS includes air-vent');
+assert(CANONICAL_ROOM_ICONS.includes('grid-2x2'), 'CANONICAL_ROOM_ICONS includes grid-2x2');
 
 // ---------------------------------------------------------------------------
 // createDemoTicker
@@ -527,6 +628,89 @@ console.log('\n── frontend/user_data methods ──');
 assert(typeof HAConnection.prototype.getUserData === 'function', 'HAConnection.prototype.getUserData exported as function');
 assert(typeof HAConnection.prototype.setUserData === 'function', 'HAConnection.prototype.setUserData exported as function');
 assert(typeof HAConnection.prototype.subscribeUserData === 'function', 'HAConnection.prototype.subscribeUserData exported as function');
+
+// ---------------------------------------------------------------------------
+// i18n — translate()
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: translate ──');
+
+const EN = {
+  'nav.devices': 'Devices',
+  'devices.count.one': '{count} device',
+  'devices.count.other': '{count} devices',
+  'greeting': 'Hello {name}',
+};
+const FR = {
+  'nav.devices': 'Appareils',
+  'devices.count.one': '{count} appareil',
+  'devices.count.other': '{count} appareils',
+};
+
+assertEqual(translate(EN, EN, 'en', 'nav.devices'), 'Devices', 'clé simple');
+assertEqual(translate(FR, EN, 'fr', 'nav.devices'), 'Appareils', 'clé traduite');
+
+// Repli : dictionnaire cible incomplet → anglais
+assertEqual(translate(FR, EN, 'fr', 'greeting', { name: 'Bap' }), 'Hello Bap',
+  'repli sur en quand la clé manque dans la locale');
+
+// Repli ultime : la clé elle-même, jamais un écran vide
+assertEqual(translate(EN, EN, 'en', 'inconnue.totale'), 'inconnue.totale',
+  'repli sur la clé quand elle est introuvable partout');
+
+// Interpolation : variable absente laissée visible, pour repérer le bug
+assertEqual(translate(EN, EN, 'en', 'greeting'), 'Hello {name}',
+  'variable non fournie laissée telle quelle');
+
+// Pluriels anglais
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 1 }), '1 device', 'en, count=1 → singulier');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 2 }), '2 devices', 'en, count=2 → pluriel');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 0 }), '0 devices', 'en, count=0 → pluriel');
+
+// Pluriels français : le cas qui attrape les vraies régressions.
+// En français 0 et 1 prennent le SINGULIER, contrairement à l'anglais.
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 0 }), '0 appareil', 'fr, count=0 → singulier');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 1 }), '1 appareil', 'fr, count=1 → singulier');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 2 }), '2 appareils', 'fr, count=2 → pluriel');
+
+// Non-integer and negative count values
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: -1 }), '-1 device', 'en, count=-1 → singular (negative)');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 1.5 }), '1.5 devices', 'en, count=1.5 → plural (fractional)');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: -1 }), '-1 appareil', 'fr, count=-1 → singular (negative)');
+
+// Completely empty target dictionary
+const EMPTY_FR = {};
+assertEqual(translate(EMPTY_FR, EN, 'fr', 'nav.devices'), 'Devices', 'empty dict → fallback English');
+assertEqual(translate(EMPTY_FR, EN, 'fr', 'totally.unknown'), 'totally.unknown', 'empty dict, unknown key → key itself');
+
+// ---------------------------------------------------------------------------
+// i18n — resolveLanguage()
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: resolveLanguage ──');
+
+const AVAIL = ['en', 'fr'];
+
+// Une préférence explicite gagne sur tout le reste
+assertEqual(resolveLanguage('fr', 'en', ['en-US'], AVAIL), 'fr', 'préférence explicite prioritaire');
+
+// auto : la langue de HA d'abord
+assertEqual(resolveLanguage('auto', 'fr', ['en-US'], AVAIL), 'fr', 'auto → langue HA');
+
+// auto : navigator en second, quand HA ne dit rien
+assertEqual(resolveLanguage('auto', null, ['fr-FR', 'en'], AVAIL), 'fr', 'auto → navigator');
+
+// Les balises régionales sont réduites à la langue de base
+assertEqual(resolveLanguage('auto', 'fr-CA', [], AVAIL), 'fr', 'fr-CA → fr');
+
+// Une langue HA non supportée ne doit pas gagner : on continue la chaîne
+assertEqual(resolveLanguage('auto', 'de', ['fr-FR'], AVAIL), 'fr',
+  'langue HA non supportée → on passe à navigator');
+
+// Dernier recours
+assertEqual(resolveLanguage('auto', 'de', ['ja-JP'], AVAIL), 'en', 'aucune correspondance → en');
+assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information → en');
+
+// Une préférence explicite devenue indisponible ne doit pas bloquer l'UI
+assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)

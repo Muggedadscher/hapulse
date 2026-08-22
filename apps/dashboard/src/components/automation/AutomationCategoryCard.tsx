@@ -1,5 +1,7 @@
 import React, { useCallback } from 'react';
 import { Workflow } from 'lucide-react';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
 import type { HassEntity } from '@hapulse/core';
@@ -17,17 +19,20 @@ function entityName(e: HassEntity): string {
   );
 }
 
-function formatRelativeTime(iso: string | null | undefined): string {
-  if (!iso) return 'Never';
+type T = (key: TKey, vars?: Record<string, string | number>) => string;
+
+/** Takes the translator as a parameter: it runs outside any component body. */
+function formatRelativeTime(t: T, iso: string | null | undefined): string {
+  if (!iso) return t('automations.time.never');
   try {
     const delta = Date.now() - new Date(iso).getTime();
-    if (delta < 60000) return 'Just now';
-    if (delta < 3600000) return `${Math.floor(delta / 60000)}m ago`;
-    if (delta < 86400000) return `${Math.floor(delta / 3600000)}h ago`;
-    if (delta < 172800000) return 'Yesterday';
-    return `${Math.floor(delta / 86400000)}d ago`;
+    if (delta < 60000) return t('automations.time.justNow');
+    if (delta < 3600000) return t('automations.time.minutesAgo', { count: Math.floor(delta / 60000) });
+    if (delta < 86400000) return t('automations.time.hoursAgo', { count: Math.floor(delta / 3600000) });
+    if (delta < 172800000) return t('automations.time.yesterday');
+    return t('automations.time.daysAgo', { count: Math.floor(delta / 86400000) });
   } catch {
-    return '—';
+    return t('automations.time.unknown');
   }
 }
 
@@ -47,6 +52,7 @@ interface AutomationRowProps {
 }
 
 function AutomationRow({ entity }: AutomationRowProps) {
+  const t             = useT();
   const entityId      = entity.entity_id;
   const isOn          = entity.state === 'on';
   const name          = entityName(entity);
@@ -71,11 +77,15 @@ function AutomationRow({ entity }: AutomationRowProps) {
       </span>
       <div className="auto-cat-row__info">
         <span className="auto-cat-row__name">{name}</span>
-        <span className="auto-cat-row__time">{formatRelativeTime(lastTriggered)}</span>
+        <span className="auto-cat-row__time">{formatRelativeTime(t, lastTriggered)}</span>
       </div>
       <label
         className="auto-row-toggle"
-        aria-label={`${name}: ${isOn ? 'enabled' : 'disabled'}`}
+        aria-label={
+          isOn
+            ? t('automations.row.enabledAria', { name })
+            : t('automations.row.disabledAria', { name })
+        }
       >
         <input type="checkbox" checked={isOn} onChange={handleToggle} />
         <span className="auto-row-toggle__track" aria-hidden="true">
@@ -87,6 +97,7 @@ function AutomationRow({ entity }: AutomationRowProps) {
 }
 
 export function AutomationCategoryCard({ category, automations }: AutomationCategoryCardProps) {
+  const t           = useT();
   const sorted      = sortAutomations(automations);
   const activeCount = automations.filter((e) => e.state === 'on').length;
 
@@ -101,13 +112,16 @@ export function AutomationCategoryCard({ category, automations }: AutomationCate
         </div>
         <span
           className="auto-cat-card__count"
-          aria-label={`${activeCount} of ${automations.length} active`}
+          aria-label={t('automations.category.countAria', {
+            active: activeCount,
+            total: automations.length,
+          })}
         >
           {activeCount}/{automations.length}
         </span>
       </div>
 
-      <ul className="auto-cat-card__list" aria-label={`${category} automations`}>
+      <ul className="auto-cat-card__list" aria-label={t('automations.category.listAria', { category })}>
         {sorted.map((entity) => (
           <AutomationRow key={entity.entity_id} entity={entity} />
         ))}

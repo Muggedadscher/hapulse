@@ -17,6 +17,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Card } from '../ui/Card';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import type { EnergyDashboard, EnergyPeriod } from '@hapulse/core';
 import './EnergyCards.css';
 
@@ -44,11 +46,11 @@ export function fmtCost(n: number, currency: string | null): string {
 // Period selector (lives in the hero header)
 // ---------------------------------------------------------------------------
 
-const PERIODS: { id: EnergyPeriod; label: string }[] = [
-  { id: 'today', label: 'Today' },
-  { id: 'week', label: 'Week' },
-  { id: 'month', label: 'Month' },
-  { id: 'year', label: 'Year' },
+const PERIODS: { id: EnergyPeriod; labelKey: TKey }[] = [
+  { id: 'today', labelKey: 'energy.period.today' },
+  { id: 'week', labelKey: 'energy.period.week' },
+  { id: 'month', labelKey: 'energy.period.month' },
+  { id: 'year', labelKey: 'energy.period.year' },
 ];
 
 function PeriodSelector({
@@ -58,8 +60,9 @@ function PeriodSelector({
   period: EnergyPeriod;
   onChange: (p: EnergyPeriod) => void;
 }) {
+  const t = useT();
   return (
-    <div className="energy-period" role="tablist" aria-label="Time period">
+    <div className="energy-period" role="tablist" aria-label={t('energy.period.ariaLabel')}>
       {PERIODS.map((p) => (
         <button
           key={p.id}
@@ -69,7 +72,7 @@ function PeriodSelector({
           className={`energy-period__btn${period === p.id ? ' energy-period__btn--active' : ''}`}
           onClick={() => onChange(p.id)}
         >
-          {p.label}
+          {t(p.labelKey)}
         </button>
       ))}
     </div>
@@ -114,6 +117,7 @@ export function EnergyHeroCard({
   onPeriodChange: (p: EnergyPeriod) => void;
   currency: string | null;
 }) {
+  const t = useT();
   return (
     <Card className="energy-hero">
       <div className="energy-hero__header">
@@ -121,14 +125,14 @@ export function EnergyHeroCard({
           <span className="energy-card__icon-chip" aria-hidden="true">
             <Zap size={16} strokeWidth={1.75} />
           </span>
-          <span className="energy-card__title">Energy</span>
+          <span className="energy-card__title">{t('energy.title')}</span>
         </div>
         <PeriodSelector period={period} onChange={onPeriodChange} />
       </div>
 
       <div className="energy-hero__primary">
         <span className="energy-hero__primary-label">
-          <House size={14} strokeWidth={2} /> Home consumption
+          <House size={14} strokeWidth={2} /> {t('energy.hero.homeConsumption')}
         </span>
         <span className="energy-hero__primary-value data-font">
           {fmtEnergy(dashboard.homeConsumption)}
@@ -140,7 +144,7 @@ export function EnergyHeroCard({
         {dashboard.hasGrid && (
           <StatTile
             icon={<ArrowDownToLine size={16} strokeWidth={1.75} />}
-            label="From grid"
+            label={t('energy.hero.fromGrid')}
             value={fmtEnergy(dashboard.gridConsumed)}
             unit="kWh"
             tone="info"
@@ -149,7 +153,7 @@ export function EnergyHeroCard({
         {dashboard.hasGrid && (
           <StatTile
             icon={<ArrowUpFromLine size={16} strokeWidth={1.75} />}
-            label="Returned"
+            label={t('energy.hero.returned')}
             value={fmtEnergy(dashboard.gridReturned)}
             unit="kWh"
             tone="positive"
@@ -158,7 +162,7 @@ export function EnergyHeroCard({
         {dashboard.hasSolar && (
           <StatTile
             icon={<Sun size={16} strokeWidth={1.75} />}
-            label="Solar"
+            label={t('energy.hero.solar')}
             value={fmtEnergy(dashboard.solarProduced)}
             unit="kWh"
             tone="accent"
@@ -167,7 +171,7 @@ export function EnergyHeroCard({
         {dashboard.hasBattery && (
           <StatTile
             icon={<BatteryCharging size={16} strokeWidth={1.75} />}
-            label="Battery out"
+            label={t('energy.hero.batteryOut')}
             value={fmtEnergy(dashboard.batteryOut)}
             unit="kWh"
             tone="neutral"
@@ -176,7 +180,7 @@ export function EnergyHeroCard({
         {dashboard.cost != null && (
           <StatTile
             icon={<Zap size={16} strokeWidth={1.75} />}
-            label="Grid cost"
+            label={t('energy.hero.gridCost')}
             value={fmtCost(dashboard.cost, currency)}
             tone="danger"
           />
@@ -191,6 +195,7 @@ export function EnergyHeroCard({
 // ---------------------------------------------------------------------------
 
 export function EnergySourcesCard({ dashboard }: { dashboard: EnergyDashboard }) {
+  const t = useT();
   const { series } = dashboard;
   const max = Math.max(
     0.001,
@@ -204,28 +209,28 @@ export function EnergySourcesCard({ dashboard }: { dashboard: EnergyDashboard })
           <span className="energy-card__icon-chip" aria-hidden="true">
             <Zap size={16} strokeWidth={1.75} />
           </span>
-          <span className="energy-card__title">Sources</span>
+          <span className="energy-card__title">{t('energy.sources.title')}</span>
         </div>
         <div className="energy-legend">
           {dashboard.hasGrid && (
             <span className="energy-legend__item">
               <span className="energy-legend__swatch energy-legend__swatch--grid" />
-              Grid
+              {t('energy.sources.legendGrid')}
             </span>
           )}
           {dashboard.hasSolar && (
             <span className="energy-legend__item">
               <span className="energy-legend__swatch energy-legend__swatch--solar" />
-              Solar
+              {t('energy.sources.legendSolar')}
             </span>
           )}
         </div>
       </div>
 
       {series.length === 0 ? (
-        <p className="energy-empty">No data for this period yet.</p>
+        <p className="energy-empty">{t('energy.sources.empty')}</p>
       ) : (
-        <div className="energy-chart" role="img" aria-label="Energy sources over time">
+        <div className="energy-chart" role="img" aria-label={t('energy.sources.chartAria')}>
           {series.map((p) => (
             <div key={p.start} className="energy-chart__col">
               <div className="energy-chart__stack">
@@ -247,21 +252,21 @@ export function EnergySourcesCard({ dashboard }: { dashboard: EnergyDashboard })
         {dashboard.hasGrid && (
           <div className="energy-total">
             <span className="energy-total__dot energy-total__dot--grid" />
-            <span className="energy-total__label">From grid</span>
+            <span className="energy-total__label">{t('energy.sources.totalFromGrid')}</span>
             <span className="energy-total__value data-font">{fmtEnergy(dashboard.gridConsumed)} kWh</span>
           </div>
         )}
         {dashboard.hasSolar && (
           <div className="energy-total">
             <span className="energy-total__dot energy-total__dot--solar" />
-            <span className="energy-total__label">Solar produced</span>
+            <span className="energy-total__label">{t('energy.sources.totalSolarProduced')}</span>
             <span className="energy-total__value data-font">{fmtEnergy(dashboard.solarProduced)} kWh</span>
           </div>
         )}
         {dashboard.hasGrid && (
           <div className="energy-total">
             <span className="energy-total__dot energy-total__dot--return" />
-            <span className="energy-total__label">Returned to grid</span>
+            <span className="energy-total__label">{t('energy.sources.totalReturnedToGrid')}</span>
             <span className="energy-total__value data-font">{fmtEnergy(dashboard.gridReturned)} kWh</span>
           </div>
         )}
@@ -275,6 +280,7 @@ export function EnergySourcesCard({ dashboard }: { dashboard: EnergyDashboard })
 // ---------------------------------------------------------------------------
 
 export function EnergyDevicesCard({ dashboard }: { dashboard: EnergyDashboard }) {
+  const t = useT();
   const max = Math.max(0.001, ...dashboard.devices.map((d) => d.consumed));
 
   return (
@@ -284,13 +290,13 @@ export function EnergyDevicesCard({ dashboard }: { dashboard: EnergyDashboard })
           <span className="energy-card__icon-chip" aria-hidden="true">
             <Plug size={16} strokeWidth={1.75} />
           </span>
-          <span className="energy-card__title">Devices</span>
+          <span className="energy-card__title">{t('energy.devices.title')}</span>
         </div>
         <span className="energy-card__sub data-font">{fmtEnergy(dashboard.devicesTotal)} kWh</span>
       </div>
 
       {dashboard.devices.length === 0 ? (
-        <p className="energy-empty">No individual devices configured.</p>
+        <p className="energy-empty">{t('energy.devices.empty')}</p>
       ) : (
         <ul className="energy-devices__list">
           {dashboard.devices.map((d) => (
@@ -316,6 +322,7 @@ export function EnergyDevicesCard({ dashboard }: { dashboard: EnergyDashboard })
 // ---------------------------------------------------------------------------
 
 export function EnergySolarCard({ dashboard }: { dashboard: EnergyDashboard }) {
+  const t = useT();
   const produced = dashboard.solarProduced;
   const selfPct = produced > 0 ? Math.round((dashboard.solarSelfConsumed / produced) * 100) : 0;
 
@@ -326,18 +333,18 @@ export function EnergySolarCard({ dashboard }: { dashboard: EnergyDashboard }) {
           <span className="energy-card__icon-chip energy-card__icon-chip--accent" aria-hidden="true">
             <Sun size={16} strokeWidth={1.75} />
           </span>
-          <span className="energy-card__title">Solar</span>
+          <span className="energy-card__title">{t('energy.solar.title')}</span>
         </div>
         <span className="energy-card__sub data-font">{fmtEnergy(produced)} kWh</span>
       </div>
 
       <div className="energy-solar__rows">
         <div className="energy-kv">
-          <span className="energy-kv__label">Self-consumed</span>
+          <span className="energy-kv__label">{t('energy.solar.selfConsumed')}</span>
           <span className="energy-kv__value data-font">{fmtEnergy(dashboard.solarSelfConsumed)} kWh</span>
         </div>
         <div className="energy-kv">
-          <span className="energy-kv__label">Returned to grid</span>
+          <span className="energy-kv__label">{t('energy.solar.returnedToGrid')}</span>
           <span className="energy-kv__value data-font">{fmtEnergy(dashboard.gridReturned)} kWh</span>
         </div>
       </div>
@@ -345,7 +352,7 @@ export function EnergySolarCard({ dashboard }: { dashboard: EnergyDashboard }) {
       <div className="energy-solar__meter" aria-hidden="true">
         <div className="energy-solar__meter-fill" style={{ width: `${selfPct}%` }} />
       </div>
-      <span className="energy-solar__meter-label">{selfPct}% self-consumed</span>
+      <span className="energy-solar__meter-label">{t('energy.solar.selfConsumedPercent', { percent: selfPct })}</span>
     </Card>
   );
 }
@@ -355,6 +362,7 @@ export function EnergySolarCard({ dashboard }: { dashboard: EnergyDashboard }) {
 // ---------------------------------------------------------------------------
 
 export function EnergyWaterCard({ dashboard }: { dashboard: EnergyDashboard }) {
+  const t = useT();
   return (
     <Card className="energy-water">
       <div className="energy-card__header">
@@ -362,7 +370,7 @@ export function EnergyWaterCard({ dashboard }: { dashboard: EnergyDashboard }) {
           <span className="energy-card__icon-chip energy-card__icon-chip--info" aria-hidden="true">
             <Droplets size={16} strokeWidth={1.75} />
           </span>
-          <span className="energy-card__title">Water</span>
+          <span className="energy-card__title">{t('energy.water.title')}</span>
         </div>
         <span className="energy-card__sub data-font">
           {fmtEnergy(dashboard.waterConsumed)} {dashboard.waterUnit}
@@ -388,6 +396,7 @@ export function EnergyWaterCard({ dashboard }: { dashboard: EnergyDashboard }) {
 // ---------------------------------------------------------------------------
 
 export function EnergyGasCard({ dashboard }: { dashboard: EnergyDashboard }) {
+  const t = useT();
   return (
     <Card className="energy-gas">
       <div className="energy-card__header">
@@ -395,7 +404,7 @@ export function EnergyGasCard({ dashboard }: { dashboard: EnergyDashboard }) {
           <span className="energy-card__icon-chip energy-card__icon-chip--danger" aria-hidden="true">
             <Flame size={16} strokeWidth={1.75} />
           </span>
-          <span className="energy-card__title">Gas</span>
+          <span className="energy-card__title">{t('energy.gas.title')}</span>
         </div>
         <span className="energy-card__sub data-font">
           {fmtEnergy(dashboard.gasConsumed)} {dashboard.gasUnit}
@@ -410,16 +419,16 @@ export function EnergyGasCard({ dashboard }: { dashboard: EnergyDashboard }) {
 // ---------------------------------------------------------------------------
 
 export function EnergyNotConfigured({ haUrl }: { haUrl: string }) {
+  const t = useT();
   const setupUrl = haUrl ? `${haUrl.replace(/\/+$/, '')}/config/energy` : null;
   return (
     <Card className="energy-empty-state">
       <span className="energy-empty-state__icon" aria-hidden="true">
         <Zap size={32} strokeWidth={1.5} />
       </span>
-      <h2 className="energy-empty-state__title">Energy isn’t set up yet</h2>
+      <h2 className="energy-empty-state__title">{t('energy.notConfigured.title')}</h2>
       <p className="energy-empty-state__desc">
-        HAPulse reads your Home Assistant Energy dashboard configuration. Set up your grid,
-        solar, battery and devices in Home Assistant, and they’ll appear here automatically.
+        {t('energy.notConfigured.description')}
       </p>
       {setupUrl && (
         <a
@@ -428,7 +437,7 @@ export function EnergyNotConfigured({ haUrl }: { haUrl: string }) {
           target="_blank"
           rel="noreferrer noopener"
         >
-          Open Energy settings in Home Assistant
+          {t('energy.notConfigured.openSettings')}
           <ExternalLink size={15} strokeWidth={2} />
         </a>
       )}

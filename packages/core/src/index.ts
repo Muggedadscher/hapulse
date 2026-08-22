@@ -28,15 +28,20 @@ export {
 } from './themes.js';
 export type { ThemeName, ThemeMode, ResolvedMode, ThemeTokens } from './themes.js';
 
+// i18n
+export { LOCALES, LOCALE_LABELS, translate, resolveLanguage } from './i18n.js';
+export type { Dict, Locale } from './i18n.js';
+
 // Rooms
-export { buildRooms, roomSummary } from './rooms.js';
+export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from './rooms.js';
+export type { DeviceAreaMap } from './rooms.js';
 
 // Domain helpers
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';
 
 // Room icon utilities
-export { roomIconName, roomStatusIconName, CANONICAL_ROOM_ICONS } from './roomIcons.js';
-export type { RoomIconName } from './roomIcons.js';
+export { roomIconName, roomStatusIconName, roomKind, CANONICAL_ROOM_ICONS, ROOM_KINDS } from './roomIcons.js';
+export type { RoomIconName, RoomKind } from './roomIcons.js';
 
 // HA icon string → @mdi/js export name converter
 export { mdiIconExportName } from './mdiIcon.js';

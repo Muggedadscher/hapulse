@@ -10,7 +10,10 @@ import { useNavigate } from 'react-router';
 import { Card } from '../ui/Card';
 import { domainOf } from '@hapulse/core';
 import type { HassEntityMap, HassEntity } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import './ActivityCard.css';
+
+type TFunction = ReturnType<typeof useT>;
 
 interface ActivityCardProps {
   entities: HassEntityMap;
@@ -70,29 +73,29 @@ function activityChipStyle(entity: HassEntity): { bg: string; color: string } {
   }
 }
 
-function shortActivityDescription(entity: HassEntity): string {
+function shortActivityDescription(entity: HassEntity, t: TFunction): string {
   const domain = domainOf(entity.entity_id);
   const state = entity.state;
   switch (domain) {
-    case 'light': return state === 'on' ? 'Turned on' : 'Turned off';
-    case 'switch': return state === 'on' ? 'Switched on' : 'Switched off';
-    case 'fan': return state === 'on' ? 'Fan on' : 'Fan off';
+    case 'light': return state === 'on' ? t('home.activity.lightOn') : t('home.activity.lightOff');
+    case 'switch': return state === 'on' ? t('home.activity.switchOn') : t('home.activity.switchOff');
+    case 'fan': return state === 'on' ? t('home.activity.fanOn') : t('home.activity.fanOff');
     case 'media_player':
-      if (state === 'playing') return 'Playing';
-      if (state === 'paused') return 'Paused';
+      if (state === 'playing') return t('home.activity.playing');
+      if (state === 'paused') return t('home.activity.paused');
       return state;
-    case 'lock': return state === 'locked' ? 'Locked' : 'Unlocked';
+    case 'lock': return state === 'locked' ? t('home.activity.locked') : t('home.activity.unlocked');
     case 'climate': {
       const temp = entity.attributes.temperature;
-      if (temp != null) return `Set to ${Math.round(temp as number)}°`;
+      if (temp != null) return t('home.activity.setTo', { temp: Math.round(temp as number) });
       return state;
     }
     case 'alarm_control_panel': return state.replace(/_/g, ' ');
     case 'binary_sensor': {
       const dc = entity.attributes.device_class as string | undefined;
-      if (dc === 'motion') return state === 'on' ? 'Motion detected' : 'No motion';
-      if (dc === 'door') return state === 'on' ? 'Door opened' : 'Door closed';
-      if (dc === 'window') return state === 'on' ? 'Window opened' : 'Window closed';
+      if (dc === 'motion') return state === 'on' ? t('home.activity.motionDetected') : t('home.activity.noMotion');
+      if (dc === 'door') return state === 'on' ? t('home.activity.doorOpened') : t('home.activity.doorClosed');
+      if (dc === 'window') return state === 'on' ? t('home.activity.windowOpened') : t('home.activity.windowClosed');
       return state;
     }
     default: return state;
@@ -112,6 +115,7 @@ function formatActivityTime(isoString: string): string {
 
 export function ActivityCard({ entities, hideSeeAll = false }: ActivityCardProps) {
   const navigate = useNavigate();
+  const t = useT();
   const recent = Object.values(entities)
     .filter((e) => {
       if (e.state === 'unavailable' || e.state === 'unknown') return false;
@@ -134,26 +138,26 @@ export function ActivityCard({ entities, hideSeeAll = false }: ActivityCardProps
           <span className="activity-card__icon-chip" aria-hidden="true">
             <Activity size={16} strokeWidth={1.75} />
           </span>
-          <span className="activity-card__title">Activity</span>
+          <span className="activity-card__title">{t('home.activity.title')}</span>
         </div>
         {!hideSeeAll && (
           <button
             className="activity-card__see-all"
             type="button"
-            aria-label="Go to system details"
+            aria-label={t('home.activity.detailsAria')}
             onClick={() => void navigate('/system')}
           >
-            Details
+            {t('home.activity.details')}
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         )}
       </div>
 
-      <ul className="activity-card__list card-scroll-body" aria-label="Recent activity">
+      <ul className="activity-card__list card-scroll-body" aria-label={t('home.activity.listAria')}>
         {recent.map((entity) => {
           const chip = activityChipStyle(entity);
           const name = (entity.attributes.friendly_name ?? entity.entity_id.split('.')[1]!).replace(/_/g, ' ');
-          const desc = shortActivityDescription(entity);
+          const desc = shortActivityDescription(entity, t);
           const time = formatActivityTime(entity.last_changed);
 
           return (
@@ -169,7 +173,7 @@ export function ActivityCard({ entities, hideSeeAll = false }: ActivityCardProps
                 <span className="activity-row__name">{name}</span>
                 <span className="activity-row__desc">{desc}</span>
               </div>
-              <span className="activity-row__time" aria-label={`at ${time}`}>{time}</span>
+              <span className="activity-row__time" aria-label={t('home.activity.atTimeAria', { time })}>{time}</span>
             </li>
           );
         })}

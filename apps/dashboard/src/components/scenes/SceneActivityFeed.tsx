@@ -1,5 +1,7 @@
 import React from 'react';
 import { Clock, Sparkles } from 'lucide-react';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SceneActivityFeed.css';
@@ -12,17 +14,20 @@ interface SceneActivityFeedProps {
   entityAreaMap: Record<string, string | null>;
 }
 
-function formatRelativeTime(iso: string | null | undefined): string {
-  if (!iso || iso === 'unknown') return 'Never';
+type T = (key: TKey, vars?: Record<string, string | number>) => string;
+
+/** Takes the translator as a parameter: it runs outside any component body. */
+function formatRelativeTime(t: T, iso: string | null | undefined): string {
+  if (!iso || iso === 'unknown') return t('scenes.time.never');
   try {
     const delta = Date.now() - new Date(iso).getTime();
-    if (delta < 60000) return 'Just now';
-    if (delta < 3600000) return `${Math.floor(delta / 60000)}m ago`;
-    if (delta < 86400000) return `${Math.floor(delta / 3600000)}h ago`;
-    if (delta < 172800000) return 'Yesterday';
-    return `${Math.floor(delta / 86400000)}d ago`;
+    if (delta < 60000) return t('scenes.time.justNow');
+    if (delta < 3600000) return t('scenes.time.minutesAgo', { count: Math.floor(delta / 60000) });
+    if (delta < 86400000) return t('scenes.time.hoursAgo', { count: Math.floor(delta / 3600000) });
+    if (delta < 172800000) return t('scenes.time.yesterday');
+    return t('scenes.time.daysAgo', { count: Math.floor(delta / 86400000) });
   } catch {
-    return '—';
+    return t('scenes.time.unknown');
   }
 }
 
@@ -34,6 +39,7 @@ function sceneName(e: HassEntity): string {
 }
 
 export function SceneActivityFeed({ scenes, areaMap, entityAreaMap }: SceneActivityFeedProps) {
+  const t = useT();
   const recent = scenes
     .filter((e) => e.state !== 'unknown')
     .sort((a, b) => {
@@ -52,15 +58,17 @@ export function SceneActivityFeed({ scenes, areaMap, entityAreaMap }: SceneActiv
           <span className="scene-feed-card__icon-chip" aria-hidden="true">
             <Clock size={15} strokeWidth={1.75} />
           </span>
-          <span className="scene-feed-card__title">Recent Activity</span>
+          <span className="scene-feed-card__title">{t('scenes.activity.title')}</span>
         </div>
-        <span className="scene-feed-card__sub">{recent.length} used today</span>
+        <span className="scene-feed-card__sub">
+          {t('scenes.activity.usedToday', { count: recent.length })}
+        </span>
       </div>
 
       {recent.length === 0 ? (
-        <p className="scene-feed-card__empty">No scenes have been activated yet.</p>
+        <p className="scene-feed-card__empty">{t('scenes.activity.empty')}</p>
       ) : (
-        <ul className="scene-feed-card__list" aria-label="Recently activated scenes">
+        <ul className="scene-feed-card__list" aria-label={t('scenes.activity.listAria')}>
           {recent.map((entity) => {
             const name   = sceneName(entity);
             const areaId = entityAreaMap[entity.entity_id] ?? null;
@@ -77,9 +85,11 @@ export function SceneActivityFeed({ scenes, areaMap, entityAreaMap }: SceneActiv
                 </div>
                 <span
                   className="scene-feed-row__time"
-                  aria-label={`activated ${formatRelativeTime(entity.state)}`}
+                  aria-label={t('scenes.activity.activatedAria', {
+                    time: formatRelativeTime(t, entity.state),
+                  })}
                 >
-                  {formatRelativeTime(entity.state)}
+                  {formatRelativeTime(t, entity.state)}
                 </span>
               </li>
             );

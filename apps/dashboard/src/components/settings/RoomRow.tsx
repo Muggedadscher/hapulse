@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { ChevronUp, ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { IconButton } from '../ui/IconButton';
 import type { Room } from '@hapulse/core';
 
@@ -26,6 +27,7 @@ export function RoomRow({
   onMoveDown,
   onToggleHide,
 }: RoomRowProps) {
+  const t = useT();
   return (
     <div className="room-row">
       <span className={`room-row__name ${isHidden ? 'room-row__name--hidden' : ''}`}>
@@ -34,7 +36,7 @@ export function RoomRow({
       <span className="room-row__count data-font">{room.entityIds.length}</span>
       <div className="room-row__controls">
         <IconButton
-          label={`Move ${room.name} up`}
+          label={t('settings.rooms.moveUpAria', { name: room.name })}
           size={36}
           onClick={onMoveUp}
           disabled={isFirst}
@@ -43,7 +45,7 @@ export function RoomRow({
           <ChevronUp size={16} strokeWidth={1.75} />
         </IconButton>
         <IconButton
-          label={`Move ${room.name} down`}
+          label={t('settings.rooms.moveDownAria', { name: room.name })}
           size={36}
           onClick={onMoveDown}
           disabled={isLast}
@@ -52,7 +54,11 @@ export function RoomRow({
           <ChevronDown size={16} strokeWidth={1.75} />
         </IconButton>
         <IconButton
-          label={isHidden ? `Show ${room.name}` : `Hide ${room.name}`}
+          label={
+            isHidden
+              ? t('settings.rooms.showAria', { name: room.name })
+              : t('settings.rooms.hideAria', { name: room.name })
+          }
           size={36}
           onClick={onToggleHide}
           variant={isHidden ? 'ghost' : 'default'}

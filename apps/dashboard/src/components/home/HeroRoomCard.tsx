@@ -7,12 +7,13 @@ import { useNavigate } from 'react-router';
 import {
   Lightbulb, Thermometer, Droplets, Wind, Minus, Plus, ChevronRight,
 } from 'lucide-react';
-import { roomSummary } from '@hapulse/core';
-import type { Room, HassEntityMap } from '@hapulse/core';
+import { roomSummary, roomKind } from '@hapulse/core';
+import type { Room, HassEntityMap, RoomKind } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useT } from '../../i18n/useT';
 import './HeroRoomCard.css';
 
 /** Resolve an HA area picture path against the connection URL. */
@@ -43,26 +44,32 @@ function pickHeroRoom(rooms: Room[], entities: HassEntityMap): Room | null {
   return best ?? rooms[0] ?? null;
 }
 
-/** Room-name-based gradient — a calm tinted gradient */
+/**
+ * Room gradient — a calm tint per kind of room.
+ *
+ * Keyed on `roomKind()` rather than on the name directly, so a room called
+ * "Cuisine" or "Küche" gets the kitchen tint without this file knowing a word
+ * of either language. Kinds with no tint of their own take the default warm.
+ */
+const GRADIENT_BY_KIND: Partial<Record<RoomKind, string>> = {
+  living:   'linear-gradient(135deg, rgba(242,148,28,0.18) 0%, rgba(59,130,246,0.1) 100%)',
+  bedroom:  'linear-gradient(135deg, rgba(99,77,200,0.18) 0%, rgba(59,130,246,0.08) 100%)',
+  kitchen:  'linear-gradient(135deg, rgba(242,148,28,0.14) 0%, rgba(22,163,74,0.1) 100%)',
+  bathroom: 'linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(99,77,200,0.08) 100%)',
+  office:   'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(59,130,246,0.1) 100%)',
+  garage:   'linear-gradient(135deg, rgba(22,163,74,0.18) 0%, rgba(229,148,17,0.08) 100%)',
+  outdoor:  'linear-gradient(135deg, rgba(22,163,74,0.18) 0%, rgba(229,148,17,0.08) 100%)',
+};
+
+const DEFAULT_GRADIENT =
+  'linear-gradient(135deg, rgba(242,148,28,0.15) 0%, rgba(59,130,246,0.1) 100%)';
+
 function roomGradient(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes('living') || n.includes('lounge'))
-    return 'linear-gradient(135deg, rgba(242,148,28,0.18) 0%, rgba(59,130,246,0.1) 100%)';
-  if (n.includes('bed') || n.includes('sleep'))
-    return 'linear-gradient(135deg, rgba(99,77,200,0.18) 0%, rgba(59,130,246,0.08) 100%)';
-  if (n.includes('kitchen') || n.includes('dining'))
-    return 'linear-gradient(135deg, rgba(242,148,28,0.14) 0%, rgba(22,163,74,0.1) 100%)';
-  if (n.includes('bath') || n.includes('shower'))
-    return 'linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(99,77,200,0.08) 100%)';
-  if (n.includes('office') || n.includes('study'))
-    return 'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(59,130,246,0.1) 100%)';
-  if (n.includes('garage') || n.includes('garden') || n.includes('outdoor'))
-    return 'linear-gradient(135deg, rgba(22,163,74,0.18) 0%, rgba(229,148,17,0.08) 100%)';
-  // Default warm
-  return 'linear-gradient(135deg, rgba(242,148,28,0.15) 0%, rgba(59,130,246,0.1) 100%)';
+  return GRADIENT_BY_KIND[roomKind(name)] ?? DEFAULT_GRADIENT;
 }
 
 export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
+  const t = useT();
   const navigate = useNavigate();
   const baseUrl = useConnectionStore((s) => s.url);
   const hiddenEntities = useSettingsStore(
@@ -85,7 +92,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   if (!room) {
     return (
       <div className="hero-room-card hero-room-card--empty card">
-        <p className="hero-room-card__empty-text">No rooms configured yet.</p>
+        <p className="hero-room-card__empty-text">{t('home.hero.emptyText')}</p>
       </div>
     );
   }
@@ -167,7 +174,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
       className={`hero-room-card card${hasPhoto ? ' hero-room-card--photo' : ''}`}
       role="button"
       tabIndex={0}
-      aria-label={`${room.name} room — tap to view details`}
+      aria-label={t('home.hero.roomAria', { name: room.name })}
       onClick={handleNavigate}
       onKeyDown={handleKeyDown}
       style={{ '--hero-gradient': gradient } as React.CSSProperties}
@@ -192,10 +199,10 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
       <div className="hero-room-card__top">
         <div>
           <h2 className="hero-room-card__name">{room.name}</h2>
-          <p className="hero-room-card__sub">{totalDevices} device{totalDevices !== 1 ? 's' : ''}</p>
+          <p className="hero-room-card__sub">{t('home.hero.deviceCount', { count: totalDevices })}</p>
         </div>
         {glanceChips.length > 0 && (
-          <div className="hero-room-card__glance" role="list" aria-label="Room conditions">
+          <div className="hero-room-card__glance" role="list" aria-label={t('home.hero.conditionsAria')}>
             {glanceChips.map((chip, i) => (
               <span key={i} className="hero-room-card__glance-chip" role="listitem">
                 {chip.icon}
@@ -212,25 +219,25 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
           <button
             className={`hero-pill hero-pill--lights${lightsOn ? ' hero-pill--lights-on' : ''}`}
             onClick={handleLightsToggle}
-            aria-label={lightsOn ? 'Turn lights off' : 'Turn lights on'}
+            aria-label={lightsOn ? t('home.hero.lightsOffAria') : t('home.hero.lightsOnAria')}
             aria-pressed={lightsOn}
             type="button"
           >
             <Lightbulb size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span>Lights</span>
-            <span className="hero-pill__state">{lightsOn ? `${visibleLightsOnCount} on` : 'off'}</span>
+            <span>{t('home.hero.lightsLabel')}</span>
+            <span className="hero-pill__state">{lightsOn ? t('home.hero.onCount', { count: visibleLightsOnCount }) : t('home.hero.off')}</span>
           </button>
         )}
 
         {climateEntity && (
           <div className="hero-pill hero-pill--climate">
             <Thermometer size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span>{climateTemp != null ? `${Math.round(climateTemp)}°` : 'Climate'}</span>
+            <span>{climateTemp != null ? `${Math.round(climateTemp)}°` : t('home.hero.climateFallback')}</span>
             <div className="hero-pill__stepper" onClick={(e) => e.stopPropagation()}>
               <button
                 className="hero-pill__step-btn"
                 onClick={handleClimateDown}
-                aria-label="Lower temperature"
+                aria-label={t('home.hero.lowerTempAria')}
                 type="button"
               >
                 <Minus size={11} strokeWidth={2.5} />
@@ -238,7 +245,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
               <button
                 className="hero-pill__step-btn"
                 onClick={handleClimateUp}
-                aria-label="Raise temperature"
+                aria-label={t('home.hero.raiseTempAria')}
                 type="button"
               >
                 <Plus size={11} strokeWidth={2.5} />
@@ -251,18 +258,18 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
           <button
             className="hero-pill hero-pill--media"
             onClick={handleMediaToggle}
-            aria-label="Toggle media playback"
+            aria-label={t('home.hero.toggleMediaAria')}
             type="button"
           >
             <Wind size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span>Playing</span>
+            <span>{t('home.hero.playing')}</span>
           </button>
         )}
 
         <button
           className="hero-pill hero-pill--nav"
           onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-          aria-label={`Go to ${room.name}`}
+          aria-label={t('home.hero.goToRoomAria', { name: room.name })}
           type="button"
         >
           <ChevronRight size={15} strokeWidth={2} />

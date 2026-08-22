@@ -7,6 +7,7 @@ import { RoomIcon } from '../ui/RoomIcon';
 import { roomDisplayIcon } from '../../lib/roomIcon';
 import { roomSummary } from '@hapulse/core';
 import type { Room, HassEntityMap } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import './home.css';
 
 interface RoomCardProps {
@@ -35,6 +36,7 @@ export function RoomCard({
   moveRightDisabled = false,
 }: RoomCardProps) {
   const navigate = useNavigate();
+  const t = useT();
   const summary = roomSummary(room, entities);
   const anyLightsOn = summary.lightsOn > 0;
   const { iconName, isStatus } = roomDisplayIcon(room, entities);
@@ -70,7 +72,7 @@ export function RoomCard({
         onKeyDown={handleKeyDown}
         role={editMode ? 'presentation' : 'button'}
         tabIndex={editMode ? -1 : 0}
-        aria-label={editMode ? undefined : `${room.name} room`}
+        aria-label={editMode ? undefined : t('home.roomCard.roomAria', { name: room.name })}
       >
         <div className="room-card__head">
           <RoomIcon
@@ -101,10 +103,10 @@ export function RoomCard({
 
           <div className="room-card__dots">
             {summary.mediaPlaying && (
-              <div className="room-card__dot room-card__dot--media" title="Media playing" />
+              <div className="room-card__dot room-card__dot--media" title={t('home.roomCard.mediaPlayingTitle')} />
             )}
             {summary.anyMotion && (
-              <div className="room-card__dot room-card__dot--motion" title="Motion detected" />
+              <div className="room-card__dot room-card__dot--motion" title={t('home.roomCard.motionTitle')} />
             )}
           </div>
         </div>
@@ -114,7 +116,7 @@ export function RoomCard({
       {editMode && onToggleHidden && (
         <EditBadge
           hidden={hidden}
-          toggleLabel={hidden ? `show ${room.name}` : `hide ${room.name}`}
+          toggleLabel={t(hidden ? 'editBadge.show' : 'editBadge.hide', { label: room.name })}
           onToggleHidden={onToggleHidden}
           onMoveLeft={onMoveLeft}
           onMoveRight={onMoveRight}

@@ -7,6 +7,9 @@ import {
   Lightbulb, Plug, Fan, Thermometer, Blinds, Lock, Speaker, Video,
   Gauge, ShieldCheck, Sparkles, User, CloudSun, Sun, CircleDot, Cpu,
 } from 'lucide-react';
+import type { useT, TKey } from '../../i18n/useT';
+
+type TFunction = ReturnType<typeof useT>;
 
 const DOMAIN_ICON: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
   light: Lightbulb,
@@ -40,30 +43,33 @@ export function DeviceIcon({
   return <Icon size={size} strokeWidth={strokeWidth} />;
 }
 
-const INTEGRATION_LABELS: Record<string, string> = {
-  hue: 'Philips Hue',
-  tplink: 'TP-Link',
-  nest: 'Google Nest',
-  zwave_js: 'Z-Wave',
-  zha: 'Zigbee',
-  cast: 'Google Cast',
-  generic: 'Generic Camera',
-  manual_alarm: 'Manual Alarm',
-  roborock: 'Roborock',
-  systemmonitor: 'System Monitor',
-  homeassistant: 'Home Assistant',
-  person: 'Person',
-  met: 'Met.no Weather',
-  sun: 'Sun',
-  mqtt: 'MQTT',
-  spotify: 'Spotify',
+// 'homeassistant' is intentionally not in this map: its display name ("Home
+// Assistant") is never translated, so it is handled as a literal special case
+// in integrationLabel() below rather than routed through en.json.
+const INTEGRATION_LABEL_KEY: Record<string, TKey> = {
+  hue: 'devices.integration.hue',
+  tplink: 'devices.integration.tplink',
+  nest: 'devices.integration.nest',
+  zwave_js: 'devices.integration.zwaveJs',
+  zha: 'devices.integration.zha',
+  cast: 'devices.integration.cast',
+  generic: 'devices.integration.generic',
+  manual_alarm: 'devices.integration.manualAlarm',
+  roborock: 'devices.integration.roborock',
+  systemmonitor: 'devices.integration.systemmonitor',
+  person: 'devices.integration.person',
+  met: 'devices.integration.met',
+  sun: 'devices.integration.sun',
+  mqtt: 'devices.integration.mqtt',
+  spotify: 'devices.integration.spotify',
 };
 
-/** Friendly display name for an integration / platform slug. */
-export function integrationLabel(platform: string | null | undefined): string {
-  if (!platform) return 'Unknown';
-  return (
-    INTEGRATION_LABELS[platform] ??
-    platform.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-  );
+/** Friendly display name for an integration / platform slug. Never translate
+ *  "Home Assistant" itself — it is kept as a literal for the `homeassistant`
+ *  platform slug. */
+export function integrationLabel(t: TFunction, platform: string | null | undefined): string {
+  if (!platform) return t('devices.integration.unknown');
+  if (platform === 'homeassistant') return 'Home Assistant';
+  const key = INTEGRATION_LABEL_KEY[platform];
+  return key ? t(key) : platform.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }

@@ -8,6 +8,8 @@ import { ChevronUp, ChevronDown, ChevronRight, Square, AlignJustify } from 'luci
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import './BlindsCard.css';
 
 interface BlindsCardProps {
@@ -61,11 +63,11 @@ const BLIND_DOT_COLOR: Record<BlindKey, string> = {
   moving:  'var(--positive)',
 };
 
-const BLIND_LABEL: Record<BlindKey, string> = {
-  open:    'Open',
-  partial: 'Partial',
-  closed:  'Closed',
-  moving:  'Moving',
+const BLIND_LABEL_KEY: Record<BlindKey, TKey> = {
+  open:    'home.blinds.state.open',
+  partial: 'home.blinds.state.partial',
+  closed:  'home.blinds.state.closed',
+  moving:  'home.blinds.state.moving',
 };
 
 // ── Arc Gauge (position %) ────────────────────────────────────────────────────
@@ -78,6 +80,7 @@ interface ArcGaugeProps {
 }
 
 function ArcGauge({ value, size = 120, label, fillColor = 'var(--accent)' }: ArcGaugeProps) {
+  const t = useT();
   const cx = size / 2;
   const cy = size / 2;
   const r = size * 0.38;
@@ -107,7 +110,7 @@ function ArcGauge({ value, size = 120, label, fillColor = 'var(--accent)' }: Arc
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      aria-label={`Blind closed: ${Math.round(value)}% – ${label}`}
+      aria-label={t('home.blinds.gaugeAria', { percent: Math.round(value), label })}
       role="img"
     >
       <path d={trackPath} fill="none" stroke="var(--border)" strokeWidth={strokeW} strokeLinecap="round" />
@@ -135,6 +138,7 @@ function ArcGauge({ value, size = 120, label, fillColor = 'var(--accent)' }: Arc
 // ── BlindsCard ────────────────────────────────────────────────────────────────
 
 export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
+  const t = useT();
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   const blindRooms: BlindRoomEntry[] = rooms.flatMap((room) => {
@@ -188,25 +192,25 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
             <span className="blinds-card__icon-chip" aria-hidden="true">
               <AlignJustify size={16} strokeWidth={1.75} />
             </span>
-            <span className="blinds-card__title">Blinds</span>
+            <span className="blinds-card__title">{t('home.blinds.title')}</span>
           </div>
           {onSeeAll && (
             <button
               className="blinds-card__link"
               type="button"
               onClick={onSeeAll}
-              aria-label="See all blinds and covers"
+              aria-label={t('home.blinds.seeAllAria')}
             >
-              See All
+              {t('home.blinds.seeAll')}
               <ChevronRight size={14} strokeWidth={2} />
             </button>
           )}
         </div>
         <div className="blinds-card__empty">
           <AlignJustify size={28} strokeWidth={1.5} className="blinds-card__empty-icon" />
-          <p className="blinds-card__empty-text">No blinds found</p>
+          <p className="blinds-card__empty-text">{t('home.blinds.emptyTitle')}</p>
           <p className="blinds-card__empty-sub">
-            No cover entities were found. You can hide this section via the home page edit mode.
+            {t('home.blinds.emptyDescription')}
           </p>
         </div>
       </Card>
@@ -225,16 +229,16 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
           <span className={`blinds-card__icon-chip blinds-card__icon-chip--${chipKey}`} aria-hidden="true">
             <AlignJustify size={16} strokeWidth={1.75} />
           </span>
-          <span className="blinds-card__title">Blinds</span>
+          <span className="blinds-card__title">{t('home.blinds.title')}</span>
         </div>
         {onSeeAll && (
           <button
             className="blinds-card__link"
             type="button"
             onClick={onSeeAll}
-            aria-label="See all blinds and covers"
+            aria-label={t('home.blinds.seeAllAria')}
           >
-            See All
+            {t('home.blinds.seeAll')}
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         )}
@@ -244,7 +248,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
       <div className="blinds-card__gauge-wrap" data-blind={colorKey}>
         <ArcGauge
           value={activeRoom.avgPosition}
-          label={BLIND_LABEL[colorKey]}
+          label={t(BLIND_LABEL_KEY[colorKey])}
           size={128}
           fillColor={gaugeColor}
         />
@@ -252,7 +256,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
           <button
             className="blinds-card__ctrl-btn"
             onClick={handleClose}
-            aria-label="Close blinds"
+            aria-label={t('home.blinds.closeAria')}
             type="button"
           >
             <ChevronDown size={16} strokeWidth={2} />
@@ -260,7 +264,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
           <button
             className="blinds-card__ctrl-btn blinds-card__ctrl-btn--stop"
             onClick={handleStop}
-            aria-label="Stop blinds"
+            aria-label={t('home.blinds.stopAria')}
             type="button"
           >
             <Square size={12} strokeWidth={2} />
@@ -268,7 +272,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
           <button
             className="blinds-card__ctrl-btn"
             onClick={handleOpen}
-            aria-label="Open blinds"
+            aria-label={t('home.blinds.openAria')}
             type="button"
           >
             <ChevronUp size={16} strokeWidth={2} />
@@ -277,12 +281,12 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
       </div>
 
       {/* Room list — scrollable when it exceeds cap */}
-      <ul className="blinds-card__rooms" aria-label="Room blind positions">
+      <ul className="blinds-card__rooms" aria-label={t('home.blinds.roomsAria')}>
         {blindRooms.map((entry) => {
           const entryKey = blindColorKey(entry.avgPosition, entry.anyMoving);
           const isSelected = entry.name === activeRoom.name;
           const posLabel = entry.anyMoving
-            ? 'Moving'
+            ? t('home.blinds.state.moving')
             : `${Math.round(entry.avgPosition)}%`;
 
           return (

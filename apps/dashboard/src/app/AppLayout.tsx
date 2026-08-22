@@ -51,6 +51,8 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
+import { useT } from '../i18n/useT';
+import type { TKey } from '../i18n/useT';
 import './AppLayout.css';
 
 /* =========================================================
@@ -74,7 +76,7 @@ type NavId =
 interface NavConfigItem {
   id: NavId;
   icon: React.ReactNode;
-  label: string;
+  labelKey: TKey;
   /** Route path — omit for action items. */
   to?: string;
   /** For routes: only exact "/" is active. */
@@ -88,17 +90,17 @@ interface NavConfigItem {
  * Both sidebar and mobile tab bar are derived from this.
  */
 const NAV_CONFIG: NavConfigItem[] = [
-  { id: 'overview',    icon: <Home       size={20} strokeWidth={1.75} />, label: 'Overview',    to: '/',            exact: true, nonHideable: true },
-  { id: 'rooms',       icon: <LayoutGrid size={20} strokeWidth={1.75} />, label: 'Rooms' },
-  { id: 'devices',     icon: <Cpu        size={20} strokeWidth={1.75} />, label: 'Devices',     to: '/devices' },
-  { id: 'automations', icon: <Workflow   size={20} strokeWidth={1.75} />, label: 'Automations', to: '/automations' },
-  { id: 'energy',      icon: <Activity   size={20} strokeWidth={1.75} />, label: 'Energy',      to: '/energy' },
-  { id: 'security',    icon: <ShieldCheck size={20} strokeWidth={1.75} />, label: 'Security',   to: '/security' },
-  { id: 'nvr',         icon: <Cctv       size={20} strokeWidth={1.75} />, label: 'NVR',         to: '/nvr' }, // [fork]
-  { id: 'music',       icon: <Music      size={20} strokeWidth={1.75} />, label: 'Music',       to: '/music' },
-  { id: 'scenes',      icon: <Sparkles   size={20} strokeWidth={1.75} />, label: 'Scenes',      to: '/scenes' },
-  { id: 'system',      icon: <Monitor    size={20} strokeWidth={1.75} />, label: 'System',      to: '/system' },
-  { id: 'settings',    icon: <Settings   size={20} strokeWidth={1.75} />, label: 'Settings',    to: '/settings',   nonHideable: true },
+  { id: 'overview',    icon: <Home       size={20} strokeWidth={1.75} />, labelKey: 'nav.overview',    to: '/',            exact: true, nonHideable: true },
+  { id: 'rooms',       icon: <LayoutGrid size={20} strokeWidth={1.75} />, labelKey: 'nav.rooms' },
+  { id: 'devices',     icon: <Cpu        size={20} strokeWidth={1.75} />, labelKey: 'nav.devices',     to: '/devices' },
+  { id: 'automations', icon: <Workflow   size={20} strokeWidth={1.75} />, labelKey: 'nav.automations', to: '/automations' },
+  { id: 'energy',      icon: <Activity   size={20} strokeWidth={1.75} />, labelKey: 'nav.energy',      to: '/energy' },
+  { id: 'security',    icon: <ShieldCheck size={20} strokeWidth={1.75} />, labelKey: 'nav.security',   to: '/security' },
+  { id: 'nvr',         icon: <Cctv       size={20} strokeWidth={1.75} />, labelKey: 'nav.nvr',         to: '/nvr' }, // [fork]
+  { id: 'music',       icon: <Music      size={20} strokeWidth={1.75} />, labelKey: 'nav.music',       to: '/music' },
+  { id: 'scenes',      icon: <Sparkles   size={20} strokeWidth={1.75} />, labelKey: 'nav.scenes',      to: '/scenes' },
+  { id: 'system',      icon: <Monitor    size={20} strokeWidth={1.75} />, labelKey: 'nav.system',      to: '/system' },
+  { id: 'settings',    icon: <Settings   size={20} strokeWidth={1.75} />, labelKey: 'nav.settings',    to: '/settings',   nonHideable: true },
 ];
 
 const ALL_NAV_IDS = NAV_CONFIG.map((item) => item.id);
@@ -112,6 +114,7 @@ const NAV_MAP = new Map<string, NavConfigItem>(NAV_CONFIG.map((item) => [item.id
 type SystemHealth = 'healthy' | 'warning' | 'critical' | 'unknown';
 
 function SystemStatusPill() {
+  const t = useT();
   const { entities, registries } = useEntityStore(
     useShallow((s) => ({ entities: s.entities, registries: s.registries }))
   );
@@ -175,11 +178,11 @@ function SystemStatusPill() {
     hasMetrics                                             ? 'healthy'  : 'unknown';
 
   const statusTitle =
-    metricsCrit                ? 'System critical' :
-    metricsWarn                ? 'System under load' :
-    unavailable > 0            ? `${unavailable} unavailable` :
-    lowBatteries > 0           ? `${lowBatteries} low ${lowBatteries === 1 ? 'battery' : 'batteries'}` :
-    hasMetrics                 ? 'All systems normal' : 'System status unknown';
+    metricsCrit                ? t('nav.systemStatus.critical') :
+    metricsWarn                ? t('nav.systemStatus.warning') :
+    unavailable > 0            ? t('nav.systemStatus.unavailable', { count: unavailable }) :
+    lowBatteries > 0           ? t('nav.systemStatus.lowBattery', { count: lowBatteries }) :
+    hasMetrics                 ? t('nav.systemStatus.healthy') : t('nav.systemStatus.unknown');
 
   const Icon =
     health === 'healthy'  ? CheckCircle2  :
@@ -190,12 +193,12 @@ function SystemStatusPill() {
     <NavLink
       to="/system"
       className={`home-status-pill home-status-pill--${health}`}
-      aria-label={`System status: ${statusTitle}. Go to System page.`}
+      aria-label={t('nav.systemStatus.ariaLabel', { status: statusTitle })}
     >
       <Icon size={16} strokeWidth={2} className="home-status-pill__icon" aria-hidden="true" />
       <div className="home-status-pill__text">
         <span className="home-status-pill__title">{statusTitle}</span>
-        <span className="home-status-pill__sub">Home Status</span>
+        <span className="home-status-pill__sub">{t('nav.systemStatus.label')}</span>
       </div>
     </NavLink>
   );
@@ -209,18 +212,20 @@ interface WeatherGlanceProps {
 }
 
 function WeatherGlance({ onClick }: WeatherGlanceProps) {
+  const t = useT();
   const weather = useWeatherEntity();
   if (!weather) return null;
 
   const temp = weather.attributes.temperature as number | undefined;
   const condition = weather.state as string;
   const unit = (weather.attributes.temperature_unit as string | undefined) ?? '°';
+  const tempPart = temp != null ? `, ${temp}${unit}` : '';
 
   return (
     <button
       type="button"
       className="header-cluster__weather header-cluster__weather--btn"
-      aria-label={`Weather: ${condition}${temp != null ? `, ${temp}${unit}` : ''}. Click for details.`}
+      aria-label={t('nav.weatherGlance.ariaLabel', { condition, tempPart })}
       onClick={onClick}
     >
       <Cloud size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -238,6 +243,7 @@ function WeatherGlance({ onClick }: WeatherGlanceProps) {
    Right-aligned header cluster (chips + weather + bell + avatar)
    ========================================================= */
 function HeaderCluster() {
+  const t = useT();
   const location = useLocation();
   const navigate = useNavigate();
   const avatarInfo = useCurrentUserAvatar();
@@ -252,7 +258,7 @@ function HeaderCluster() {
       {/* Back button on room pages */}
       {isRoom && (
         <IconButton
-          label="Back"
+          label={t('common.back')}
           size={40}
           variant="ghost"
           onClick={() => void navigate(-1)}
@@ -295,6 +301,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const t = useT();
   /* ---- Store reads ---- */
   const { status } = useConnectionStatus();
   const showBanner = status === 'reconnecting' || status === 'disconnected';
@@ -416,7 +423,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       ? isRoomsActive || roomsOpen
       : false; // NavLink handles active state for routes
 
-    const label = item.label;
+    const label = t(item.labelKey);
     const icon = item.icon;
 
     const wrapperCls = [
@@ -491,7 +498,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {canHide && (
             <EditBadge
               hidden={isHidden}
-              toggleLabel={isHidden ? `show ${label}` : `hide ${label}`}
+              toggleLabel={isHidden ? t('nav.editBadge.show', { label }) : t('nav.editBadge.hide', { label })}
               onToggleHidden={() => handleToggleHidden(id)}
             />
           )}
@@ -514,6 +521,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     const isAction  = !item.to;
     const isRoomsBtn = id === 'rooms';
     const isActive  = isRoomsBtn ? isRoomsActive || roomsOpen : false;
+    const label = t(item.labelKey);
 
     if (isAction) {
       return (
@@ -522,13 +530,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           ref={isRoomsBtn ? tabRoomsRef : undefined}
           type="button"
           className={['app-tabs__item', isActive ? 'app-tabs__item--active' : ''].filter(Boolean).join(' ')}
-          aria-label={item.label}
+          aria-label={label}
           aria-haspopup="menu"
           aria-expanded={isRoomsBtn ? roomsOpen : undefined}
           onClick={isRoomsBtn ? handleTabRoomsClick : undefined}
         >
           {item.icon}
-          <span className="app-tabs__label">{item.label}</span>
+          <span className="app-tabs__label">{label}</span>
         </button>
       );
     }
@@ -543,7 +551,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         }
       >
         {item.icon}
-        <span className="app-tabs__label">{item.label}</span>
+        <span className="app-tabs__label">{label}</span>
       </NavLink>
     );
   }
@@ -555,6 +563,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
     const isRoomsBtn = id === 'rooms';
     const isAction   = !item.to;
+    const label = t(item.labelKey);
 
     if (isAction) {
       return (
@@ -572,7 +581,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           }}
         >
           <span className="app-more-menu__row-icon" aria-hidden="true">{item.icon}</span>
-          <span className="app-more-menu__row-name">{item.label}</span>
+          <span className="app-more-menu__row-name">{label}</span>
           <ChevronRight size={16} strokeWidth={1.75} className="app-more-menu__row-chevron" aria-hidden="true" />
         </button>
       );
@@ -590,7 +599,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         onClick={handleMoreClose}
       >
         <span className="app-more-menu__row-icon" aria-hidden="true">{item.icon}</span>
-        <span className="app-more-menu__row-name">{item.label}</span>
+        <span className="app-more-menu__row-name">{label}</span>
         <ChevronRight size={16} strokeWidth={1.75} className="app-more-menu__row-chevron" aria-hidden="true" />
       </NavLink>
     );
@@ -613,7 +622,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           'app-sidebar',
           sidebarCollapsed ? 'app-sidebar--collapsed' : '',
         ].filter(Boolean).join(' ')}
-        aria-label="Main navigation"
+        aria-label={t('nav.mainNavigation')}
       >
         {/* Logo / wordmark */}
         <div className="app-sidebar__header">
@@ -642,10 +651,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           <button
             type="button"
             className="app-sidebar__collapse"
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={sidebarCollapsed ? t('nav.sidebarExpand') : t('nav.sidebarCollapse')}
             aria-expanded={!sidebarCollapsed}
             onClick={handleCollapseToggle}
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={sidebarCollapsed ? t('nav.sidebarExpand') : t('nav.sidebarCollapse')}
           >
             {sidebarCollapsed
               ? <ChevronRight size={16} strokeWidth={2} />
@@ -667,7 +676,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         ref={moreMenuRef}
         className={`app-more-menu${moreOpen ? ' app-more-menu--open' : ''}`}
         role="menu"
-        aria-label="More navigation"
+        aria-label={t('nav.moreNavigation')}
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="app-more-menu__inner">
@@ -685,13 +694,13 @@ export function AppLayout({ children }: AppLayoutProps) {
             aria-live="polite"
           >
             {status === 'reconnecting'
-              ? 'reconnecting to home assistant…'
-              : 'connection lost — check your home assistant instance'}
+              ? t('banner.reconnecting')
+              : t('banner.disconnected')}
           </div>
         )}
 
         {/* Floating header — desktop only (chips + weather + bell + avatar) */}
-        <div className="app-header-cluster-wrapper" aria-label="Quick actions">
+        <div className="app-header-cluster-wrapper" aria-label={t('nav.quickActions')}>
           <HeaderCluster />
         </div>
 
@@ -707,7 +716,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       </div>
 
       {/* ---- Mobile bottom tab bar ---- */}
-      <nav className="app-tabs" aria-label="Main navigation">
+      <nav className="app-tabs" aria-label={t('nav.mainNavigation')}>
         {primaryTabIds.map(renderMobileTab)}
         {showMore && (
           <button
@@ -715,12 +724,12 @@ export function AppLayout({ children }: AppLayoutProps) {
             type="button"
             className={`app-tabs__item${moreOpen ? ' app-tabs__item--active' : ''}`}
             onClick={handleMoreToggle}
-            aria-label="More navigation"
+            aria-label={t('nav.moreNavigation')}
             aria-haspopup="menu"
             aria-expanded={moreOpen}
           >
             <MoreHorizontal size={20} strokeWidth={1.75} />
-            <span className="app-tabs__label">More</span>
+            <span className="app-tabs__label">{t('nav.more')}</span>
           </button>
         )}
       </nav>

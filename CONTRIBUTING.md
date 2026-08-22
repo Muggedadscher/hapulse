@@ -34,3 +34,41 @@ npm install
 - Include a short description of the change and any manual testing you did.
 - For visual changes, a screenshot or short screen recording is appreciated.
 - The CI workflow runs `npm run typecheck`, `npm run build`, and `npm test -w @hapulse/core` on every PR.
+
+## How contributions land
+
+This repository is the open-source distribution of HAPulse. Its `packages/core`
+and `apps/dashboard` are developed in a larger private monorepo — which also
+holds the hosted service and the mobile apps — and exported here by a publish
+script. That is what the periodic *"Sync from monorepo"* commits are.
+
+**This does not change how you contribute.** Pull requests are reviewed and
+merged here, so your commits and your authorship stay in this repository's
+history. Two things are worth knowing:
+
+- A later sync commit may touch files you changed. That is the export running,
+  not your work being reverted.
+- Translation dictionaries live in `packages/core/locales/`, not in the
+  dashboard, so every HAPulse app can share them.
+
+### Maintainers: the dual-apply rule
+
+The export **deletes and re-copies** `packages/core` and `apps/dashboard` from
+the monorepo. Merging a pull request here is therefore only half the job:
+anything merged here and not mirrored upstream is **silently reverted by the
+next sync**.
+
+For every pull request merged here:
+
+1. **Merge it here.** Contributor commits and authorship stay in the public history.
+2. **Port the same change upstream** into the monorepo's copy of the affected paths.
+   Since PRs branch from this repository — whose content matches the monorepo for
+   those paths — this is normally a clean patch apply.
+3. **Verify upstream:** `npm run typecheck`, `npm run build` and
+   `npm test -w @hapulse/core`, plus the monorepo's other apps, which the CI here
+   does not cover.
+4. **Re-export and check the diff is empty** for the files you just ported. A
+   non-empty diff means the port missed something and the next sync would undo it.
+
+Do steps 1–4 in one sitting. A merged pull request that is left un-ported looks
+fine until the next unrelated sync quietly removes it.

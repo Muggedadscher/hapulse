@@ -1,10 +1,16 @@
 /**
  * Room icon utilities — pure, no DOM.
  *
- * Two public functions:
+ * Three public functions:
+ *  - roomKind(name)             → the kind of room a name denotes ('kitchen', …)
  *  - roomIconName(area)         → lucide icon name for a room's identity
  *  - roomStatusIconName(room, entities) → lucide icon name when something notable
  *                               is open/active in the room, or null if nothing notable
+ *
+ * `roomKind` is the single place room names are classified. Anything that
+ * derives a look from a room's name — its icon here, its gradient in the
+ * dashboard — goes through it, so a new language is one list to extend rather
+ * than one per consumer.
  *
  * The CANONICAL_ROOM_ICONS set lists every icon name these functions can ever
  * return. The dashboard RoomIcon component (apps/dashboard/src/components/ui/RoomIcon.tsx)
@@ -125,89 +131,232 @@ const MDI_TO_LUCIDE: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Room keyword → icon (ordered: first match wins)
+// Room kinds
+//
+// A kind is what a room *is*, independent of how it is rendered. Icons map from
+// it here; the dashboard maps gradients from it. Adding a look means adding a
+// map, not a second list of names to keep in sync.
 // ---------------------------------------------------------------------------
 
-const ROOM_KEYWORDS: Array<{ keyword: string; icon: string }> = [
+export const ROOM_KINDS = [
+  'living', 'kitchen', 'bedroom', 'kids', 'bathroom', 'office', 'garage',
+  'hallway', 'laundry', 'outdoor', 'storage', 'attic', 'gym', 'closet',
+  'pool', 'media', 'play', 'other',
+] as const;
+
+export type RoomKind = (typeof ROOM_KINDS)[number];
+
+const ICON_BY_KIND: Record<RoomKind, RoomIconName> = {
+  living: 'sofa',
+  kitchen: 'utensils',
+  bedroom: 'bed',
+  kids: 'baby',
+  bathroom: 'bath',
+  office: 'monitor',
+  garage: 'car',
+  hallway: 'door-open',
+  laundry: 'washing-machine',
+  outdoor: 'trees',
+  storage: 'box',
+  attic: 'triangle',
+  gym: 'dumbbell',
+  closet: 'shirt',
+  pool: 'waves',
+  media: 'clapperboard',
+  play: 'gamepad-2',
+  other: 'house',
+};
+
+// ---------------------------------------------------------------------------
+// Room name → kind (ordered: first match wins)
+//
+// Room names come from Home Assistant in whatever language the household
+// speaks, which has nothing to do with the display language chosen in HAPulse.
+// So this list is multilingual all at once, never per-locale: a French
+// household reading the dashboard in English still has a room called "Cuisine".
+//
+// Matching is on the normalised name (see `normalizeRoomName`), so keywords are
+// written without accents and with spaces where the name may use an accent, a
+// hyphen or an apostrophe: `salle d eau` matches "Salle d'eau" and "Salle
+// d’eau" alike.
+//
+// Keywords are substrings, so within a language the specific must precede the
+// generic — `enfant` before `chambre`, or a child's bedroom reads as a bedroom.
+// Avoid keywords short enough to appear inside an unrelated word.
+// ---------------------------------------------------------------------------
+
+const ROOM_KEYWORDS: Array<{ keyword: string; kind: RoomKind }> = [
+  // -- English ------------------------------------------------------------
   // Living areas
-  { keyword: 'living', icon: 'sofa' },
-  { keyword: 'lounge', icon: 'sofa' },
-  { keyword: 'family', icon: 'sofa' },
-  { keyword: 'sitting', icon: 'sofa' },
+  { keyword: 'living', kind: 'living' },
+  { keyword: 'lounge', kind: 'living' },
+  { keyword: 'family', kind: 'living' },
+  { keyword: 'sitting', kind: 'living' },
   // Kitchen / dining
-  { keyword: 'kitchen', icon: 'utensils' },
-  { keyword: 'dining', icon: 'utensils' },
-  { keyword: 'pantry', icon: 'box' },
+  { keyword: 'kitchen', kind: 'kitchen' },
+  { keyword: 'dining', kind: 'kitchen' },
+  { keyword: 'pantry', kind: 'storage' },
   // Bedroom
-  { keyword: 'master', icon: 'bed' },
-  { keyword: 'bedroom', icon: 'bed' },
-  { keyword: 'guest', icon: 'bed' },
+  { keyword: 'master', kind: 'bedroom' },
+  { keyword: 'bedroom', kind: 'bedroom' },
+  { keyword: 'guest', kind: 'bedroom' },
+  { keyword: 'sleep', kind: 'bedroom' },
   // Kids / nursery
-  { keyword: 'nursery', icon: 'baby' },
-  { keyword: 'child', icon: 'baby' },
-  { keyword: 'kid', icon: 'baby' },
-  { keyword: 'baby', icon: 'baby' },
+  { keyword: 'nursery', kind: 'kids' },
+  { keyword: 'child', kind: 'kids' },
+  { keyword: 'kid', kind: 'kids' },
+  { keyword: 'baby', kind: 'kids' },
   // Bathroom
-  { keyword: 'bath', icon: 'bath' },
-  { keyword: 'shower', icon: 'bath' },
-  { keyword: 'toilet', icon: 'bath' },
-  { keyword: 'wc', icon: 'bath' },
-  { keyword: 'ensuite', icon: 'bath' },
+  { keyword: 'bath', kind: 'bathroom' },
+  { keyword: 'shower', kind: 'bathroom' },
+  { keyword: 'toilet', kind: 'bathroom' },
+  { keyword: 'wc', kind: 'bathroom' },
+  { keyword: 'ensuite', kind: 'bathroom' },
   // Office / work
-  { keyword: 'office', icon: 'monitor' },
-  { keyword: 'study', icon: 'monitor' },
-  { keyword: 'work', icon: 'monitor' },
-  { keyword: 'desk', icon: 'monitor' },
+  { keyword: 'office', kind: 'office' },
+  { keyword: 'study', kind: 'office' },
+  { keyword: 'work', kind: 'office' },
+  { keyword: 'desk', kind: 'office' },
   // Garage
-  { keyword: 'garage', icon: 'car' },
+  { keyword: 'garage', kind: 'garage' },
   // Entry / hallway
-  { keyword: 'hall', icon: 'door-open' },
-  { keyword: 'entry', icon: 'door-open' },
-  { keyword: 'foyer', icon: 'door-open' },
-  { keyword: 'corridor', icon: 'door-open' },
-  { keyword: 'landing', icon: 'door-open' },
-  { keyword: 'stair', icon: 'door-open' },
+  { keyword: 'hall', kind: 'hallway' },
+  { keyword: 'entry', kind: 'hallway' },
+  { keyword: 'foyer', kind: 'hallway' },
+  { keyword: 'corridor', kind: 'hallway' },
+  { keyword: 'landing', kind: 'hallway' },
+  { keyword: 'stair', kind: 'hallway' },
   // Laundry / utility
-  { keyword: 'laundry', icon: 'washing-machine' },
-  { keyword: 'utility', icon: 'washing-machine' },
-  { keyword: 'mud', icon: 'washing-machine' },
+  { keyword: 'laundry', kind: 'laundry' },
+  { keyword: 'utility', kind: 'laundry' },
+  { keyword: 'mud', kind: 'laundry' },
   // Garden / outdoor
-  { keyword: 'garden', icon: 'trees' },
-  { keyword: 'yard', icon: 'trees' },
-  { keyword: 'patio', icon: 'trees' },
-  { keyword: 'balcony', icon: 'trees' },
-  { keyword: 'terrace', icon: 'trees' },
-  { keyword: 'outdoor', icon: 'trees' },
-  { keyword: 'outside', icon: 'trees' },
-  { keyword: 'porch', icon: 'trees' },
-  { keyword: 'deck', icon: 'trees' },
+  { keyword: 'garden', kind: 'outdoor' },
+  { keyword: 'yard', kind: 'outdoor' },
+  { keyword: 'patio', kind: 'outdoor' },
+  { keyword: 'balcony', kind: 'outdoor' },
+  { keyword: 'terrace', kind: 'outdoor' },
+  { keyword: 'outdoor', kind: 'outdoor' },
+  { keyword: 'outside', kind: 'outdoor' },
+  { keyword: 'porch', kind: 'outdoor' },
+  { keyword: 'deck', kind: 'outdoor' },
   // Basement / cellar / storage
-  { keyword: 'basement', icon: 'box' },
-  { keyword: 'cellar', icon: 'box' },
-  { keyword: 'storage', icon: 'box' },
-  { keyword: 'shed', icon: 'box' },
+  { keyword: 'basement', kind: 'storage' },
+  { keyword: 'cellar', kind: 'storage' },
+  { keyword: 'storage', kind: 'storage' },
+  { keyword: 'shed', kind: 'storage' },
   // Attic / loft
-  { keyword: 'attic', icon: 'triangle' },
-  { keyword: 'loft', icon: 'triangle' },
+  { keyword: 'attic', kind: 'attic' },
+  { keyword: 'loft', kind: 'attic' },
   // Gym / fitness
-  { keyword: 'gym', icon: 'dumbbell' },
-  { keyword: 'fitness', icon: 'dumbbell' },
-  { keyword: 'exercise', icon: 'dumbbell' },
+  { keyword: 'gym', kind: 'gym' },
+  { keyword: 'fitness', kind: 'gym' },
+  { keyword: 'exercise', kind: 'gym' },
   // Closet / wardrobe / dressing
-  { keyword: 'closet', icon: 'shirt' },
-  { keyword: 'wardrobe', icon: 'shirt' },
-  { keyword: 'dressing', icon: 'shirt' },
+  { keyword: 'closet', kind: 'closet' },
+  { keyword: 'wardrobe', kind: 'closet' },
+  { keyword: 'dressing', kind: 'closet' },
   // Pool
-  { keyword: 'pool', icon: 'waves' },
+  { keyword: 'pool', kind: 'pool' },
   // Theater / media
-  { keyword: 'theater', icon: 'clapperboard' },
-  { keyword: 'theatre', icon: 'clapperboard' },
-  { keyword: 'cinema', icon: 'clapperboard' },
-  { keyword: 'media', icon: 'clapperboard' },
+  { keyword: 'theater', kind: 'media' },
+  { keyword: 'theatre', kind: 'media' },
+  { keyword: 'cinema', kind: 'media' },
+  { keyword: 'media', kind: 'media' },
   // Playroom / game
-  { keyword: 'play', icon: 'gamepad-2' },
-  { keyword: 'game', icon: 'gamepad-2' },
+  { keyword: 'play', kind: 'play' },
+  { keyword: 'game', kind: 'play' },
+
+  // -- French -------------------------------------------------------------
+  // Kids before bedroom: "Chambre d'enfant" is a child's room, not a bedroom.
+  { keyword: 'enfant', kind: 'kids' },
+  { keyword: 'bebe', kind: 'kids' },
+  { keyword: 'nurserie', kind: 'kids' },
+  // Bedroom
+  { keyword: 'chambre', kind: 'bedroom' },
+  { keyword: 'parentale', kind: 'bedroom' },
+  // Living
+  { keyword: 'salon', kind: 'living' },
+  { keyword: 'sejour', kind: 'living' },
+  // Kitchen / dining. `salle a manger` before the bathroom's `salle de bain`
+  // is not required (neither contains the other), but keeping the room's
+  // full phrase avoids ever introducing a bare `salle` keyword.
+  { keyword: 'cuisine', kind: 'kitchen' },
+  { keyword: 'salle a manger', kind: 'kitchen' },
+  { keyword: 'garde manger', kind: 'storage' },
+  // Bathroom
+  { keyword: 'salle de bain', kind: 'bathroom' },
+  { keyword: 'salle d eau', kind: 'bathroom' },
+  { keyword: 'sdb', kind: 'bathroom' },
+  { keyword: 'douche', kind: 'bathroom' },
+  { keyword: 'toilette', kind: 'bathroom' },
+  // Office
+  { keyword: 'bureau', kind: 'office' },
+  // Entry / hallway
+  { keyword: 'entree', kind: 'hallway' },
+  { keyword: 'couloir', kind: 'hallway' },
+  { keyword: 'palier', kind: 'hallway' },
+  { keyword: 'vestibule', kind: 'hallway' },
+  { keyword: 'escalier', kind: 'hallway' },
+  // Laundry / utility
+  { keyword: 'buanderie', kind: 'laundry' },
+  { keyword: 'lingerie', kind: 'laundry' },
+  { keyword: 'laverie', kind: 'laundry' },
+  // Garden / outdoor
+  { keyword: 'jardin', kind: 'outdoor' },
+  { keyword: 'terrasse', kind: 'outdoor' },
+  { keyword: 'balcon', kind: 'outdoor' },
+  { keyword: 'veranda', kind: 'outdoor' },
+  { keyword: 'exterieur', kind: 'outdoor' },
+  // Basement / cellar / storage
+  { keyword: 'sous sol', kind: 'storage' },
+  { keyword: 'cave', kind: 'storage' },
+  { keyword: 'cellier', kind: 'storage' },
+  { keyword: 'debarras', kind: 'storage' },
+  { keyword: 'rangement', kind: 'storage' },
+  { keyword: 'remise', kind: 'storage' },
+  // Attic
+  { keyword: 'grenier', kind: 'attic' },
+  { keyword: 'combles', kind: 'attic' },
+  { keyword: 'mansarde', kind: 'attic' },
+  // Gym
+  { keyword: 'salle de sport', kind: 'gym' },
+  { keyword: 'musculation', kind: 'gym' },
+  // Closet / dressing
+  { keyword: 'placard', kind: 'closet' },
+  { keyword: 'penderie', kind: 'closet' },
+  // Pool
+  { keyword: 'piscine', kind: 'pool' },
+  // Play
+  { keyword: 'jeux', kind: 'play' },
 ];
+
+/**
+ * Lowercases, strips diacritics, and flattens every run of non-alphanumerics to
+ * a single space, so accents, hyphens and both apostrophe characters stop
+ * mattering: "Salle d’Eau", "salle-d-eau" and "SALLE D EAU" all normalise to
+ * `salle d eau`.
+ */
+function normalizeRoomName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/**
+ * Classifies a room name. Returns `'other'` when nothing matches — the caller
+ * decides what a room of unknown kind looks like.
+ */
+export function roomKind(name: string): RoomKind {
+  const normalized = normalizeRoomName(name);
+  for (const { keyword, kind } of ROOM_KEYWORDS) {
+    if (normalized.includes(keyword)) return kind;
+  }
+  return 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -222,8 +371,8 @@ const ROOM_KEYWORDS: Array<{ keyword: string; icon: string }> = [
  *       (handles demo data icons like 'sofa', 'bed', 'door-open').
  *    b. Else map via MDI_TO_LUCIDE.
  *    c. If still no match → fall through to keyword matching.
- * 2. Keyword-match area.name.toLowerCase() (first match wins).
- * 3. Default → 'house'.
+ * 2. Classify area.name with roomKind() and take that kind's icon.
+ *    An unrecognised name is kind 'other', whose icon is 'house'.
  */
 export function roomIconName(area: { name: string; icon?: string | null }): string {
   if (area.icon) {
@@ -242,13 +391,8 @@ export function roomIconName(area: { name: string; icon?: string | null }): stri
     // Unknown icon — fall through to keyword matching
   }
 
-  // Keyword matching on room name
-  const lower = area.name.toLowerCase();
-  for (const { keyword, icon } of ROOM_KEYWORDS) {
-    if (lower.includes(keyword)) return icon;
-  }
-
-  return 'house';
+  // Name matching, via the shared classifier
+  return ICON_BY_KIND[roomKind(area.name)];
 }
 
 /**
@@ -258,8 +402,7 @@ export function roomIconName(area: { name: string; icon?: string | null }): stri
  * Priority (first match wins):
  * 1. binary_sensor device_class 'door'                 state 'on' → 'door-open'
  * 2. binary_sensor device_class 'garage_door'          state 'on' → 'car'
- * 3. binary_sensor device_class 'window'|'opening'     state 'on' → 'air-vent'
- *    (AirVent chosen: reads clearly as airflow through an open window)
+ * 3. binary_sensor device_class 'window'|'opening'     state 'on' → 'grid-2x2'
  * 4. binary_sensor device_class 'moisture'             state 'on' → 'droplets'
  * 5. binary_sensor device_class 'smoke'                state 'on' → 'flame'
  *

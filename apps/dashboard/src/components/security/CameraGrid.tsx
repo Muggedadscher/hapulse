@@ -11,6 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import { Camera } from 'lucide-react';
 import { useConnectionStore } from '../../stores/connectionStore';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { resolveEntityPicture } from '../../lib/media';
 import type { HassEntity, Room } from '@hapulse/core';
@@ -30,6 +31,7 @@ interface CameraTileProps {
 }
 
 function CameraTile({ entity, motionActive, roomName }: CameraTileProps) {
+  const t = useT();
   const url = useConnectionStore((s) => s.url);
   const demo = useConnectionStore((s) => s.demo);
 
@@ -71,8 +73,8 @@ function CameraTile({ entity, motionActive, roomName }: CameraTileProps) {
 
         {/* Motion badge */}
         {motionActive && (
-          <span className="camera-tile__motion-badge" aria-label="Motion detected">
-            motion
+          <span className="camera-tile__motion-badge" aria-label={t('security.cameras.motionDetectedAria')}>
+            {t('security.sensor.motion')}
           </span>
         )}
       </div>

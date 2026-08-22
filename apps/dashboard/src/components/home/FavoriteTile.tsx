@@ -24,6 +24,7 @@ import { domainOf, domainIcon, formatEntityState, isToggleable } from '@hapulse/
 import type { HassEntity } from '@hapulse/core';
 import type { CustomizationSettings } from '../../stores/settingsStore';
 import { callService } from '../../ha/service';
+import { useLocale, useT } from '../../i18n/useT';
 import './favorites.css';
 
 interface FavoriteTileProps {
@@ -95,6 +96,8 @@ function isEntityActive(entity: HassEntity): boolean {
 }
 
 export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTileProps) {
+  const t = useT();
+  const locale = useLocale();
   const { entityOverrides } = customization;
   const override = entityOverrides[entity.entity_id];
   const name =
@@ -104,7 +107,7 @@ export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTi
 
   const iconName = domainIcon(entity);
   const icon = ICON_MAP[iconName] ?? <Activity size={16} strokeWidth={1.75} />;
-  const value = formatEntityState(entity);
+  const value = formatEntityState(entity, locale);
   const active = isEntityActive(entity);
 
   const domain = domainOf(entity.entity_id);
@@ -126,7 +129,7 @@ export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTi
         type="button"
         className={tileClass}
         onClick={handleToggle}
-        aria-label={`toggle ${name}`}
+        aria-label={t('home.favorites.toggleAria', { name })}
         aria-pressed={active}
       >
         <div className="favorite-tile__icon" aria-hidden="true">{icon}</div>
@@ -141,7 +144,7 @@ export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTi
       type="button"
       className={tileClass}
       onClick={handleOpenDetail}
-      aria-label={`${name} details`}
+      aria-label={t('home.favorites.detailsAria', { name })}
       aria-haspopup="dialog"
     >
       <div className="favorite-tile__icon" aria-hidden="true">{icon}</div>

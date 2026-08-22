@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Users } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import { relativeTime } from './roomUtils';
@@ -14,12 +15,13 @@ interface PersonRowProps {
 }
 
 function PersonRow({ person, url, tick }: PersonRowProps) {
+  const t = useT();
   void tick;
   const name = (person.attributes['friendly_name'] as string | undefined) ?? person.entity_id;
   const pic = person.attributes['entity_picture'] as string | undefined;
   const isHome = person.state === 'home';
   const avatarUrl = pic && url ? `${url}${pic}` : null;
-  const when = relativeTime(person.last_changed);
+  const when = relativeTime(t, person.last_changed);
 
   return (
     <div className="people-list__row">
@@ -36,7 +38,7 @@ function PersonRow({ person, url, tick }: PersonRowProps) {
       <div className="people-list__info">
         <span className="people-list__name">{name}</span>
         <span className={`people-list__location${isHome ? ' people-list__location--home' : ''}`}>
-          {isHome ? 'Home' : 'Away'}
+          {isHome ? t('security.people.home') : t('security.people.away')}
         </span>
       </div>
       <span className="people-list__time">{when}</span>
@@ -49,6 +51,7 @@ interface PeopleListProps {
 }
 
 export function PeopleList({ people }: PeopleListProps) {
+  const t = useT();
   const url = useConnectionStore(useShallow((s) => s.url));
   const [tick, setTick] = useState(0);
 
@@ -72,9 +75,9 @@ export function PeopleList({ people }: PeopleListProps) {
           <span className="people-list-card__icon-chip">
             <Users size={16} strokeWidth={1.75} />
           </span>
-          <span className="people-list-card__title">People</span>
+          <span className="people-list-card__title">{t('security.people.title')}</span>
           <span className="people-list-card__count">
-            {homeCount}/{people.length} home
+            {t('security.people.count', { home: homeCount, total: people.length })}
           </span>
         </div>
       </div>

@@ -221,6 +221,24 @@ export class HAConnection {
   }
 
   /**
+   * Fetch the configured language from HA core config (`get_config`).
+   * Returns null on failure.
+   *
+   * Deliberately a second `get_config` round-trip rather than sharing one with
+   * fetchCurrency(): it keeps the diff small and mirrors the existing shape.
+   */
+  async fetchLanguage(): Promise<string | null> {
+    try {
+      const cfg = await this.#conn.sendMessagePromise<{ language?: string }>({
+        type: 'get_config',
+      });
+      return cfg.language ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Subscribe to Home Assistant persistent notifications.
    *
    * Persistent notifications are NOT state-machine entities (so they never

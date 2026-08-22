@@ -11,6 +11,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import { useConnectionStore } from '../../../stores/connectionStore';
+import { useT } from '../../../i18n/useT';
 import './chipmodals.css';
 
 interface PeopleModalProps {
@@ -19,6 +20,7 @@ interface PeopleModalProps {
 }
 
 export function PeopleModal({ open, onClose }: PeopleModalProps) {
+  const t = useT();
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -39,14 +41,14 @@ export function PeopleModal({ open, onClose }: PeopleModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="people"
+      title={t('home.chipmodals.people.title')}
       icon={<Users size={20} strokeWidth={1.75} />}
     >
       {people.length === 0 ? (
         <EmptyState
           icon={<Users size={32} strokeWidth={1.5} />}
-          title="no people found"
-          description="add person entities in home assistant to track who's home."
+          title={t('home.chipmodals.people.emptyTitle')}
+          description={t('home.chipmodals.people.emptyDescription')}
         />
       ) : (
         <div className="people-modal__list" role="list">
@@ -105,17 +107,22 @@ export function PeopleModal({ open, onClose }: PeopleModalProps) {
                       .join(' ')}
                   >
                     {isHome
-                      ? 'home'
+                      ? t('home.chipmodals.people.homeLabel')
                       : state === 'not_home'
-                      ? 'away'
+                      ? t('home.chipmodals.people.awayLabel')
                       : state}
                   </span>
                 </div>
 
                 {/* Last changed */}
                 {lastChanged && (
-                  <span className="people-modal__time" aria-label={`Last changed ${relativeTime(lastChanged)}`}>
-                    {relativeTime(lastChanged)}
+                  <span
+                    className="people-modal__time"
+                    aria-label={t('home.chipmodals.people.lastChangedAria', {
+                      time: relativeTime(t, lastChanged),
+                    })}
+                  >
+                    {relativeTime(t, lastChanged)}
                   </span>
                 )}
               </div>

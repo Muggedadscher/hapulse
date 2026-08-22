@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { Shield, ShieldCheck, ShieldAlert, ShieldOff, Delete } from 'lucide-react';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './AlarmPanelCard.css';
@@ -14,17 +16,17 @@ type AlarmAction = 'disarm' | 'arm_home' | 'arm_away' | 'arm_night' | 'arm_vacat
 
 interface ActionDef {
   id: AlarmAction;
-  label: string;
+  labelKey: TKey;
   targetState: string;
   colorClass: string;
 }
 
 const ACTIONS: ActionDef[] = [
-  { id: 'arm_home',    label: 'Arm Home',    targetState: 'armed_home',    colorClass: 'alarm-btn--home' },
-  { id: 'arm_away',   label: 'Arm Away',    targetState: 'armed_away',    colorClass: 'alarm-btn--away' },
-  { id: 'arm_night',  label: 'Arm Night',   targetState: 'armed_night',   colorClass: 'alarm-btn--night' },
-  { id: 'arm_vacation', label: 'Vacation',  targetState: 'armed_vacation', colorClass: 'alarm-btn--vacation' },
-  { id: 'disarm',     label: 'Disarm',      targetState: 'disarmed',      colorClass: 'alarm-btn--disarm' },
+  { id: 'arm_home',    labelKey: 'security.alarmPanel.action.armHome',  targetState: 'armed_home',    colorClass: 'alarm-btn--home' },
+  { id: 'arm_away',   labelKey: 'security.alarmPanel.action.armAway',   targetState: 'armed_away',    colorClass: 'alarm-btn--away' },
+  { id: 'arm_night',  labelKey: 'security.alarmPanel.action.armNight',  targetState: 'armed_night',   colorClass: 'alarm-btn--night' },
+  { id: 'arm_vacation', labelKey: 'security.alarmPanel.action.vacation', targetState: 'armed_vacation', colorClass: 'alarm-btn--vacation' },
+  { id: 'disarm',     labelKey: 'security.alarmPanel.action.disarm',    targetState: 'disarmed',      colorClass: 'alarm-btn--disarm' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -38,6 +40,7 @@ interface NumpadModalProps {
 }
 
 function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
+  const t = useT();
   const [digits, setDigits] = useState('');
 
   const addDigit = useCallback((d: string) => {
@@ -56,13 +59,16 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
   const KEYS = ['1','2','3','4','5','6','7','8','9'];
 
   return (
-    <div className="numpad-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label="Enter code">
+    <div className="numpad-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label={t('security.alarmPanel.numpad.dialogAria')}>
       <div className="numpad-modal" onClick={(e) => e.stopPropagation()}>
         <h3 className="numpad-modal__title">{actionLabel}</h3>
-        <p className="numpad-modal__subtitle">Enter your alarm code</p>
+        <p className="numpad-modal__subtitle">{t('security.alarmPanel.numpad.subtitle')}</p>
 
         {/* Pin dots display */}
-        <div className="numpad-modal__display" aria-label={`${digits.length} digits entered`}>
+        <div
+          className="numpad-modal__display"
+          aria-label={t('security.alarmPanel.numpad.digitsEntered', { count: digits.length })}
+        >
           {Array.from({ length: Math.max(4, digits.length) }, (_, i) => (
             <span
               key={i}
@@ -87,7 +93,7 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
             type="button"
             className="numpad-key numpad-key--action"
             onClick={removeDigit}
-            aria-label="Backspace"
+            aria-label={t('security.alarmPanel.numpad.backspace')}
             disabled={digits.length === 0}
           >
             <Delete size={18} strokeWidth={1.75} />
@@ -103,7 +109,7 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
             type="button"
             className="numpad-key numpad-key--confirm"
             onClick={confirm}
-            aria-label="Confirm"
+            aria-label={t('security.alarmPanel.numpad.confirm')}
             disabled={digits.length === 0}
           >
             ✓
@@ -111,7 +117,7 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
         </div>
 
         <button type="button" className="numpad-modal__cancel" onClick={onCancel}>
-          Cancel
+          {t('security.alarmPanel.numpad.cancel')}
         </button>
       </div>
     </div>
@@ -150,8 +156,10 @@ interface AlarmPanelCardProps {
 }
 
 export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
+  const t = useT();
   const state = entity.state;
-  const name = (entity.attributes['friendly_name'] as string | undefined) ?? 'Alarm Panel';
+  const name =
+    (entity.attributes['friendly_name'] as string | undefined) ?? t('security.alarmPanel.fallbackName');
   const codeFormat = entity.attributes['code_format'] as string | undefined;
   const requiresCode = !!codeFormat;
 
@@ -217,7 +225,7 @@ export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
                   disabled={isActive || isTransitioning}
                   aria-pressed={isActive}
                 >
-                  {action.label}
+                  {t(action.labelKey)}
                 </button>
               );
             })}
@@ -228,7 +236,7 @@ export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
 
       {pendingAction && ReactDOM.createPortal(
         <NumpadModal
-          actionLabel={pendingAction.label}
+          actionLabel={t(pendingAction.labelKey)}
           onConfirm={handleNumpadConfirm}
           onCancel={() => setPendingAction(null)}
         />,

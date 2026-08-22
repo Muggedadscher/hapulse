@@ -5,6 +5,7 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { CoverCard } from '../../cards/CoverCard';
 import { useEntityStore } from '../../../stores/entityStore';
+import { useT, useLocale } from '../../../i18n/useT';
 import './all-modal.css';
 
 interface BlindsAllModalProps {
@@ -13,6 +14,8 @@ interface BlindsAllModalProps {
 }
 
 export function BlindsAllModal({ open, onClose }: BlindsAllModalProps) {
+  const t = useT();
+  const locale = useLocale();
   const coverEntities = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities)
@@ -24,7 +27,7 @@ export function BlindsAllModal({ open, onClose }: BlindsAllModalProps) {
         .sort((a, b) => {
           const na = (a.attributes.friendly_name as string | undefined) ?? a.entity_id;
           const nb = (b.attributes.friendly_name as string | undefined) ?? b.entity_id;
-          return na.localeCompare(nb);
+          return na.localeCompare(nb, locale);
         })
     )
   );
@@ -33,14 +36,14 @@ export function BlindsAllModal({ open, onClose }: BlindsAllModalProps) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Blinds & Covers"
+      title={t('home.chipmodals.blindsAll.title')}
       icon={<AlignJustify size={20} strokeWidth={1.75} />}
     >
       {coverEntities.length === 0 ? (
         <EmptyState
           icon={<AlignJustify size={32} strokeWidth={1.5} />}
-          title="no cover entities"
-          description="add cover entities in home assistant to control them here."
+          title={t('home.chipmodals.blindsAll.emptyTitle')}
+          description={t('home.chipmodals.blindsAll.emptyDescription')}
         />
       ) : (
         <div className="all-modal__grid">

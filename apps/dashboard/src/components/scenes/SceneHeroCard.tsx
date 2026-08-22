@@ -1,5 +1,7 @@
 import React from 'react';
 import { Sparkles, LayoutGrid } from 'lucide-react';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SceneHeroCard.css';
@@ -9,17 +11,20 @@ interface SceneHeroCardProps {
   roomCount: number;
 }
 
-function formatRelativeTime(iso: string | null | undefined): string {
-  if (!iso || iso === 'unknown') return 'Never';
+type T = (key: TKey, vars?: Record<string, string | number>) => string;
+
+/** Takes the translator as a parameter: it runs outside any component body. */
+function formatRelativeTime(t: T, iso: string | null | undefined): string {
+  if (!iso || iso === 'unknown') return t('scenes.time.never');
   try {
     const delta = Date.now() - new Date(iso).getTime();
-    if (delta < 60000) return 'Just now';
-    if (delta < 3600000) return `${Math.floor(delta / 60000)}m ago`;
-    if (delta < 86400000) return `${Math.floor(delta / 3600000)}h ago`;
-    if (delta < 172800000) return 'Yesterday';
-    return `${Math.floor(delta / 86400000)}d ago`;
+    if (delta < 60000) return t('scenes.time.justNow');
+    if (delta < 3600000) return t('scenes.time.minutesAgo', { count: Math.floor(delta / 60000) });
+    if (delta < 86400000) return t('scenes.time.hoursAgo', { count: Math.floor(delta / 3600000) });
+    if (delta < 172800000) return t('scenes.time.yesterday');
+    return t('scenes.time.daysAgo', { count: Math.floor(delta / 86400000) });
   } catch {
-    return '—';
+    return t('scenes.time.unknown');
   }
 }
 
@@ -31,6 +36,7 @@ function sceneName(e: HassEntity): string {
 }
 
 export function SceneHeroCard({ scenes, roomCount }: SceneHeroCardProps) {
+  const t = useT();
   const total = scenes.length;
 
   const activated = scenes.filter((e) => e.state !== 'unknown');
@@ -70,39 +76,45 @@ export function SceneHeroCard({ scenes, roomCount }: SceneHeroCardProps) {
               <span className="scene-hero-card__icon-chip" aria-hidden="true">
                 <Sparkles size={16} strokeWidth={1.75} />
               </span>
-              <span className="scene-hero-card__eyebrow">Scenes</span>
+              <span className="scene-hero-card__eyebrow">{t('scenes.title')}</span>
             </div>
-            <div className="scene-hero-card__total" aria-label={`${total} total scenes`}>
+            <div
+              className="scene-hero-card__total"
+              aria-label={t('scenes.hero.totalAria', { count: total })}
+            >
               {total}
             </div>
-            <div className="scene-hero-card__sub">total scenes</div>
+            <div className="scene-hero-card__sub">{t('scenes.hero.totalLabel')}</div>
           </div>
 
           {lastUsedName && (
-            <div className="scene-hero-card__last-used" aria-label={`Last used: ${lastUsedName}`}>
-              <div className="scene-hero-card__last-used-label">Last used</div>
+            <div
+              className="scene-hero-card__last-used"
+              aria-label={t('scenes.hero.lastUsedAria', { name: lastUsedName })}
+            >
+              <div className="scene-hero-card__last-used-label">{t('scenes.hero.lastUsed')}</div>
               <div className="scene-hero-card__last-used-name">{lastUsedName}</div>
               {lastUsedTime && (
                 <div className="scene-hero-card__last-used-time">
-                  {formatRelativeTime(lastUsedTime)}
+                  {formatRelativeTime(t, lastUsedTime)}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <div className="scene-hero-card__stats" role="list" aria-label="Scene statistics">
+        <div className="scene-hero-card__stats" role="list" aria-label={t('scenes.hero.statsAria')}>
           <div className="scene-hero-card__stat scene-hero-card__stat--activated" role="listitem">
             <Sparkles size={14} strokeWidth={2} aria-hidden="true" />
             <span className="scene-hero-card__stat-value">{activatedToday.length}</span>
-            <span className="scene-hero-card__stat-label">used today</span>
+            <span className="scene-hero-card__stat-label">{t('scenes.hero.statUsedToday')}</span>
           </div>
           <div className="scene-hero-card__stat-divider" aria-hidden="true" />
           <div className="scene-hero-card__stat scene-hero-card__stat--rooms" role="listitem">
             <LayoutGrid size={14} strokeWidth={2} aria-hidden="true" />
             <span className="scene-hero-card__stat-value">{roomCount}</span>
             <span className="scene-hero-card__stat-label">
-              {roomCount === 1 ? 'room' : 'rooms'}
+              {t('scenes.hero.roomLabel', { count: roomCount })}
             </span>
           </div>
         </div>

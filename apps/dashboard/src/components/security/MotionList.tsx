@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Activity, UserCheck } from 'lucide-react';
 import type { HassEntity, Room } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import { getRoomName, relativeTime } from './roomUtils';
 import './MotionList.css';
 
@@ -18,6 +19,7 @@ interface MotionListProps {
 }
 
 export function MotionList({ sensors, rooms }: MotionListProps) {
+  const t = useT();
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -51,9 +53,9 @@ export function MotionList({ sensors, rooms }: MotionListProps) {
             <div className="motion-list__right">
               <span className={`motion-list__pill${isActive ? ' motion-list__pill--active' : ' motion-list__pill--clear'}`}>
                 {isActive && <span className="motion-list__dot" aria-hidden="true" />}
-                {isActive ? 'motion' : 'clear'}
+                {isActive ? t('security.sensor.motion') : t('security.sensor.clear')}
               </span>
-              <span className="motion-list__time">{relativeTime(sensor.last_changed)}</span>
+              <span className="motion-list__time">{relativeTime(t, sensor.last_changed)}</span>
             </div>
           </div>
         );

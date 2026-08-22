@@ -7,6 +7,7 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useEntities } from '../../ha/hooks';
 import { DeviceIcon } from './deviceMeta';
+import { useT } from '../../i18n/useT';
 import type { DeviceModel } from '@hapulse/core';
 
 const ACTIVE_STATES = new Set([
@@ -22,11 +23,12 @@ interface DeviceCardProps {
 }
 
 export function DeviceCard({ device, view, onSelect, dimHidden = false }: DeviceCardProps) {
+  const t = useT();
   const states = useEntities(device.entities.map((e) => e.entity_id));
   const activeCount = states.filter((e) => e && ACTIVE_STATES.has(e.state)).length;
   const isActive = activeCount > 0;
 
-  const entityLabel = `${device.entityCount} ${device.entityCount === 1 ? 'entity' : 'entities'}`;
+  const entityLabel = t('devices.card.entityCount', { count: device.entityCount });
 
   return (
     <button
@@ -41,7 +43,7 @@ export function DeviceCard({ device, view, onSelect, dimHidden = false }: Device
         </span>
         <span className="device-card__body">
           <span className="device-card__name" title={device.name}>{device.name}</span>
-          <span className="device-card__room">{device.areaName ?? 'Unassigned'}</span>
+          <span className="device-card__room">{device.areaName ?? t('devices.card.unassigned')}</span>
         </span>
       </span>
 
