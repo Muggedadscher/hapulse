@@ -29,7 +29,8 @@ export {
 export type { ThemeName, ThemeMode, ResolvedMode, ThemeTokens } from './themes.js';
 
 // Rooms
-export { buildRooms, roomSummary } from './rooms.js';
+export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from './rooms.js';
+export type { DeviceAreaMap } from './rooms.js';
 
 // Domain helpers
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';

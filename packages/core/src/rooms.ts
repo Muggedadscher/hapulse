@@ -15,6 +15,35 @@ import type {
 } from './types.js';
 import { domainOf } from './domain.js';
 
+/** Device id → area_id, as resolved by `resolveEntityAreaId`'s device fallback. */
+export type DeviceAreaMap = Map<string, string | null>;
+
+/** Builds a device id → area_id lookup from the device registry, for `resolveEntityAreaId`. */
+export function buildDeviceAreaMap(devices: DeviceRegistryEntry[]): DeviceAreaMap {
+  return new Map(devices.map((d) => [d.id, d.area_id ?? null]));
+}
+
+/**
+ * Resolves the area (room) an entity belongs to, matching Home Assistant's
+ * own precedence: the entity's own `area_id` first, falling back to its
+ * device's `area_id` when the entity itself has none — which is the common
+ * case for entities on a multi-entity device (e.g. a Hue "Room" device),
+ * where only the device carries the area assignment.
+ *
+ * Returns `null` when neither the entity nor its device has an area — either
+ * genuinely unassigned, or (by design) a "Zone" device spanning multiple
+ * rooms, which HA leaves area-less on both the entity and the device.
+ */
+export function resolveEntityAreaId(
+  entry: Pick<EntityRegistryEntry, 'area_id' | 'device_id'>,
+  deviceAreaMap: DeviceAreaMap,
+): string | null {
+  return (
+    entry.area_id ??
+    (entry.device_id !== null ? (deviceAreaMap.get(entry.device_id) ?? null) : null)
+  );
+}
+
 /**
  * Build a `Room[]` from registry data and the current entity state map.
  *
@@ -29,10 +58,7 @@ import { domainOf } from './domain.js';
 export function buildRooms(registries: Registries, entities: HassEntityMap): Room[] {
   const { areas, devices, entities: entityEntries } = registries;
 
-  // Build device lookup: device id → area_id
-  const deviceAreaMap = new Map<string, string | null>(
-    devices.map((d: DeviceRegistryEntry) => [d.id, d.area_id ?? null])
-  );
+  const deviceAreaMap = buildDeviceAreaMap(devices);
 
   // Build a map: area_id → Room (start empty)
   const roomMap = new Map<string, Room>(
@@ -57,9 +83,7 @@ export function buildRooms(registries: Registries, entities: HassEntityMap): Roo
     if (entry.disabled_by != null || entry.hidden_by != null) continue;
 
     // Resolve which area this entity belongs to
-    const areaId =
-      entry.area_id ??
-      (entry.device_id !== null ? (deviceAreaMap.get(entry.device_id) ?? null) : null);
+    const areaId = resolveEntityAreaId(entry, deviceAreaMap);
 
     if (areaId === null) continue; // No room — skip
 
