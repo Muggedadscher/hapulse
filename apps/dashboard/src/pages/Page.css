@@ -66,6 +66,220 @@
 }
 
 /* =========================================================
+   Overview widget grid
+   Shared by every page that lays out sections in a grid (Home, Scenes,
+   Security, Energy, Automations, System) — lives here rather than in
+   Home.css because pages lazy-load their own CSS chunk independently;
+   keeping it in Home.css meant the grid/gap only rendered correctly if
+   the Home page happened to load first in the session.
+
+   Desktop (≥ 900px): 3 columns, auto-placement.
+   Hero section spans 2 columns.
+   Tablet (560–899px): 2 columns.
+   Mobile (< 560px): single column.
+   ========================================================= */
+.overview-grid {
+  display: grid;
+  /* minmax(0, 1fr) lets columns shrink below their content min-size so the grid
+     always fits the content area (prevents right-edge overflow when the sidebar
+     is expanded). */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  /* Stretch so cards in the same row share the same height. */
+  align-items: stretch;
+  /* dense packing helps lone cards backfill gaps from full-span cards */
+  grid-auto-flow: row dense;
+}
+
+/* Each cell stretches its child card to fill height */
+.overview-grid__cell {
+  display: flex;
+  flex-direction: column;
+  /* Cells self-stretch so cards inside fill their row */
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Direct card children fill the cell height */
+.overview-grid__cell > * {
+  flex: 1;
+  height: 100%;
+}
+
+/* Column span classes — applied to the direct grid child (SortableItem wrapper in edit mode, cell div in view mode) */
+.overview-grid__cell--span-2 { grid-column: span 2; }
+.overview-grid__cell--span-3 { grid-column: span 3; }
+.overview-grid__cell--span-4 { grid-column: 1 / -1; }
+
+/* =========================================================
+   Edit mode — section wrapper styles
+   ========================================================= */
+
+/* Dimmed hidden section (shown at ~40% in edit mode) */
+.overview-grid__cell--hidden {
+  opacity: 0.4;
+}
+
+/* Editing wrapper: provide positioning context for EditBadge */
+.overview-grid__cell--editing {
+  position: relative;
+  /* Extra space around each cell so EditBadge badge can poke out */
+  margin-top: 8px;
+  margin-right: 8px;
+}
+
+/* Outline shown around each section while editing */
+.edit-section-outline {
+  border-radius: var(--radius-card);
+  outline: 1.5px dashed var(--line);
+  outline-offset: 3px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.edit-section-outline > * {
+  flex: 1;
+  height: 100%;
+}
+
+/* =========================================================
+   Span dots — column indicator shown in edit mode
+   ========================================================= */
+.overview-span-dots {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  display: flex;
+  gap: 3px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.overview-span-dot {
+  width: 12px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 150ms ease-out;
+}
+
+.overview-span-dot--filled {
+  background: var(--accent);
+}
+
+/* =========================================================
+   Resize handle — drag left/right to change column span
+   ========================================================= */
+.overview-resize-handle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 40px;
+
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+
+  cursor: ew-resize;
+  touch-action: none;
+  color: var(--text-faint);
+
+  /* Button resets */
+  padding: 0;
+
+  transition: background 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.overview-resize-handle:hover {
+  background: var(--bg-subtle);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* =========================================================
+   Laptop / small desktop (3-column, 900–1279px)
+   At these widths the sidebar + 4 columns get too cramped, so drop to 3.
+   The span classes still apply: span-2 hero keeps 2 of 3, span-3/4 fill the row.
+   ========================================================= */
+@media (min-width: 900px) and (max-width: 1279px) {
+  .overview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* A 3-wide span equals a full row at 3 columns. */
+  .overview-grid__cell--span-3 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
+   Tablet (2-column, 560–899px)
+   ========================================================= */
+@media (max-width: 899px) and (min-width: 560px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Any multi-col span collapses to full row on 2-col tablet */
+  .overview-grid__cell--span-2,
+  .overview-grid__cell--span-3,
+  .overview-grid__cell--span-4 {
+    grid-column: 1 / -1;
+  }
+
+  /* Lone last single-span card also goes full width */
+  .overview-grid__cell:not(.overview-grid__cell--span-2):not(.overview-grid__cell--span-3):not(.overview-grid__cell--span-4):last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
+   Mobile (narrow 2-column, 480–559px)
+   ========================================================= */
+@media (max-width: 559px) and (min-width: 480px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-grid__cell--span-2,
+  .overview-grid__cell--span-3,
+  .overview-grid__cell--span-4 {
+    grid-column: 1 / -1;
+  }
+
+  .overview-grid__cell:not(.overview-grid__cell--span-2):not(.overview-grid__cell--span-3):not(.overview-grid__cell--span-4):last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
+   Mobile (single column, < 480px)
+   ========================================================= */
+@media (max-width: 479px) {
+  .overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Everything full-width on narrow mobile */
+  .overview-grid__cell,
+  .overview-grid__cell--span-2,
+  .overview-grid__cell--span-3,
+  .overview-grid__cell--span-4 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
    Section height levels (overview-grid pages)
    Applied to the [data-section] cell via .section-h-N. Level 0 = no class =
    no cap (default). The px values MUST match HEIGHT_PX in
