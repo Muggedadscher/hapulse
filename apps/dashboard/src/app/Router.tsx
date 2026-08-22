@@ -21,6 +21,7 @@ const Scenes      = lazy(() => import('../pages/Scenes').then((m) => ({ default:
 const System      = lazy(() => import('../pages/System').then((m) => ({ default: m.System })));
 const Energy      = lazy(() => import('../pages/Energy').then((m) => ({ default: m.Energy })));
 const Devices     = lazy(() => import('../pages/Devices').then((m) => ({ default: m.Devices })));
+const Nvr         = lazy(() => import('../pages/Nvr').then((m) => ({ default: m.Nvr }))); // [fork]
 
 /**
  * Resets scroll to the top on every route change. The app scrolls on the
@@ -75,6 +76,7 @@ export function AppRouter({ basename }: { basename?: string | undefined }) {
                     <Route path="/room/:areaId" element={<Room />} />
                     <Route path="/music" element={<Music />} />
                     <Route path="/security" element={<Security />} />
+                    <Route path="/nvr" element={<Nvr />} /> {/* [fork] */}
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/devices" element={<Devices />} />
                     <Route path="/automations" element={<Automations />} />

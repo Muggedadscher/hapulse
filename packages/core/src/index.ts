@@ -81,6 +81,22 @@ export type {
   DevicesSummary,
 } from './devices.js';
 
+// History
+export {
+  HISTORY_RANGES,
+  historyRangeSpec,
+  parseNumericHistory,
+  summarizeHistory,
+  demoHistory,
+} from './history.js';
+export type {
+  RawHistoryState,
+  HistoryPoint,
+  HistoryRange,
+  HistoryRangeSpec,
+  HistorySummary,
+} from './history.js';
+
 // Energy
 export {
   computeEnergyDashboard,

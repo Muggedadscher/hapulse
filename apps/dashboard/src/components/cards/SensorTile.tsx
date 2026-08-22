@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Thermometer, Droplets, Zap, Sun, Battery, Gauge,
   Clock, Wind, Activity, Eye, DoorOpen, Flame, Users,
@@ -7,6 +7,7 @@ import {
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
+import { HistoryModal } from '../history/HistoryModal'; // [fork]
 import './cards.css';
 
 interface SensorTileProps {
@@ -113,6 +114,7 @@ function sensorBarColor(deviceClass: string | undefined): string {
 }
 
 export function SensorTile({ entity, name }: SensorTileProps) {
+  const [historyOpen, setHistoryOpen] = useState(false); // [fork]
   const deviceClass = entity.attributes.device_class as string | undefined;
   const icon = (deviceClass && DC_ICONS[deviceClass]) ?? <Activity size={16} strokeWidth={1.75} />;
   const value = formatEntityState(entity);
@@ -138,8 +140,8 @@ export function SensorTile({ entity, name }: SensorTileProps) {
   const fillPct  = isNumeric ? normalizeSensorValue(deviceClass, numValue) : 0;
   const barColor = sensorBarColor(deviceClass);
 
-  return (
-    <Card className="sensor-tile sensor-tile--numeric">
+  const tileInner = (
+    <>
       {isNumeric && (
         <div
           className="sensor-tile__bar"
@@ -150,6 +152,39 @@ export function SensorTile({ entity, name }: SensorTileProps) {
       <div className="icon-chip sensor-tile__chip">{icon}</div>
       <div className="sensor-tile__value">{value}</div>
       <div className="sensor-tile__name">{name}</div>
-    </Card>
+    </>
+  );
+
+  // [fork] Numeric sensors open a value-over-time history chart on tap;
+  // non-numeric (text/unavailable) tiles stay static.
+  if (!isNumeric) {
+    return <Card className="sensor-tile sensor-tile--numeric">{tileInner}</Card>;
+  }
+
+  return (
+    <>
+      <Card
+        className="sensor-tile sensor-tile--numeric sensor-tile--clickable"
+        role="button"
+        tabIndex={0}
+        aria-label={`${name} — show history`}
+        onClick={() => setHistoryOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setHistoryOpen(true);
+          }
+        }}
+      >
+        {tileInner}
+      </Card>
+      <HistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        entity={entity}
+        name={name}
+        color={barColor}
+      />
+    </>
   );
 }
