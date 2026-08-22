@@ -447,18 +447,28 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
             }
           } catch (err) {
             teardown();
-            clearHATokens();
-            // If persisted mode was oauth but tokens are gone/expired, reset to idle
-            // so the route guard sends the user back to /onboarding.
-            let errorMsg = 'session expired — sign in again';
+
+            // Only an auth failure means the stored tokens are actually
+            // unusable. Clearing them for a mere connection failure — HA
+            // restarting, a network blip, a reverse-proxy hiccup during page
+            // load — permanently destroys a perfectly valid session and forces
+            // a full re-authentication. core draws this distinction for us:
+            // resumeHASession throws HAAuthError for bad tokens and
+            // HAConnectionError when it simply could not reach HA.
             if (err instanceof HAAuthError) {
-              errorMsg = err.message;
-            } else if (err instanceof HAConnectionError) {
-              errorMsg = err.message;
-            } else if (err instanceof Error) {
-              errorMsg = err.message;
+              clearHATokens();
+              set({ status: 'error', error: err.message, mode: null });
+            } else {
+              // Keep the tokens and stay in oauth mode: the session survives,
+              // the layout shows its "can't reach Home Assistant" banner, and
+              // a reload (or HA coming back) resumes without signing in again.
+              set({
+                status: 'disconnected',
+                error: err instanceof Error ? err.message : 'cannot reach home assistant',
+                mode: 'oauth',
+                url: persisted.url ?? '',
+              });
             }
-            set({ status: 'error', error: errorMsg, mode: null });
             // Don't rethrow — init failure is handled by the route guard
           }
         }
