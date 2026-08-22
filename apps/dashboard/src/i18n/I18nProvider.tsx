@@ -10,7 +10,7 @@ import { resolveLanguage, type Dict, type Locale } from '@hapulse/core';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useConnectionStore } from '../stores/connectionStore';
 import { getLanguage } from '../ha/config';
-import en from './locales/en.json';
+import en from '@hapulse/core/locales/en.json';
 
 export interface I18nValue {
   locale: Locale;

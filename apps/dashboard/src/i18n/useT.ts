@@ -1,7 +1,7 @@
 import { useContext, useMemo } from 'react';
 import { translate, type Locale } from '@hapulse/core';
 import { I18nContext } from './I18nProvider';
-import type en from './locales/en.json';
+import type en from '@hapulse/core/locales/en.json';
 
 /** Plural keys are addressed by their base name, whose `.one` / `.other` variants
  *  are what actually live in the JSON. */
