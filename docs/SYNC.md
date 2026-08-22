@@ -20,49 +20,47 @@ git remote -v
 
 ---
 
-## 2. `main` bleibt ein reiner Spiegel von Upstream
+## 2. `main` = deine eigene Linie (Fork **+** Upstream)
 
-Auf `main` wird **nie direkt committet**. So bleibt der Abgleich mit dem
-Original trivial:
+`main` enthält **deine Erweiterungen**. Neue Arbeit passiert in Feature-Branches
+und kommt per PR in `main` (Schritt 3). Upstream-Updates holst du per **echtem
+Merge** in `main`:
 
 ```bash
 git checkout main
+git pull origin main            # deinen aktuellen Fork-Stand holen
 git fetch upstream
-git merge --ff-only upstream/main   # holt neue Original-Commits
+git merge upstream/main         # Original-Updates einmischen
+# Konflikte lösen (dank [fork]-Marker leicht zu finden), dann prüfen:
+npm run typecheck && npm run build && npm test -w @hapulse/core
 git push origin main
 ```
 
-`--ff-only` erzwingt, dass `main` wirklich nur „vorgespult" wird. Schlägt es
-fehl, hat aus Versehen jemand auf `main` committet → dann den Commit auf einen
-Feature-Branch verschieben und `main` zurücksetzen.
+Konflikte entstehen praktisch nur in den wenigen mit `// [fork]` markierten
+Upstream-Dateien (Inventar unten) — wegen der Datei-Isolation bleibt das klein.
+
+> Merke: seit dem Merge der Fork-Features ist `main` **kein** reiner
+> Upstream-Spiegel mehr, deshalb `git merge` statt `--ff-only`.
 
 ---
 
-## 3. Eigene Erweiterungen in einem Feature-Branch
+## 3. Eigene Erweiterungen in Feature-Branches
 
-Alle Fork-Änderungen leben in einem eigenen Branch (aktuell
-`claude/forked-repo-updates-extensions-dsuu02`):
+Neue Features nicht direkt auf `main`, sondern in einem Branch — dann per PR
+zurück nach `main`:
 
 ```bash
-git checkout -b my-extensions main   # falls noch nicht vorhanden
+git checkout main && git pull origin main
+git checkout -b feature/mein-feature
 # ... entwickeln, committen ...
-git push -u origin my-extensions
+git push -u origin feature/mein-feature
+# danach PR  feature/mein-feature -> main  öffnen und mergen
 ```
 
-### Upstream-Updates in den Feature-Branch holen
-
-```bash
-# 1. main aktualisieren (Schritt 2)
-# 2. Updates in den Feature-Branch mergen:
-git checkout my-extensions
-git merge main
-# Konflikte lösen, testen, committen
-git push
-```
-
-> **Merge oder Rebase?** `merge` ist sicherer und behält die History — empfohlen,
-> wenn der Branch schon gepusht/geteilt ist. `rebase main` gibt eine lineare
-> History, schreibt aber Commits um (nur auf noch nicht geteilten Branches).
+So bleibt `main` immer buildbar und die History nachvollziehbar. Läuft parallel
+ein Upstream-Merge in `main`, hol ihn danach mit `git merge main` in deinen
+offenen Feature-Branch (behält die History; `rebase main` nur auf noch nicht
+geteilten Branches).
 
 ---
 
