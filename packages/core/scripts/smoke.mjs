@@ -49,6 +49,8 @@ import {
   exchangeHAAuthCode,
   connectWithAuthData,
   HAConnection,
+  translate,
+  resolveLanguage,
 } from '../dist/index.js';
 
 let passed = 0;
@@ -626,6 +628,89 @@ console.log('\n── frontend/user_data methods ──');
 assert(typeof HAConnection.prototype.getUserData === 'function', 'HAConnection.prototype.getUserData exported as function');
 assert(typeof HAConnection.prototype.setUserData === 'function', 'HAConnection.prototype.setUserData exported as function');
 assert(typeof HAConnection.prototype.subscribeUserData === 'function', 'HAConnection.prototype.subscribeUserData exported as function');
+
+// ---------------------------------------------------------------------------
+// i18n — translate()
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: translate ──');
+
+const EN = {
+  'nav.devices': 'Devices',
+  'devices.count.one': '{count} device',
+  'devices.count.other': '{count} devices',
+  'greeting': 'Hello {name}',
+};
+const FR = {
+  'nav.devices': 'Appareils',
+  'devices.count.one': '{count} appareil',
+  'devices.count.other': '{count} appareils',
+};
+
+assertEqual(translate(EN, EN, 'en', 'nav.devices'), 'Devices', 'clé simple');
+assertEqual(translate(FR, EN, 'fr', 'nav.devices'), 'Appareils', 'clé traduite');
+
+// Repli : dictionnaire cible incomplet → anglais
+assertEqual(translate(FR, EN, 'fr', 'greeting', { name: 'Bap' }), 'Hello Bap',
+  'repli sur en quand la clé manque dans la locale');
+
+// Repli ultime : la clé elle-même, jamais un écran vide
+assertEqual(translate(EN, EN, 'en', 'inconnue.totale'), 'inconnue.totale',
+  'repli sur la clé quand elle est introuvable partout');
+
+// Interpolation : variable absente laissée visible, pour repérer le bug
+assertEqual(translate(EN, EN, 'en', 'greeting'), 'Hello {name}',
+  'variable non fournie laissée telle quelle');
+
+// Pluriels anglais
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 1 }), '1 device', 'en, count=1 → singulier');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 2 }), '2 devices', 'en, count=2 → pluriel');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 0 }), '0 devices', 'en, count=0 → pluriel');
+
+// Pluriels français : le cas qui attrape les vraies régressions.
+// En français 0 et 1 prennent le SINGULIER, contrairement à l'anglais.
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 0 }), '0 appareil', 'fr, count=0 → singulier');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 1 }), '1 appareil', 'fr, count=1 → singulier');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: 2 }), '2 appareils', 'fr, count=2 → pluriel');
+
+// Non-integer and negative count values
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: -1 }), '-1 device', 'en, count=-1 → singular (negative)');
+assertEqual(translate(EN, EN, 'en', 'devices.count', { count: 1.5 }), '1.5 devices', 'en, count=1.5 → plural (fractional)');
+assertEqual(translate(FR, EN, 'fr', 'devices.count', { count: -1 }), '-1 appareil', 'fr, count=-1 → singular (negative)');
+
+// Completely empty target dictionary
+const EMPTY_FR = {};
+assertEqual(translate(EMPTY_FR, EN, 'fr', 'nav.devices'), 'Devices', 'empty dict → fallback English');
+assertEqual(translate(EMPTY_FR, EN, 'fr', 'totally.unknown'), 'totally.unknown', 'empty dict, unknown key → key itself');
+
+// ---------------------------------------------------------------------------
+// i18n — resolveLanguage()
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: resolveLanguage ──');
+
+const AVAIL = ['en', 'fr'];
+
+// Une préférence explicite gagne sur tout le reste
+assertEqual(resolveLanguage('fr', 'en', ['en-US'], AVAIL), 'fr', 'préférence explicite prioritaire');
+
+// auto : la langue de HA d'abord
+assertEqual(resolveLanguage('auto', 'fr', ['en-US'], AVAIL), 'fr', 'auto → langue HA');
+
+// auto : navigator en second, quand HA ne dit rien
+assertEqual(resolveLanguage('auto', null, ['fr-FR', 'en'], AVAIL), 'fr', 'auto → navigator');
+
+// Les balises régionales sont réduites à la langue de base
+assertEqual(resolveLanguage('auto', 'fr-CA', [], AVAIL), 'fr', 'fr-CA → fr');
+
+// Une langue HA non supportée ne doit pas gagner : on continue la chaîne
+assertEqual(resolveLanguage('auto', 'de', ['fr-FR'], AVAIL), 'fr',
+  'langue HA non supportée → on passe à navigator');
+
+// Dernier recours
+assertEqual(resolveLanguage('auto', 'de', ['ja-JP'], AVAIL), 'en', 'aucune correspondance → en');
+assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information → en');
+
+// Une préférence explicite devenue indisponible ne doit pas bloquer l'UI
+assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)

@@ -10,6 +10,7 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
+import { useT, type TKey } from '../i18n/useT';
 import { useEntitiesByDomain } from '../ha/hooks';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
@@ -90,6 +91,8 @@ function ResizeHandle({
   span: number;
   onCommit: (id: string, newSpan: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -133,8 +136,8 @@ function ResizeHandle({
       type="button"
       className="overview-resize-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag to resize — currently ${span} of ${MAX_COLS} columns`}
-      title={`Drag left / right to resize (${span} of ${MAX_COLS} columns)`}
+      aria-label={t('columnResize.ariaLabel', { span, max: MAX_COLS })}
+      title={t('columnResize.title', { span, max: MAX_COLS })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
@@ -143,14 +146,27 @@ function ResizeHandle({
 
 // ── Section labels for EditBadge ──────────────────────────────────────────────
 
-const FIXED_LABELS: Record<string, string> = {
-  hero:     'Overview',
-  activity: 'Activity',
+type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
+
+const FIXED_TOGGLE_KEYS: Record<string, ToggleKeys> = {
+  hero: {
+    hide: 'automations.section.hide.hero',
+    show: 'automations.section.show.hero',
+    hideMobile: 'automations.section.hideMobile.hero',
+    showMobile: 'automations.section.showMobile.hero',
+  },
+  activity: {
+    hide: 'automations.section.hide.activity',
+    show: 'automations.section.show.activity',
+    hideMobile: 'automations.section.hideMobile.activity',
+    showMobile: 'automations.section.showMobile.activity',
+  },
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function Automations() {
+  const t = useT();
   const automations = useEntitiesByDomain('automation');
   const editMode    = useUIStore((s) => s.editMode);
   const registries  = useEntityStore((s) => s.registries);
@@ -275,8 +291,23 @@ export function Automations() {
     [updateCustomization]
   );
 
-  function getSectionLabel(id: string): string {
-    return FIXED_LABELS[id] ?? idToCategory(id, categories);
+  function getToggleLabels(id: string) {
+    const fixed = FIXED_TOGGLE_KEYS[id];
+    if (fixed) {
+      return {
+        hide: t(fixed.hide),
+        show: t(fixed.show),
+        hideMobile: t(fixed.hideMobile),
+        showMobile: t(fixed.showMobile),
+      };
+    }
+    const label = idToCategory(id, categories);
+    return {
+      hide: t('automations.section.hideCategory', { label }),
+      show: t('automations.section.showCategory', { label }),
+      hideMobile: t('automations.section.hideMobileCategory', { label }),
+      showMobile: t('automations.section.showMobileCategory', { label }),
+    };
   }
 
   function renderWidget(id: string) {
@@ -294,7 +325,7 @@ export function Automations() {
   return (
     <div className="page automations-page stagger-rise">
       <div className="page__header-row automations-page__header">
-        <h1 className="page__title">Automations</h1>
+        <h1 className="page__title">{t('automations.title')}</h1>
         <PageHeaderActions><EditToggle /></PageHeaderActions>
       </div>
 
@@ -313,7 +344,7 @@ export function Automations() {
 
       {!editMode && filterActive ? (
         filteredAutomations.length === 0 ? (
-          <p className="automations-empty-filter">No automations match your filters.</p>
+          <p className="automations-empty-filter">{t('automations.emptyFilter')}</p>
         ) : (
           <div className="overview-grid">
             {[...new Set(filteredAutomations.map(getCategory))].sort().map((cat) => (
@@ -371,15 +402,13 @@ export function Automations() {
                   <div className="edit-section-outline">{widget}</div>
                   <EditBadge
                     hidden={isHidden}
-                    toggleLabel={
-                      isHidden
-                        ? `show ${getSectionLabel(id)}`
-                        : `hide ${getSectionLabel(id)}`
-                    }
+                    toggleLabel={isHidden ? getToggleLabels(id).show : getToggleLabels(id).hide}
                     onToggleHidden={() => handleToggleHidden(id)}
                     mobileHidden={isMobileHidden}
                     onToggleMobileHidden={() => handleToggleMobileHidden(id)}
-                    mobileToggleLabel={isMobileHidden ? `show ${getSectionLabel(id)} on mobile` : `hide ${getSectionLabel(id)} on mobile`}
+                    mobileToggleLabel={
+                      isMobileHidden ? getToggleLabels(id).showMobile : getToggleLabels(id).hideMobile
+                    }
                   />
                   <SpanDots span={currentSpan} />
                   <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />

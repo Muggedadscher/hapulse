@@ -19,6 +19,7 @@ import { AppRouter } from './Router';
 import { UserMenuContext } from './userMenuContext';
 import { setAppBasename } from './basename';
 import { DashboardBootLoading } from '../components/ui/DashboardBootLoading';
+import { I18nProvider } from '../i18n/I18nProvider';
 
 // Guard against React 19 StrictMode's double-invocation running init twice.
 let _initialised = false;
@@ -83,13 +84,15 @@ export function DashboardApp({ basename, accountMenu, demo = false }: DashboardA
     }
   }, [demo, basename]);
 
-  if (waitingForBoot && !booted) {
-    return <DashboardBootLoading />;
-  }
-
   return (
-    <UserMenuContext.Provider value={accountMenu}>
-      <AppRouter basename={basename} />
-    </UserMenuContext.Provider>
+    <I18nProvider>
+      {waitingForBoot && !booted ? (
+        <DashboardBootLoading />
+      ) : (
+        <UserMenuContext.Provider value={accountMenu}>
+          <AppRouter basename={basename} />
+        </UserMenuContext.Provider>
+      )}
+    </I18nProvider>
   );
 }

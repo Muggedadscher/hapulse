@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { Search, List, LayoutGrid, ChevronDown } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 export interface FilterOption {
   value: string;
@@ -54,6 +55,7 @@ export function DevicesToolbar({
   integrations, integration, onIntegrationChange,
   view, onViewChange,
 }: DevicesToolbarProps) {
+  const t = useT();
   return (
     <div className="devices-toolbar">
       <div className="devices-toolbar__search">
@@ -61,33 +63,33 @@ export function DevicesToolbar({
         <input
           type="search"
           className="devices-toolbar__search-input"
-          placeholder="Search devices…"
+          placeholder={t('devices.toolbar.searchPlaceholder')}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          aria-label="Search devices"
+          aria-label={t('devices.toolbar.searchAria')}
         />
       </div>
 
       <div className="devices-toolbar__filters">
         <Select
-          ariaLabel="Filter by room"
+          ariaLabel={t('devices.toolbar.roomFilterAria')}
           value={room}
           onChange={onRoomChange}
-          options={[{ value: '', label: 'All rooms' }, ...rooms]}
+          options={[{ value: '', label: t('devices.toolbar.allRooms') }, ...rooms]}
         />
         <Select
-          ariaLabel="Filter by integration"
+          ariaLabel={t('devices.toolbar.integrationFilterAria')}
           value={integration}
           onChange={onIntegrationChange}
-          options={[{ value: '', label: 'All integrations' }, ...integrations]}
+          options={[{ value: '', label: t('devices.toolbar.allIntegrations') }, ...integrations]}
         />
 
-        <div className="devices-view-toggle" role="group" aria-label="View mode">
+        <div className="devices-view-toggle" role="group" aria-label={t('devices.toolbar.viewModeAria')}>
           <button
             type="button"
             className={`devices-view-toggle__btn${view === 'list' ? ' devices-view-toggle__btn--active' : ''}`}
             onClick={() => onViewChange('list')}
-            aria-label="List view"
+            aria-label={t('devices.toolbar.listViewAria')}
             aria-pressed={view === 'list'}
           >
             <List size={16} strokeWidth={2} />
@@ -96,7 +98,7 @@ export function DevicesToolbar({
             type="button"
             className={`devices-view-toggle__btn${view === 'grid' ? ' devices-view-toggle__btn--active' : ''}`}
             onClick={() => onViewChange('grid')}
-            aria-label="Grid view"
+            aria-label={t('devices.toolbar.gridViewAria')}
             aria-pressed={view === 'grid'}
           >
             <LayoutGrid size={16} strokeWidth={2} />

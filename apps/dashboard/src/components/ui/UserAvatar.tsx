@@ -17,6 +17,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router';
 import { UserMenuContext, DashboardNavContext } from '../../app/userMenuContext';
+import { useT } from '../../i18n/useT';
 import './UserAvatar.css';
 
 export interface UserAvatarProps {
@@ -28,6 +29,7 @@ export interface UserAvatarProps {
 }
 
 export function UserAvatar({ name, pictureUrl, initial, interactive = true }: UserAvatarProps) {
+  const t = useT();
   const navigate = useNavigate();
   const menu = useContext(UserMenuContext);
   const [open, setOpen] = useState(false);
@@ -106,7 +108,7 @@ export function UserAvatar({ name, pictureUrl, initial, interactive = true }: Us
           ref={triggerRef}
           type="button"
           className="user-avatar user-avatar--interactive"
-          aria-label={`Account: ${name}`}
+          aria-label={t('userAvatar.account', { name })}
           aria-haspopup="menu"
           aria-expanded={open}
           title={name}
@@ -137,7 +139,7 @@ export function UserAvatar({ name, pictureUrl, initial, interactive = true }: Us
       <button
         type="button"
         className="user-avatar user-avatar--interactive"
-        aria-label={`signed in as ${name} — open settings`}
+        aria-label={t('userAvatar.signedInSettings', { name })}
         title={name}
         onClick={() => navigate('/settings')}
       >
@@ -150,7 +152,7 @@ export function UserAvatar({ name, pictureUrl, initial, interactive = true }: Us
     <div
       className="user-avatar"
       title={name}
-      aria-label={`signed in as ${name}`}
+      aria-label={t('userAvatar.signedIn', { name })}
     >
       {inner}
     </div>

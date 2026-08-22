@@ -12,6 +12,7 @@ import { Card } from '../ui/Card';
 import type { HassEntityMap } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useT } from '../../i18n/useT';
 import './ScenesCard.css';
 
 interface ScenesCardProps {
@@ -41,6 +42,7 @@ function sceneIcon(name: string): React.ReactNode {
 
 export function ScenesCard({ entities }: ScenesCardProps) {
   const navigate = useNavigate();
+  const t = useT();
   const favorites = useSettingsStore(useShallow((s) => s.customization.favorites));
 
   const scenes = Object.values(entities)
@@ -59,15 +61,15 @@ export function ScenesCard({ entities }: ScenesCardProps) {
           <span className="scenes-card__icon-chip" aria-hidden="true">
             <Sparkles size={16} strokeWidth={1.75} />
           </span>
-          <span className="scenes-card__title">Scenes</span>
+          <span className="scenes-card__title">{t('home.scenes.title')}</span>
         </div>
         <button
           className="scenes-card__link"
           onClick={() => void navigate('/scenes')}
           type="button"
-          aria-label="View all scenes"
+          aria-label={t('home.scenes.viewAllAria')}
         >
-          All Scenes
+          {t('home.scenes.allScenes')}
           <ChevronRight size={14} strokeWidth={2} />
         </button>
       </div>
@@ -82,7 +84,7 @@ export function ScenesCard({ entities }: ScenesCardProps) {
                 key={scene.entity_id}
                 className="scene-tile"
                 onClick={() => handleActivate(scene.entity_id)}
-                aria-label={`Activate scene: ${name}`}
+                aria-label={t('home.scenes.activateAria', { name })}
                 type="button"
               >
                 <span
@@ -100,9 +102,9 @@ export function ScenesCard({ entities }: ScenesCardProps) {
       ) : (
         <div className="scenes-card__empty">
           <Star size={28} strokeWidth={1.5} className="scenes-card__empty-icon" />
-          <p className="scenes-card__empty-text">No favorite scenes</p>
+          <p className="scenes-card__empty-text">{t('home.scenes.emptyTitle')}</p>
           <p className="scenes-card__empty-sub">
-            Open a room, tap edit, and star a scene to pin it here.
+            {t('home.scenes.emptyDescription')}
           </p>
         </div>
       )}

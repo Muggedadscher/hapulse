@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DoorOpen, DoorClosed, Grid2x2 } from 'lucide-react';
 import type { HassEntity, Room } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import { getRoomName, relativeTime } from './roomUtils';
 import './MotionList.css'; // shares the same list row styles
 
@@ -26,6 +27,7 @@ interface DoorWindowListProps {
 }
 
 export function DoorWindowList({ sensors, rooms }: DoorWindowListProps) {
+  const t = useT();
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -62,9 +64,9 @@ export function DoorWindowList({ sensors, rooms }: DoorWindowListProps) {
             <div className="motion-list__right">
               <span className={`motion-list__pill${isOpen ? ` motion-list__pill--${alertClass}` : ' motion-list__pill--clear'}`}>
                 {isOpen && <span className="motion-list__dot" aria-hidden="true" />}
-                {isOpen ? 'open' : 'closed'}
+                {isOpen ? t('security.sensor.open') : t('security.sensor.closed')}
               </span>
-              <span className="motion-list__time">{relativeTime(sensor.last_changed)}</span>
+              <span className="motion-list__time">{relativeTime(t, sensor.last_changed)}</span>
             </div>
           </div>
         );

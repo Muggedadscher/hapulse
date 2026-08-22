@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { useSystemHealth } from '../../ha/useSystemHealth';
+import { useT } from '../../i18n/useT';
 import type { DevicesSummary } from '@hapulse/core';
 
 interface StatProps {
@@ -31,7 +32,9 @@ function Stat({ icon, value, label }: StatProps) {
 }
 
 export function DevicesHeroCard({ summary }: { summary: DevicesSummary }) {
-  const { health, title } = useSystemHealth();
+  const t = useT();
+  const { health, titleKey, titleCount } = useSystemHealth();
+  const title = t(titleKey, titleCount !== undefined ? { count: titleCount } : undefined);
   const StatusIcon =
     health === 'healthy' ? CheckCircle2 :
     health === 'warning' ? AlertTriangle :
@@ -41,9 +44,9 @@ export function DevicesHeroCard({ summary }: { summary: DevicesSummary }) {
     <Card className="devices-hero">
       <div className="devices-hero__head">
         <div>
-          <h2 className="devices-hero__title">All Devices</h2>
+          <h2 className="devices-hero__title">{t('devices.hero.title')}</h2>
           <p className="devices-hero__subtitle">
-            {summary.devices} devices · {summary.rooms} {summary.rooms === 1 ? 'room' : 'rooms'}
+            {t('devices.hero.deviceCount', { count: summary.devices })} · {t('devices.hero.roomCount', { count: summary.rooms })}
           </p>
         </div>
         <span className={`devices-hero__status devices-hero__status--${health}`}>
@@ -53,10 +56,10 @@ export function DevicesHeroCard({ summary }: { summary: DevicesSummary }) {
       </div>
 
       <div className="devices-hero__stats">
-        <Stat icon={<Boxes size={18} strokeWidth={1.75} />} value={summary.integrations} label="Integrations" />
-        <Stat icon={<Cpu size={18} strokeWidth={1.75} />} value={summary.devices} label="Devices" />
-        <Stat icon={<LayoutGrid size={18} strokeWidth={1.75} />} value={summary.entities} label="Entities" />
-        <Stat icon={<DoorOpen size={18} strokeWidth={1.75} />} value={summary.rooms} label="Rooms" />
+        <Stat icon={<Boxes size={18} strokeWidth={1.75} />} value={summary.integrations} label={t('devices.hero.stat.integrations')} />
+        <Stat icon={<Cpu size={18} strokeWidth={1.75} />} value={summary.devices} label={t('devices.hero.stat.devices')} />
+        <Stat icon={<LayoutGrid size={18} strokeWidth={1.75} />} value={summary.entities} label={t('devices.hero.stat.entities')} />
+        <Stat icon={<DoorOpen size={18} strokeWidth={1.75} />} value={summary.rooms} label={t('devices.hero.stat.rooms')} />
       </div>
     </Card>
   );

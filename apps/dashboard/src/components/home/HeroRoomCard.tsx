@@ -13,6 +13,7 @@ import { callService } from '../../ha/service';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useT } from '../../i18n/useT';
 import './HeroRoomCard.css';
 
 /** Resolve an HA area picture path against the connection URL. */
@@ -68,6 +69,7 @@ function roomGradient(name: string): string {
 }
 
 export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
+  const t = useT();
   const navigate = useNavigate();
   const baseUrl = useConnectionStore((s) => s.url);
   const hiddenEntities = useSettingsStore(
@@ -90,7 +92,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   if (!room) {
     return (
       <div className="hero-room-card hero-room-card--empty card">
-        <p className="hero-room-card__empty-text">No rooms configured yet.</p>
+        <p className="hero-room-card__empty-text">{t('home.hero.emptyText')}</p>
       </div>
     );
   }
@@ -172,7 +174,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
       className={`hero-room-card card${hasPhoto ? ' hero-room-card--photo' : ''}`}
       role="button"
       tabIndex={0}
-      aria-label={`${room.name} room — tap to view details`}
+      aria-label={t('home.hero.roomAria', { name: room.name })}
       onClick={handleNavigate}
       onKeyDown={handleKeyDown}
       style={{ '--hero-gradient': gradient } as React.CSSProperties}
@@ -197,10 +199,10 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
       <div className="hero-room-card__top">
         <div>
           <h2 className="hero-room-card__name">{room.name}</h2>
-          <p className="hero-room-card__sub">{totalDevices} device{totalDevices !== 1 ? 's' : ''}</p>
+          <p className="hero-room-card__sub">{t('home.hero.deviceCount', { count: totalDevices })}</p>
         </div>
         {glanceChips.length > 0 && (
-          <div className="hero-room-card__glance" role="list" aria-label="Room conditions">
+          <div className="hero-room-card__glance" role="list" aria-label={t('home.hero.conditionsAria')}>
             {glanceChips.map((chip, i) => (
               <span key={i} className="hero-room-card__glance-chip" role="listitem">
                 {chip.icon}
@@ -217,25 +219,25 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
           <button
             className={`hero-pill hero-pill--lights${lightsOn ? ' hero-pill--lights-on' : ''}`}
             onClick={handleLightsToggle}
-            aria-label={lightsOn ? 'Turn lights off' : 'Turn lights on'}
+            aria-label={lightsOn ? t('home.hero.lightsOffAria') : t('home.hero.lightsOnAria')}
             aria-pressed={lightsOn}
             type="button"
           >
             <Lightbulb size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span>Lights</span>
-            <span className="hero-pill__state">{lightsOn ? `${visibleLightsOnCount} on` : 'off'}</span>
+            <span>{t('home.hero.lightsLabel')}</span>
+            <span className="hero-pill__state">{lightsOn ? t('home.hero.onCount', { count: visibleLightsOnCount }) : t('home.hero.off')}</span>
           </button>
         )}
 
         {climateEntity && (
           <div className="hero-pill hero-pill--climate">
             <Thermometer size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span>{climateTemp != null ? `${Math.round(climateTemp)}°` : 'Climate'}</span>
+            <span>{climateTemp != null ? `${Math.round(climateTemp)}°` : t('home.hero.climateFallback')}</span>
             <div className="hero-pill__stepper" onClick={(e) => e.stopPropagation()}>
               <button
                 className="hero-pill__step-btn"
                 onClick={handleClimateDown}
-                aria-label="Lower temperature"
+                aria-label={t('home.hero.lowerTempAria')}
                 type="button"
               >
                 <Minus size={11} strokeWidth={2.5} />
@@ -243,7 +245,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
               <button
                 className="hero-pill__step-btn"
                 onClick={handleClimateUp}
-                aria-label="Raise temperature"
+                aria-label={t('home.hero.raiseTempAria')}
                 type="button"
               >
                 <Plus size={11} strokeWidth={2.5} />
@@ -256,18 +258,18 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
           <button
             className="hero-pill hero-pill--media"
             onClick={handleMediaToggle}
-            aria-label="Toggle media playback"
+            aria-label={t('home.hero.toggleMediaAria')}
             type="button"
           >
             <Wind size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span>Playing</span>
+            <span>{t('home.hero.playing')}</span>
           </button>
         )}
 
         <button
           className="hero-pill hero-pill--nav"
           onClick={(e) => { e.stopPropagation(); handleNavigate(); }}
-          aria-label={`Go to ${room.name}`}
+          aria-label={t('home.hero.goToRoomAria', { name: room.name })}
           type="button"
         >
           <ChevronRight size={15} strokeWidth={2} />

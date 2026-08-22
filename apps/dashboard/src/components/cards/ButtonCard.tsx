@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { PlayCircle } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -11,6 +12,7 @@ interface ButtonCardProps {
 }
 
 export function ButtonCard({ entity, name }: ButtonCardProps) {
+  const t = useT();
   const entityId = entity.entity_id;
   const [flash, setFlash] = useState(false);
 
@@ -30,9 +32,9 @@ export function ButtonCard({ entity, name }: ButtonCardProps) {
         type="button"
         className={`button-card__btn${flash ? ' button-card__btn--flash' : ''}`}
         onClick={handlePress}
-        aria-label={`Press ${name}`}
+        aria-label={t('cards.button.pressAria', { name })}
       >
-        Press
+        {t('cards.button.press')}
       </button>
     </Card>
   );

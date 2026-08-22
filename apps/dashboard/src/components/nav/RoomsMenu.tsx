@@ -15,6 +15,7 @@ import { useRooms, useCustomization } from '../../ha/hooks';
 import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
 import { roomIconName } from '@hapulse/core';
 import type { Room } from '@hapulse/core';
+import { useT, useLocale } from '../../i18n/useT';
 import './RoomsMenu.css';
 
 interface RoomsMenuProps {
@@ -30,14 +31,14 @@ interface RoomsMenuProps {
 }
 
 /** Mirror of the room-ordering logic used in Home.tsx — no import from pages. */
-function applyRoomOrder(rooms: Room[], roomOrder: string[], hiddenRooms: string[]): Room[] {
+function applyRoomOrder(rooms: Room[], roomOrder: string[], hiddenRooms: string[], locale: string): Room[] {
   const visible = rooms.filter((r) => !hiddenRooms.includes(r.id));
 
   // Ordered ids come first (by their position in roomOrder)
   const orderedIds = roomOrder.filter((id) => visible.some((r) => r.id === id));
   const rest = visible
     .filter((r) => !orderedIds.includes(r.id))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
 
   const orderedRooms = orderedIds
     .map((id) => visible.find((r) => r.id === id))
@@ -47,6 +48,8 @@ function applyRoomOrder(rooms: Room[], roomOrder: string[], hiddenRooms: string[
 }
 
 export function RoomsMenu({ open, onClose, triggerRef }: RoomsMenuProps) {
+  const t = useT();
+  const locale = useLocale();
   const navigate = useNavigate();
   const location = useLocation();
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -54,7 +57,7 @@ export function RoomsMenu({ open, onClose, triggerRef }: RoomsMenuProps) {
 
   const rooms = useRooms();
   const customization = useCustomization();
-  const sortedRooms = applyRoomOrder(rooms, customization.roomOrder, customization.hiddenRooms);
+  const sortedRooms = applyRoomOrder(rooms, customization.roomOrder, customization.hiddenRooms, locale);
 
   // Focus first row when open
   useEffect(() => {
@@ -124,14 +127,14 @@ export function RoomsMenu({ open, onClose, triggerRef }: RoomsMenuProps) {
       ref={popoverRef}
       className={['rooms-menu', open ? 'rooms-menu--open' : ''].filter(Boolean).join(' ')}
       role="menu"
-      aria-label="Rooms"
+      aria-label={t('nav.rooms')}
       // Prevent mouse-down inside the popover from firing the outside-click handler
       onPointerDown={(e) => e.stopPropagation()}
     >
       <div className="rooms-menu__inner">
         {sortedRooms.length === 0 ? (
           <p className="rooms-menu__empty">
-            no rooms — set areas in home assistant
+            {t('rooms.empty')}
           </p>
         ) : (
           sortedRooms.map((room, index) => (

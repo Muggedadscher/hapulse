@@ -7,6 +7,7 @@ import { useUIStore } from '../stores/uiStore';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { EditBadge } from '../components/ui/EditBadge';
+import { useT, type TKey } from '../i18n/useT';
 import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
@@ -25,11 +26,33 @@ import './System.css';
 const SECTION_IDS = ['system_hero', 'activity', 'system_monitor', 'batteries'] as const;
 type SectionId = typeof SECTION_IDS[number];
 
-const SECTION_LABELS: Record<SectionId, string> = {
-  system_hero:    'System Overview',
-  activity:       'Activity',
-  system_monitor: 'System Monitor',
-  batteries:      'Batteries',
+type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
+
+const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
+  system_hero: {
+    hide: 'system.section.hide.systemHero',
+    show: 'system.section.show.systemHero',
+    hideMobile: 'system.section.hideMobile.systemHero',
+    showMobile: 'system.section.showMobile.systemHero',
+  },
+  activity: {
+    hide: 'system.section.hide.activity',
+    show: 'system.section.show.activity',
+    hideMobile: 'system.section.hideMobile.activity',
+    showMobile: 'system.section.showMobile.activity',
+  },
+  system_monitor: {
+    hide: 'system.section.hide.systemMonitor',
+    show: 'system.section.show.systemMonitor',
+    hideMobile: 'system.section.hideMobile.systemMonitor',
+    showMobile: 'system.section.showMobile.systemMonitor',
+  },
+  batteries: {
+    hide: 'system.section.hide.batteries',
+    show: 'system.section.show.batteries',
+    hideMobile: 'system.section.hideMobile.batteries',
+    showMobile: 'system.section.showMobile.batteries',
+  },
 };
 
 const MAX_COLS = 4;
@@ -76,6 +99,8 @@ function ResizeHandle({
   span: number;
   onCommit: (id: string, newSpan: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -111,8 +136,8 @@ function ResizeHandle({
       type="button"
       className="overview-resize-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag to resize — currently ${span} of ${MAX_COLS} columns`}
-      title={`Drag left / right to resize (${span} of ${MAX_COLS} columns)`}
+      aria-label={t('columnResize.ariaLabel', { span, max: MAX_COLS })}
+      title={t('columnResize.title', { span, max: MAX_COLS })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
@@ -126,6 +151,7 @@ function ResizeHandle({
 const LOW_BATTERY_THRESHOLD = 20;
 
 export function System() {
+  const t = useT();
   const { entities, registries } = useEntityStore(
     useShallow((s) => ({ entities: s.entities, registries: s.registries }))
   );
@@ -249,7 +275,7 @@ export function System() {
   return (
     <div className="page system-page stagger-rise">
       <div className="page__header-row">
-        <h1 className="page__title">System</h1>
+        <h1 className="page__title">{t('system.title')}</h1>
         <PageHeaderActions><EditToggle /></PageHeaderActions>
       </div>
 
@@ -296,11 +322,13 @@ export function System() {
                 <div className="edit-section-outline">{widget}</div>
                 <EditBadge
                   hidden={isHidden}
-                  toggleLabel={isHidden ? `show ${SECTION_LABELS[id]}` : `hide ${SECTION_LABELS[id]}`}
+                  toggleLabel={isHidden ? t(SECTION_TOGGLE_KEYS[id].show) : t(SECTION_TOGGLE_KEYS[id].hide)}
                   onToggleHidden={() => handleToggleHidden(id)}
                   mobileHidden={isMobileHidden}
                   onToggleMobileHidden={() => handleToggleMobileHidden(id)}
-                  mobileToggleLabel={isMobileHidden ? `show ${SECTION_LABELS[id]} on mobile` : `hide ${SECTION_LABELS[id]} on mobile`}
+                  mobileToggleLabel={
+                    isMobileHidden ? t(SECTION_TOGGLE_KEYS[id].showMobile) : t(SECTION_TOGGLE_KEYS[id].hideMobile)
+                  }
                 />
                 <SpanDots span={currentSpan} />
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />

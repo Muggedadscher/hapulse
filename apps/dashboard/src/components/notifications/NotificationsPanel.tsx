@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Bell, X, CheckCheck, BellOff } from 'lucide-react';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService, subscribeNotifications } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import './NotificationsPanel.css';
 
 // ---------------------------------------------------------------------------
@@ -54,6 +55,7 @@ interface NotificationRowProps {
 }
 
 function NotificationRow({ notification, onDismiss }: NotificationRowProps) {
+  const t = useT();
   return (
     <div className="notif-row">
       <div className="notif-row__body">
@@ -67,7 +69,7 @@ function NotificationRow({ notification, onDismiss }: NotificationRowProps) {
       <button
         type="button"
         className="notif-row__dismiss"
-        aria-label={`Dismiss: ${notification.title}`}
+        aria-label={t('notifications.dismissOne', { title: notification.title })}
         onClick={() => onDismiss(notification.notificationId)}
       >
         <X size={14} strokeWidth={2} />
@@ -89,27 +91,28 @@ interface PanelProps {
 }
 
 function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: PanelProps) {
+  const t = useT();
   const count = notifications.length;
   return ReactDOM.createPortal(
     <div
       ref={panelRef}
       className="notifications-panel"
       role="dialog"
-      aria-label="Notifications"
+      aria-label={t('notifications.title')}
       aria-modal="false"
       style={style}
     >
       <div className="notifications-panel__header">
-        <span className="notifications-panel__title">Notifications</span>
+        <span className="notifications-panel__title">{t('notifications.title')}</span>
         {count > 0 && (
           <button
             type="button"
             className="notifications-panel__dismiss-all"
             onClick={onDismissAll}
-            aria-label="Dismiss all notifications"
+            aria-label={t('notifications.dismissAll')}
           >
             <CheckCheck size={14} strokeWidth={2} />
-            Dismiss all
+            {t('notifications.dismissAllButton')}
           </button>
         )}
       </div>
@@ -118,7 +121,7 @@ function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: Pane
         {count === 0 ? (
           <div className="notifications-empty">
             <BellOff size={28} strokeWidth={1.5} />
-            <p>No notifications</p>
+            <p>{t('notifications.empty')}</p>
           </div>
         ) : (
           <div className="notifications-panel__list">
@@ -142,6 +145,7 @@ function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: Pane
 // ---------------------------------------------------------------------------
 
 export function NotificationsPanel() {
+  const t = useT();
   const notifications = useNotifications();
   const count = notifications.length;
 
@@ -208,7 +212,7 @@ export function NotificationsPanel() {
         type="button"
         className="icon-btn icon-btn--ghost notifications-trigger"
         style={{ width: 40, height: 40, minWidth: 40, minHeight: 40 }}
-        aria-label={count > 0 ? `Notifications (${count} unread)` : 'Notifications'}
+        aria-label={count > 0 ? t('notifications.unread', { count }) : t('notifications.title')}
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((prev) => !prev)}

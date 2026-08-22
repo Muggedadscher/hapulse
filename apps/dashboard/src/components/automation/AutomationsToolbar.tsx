@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { Search, ChevronDown } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import './AutomationsToolbar.css';
 
 export interface FilterOption {
@@ -53,6 +54,7 @@ export function AutomationsToolbar({
   rooms, room, onRoomChange,
   categories, category, onCategoryChange,
 }: Props) {
+  const t = useT();
   return (
     <div className="automations-toolbar">
       <div className="automations-toolbar__search">
@@ -60,25 +62,25 @@ export function AutomationsToolbar({
         <input
           type="search"
           className="automations-toolbar__search-input"
-          placeholder="Search automations…"
+          placeholder={t('automations.toolbar.searchPlaceholder')}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          aria-label="Search automations"
+          aria-label={t('automations.toolbar.searchAria')}
         />
       </div>
 
       <div className="automations-toolbar__filters">
         <Select
-          ariaLabel="Filter by room"
+          ariaLabel={t('automations.toolbar.roomFilterAria')}
           value={room}
           onChange={onRoomChange}
-          options={[{ value: '', label: 'All rooms' }, ...rooms]}
+          options={[{ value: '', label: t('automations.toolbar.allRooms') }, ...rooms]}
         />
         <Select
-          ariaLabel="Filter by category"
+          ariaLabel={t('automations.toolbar.categoryFilterAria')}
           value={category}
           onChange={onCategoryChange}
-          options={[{ value: '', label: 'All categories' }, ...categories]}
+          options={[{ value: '', label: t('automations.toolbar.allCategories') }, ...categories]}
         />
       </div>
     </div>

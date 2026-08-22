@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { Lock, Unlock } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -11,6 +12,7 @@ interface LockCardProps {
 }
 
 export function LockCard({ entity, name }: LockCardProps) {
+  const t = useT();
   const entityId = entity.entity_id;
   const isLocked = entity.state === 'locked';
 
@@ -36,9 +38,9 @@ export function LockCard({ entity, name }: LockCardProps) {
         type="button"
         className="lock-card__btn"
         onClick={handleToggle}
-        aria-label={isLocked ? 'Unlock' : 'Lock'}
+        aria-label={isLocked ? t('cards.lock.unlock') : t('cards.lock.lock')}
       >
-        {isLocked ? 'Unlock' : 'Lock'}
+        {isLocked ? t('cards.lock.unlock') : t('cards.lock.lock')}
       </button>
     </Card>
   );

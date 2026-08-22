@@ -6,8 +6,11 @@ import {
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
+import { useLocale, useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
+
+type TFunction = ReturnType<typeof useT>;
 
 interface SensorTileProps {
   entity: HassEntity;
@@ -45,26 +48,26 @@ const BINARY_ON_DANGER   = new Set(['moisture', 'smoke', 'gas', 'carbon_monoxide
 const BINARY_ON_POSITIVE = new Set(['presence', 'occupancy', 'connectivity', 'plug']);
 const BINARY_ON_INFO     = new Set(['door', 'window', 'motion', 'vibration']);
 
-function binaryLabel(deviceClass: string | undefined, on: boolean): string {
+function binaryLabel(deviceClass: string | undefined, on: boolean, t: TFunction): string {
   switch (deviceClass) {
     case 'door':
     case 'window':
     case 'garage_door':
-    case 'opening':         return on ? 'Open' : 'Closed';
+    case 'opening':         return on ? t('cards.sensor.open') : t('cards.sensor.closed');
     case 'motion':
     case 'occupancy':
     case 'presence':
     case 'moving':
-    case 'vibration':       return on ? 'Detected' : 'Clear';
-    case 'moisture':        return on ? 'Wet' : 'Dry';
+    case 'vibration':       return on ? t('cards.sensor.detected') : t('cards.sensor.clear');
+    case 'moisture':        return on ? t('cards.sensor.wet') : t('cards.sensor.dry');
     case 'smoke':
     case 'gas':
-    case 'carbon_monoxide': return on ? 'Detected' : 'Clear';
-    case 'connectivity':    return on ? 'Connected' : 'Disconnected';
-    case 'battery':         return on ? 'Low' : 'OK';
-    case 'problem':         return on ? 'Problem' : 'OK';
-    case 'lock':            return on ? 'Unlocked' : 'Locked';
-    default:                return on ? 'On' : 'Off';
+    case 'carbon_monoxide': return on ? t('cards.sensor.detected') : t('cards.sensor.clear');
+    case 'connectivity':    return on ? t('cards.sensor.connected') : t('cards.sensor.disconnected');
+    case 'battery':         return on ? t('cards.sensor.low') : t('cards.sensor.ok');
+    case 'problem':         return on ? t('cards.sensor.problem') : t('cards.sensor.ok');
+    case 'lock':            return on ? t('cards.sensor.unlocked') : t('cards.sensor.locked');
+    default:                return on ? t('cards.sensor.on') : t('cards.sensor.off');
   }
 }
 
@@ -113,9 +116,11 @@ function sensorBarColor(deviceClass: string | undefined): string {
 }
 
 export function SensorTile({ entity, name }: SensorTileProps) {
+  const t = useT();
+  const locale = useLocale();
   const deviceClass = entity.attributes.device_class as string | undefined;
   const icon = (deviceClass && DC_ICONS[deviceClass]) ?? <Activity size={16} strokeWidth={1.75} />;
-  const value = formatEntityState(entity);
+  const value = formatEntityState(entity, locale);
 
   const isBinary  = entity.entity_id.startsWith('binary_sensor.');
   const isOn      = entity.state === 'on';
@@ -128,7 +133,7 @@ export function SensorTile({ entity, name }: SensorTileProps) {
       <Card className={`sensor-tile sensor-tile--binary${isOn ? ` sensor-tile--binary-on sensor-tile--binary-on-${onType}` : ''}`}>
         <div className={`icon-chip sensor-tile__chip${isOn ? ` sensor-tile__chip--binary-${onType}` : ''}`}>{icon}</div>
         <div className={`sensor-tile__value${isOn ? ` sensor-tile__value--binary-${onType}` : ''}`}>
-          {binaryLabel(deviceClass, isOn)}
+          {binaryLabel(deviceClass, isOn, t)}
         </div>
         <div className="sensor-tile__name">{name}</div>
       </Card>

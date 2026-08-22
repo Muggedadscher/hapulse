@@ -13,10 +13,12 @@ import { Card } from '../ui/Card';
 import { useEnergy } from '../../ha/useEnergy';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { fmtEnergy } from '../energy/EnergyCards';
+import { useT } from '../../i18n/useT';
 import './EnergyWidget.css';
 
 export function EnergyWidget() {
   const navigate = useNavigate();
+  const t = useT();
   const haUrl = useConnectionStore((s) => s.url);
   const { state, dashboard } = useEnergy('today');
 
@@ -33,11 +35,11 @@ export function EnergyWidget() {
             <span className="energy-widget__icon-chip" aria-hidden="true">
               <Zap size={16} strokeWidth={1.75} />
             </span>
-            <span className="energy-widget__title">Energy</span>
+            <span className="energy-widget__title">{t('home.energy.title')}</span>
           </div>
         </div>
         <p className="energy-widget__prompt-text">
-          Set up the Energy dashboard in Home Assistant to see your usage here.
+          {t('home.energy.promptText')}
         </p>
         {setupUrl && (
           <a
@@ -46,7 +48,7 @@ export function EnergyWidget() {
             target="_blank"
             rel="noreferrer noopener"
           >
-            Set up in Home Assistant
+            {t('home.energy.promptButton')}
             <ExternalLink size={14} strokeWidth={2} />
           </a>
         )}
@@ -67,15 +69,15 @@ export function EnergyWidget() {
           <span className="energy-widget__icon-chip" aria-hidden="true">
             <Zap size={16} strokeWidth={1.75} />
           </span>
-          <span className="energy-widget__title">Energy Today</span>
+          <span className="energy-widget__title">{t('home.energy.titleToday')}</span>
         </div>
         <button
           className="energy-widget__link"
           onClick={() => void navigate('/energy')}
           type="button"
-          aria-label="View energy details"
+          aria-label={t('home.energy.detailsAria')}
         >
-          Details
+          {t('home.energy.details')}
           <ChevronRight size={14} strokeWidth={2} />
         </button>
       </div>
@@ -87,7 +89,7 @@ export function EnergyWidget() {
       </div>
 
       {bars.length > 0 && (
-        <div className="energy-widget__chart" role="img" aria-label="Energy usage chart">
+        <div className="energy-widget__chart" role="img" aria-label={t('home.energy.chartAria')}>
           {bars.map((h, i) => (
             <div
               key={i}

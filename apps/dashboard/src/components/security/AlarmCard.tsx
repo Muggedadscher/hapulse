@@ -5,6 +5,7 @@
 import React, { useState, useCallback } from 'react';
 import { Shield, ShieldCheck, ShieldAlert, ShieldOff } from 'lucide-react';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './AlarmCard.css';
@@ -46,10 +47,12 @@ interface AlarmCardProps {
 }
 
 export function AlarmCard({ entity }: AlarmCardProps) {
+  const t = useT();
   const state = entity.state as AlarmState;
   const codeFormat = entity.attributes['code_format'] as string | undefined;
   const requiresCode = !!codeFormat;
-  const name = (entity.attributes['friendly_name'] as string | undefined) ?? 'Alarm';
+  const name =
+    (entity.attributes['friendly_name'] as string | undefined) ?? t('security.alarmCard.fallbackName');
 
   const [code, setCode] = useState('');
 
@@ -94,10 +97,10 @@ export function AlarmCard({ entity }: AlarmCardProps) {
               inputMode="numeric"
               pattern="[0-9]*"
               className="alarm-card__code-input"
-              placeholder="Code"
+              placeholder={t('security.alarmCard.codePlaceholder')}
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              aria-label="Alarm code"
+              aria-label={t('security.alarmCard.codeAria')}
               maxLength={8}
               autoComplete="off"
             />
@@ -112,7 +115,7 @@ export function AlarmCard({ entity }: AlarmCardProps) {
             disabled={state === 'armed_home' || state === 'arming'}
             type="button"
           >
-            Arm Home
+            {t('security.alarmCard.armHome')}
           </button>
           <button
             className="alarm-card__btn alarm-card__btn--away"
@@ -120,7 +123,7 @@ export function AlarmCard({ entity }: AlarmCardProps) {
             disabled={state === 'armed_away' || state === 'arming'}
             type="button"
           >
-            Arm Away
+            {t('security.alarmCard.armAway')}
           </button>
           <button
             className="alarm-card__btn alarm-card__btn--disarm"
@@ -128,7 +131,7 @@ export function AlarmCard({ entity }: AlarmCardProps) {
             disabled={state === 'disarmed'}
             type="button"
           >
-            Disarm
+            {t('security.alarmCard.disarm')}
           </button>
         </div>
       </div>

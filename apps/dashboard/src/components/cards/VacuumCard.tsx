@@ -2,6 +2,8 @@ import React, { useCallback } from 'react';
 import { Bot, Play, Pause, Home, Battery } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -10,18 +12,19 @@ interface VacuumCardProps {
   name: string;
 }
 
-const STATE_LABELS: Record<string, string> = {
-  cleaning: 'Cleaning',
-  docked: 'Docked',
-  idle: 'Idle',
-  paused: 'Paused',
-  returning: 'Returning',
-  error: 'Error',
-  unknown: 'Unknown',
-  unavailable: 'Unavailable',
+const STATE_LABEL_KEY: Record<string, TKey> = {
+  cleaning: 'cards.vacuum.cleaning',
+  docked: 'cards.vacuum.docked',
+  idle: 'cards.vacuum.idle',
+  paused: 'cards.vacuum.paused',
+  returning: 'cards.vacuum.returning',
+  error: 'cards.vacuum.error',
+  unknown: 'cards.vacuum.unknown',
+  unavailable: 'cards.vacuum.unavailable',
 };
 
 export function VacuumCard({ entity, name }: VacuumCardProps) {
+  const t = useT();
   const entityId = entity.entity_id;
   const state = entity.state;
   const batteryLevel = entity.attributes.battery_level as number | undefined;
@@ -44,7 +47,8 @@ export function VacuumCard({ entity, name }: VacuumCardProps) {
     void callService('vacuum', 'return_to_base', {}, { entity_id: entityId });
   }, [entityId]);
 
-  const displayLabel = STATE_LABELS[state] ?? state;
+  const stateLabelKey = STATE_LABEL_KEY[state];
+  const displayLabel = stateLabelKey ? t(stateLabelKey) : state;
 
   return (
     <Card active={isActive} className="vacuum-card">
@@ -68,21 +72,21 @@ export function VacuumCard({ entity, name }: VacuumCardProps) {
 
       <div className="vacuum-card__controls">
         {(isDocked || state === 'idle' || isPaused) && (
-          <button type="button" className="vacuum-card__btn vacuum-card__btn--start" onClick={handleStart} aria-label="Start cleaning">
+          <button type="button" className="vacuum-card__btn vacuum-card__btn--start" onClick={handleStart} aria-label={t('cards.vacuum.startCleaningAria')}>
             <Play size={15} strokeWidth={2} />
-            <span>{isPaused ? 'Resume' : 'Start'}</span>
+            <span>{isPaused ? t('cards.vacuum.resume') : t('cards.vacuum.start')}</span>
           </button>
         )}
         {isActive && (
-          <button type="button" className="vacuum-card__btn" onClick={handlePause} aria-label="Pause">
+          <button type="button" className="vacuum-card__btn" onClick={handlePause} aria-label={t('cards.vacuum.pause')}>
             <Pause size={15} strokeWidth={2} />
-            <span>Pause</span>
+            <span>{t('cards.vacuum.pause')}</span>
           </button>
         )}
         {!isDocked && !isReturning && (
-          <button type="button" className="vacuum-card__btn" onClick={handleReturn} aria-label="Return to dock">
+          <button type="button" className="vacuum-card__btn" onClick={handleReturn} aria-label={t('cards.vacuum.returnToDockAria')}>
             <Home size={15} strokeWidth={1.75} />
-            <span>Dock</span>
+            <span>{t('cards.vacuum.dock')}</span>
           </button>
         )}
       </div>

@@ -11,6 +11,7 @@ import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
 import { roomDisplayIcon } from '../../lib/roomIcon';
 import { SectionLabel } from '../ui/SectionLabel';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useT } from '../../i18n/useT';
 import './RoomsQuickAccess.css';
 
 interface RoomsQuickAccessProps {
@@ -20,6 +21,7 @@ interface RoomsQuickAccessProps {
 
 export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
   const navigate = useNavigate();
+  const t = useT();
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -28,8 +30,8 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
 
   return (
     <section className="rooms-quick-section">
-      <SectionLabel style={{ marginBottom: 0 }}>rooms</SectionLabel>
-      <div className="rooms-quick-strip" role="list" aria-label="All rooms">
+      <SectionLabel style={{ marginBottom: 0 }}>{t('home.roomsQuickAccess.sectionLabel')}</SectionLabel>
+      <div className="rooms-quick-strip" role="list" aria-label={t('home.roomsQuickAccess.listAria')}>
         {rooms.map((room) => {
           const summary = roomSummary(room, entities);
           const { iconName, isStatus } = roomDisplayIcon(room, entities, hiddenEntities);
@@ -58,7 +60,7 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
                 isStatus ? 'rooms-quick-tile--status' : '',
               ].filter(Boolean).join(' ')}
               onClick={() => void navigate(`/room/${room.id}`)}
-              aria-label={`${room.name} room`}
+              aria-label={t('home.roomsQuickAccess.roomAria', { name: room.name })}
               role="listitem"
               type="button"
             >
@@ -86,7 +88,7 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
                         <Thermometer size={11} strokeWidth={1.75} />
                         {Math.round(summary.temperature)}°
                       </span>
-                      <span className="rooms-quick-tile__stat-label">temp</span>
+                      <span className="rooms-quick-tile__stat-label">{t('home.roomsQuickAccess.tempLabel')}</span>
                     </div>
                   )}
                   {summary.humidity != null && (
@@ -95,23 +97,23 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
                         <Droplets size={11} strokeWidth={1.75} />
                         {Math.round(summary.humidity)}%
                       </span>
-                      <span className="rooms-quick-tile__stat-label">humidity</span>
+                      <span className="rooms-quick-tile__stat-label">{t('home.roomsQuickAccess.humidityLabel')}</span>
                     </div>
                   )}
                   {visibleLightIds.length > 0 && (
                     <div className="rooms-quick-tile__stat">
                       <span className={`rooms-quick-tile__stat-value${lightsOn ? ' rooms-quick-tile__stat-value--lit' : ''}`}>
                         <Lightbulb size={11} strokeWidth={1.75} />
-                        {lightsOn ? visibleLightsOn : 'off'}
+                        {lightsOn ? visibleLightsOn : t('home.roomsQuickAccess.off')}
                       </span>
-                      <span className="rooms-quick-tile__stat-label">lights</span>
+                      <span className="rooms-quick-tile__stat-label">{t('home.roomsQuickAccess.lightsLabel')}</span>
                     </div>
                   )}
                   {/* Fallback: device count when no other stats are available */}
                   {!hasStats && (
                     <div className="rooms-quick-tile__stat">
                       <span className="rooms-quick-tile__stat-value">{totalDevices}</span>
-                      <span className="rooms-quick-tile__stat-label">device{totalDevices !== 1 ? 's' : ''}</span>
+                      <span className="rooms-quick-tile__stat-label">{t('home.roomsQuickAccess.deviceLabel', { count: totalDevices })}</span>
                     </div>
                   )}
                 </div>

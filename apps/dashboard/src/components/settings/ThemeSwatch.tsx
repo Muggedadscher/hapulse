@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useT } from '../../i18n/useT';
 import { THEMES, THEME_LABELS } from '../../theme/themes';
 import type { ThemeName, ResolvedMode } from '../../theme/themes';
 
@@ -16,19 +17,20 @@ interface ThemeSwatchProps {
 }
 
 export function ThemeSwatch({ name, active, onClick, previewMode = 'light' }: ThemeSwatchProps) {
-  const t = THEMES[name][previewMode];
+  const t = useT();
+  const c = THEMES[name][previewMode];
 
   return (
     <button
       type="button"
       className={`theme-swatch card ${active ? 'theme-swatch--active' : ''}`}
       onClick={onClick}
-      aria-label={`Select ${name} theme`}
+      aria-label={t('settings.appearance.theme.selectAria', { name })}
       aria-pressed={active}
     >
       <div
         className="theme-swatch__preview"
-        style={{ background: t.bg }}
+        style={{ background: c.bg }}
         aria-hidden="true"
       >
         {/* Card rectangle */}
@@ -38,9 +40,9 @@ export function ThemeSwatch({ name, active, onClick, previewMode = 'light' }: Th
           left: 10,
           right: 10,
           bottom: 10,
-          background: t.bgCard,
+          background: c.bgCard,
           borderRadius: 8,
-          border: `1px solid ${t.line}`,
+          border: `1px solid ${c.line}`,
         }} />
         {/* Accent stripe */}
         <div style={{
@@ -49,7 +51,7 @@ export function ThemeSwatch({ name, active, onClick, previewMode = 'light' }: Th
           left: 16,
           width: 28,
           height: 6,
-          background: t.accent,
+          background: c.accent,
           borderRadius: 3,
         }} />
         {/* Text lines */}
@@ -59,7 +61,7 @@ export function ThemeSwatch({ name, active, onClick, previewMode = 'light' }: Th
           left: 16,
           right: 16,
           height: 4,
-          background: t.text,
+          background: c.text,
           borderRadius: 2,
           opacity: 0.5,
         }} />
@@ -69,7 +71,7 @@ export function ThemeSwatch({ name, active, onClick, previewMode = 'light' }: Th
           left: 16,
           right: 28,
           height: 3,
-          background: t.textDim,
+          background: c.textDim,
           borderRadius: 2,
           opacity: 0.4,
         }} />

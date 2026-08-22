@@ -1,5 +1,7 @@
 import React from 'react';
 import { Clock, Workflow } from 'lucide-react';
+import { useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './AutomationActivityFeed.css';
@@ -8,17 +10,20 @@ interface AutomationActivityFeedProps {
   automations: HassEntity[];
 }
 
-function formatRelativeTime(iso: string | null | undefined): string {
-  if (!iso) return 'Never';
+type T = (key: TKey, vars?: Record<string, string | number>) => string;
+
+/** Takes the translator as a parameter: it runs outside any component body. */
+function formatRelativeTime(t: T, iso: string | null | undefined): string {
+  if (!iso) return t('automations.time.never');
   try {
     const delta = Date.now() - new Date(iso).getTime();
-    if (delta < 60000) return 'Just now';
-    if (delta < 3600000) return `${Math.floor(delta / 60000)}m ago`;
-    if (delta < 86400000) return `${Math.floor(delta / 3600000)}h ago`;
-    if (delta < 172800000) return 'Yesterday';
-    return `${Math.floor(delta / 86400000)}d ago`;
+    if (delta < 60000) return t('automations.time.justNow');
+    if (delta < 3600000) return t('automations.time.minutesAgo', { count: Math.floor(delta / 60000) });
+    if (delta < 86400000) return t('automations.time.hoursAgo', { count: Math.floor(delta / 3600000) });
+    if (delta < 172800000) return t('automations.time.yesterday');
+    return t('automations.time.daysAgo', { count: Math.floor(delta / 86400000) });
   } catch {
-    return '—';
+    return t('automations.time.unknown');
   }
 }
 
@@ -30,6 +35,7 @@ function entityName(e: HassEntity): string {
 }
 
 export function AutomationActivityFeed({ automations }: AutomationActivityFeedProps) {
+  const t = useT();
   const recent = automations
     .filter((e) => e.attributes.last_triggered != null)
     .sort((a, b) => {
@@ -46,15 +52,17 @@ export function AutomationActivityFeed({ automations }: AutomationActivityFeedPr
           <span className="auto-feed-card__icon-chip" aria-hidden="true">
             <Clock size={15} strokeWidth={1.75} />
           </span>
-          <span className="auto-feed-card__title">Recent Activity</span>
+          <span className="auto-feed-card__title">{t('automations.activity.title')}</span>
         </div>
-        <span className="auto-feed-card__sub">{recent.length} ran today</span>
+        <span className="auto-feed-card__sub">
+          {t('automations.activity.ranToday', { count: recent.length })}
+        </span>
       </div>
 
       {recent.length === 0 ? (
-        <p className="auto-feed-card__empty">No automations have run yet.</p>
+        <p className="auto-feed-card__empty">{t('automations.activity.empty')}</p>
       ) : (
-        <ul className="auto-feed-card__list" aria-label="Recent automation activity">
+        <ul className="auto-feed-card__list" aria-label={t('automations.activity.listAria')}>
           {recent.map((entity) => {
             const name          = entityName(entity);
             const category      = entity.attributes.category as string | undefined;
@@ -75,8 +83,13 @@ export function AutomationActivityFeed({ automations }: AutomationActivityFeedPr
                     <span className="auto-feed-row__cat">{category}</span>
                   )}
                 </div>
-                <span className="auto-feed-row__time" aria-label={`ran ${formatRelativeTime(lastTriggered)}`}>
-                  {formatRelativeTime(lastTriggered)}
+                <span
+                  className="auto-feed-row__time"
+                  aria-label={t('automations.activity.ranAria', {
+                    time: formatRelativeTime(t, lastTriggered),
+                  })}
+                >
+                  {formatRelativeTime(t, lastTriggered)}
                 </span>
               </li>
             );

@@ -28,6 +28,10 @@ export {
 } from './themes.js';
 export type { ThemeName, ThemeMode, ResolvedMode, ThemeTokens } from './themes.js';
 
+// i18n
+export { LOCALES, LOCALE_LABELS, translate, resolveLanguage } from './i18n.js';
+export type { Dict, Locale } from './i18n.js';
+
 // Rooms
 export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from './rooms.js';
 export type { DeviceAreaMap } from './rooms.js';

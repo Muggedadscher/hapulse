@@ -28,6 +28,7 @@ import { useRoom, useEntityMap, useCustomization } from '../ha/hooks';
 import { useUIStore } from '../stores/uiStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { applyStoredOrder } from '../lib/order';
+import { useT, type TKey } from '../i18n/useT';
 import './Page.css';
 import './Room.css';
 
@@ -105,6 +106,8 @@ function RoomResizeHandle({
   span: number;
   onCommit: (newSpan: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation(); // don't start a section drag
@@ -146,8 +149,8 @@ function RoomResizeHandle({
       type="button"
       className="room-section__resize-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag to resize — currently ${span} of ${ROOM_MAX_COLS} columns`}
-      title={`Drag left / right to resize (${span} of ${ROOM_MAX_COLS} columns)`}
+      aria-label={t('columnResize.ariaLabel', { span, max: ROOM_MAX_COLS })}
+      title={t('columnResize.title', { span, max: ROOM_MAX_COLS })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
@@ -156,6 +159,20 @@ function RoomResizeHandle({
 
 // ── Sortable section wrapper ──────────────────────────────────────────────────
 
+const DRAG_REORDER_KEYS: Record<SectionKey, TKey> = {
+  scene: 'room.section.dragReorder.scene',
+  light: 'room.section.dragReorder.light',
+  climate: 'room.section.dragReorder.climate',
+  media_player: 'room.section.dragReorder.mediaPlayer',
+  cover: 'room.section.dragReorder.cover',
+  switches: 'room.section.dragReorder.switches',
+  button: 'room.section.dragReorder.button',
+  vacuum: 'room.section.dragReorder.vacuum',
+  sensor: 'room.section.dragReorder.sensor',
+  binary_sensor: 'room.section.dragReorder.sensor',
+  other: 'room.section.dragReorder.other',
+};
+
 function SortableSectionInner({
   id,
   label,
@@ -163,12 +180,13 @@ function SortableSectionInner({
   onCommitSpan,
   children,
 }: {
-  id: string;
+  id: SectionKey;
   label: string;
   span: number;
   onCommitSpan: (newSpan: number) => void;
   children: React.ReactNode;
 }) {
+  const t = useT();
   const {
     attributes,
     listeners,
@@ -200,7 +218,7 @@ function SortableSectionInner({
           ref={setActivatorNodeRef}
           className="room-section__grip"
           type="button"
-          aria-label={`Drag to reorder ${label} section`}
+          aria-label={t(DRAG_REORDER_KEYS[id])}
           {...listeners}
         >
           <GripVertical size={14} strokeWidth={1.75} />
@@ -232,18 +250,18 @@ const SECTION_ORDER = [
 
 type SectionKey = (typeof SECTION_ORDER)[number];
 
-const SECTION_LABELS: Record<string, string> = {
-  scene:        'Scenes',
-  light:        'Lights',
-  climate:      'Climate',
-  media_player: 'Media',
-  cover:        'Blinds',
-  switches:     'Switches',
-  button:       'Buttons',
-  vacuum:       'Vacuums',
-  sensor:       'Sensors',
-  binary_sensor:'Sensors',
-  other:        'Other',
+const SECTION_LABEL_KEYS: Record<string, TKey> = {
+  scene:        'room.section.label.scene',
+  light:        'room.section.label.light',
+  climate:      'room.section.label.climate',
+  media_player: 'room.section.label.mediaPlayer',
+  cover:        'room.section.label.cover',
+  switches:     'room.section.label.switches',
+  button:       'room.section.label.button',
+  vacuum:       'room.section.label.vacuum',
+  sensor:       'room.section.label.sensor',
+  binary_sensor:'room.section.label.sensor',
+  other:        'room.section.label.other',
 };
 
 const SWITCH_DOMAINS = new Set(['switch', 'fan', 'input_boolean']);
@@ -257,6 +275,7 @@ const CORE_DOMAINS = new Set([
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function Room() {
+  const t = useT();
   const { areaId } = useParams<{ areaId: string }>();
   const navigate = useNavigate();
   const room = useRoom(areaId ?? '');
@@ -270,13 +289,13 @@ export function Room() {
     return (
       <div className="page room-page stagger-rise">
         <div className="room-page__not-found">
-          <div className="room-page__not-found-title">room not found</div>
+          <div className="room-page__not-found-title">{t('room.notFound.title')}</div>
           <button
             type="button"
             className="room-page__not-found-link"
             onClick={() => void navigate('/')}
           >
-            ← back to home
+            {t('room.backToHome')}
           </button>
         </div>
       </div>
@@ -413,7 +432,7 @@ export function Room() {
             key={entityId}
             className={['scene-tile', 'scene-tile--compact', isHidden && editMode ? 'scene-tile--hidden' : ''].filter(Boolean).join(' ')}
             onClick={() => void callService('scene', 'turn_on', {}, { entity_id: entityId })}
-            aria-label={`Activate scene: ${displayName}`}
+            aria-label={t('room.scene.activate', { name: displayName })}
             type="button"
           >
             <span className="scene-tile__icon" style={{ background: palette.bg, color: palette.color }} aria-hidden="true">
@@ -457,7 +476,7 @@ export function Room() {
           </div>
           <EditBadge
             hidden={isHidden}
-            toggleLabel={isHidden ? `show ${name}` : `hide ${name}`}
+            toggleLabel={isHidden ? t('editBadge.show', { label: name }) : t('editBadge.hide', { label: name })}
             onToggleHidden={() => handleToggleEntity(entityId)}
             favorite={favorites.includes(entityId)}
             onToggleFavorite={() => handleToggleFavorite(entityId)}
@@ -478,16 +497,16 @@ export function Room() {
   };
 
   const allSectionDefs: SectionDef[] = [
-    { key: 'scene',        label: SECTION_LABELS['scene']!,        ids: sceneIds },
-    { key: 'light',        label: SECTION_LABELS['light']!,        ids: lightIds },
-    { key: 'climate',      label: SECTION_LABELS['climate']!,      ids: climateIds },
-    { key: 'media_player', label: SECTION_LABELS['media_player']!, ids: mediaIds },
-    { key: 'cover',        label: SECTION_LABELS['cover']!,        ids: coverIds },
-    { key: 'switches',     label: SECTION_LABELS['switches']!,     ids: orderedSwitchIds },
-    { key: 'button',       label: SECTION_LABELS['button']!,       ids: buttonIds },
-    { key: 'vacuum',       label: SECTION_LABELS['vacuum']!,       ids: vacuumIds },
-    { key: 'sensor',       label: SECTION_LABELS['sensor']!,       ids: sensorIds, isSensor: true },
-    { key: 'other',        label: SECTION_LABELS['other']!,        ids: orderedOtherIds },
+    { key: 'scene',        label: t(SECTION_LABEL_KEYS['scene']!),        ids: sceneIds },
+    { key: 'light',        label: t(SECTION_LABEL_KEYS['light']!),        ids: lightIds },
+    { key: 'climate',      label: t(SECTION_LABEL_KEYS['climate']!),      ids: climateIds },
+    { key: 'media_player', label: t(SECTION_LABEL_KEYS['media_player']!), ids: mediaIds },
+    { key: 'cover',        label: t(SECTION_LABEL_KEYS['cover']!),        ids: coverIds },
+    { key: 'switches',     label: t(SECTION_LABEL_KEYS['switches']!),     ids: orderedSwitchIds },
+    { key: 'button',       label: t(SECTION_LABEL_KEYS['button']!),       ids: buttonIds },
+    { key: 'vacuum',       label: t(SECTION_LABEL_KEYS['vacuum']!),       ids: vacuumIds },
+    { key: 'sensor',       label: t(SECTION_LABEL_KEYS['sensor']!),       ids: sensorIds, isSensor: true },
+    { key: 'other',        label: t(SECTION_LABEL_KEYS['other']!),        ids: orderedOtherIds },
   ];
 
   const activeSectionDefs = allSectionDefs.filter((s) => s.ids.length > 0);
@@ -531,7 +550,7 @@ export function Room() {
       {/* Mobile-only top bar: back + edit toggle (desktop uses AppLayout header) */}
       <div className="room-page__header">
         <IconButton
-          label="Back"
+          label={t('common.back')}
           size={40}
           variant="ghost"
           onClick={() => void navigate(-1)}
@@ -549,13 +568,13 @@ export function Room() {
       {/* Sections */}
       {isEmpty ? (
         <div className="room-page__not-found">
-          <div className="room-page__not-found-title">no entities in this room</div>
+          <div className="room-page__not-found-title">{t('room.empty.title')}</div>
           <button
             type="button"
             className="room-page__not-found-link"
             onClick={() => void navigate('/')}
           >
-            ← back to home
+            {t('room.backToHome')}
           </button>
         </div>
       ) : editMode ? (

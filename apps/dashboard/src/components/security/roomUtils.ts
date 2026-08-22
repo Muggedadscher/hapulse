@@ -3,6 +3,9 @@
  */
 
 import type { Room } from '@hapulse/core';
+import type { TKey } from '../../i18n/useT';
+
+type T = (key: TKey, vars?: Record<string, string | number>) => string;
 
 /** Return the room name for an entity ID, or undefined if not found. */
 export function getRoomName(entityId: string, rooms: Room[]): string | undefined {
@@ -12,12 +15,15 @@ export function getRoomName(entityId: string, rooms: Room[]): string | undefined
 /**
  * Format a relative time string for a last-changed timestamp.
  * e.g. "4m ago", "2h ago", "just now"
+ *
+ * Takes the translator as a parameter so the strings stay in the dictionary
+ * without this module needing a React hook.
  */
-export function relativeTime(isoString: string): string {
+export function relativeTime(t: T, isoString: string): string {
   const diff = (Date.now() - new Date(isoString).getTime()) / 1000;
-  if (diff < 30) return 'just now';
-  if (diff < 60) return `${Math.round(diff)}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 30) return t('common.time.justNow');
+  if (diff < 60) return t('common.time.secondsAgo', { count: Math.round(diff) });
+  if (diff < 3600) return t('common.time.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t('common.time.hoursAgo', { count: Math.floor(diff / 3600) });
+  return t('common.time.daysAgo', { count: Math.floor(diff / 86400) });
 }

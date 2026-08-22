@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Thermometer, Flame, Snowflake, Wind, Power, RefreshCw } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
+import { useT } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -19,6 +20,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
 };
 
 export function ClimateCard({ entity, name }: ClimateCardProps) {
+  const t = useT();
   const entityId = entity.entity_id;
   const currentTemp = entity.attributes.current_temperature as number | undefined;
   const targetTemp = entity.attributes.temperature as number | undefined;
@@ -72,7 +74,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
       {/* Temperatures */}
       <div className="climate-card__temps">
         <div className="climate-card__current">
-          <span className="climate-card__current-label">Current</span>
+          <span className="climate-card__current-label">{t('cards.climate.current')}</span>
           <span className="climate-card__current-value">
             {currentTemp != null ? `${currentTemp.toFixed(1)}°` : '—'}
           </span>
@@ -80,12 +82,12 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
 
         {!isOff && (
           <div className="climate-card__target">
-            <span className="climate-card__target-label">Target</span>
+            <span className="climate-card__target-label">{t('cards.climate.target')}</span>
             <div className="climate-card__target-control">
               <button
                 className="climate-card__step-btn"
                 onClick={() => handleTempStep(-0.5)}
-                aria-label="Decrease temperature"
+                aria-label={t('cards.climate.decreaseAria')}
                 type="button"
               >
                 −
@@ -96,7 +98,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
               <button
                 className="climate-card__step-btn"
                 onClick={() => handleTempStep(0.5)}
-                aria-label="Increase temperature"
+                aria-label={t('cards.climate.increaseAria')}
                 type="button"
               >
                 +

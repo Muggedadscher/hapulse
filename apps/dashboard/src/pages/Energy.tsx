@@ -16,6 +16,7 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
+import { useT, type TKey } from '../i18n/useT';
 import { useEnergy } from '../ha/useEnergy';
 import { useConnectionStore } from '../stores/connectionStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -64,6 +65,8 @@ function ResizeHandle({
   span: number;
   onCommit: (id: string, newSpan: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -107,8 +110,8 @@ function ResizeHandle({
       type="button"
       className="overview-resize-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag to resize — currently ${span} of ${MAX_COLS} columns`}
-      title={`Drag left / right to resize (${span} of ${MAX_COLS} columns)`}
+      aria-label={t('columnResize.ariaLabel', { span, max: MAX_COLS })}
+      title={t('columnResize.title', { span, max: MAX_COLS })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
@@ -117,18 +120,54 @@ function ResizeHandle({
 
 // ── Section model ────────────────────────────────────────────────────────────
 
-const SECTION_LABELS: Record<string, string> = {
-  hero:    'Overview',
-  usage:   'Sources',
-  solar:   'Solar',
-  devices: 'Devices',
-  water:   'Water',
-  gas:     'Gas',
-};
+type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
+
+const SECTION_TOGGLE_KEYS = {
+  hero: {
+    hide: 'energy.section.hide.hero',
+    show: 'energy.section.show.hero',
+    hideMobile: 'energy.section.hideMobile.hero',
+    showMobile: 'energy.section.showMobile.hero',
+  },
+  usage: {
+    hide: 'energy.section.hide.usage',
+    show: 'energy.section.show.usage',
+    hideMobile: 'energy.section.hideMobile.usage',
+    showMobile: 'energy.section.showMobile.usage',
+  },
+  solar: {
+    hide: 'energy.section.hide.solar',
+    show: 'energy.section.show.solar',
+    hideMobile: 'energy.section.hideMobile.solar',
+    showMobile: 'energy.section.showMobile.solar',
+  },
+  devices: {
+    hide: 'energy.section.hide.devices',
+    show: 'energy.section.show.devices',
+    hideMobile: 'energy.section.hideMobile.devices',
+    showMobile: 'energy.section.showMobile.devices',
+  },
+  water: {
+    hide: 'energy.section.hide.water',
+    show: 'energy.section.show.water',
+    hideMobile: 'energy.section.hideMobile.water',
+    showMobile: 'energy.section.showMobile.water',
+  },
+  gas: {
+    hide: 'energy.section.hide.gas',
+    show: 'energy.section.show.gas',
+    hideMobile: 'energy.section.hideMobile.gas',
+    showMobile: 'energy.section.showMobile.gas',
+  },
+} satisfies Record<string, ToggleKeys>;
+
+/** Section id: derived from the fixed key set above rather than `string`, so
+ *  `SECTION_TOGGLE_KEYS[id]` is known to exist and no `!` assertion is needed. */
+type SectionId = keyof typeof SECTION_TOGGLE_KEYS;
 
 /** Which sections exist depends on what the user configured in HA. */
-function availableSections(d: EnergyDashboard): string[] {
-  const ids: string[] = ['hero'];
+function availableSections(d: EnergyDashboard): SectionId[] {
+  const ids: SectionId[] = ['hero'];
   if (d.hasGrid || d.hasSolar) ids.push('usage');
   if (d.hasSolar) ids.push('solar');
   if (d.devices.length > 0) ids.push('devices');
@@ -140,6 +179,7 @@ function availableSections(d: EnergyDashboard): string[] {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function Energy() {
+  const t = useT();
   const [period, setPeriod] = useState<EnergyPeriod>('today');
   const { state, dashboard, currency } = useEnergy(period);
   const editMode = useUIStore((s) => s.editMode);
@@ -217,10 +257,10 @@ export function Energy() {
     return (
       <div className="page energy-page stagger-rise">
         <div className="page__header-row energy-page__header">
-          <h1 className="page__title">Energy</h1>
+          <h1 className="page__title">{t('energy.title')}</h1>
           <PageHeaderActions />
         </div>
-        <p className="energy-page__loading">Loading energy data…</p>
+        <p className="energy-page__loading">{t('energy.loading')}</p>
       </div>
     );
   }
@@ -229,7 +269,7 @@ export function Energy() {
     return (
       <div className="page energy-page stagger-rise">
         <div className="page__header-row energy-page__header">
-          <h1 className="page__title">Energy</h1>
+          <h1 className="page__title">{t('energy.title')}</h1>
           <PageHeaderActions />
         </div>
         <EnergyNotConfigured haUrl={haUrl} />
@@ -241,17 +281,20 @@ export function Energy() {
     return (
       <div className="page energy-page stagger-rise">
         <div className="page__header-row energy-page__header">
-          <h1 className="page__title">Energy</h1>
+          <h1 className="page__title">{t('energy.title')}</h1>
           <PageHeaderActions />
         </div>
-        <p className="energy-page__loading">Couldn’t load energy data. Check your Home Assistant connection.</p>
+        <p className="energy-page__loading">{t('energy.error')}</p>
       </div>
     );
   }
 
   // ---- Ready ----
   const allSectionIds = availableSections(dashboard);
-  const orderedIds = applyStoredOrder(allSectionIds, energySectionOrder)
+  // applyStoredOrder (lib/order.ts) is a generic string[] reorder utility shared
+  // with other pages, so it widens to string[] — but it only ever returns a
+  // permutation of its `ids` input, so every element is still a SectionId.
+  const orderedIds = (applyStoredOrder(allSectionIds, energySectionOrder) as SectionId[])
     .filter((id) => allSectionIds.includes(id)); // drop stale ids for sources no longer configured
   const visibleIds = editMode
     ? orderedIds
@@ -260,7 +303,7 @@ export function Energy() {
   return (
     <div className="page energy-page stagger-rise">
       <div className="page__header-row energy-page__header">
-        <h1 className="page__title">Energy</h1>
+        <h1 className="page__title">{t('energy.title')}</h1>
         <PageHeaderActions><EditToggle /></PageHeaderActions>
       </div>
 
@@ -307,11 +350,13 @@ export function Energy() {
                 <div className="edit-section-outline">{widget}</div>
                 <EditBadge
                   hidden={isHidden}
-                  toggleLabel={isHidden ? `show ${SECTION_LABELS[id]}` : `hide ${SECTION_LABELS[id]}`}
+                  toggleLabel={isHidden ? t(SECTION_TOGGLE_KEYS[id].show) : t(SECTION_TOGGLE_KEYS[id].hide)}
                   onToggleHidden={() => handleToggleHidden(id)}
                   mobileHidden={isMobileHidden}
                   onToggleMobileHidden={() => handleToggleMobileHidden(id)}
-                  mobileToggleLabel={isMobileHidden ? `show ${SECTION_LABELS[id]} on mobile` : `hide ${SECTION_LABELS[id]} on mobile`}
+                  mobileToggleLabel={
+                    isMobileHidden ? t(SECTION_TOGGLE_KEYS[id].showMobile) : t(SECTION_TOGGLE_KEYS[id].hideMobile)
+                  }
                 />
                 <SpanDots span={currentSpan} />
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />

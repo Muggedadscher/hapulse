@@ -22,6 +22,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './NowPlayingCard.css';
@@ -85,6 +86,7 @@ interface NowPlayingCardProps {
 }
 
 export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
+  const t = useT();
   const { url } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
   const attrs = entity.attributes;
@@ -240,7 +242,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
                 step={1}
                 onChange={handleSeek}
                 disabled={!hasFeature(entity, FEATURE_SEEK)}
-                aria-label="Seek"
+                aria-label={t('music.control.seek')}
                 style={{ '--progress-pct': `${progressPct}%` } as React.CSSProperties}
               />
               <div className="now-playing-card__time-row">
@@ -260,7 +262,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
               <button
                 className={`now-playing-card__transport-btn${shuffleMode ? ' now-playing-card__transport-btn--active' : ''}`}
                 onClick={handleShuffle}
-                aria-label="Shuffle"
+                aria-label={t('music.control.shuffle')}
                 type="button"
               >
                 <Shuffle size={18} strokeWidth={1.75} />
@@ -270,7 +272,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
               <button
                 className="now-playing-card__transport-btn"
                 onClick={handlePrevious}
-                aria-label="Previous"
+                aria-label={t('music.control.previous')}
                 type="button"
               >
                 <SkipBack size={22} strokeWidth={1.75} />
@@ -279,7 +281,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
             <button
               className="now-playing-card__play-btn"
               onClick={handlePlayPause}
-              aria-label={isPlaying ? 'Pause' : 'Play'}
+              aria-label={isPlaying ? t('music.control.pause') : t('music.control.play')}
               type="button"
             >
               {isPlaying
@@ -291,7 +293,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
               <button
                 className="now-playing-card__transport-btn"
                 onClick={handleNext}
-                aria-label="Next"
+                aria-label={t('music.control.next')}
                 type="button"
               >
                 <SkipForward size={22} strokeWidth={1.75} />
@@ -301,7 +303,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
               <button
                 className={`now-playing-card__transport-btn${repeatMode !== 'off' ? ' now-playing-card__transport-btn--active' : ''}`}
                 onClick={handleRepeat}
-                aria-label={`Repeat: ${repeatMode}`}
+                aria-label={t('music.control.repeatAria', { mode: repeatMode })}
                 type="button"
               >
                 {repeatMode === 'one'
@@ -318,7 +320,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
               <button
                 className="now-playing-card__mute-btn"
                 onClick={handleMute}
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
+                aria-label={isMuted ? t('music.control.unmute') : t('music.control.mute')}
                 type="button"
               >
                 {isMuted
@@ -334,7 +336,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
                 value={effectiveVolume}
                 step={0.01}
                 onChange={handleVolume}
-                aria-label="Volume"
+                aria-label={t('music.control.volume')}
                 style={{ '--progress-pct': `${effectiveVolume * 100}%` } as React.CSSProperties}
               />
               <Volume2 size={18} strokeWidth={1.75} className="now-playing-card__vol-high" aria-hidden="true" />
@@ -348,7 +350,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
                 className="now-playing-card__source-select"
                 value={currentSource ?? ''}
                 onChange={handleSource}
-                aria-label="Source"
+                aria-label={t('music.control.source')}
               >
                 {sourceList!.map((src) => (
                   <option key={src} value={src}>{src}</option>

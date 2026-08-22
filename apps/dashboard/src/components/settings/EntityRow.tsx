@@ -5,6 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Pencil, Check, X, Star } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { IconButton } from '../ui/IconButton';
 import { DomainIcon } from './DomainIcon';
 import type { HassEntity } from '@hapulse/core';
@@ -28,6 +29,7 @@ export function EntityRow({
   onToggleHide,
   onToggleFavorite,
 }: EntityRowProps) {
+  const t = useT();
   const [renaming, setRenaming] = useState(false);
   const [draftName, setDraftName] = useState(displayName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,7 +74,7 @@ export function EntityRow({
             onChange={(e) => setDraftName(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={displayName}
-            aria-label={`Rename ${displayName}`}
+            aria-label={t('settings.entities.renameAria', { name: displayName })}
           />
         ) : (
           <span className={`entity-row__name ${isHidden ? 'entity-row__name--hidden' : ''}`}>
@@ -84,21 +86,40 @@ export function EntityRow({
       <div className="entity-row__controls">
         {renaming ? (
           <>
-            <IconButton label="Confirm rename" size={36} variant="accent" onClick={handleCommit}>
+            <IconButton
+              label={t('settings.entities.confirmRename')}
+              size={36}
+              variant="accent"
+              onClick={handleCommit}
+            >
               <Check size={14} strokeWidth={2} />
             </IconButton>
-            <IconButton label="Cancel rename" size={36} variant="ghost" onClick={handleCancel}>
+            <IconButton
+              label={t('settings.entities.cancelRename')}
+              size={36}
+              variant="ghost"
+              onClick={handleCancel}
+            >
               <X size={14} strokeWidth={2} />
             </IconButton>
           </>
         ) : (
-          <IconButton label={`Rename ${displayName}`} size={36} variant="ghost" onClick={handleStartRename}>
+          <IconButton
+            label={t('settings.entities.renameAria', { name: displayName })}
+            size={36}
+            variant="ghost"
+            onClick={handleStartRename}
+          >
             <Pencil size={14} strokeWidth={1.75} />
           </IconButton>
         )}
         {!renaming && (
           <IconButton
-            label={isFavorite ? `Unfavorite ${displayName}` : `Favorite ${displayName}`}
+            label={
+              isFavorite
+                ? t('settings.entities.unfavoriteAria', { name: displayName })
+                : t('settings.entities.favoriteAria', { name: displayName })
+            }
             size={36}
             variant={isFavorite ? 'accent' : 'ghost'}
             onClick={onToggleFavorite}
@@ -107,7 +128,11 @@ export function EntityRow({
           </IconButton>
         )}
         <IconButton
-          label={isHidden ? `Show ${displayName}` : `Hide ${displayName}`}
+          label={
+            isHidden
+              ? t('settings.entities.showAria', { name: displayName })
+              : t('settings.entities.hideAria', { name: displayName })
+          }
           size={36}
           variant={isHidden ? 'ghost' : 'default'}
           onClick={onToggleHide}

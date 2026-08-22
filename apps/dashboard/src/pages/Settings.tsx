@@ -22,6 +22,8 @@ import type { ThemeName, ThemeMode } from '../theme/themes';
 import type { Room, HassEntity } from '@hapulse/core';
 import { isDefaultPersistenceAdapter } from '../persistence';
 
+import { useT } from '../i18n/useT';
+import type { TKey } from '../i18n/useT';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { SectionLabel } from '../components/ui/SectionLabel';
@@ -40,25 +42,25 @@ import './Settings.css';
 
 const VALID_THEMES = new Set<string>([...THEME_NAMES, 'dusk', 'dawn', 'midnight', 'sage']);
 
-function validateImport(data: unknown): string | null {
-  if (typeof data !== 'object' || data === null) return 'File is not a valid JSON object.';
+function validateImport(data: unknown, t: (key: TKey, vars?: Record<string, string | number>) => string): string | null {
+  if (typeof data !== 'object' || data === null) return t('settings.backup.error.notObject');
   const d = data as Record<string, unknown>;
   if (d['theme'] !== undefined && !VALID_THEMES.has(String(d['theme']))) {
-    return `Invalid theme "${String(d['theme'])}". Must be one of: ${THEME_NAMES.join(', ')}.`;
+    return t('settings.backup.error.invalidTheme', { theme: String(d['theme']), validThemes: THEME_NAMES.join(', ') });
   }
   if (d['mode'] !== undefined && !['light', 'dark', 'auto'].includes(String(d['mode']))) {
-    return `Invalid mode "${String(d['mode'])}". Must be light, dark, or auto.`;
+    return t('settings.backup.error.invalidMode', { mode: String(d['mode']) });
   }
   if (d['accentHue'] !== undefined && typeof d['accentHue'] !== 'number') {
-    return 'accentHue must be a number or undefined.';
+    return t('settings.backup.error.invalidAccentHue');
   }
   if (d['customization'] !== undefined) {
     const c = d['customization'] as Record<string, unknown>;
-    if (!Array.isArray(c['roomOrder'])) return 'customization.roomOrder must be an array.';
-    if (!Array.isArray(c['hiddenRooms'])) return 'customization.hiddenRooms must be an array.';
-    if (!Array.isArray(c['hiddenEntities'])) return 'customization.hiddenEntities must be an array.';
+    if (!Array.isArray(c['roomOrder'])) return t('settings.backup.error.invalidRoomOrder');
+    if (!Array.isArray(c['hiddenRooms'])) return t('settings.backup.error.invalidHiddenRooms');
+    if (!Array.isArray(c['hiddenEntities'])) return t('settings.backup.error.invalidHiddenEntities');
     if (typeof c['entityOverrides'] !== 'object' || c['entityOverrides'] === null || Array.isArray(c['entityOverrides'])) {
-      return 'customization.entityOverrides must be an object.';
+      return t('settings.backup.error.invalidEntityOverrides');
     }
   }
   return null;
@@ -80,14 +82,14 @@ function statusDotClass(status: StoreStatus): string {
   }
 }
 
-function statusLabel(status: StoreStatus, demo: boolean): string {
-  if (demo) return 'demo mode';
+function statusLabel(status: StoreStatus, demo: boolean, t: (key: TKey) => string): string {
+  if (demo) return t('settings.status.demo');
   switch (status) {
-    case 'connected':    return 'connected';
-    case 'reconnecting': return 'reconnecting…';
-    case 'disconnected': return 'disconnected';
-    case 'error':        return 'connection error';
-    default:             return 'idle';
+    case 'connected':    return t('settings.status.connected');
+    case 'reconnecting': return t('settings.status.reconnecting');
+    case 'disconnected': return t('settings.status.disconnected');
+    case 'error':        return t('settings.status.error');
+    default:             return t('settings.status.idle');
   }
 }
 
@@ -96,6 +98,7 @@ function statusLabel(status: StoreStatus, demo: boolean): string {
 // ---------------------------------------------------------------------------
 
 function ConnectionSection() {
+  const t = useT();
   const navigate = useNavigate();
   const { url, token, demo, mode, status, currentUser } = useConnectionStore(
     useShallow((s) => ({ url: s.url, token: s.token, demo: s.demo, mode: s.mode, status: s.status, currentUser: s.currentUser }))
@@ -120,12 +123,12 @@ function ConnectionSection() {
 
   const isDemo = mode === 'demo' || demo;
   const displayName = currentUser
-    ? (isDemo ? 'Demo User' : currentUser.name)
-    : (isDemo ? 'Demo Home' : 'Home Assistant');
+    ? (isDemo ? t('settings.connection.demoUser') : currentUser.name)
+    : (isDemo ? t('settings.connection.demoHome') : 'Home Assistant');
 
   return (
     <section className="settings-page__section">
-      <SectionLabel>connection</SectionLabel>
+      <SectionLabel>{t('settings.section.connection')}</SectionLabel>
       <Card className="conn-card">
         <div className="conn-card__profile">
           <UserAvatar
@@ -138,15 +141,15 @@ function ConnectionSection() {
             <span className="conn-card__profile-name">{displayName}</span>
             <div className="conn-card__profile-meta">
               {isDemo ? (
-                <span className="conn-card__badge">demo home</span>
+                <span className="conn-card__badge">{t('settings.connection.badge.demo')}</span>
               ) : mode === 'oauth' ? (
-                <span className="conn-card__badge conn-card__badge--oauth">HA account</span>
+                <span className="conn-card__badge conn-card__badge--oauth">{t('settings.connection.badge.oauth')}</span>
               ) : (
-                <span className="conn-card__badge conn-card__badge--token">token</span>
+                <span className="conn-card__badge conn-card__badge--token">{t('settings.connection.badge.token')}</span>
               )}
               {!isDemo && currentUser && (
                 <span className="conn-card__role-badge">
-                  {currentUser.is_owner ? 'owner' : 'user'}
+                  {currentUser.is_owner ? t('settings.connection.role.owner') : t('settings.connection.role.user')}
                 </span>
               )}
             </div>
@@ -159,7 +162,7 @@ function ConnectionSection() {
               <span className="conn-card__icon-chip" style={{ background: 'var(--info-soft)', color: 'var(--info)' }}>
                 <Wifi size={14} strokeWidth={1.75} />
               </span>
-              Status
+              {t('settings.connection.row.status')}
             </span>
             <div className="conn-status">
               <span className={`conn-status__dot ${statusDotClass(status)}`} aria-hidden="true" />
@@ -168,7 +171,7 @@ function ConnectionSection() {
                   : status === 'reconnecting' ? 'var(--warning)'
                   : 'var(--text-dim)',
               }}>
-                {statusLabel(status, isDemo)}
+                {statusLabel(status, isDemo, t)}
               </span>
             </div>
           </div>
@@ -179,7 +182,7 @@ function ConnectionSection() {
                 <span className="conn-card__icon-chip" style={{ background: 'var(--bg-subtle)', color: 'var(--text-dim)' }}>
                   <Hash size={14} strokeWidth={1.75} />
                 </span>
-                URL
+                {t('settings.connection.row.url')}
               </span>
               <span className="conn-card__url conn-card__row-value">{url}</span>
             </div>
@@ -191,7 +194,7 @@ function ConnectionSection() {
                 <span className="conn-card__icon-chip" style={{ background: 'var(--bg-subtle)', color: 'var(--text-dim)' }}>
                   <Hash size={14} strokeWidth={1.75} />
                 </span>
-                Token
+                {t('settings.connection.row.token')}
               </span>
               <span className="conn-card__token conn-card__row-value">{maskedToken}</span>
             </div>
@@ -202,17 +205,17 @@ function ConnectionSection() {
               <span className="conn-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
                 <LayoutGrid size={14} strokeWidth={1.75} />
               </span>
-              Data
+              {t('settings.connection.row.data')}
             </span>
             <div className="conn-card__counts conn-card__row-value">
-              <span>{roomCount}</span>&nbsp;rooms&nbsp;·&nbsp;<span>{entityCount}</span>&nbsp;entities
+              <span>{roomCount}</span>&nbsp;{t('settings.connection.rooms')}&nbsp;·&nbsp;<span>{entityCount}</span>&nbsp;{t('settings.connection.entities')}
             </div>
           </div>
 
           {isDemo && (
             <div className="conn-card__row" style={{ background: 'var(--bg-subtle)' }}>
               <span style={{ fontSize: '0.8125rem', color: 'var(--text-dim)' }}>
-                exploring with sample data — connect your own home assistant to get started.
+                {t('settings.connection.demoHint')}
               </span>
             </div>
           )}
@@ -221,15 +224,15 @@ function ConnectionSection() {
         <div className="conn-card__actions">
           {mode === 'oauth' ? (
             <button type="button" className="btn btn--danger" onClick={handleDisconnect}>
-              Sign Out
+              {t('settings.connection.signOut')}
             </button>
           ) : isDemo ? (
             <button type="button" className="btn btn--ghost" onClick={handleDisconnect}>
-              Connect your Home Assistant
+              {t('settings.connection.connectHA')}
             </button>
           ) : (
             <button type="button" className="btn btn--ghost" onClick={handleDisconnect}>
-              Disconnect
+              {t('settings.connection.disconnect')}
             </button>
           )}
         </div>
@@ -243,6 +246,7 @@ function ConnectionSection() {
 // ---------------------------------------------------------------------------
 
 function AppearanceSection() {
+  const t = useT();
   const { theme, mode, accentHue } = useSettingsStore(
     useShallow((s) => ({ theme: s.theme, mode: s.mode, accentHue: s.accentHue }))
   );
@@ -288,15 +292,15 @@ function AppearanceSection() {
     ? `hsl(${accentHue}, 78%, ${resolved === 'dark' ? 60 : 50}%)`
     : THEMES[theme][resolved].accent;
 
-  const MODE_OPTIONS: { id: ThemeMode; label: string }[] = [
-    { id: 'light', label: 'Light' },
-    { id: 'dark', label: 'Dark' },
-    { id: 'auto', label: 'Auto' },
+  const MODE_OPTIONS: { id: ThemeMode; labelKey: TKey }[] = [
+    { id: 'light', labelKey: 'settings.appearance.mode.light' },
+    { id: 'dark', labelKey: 'settings.appearance.mode.dark' },
+    { id: 'auto', labelKey: 'settings.appearance.mode.auto' },
   ];
 
   return (
     <section className="settings-page__section">
-      <SectionLabel>appearance</SectionLabel>
+      <SectionLabel>{t('settings.section.appearance')}</SectionLabel>
       <Card className="settings-card">
         {/* Mode row */}
         <div className="settings-card__row settings-card__row--inline">
@@ -304,9 +308,9 @@ function AppearanceSection() {
             <span className="settings-card__icon-chip" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
               <Sun size={14} strokeWidth={1.75} />
             </span>
-            Appearance
+            {t('settings.appearance.mode.label')}
           </span>
-          <div className="mode-toggle" role="group" aria-label="Appearance mode">
+          <div className="mode-toggle" role="group" aria-label={t('settings.appearance.mode.groupAria')}>
             {MODE_OPTIONS.map((m) => (
               <button
                 key={m.id}
@@ -315,7 +319,7 @@ function AppearanceSection() {
                 onClick={() => setMode(m.id)}
                 aria-pressed={mode === m.id}
               >
-                {m.label}
+                {t(m.labelKey)}
               </button>
             ))}
           </div>
@@ -327,16 +331,16 @@ function AppearanceSection() {
             <span className="settings-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
               <Palette size={14} strokeWidth={1.75} />
             </span>
-            Theme
+            {t('settings.appearance.theme.label')}
           </div>
           <div className="theme-grid">
-            {THEME_NAMES.map((t) => (
+            {THEME_NAMES.map((themeName) => (
               <ThemeSwatch
-                key={t}
-                name={t}
-                active={theme === t}
+                key={themeName}
+                name={themeName}
+                active={theme === themeName}
                 previewMode={resolved}
-                onClick={() => handleThemeSelect(t)}
+                onClick={() => handleThemeSelect(themeName)}
               />
             ))}
           </div>
@@ -350,7 +354,7 @@ function AppearanceSection() {
                 <span className="settings-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
                   <Palette size={14} strokeWidth={1.75} />
                 </span>
-                Accent colour
+                {t('settings.appearance.accent.label')}
                 <span className="accent-preview-dot" style={{ background: accentPreviewColor }} aria-hidden="true" />
               </span>
               {accentHue !== undefined && (
@@ -360,7 +364,7 @@ function AppearanceSection() {
                   style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', minHeight: 32 }}
                   onClick={handleResetHue}
                 >
-                  reset
+                  {t('settings.appearance.accent.reset')}
                 </button>
               )}
             </div>
@@ -371,7 +375,7 @@ function AppearanceSection() {
               max={360}
               value={localHue}
               onChange={(e) => handleHueChange(Number(e.target.value))}
-              aria-label="Accent hue"
+              aria-label={t('settings.appearance.accent.hueAria')}
             />
           </div>
         </div>
@@ -404,6 +408,7 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
 // ---------------------------------------------------------------------------
 
 function EntitiesContent() {
+  const t = useT();
   const rooms = useRooms();
   const entities = useEntityStore((s) => s.entities);
   const { customization, updateCustomization } = useSettingsStore(
@@ -469,7 +474,7 @@ function EntitiesContent() {
     return name.includes(q) || e.entity_id.toLowerCase().includes(q);
   });
   if (uncategorised.length > 0) {
-    groupsWithEntities.push({ label: 'uncategorised', entities: uncategorised });
+    groupsWithEntities.push({ label: t('settings.entities.uncategorised'), entities: uncategorised });
   }
 
   return (
@@ -478,16 +483,16 @@ function EntitiesContent() {
         <input
           type="search"
           className="settings-text-input"
-          placeholder="search by name or id…"
+          placeholder={t('settings.entities.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          aria-label="Search entities"
+          aria-label={t('settings.entities.searchAria')}
         />
       </div>
 
       {groupsWithEntities.length === 0 && (
         <p style={{ fontSize: '0.875rem', color: 'var(--text-faint)', marginTop: '0.5rem' }}>
-          {search ? 'no entities match your search.' : 'no entities found.'}
+          {search ? t('settings.entities.emptySearch') : t('settings.entities.empty')}
         </p>
       )}
 
@@ -527,6 +532,7 @@ function EntitiesContent() {
 // ---------------------------------------------------------------------------
 
 function EditEntitiesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -541,13 +547,13 @@ function EditEntitiesModal({ open, onClose }: { open: boolean; onClose: () => vo
     <Modal
       open={open}
       onClose={onClose}
-      title="Entities"
+      title={t('settings.entities.modalTitle')}
       icon={<List size={18} strokeWidth={1.75} />}
     >
       {!loaded ? (
         <div className="entities-modal-loading">
           <div className="entities-modal-progress" />
-          <span className="entities-modal-loading-label">Loading entities…</span>
+          <span className="entities-modal-loading-label">{t('settings.entities.loading')}</span>
         </div>
       ) : (
         <EntitiesContent />
@@ -561,6 +567,7 @@ function EditEntitiesModal({ open, onClose }: { open: boolean; onClose: () => vo
 // ---------------------------------------------------------------------------
 
 function AdminSection() {
+  const t = useT();
   const canEdit = useCanEdit();
   if (!canEdit) return null;
 
@@ -576,7 +583,7 @@ function AdminSection() {
 
   return (
     <section className="settings-page__section">
-      <SectionLabel>admin</SectionLabel>
+      <SectionLabel>{t('settings.section.admin')}</SectionLabel>
       <Card className="settings-card">
         {/* Editing toggle */}
         <div className="settings-card__row settings-card__row--inline">
@@ -584,12 +591,12 @@ function AdminSection() {
             <span className="settings-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
               <Pencil size={14} strokeWidth={1.75} />
             </span>
-            Editing
+            {t('settings.admin.editingLabel')}
           </span>
           <ToggleSwitch
             checked={editingEnabled}
             onChange={handleToggleEditing}
-            label="Enable editing controls"
+            label={t('settings.admin.editingToggleAria')}
           />
         </div>
 
@@ -599,14 +606,14 @@ function AdminSection() {
             <span className="settings-card__icon-chip" style={{ background: 'var(--info-soft)', color: 'var(--info)' }}>
               <List size={14} strokeWidth={1.75} />
             </span>
-            Entities
+            {t('settings.admin.entitiesLabel')}
           </span>
           <button
             type="button"
             className="btn btn--ghost admin-entities-btn"
             onClick={() => setEntitiesOpen(true)}
           >
-            Edit Entities
+            {t('settings.admin.editEntitiesBtn')}
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         </div>
@@ -622,6 +629,7 @@ function AdminSection() {
 // ---------------------------------------------------------------------------
 
 function RoomsSection() {
+  const t = useT();
   const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
   const rooms = useRooms();
   const { customization, updateCustomization } = useSettingsStore(
@@ -677,9 +685,9 @@ function RoomsSection() {
   if (orderedRooms.length === 0) {
     return (
       <section className="settings-page__section">
-        <SectionLabel>rooms</SectionLabel>
+        <SectionLabel>{t('settings.section.rooms')}</SectionLabel>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-faint)' }}>
-          no rooms found — add areas in home assistant to organise entities.
+          {t('settings.rooms.empty')}
         </p>
       </section>
     );
@@ -687,7 +695,7 @@ function RoomsSection() {
 
   return (
     <section className="settings-page__section">
-      <SectionLabel>rooms</SectionLabel>
+      <SectionLabel>{t('settings.section.rooms')}</SectionLabel>
       <Card style={{ overflow: 'hidden' }}>
         <div className="rooms-list">
           {orderedRooms.map((room, index) => (
@@ -713,6 +721,7 @@ function RoomsSection() {
 // ---------------------------------------------------------------------------
 
 function BackupSection() {
+  const t = useT();
   const { exportSettings, importSettings } = useSettingsStore(
     useShallow((s) => ({ exportSettings: s.exportSettings, importSettings: s.importSettings }))
   );
@@ -753,17 +762,17 @@ function BackupSection() {
     reader.onload = (ev) => {
       const text = ev.target?.result;
       if (typeof text !== 'string') {
-        setImportError('Could not read file.');
+        setImportError(t('settings.backup.error.readFail'));
         return;
       }
       let parsed: unknown;
       try {
         parsed = JSON.parse(text);
       } catch {
-        setImportError('File is not valid JSON.');
+        setImportError(t('settings.backup.error.invalidJson'));
         return;
       }
-      const error = validateImport(parsed);
+      const error = validateImport(parsed, t);
       if (error) {
         setImportError(error);
         return;
@@ -778,19 +787,19 @@ function BackupSection() {
 
   return (
     <section className="settings-page__section">
-      <SectionLabel>backup</SectionLabel>
+      <SectionLabel>{t('settings.section.backup')}</SectionLabel>
       <Card className="settings-card">
         <p className="backup-hint">
-          export your theme, customization, and display name as a JSON file. import it on any device.
+          {t('settings.backup.hint')}
         </p>
         <div className="backup-row">
           <button type="button" className="btn btn--secondary" onClick={handleExport}>
             <Download size={15} strokeWidth={1.75} />
-            Export settings
+            {t('settings.backup.exportBtn')}
           </button>
           <button type="button" className="btn btn--ghost" onClick={handleImportClick}>
             <Upload size={15} strokeWidth={1.75} />
-            Import settings
+            {t('settings.backup.importBtn')}
           </button>
           <input
             ref={fileInputRef}
@@ -798,21 +807,21 @@ function BackupSection() {
             accept="application/json,.json"
             className="file-input-hidden"
             onChange={handleFileChange}
-            aria-label="Import settings file"
+            aria-label={t('settings.backup.importFileAria')}
             tabIndex={-1}
           />
         </div>
         {importError && <p className="import-error" role="alert">{importError}</p>}
         {importSuccess && (
           <p style={{ fontSize: '0.8125rem', color: 'var(--positive)', padding: '0 1.375rem 0.75rem' }} role="status">
-            Settings imported successfully.
+            {t('settings.backup.importSuccess')}
           </p>
         )}
         {showHASyncStatus && (
           <p className="backup-hint" style={{ paddingTop: 0, paddingBottom: '1rem' }}>
             {haSyncConnected
-              ? 'Settings are saved to your Home Assistant and sync across your devices.'
-              : 'Settings will sync to your Home Assistant once connected.'}
+              ? t('settings.backup.syncStatus.connected')
+              : t('settings.backup.syncStatus.pending')}
           </p>
         )}
       </Card>
@@ -825,9 +834,10 @@ function BackupSection() {
 // ---------------------------------------------------------------------------
 
 function AboutSection() {
+  const t = useT();
   return (
     <section className="settings-page__section">
-      <SectionLabel>about</SectionLabel>
+      <SectionLabel>{t('settings.section.about')}</SectionLabel>
       <Card className="about-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
           <span style={{
@@ -839,8 +849,8 @@ function AboutSection() {
           </span>
           <div className="about-card__title">HAPulse</div>
         </div>
-        <div className="about-card__sub">version 1.0.0</div>
-        <div className="about-card__sub">made for home assistant — open source, self-hosted.</div>
+        <div className="about-card__sub">{t('settings.about.version')}</div>
+        <div className="about-card__sub">{t('settings.about.tagline')}</div>
         <a
           href="https://github.com/jlnbln/HAPulse"
           target="_blank"
@@ -861,10 +871,11 @@ function AboutSection() {
 // ---------------------------------------------------------------------------
 
 export function Settings() {
+  const t = useT();
   return (
     <div className="page settings-page stagger-rise">
       <div className="page__header-row">
-        <h1 className="page__title">Settings</h1>
+        <h1 className="page__title">{t('settings.title')}</h1>
         <PageHeaderActions />
       </div>
       <ConnectionSection />

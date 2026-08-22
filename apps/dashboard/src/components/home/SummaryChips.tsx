@@ -9,6 +9,7 @@ import { applyStoredOrder } from '../../lib/order';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { HassEntityMap } from '@hapulse/core';
+import { useT } from '../../i18n/useT';
 import './home.css';
 
 const ALL_CHIP_IDS = ['people', 'lights', 'doors', 'alarm', 'media'] as const;
@@ -37,6 +38,7 @@ export function SummaryChips({
   order,
   onReorder,
 }: SummaryChipsProps) {
+  const t = useT();
   const allEntities = Object.values(entities);
   const { url: haUrl } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
@@ -91,34 +93,34 @@ export function SummaryChips({
     {
       id: 'people',
       icon: <Users size={16} strokeWidth={1.75} />,
-      label: peopleHome.length > 0 ? `${peopleHome.length} home` : 'nobody home',
+      label: peopleHome.length > 0 ? t('home.summaryChips.peopleCount', { count: peopleHome.length }) : t('home.summaryChips.nobodyHome'),
       active: peopleHome.length > 0,
       ...(peopleHome.length > 0 ? { avatars: peopleAvatars } : {}),
     },
     {
       id: 'lights',
       icon: <Lightbulb size={16} strokeWidth={1.75} />,
-      label: lightsOn > 0 ? `${lightsOn} on` : 'all off',
+      label: lightsOn > 0 ? t('home.summaryChips.lightsCount', { count: lightsOn }) : t('home.summaryChips.allOff'),
       active: lightsOn > 0,
     },
     {
       id: 'doors',
       icon: <DoorOpen size={16} strokeWidth={1.75} />,
-      label: openDoorWindow > 0 ? `${openDoorWindow} open` : 'all closed',
+      label: openDoorWindow > 0 ? t('home.summaryChips.openCount', { count: openDoorWindow }) : t('home.summaryChips.allClosed'),
       active: openDoorWindow > 0,
       alert: openDoorWindow > 0,
     },
     {
       id: 'alarm',
       icon: <ShieldAlert size={16} strokeWidth={1.75} />,
-      label: alarmState?.replace(/_/g, ' ') ?? 'unknown',
+      label: alarmState?.replace(/_/g, ' ') ?? t('home.summaryChips.unknown'),
       active: alarmState != null && alarmState !== 'disarmed',
       alert: alarmState != null && alarmState !== 'disarmed',
     },
     {
       id: 'media',
       icon: <Music2 size={16} strokeWidth={1.75} />,
-      label: mediaPlaying > 0 ? `${mediaPlaying} playing` : 'nothing playing',
+      label: mediaPlaying > 0 ? t('home.summaryChips.mediaCount', { count: mediaPlaying }) : t('home.summaryChips.nothingPlaying'),
       active: mediaPlaying > 0,
     },
   ];
@@ -202,7 +204,7 @@ export function SummaryChips({
                 ].filter(Boolean).join(' ')}
                 onClick={() => onChipClick?.(chip.id)}
                 aria-haspopup="dialog"
-                aria-label={`${chip.id}: ${chip.label}`}
+                aria-label={t('home.summaryChips.chipAria', { id: chip.id, label: chip.label })}
               >
                 <span className="summary-chip__icon">{chip.icon}</span>
                 <span className="summary-chip__count">{chip.label}</span>
@@ -225,7 +227,7 @@ export function SummaryChips({
             {editMode && onToggleChip && (
               <EditBadge
                 hidden={isHidden}
-                toggleLabel={isHidden ? `show ${chip.id} chip` : `hide ${chip.id} chip`}
+                toggleLabel={isHidden ? t('home.summaryChips.showChipAria', { id: chip.id }) : t('home.summaryChips.hideChipAria', { id: chip.id })}
                 onToggleHidden={() => onToggleChip(chip.id)}
               />
             )}

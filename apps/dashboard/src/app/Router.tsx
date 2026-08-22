@@ -6,6 +6,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router';
 import { Guard } from './Guard';
 import { AppLayout } from './AppLayout';
+import { useT } from '../i18n/useT';
 
 // Eager import for onboarding — always shown first
 import { Onboarding } from '../pages/Onboarding';
@@ -40,6 +41,7 @@ function ScrollToTop() {
 }
 
 function PageFallback() {
+  const t = useT();
   return (
     <div
       style={{
@@ -51,7 +53,7 @@ function PageFallback() {
         fontSize: '0.875rem',
       }}
     >
-      loading…
+      {t('app.loading')}
     </div>
   );
 }

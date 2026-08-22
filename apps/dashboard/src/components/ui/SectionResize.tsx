@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { Scaling } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import './SectionResize.css';
 
 /** Highest height level (0 = off). */
@@ -72,6 +73,8 @@ export function HeightHandle({
   level: number;
   onCommit: (id: string, newLevel: number) => void;
 }) {
+  const t = useT();
+
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation(); // don't let DnD-kit start a drag
@@ -124,15 +127,18 @@ export function HeightHandle({
     document.addEventListener('pointerup', onUp);
   }
 
-  const desc = level === 0 ? 'no limit' : `${level} of ${MAX_HEIGHT_LEVEL}`;
+  const desc =
+    level === 0
+      ? t('sectionResize.noLimit')
+      : t('sectionResize.levelOf', { level, max: MAX_HEIGHT_LEVEL });
 
   return (
     <button
       type="button"
       className="section-height-handle"
       onPointerDown={handlePointerDown}
-      aria-label={`Drag up / down to set max height — currently ${desc}`}
-      title={`Drag up / down to set max height (${desc})`}
+      aria-label={t('sectionResize.ariaLabel', { desc })}
+      title={t('sectionResize.title', { desc })}
     >
       <Scaling size={12} strokeWidth={2.5} />
     </button>
