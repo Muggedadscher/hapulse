@@ -15,7 +15,7 @@ import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
-import { roomIconName } from '@hapulse/core';
+import { roomIconName, resolveEntityAreaId, buildDeviceAreaMap } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
 import './Page.css';
 import './Scenes.css';
@@ -151,7 +151,11 @@ export function Scenes() {
   );
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
 
-  // Build area map and entity→area map from registries
+  // Build area map and entity→area map from registries. An entity's room
+  // comes from its own area_id first, falling back to its device's area_id
+  // — the same precedence Home Assistant's own frontend uses. Most scenes
+  // have no area_id of their own and hang off a device (e.g. a Hue "Room"
+  // device) that carries the real area assignment.
   const { areaMap, entityAreaMap } = useMemo(() => {
     const am: Record<string, { name: string; icon: string; haIcon: string | null }> = {};
     for (const area of registries?.areas ?? []) {
@@ -162,9 +166,10 @@ export function Scenes() {
         haIcon: area.icon ?? null,
       };
     }
+    const deviceAreaMap = buildDeviceAreaMap(registries?.devices ?? []);
     const em: Record<string, string | null> = {};
     for (const entry of registries?.entities ?? []) {
-      em[entry.entity_id] = entry.area_id;
+      em[entry.entity_id] = resolveEntityAreaId(entry, deviceAreaMap);
     }
     return { areaMap: am, entityAreaMap: em };
   }, [registries]);

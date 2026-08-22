@@ -13,11 +13,14 @@
  *  - resolveThemeMode / accentOverride pure theme math
  *  - buildHAAuthorizeUrl / exchangeHAAuthCode / connectWithAuthData (mobile OAuth)
  *  - HAConnection.suspend is exported
+ *  - resolveEntityAreaId() device-area fallback precedence
  */
 
 import {
   buildRooms,
   roomSummary,
+  resolveEntityAreaId,
+  buildDeviceAreaMap,
   DEMO_ENTITIES,
   DEMO_REGISTRIES,
   domainOf,
@@ -88,6 +91,54 @@ const lr = rooms.find(r => r.id === 'living_room');
 assert(lr !== undefined, 'living_room room found');
 assert(Array.isArray(lr.domains['light']) && lr.domains['light'].length > 0, 'living_room has lights in domains');
 assert(lr.entityIds.length > 0, 'living_room has entityIds');
+
+// ---------------------------------------------------------------------------
+// resolveEntityAreaId — device-area fallback precedence
+// ---------------------------------------------------------------------------
+
+console.log('\n── resolveEntityAreaId ──');
+
+const deviceAreaMap = buildDeviceAreaMap([
+  { id: 'dev_with_area', area_id: 'kitchen', name: 'Hue Kitchen Room' },
+  { id: 'dev_no_area', area_id: null, name: 'Zone device' },
+]);
+
+// Entity's own area_id wins, even if its device has a different one
+assertEqual(
+  resolveEntityAreaId({ area_id: 'living_room', device_id: 'dev_with_area' }, deviceAreaMap),
+  'living_room',
+  "entity's own area_id takes priority over its device's",
+);
+
+// No entity area_id → falls back to the device's area_id (the common case:
+// a scene entity with no area of its own, hanging off a Hue "Room" device)
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: 'dev_with_area' }, deviceAreaMap),
+  'kitchen',
+  'falls back to device area_id when entity has none',
+);
+
+// Neither the entity nor its device has an area — by design for a "Zone"
+// device spanning multiple rooms. Must not silently default to some room.
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: 'dev_no_area' }, deviceAreaMap),
+  null,
+  'null when neither entity nor device has an area (e.g. a multi-room Zone device)',
+);
+
+// No device_id at all (e.g. a helper entity) and no area_id → null, not a crash
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: null }, deviceAreaMap),
+  null,
+  'null when entity has neither an area_id nor a device_id',
+);
+
+// Unknown device_id (not in the map) → null rather than throwing
+assertEqual(
+  resolveEntityAreaId({ area_id: null, device_id: 'dev_unknown' }, deviceAreaMap),
+  null,
+  'null when device_id is not found in the device map',
+);
 
 // ---------------------------------------------------------------------------
 // roomSummary
