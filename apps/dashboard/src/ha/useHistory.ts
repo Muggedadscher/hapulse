@@ -5,6 +5,10 @@
  * open), re-fetching when the entity or range changes. Mirrors the
  * fetch-on-demand pattern of `useEnergy` — history lives in the recorder, not
  * the entity store.
+ *
+ * Crucially, a range change does NOT clear the previous points: they stay
+ * visible while the new range loads, so the chart can animate smoothly from
+ * the old series into the new one instead of blanking out.
  */
 
 import { useEffect, useState } from 'react';
@@ -12,10 +16,14 @@ import { historyRangeSpec, summarizeHistory } from '@hapulse/core';
 import type { HistoryPoint, HistoryRange, HistorySummary } from '@hapulse/core';
 import { getHistory } from './history';
 
-export type HistoryLoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
-
 export interface UseHistoryResult {
-  state: HistoryLoadState;
+  /** A fetch is in flight (initial load or a range switch). */
+  loading: boolean;
+  /** The last fetch failed. */
+  error: boolean;
+  /** A fetch finished with zero points. */
+  empty: boolean;
+  /** Most recently loaded series (kept during a refetch). */
   points: HistoryPoint[];
   summary: HistorySummary | null;
 }
@@ -25,20 +33,25 @@ export interface UseHistoryResult {
  * @param range    - look-back window
  */
 export function useHistory(entityId: string | null, range: HistoryRange): UseHistoryResult {
-  const [state, setState] = useState<HistoryLoadState>('idle');
   const [points, setPoints] = useState<HistoryPoint[]>([]);
   const [summary, setSummary] = useState<HistorySummary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [loadedOnce, setLoadedOnce] = useState(false);
 
   useEffect(() => {
     if (!entityId) {
-      setState('idle');
       setPoints([]);
       setSummary(null);
+      setLoading(false);
+      setError(false);
+      setLoadedOnce(false);
       return;
     }
 
     let cancelled = false;
-    setState('loading');
+    setLoading(true);
+    setError(false);
 
     (async () => {
       try {
@@ -47,13 +60,17 @@ export function useHistory(entityId: string | null, range: HistoryRange): UseHis
         const pts = await getHistory(entityId, startMs, now);
         if (cancelled) return;
 
+        // Replace points only when the new series has arrived — the old one
+        // stayed on screen until now, enabling a smooth morph.
         setPoints(pts);
         setSummary(summarizeHistory(pts));
-        setState(pts.length === 0 ? 'empty' : 'ready');
+        setLoadedOnce(true);
+        setLoading(false);
       } catch (err) {
         if (cancelled) return;
         console.warn('[HAPulse] useHistory failed:', err);
-        setState('error');
+        setError(true);
+        setLoading(false);
       }
     })();
 
@@ -62,5 +79,7 @@ export function useHistory(entityId: string | null, range: HistoryRange): UseHis
     };
   }, [entityId, range]);
 
-  return { state, points, summary };
+  const empty = loadedOnce && !loading && points.length === 0;
+
+  return { loading, error, empty, points, summary };
 }

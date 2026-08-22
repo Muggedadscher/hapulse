@@ -73,6 +73,13 @@
   height: auto;
 }
 
+/* Subtle dim while a new range is loading (the old chart stays visible and
+   then morphs into the new one). */
+.history__plot--loading .history-chart {
+  opacity: 0.55;
+  transition: opacity 200ms ease-out;
+}
+
 .history-chart__guide {
   stroke: var(--line);
   stroke-width: 1;

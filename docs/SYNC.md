@@ -111,7 +111,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/index.ts` | Export des History-Moduls |
 | `apps/dashboard/src/components/cards/SensorTile.tsx` | numerische Tiles klickbar → History-Modal |
 | `apps/dashboard/src/components/cards/cards.css` | `.sensor-tile--clickable` |
-| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`-Setting |
+| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`- + `historyRange`-Setting |
 | `apps/dashboard/src/app/Router.tsx` | Route `/nvr` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" (`labelKey: 'nav.nvr'`) |
 | `packages/core/locales/en.json` | i18n-Keys `nav.nvr`, `history.*`, `nvr.*` (am Dateiende angehängt) |

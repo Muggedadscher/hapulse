@@ -3,11 +3,16 @@
  * entity's history. No charting dependency: it renders a single path plus a
  * soft gradient area, scaled into a fixed viewBox and stretched responsively.
  *
+ * When the series changes (e.g. the user picks another time range) the chart
+ * MORPHS smoothly from the old shape into the new one instead of snapping:
+ * both series are resampled to a fixed point count and tweened per-frame with
+ * requestAnimationFrame. Respects `prefers-reduced-motion`.
+ *
  * All colours come from the caller (a CSS-variable string like `var(--danger)`)
  * so the chart inherits the active theme automatically.
  */
 
-import React, { useId, useMemo } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { HistoryPoint } from '@hapulse/core';
 
 interface HistoryChartProps {
@@ -28,6 +33,15 @@ const PAD_B = 22; // room for time labels
 const PLOT_W = VIEW_W - PAD_L - PAD_R;
 const PLOT_H = VIEW_H - PAD_T - PAD_B;
 
+// Morphing: every series is resampled to this many points so the tween is a
+// simple 1:1 interpolation.
+const SAMPLES = 100;
+const ANIM_MS = 440;
+
+function easeInOut(p: number): number {
+  return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+}
+
 function formatValue(v: number): string {
   return `${Math.round(v * 10) / 10}`;
 }
@@ -41,12 +55,95 @@ function tickTimeLabel(t: number, spanMs: number): string {
   return d.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
 }
 
+/** Resample a series to exactly `n` points, evenly spaced across its own time
+ *  range, linearly interpolating the value. Enables a 1:1 morph tween. */
+function resample(points: HistoryPoint[], n: number): HistoryPoint[] {
+  const len = points.length;
+  if (len === 0) return [];
+  const first = points[0]!;
+  if (len === 1) return Array.from({ length: n }, () => ({ t: first.t, v: first.v }));
+
+  const last = points[len - 1]!;
+  const t0 = first.t;
+  const span = last.t - t0 || 1;
+
+  const out: HistoryPoint[] = [];
+  let j = 0;
+  for (let i = 0; i < n; i++) {
+    const tt = t0 + (span * i) / (n - 1);
+    while (j < len - 2 && points[j + 1]!.t < tt) j++;
+    const a = points[j]!;
+    const b = points[j + 1]!;
+    const seg = b.t - a.t || 1;
+    const f = Math.min(Math.max((tt - a.t) / seg, 0), 1);
+    out.push({ t: tt, v: a.v + (b.v - a.v) * f });
+  }
+  return out;
+}
+
+/** Linear interpolation between two equal-length resampled series. */
+function lerpSeries(from: HistoryPoint[], to: HistoryPoint[], p: number): HistoryPoint[] {
+  const n = to.length;
+  const out: HistoryPoint[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const a = from[i] ?? to[i]!;
+    const b = to[i]!;
+    out[i] = { t: a.t + (b.t - a.t) * p, v: a.v + (b.v - a.v) * p };
+  }
+  return out;
+}
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 export function HistoryChart({ points, color, unit }: HistoryChartProps) {
   const gradientId = useId();
 
+  const target = useMemo(() => resample(points, SAMPLES), [points]);
+
+  const [display, setDisplay] = useState<HistoryPoint[]>(target);
+  const displayRef = useRef<HistoryPoint[]>(target);
+  const firstRef = useRef(true);
+
+  // Tween `display` from its current shape into every new `target`.
+  useEffect(() => {
+    // First mount: show immediately, no animation.
+    if (firstRef.current) {
+      firstRef.current = false;
+      displayRef.current = target;
+      setDisplay(target);
+      return;
+    }
+
+    const from = displayRef.current;
+    // Can't morph across mismatched lengths (e.g. empty ↔ data) — snap instead.
+    if (prefersReducedMotion() || from.length !== target.length || target.length === 0) {
+      displayRef.current = target;
+      setDisplay(target);
+      return;
+    }
+
+    const startFrom = from;
+    let raf = 0;
+    let start = 0;
+    const step = (ts: number) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / ANIM_MS, 1);
+      const cur = lerpSeries(startFrom, target, easeInOut(p));
+      displayRef.current = cur;
+      setDisplay(cur);
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
+
   const geom = useMemo(() => {
-    const first = points[0];
-    const last = points[points.length - 1];
+    const first = display[0];
+    const last = display[display.length - 1];
     if (first === undefined || last === undefined) return null;
 
     const tMin = first.t;
@@ -55,7 +152,7 @@ export function HistoryChart({ points, color, unit }: HistoryChartProps) {
 
     let vMin = first.v;
     let vMax = first.v;
-    for (const p of points) {
+    for (const p of display) {
       if (p.v < vMin) vMin = p.v;
       if (p.v > vMax) vMax = p.v;
     }
@@ -69,7 +166,7 @@ export function HistoryChart({ points, color, unit }: HistoryChartProps) {
     const x = (t: number) => PAD_L + ((t - tMin) / tSpan) * PLOT_W;
     const y = (v: number) => PAD_T + (1 - (v - domMin) / domSpan) * PLOT_H;
 
-    const coords = points.map((p) => ({ px: x(p.t), py: y(p.v) }));
+    const coords = display.map((p) => ({ px: x(p.t), py: y(p.v) }));
 
     const line = coords
       .map((c, i) => `${i === 0 ? 'M' : 'L'}${c.px.toFixed(2)},${c.py.toFixed(2)}`)
@@ -91,7 +188,7 @@ export function HistoryChart({ points, color, unit }: HistoryChartProps) {
     });
 
     return { line, area, vMin, vMax, yMin: y(vMin), yMax: y(vMax), ticks };
-  }, [points]);
+  }, [display]);
 
   if (!geom) return null;
 

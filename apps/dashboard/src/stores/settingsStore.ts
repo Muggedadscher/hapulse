@@ -129,6 +129,11 @@ export interface CustomizationSettings {
    * page. Empty = not configured (the page shows a setup prompt).
    */
   scryptedUrl: string;
+  /**
+   * [fork] Last-selected time range in the sensor history modal
+   * (`1h`/`6h`/`24h`/`7d`/`30d`). Remembered across sensors, per user.
+   */
+  historyRange: string;
 }
 
 interface SettingsState {
@@ -206,6 +211,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   mobileHiddenSystemSections: [],
   mobileHiddenEnergySections: [],
   scryptedUrl: '', // [fork]
+  historyRange: '24h', // [fork]
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
