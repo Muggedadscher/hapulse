@@ -258,8 +258,7 @@ export function roomIconName(area: { name: string; icon?: string | null }): stri
  * Priority (first match wins):
  * 1. binary_sensor device_class 'door'                 state 'on' → 'door-open'
  * 2. binary_sensor device_class 'garage_door'          state 'on' → 'car'
- * 3. binary_sensor device_class 'window'|'opening'     state 'on' → 'air-vent'
- *    (AirVent chosen: reads clearly as airflow through an open window)
+ * 3. binary_sensor device_class 'window'|'opening'     state 'on' → 'grid-2x2'
  * 4. binary_sensor device_class 'moisture'             state 'on' → 'droplets'
  * 5. binary_sensor device_class 'smoke'                state 'on' → 'flame'
  *

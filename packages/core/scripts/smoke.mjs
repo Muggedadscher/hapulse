@@ -237,7 +237,7 @@ const openDoorEntities = {
 };
 assertEqual(roomStatusIconName(hallwayRoom, openDoorEntities), 'door-open', 'status: open door → door-open');
 
-// Open window → 'air-vent'
+// Open window → 'grid-2x2'
 const bedroomRoom = rooms.find(r => r.id === 'bedroom');
 assert(bedroomRoom !== undefined, 'bedroom room found for window status test');
 const openWindowEntities = {
@@ -248,13 +248,13 @@ const openWindowEntities = {
     attributes: { ...DEMO_ENTITIES['binary_sensor.bedroom_window'].attributes, device_class: 'window' },
   },
 };
-assertEqual(roomStatusIconName(bedroomRoom, openWindowEntities), 'air-vent', 'status: open window → air-vent');
+assertEqual(roomStatusIconName(bedroomRoom, openWindowEntities), 'grid-2x2', 'status: open window → grid-2x2');
 
 // CANONICAL_ROOM_ICONS includes expected values
 assert(Array.isArray(CANONICAL_ROOM_ICONS), 'CANONICAL_ROOM_ICONS is array');
 assert(CANONICAL_ROOM_ICONS.includes('house'), 'CANONICAL_ROOM_ICONS includes house');
 assert(CANONICAL_ROOM_ICONS.includes('sofa'), 'CANONICAL_ROOM_ICONS includes sofa');
-assert(CANONICAL_ROOM_ICONS.includes('air-vent'), 'CANONICAL_ROOM_ICONS includes air-vent');
+assert(CANONICAL_ROOM_ICONS.includes('grid-2x2'), 'CANONICAL_ROOM_ICONS includes grid-2x2');
 
 // ---------------------------------------------------------------------------
 // createDemoTicker
