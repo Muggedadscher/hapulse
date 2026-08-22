@@ -14,8 +14,8 @@ sauber übernehmen können.
   vorhandene Bausteine wiederverwenden (`Modal`, `Card`, `EmptyState`, `.btn …`).
 - `@hapulse/core` bleibt React-/DOM-frei (HA-Logik dort, Components sind dünn).
 - Vor jedem Push: `npm run typecheck && npm run build && npm test -w @hapulse/core`.
-  (Hinweis: 2 Tests zu `air-vent`/`roomIcons` sind **im Upstream** rot, nicht
-  von uns — nicht „fixen", das erzeugt nur Merge-Fläche.)
+  (Stand nach Upstream-Merge: alle Tests grün. Die früher roten
+  `air-vent`/`roomIcons`-Tests hat der Upstream selbst gefixt.)
 
 ## Bereits umgesetzte Fork-Features
 
