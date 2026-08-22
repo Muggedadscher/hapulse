@@ -29,6 +29,7 @@ import type {
   StatisticsMap,
   StatisticsPeriod,
 } from './energy.js';
+import type { RawHistoryState } from './history.js';
 
 /** Raw payload shape returned by `auth/current_user` WebSocket message. */
 interface RawCurrentUser {
@@ -175,6 +176,33 @@ export class HAConnection {
       period,
       types: ['change', 'sum', 'state'],
     });
+  }
+
+  /**
+   * Fetch recorder state history for a single entity over a time range
+   * (`history/history_during_period`).
+   *
+   * Requests a compact response (`minimal_response` + `no_attributes`) — HA
+   * returns a map keyed by entity_id; this unwraps the requested entity's
+   * samples (or `[]` when there is no history). `start`/`end` are ISO 8601
+   * strings. Use `parseNumericHistory` to turn the result into chartable
+   * numeric points.
+   */
+  async fetchHistory(
+    entityId: string,
+    start: string,
+    end?: string
+  ): Promise<RawHistoryState[]> {
+    const result = await this.#conn.sendMessagePromise<Record<string, RawHistoryState[]>>({
+      type: 'history/history_during_period',
+      start_time: start,
+      ...(end != null ? { end_time: end } : {}),
+      entity_ids: [entityId],
+      minimal_response: true,
+      no_attributes: true,
+      significant_changes_only: false,
+    });
+    return result?.[entityId] ?? [];
   }
 
   /**

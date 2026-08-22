@@ -662,6 +662,26 @@
   overflow: hidden;
 }
 
+/* [fork] Clickable numeric sensor tiles — open the history chart on tap */
+.sensor-tile--clickable {
+  cursor: pointer;
+  transition: background 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.sensor-tile--clickable:hover {
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-card);
+}
+
+.sensor-tile--clickable:active {
+  transform: scale(0.98);
+}
+
+.sensor-tile--clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .sensor-tile__chip {
   background: var(--bg-subtle);
   color: var(--text-faint);

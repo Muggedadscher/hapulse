@@ -22,6 +22,7 @@ import {
   Workflow,
   Activity,
   ShieldCheck,
+  Cctv,
   Sparkles,
   Music,
   Settings,
@@ -64,6 +65,7 @@ type NavId =
   | 'automations'
   | 'energy'
   | 'security'
+  | 'nvr'
   | 'music'
   | 'scenes'
   | 'system'
@@ -92,6 +94,7 @@ const NAV_CONFIG: NavConfigItem[] = [
   { id: 'automations', icon: <Workflow   size={20} strokeWidth={1.75} />, label: 'Automations', to: '/automations' },
   { id: 'energy',      icon: <Activity   size={20} strokeWidth={1.75} />, label: 'Energy',      to: '/energy' },
   { id: 'security',    icon: <ShieldCheck size={20} strokeWidth={1.75} />, label: 'Security',   to: '/security' },
+  { id: 'nvr',         icon: <Cctv       size={20} strokeWidth={1.75} />, label: 'NVR',         to: '/nvr' }, // [fork]
   { id: 'music',       icon: <Music      size={20} strokeWidth={1.75} />, label: 'Music',       to: '/music' },
   { id: 'scenes',      icon: <Sparkles   size={20} strokeWidth={1.75} />, label: 'Scenes',      to: '/scenes' },
   { id: 'system',      icon: <Monitor    size={20} strokeWidth={1.75} />, label: 'System',      to: '/system' },

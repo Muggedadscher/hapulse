@@ -122,6 +122,11 @@ export interface CustomizationSettings {
   mobileHiddenSecuritySections: string[];
   mobileHiddenSystemSections: string[];
   mobileHiddenEnergySections: string[];
+  /**
+   * [fork] Base URL of the Scrypted (NVR) web interface, embedded on the NVR
+   * page. Empty = not configured (the page shows a setup prompt).
+   */
+  scryptedUrl: string;
 }
 
 interface SettingsState {
@@ -195,6 +200,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   mobileHiddenSecuritySections: [],
   mobileHiddenSystemSections: [],
   mobileHiddenEnergySections: [],
+  scryptedUrl: '', // [fork]
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
