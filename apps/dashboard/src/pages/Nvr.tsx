@@ -17,18 +17,20 @@ import { Cctv, ExternalLink, Pencil, Check } from 'lucide-react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { Card } from '../components/ui/Card';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
+import { useT } from '../i18n/useT';
 import './Page.css';
 import './Nvr.css';
 
 /** Trim, add a scheme if missing, and drop any trailing slash. */
 function normalizeUrl(input: string): string {
-  const t = input.trim();
-  if (!t) return '';
-  const withScheme = /^https?:\/\//i.test(t) ? t : `https://${t}`;
+  const raw = input.trim();
+  if (!raw) return '';
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
   return withScheme.replace(/\/+$/, '');
 }
 
 export function Nvr() {
+  const t = useT();
   const scryptedUrl = useSettingsStore((s) => s.customization.scryptedUrl);
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
 
@@ -45,7 +47,7 @@ export function Nvr() {
   return (
     <div className="page nvr-page stagger-rise">
       <div className="page__header-row">
-        <h1 className="page__title">NVR</h1>
+        <h1 className="page__title">{t('nvr.title')}</h1>
         <div className="nvr-actions">
           {scryptedUrl && !editing && (
             <>
@@ -56,7 +58,7 @@ export function Nvr() {
                 rel="noreferrer noopener"
               >
                 <ExternalLink size={16} strokeWidth={1.75} />
-                <span className="nvr-actions__label">Open</span>
+                <span className="nvr-actions__label">{t('nvr.open')}</span>
               </a>
               <button
                 type="button"
@@ -67,7 +69,7 @@ export function Nvr() {
                 }}
               >
                 <Pencil size={16} strokeWidth={1.75} />
-                <span className="nvr-actions__label">URL</span>
+                <span className="nvr-actions__label">{t('nvr.editUrl')}</span>
               </button>
             </>
           )}
@@ -80,11 +82,8 @@ export function Nvr() {
           <span className="nvr-setup__icon" aria-hidden="true">
             <Cctv size={26} strokeWidth={1.75} />
           </span>
-          <h2 className="nvr-setup__title">Connect your NVR</h2>
-          <p className="nvr-setup__desc">
-            Enter the address of your Scrypted web interface. It gets embedded here so you can
-            watch cameras, the timeline and recordings without leaving HAPulse.
-          </p>
+          <h2 className="nvr-setup__title">{t('nvr.setup.title')}</h2>
+          <p className="nvr-setup__desc">{t('nvr.setup.desc')}</p>
 
           <form
             className="nvr-setup__form"
@@ -99,14 +98,14 @@ export function Nvr() {
               inputMode="url"
               autoComplete="off"
               spellCheck={false}
-              placeholder="https://192.168.1.50:10443"
+              placeholder={t('nvr.setup.placeholder')}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              aria-label="Scrypted NVR URL"
+              aria-label={t('nvr.setup.inputLabel')}
             />
             <button type="submit" className="btn btn--primary" disabled={!draft.trim()}>
               <Check size={16} strokeWidth={2} />
-              Save
+              {t('nvr.setup.save')}
             </button>
           </form>
 
@@ -119,22 +118,18 @@ export function Nvr() {
                 setEditing(false);
               }}
             >
-              Cancel
+              {t('nvr.setup.cancel')}
             </button>
           )}
 
-          <p className="nvr-setup__hint">
-            Scrypted usually runs on port <strong>10443</strong> (https) or <strong>11080</strong>{' '}
-            (http). If the frame stays blank, your NVR may block embedding — use{' '}
-            <strong>Open</strong> to launch it in a new tab instead.
-          </p>
+          <p className="nvr-setup__hint">{t('nvr.setup.hint')}</p>
         </Card>
       ) : (
         <div className="nvr-frame-wrap">
           <iframe
             className="nvr-frame"
             src={scryptedUrl}
-            title="Scrypted NVR"
+            title={t('nvr.frameTitle')}
             allow="fullscreen; autoplay; camera; microphone; picture-in-picture"
             allowFullScreen
           />

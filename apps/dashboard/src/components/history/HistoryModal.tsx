@@ -14,6 +14,7 @@ import { HISTORY_RANGES } from '@hapulse/core';
 import type { HistoryRange } from '@hapulse/core';
 import { formatEntityState } from '@hapulse/core';
 import { Modal } from '../ui/Modal';
+import { useT } from '../../i18n/useT';
 import { useHistory } from '../../ha/useHistory';
 import { HistoryChart } from './HistoryChart';
 import './history.css';
@@ -30,6 +31,7 @@ interface HistoryModalProps {
 const DEFAULT_RANGE: HistoryRange = '24h';
 
 export function HistoryModal({ open, onClose, entity, name, color }: HistoryModalProps) {
+  const t = useT();
   const [range, setRange] = useState<HistoryRange>(DEFAULT_RANGE);
   const { state, points, summary } = useHistory(open ? entity.entity_id : null, range);
 
@@ -64,19 +66,19 @@ export function HistoryModal({ open, onClose, entity, name, color }: HistoryModa
         </div>
 
         <div className="history__plot">
-          {state === 'loading' && <div className="history__msg">loading…</div>}
-          {state === 'error' && <div className="history__msg">Could not load history.</div>}
+          {state === 'loading' && <div className="history__msg">{t('common.loading')}</div>}
+          {state === 'error' && <div className="history__msg">{t('history.error')}</div>}
           {state === 'empty' && (
-            <div className="history__msg">No history recorded for this range.</div>
+            <div className="history__msg">{t('history.empty')}</div>
           )}
           {state === 'ready' && <HistoryChart points={points} color={color} unit={unit} />}
         </div>
 
         {summary && state === 'ready' && (
           <div className="history__stats">
-            <Stat label="min" value={summary.min} unit={unit} />
-            <Stat label="avg" value={summary.avg} unit={unit} />
-            <Stat label="max" value={summary.max} unit={unit} />
+            <Stat label={t('history.stat.min')} value={summary.min} unit={unit} />
+            <Stat label={t('history.stat.avg')} value={summary.avg} unit={unit} />
+            <Stat label={t('history.stat.max')} value={summary.max} unit={unit} />
           </div>
         )}
       </div>

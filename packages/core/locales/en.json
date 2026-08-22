@@ -978,5 +978,23 @@
   "settings.rooms.showAria": "Show {name}",
   "settings.rooms.hideAria": "Hide {name}",
 
-  "settings.appearance.theme.selectAria": "Select {name} theme"
+  "settings.appearance.theme.selectAria": "Select {name} theme",
+
+  "history.error": "Could not load history.",
+  "history.empty": "No history recorded for this range.",
+  "history.stat.min": "min",
+  "history.stat.avg": "avg",
+  "history.stat.max": "max",
+
+  "nvr.title": "NVR",
+  "nvr.open": "Open",
+  "nvr.editUrl": "URL",
+  "nvr.setup.title": "Connect your NVR",
+  "nvr.setup.desc": "Enter the address of your Scrypted web interface. It gets embedded here so you can watch cameras, the timeline and recordings without leaving HAPulse.",
+  "nvr.setup.inputLabel": "Scrypted NVR URL",
+  "nvr.setup.placeholder": "https://192.168.1.50:10443",
+  "nvr.setup.save": "Save",
+  "nvr.setup.cancel": "Cancel",
+  "nvr.setup.hint": "Scrypted usually runs on port 10443 (https) or 11080 (http). If the frame stays blank, your NVR may block embedding — use Open to launch it in a new tab instead.",
+  "nvr.frameTitle": "Scrypted NVR"
 }

@@ -113,7 +113,12 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/cards/cards.css` | `.sensor-tile--clickable` |
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`-Setting |
 | `apps/dashboard/src/app/Router.tsx` | Route `/nvr` |
-| `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" |
+| `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" (`labelKey: 'nav.nvr'`) |
+| `packages/core/locales/en.json` | i18n-Keys `nav.nvr`, `history.*`, `nvr.*` (am Dateiende angehängt) |
+
+> Hinweis: `en.json` erlaubt keine `[fork]`-Kommentare (JSON). Deshalb sind alle
+> Fork-Keys eindeutig unter `history.*` / `nvr.*` (+ `nav.nvr`) benannt und am
+> **Dateiende** angehängt — so bleibt die Merge-Fläche minimal.
 
 ---
 
