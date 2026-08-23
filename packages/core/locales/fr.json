@@ -901,5 +901,12 @@
   "settings.rooms.hideAria": "Masquer {name}",
   "settings.appearance.theme.selectAria": "Sélectionner le thème {name}",
   "entityState.unavailable": "Indisponible",
-  "entityState.unknown": "Inconnu"
+  "entityState.unknown": "Inconnu",
+  "changelog.kind.added": "Ajouté",
+  "changelog.kind.changed": "Modifié",
+  "changelog.kind.fixed": "Corrigé",
+  "changelog.whatsNew.title": "Nouveautés de la version {version}",
+  "changelog.whatsNew.dismiss": "J'ai compris",
+  "changelog.history.title": "Journal des modifications",
+  "settings.about.whatsNew": "Nouveautés"
 }

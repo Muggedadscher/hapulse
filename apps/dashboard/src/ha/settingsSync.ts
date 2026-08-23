@@ -90,6 +90,7 @@ const SNAPSHOT_KEYS = [
   'appIconHidden',
   'sidebarCollapsed',
   'language',
+  'lastSeenVersion',
 ] as const;
 
 function isValidSnapshot(value: unknown): value is Record<string, unknown> {
@@ -249,7 +250,8 @@ export function startHASettingsSync(): void {
       state.appIconHidden !== prevState.appIconHidden ||
       state.sidebarCollapsed !== prevState.sidebarCollapsed ||
       state.customization !== prevState.customization ||
-      state.language !== prevState.language
+      state.language !== prevState.language ||
+      state.lastSeenVersion !== prevState.lastSeenVersion
     ) {
       schedulePush();
     }

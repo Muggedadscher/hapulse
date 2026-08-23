@@ -894,3 +894,42 @@ details[open] .entity-group__chevron {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ---- Language select ------------------------------------------------------
+   Mirrors .automations-select / .devices-select. A native <select> is used
+   instead of a mode-toggle button group because the locale list (seven and
+   growing) overflows a horizontal row on narrow screens. */
+.settings-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.settings-select__native {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 2rem 0.5rem 0.875rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text);
+  cursor: pointer;
+  max-width: 200px;
+}
+.settings-select__chevron {
+  position: absolute;
+  right: 0.625rem;
+  pointer-events: none;
+  color: var(--text-faint);
+}
+
+/* The changelog opener sits in the About card's link row, so it borrows
+   .about-card__link's look and only resets the <button> defaults. */
+.about-card__link--button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}

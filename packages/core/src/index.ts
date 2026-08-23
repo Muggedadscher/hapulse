@@ -34,6 +34,9 @@ export type { Dict, Locale } from './i18n.js';
 export { lookupEntityState, humanizeState } from './entityStates.js';
 export type { StateTranslations, StateLookupOptions, EntityStateLabel } from './entityStates.js';
 
+export { RELEASES, CURRENT_VERSION, CHANGE_KINDS, releasesSince, compareVersions } from './changelog.js';
+export type { Release, ReleaseSection, ChangeKind } from './changelog.js';
+
 // Rooms
 export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from './rooms.js';
 export type { DeviceAreaMap } from './rooms.js';

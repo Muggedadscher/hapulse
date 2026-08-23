@@ -45,11 +45,13 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { WeatherModal } from '../components/home/chipmodals';
 import { NotificationsPanel } from '../components/notifications/NotificationsPanel';
+import { ChangelogModal } from '../components/changelog/ChangelogModal';
 import { useConnectionStatus, useWeatherEntity, useCurrentUserAvatar } from '../ha/hooks';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
+import { releasesSince } from '@hapulse/core';
 import { useT, useStateLabel } from '../i18n/useT';
 import type { TKey } from '../i18n/useT';
 import './AppLayout.css';
@@ -316,6 +318,25 @@ export function AppLayout({ children }: AppLayoutProps) {
   const appIconHidden = useSettingsStore((s) => s.appIconHidden);
 
   const editMode = useUIStore((s) => s.editMode);
+
+  /* ---- What's New ----
+     Opens once per release. `lastSeenVersion` is seeded to the running version
+     on a fresh install and backfilled to 1.0.0 for an existing one (see
+     settingsStore's `merge`), so a first-time user is never shown a changelog
+     while an upgrading user always is. Reading it before the first paint would
+     race persist hydration, hence the effect. */
+  const lastSeenVersion = useSettingsStore((s) => s.lastSeenVersion);
+  const markVersionSeen = useSettingsStore((s) => s.markVersionSeen);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+
+  useEffect(() => {
+    if (releasesSince(lastSeenVersion).length > 0) setWhatsNewOpen(true);
+  }, [lastSeenVersion]);
+
+  const closeWhatsNew = useCallback(() => {
+    setWhatsNewOpen(false);
+    markVersionSeen();
+  }, [markVersionSeen]);
 
   /* ---- Derived nav order ---- */
   // All IDs in user-stored order (new IDs appended after stored ones)
@@ -740,6 +761,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           </button>
         )}
       </nav>
+
+      <ChangelogModal
+        open={whatsNewOpen}
+        onClose={closeWhatsNew}
+        mode="whats-new"
+        since={lastSeenVersion}
+      />
     </div>
   );
 }

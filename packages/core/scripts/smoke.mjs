@@ -55,9 +55,19 @@ import {
   LOCALES,
   lookupEntityState,
   humanizeState,
+  RELEASES,
+  CURRENT_VERSION,
+  CHANGE_KINDS,
+  releasesSince,
+  compareVersions,
 } from '../dist/index.js';
+import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
+import DE_DICT from '../locales/de.json' with { type: 'json' };
+import ES_DICT from '../locales/es.json' with { type: 'json' };
 import FR_DICT from '../locales/fr.json' with { type: 'json' };
+import IT_DICT from '../locales/it.json' with { type: 'json' };
+import PT_DICT from '../locales/pt.json' with { type: 'json' };
 import SV_DICT from '../locales/sv.json' with { type: 'json' };
 
 let passed = 0;
@@ -730,7 +740,7 @@ assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indispo
 console.log('\n── i18n: dictionary parity ──');
 
 /** Every translated locale, keyed by its code. `en` is the source of truth. */
-const LOCALE_DICTS = { fr: FR_DICT, sv: SV_DICT };
+const LOCALE_DICTS = { de: DE_DICT, es: ES_DICT, fr: FR_DICT, it: IT_DICT, pt: PT_DICT, sv: SV_DICT };
 
 const enKeys = Object.keys(EN_DICT).sort();
 const placeholders = (s) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(',');
@@ -907,3 +917,75 @@ function finish() {
     process.exit(1);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Changelog
+//
+// The release list is the version source for the whole app (Settings → About
+// reads CURRENT_VERSION, the What's New modal diffs against it, and
+// CHANGELOG.md is generated from it), so the invariants that keep it honest
+// are worth asserting: newest first, well-formed, and in step with the
+// package.json versions a release also has to bump.
+// ---------------------------------------------------------------------------
+console.log('\n── changelog ──');
+
+assert(RELEASES.length > 0, 'at least one release is documented');
+assertEqual(CURRENT_VERSION, RELEASES[0].version, 'CURRENT_VERSION is the newest release');
+
+const SEMVER = /^\d+\.\d+\.\d+$/;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const malformed = RELEASES.flatMap((r) => {
+  const problems = [];
+  if (!SEMVER.test(r.version)) problems.push(`${r.version}: version is not major.minor.patch`);
+  if (!ISO_DATE.test(r.date)) problems.push(`${r.version}: date is not YYYY-MM-DD`);
+  if (!r.title || typeof r.title !== 'string') problems.push(`${r.version}: missing title`);
+  if (!Array.isArray(r.sections) || r.sections.length === 0) problems.push(`${r.version}: no sections`);
+  for (const section of r.sections ?? []) {
+    if (!CHANGE_KINDS.includes(section.kind)) problems.push(`${r.version}: unknown kind "${section.kind}"`);
+    if (!Array.isArray(section.items) || section.items.length === 0) {
+      problems.push(`${r.version}/${section.kind}: no items`);
+    }
+    for (const item of section.items ?? []) {
+      // A trailing period reads as a sentence fragment next to its siblings;
+      // the list renders as bullets, not prose.
+      if (item.endsWith('.')) problems.push(`${r.version}/${section.kind}: "${item}" ends with a period`);
+    }
+  }
+  return problems;
+});
+assert(malformed.length === 0, `every release is well-formed${malformed.length > 0 ? ` — ${malformed.join('; ')}` : ''}`);
+
+// Newest first, and no duplicate versions — releasesSince() relies on both.
+const misordered = RELEASES.slice(1)
+  .map((r, i) => (compareVersions(RELEASES[i].version, r.version) > 0
+    ? null
+    : `${RELEASES[i].version} is not newer than ${r.version}`))
+  .filter((m) => m !== null);
+assert(misordered.length === 0,
+  `releases are ordered newest first${misordered.length > 0 ? ` — ${misordered.join('; ')}` : ''}`);
+
+assertEqual(compareVersions('1.2.0', '1.10.0') < 0, true, 'version compare is numeric, not lexical');
+assertEqual(compareVersions('1.1.0', '1.1.0'), 0, 'equal versions compare equal');
+
+// A fresh install must not be shown a changelog; an upgrade must be.
+assertEqual(releasesSince(null).length, 0, 'a fresh install sees no releases');
+assertEqual(releasesSince(CURRENT_VERSION).length, 0, 'an up-to-date install sees no releases');
+assert(releasesSince('0.0.1').length === RELEASES.length, 'an ancient install sees every release');
+assertEqual(
+  releasesSince(RELEASES[RELEASES.length - 1].version).length,
+  RELEASES.length - 1,
+  'an install on the oldest release sees everything after it',
+);
+
+// The version shown in Settings → About must match what is published.
+const PKG_PATHS = ['package.json', 'packages/core/package.json', 'apps/dashboard/package.json'];
+const repoRoot = new URL('../../../', import.meta.url);
+const drifted = PKG_PATHS
+  .map((rel) => {
+    const version = JSON.parse(readFileSync(new URL(rel, repoRoot), 'utf8')).version;
+    return version === CURRENT_VERSION ? null : `${rel} is ${version}, expected ${CURRENT_VERSION}`;
+  })
+  .filter((m) => m !== null);
+assert(drifted.length === 0,
+  `package.json versions match CURRENT_VERSION${drifted.length > 0 ? ` — ${drifted.join('; ')}` : ''}`);

@@ -1,0 +1,130 @@
+/* =========================================================
+   ChangelogModal — release notes list.
+   All colors are CSS custom properties — no hard-coded values.
+   ========================================================= */
+
+.changelog-modal {
+  max-width: 34rem;
+}
+
+.changelog-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* ---- One release ---- */
+.changelog-release {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Separator between releases in the full-history view. */
+.changelog-release + .changelog-release {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.changelog-release__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.changelog-release__version {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-pill);
+  padding: 0.125rem 0.5rem;
+}
+
+.changelog-release__date {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.changelog-release__title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+/* ---- A change category (added / changed / fixed) ---- */
+.changelog-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.changelog-group__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  align-self: flex-start;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.changelog-group__label--positive { color: var(--positive); }
+.changelog-group__label--info     { color: var(--info); }
+.changelog-group__label--accent   { color: var(--accent); }
+
+.changelog-group__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.changelog-group__item {
+  position: relative;
+  padding-left: 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.changelog-group__item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5625rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--border-strong, var(--border));
+}
+
+/* ---- Footer action ---- */
+.changelog-modal__done {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--accent-contrast, #fff);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.changelog-modal__done:hover { filter: brightness(1.06); }
+
+@media (prefers-reduced-motion: reduce) {
+  .changelog-modal__done { transition: none; }
+}

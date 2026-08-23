@@ -11,7 +11,11 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useConnectionStore } from '../stores/connectionStore';
 import { getLanguage, getEntityStateTranslations } from '../ha/config';
 import en from '@hapulse/core/locales/en.json';
+import de from '@hapulse/core/locales/de.json';
+import es from '@hapulse/core/locales/es.json';
 import fr from '@hapulse/core/locales/fr.json';
+import it from '@hapulse/core/locales/it.json';
+import pt from '@hapulse/core/locales/pt.json';
 import sv from '@hapulse/core/locales/sv.json';
 
 export interface I18nValue {
@@ -31,7 +35,7 @@ export const I18nContext = createContext<I18nValue>({
 });
 
 /** Dictionaries by locale. */
-const DICTS: Record<Locale, Dict> = { en, fr, sv };
+const DICTS: Record<Locale, Dict> = { en, de, es, fr, it, pt, sv };
 
 /** Entity-state translations, cached per locale for the session: the payload
  *  covers every loaded integration, and HA's state vocabulary does not change

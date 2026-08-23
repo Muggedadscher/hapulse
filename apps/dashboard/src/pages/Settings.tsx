@@ -9,7 +9,7 @@ import {
   Github, ExternalLink,
   ChevronDown, ChevronRight,
   Wifi, Hash, Sun, Palette, Download, Upload, Info, Languages, Type, EyeOff, Shapes,
-  LayoutGrid, Pencil, List, ShieldCheck,
+  LayoutGrid, Pencil, List, ShieldCheck, Sparkles,
 } from 'lucide-react';
 
 import { useSettingsStore } from '../stores/settingsStore';
@@ -19,13 +19,14 @@ import { useUIStore } from '../stores/uiStore';
 import { useRooms, useCurrentUserAvatar, useCanEdit } from '../ha/hooks';
 import { THEMES, THEME_NAMES, resolveMode } from '../theme/themes';
 import type { ThemeName, ThemeMode } from '../theme/themes';
-import { LOCALES, LOCALE_LABELS } from '@hapulse/core';
+import { LOCALES, LOCALE_LABELS, CURRENT_VERSION } from '@hapulse/core';
 import type { Room, HassEntity, Locale } from '@hapulse/core';
 import { isDefaultPersistenceAdapter } from '../persistence';
 
 import { useT } from '../i18n/useT';
 import type { TKey, TFunction } from '../i18n/useT';
 import { Card } from '../components/ui/Card';
+import { ChangelogModal } from '../components/changelog/ChangelogModal';
 import { Modal } from '../components/ui/Modal';
 import { SectionLabel } from '../components/ui/SectionLabel';
 import { UserAvatar } from '../components/ui/UserAvatar';
@@ -327,6 +328,9 @@ function AppearanceSection() {
   // translated — "Français" reads the same regardless of UI language), so
   // only the 'auto' entry resolves through a translation key at render time,
   // mirroring MODE_OPTIONS.
+  // A native <select> rather than the mode-toggle button group the two-locale
+  // version used: seven languages plus 'auto' overflow a horizontal row well
+  // before the 375px breakpoint, and the list only grows from here.
   const LANGUAGE_OPTIONS: { id: Locale | 'auto'; labelKey?: TKey; label?: string }[] = [
     { id: 'auto', labelKey: 'settings.language.auto' },
     ...LOCALES.map((l) => ({ id: l, label: LOCALE_LABELS[l] })),
@@ -424,18 +428,20 @@ function AppearanceSection() {
             </span>
             {t('settings.language.label')}
           </span>
-          <div className="mode-toggle" role="group" aria-label={t('settings.language.groupAria')}>
-            {LANGUAGE_OPTIONS.map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                className={`mode-toggle__btn${language === l.id ? ' mode-toggle__btn--active' : ''}`}
-                onClick={() => setLanguage(l.id)}
-                aria-pressed={language === l.id}
-              >
-                {l.labelKey ? t(l.labelKey) : l.label}
-              </button>
-            ))}
+          <div className="settings-select">
+            <select
+              className="settings-select__native"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Locale | 'auto')}
+              aria-label={t('settings.language.groupAria')}
+            >
+              {LANGUAGE_OPTIONS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.labelKey ? t(l.labelKey) : l.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={14} strokeWidth={2} className="settings-select__chevron" aria-hidden="true" />
           </div>
         </div>
 
@@ -949,6 +955,7 @@ function BackupSection() {
 
 function AboutSection() {
   const t = useT();
+  const [changelogOpen, setChangelogOpen] = useState(false);
   return (
     <section className="settings-page__section">
       <SectionLabel>{t('settings.section.about')}</SectionLabel>
@@ -963,8 +970,16 @@ function AboutSection() {
           </span>
           <div className="about-card__title">HAPulse</div>
         </div>
-        <div className="about-card__sub">{t('settings.about.version', { version: '1.0.0' })}</div>
+        <div className="about-card__sub">{t('settings.about.version', { version: CURRENT_VERSION })}</div>
         <div className="about-card__sub">{t('settings.about.tagline')}</div>
+        <button
+          type="button"
+          className="about-card__link about-card__link--button"
+          onClick={() => setChangelogOpen(true)}
+        >
+          <Sparkles size={14} strokeWidth={1.75} />
+          {t('settings.about.whatsNew')}
+        </button>
         <a
           href="https://github.com/jlnbln/HAPulse"
           target="_blank"
@@ -976,6 +991,12 @@ function AboutSection() {
           <ExternalLink size={12} strokeWidth={1.75} />
         </a>
       </Card>
+
+      <ChangelogModal
+        open={changelogOpen}
+        onClose={() => setChangelogOpen(false)}
+        mode="history"
+      />
     </section>
   );
 }

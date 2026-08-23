@@ -901,5 +901,12 @@
   "settings.rooms.hideAria": "Dölj {name}",
   "settings.appearance.theme.selectAria": "Välj temat {name}",
   "entityState.unavailable": "Otillgänglig",
-  "entityState.unknown": "Okänd"
+  "entityState.unknown": "Okänd",
+  "changelog.kind.added": "Tillagt",
+  "changelog.kind.changed": "Ändrat",
+  "changelog.kind.fixed": "Åtgärdat",
+  "changelog.whatsNew.title": "Nyheter i {version}",
+  "changelog.whatsNew.dismiss": "Uppfattat",
+  "changelog.history.title": "Ändringslogg",
+  "settings.about.whatsNew": "Nyheter"
 }
