@@ -1,7 +1,7 @@
 import React from 'react';
 import { Cpu, Database, HardDrive, Network, Clock, Activity } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import type { TKey } from '../../i18n/useT';
+import type { TKey, TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SystemMonitorCard.css';
@@ -9,8 +9,6 @@ import './SystemMonitorCard.css';
 interface SystemMonitorCardProps {
   entities: HassEntity[];
 }
-
-type T = (key: TKey, vars?: Record<string, string | number>) => string;
 
 type MetricGroup = {
   /** Stable identity — used as the React key, never displayed. */
@@ -44,13 +42,13 @@ function categorise(entities: HassEntity[]): MetricGroup[] {
     { id: 'disk',      labelKey: 'system.monitor.group.disk',      icon: <HardDrive size={14} strokeWidth={1.75} />, entities: disk },
     { id: 'network',   labelKey: 'system.monitor.group.network',   icon: <Network size={14} strokeWidth={1.75} />, entities: network },
     { id: 'system',    labelKey: 'system.monitor.group.system',    icon: <Clock size={14} strokeWidth={1.75} />, entities: system },
-    { id: 'other',     labelKey: 'system.monitor.group.other',     icon: <Activity size={14} strokeWidth={1.75} />, entities: other },
+    { id: 'other',     labelKey: 'system.monitor.group.misc',      icon: <Activity size={14} strokeWidth={1.75} />, entities: other },
   ];
 
   return groups.filter((g) => g.entities.length > 0);
 }
 
-function formatValue(entity: HassEntity, t: T): string {
+function formatValue(entity: HassEntity, t: TFunction): string {
   const unit = entity.attributes.unit_of_measurement as string | undefined;
   const val = entity.state;
 

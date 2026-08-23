@@ -569,11 +569,19 @@
 
 .cover-card__buttons {
   display: flex;
+  /* Wrap rather than overflow: `flex: 1` on the buttons is floored at their
+     content width by `min-width: auto`, so a label longer than the English one
+     pushes the row past the card. Same recipe as .alarm-card__actions. */
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .cover-card__btn {
   flex: 1;
+  /* Wrap threshold, not a decoration: sized for the longest label plus its
+     icon, so three buttons share one row on a wide card and drop to two rows
+     on a narrow one instead of spilling out. */
+  min-width: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -856,11 +864,13 @@
 
 .vacuum-card__controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .vacuum-card__btn {
   flex: 1;
+  min-width: 96px;
   display: flex;
   align-items: center;
   justify-content: center;

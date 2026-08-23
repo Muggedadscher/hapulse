@@ -11,9 +11,8 @@ import { Card } from '../ui/Card';
 import { domainOf } from '@hapulse/core';
 import type { HassEntityMap, HassEntity } from '@hapulse/core';
 import { useT } from '../../i18n/useT';
+import type { TFunction } from '../../i18n/useT';
 import './ActivityCard.css';
-
-type TFunction = ReturnType<typeof useT>;
 
 interface ActivityCardProps {
   entities: HassEntityMap;

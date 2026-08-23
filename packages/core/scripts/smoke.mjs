@@ -52,6 +52,8 @@ import {
   translate,
   resolveLanguage,
 } from '../dist/index.js';
+import EN_DICT from '../locales/en.json' with { type: 'json' };
+import FR_DICT from '../locales/fr.json' with { type: 'json' };
 
 let passed = 0;
 let failed = 0;
@@ -711,6 +713,66 @@ assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information 
 
 // Une préférence explicite devenue indisponible ne doit pas bloquer l'UI
 assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
+
+// ---------------------------------------------------------------------------
+// i18n — parité des dictionnaires
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: parité en/fr ──');
+
+const enKeys = Object.keys(EN_DICT).sort();
+const frKeys = Object.keys(FR_DICT).sort();
+
+const missingInFr = enKeys.filter((k) => !frKeys.includes(k));
+const extraInFr = frKeys.filter((k) => !enKeys.includes(k));
+
+assert(missingInFr.length === 0, `fr.json ne doit rien omettre (manquant: ${missingInFr.join(', ') || 'aucun'})`);
+assert(extraInFr.length === 0, `fr.json ne doit rien ajouter (en trop: ${extraInFr.join(', ') || 'aucun'})`);
+
+// Les placeholders doivent survivre à la traduction. Une seule assertion, dont le
+// message énumère toutes les clés fautives : 899 lignes de coches noieraient les
+// échecs des autres blocs, et la sortie de ce runner est son unique rapport.
+const placeholders = (s) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(',');
+const drifted = enKeys
+  .map((k) => ({ k, en: placeholders(EN_DICT[k]), fr: placeholders(FR_DICT[k] ?? '') }))
+  .filter(({ en, fr }) => en !== fr)
+  .map(({ k, en, fr }) => `${k} (attendu ${JSON.stringify(en)}, obtenu ${JSON.stringify(fr)})`);
+
+assert(drifted.length === 0,
+  `placeholders conservés sur les ${enKeys.length} clés${drifted.length > 0 ? ` — dérive: ${drifted.join('; ')}` : ''}`);
+
+// ---------------------------------------------------------------------------
+// i18n — couverture des pluriels (en.json)
+//
+// Trouvé 3 fois à la main sur cette branche (security.hero.peopleHome.one,
+// trois clés .other orphelines, devices.hero.deviceCount) : le seul défaut
+// récidivant, sans filet jusqu'ici. Une assertion agrégée par invariant, pas
+// une par clé, pour la même raison que le bloc placeholders ci-dessus.
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: couverture des pluriels ──');
+
+const enKeySet = new Set(enKeys);
+
+// Toute clé `.one` doit avoir sa `.other`, et réciproquement.
+const unpairedPlurals = enKeys
+  .filter((k) => k.endsWith('.one') || k.endsWith('.other'))
+  .map((k) => {
+    const base = k.endsWith('.one') ? k.slice(0, -'.one'.length) : k.slice(0, -'.other'.length);
+    const sibling = k.endsWith('.one') ? `${base}.other` : `${base}.one`;
+    return enKeySet.has(sibling) ? null : `${k} (manque ${sibling})`;
+  })
+  .filter((msg) => msg !== null);
+
+assert(unpairedPlurals.length === 0,
+  `toute clé .one/.other a sa contrepartie${unpairedPlurals.length > 0 ? ` — orphelines: ${unpairedPlurals.join(', ')}` : ''}`);
+
+// Toute valeur contenant {count} doit appartenir à une paire .one/.other.
+const countOutsidePlural = enKeys
+  .filter((k) => !k.endsWith('.one') && !k.endsWith('.other'))
+  .filter((k) => /\{count\}/.test(EN_DICT[k]))
+  .map((k) => `${k} (${JSON.stringify(EN_DICT[k])})`);
+
+assert(countOutsidePlural.length === 0,
+  `{count} n'apparaît que dans des clés .one/.other${countOutsidePlural.length > 0 ? ` — hors paire: ${countOutsidePlural.join(', ')}` : ''}`);
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)

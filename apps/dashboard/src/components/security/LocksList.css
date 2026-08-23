@@ -14,6 +14,12 @@
 
 .locks-row {
   display: flex;
+  /* The icon, the state pill and both buttons are all flex-shrink: 0, so the
+     name column is the only thing that can give — and with min-width: 0 it
+     gives all the way to zero before anything overflows. Wrapping instead
+     keeps every part legible once the labels no longer fit on one line, the
+     same way .alarm-card__actions already does. */
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.875rem;
   padding: 0.875rem 1.125rem;
@@ -54,8 +60,10 @@
 
 /* Name column */
 .locks-row__name-col {
-  flex: 1;
-  min-width: 0;
+  /* A floor, not 0: below this the lock's name is unreadable anyway, so the
+     row should wrap rather than squeeze it out of existence. */
+  flex: 1 1 8rem;
+  min-width: 8rem;
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
@@ -73,6 +81,11 @@
 .locks-row__room {
   font-size: 0.75rem;
   color: var(--text-faint);
+  /* Same truncation as .locks-row__name, which already has it: without it a
+     room name spills out of the column instead of being cut. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* State badge — pill */
@@ -101,6 +114,8 @@
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+  /* Stay hard right, whether sharing the row or wrapped onto their own line. */
+  margin-left: auto;
 }
 
 .locks-row__btn {

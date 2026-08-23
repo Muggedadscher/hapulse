@@ -1,6 +1,9 @@
 /**
- * useSystemHealth — derives the overall "Home Status" shown in the sidebar pill,
- * the System hero and the Devices hero. Single source of truth so they agree.
+ * useSystemHealth — derives the overall "Home Status" shown in the Devices hero.
+ *
+ * Note: this is NOT a shared source of truth today — AppLayout.tsx recomputes
+ * the same status independently for the sidebar pill, and SystemHeroCard
+ * doesn't call this hook at all. Unifying those is a refactor of its own.
  *
  * Health from System Monitor CPU/RAM/disk thresholds, plus low batteries and
  * unavailable entities (respecting hiddenEntities).

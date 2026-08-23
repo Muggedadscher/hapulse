@@ -3,9 +3,7 @@
  */
 
 import type { Room } from '@hapulse/core';
-import type { TKey } from '../../i18n/useT';
-
-type T = (key: TKey, vars?: Record<string, string | number>) => string;
+import type { TFunction } from '../../i18n/useT';
 
 /** Return the room name for an entity ID, or undefined if not found. */
 export function getRoomName(entityId: string, rooms: Room[]): string | undefined {
@@ -19,7 +17,7 @@ export function getRoomName(entityId: string, rooms: Room[]): string | undefined
  * Takes the translator as a parameter so the strings stay in the dictionary
  * without this module needing a React hook.
  */
-export function relativeTime(t: T, isoString: string): string {
+export function relativeTime(t: TFunction, isoString: string): string {
   const diff = (Date.now() - new Date(isoString).getTime()) / 1000;
   if (diff < 30) return t('common.time.justNow');
   if (diff < 60) return t('common.time.secondsAgo', { count: Math.round(diff) });

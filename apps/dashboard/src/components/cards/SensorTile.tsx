@@ -7,10 +7,9 @@ import {
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
 import { useLocale, useT } from '../../i18n/useT';
+import type { TFunction } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
-
-type TFunction = ReturnType<typeof useT>;
 
 interface SensorTileProps {
   entity: HassEntity;

@@ -1,7 +1,5 @@
 {
   "nav.rooms": "Rooms",
-  "devices.count.one": "{count} device",
-  "devices.count.other": "{count} devices",
 
   "nav.overview": "Overview",
   "nav.devices": "Devices",
@@ -348,6 +346,7 @@
 
   "automations.title": "Automations",
   "automations.emptyFilter": "No automations match your filters.",
+  "automations.section.generalLabel": "General",
   "automations.section.hide.hero": "hide Overview",
   "automations.section.show.hero": "show Overview",
   "automations.section.hideMobile.hero": "hide Overview on mobile",
@@ -500,7 +499,7 @@
   "room.section.label.button": "Buttons",
   "room.section.label.vacuum": "Vacuums",
   "room.section.label.sensor": "Sensors",
-  "room.section.label.other": "Other",
+  "room.section.label.misc": "Other",
   "room.section.dragReorder.scene": "Drag to reorder Scenes section",
   "room.section.dragReorder.light": "Drag to reorder Lights section",
   "room.section.dragReorder.climate": "Drag to reorder Climate section",
@@ -510,7 +509,7 @@
   "room.section.dragReorder.button": "Drag to reorder Buttons section",
   "room.section.dragReorder.vacuum": "Drag to reorder Vacuums section",
   "room.section.dragReorder.sensor": "Drag to reorder Sensors section",
-  "room.section.dragReorder.other": "Drag to reorder Other section",
+  "room.section.dragReorder.misc": "Drag to reorder Other section",
 
   "settings.title": "Settings",
   "settings.section.connection": "connection",
@@ -555,6 +554,10 @@
   "settings.appearance.accent.reset": "reset",
   "settings.appearance.accent.hueAria": "Accent hue",
 
+  "settings.language.label": "Language",
+  "settings.language.groupAria": "Language",
+  "settings.language.auto": "Auto",
+
   "settings.entities.searchPlaceholder": "search by name or id…",
   "settings.entities.searchAria": "Search entities",
   "settings.entities.uncategorised": "uncategorised",
@@ -588,11 +591,12 @@
   "settings.backup.syncStatus.connected": "Settings are saved to your Home Assistant and sync across your devices.",
   "settings.backup.syncStatus.pending": "Settings will sync to your Home Assistant once connected.",
 
-  "settings.about.version": "version 1.0.0",
+  "settings.about.version": "version {version}",
   "settings.about.tagline": "made for home assistant — open source, self-hosted.",
 
   "devices.hero.title": "All Devices",
-  "devices.hero.deviceCount": "{count} devices",
+  "devices.hero.deviceCount.one": "{count} device",
+  "devices.hero.deviceCount.other": "{count} devices",
   "devices.hero.roomCount.one": "{count} room",
   "devices.hero.roomCount.other": "{count} rooms",
   "devices.hero.stat.integrations": "Integrations",
@@ -808,7 +812,7 @@
   "security.hero.personAwayTitle": "{name}: Away",
   "security.hero.personIsHome": "{name} is home",
   "security.hero.someoneIsHome": "Someone is home",
-  "security.hero.peopleHome.one": "{count} people home",
+  "security.hero.peopleHome.one": "{count} person home",
   "security.hero.peopleHome.other": "{count} people home",
   "security.hero.allLocked": "All locked",
   "security.hero.unlockedCount.one": "{count} unlocked",
@@ -887,7 +891,7 @@
   "system.monitor.group.disk": "Disk",
   "system.monitor.group.network": "Network",
   "system.monitor.group.system": "System",
-  "system.monitor.group.other": "Other",
+  "system.monitor.group.misc": "Other",
   "system.monitor.uptimeDaysHours": "{days}d {hours}h",
   "system.monitor.uptimeHoursAgo": "{hours}h ago",
 

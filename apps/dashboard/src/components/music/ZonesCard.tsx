@@ -5,7 +5,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
 import { useT } from '../../i18n/useT';
-import type { TKey } from '../../i18n/useT';
+import type { TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { RoomIcon } from '../ui/RoomIcon';
 import type { HassEntity, Room } from '@hapulse/core';
@@ -25,10 +25,8 @@ export interface ZoneData {
   players: HassEntity[];
 }
 
-type T = (key: TKey, vars?: Record<string, string | number>) => string;
-
 /** Takes the translator as a parameter: it runs outside any component body. */
-function getZoneState(players: HassEntity[], t: T) {
+function getZoneState(players: HassEntity[], t: TFunction) {
   const playingPlayers = players.filter((p) => p.state === 'playing');
   const isActive = playingPlayers.length > 0;
   const volPlayers = playingPlayers.filter((p) => hasFeature(p, FEATURE_VOLUME_SET));
