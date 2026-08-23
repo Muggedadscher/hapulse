@@ -5,6 +5,16 @@ All notable changes to HAPulse are recorded here.
 <!-- Generated from packages/core/src/changelog.ts by `npm run changelog`.
      Edit that file, not this one — this file is overwritten. -->
 
+## 1.1.1 — 2026-08-23
+
+_Fixes for translated installs, colour lights and deep links_
+
+### Fixed
+
+- System Monitor readings — the sidebar health indicator, the CPU/RAM/disk chips and the System page — were blank on every non-English Home Assistant, because the sensors were being matched by their English names
+- Colour-capable bulbs now have a colour slider. A light reporting both a colour mode and colour temperature previously offered only warmth, with no way to change its colour
+- Opening Scenes, Security, Energy, Automations or System directly — from a bookmark, a refresh or a shared link — laid the page out without its grid styling
+
 ## 1.1.0 — 2026-08-23
 
 _HAPulse speaks seven languages_
