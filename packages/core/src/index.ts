@@ -41,6 +41,10 @@ export type { Release, ReleaseSection, ChangeKind } from './changelog.js';
 export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from './rooms.js';
 export type { DeviceAreaMap } from './rooms.js';
 
+// System Monitor metric identification
+export { indexSystemMonitor, pickSystemMetrics } from './systemMonitor.js';
+export type { SystemMonitorIndex, SystemMetricFamily, SystemMetrics } from './systemMonitor.js';
+
 // Domain helpers
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';
 

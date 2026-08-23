@@ -15,6 +15,7 @@
  *  - HAConnection.suspend is exported
  *  - resolveEntityAreaId() device-area fallback precedence
  *  - en/sv dictionary parity (keys, placeholders, .one/.other pairing)
+ *  - System Monitor metrics resolve on a non-English HA (localized entity_ids)
  */
 
 import {
@@ -60,6 +61,8 @@ import {
   CHANGE_KINDS,
   releasesSince,
   compareVersions,
+  indexSystemMonitor,
+  pickSystemMetrics,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -989,3 +992,69 @@ const drifted = PKG_PATHS
   .filter((m) => m !== null);
 assert(drifted.length === 0,
   `package.json versions match CURRENT_VERSION${drifted.length > 0 ? ` — ${drifted.join('; ')}` : ''}`);
+
+
+// ---------------------------------------------------------------------------
+// System Monitor — metrics must resolve whatever HA's language is
+// ---------------------------------------------------------------------------
+
+console.log('\n── indexSystemMonitor / pickSystemMetrics ──');
+
+const smState = (entity_id, state) => ({
+  entity_id, state, attributes: {}, last_changed: '', last_updated: '',
+  context: { id: '', parent_id: null, user_id: null },
+});
+
+// A French HA: entity_ids are translated, translation_key/unique_id are not.
+const frRegistries = {
+  areas: [], devices: [],
+  entities: [
+    { entity_id: 'sensor.system_monitor_utilisation_du_processeur', platform: 'systemmonitor', translation_key: 'processor_use' },
+    { entity_id: 'sensor.system_monitor_utilisation_de_la_memoire', platform: 'systemmonitor', translation_key: 'memory_use_percent' },
+    { entity_id: 'sensor.system_monitor_utilisation_du_disque_ssl', platform: 'systemmonitor', unique_id: 'disk_use_percent_ssl', translation_key: 'disk_use_percent' },
+    { entity_id: 'sensor.system_monitor_utilisation_du_disque', platform: 'systemmonitor', unique_id: 'disk_use_percent', translation_key: 'disk_use_percent' },
+    // last_boot is named through device_class: uptime — no translation_key, so
+    // the unique_id is the only stable handle HA gives us here.
+    { entity_id: 'sensor.system_monitor_dernier_demarrage', platform: 'systemmonitor', translation_key: null, unique_id: 'last_boot' },
+    { entity_id: 'sensor.system_monitor_io_pressure_some_total', platform: 'systemmonitor', translation_key: 'io_pressure_some_total' },
+    { entity_id: 'sensor.temperature_salon', platform: 'zwave_js' },
+  ],
+};
+const frIndex = indexSystemMonitor(frRegistries);
+const frEntities = [
+  smState('sensor.system_monitor_utilisation_du_processeur', '22'),
+  smState('sensor.system_monitor_utilisation_de_la_memoire', '80.1'),
+  smState('sensor.system_monitor_utilisation_du_disque_ssl', '17.2'),
+  smState('sensor.system_monitor_utilisation_du_disque', '17.2'),
+  smState('sensor.temperature_salon', '21'),
+];
+
+assertEqual(frIndex.ids.size, 6, 'only systemmonitor entities are indexed');
+assertEqual(frIndex.ids.has('sensor.temperature_salon'), false, 'non-systemmonitor entities are not indexed');
+assertEqual(frIndex.familyOf('sensor.system_monitor_dernier_demarrage'), 'system', 'uptime is grouped as system');
+assertEqual(frIndex.familyOf('sensor.system_monitor_utilisation_du_processeur'), 'processor', 'CPU is grouped as processor');
+assertEqual(frIndex.keyOf('sensor.system_monitor_dernier_demarrage'), 'last_boot', 'a sensor without translation_key falls back to unique_id');
+assertEqual(frIndex.familyOf('sensor.system_monitor_io_pressure_some_total'), 'disk', 'I/O pressure is grouped with disk');
+
+const frMetrics = pickSystemMetrics(frEntities, frIndex);
+assertEqual(frMetrics.cpu?.entity_id, 'sensor.system_monitor_utilisation_du_processeur', 'CPU found on a French HA');
+assertEqual(frMetrics.memory?.entity_id, 'sensor.system_monitor_utilisation_de_la_memoire', 'RAM found on a French HA');
+assertEqual(frMetrics.disk?.entity_id, 'sensor.system_monitor_utilisation_du_disque', 'disk picks the root mount, not /ssl');
+
+// An English HA whose registry carries no keys must still work (old HA, demo data).
+const enIndex = indexSystemMonitor({
+  areas: [], devices: [],
+  entities: [
+    { entity_id: 'sensor.system_monitor_processor_use', platform: 'systemmonitor' },
+    { entity_id: 'sensor.system_monitor_memory_use_percent', platform: 'systemmonitor' },
+    { entity_id: 'sensor.system_monitor_disk_use_percent', platform: 'systemmonitor' },
+  ],
+});
+const enMetrics = pickSystemMetrics([
+  smState('sensor.system_monitor_processor_use', '10'),
+  smState('sensor.system_monitor_memory_use_percent', '40'),
+  smState('sensor.system_monitor_disk_use_percent', '50'),
+], enIndex);
+assertEqual(enMetrics.cpu?.entity_id, 'sensor.system_monitor_processor_use', 'CPU still found without registry keys');
+assertEqual(enMetrics.memory?.entity_id, 'sensor.system_monitor_memory_use_percent', 'RAM still found without registry keys');
+assertEqual(enMetrics.disk?.entity_id, 'sensor.system_monitor_disk_use_percent', 'disk still found without registry keys');
