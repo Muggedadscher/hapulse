@@ -47,6 +47,14 @@ Want to look around first? **[Explore the live demo](https://pulse.homeassistant
 
 ### Docker (recommended for self-hosting)
 
+Prebuilt images are published to GitHub Container Registry — nothing to clone or build:
+
+```bash
+docker run -d --name hapulse -p 7421:80 --restart unless-stopped ghcr.io/jlnbln/hapulse:latest
+```
+
+Or with Compose, using the file in this repository:
+
 ```bash
 docker compose -f docker/docker-compose.yml up -d
 ```
@@ -54,6 +62,10 @@ docker compose -f docker/docker-compose.yml up -d
 Then open [http://localhost:7421](http://localhost:7421).
 
 > Port 7421 is used by default to avoid conflict with Home Assistant's port 8123.
+
+Tags: `latest` tracks `main`; `1.1.0`, `1.1` and `1` track a release, its patch line
+and its major line. See [docs/SELF-HOSTING.md](docs/SELF-HOSTING.md) for updating,
+reverse proxies and TLS.
 
 ### Run from source
 

@@ -1,9 +1,16 @@
 services:
   hapulse:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    image: hapulse:latest
+    # Published by CI on every push to main and every v* tag.
+    # To pin a release instead of tracking latest:
+    #   image: ghcr.io/jlnbln/hapulse:1.1.0
+    image: ghcr.io/jlnbln/hapulse:latest
+
+    # To build from this checkout instead of pulling, comment out `image:`
+    # above (or keep it as the local tag) and uncomment:
+    # build:
+    #   context: ..
+    #   dockerfile: docker/Dockerfile
+
     ports:
       # 7421 avoids collision with Home Assistant's default port 8123
       - "7421:80"

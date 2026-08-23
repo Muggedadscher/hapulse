@@ -6,20 +6,45 @@ HAPulse is a static single-page application. The server only needs to serve file
 
 ## Docker Compose (recommended)
 
+Prebuilt images are published to GitHub Container Registry, so there is nothing
+to clone or build. Save this as `docker-compose.yml`:
+
+```yaml
+services:
+  hapulse:
+    image: ghcr.io/jlnbln/hapulse:latest
+    ports:
+      - "7421:80"
+    restart: unless-stopped
+```
+
 ```bash
-git clone https://github.com/hapulse/hapulse.git
-cd hapulse
+docker compose up -d
+```
+
+Open [http://localhost:7421](http://localhost:7421). Change the `7421` on the
+left of the colon to use a different host port.
+
+The repository's `docker/docker-compose.yml` is the same file, if you would
+rather clone:
+
+```bash
+git clone https://github.com/jlnbln/HAPulse.git
+cd HAPulse
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-Open [http://localhost:7421](http://localhost:7421).
+### Image tags
 
-To run on a different port, edit `docker/docker-compose.yml`:
+| Tag | Tracks |
+|---|---|
+| `latest` | the newest commit on `main` |
+| `1.1.0` | that exact release |
+| `1.1` | the newest patch of 1.1 |
+| `1` | the newest release of major version 1 |
 
-```yaml
-ports:
-  - "8080:80"   # change 8080 to your preferred host port
-```
+Pin to `1.1` (or an exact version) if you would rather decide when to take a
+new release.
 
 ## Plain `docker run`
 
@@ -28,14 +53,20 @@ docker run -d \
   --name hapulse \
   --restart unless-stopped \
   -p 7421:80 \
-  hapulse:latest
+  ghcr.io/jlnbln/hapulse:latest
 ```
 
-To build the image yourself first:
+## Building the image yourself
+
+Not required — only if you want to run modified source:
 
 ```bash
-docker build -f docker/Dockerfile -t hapulse:latest .
+git clone https://github.com/jlnbln/HAPulse.git
+cd HAPulse
+docker build -f docker/Dockerfile -t hapulse:local .
 ```
+
+Then set `image: hapulse:local` in your compose file.
 
 ---
 
@@ -127,10 +158,19 @@ Camera snapshots use `GET /api/camera_proxy/<entity_id>?token=<signed_token>` (o
 
 ## Updating
 
-With Docker Compose, pull the new image (once it's published to a registry) or rebuild from source:
+With Docker Compose, pull the new image and recreate the container:
 
 ```bash
-# rebuild from latest source
+docker compose pull
+docker compose up -d
+```
+
+HAPulse keeps your layout and customization in Home Assistant's per-user
+storage, not in the container, so updating never loses your settings.
+
+If you build from source instead:
+
+```bash
 git pull
 docker compose -f docker/docker-compose.yml build --no-cache
 docker compose -f docker/docker-compose.yml up -d
