@@ -675,6 +675,7 @@
   "cards.light.brightness": "Ljusstyrka",
   "cards.light.colorTemp": "Färgtemp",
   "cards.light.colorTemperatureAria": "Färgtemperatur",
+  "cards.light.color": "Färg",
   "cards.lock.unlock": "Lås upp",
   "cards.lock.lock": "Lås",
   "cards.media.play": "Spela",

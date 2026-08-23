@@ -675,6 +675,7 @@
   "cards.light.brightness": "Luminosité",
   "cards.light.colorTemp": "Température de couleur",
   "cards.light.colorTemperatureAria": "Température de couleur",
+  "cards.light.color": "Couleur",
   "cards.lock.unlock": "Déverrouiller",
   "cards.lock.lock": "Verrouiller",
   "cards.media.play": "Lecture",
