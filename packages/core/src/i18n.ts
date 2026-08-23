@@ -10,13 +10,14 @@
 
 export type Dict = Record<string, string>;
 
-export const LOCALES = ['en', 'fr'] as const;
+export const LOCALES = ['en', 'fr', 'sv'] as const;
 export type Locale = (typeof LOCALES)[number];
 
 /** Language names shown in the language selector, each in its own language. */
 export const LOCALE_LABELS: Record<Locale, string> = {
   en: 'English',
   fr: 'Français',
+  sv: 'Svenska',
 };
 
 /** Replaces `{name}` with vars.name. An unprovided variable is left visible on

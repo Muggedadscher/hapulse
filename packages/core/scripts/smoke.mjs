@@ -14,6 +14,7 @@
  *  - buildHAAuthorizeUrl / exchangeHAAuthCode / connectWithAuthData (mobile OAuth)
  *  - HAConnection.suspend is exported
  *  - resolveEntityAreaId() device-area fallback precedence
+ *  - en/sv dictionary parity (keys, placeholders, .one/.other pairing)
  */
 
 import {
@@ -51,11 +52,13 @@ import {
   HAConnection,
   translate,
   resolveLanguage,
+  LOCALES,
   lookupEntityState,
   humanizeState,
 } from '../dist/index.js';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
 import FR_DICT from '../locales/fr.json' with { type: 'json' };
+import SV_DICT from '../locales/sv.json' with { type: 'json' };
 
 let passed = 0;
 let failed = 0;
@@ -717,73 +720,98 @@ assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information 
 assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
 
 // ---------------------------------------------------------------------------
-// i18n — parité des dictionnaires
+// i18n — dictionary parity, across every shipped locale
+//
+// Generic over LOCALE_DICTS rather than one hand-written block per language:
+// each added locale otherwise means another near-identical block, and two of
+// them landing at once is a merge conflict (which is exactly what fr and sv
+// did). Adding a language is now one entry in LOCALE_DICTS.
 // ---------------------------------------------------------------------------
-console.log('\n── i18n: parité en/fr ──');
+console.log('\n── i18n: dictionary parity ──');
+
+/** Every translated locale, keyed by its code. `en` is the source of truth. */
+const LOCALE_DICTS = { fr: FR_DICT, sv: SV_DICT };
 
 const enKeys = Object.keys(EN_DICT).sort();
-const frKeys = Object.keys(FR_DICT).sort();
-
-const missingInFr = enKeys.filter((k) => !frKeys.includes(k));
-const extraInFr = frKeys.filter((k) => !enKeys.includes(k));
-
-assert(missingInFr.length === 0, `fr.json ne doit rien omettre (manquant: ${missingInFr.join(', ') || 'aucun'})`);
-assert(extraInFr.length === 0, `fr.json ne doit rien ajouter (en trop: ${extraInFr.join(', ') || 'aucun'})`);
-
-// Les placeholders doivent survivre à la traduction. Une seule assertion, dont le
-// message énumère toutes les clés fautives : 899 lignes de coches noieraient les
-// échecs des autres blocs, et la sortie de ce runner est son unique rapport.
 const placeholders = (s) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(',');
-const drifted = enKeys
-  .map((k) => ({ k, en: placeholders(EN_DICT[k]), fr: placeholders(FR_DICT[k] ?? '') }))
-  .filter(({ en, fr }) => en !== fr)
-  .map(({ k, en, fr }) => `${k} (attendu ${JSON.stringify(en)}, obtenu ${JSON.stringify(fr)})`);
 
-assert(drifted.length === 0,
-  `placeholders conservés sur les ${enKeys.length} clés${drifted.length > 0 ? ` — dérive: ${drifted.join('; ')}` : ''}`);
+assertEqual(
+  Object.keys(LOCALE_DICTS).sort().join(','),
+  LOCALES.filter((l) => l !== 'en').sort().join(','),
+  'every locale in LOCALES has a dictionary under test',
+);
+
+for (const [code, dict] of Object.entries(LOCALE_DICTS)) {
+  const keys = Object.keys(dict).sort();
+
+  const missing = enKeys.filter((k) => !keys.includes(k));
+  const extra = keys.filter((k) => !enKeys.includes(k));
+  assert(missing.length === 0, `${code}.json omits nothing (missing: ${missing.join(', ') || 'none'})`);
+  assert(extra.length === 0, `${code}.json adds nothing (extra: ${extra.join(', ') || 'none'})`);
+
+  // Placeholders must survive translation. One aggregated assertion per locale,
+  // not one per key: 900 ticks per language would drown every other block's
+  // failures, and this runner's stdout is its only report.
+  const drifted = enKeys
+    .map((k) => ({ k, en: placeholders(EN_DICT[k]), tr: placeholders(dict[k] ?? '') }))
+    .filter(({ en, tr }) => en !== tr)
+    .map(({ k, en, tr }) => `${k} (expected ${JSON.stringify(en)}, got ${JSON.stringify(tr)})`);
+  assert(drifted.length === 0,
+    `${code}.json preserves placeholders across ${enKeys.length} keys${drifted.length > 0 ? ` — drift: ${drifted.join('; ')}` : ''}`);
+
+  // translate() always tries `${key}.other` as the plural fallback, so a lone
+  // .one silently resolves to the raw key for every non-singular count.
+  // Not checked in reverse per-locale: a bare ".other" is sometimes a category
+  // literally named "Other", not a plural pair missing its .one.
+  const oneWithoutOther = keys
+    .filter((k) => k.endsWith('.one'))
+    .filter((k) => dict[`${k.slice(0, -'.one'.length)}.other`] === undefined);
+  assert(oneWithoutOther.length === 0,
+    `${code}.json: every .one has its .other (missing: ${oneWithoutOther.join(', ') || 'none'})`);
+}
 
 // ---------------------------------------------------------------------------
-// i18n — couverture des pluriels (en.json)
+// i18n — plural coverage (en.json)
 //
-// Trouvé 3 fois à la main sur cette branche (security.hero.peopleHome.one,
-// trois clés .other orphelines, devices.hero.deviceCount) : le seul défaut
-// récidivant, sans filet jusqu'ici. Une assertion agrégée par invariant, pas
-// une par clé, pour la même raison que le bloc placeholders ci-dessus.
+// Found three times by hand while reviewing translations
+// (security.hero.peopleHome.one, three orphaned .other keys,
+// devices.hero.deviceCount): the one recurring defect, until now without a net.
+// Checked bidirectionally here because en.json is the source every translation
+// is generated from — an orphan here propagates to all seven languages.
 // ---------------------------------------------------------------------------
-console.log('\n── i18n: couverture des pluriels ──');
+console.log('\n── i18n: plural coverage ──');
 
 const enKeySet = new Set(enKeys);
 
-// Toute clé `.one` doit avoir sa `.other`, et réciproquement.
 const unpairedPlurals = enKeys
   .filter((k) => k.endsWith('.one') || k.endsWith('.other'))
   .map((k) => {
     const base = k.endsWith('.one') ? k.slice(0, -'.one'.length) : k.slice(0, -'.other'.length);
     const sibling = k.endsWith('.one') ? `${base}.other` : `${base}.one`;
-    return enKeySet.has(sibling) ? null : `${k} (manque ${sibling})`;
+    return enKeySet.has(sibling) ? null : `${k} (missing ${sibling})`;
   })
   .filter((msg) => msg !== null);
 
 assert(unpairedPlurals.length === 0,
-  `toute clé .one/.other a sa contrepartie${unpairedPlurals.length > 0 ? ` — orphelines: ${unpairedPlurals.join(', ')}` : ''}`);
+  `every .one/.other key has its counterpart${unpairedPlurals.length > 0 ? ` — orphans: ${unpairedPlurals.join(', ')}` : ''}`);
 
-// Toute valeur contenant {count} doit appartenir à une paire .one/.other.
+// Any value containing {count} must belong to a .one/.other pair.
 const countOutsidePlural = enKeys
   .filter((k) => !k.endsWith('.one') && !k.endsWith('.other'))
   .filter((k) => /\{count\}/.test(EN_DICT[k]))
   .map((k) => `${k} (${JSON.stringify(EN_DICT[k])})`);
 
 assert(countOutsidePlural.length === 0,
-  `{count} n'apparaît que dans des clés .one/.other${countOutsidePlural.length > 0 ? ` — hors paire: ${countOutsidePlural.join(', ')}` : ''}`);
+  `{count} appears only in .one/.other keys${countOutsidePlural.length > 0 ? ` — outside a pair: ${countOutsidePlural.join(', ')}` : ''}`);
 
 // ---------------------------------------------------------------------------
-// États d'entités — traductions Home Assistant
+// Entity states — Home Assistant's own translations
 //
-// Format des clés vérifié dans homeassistant/helpers/translation.py et dans les
-// strings.json des intégrations : `component.{domaine}.entity_component.{classe
-// d'appareil}.state.{état}`, `_` étant le seau sans classe d'appareil.
+// Key shape verified against homeassistant/helpers/translation.py and the
+// integrations' strings.json: `component.{domain}.entity_component.{device
+// class}.state.{state}`, with `_` as the device-class-less bucket.
 // ---------------------------------------------------------------------------
-console.log('\n── états d\'entités ──');
+console.log('\n── entity states ──');
 
 const HA_STATES = {
   'component.weather.entity_component._.state.partlycloudy': 'Partiellement nuageux',
@@ -794,34 +822,34 @@ const HA_STATES = {
 };
 
 assertEqual(lookupEntityState(HA_STATES, 'weather', 'partlycloudy'), 'Partiellement nuageux',
-  'état simple résolu');
+  'plain state resolved');
 
 assertEqual(lookupEntityState(HA_STATES, 'climate', 'heating', { attribute: 'hvac_action' }),
-  'Chauffage', 'valeur d\'attribut résolue');
+  'Chauffage', 'attribute value resolved');
 
-// La classe d'appareil gagne sur le seau `_` : c'est tout l'intérêt de
-// binary_sensor (« Détecté » plutôt que « Actif »).
+// Device class wins over the `_` bucket — the whole point of binary_sensor
+// ("Détecté" rather than "Actif").
 assertEqual(lookupEntityState(HA_STATES, 'binary_sensor', 'on', { deviceClass: 'motion' }),
-  'Détecté', 'classe d\'appareil prioritaire');
+  'Détecté', 'device class takes precedence');
 
-// Une classe d'appareil que HA ne distingue pas doit retomber sur `_`, pas échouer.
+// A device class HA draws no distinction for must fall back to `_`, not fail.
 assertEqual(lookupEntityState(HA_STATES, 'binary_sensor', 'on', { deviceClass: 'plug' }),
-  'Actif', 'classe d\'appareil inconnue → seau _');
+  'Actif', 'unknown device class → `_` bucket');
 
 assertEqual(lookupEntityState(HA_STATES, 'vacuum', 'cleaning'), undefined,
-  'domaine absent → undefined (l\'appelant décide du repli)');
+  'absent domain → undefined (caller picks the fallback)');
 assertEqual(lookupEntityState({}, 'weather', 'sunny'), undefined,
-  'dictionnaire vide → undefined');
-assertEqual(lookupEntityState(HA_STATES, 'weather', ''), undefined, 'état vide → undefined');
+  'empty dictionary → undefined');
+assertEqual(lookupEntityState(HA_STATES, 'weather', ''), undefined, 'empty state → undefined');
 
-// Repli quand HA est muet : mode démo, connexion coupée, état non traduit.
-assertEqual(humanizeState('fan_only'), 'Fan only', 'underscores aplatis et capitalisation');
-assertEqual(humanizeState('clear-night'), 'Clear night', 'tirets aplatis');
-assertEqual(humanizeState('armed_custom_bypass'), 'Armed custom bypass', 'plusieurs séparateurs');
-assertEqual(humanizeState('on'), 'On', 'état court');
+// Fallback when HA is silent: demo mode, dropped connection, untranslated state.
+assertEqual(humanizeState('fan_only'), 'Fan only', 'underscores flattened and capitalised');
+assertEqual(humanizeState('clear-night'), 'Clear night', 'hyphens flattened');
+assertEqual(humanizeState('armed_custom_bypass'), 'Armed custom bypass', 'several separators');
+assertEqual(humanizeState('on'), 'On', 'short state');
 
-// formatEntityState : le label est optionnel, et ne s'applique qu'aux états non
-// numériques — un capteur avec unité reste un nombre.
+// formatEntityState: the label is optional, and applies only to non-numeric
+// states — a sensor with a unit stays a number.
 const CLIMATE_ENTITY = {
   entity_id: 'climate.living_room',
   state: 'fan_only',
@@ -834,9 +862,9 @@ const label = (domain, state, opts) =>
   lookupEntityState(HA_STATES, domain, state, opts) ?? humanizeState(state);
 
 assertEqual(formatEntityState(CLIMATE_ENTITY), 'fan_only',
-  'sans label : état brut (appelants hors UI)');
+  'without a label: raw state (non-UI callers)');
 assertEqual(formatEntityState(CLIMATE_ENTITY, 'fr', label), 'Ventilation seule',
-  'avec label : état traduit');
+  'with a label: translated state');
 
 const TEMP_SENSOR = {
   ...CLIMATE_ENTITY,
@@ -844,21 +872,21 @@ const TEMP_SENSOR = {
   state: '21.34',
   attributes: { unit_of_measurement: '°C' },
 };
-// L'espace fine insécable entre nombre et unité vient du code amont (U+202F).
+// The narrow no-break space between number and unit comes from upstream (U+202F).
 assertEqual(formatEntityState(TEMP_SENSOR, 'fr', label), '21.3 °C',
-  'valeur numérique intacte malgré le label');
+  'numeric value untouched despite the label');
 
 const UNAVAILABLE = { ...CLIMATE_ENTITY, state: 'unavailable' };
 assertEqual(formatEntityState(UNAVAILABLE, 'fr', label), 'Unavailable',
-  'unavailable passe par le label');
+  'unavailable goes through the label');
 assertEqual(formatEntityState({ ...CLIMATE_ENTITY, state: 'unknown' }, 'fr', label), 'Unavailable',
-  'unknown reste replié sur unavailable');
+  'unknown stays folded onto unavailable');
 
-// Le dictionnaire HAPulse ne doit pas redevenir un vocabulaire d'états : ces
-// deux pseudo-états sont les seuls que HA ne livre pas sous entity_component.
+// The HAPulse dictionary must not grow back into a state vocabulary: these two
+// pseudo-states are the only ones HA does not ship under entity_component.
 const ownStateKeys = enKeys.filter((k) => k.startsWith('entityState.'));
 assertEqual(ownStateKeys.sort().join(','), 'entityState.unavailable,entityState.unknown',
-  'HAPulse ne nomme que les pseudo-états absents de HA');
+  'HAPulse names only the pseudo-states HA lacks');
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)
