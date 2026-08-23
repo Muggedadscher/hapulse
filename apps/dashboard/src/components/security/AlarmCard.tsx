@@ -5,7 +5,7 @@
 import React, { useState, useCallback } from 'react';
 import { Shield, ShieldCheck, ShieldAlert, ShieldOff } from 'lucide-react';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './AlarmCard.css';
@@ -38,16 +38,13 @@ function StateIcon({ state }: { state: string }) {
   return <Shield size={size} strokeWidth={sw} />;
 }
 
-function humanState(state: string): string {
-  return state.replace(/_/g, ' ');
-}
-
 interface AlarmCardProps {
   entity: HassEntity;
 }
 
 export function AlarmCard({ entity }: AlarmCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const state = entity.state as AlarmState;
   const codeFormat = entity.attributes['code_format'] as string | undefined;
   const requiresCode = !!codeFormat;
@@ -83,7 +80,7 @@ export function AlarmCard({ entity }: AlarmCardProps) {
           </div>
           <div>
             <p className="alarm-card__name">{name}</p>
-            <p className="alarm-card__state-label">{humanState(state)}</p>
+            <p className="alarm-card__state-label">{sl('alarm_control_panel', state)}</p>
           </div>
         </div>
 

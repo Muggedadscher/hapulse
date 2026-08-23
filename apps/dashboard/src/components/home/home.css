@@ -135,7 +135,6 @@
 .weather-hero__condition-text {
   font-size: 0.875rem;
   font-weight: 500;
-  text-transform: capitalize;
   color: var(--text-dim);
 }
 

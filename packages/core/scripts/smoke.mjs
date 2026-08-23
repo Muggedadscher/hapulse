@@ -51,6 +51,8 @@ import {
   HAConnection,
   translate,
   resolveLanguage,
+  lookupEntityState,
+  humanizeState,
 } from '../dist/index.js';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
 import FR_DICT from '../locales/fr.json' with { type: 'json' };
@@ -773,6 +775,90 @@ const countOutsidePlural = enKeys
 
 assert(countOutsidePlural.length === 0,
   `{count} n'apparaît que dans des clés .one/.other${countOutsidePlural.length > 0 ? ` — hors paire: ${countOutsidePlural.join(', ')}` : ''}`);
+
+// ---------------------------------------------------------------------------
+// États d'entités — traductions Home Assistant
+//
+// Format des clés vérifié dans homeassistant/helpers/translation.py et dans les
+// strings.json des intégrations : `component.{domaine}.entity_component.{classe
+// d'appareil}.state.{état}`, `_` étant le seau sans classe d'appareil.
+// ---------------------------------------------------------------------------
+console.log('\n── états d\'entités ──');
+
+const HA_STATES = {
+  'component.weather.entity_component._.state.partlycloudy': 'Partiellement nuageux',
+  'component.climate.entity_component._.state.fan_only': 'Ventilation seule',
+  'component.climate.entity_component._.state_attributes.hvac_action.state.heating': 'Chauffage',
+  'component.binary_sensor.entity_component._.state.on': 'Actif',
+  'component.binary_sensor.entity_component.motion.state.on': 'Détecté',
+};
+
+assertEqual(lookupEntityState(HA_STATES, 'weather', 'partlycloudy'), 'Partiellement nuageux',
+  'état simple résolu');
+
+assertEqual(lookupEntityState(HA_STATES, 'climate', 'heating', { attribute: 'hvac_action' }),
+  'Chauffage', 'valeur d\'attribut résolue');
+
+// La classe d'appareil gagne sur le seau `_` : c'est tout l'intérêt de
+// binary_sensor (« Détecté » plutôt que « Actif »).
+assertEqual(lookupEntityState(HA_STATES, 'binary_sensor', 'on', { deviceClass: 'motion' }),
+  'Détecté', 'classe d\'appareil prioritaire');
+
+// Une classe d'appareil que HA ne distingue pas doit retomber sur `_`, pas échouer.
+assertEqual(lookupEntityState(HA_STATES, 'binary_sensor', 'on', { deviceClass: 'plug' }),
+  'Actif', 'classe d\'appareil inconnue → seau _');
+
+assertEqual(lookupEntityState(HA_STATES, 'vacuum', 'cleaning'), undefined,
+  'domaine absent → undefined (l\'appelant décide du repli)');
+assertEqual(lookupEntityState({}, 'weather', 'sunny'), undefined,
+  'dictionnaire vide → undefined');
+assertEqual(lookupEntityState(HA_STATES, 'weather', ''), undefined, 'état vide → undefined');
+
+// Repli quand HA est muet : mode démo, connexion coupée, état non traduit.
+assertEqual(humanizeState('fan_only'), 'Fan only', 'underscores aplatis et capitalisation');
+assertEqual(humanizeState('clear-night'), 'Clear night', 'tirets aplatis');
+assertEqual(humanizeState('armed_custom_bypass'), 'Armed custom bypass', 'plusieurs séparateurs');
+assertEqual(humanizeState('on'), 'On', 'état court');
+
+// formatEntityState : le label est optionnel, et ne s'applique qu'aux états non
+// numériques — un capteur avec unité reste un nombre.
+const CLIMATE_ENTITY = {
+  entity_id: 'climate.living_room',
+  state: 'fan_only',
+  attributes: {},
+  last_changed: '',
+  last_updated: '',
+  context: { id: '' },
+};
+const label = (domain, state, opts) =>
+  lookupEntityState(HA_STATES, domain, state, opts) ?? humanizeState(state);
+
+assertEqual(formatEntityState(CLIMATE_ENTITY), 'fan_only',
+  'sans label : état brut (appelants hors UI)');
+assertEqual(formatEntityState(CLIMATE_ENTITY, 'fr', label), 'Ventilation seule',
+  'avec label : état traduit');
+
+const TEMP_SENSOR = {
+  ...CLIMATE_ENTITY,
+  entity_id: 'sensor.outside',
+  state: '21.34',
+  attributes: { unit_of_measurement: '°C' },
+};
+// L'espace fine insécable entre nombre et unité vient du code amont (U+202F).
+assertEqual(formatEntityState(TEMP_SENSOR, 'fr', label), '21.3 °C',
+  'valeur numérique intacte malgré le label');
+
+const UNAVAILABLE = { ...CLIMATE_ENTITY, state: 'unavailable' };
+assertEqual(formatEntityState(UNAVAILABLE, 'fr', label), 'Unavailable',
+  'unavailable passe par le label');
+assertEqual(formatEntityState({ ...CLIMATE_ENTITY, state: 'unknown' }, 'fr', label), 'Unavailable',
+  'unknown reste replié sur unavailable');
+
+// Le dictionnaire HAPulse ne doit pas redevenir un vocabulaire d'états : ces
+// deux pseudo-états sont les seuls que HA ne livre pas sous entity_component.
+const ownStateKeys = enKeys.filter((k) => k.startsWith('entityState.'));
+assertEqual(ownStateKeys.sort().join(','), 'entityState.unavailable,entityState.unknown',
+  'HAPulse ne nomme que les pseudo-états absents de HA');
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)

@@ -24,7 +24,7 @@ import { domainOf, domainIcon, formatEntityState, isToggleable } from '@hapulse/
 import type { HassEntity } from '@hapulse/core';
 import type { CustomizationSettings } from '../../stores/settingsStore';
 import { callService } from '../../ha/service';
-import { useLocale, useT } from '../../i18n/useT';
+import { useLocale, useT, useStateLabel } from '../../i18n/useT';
 import './favorites.css';
 
 interface FavoriteTileProps {
@@ -98,6 +98,7 @@ function isEntityActive(entity: HassEntity): boolean {
 export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTileProps) {
   const t = useT();
   const locale = useLocale();
+  const sl = useStateLabel();
   const { entityOverrides } = customization;
   const override = entityOverrides[entity.entity_id];
   const name =
@@ -107,7 +108,7 @@ export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTi
 
   const iconName = domainIcon(entity);
   const icon = ICON_MAP[iconName] ?? <Activity size={16} strokeWidth={1.75} />;
-  const value = formatEntityState(entity, locale);
+  const value = formatEntityState(entity, locale, sl);
   const active = isEntityActive(entity);
 
   const domain = domainOf(entity.entity_id);

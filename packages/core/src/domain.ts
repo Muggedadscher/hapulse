@@ -3,6 +3,7 @@
  */
 
 import type { HassEntity } from './types.js';
+import type { EntityStateLabel } from './entityStates.js';
 
 /**
  * Determines whether a favorited entity should be shown in the favorites strip.
@@ -105,14 +106,24 @@ export function isToggleable(domain: string): boolean {
  * Rules:
  * - `unavailable` | `unknown` → `"unavailable"`
  * - Numeric state with `unit_of_measurement` → rounded to 1 decimal + unit
- * - `on` / `off` → `"on"` / `"off"`
  * - `device_class: timestamp` → locale-formatted date/time string
- * - Anything else → raw state string
+ * - Anything else → the raw state string
+ *
+ * `label` translates the non-numeric cases (see `entityStates.ts`). Omitting it
+ * yields the raw English-ish state, which is what a non-UI caller wants.
  */
-export function formatEntityState(entity: HassEntity, locale?: string): string {
+export function formatEntityState(
+  entity: HassEntity,
+  locale?: string,
+  label?: EntityStateLabel,
+): string {
   const { state, attributes } = entity;
 
-  if (state === 'unavailable' || state === 'unknown') return 'unavailable';
+  // `unknown` collapses onto `unavailable`: the distinction is not actionable
+  // for a dashboard reader.
+  if (state === 'unavailable' || state === 'unknown') {
+    return label ? label(domainOf(entity.entity_id), 'unavailable') : 'unavailable';
+  }
 
   // Timestamp device class
   if (attributes['device_class'] === 'timestamp' && state) {
@@ -135,10 +146,11 @@ export function formatEntityState(entity: HassEntity, locale?: string): string {
     }
   }
 
-  // on/off
-  if (state === 'on' || state === 'off') return state;
-
-  return state;
+  if (!label) return state;
+  const deviceClass = attributes['device_class'];
+  return label(domainOf(entity.entity_id), state, {
+    deviceClass: typeof deviceClass === 'string' ? deviceClass : undefined,
+  });
 }
 
 /**

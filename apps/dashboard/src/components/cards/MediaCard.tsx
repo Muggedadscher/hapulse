@@ -3,7 +3,7 @@ import { Speaker, Play, Pause } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
 import { useConnectionStore } from '../../stores/connectionStore';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -20,6 +20,7 @@ function resolveEntityPicture(picture: string | null | undefined, baseUrl: strin
 
 export function MediaCard({ entity, name }: MediaCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const entityId = entity.entity_id;
   const isPlaying = entity.state === 'playing';
   const title = entity.attributes.media_title as string | undefined;
@@ -72,7 +73,7 @@ export function MediaCard({ entity, name }: MediaCardProps) {
             <>
               <div className="media-card__title">{name}</div>
               {entity.state !== 'unavailable' && entity.state !== 'unknown' && (
-                <div className="media-card__artist">{entity.state}</div>
+                <div className="media-card__artist">{sl('media_player', entity.state)}</div>
               )}
             </>
           )}

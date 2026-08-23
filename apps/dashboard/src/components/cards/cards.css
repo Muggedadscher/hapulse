@@ -250,7 +250,6 @@
   font-size: 0.75rem;
   color: var(--text-faint);
   margin-top: 0.125rem;
-  text-transform: capitalize;
 }
 
 /* temps row */
@@ -367,7 +366,6 @@
   cursor: pointer;
   transition: background 160ms ease-out, color 160ms ease-out, border-color 160ms ease-out;
   min-height: 32px;
-  text-transform: capitalize;
 }
 
 .climate-card__mode-pill:hover {
@@ -564,7 +562,6 @@
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
   margin-top: 0.125rem;
-  text-transform: capitalize;
 }
 
 .cover-card__buttons {
@@ -844,7 +841,6 @@
 .vacuum-card__state {
   font-size: 0.8125rem;
   color: var(--text-faint);
-  text-transform: capitalize;
 }
 
 .vacuum-card__state--cleaning { color: var(--accent); }
@@ -959,7 +955,6 @@
 .lock-card__state {
   font-size: 0.8125rem;
   margin-top: 0.125rem;
-  text-transform: capitalize;
 }
 
 .lock-card__state--locked {

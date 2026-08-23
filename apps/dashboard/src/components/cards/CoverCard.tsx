@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { PanelTop, ChevronUp, ChevronDown, Square, Blinds, Warehouse } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -23,6 +23,7 @@ function coverIcon(deviceClass: string | undefined): React.ReactNode {
 
 export function CoverCard({ entity, name }: CoverCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const entityId = entity.entity_id;
   const position = entity.attributes.current_position as number | undefined;
   const deviceClass = entity.attributes.device_class as string | undefined;
@@ -53,7 +54,7 @@ export function CoverCard({ entity, name }: CoverCardProps) {
             {position != null ? (
               <span className="data-font">{t('cards.cover.percentOpen', { percent: position })}</span>
             ) : (
-              entity.state
+              sl('cover', entity.state)
             )}
           </div>
         </div>

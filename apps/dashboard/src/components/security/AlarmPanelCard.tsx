@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { Shield, ShieldCheck, ShieldAlert, ShieldOff, Delete } from 'lucide-react';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
@@ -157,6 +157,7 @@ interface AlarmPanelCardProps {
 
 export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const state = entity.state;
   const name =
     (entity.attributes['friendly_name'] as string | undefined) ?? t('security.alarmPanel.fallbackName');
@@ -204,7 +205,7 @@ export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
             <div>
               <p className="alarm-panel-card__name">{name}</p>
               <p className="alarm-panel-card__state-label">
-                {state.replace(/_/g, ' ')}
+                {sl('alarm_control_panel', state)}
                 {isTransitioning && <span className="alarm-panel-card__dots" aria-hidden="true" />}
               </p>
             </div>

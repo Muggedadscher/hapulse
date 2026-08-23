@@ -82,7 +82,9 @@
 
 .security-hero-card__alarm-text {
   flex: 1;
-  min-width: 0;
+  /* min-content, not 0: keeps the state label from wrapping letter-by-letter
+     when the people block is wide. The parent wraps instead. */
+  min-width: min-content;
 }
 
 .security-hero-card__alarm-name {
@@ -101,7 +103,6 @@
   font-weight: 700;
   color: var(--text);
   margin: 0;
-  text-transform: capitalize;
   line-height: 1.2;
 }
 
