@@ -11,6 +11,7 @@
 
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { indexSystemMonitor, pickSystemMetrics } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import type { TKey } from '../i18n/useT';
@@ -32,17 +33,11 @@ export function useSystemHealth(): SystemHealthInfo {
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
 
   return useMemo(() => {
-    const sysIds = new Set<string>();
-    for (const re of registries?.entities ?? []) {
-      if (re.platform === 'systemmonitor') sysIds.add(re.entity_id);
-    }
-
+    const index = indexSystemMonitor(registries);
     const all = Object.values(entities);
-    const sys = all.filter((e) => sysIds.has(e.entity_id));
+    const sys = all.filter((e) => index.ids.has(e.entity_id));
 
-    const cpu = sys.find((e) => /processor_use/.test(e.entity_id) && !/nice/.test(e.entity_id));
-    const mem = sys.find((e) => /memory_use_percent/.test(e.entity_id));
-    const disk = sys.find((e) => /disk_use_percent/.test(e.entity_id));
+    const { cpu, memory: mem, disk } = pickSystemMetrics(sys, index);
 
     const cpuVal = cpu ? parseFloat(cpu.state) : NaN;
     const memVal = mem ? parseFloat(mem.state) : NaN;

@@ -51,7 +51,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
-import { releasesSince } from '@hapulse/core';
+import { releasesSince, indexSystemMonitor, pickSystemMetrics } from '@hapulse/core';
 import { useT, useStateLabel } from '../i18n/useT';
 import type { TKey } from '../i18n/useT';
 import './AppLayout.css';
@@ -120,29 +120,21 @@ function SystemStatusPill() {
   const hiddenNav      = useSettingsStore(useShallow((s) => s.customization.hiddenNav));
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
 
-  // Identify System Monitor entities via registry platform field
-  const systemMonitorIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const re of (registries?.entities ?? [])) {
-      if (re.platform === 'systemmonitor') ids.add(re.entity_id);
-    }
-    return ids;
-  }, [registries]);
+  const sysIndex = useMemo(() => indexSystemMonitor(registries), [registries]);
 
   const sysEntities = useMemo(
-    () => Object.values(entities).filter((e) => systemMonitorIds.has(e.entity_id)),
-    [entities, systemMonitorIds]
+    () => Object.values(entities).filter((e) => sysIndex.ids.has(e.entity_id)),
+    [entities, sysIndex]
   );
+
+  const metrics = useMemo(() => pickSystemMetrics(sysEntities, sysIndex), [sysEntities, sysIndex]);
 
   // All hooks above this line — early return only after all hooks
   if (hiddenNav.includes('system')) return null;
 
   const allEntities = Object.values(entities);
 
-  // Key metrics (same patterns as SystemHeroCard)
-  const cpu  = sysEntities.find((e) => /processor_use/.test(e.entity_id) && !/nice/.test(e.entity_id));
-  const mem  = sysEntities.find((e) => /memory_use_percent/.test(e.entity_id));
-  const disk = sysEntities.find((e) => /disk_use_percent/.test(e.entity_id));
+  const { cpu, memory: mem, disk } = metrics;
 
   const cpuVal  = cpu  ? parseFloat(cpu.state)  : NaN;
   const memVal  = mem  ? parseFloat(mem.state)  : NaN;

@@ -3,11 +3,12 @@ import { Cpu, Database, HardDrive, Network, Clock, Activity } from 'lucide-react
 import { useT } from '../../i18n/useT';
 import type { TKey, TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
-import type { HassEntity } from '@hapulse/core';
+import type { HassEntity, SystemMonitorIndex } from '@hapulse/core';
 import './SystemMonitorCard.css';
 
 interface SystemMonitorCardProps {
   entities: HassEntity[];
+  index: SystemMonitorIndex;
 }
 
 type MetricGroup = {
@@ -18,7 +19,7 @@ type MetricGroup = {
   entities: HassEntity[];
 };
 
-function categorise(entities: HassEntity[]): MetricGroup[] {
+function categorise(entities: HassEntity[], index: SystemMonitorIndex): MetricGroup[] {
   const processor: HassEntity[] = [];
   const memory:    HassEntity[] = [];
   const disk:      HassEntity[] = [];
@@ -26,15 +27,8 @@ function categorise(entities: HassEntity[]): MetricGroup[] {
   const system:    HassEntity[] = [];
   const other:     HassEntity[] = [];
 
-  for (const e of entities) {
-    const id = e.entity_id;
-    if (/processor/.test(id)) processor.push(e);
-    else if (/memory/.test(id)) memory.push(e);
-    else if (/disk/.test(id)) disk.push(e);
-    else if (/network|throughput_network/.test(id)) network.push(e);
-    else if (/last_boot|uptime/.test(id)) system.push(e);
-    else other.push(e);
-  }
+  const bucket = { processor, memory, disk, network, system, other };
+  for (const e of entities) bucket[index.familyOf(e.entity_id)].push(e);
 
   const groups: MetricGroup[] = [
     { id: 'processor', labelKey: 'system.monitor.group.processor', icon: <Cpu size={14} strokeWidth={1.75} />, entities: processor },
@@ -48,14 +42,14 @@ function categorise(entities: HassEntity[]): MetricGroup[] {
   return groups.filter((g) => g.entities.length > 0);
 }
 
-function formatValue(entity: HassEntity, t: TFunction): string {
+function formatValue(entity: HassEntity, t: TFunction, key: string): string {
   const unit = entity.attributes.unit_of_measurement as string | undefined;
   const val = entity.state;
 
   if (val === 'unavailable' || val === 'unknown') return '–';
 
   // Format timestamps (last_boot) as "X days ago" or similar
-  if (entity.entity_id.includes('last_boot')) {
+  if (key.includes('last_boot')) {
     try {
       const diff = Date.now() - new Date(val).getTime();
       const days  = Math.floor(diff / 86_400_000);
@@ -88,11 +82,11 @@ function barColorClass(val: number): string {
   return 'sys-metric-bar__fill--ok';
 }
 
-export function SystemMonitorCard({ entities }: SystemMonitorCardProps) {
+export function SystemMonitorCard({ entities, index }: SystemMonitorCardProps) {
   const t = useT();
   if (entities.length === 0) return null;
 
-  const groups = categorise(entities);
+  const groups = categorise(entities, index);
 
   return (
     <Card className="sys-monitor-card">
@@ -116,7 +110,7 @@ export function SystemMonitorCard({ entities }: SystemMonitorCardProps) {
                   entity.attributes.friendly_name ?? entity.entity_id.split('.')[1]!
                 ).replace(/_/g, ' ');
                 const barPct = metricBarWidth(entity);
-                const formatted = formatValue(entity, t);
+                const formatted = formatValue(entity, t, index.keyOf(entity.entity_id));
 
                 return (
                   <div key={entity.entity_id} className="sys-metric-tile">

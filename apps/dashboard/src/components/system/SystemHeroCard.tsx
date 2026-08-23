@@ -2,7 +2,8 @@ import React from 'react';
 import { Monitor, CheckCircle2, AlertTriangle, AlertCircle, Battery, WifiOff } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
-import type { HassEntity } from '@hapulse/core';
+import { pickSystemMetrics } from '@hapulse/core';
+import type { HassEntity, SystemMonitorIndex } from '@hapulse/core';
 import './SystemHeroCard.css';
 
 type SystemHealth = 'healthy' | 'warning' | 'critical' | 'unknown';
@@ -31,17 +32,14 @@ function metricChipClass(val: number, warnAt: number, critAt: number): string {
 
 interface SystemHeroCardProps {
   systemMonitorEntities: HassEntity[];
+  systemMonitorIndex: SystemMonitorIndex;
   lowBatteryCount: number;
   unavailableCount: number;
 }
 
-export function SystemHeroCard({ systemMonitorEntities, lowBatteryCount, unavailableCount }: SystemHeroCardProps) {
+export function SystemHeroCard({ systemMonitorEntities, systemMonitorIndex, lowBatteryCount, unavailableCount }: SystemHeroCardProps) {
   const t = useT();
-  const cpu = systemMonitorEntities.find((e) =>
-    /processor_use/.test(e.entity_id) && !/nice/.test(e.entity_id)
-  );
-  const mem = systemMonitorEntities.find((e) => /memory_use_percent/.test(e.entity_id));
-  const disk = systemMonitorEntities.find((e) => /disk_use_percent/.test(e.entity_id));
+  const { cpu, memory: mem, disk } = pickSystemMetrics(systemMonitorEntities, systemMonitorIndex);
 
   const health = deriveHealth(cpu, mem, disk);
 
