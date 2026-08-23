@@ -87,6 +87,11 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
+          # arm64 covers Raspberry Pi and the other ARM boards a lot of Home
+          # Assistant installs run on. The builder stage is pinned to
+          # BUILDPLATFORM (see docker/Dockerfile), so this only fans out the
+          # small nginx runtime layer rather than emulating the whole npm build.
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
