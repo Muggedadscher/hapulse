@@ -16,6 +16,7 @@ import { SystemHeroCard } from '../components/system/SystemHeroCard';
 import { SystemMonitorCard } from '../components/system/SystemMonitorCard';
 import { BatteriesCard } from '../components/system/BatteriesCard';
 import { applyStoredOrder } from '../lib/order';
+import { indexSystemMonitor } from '@hapulse/core';
 import './Page.css';
 import './System.css';
 
@@ -168,17 +169,11 @@ export function System() {
   const allEntities = useMemo(() => Object.values(entities), [entities]);
 
   // System Monitor entities — identified via entity registry platform field
-  const systemMonitorIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const re of (registries?.entities ?? [])) {
-      if (re.platform === 'systemmonitor') ids.add(re.entity_id);
-    }
-    return ids;
-  }, [registries]);
+  const systemMonitorIndex = useMemo(() => indexSystemMonitor(registries), [registries]);
 
   const systemMonitorEntities = useMemo(
-    () => allEntities.filter((e) => systemMonitorIds.has(e.entity_id)),
-    [allEntities, systemMonitorIds]
+    () => allEntities.filter((e) => systemMonitorIndex.ids.has(e.entity_id)),
+    [allEntities, systemMonitorIndex]
   );
 
   // Battery sensors — device_class=battery, numeric state, sorted lowest first
@@ -259,6 +254,7 @@ export function System() {
         return (
           <SystemHeroCard
             systemMonitorEntities={systemMonitorEntities}
+            systemMonitorIndex={systemMonitorIndex}
             lowBatteryCount={lowBatteryCount}
             unavailableCount={unavailableCount}
           />
@@ -266,7 +262,7 @@ export function System() {
       case 'activity':
         return <ActivityCard entities={entities} hideSeeAll />;
       case 'system_monitor':
-        return <SystemMonitorCard entities={systemMonitorEntities} />;
+        return <SystemMonitorCard entities={systemMonitorEntities} index={systemMonitorIndex} />;
       case 'batteries':
         return <BatteriesCard batteries={batteries} />;
     }
