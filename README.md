@@ -18,6 +18,7 @@ HAPulse is a fully client-side single-page app that connects directly to your Ho
 - **Energy** — live consumption, solar production, and grid flow using Home Assistant's long-term statistics
 - **System** — CPU, RAM, and disk metrics from the System Monitor integration, battery levels for all devices, and a health indicator in the sidebar
 - **Four themes** — Aurora (warm dark, default), Sunset, Ocean, Forest — each with light, dark, and auto (OS) mode
+- **Seven languages** — German, English, Spanish, French, Italian, Portuguese and Swedish. Left on Auto, HAPulse follows your Home Assistant language, then your browser's; entity states come from Home Assistant's own translations
 - **Full edit mode** — drag to reorder, resize, and hide any section or card on every page
 - **Settings stored in your Home Assistant** — your layout and customization are saved to HA's per-user storage, so they survive browser storage being cleared and sync live across every device you use with the same HA login
 - **Settings export / import** — back up your entire layout and customization to a JSON file; import it on any other browser or share with household members
