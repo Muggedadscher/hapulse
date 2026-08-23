@@ -14,6 +14,7 @@
  *  - buildHAAuthorizeUrl / exchangeHAAuthCode / connectWithAuthData (mobile OAuth)
  *  - HAConnection.suspend is exported
  *  - resolveEntityAreaId() device-area fallback precedence
+ *  - en/sv dictionary parity (keys, placeholders, .one/.other pairing)
  */
 
 import {
@@ -52,6 +53,8 @@ import {
   translate,
   resolveLanguage,
 } from '../dist/index.js';
+import EN_DICT from '../locales/en.json' with { type: 'json' };
+import SV_DICT from '../locales/sv.json' with { type: 'json' };
 
 let passed = 0;
 let failed = 0;
@@ -711,6 +714,37 @@ assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information 
 
 // Une préférence explicite devenue indisponible ne doit pas bloquer l'UI
 assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
+
+// ---------------------------------------------------------------------------
+// i18n — dictionary parity (en/sv)
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: en/sv parity ──');
+
+const enKeys = Object.keys(EN_DICT).sort();
+const svKeys = Object.keys(SV_DICT).sort();
+
+const missingInSv = enKeys.filter((k) => !svKeys.includes(k));
+const extraInSv = svKeys.filter((k) => !enKeys.includes(k));
+
+assert(missingInSv.length === 0, `sv.json must not omit anything (missing: ${missingInSv.join(', ') || 'none'})`);
+assert(extraInSv.length === 0, `sv.json must not add anything (extra: ${extraInSv.join(', ') || 'none'})`);
+
+// Placeholders must survive translation
+const dictPlaceholders = (s) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(',');
+for (const k of enKeys) {
+  assertEqual(dictPlaceholders(SV_DICT[k] ?? ''), dictPlaceholders(EN_DICT[k]), `placeholders preserved for "${k}"`);
+}
+
+// Every .one key has a matching .other, in both dictionaries — translate()
+// always tries `${key}.other` as the plural fallback, so a lone .one without
+// one silently resolves to the raw key for every count that isn't singular.
+// (Not checked in reverse: a bare "…other" key is often just a category
+// literally named "Other", not a plural pair missing its .one.)
+for (const [label, dict] of [['en', EN_DICT], ['sv', SV_DICT]]) {
+  const ones = Object.keys(dict).filter((k) => k.endsWith('.one'));
+  const oneWithoutOther = ones.filter((k) => !dict[`${k.slice(0, -4)}.other`]);
+  assert(oneWithoutOther.length === 0, `${label}.json: every .one has a matching .other (missing: ${oneWithoutOther.join(', ') || 'none'})`);
+}
 
 // ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)
