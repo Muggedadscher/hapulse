@@ -208,6 +208,50 @@
   margin: 0;
 }
 
+/* Hue slider — unlike brightness/color-temp, hue isn't a "fill from the
+   left" magnitude, so this is a standalone rainbow-track input (mirrors
+   Settings' .accent-slider) rather than the track+fill+transparent-range
+   layering above. */
+.light-card__hue-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  border-radius: 14px;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  background: linear-gradient(
+    to right,
+    hsl(0,80%,55%), hsl(36,80%,55%), hsl(72,80%,55%),
+    hsl(108,80%,50%), hsl(144,80%,50%), hsl(180,80%,50%),
+    hsl(216,80%,55%), hsl(252,80%,55%), hsl(288,80%,55%),
+    hsl(324,80%,55%), hsl(360,80%,55%)
+  );
+}
+
+.light-card__hue-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,.20);
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  cursor: pointer;
+}
+
+.light-card__hue-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,.20);
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  cursor: pointer;
+}
+
 /* =========================================================
    ClimateCard
    ========================================================= */
@@ -250,7 +294,6 @@
   font-size: 0.75rem;
   color: var(--text-faint);
   margin-top: 0.125rem;
-  text-transform: capitalize;
 }
 
 /* temps row */
@@ -367,7 +410,6 @@
   cursor: pointer;
   transition: background 160ms ease-out, color 160ms ease-out, border-color 160ms ease-out;
   min-height: 32px;
-  text-transform: capitalize;
 }
 
 .climate-card__mode-pill:hover {
@@ -564,16 +606,23 @@
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
   margin-top: 0.125rem;
-  text-transform: capitalize;
 }
 
 .cover-card__buttons {
   display: flex;
+  /* Wrap rather than overflow: `flex: 1` on the buttons is floored at their
+     content width by `min-width: auto`, so a label longer than the English one
+     pushes the row past the card. Same recipe as .alarm-card__actions. */
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .cover-card__btn {
   flex: 1;
+  /* Wrap threshold, not a decoration: sized for the longest label plus its
+     icon, so three buttons share one row on a wide card and drop to two rows
+     on a narrow one instead of spilling out. */
+  min-width: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -856,7 +905,6 @@
 .vacuum-card__state {
   font-size: 0.8125rem;
   color: var(--text-faint);
-  text-transform: capitalize;
 }
 
 .vacuum-card__state--cleaning { color: var(--accent); }
@@ -876,11 +924,13 @@
 
 .vacuum-card__controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .vacuum-card__btn {
   flex: 1;
+  min-width: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -969,7 +1019,6 @@
 .lock-card__state {
   font-size: 0.8125rem;
   margin-top: 0.125rem;
-  text-transform: capitalize;
 }
 
 .lock-card__state--locked {

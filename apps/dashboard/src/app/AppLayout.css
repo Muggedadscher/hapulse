@@ -459,7 +459,6 @@
 
 .header-cluster__weather-condition {
   color: var(--text-dim);
-  text-transform: capitalize;
 }
 
 /* =========================================================

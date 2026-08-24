@@ -8,7 +8,8 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { useWeatherEntity, useWeatherEntities } from '../../../ha/hooks';
 import { useSettingsStore } from '../../../stores/settingsStore';
-import { useLocale, useT } from '../../../i18n/useT';
+import { useLocale, useT, useStateLabel } from '../../../i18n/useT';
+import type { TFunction } from '../../../i18n/useT';
 import './WeatherModal.css';
 
 // ---------------------------------------------------------------------------
@@ -74,8 +75,6 @@ function conditionGradient(condition: string, isNight: boolean): string {
       return 'radial-gradient(ellipse 120% 80% at 80% 20%, rgba(100,110,130,0.22) 0%, transparent 65%)';
   }
 }
-
-type TFunction = ReturnType<typeof useT>;
 
 function formatForecastLabel(datetime: string, isHourly: boolean, t: TFunction, locale: Locale): string {
   try {
@@ -253,6 +252,7 @@ export function WeatherModal({ open, onClose }: WeatherModalProps) {
 function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useWeatherEntity>> }) {
   const t = useT();
   const locale = useLocale();
+  const sl = useStateLabel();
   const attrs = entity.attributes;
   const condition     = (attrs.condition as string | undefined) ?? entity.state;
   const temp          = attrs.temperature as number | undefined;
@@ -328,7 +328,7 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
               {temp != null ? `${Math.round(temp)}${tempUnit}` : '—'}
             </p>
             <p className="weather-modal__hero-condition">
-              {condition.replace(/-/g, ' ')}
+              {sl('weather', condition)}
             </p>
             <p className="weather-modal__hero-name">{name}</p>
           </div>

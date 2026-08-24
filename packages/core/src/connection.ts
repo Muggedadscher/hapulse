@@ -30,6 +30,7 @@ import type {
   StatisticsPeriod,
 } from './energy.js';
 import type { RawHistoryState } from './history.js';
+import type { StateTranslations } from './entityStates.js';
 
 /** Raw payload shape returned by `auth/current_user` WebSocket message. */
 interface RawCurrentUser {
@@ -235,6 +236,27 @@ export class HAConnection {
       return cfg.language ?? null;
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Fetch Home Assistant's entity-state translations for `language`.
+   *
+   * Category `entity_component` covers every loaded integration's state and
+   * state-attribute wording — the vocabulary HAPulse must never maintain by
+   * hand. Returns an empty map on failure: callers fall back to humanising the
+   * raw state.
+   */
+  async fetchEntityStateTranslations(language: string): Promise<StateTranslations> {
+    try {
+      const res = await this.#conn.sendMessagePromise<{ resources?: StateTranslations }>({
+        type: 'frontend/get_translations',
+        language,
+        category: 'entity_component',
+      });
+      return res.resources ?? {};
+    } catch {
+      return {};
     }
   }
 

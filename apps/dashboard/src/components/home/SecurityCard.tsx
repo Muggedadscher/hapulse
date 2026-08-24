@@ -12,7 +12,7 @@ import { Card } from '../ui/Card';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { HassEntityMap } from '@hapulse/core';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import './SecurityCard.css';
 
 interface SecurityCardProps {
@@ -22,6 +22,7 @@ interface SecurityCardProps {
 export function SecurityCard({ entities }: SecurityCardProps) {
   const navigate = useNavigate();
   const t = useT();
+  const sl = useStateLabel();
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -32,7 +33,9 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   // Alarm
   const alarm = all.find((e) => e.entity_id.startsWith('alarm_control_panel.'));
   const alarmState = alarm?.state ?? null;
-  const alarmLabel = alarmState ? alarmState.replace(/_/g, ' ') : t('home.security.notConfigured');
+  const alarmLabel = alarmState
+    ? sl('alarm_control_panel', alarmState)
+    : t('home.security.notConfigured');
 
   /** Returns the CSS colour key for the alarm dot/value based on state. */
   function alarmColorKey(state: string | null): 'ok' | 'info' | 'danger' | 'muted' | 'warn' {

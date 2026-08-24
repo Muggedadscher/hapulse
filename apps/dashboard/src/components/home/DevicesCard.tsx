@@ -11,10 +11,9 @@ import { Card } from '../ui/Card';
 import { domainOf, isToggleable, formatEntityState } from '@hapulse/core';
 import type { HassEntityMap, HassEntity, Locale, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
-import { useLocale, useT } from '../../i18n/useT';
+import { useLocale, useT, useStateLabel } from '../../i18n/useT';
+import type { StateLabel } from '../../i18n/useT';
 import './DevicesCard.css';
-
-type TFunction = ReturnType<typeof useT>;
 
 interface DevicesCardProps {
   entities: HassEntityMap;
@@ -57,21 +56,8 @@ function deviceIconChip(entity: HassEntity): { icon: React.ReactNode; bg: string
   }
 }
 
-function statusLabel(entity: HassEntity, t: TFunction, locale: Locale): string {
-  const domain = domainOf(entity.entity_id);
-  const { state } = entity;
-  switch (domain) {
-    case 'vacuum':
-      if (state === 'cleaning') return t('home.devices.cleaning');
-      if (state === 'returning') return t('home.devices.returning');
-      return state;
-    case 'media_player':
-      if (state === 'playing') return t('home.devices.playing');
-      if (state === 'paused') return t('home.devices.paused');
-      return state;
-    default:
-      return formatEntityState(entity, locale);
-  }
+function statusLabel(entity: HassEntity, locale: Locale, sl: StateLabel): string {
+  return formatEntityState(entity, locale, sl);
 }
 
 function findRoomName(entityId: string, rooms: Room[]): string | undefined {
@@ -84,6 +70,7 @@ function findRoomName(entityId: string, rooms: Room[]): string | undefined {
 export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
   const navigate = useNavigate();
   const t = useT();
+  const sl = useStateLabel();
   const locale = useLocale();
 
   // All favorited device entities (available, right domain)
@@ -171,7 +158,7 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
                       <span className="device-toggle__thumb" />
                     </button>
                   ) : (
-                    <span className="device-row__status">{statusLabel(entity, t, locale)}</span>
+                    <span className="device-row__status">{statusLabel(entity, locale, sl)}</span>
                   )}
                 </div>
               </li>

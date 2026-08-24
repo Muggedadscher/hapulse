@@ -6,12 +6,11 @@ import {
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
-import { useLocale, useT } from '../../i18n/useT';
+import { useLocale, useT, useStateLabel } from '../../i18n/useT';
+import type { TFunction } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import { HistoryModal } from '../history/HistoryModal'; // [fork]
 import './cards.css';
-
-type TFunction = ReturnType<typeof useT>;
 
 interface SensorTileProps {
   entity: HassEntity;
@@ -120,9 +119,10 @@ export function SensorTile({ entity, name }: SensorTileProps) {
   const [historyOpen, setHistoryOpen] = useState(false); // [fork]
   const t = useT();
   const locale = useLocale();
+  const sl = useStateLabel();
   const deviceClass = entity.attributes.device_class as string | undefined;
   const icon = (deviceClass && DC_ICONS[deviceClass]) ?? <Activity size={16} strokeWidth={1.75} />;
-  const value = formatEntityState(entity, locale);
+  const value = formatEntityState(entity, locale, sl);
 
   const isBinary  = entity.entity_id.startsWith('binary_sensor.');
   const isOn      = entity.state === 'on';

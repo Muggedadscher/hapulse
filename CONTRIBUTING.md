@@ -51,6 +51,33 @@ history. Two things are worth knowing:
 - Translation dictionaries live in `packages/core/locales/`, not in the
   dashboard, so every HAPulse app can share them.
 
+### Adding or improving a language
+
+`packages/core/locales/en.json` is the source of truth. A translation is one
+flat JSON file next to it, named for its locale, with **exactly** the same keys.
+
+1. Copy `en.json` to `<locale>.json` and translate the values. Keep every
+   `{placeholder}` — the tests fail if one is dropped or renamed.
+2. Register the locale in `packages/core/src/i18n.ts` (`LOCALES` and
+   `LOCALE_LABELS`, the latter in the language's own name) and in `DICTS` in
+   `apps/dashboard/src/i18n/I18nProvider.tsx`.
+3. Run `npm test -w @hapulse/core`. It checks key parity, placeholder
+   preservation and plural pairing for every registered locale, so a dictionary
+   that drifts from `en.json` cannot land.
+
+Keys ending `.one` / `.other` are plural forms selected by `Intl.PluralRules`;
+translate both even when your language uses the same wording for each. Entity
+states (Sunny, Heating, Armed home, …) are **not** in these files — they come
+from Home Assistant's own translations, so they follow your HA language.
+
+### Release notes
+
+`CHANGELOG.md` is generated — do not edit it by hand. Release notes live in
+`packages/core/src/changelog.ts`, which also feeds the in-app What's New modal
+and the version shown in Settings → About. Add an entry there, bump the
+`version` in the `package.json` files to match, and run `npm run changelog`.
+Notes are written in English and are not translated.
+
 ### Maintainers: the dual-apply rule
 
 The export **deletes and re-copies** `packages/core` and `apps/dashboard` from

@@ -1,5 +1,12 @@
 # Stage 1: Build
-FROM node:24-alpine AS builder
+#
+# Pinned to BUILDPLATFORM so the npm build always runs natively on the builder's
+# own architecture. The output is a static site — HTML, CSS and JS with no
+# native binaries — so it is identical whatever platform produced it, and only
+# the nginx stage below needs to be built per target architecture. Without this,
+# a multi-arch build would run `npm ci && npm run build` under QEMU emulation
+# for every non-native target, turning a one-minute build into fifteen.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
 
 WORKDIR /app
 

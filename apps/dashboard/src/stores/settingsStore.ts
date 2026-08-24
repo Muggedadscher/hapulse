@@ -9,7 +9,7 @@ import { persist } from 'zustand/middleware';
 import { THEME_NAMES } from '../theme/themes';
 import type { ThemeName, ThemeMode } from '../theme/themes';
 import { dynamicJSONStorage } from '../persistence/zustandStorage';
-import { LOCALES } from '@hapulse/core';
+import { LOCALES, CURRENT_VERSION } from '@hapulse/core';
 import type { Locale } from '@hapulse/core';
 
 /**
@@ -144,10 +144,27 @@ interface SettingsState {
   accentHue?: number | undefined;
   customization: CustomizationSettings;
   userName?: string | undefined;
+  /** Custom sidebar wordmark, shown instead of "HAPulse" when set. */
+  appName?: string | undefined;
+  /** Sidebar logo glyph id (see PulseLogo's APP_ICON_IDS). Undefined/unrecognised → the default heartbeat. */
+  appIcon?: string | undefined;
+  /** If true, the sidebar logo glyph is omitted (wordmark only). */
+  appIconHidden: boolean;
   /** Desktop sidebar collapsed to an icon-only rail. */
   sidebarCollapsed: boolean;
   /** Display language. 'auto' resolves from Home Assistant, then the browser. */
   language: Locale | 'auto';
+  /**
+   * Newest release whose notes this user has already seen. Drives the What's
+   * New modal, which shows exactly the releases newer than this.
+   *
+   * A fresh install starts at CURRENT_VERSION — someone opening HAPulse for the
+   * first time should not be greeted by a changelog. An install that predates
+   * this field is backfilled to '1.0.0' in `merge` below, so upgrading users DO
+   * get the notes. `null` means "show nothing", and is only reachable through a
+   * hand-edited import.
+   */
+  lastSeenVersion: string | null;
 }
 
 interface SettingsActions {
@@ -155,11 +172,16 @@ interface SettingsActions {
   setMode: (mode: ThemeMode) => void;
   setAccentHue: (hue: number | undefined) => void;
   setUserName: (name: string) => void;
+  setAppName: (name: string) => void;
+  setAppIcon: (icon: string | undefined) => void;
+  setAppIconHidden: (hidden: boolean) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   updateCustomization: (patch: Partial<CustomizationSettings>) => void;
   exportSettings: () => string;
   importSettings: (json: string) => void;
   setLanguage(language: Locale | 'auto'): void;
+  /** Record that the user has seen the notes up to the running version. */
+  markVersionSeen: () => void;
 }
 
 const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
@@ -222,8 +244,12 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       accentHue: undefined,
       customization: DEFAULT_CUSTOMIZATION,
       userName: undefined,
+      appName: undefined,
+      appIcon: undefined,
+      appIconHidden: false,
       sidebarCollapsed: false,
       language: 'auto',
+      lastSeenVersion: CURRENT_VERSION,
 
       setTheme(theme) {
         set({ theme });
@@ -237,12 +263,28 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
         set({ language });
       },
 
+      markVersionSeen() {
+        set({ lastSeenVersion: CURRENT_VERSION });
+      },
+
       setAccentHue(accentHue) {
         set({ accentHue });
       },
 
       setUserName(userName) {
         set({ userName });
+      },
+
+      setAppName(appName) {
+        set({ appName });
+      },
+
+      setAppIcon(appIcon) {
+        set({ appIcon });
+      },
+
+      setAppIconHidden(appIconHidden) {
+        set({ appIconHidden });
       },
 
       setSidebarCollapsed(sidebarCollapsed) {
@@ -256,9 +298,9 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       },
 
       exportSettings() {
-        const { theme, mode, accentHue, customization, userName, sidebarCollapsed, language } = get();
+        const { theme, mode, accentHue, customization, userName, appName, appIcon, appIconHidden, sidebarCollapsed, language, lastSeenVersion } = get();
         return JSON.stringify(
-          { theme, mode, accentHue, customization, userName, sidebarCollapsed, language },
+          { theme, mode, accentHue, customization, userName, appName, appIcon, appIconHidden, sidebarCollapsed, language, lastSeenVersion },
           null,
           2
         );
@@ -301,6 +343,15 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               ? (data.language as Locale | 'auto')
               : 'auto';
 
+          // Adopted so dismissing What's New on one device settles it on the
+          // others too (this same path applies snapshots arriving from Home
+          // Assistant). A snapshot without the field leaves the local value
+          // alone rather than resetting it.
+          const lastSeenVersion =
+            typeof data.lastSeenVersion === 'string' && /^\d+\.\d+\.\d+$/.test(data.lastSeenVersion)
+              ? data.lastSeenVersion
+              : get().lastSeenVersion;
+
           set({
             theme: migrated.theme,
             mode,
@@ -312,8 +363,12 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               favorites,
             },
             userName: data.userName,
+            appName: data.appName,
+            appIcon: data.appIcon,
+            appIconHidden: typeof data.appIconHidden === 'boolean' ? data.appIconHidden : false,
             sidebarCollapsed: typeof data.sidebarCollapsed === 'boolean' ? data.sidebarCollapsed : false,
             language,
+            lastSeenVersion,
           });
         } catch {
           console.error('[settingsStore] importSettings: invalid JSON');
@@ -337,9 +392,17 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           p.mode === 'light' || p.mode === 'dark' || p.mode === 'auto'
             ? p.mode
             : (migrated?.mode ?? current.mode);
+        // An install saved before this field existed is an UPGRADE, not a fresh
+        // start: backfill it to the last release that shipped without a
+        // changelog so the What's New modal has something to show. A fresh
+        // install never reaches `merge` (there is nothing persisted) and keeps
+        // the CURRENT_VERSION default instead.
+        const lastSeenVersion =
+          typeof p.lastSeenVersion === 'string' ? p.lastSeenVersion : '1.0.0';
         return {
           ...current,
           ...p,
+          lastSeenVersion,
           theme: migrated?.theme ?? current.theme,
           mode,
           customization: {

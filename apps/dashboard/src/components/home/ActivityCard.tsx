@@ -10,10 +10,9 @@ import { useNavigate } from 'react-router';
 import { Card } from '../ui/Card';
 import { domainOf } from '@hapulse/core';
 import type { HassEntityMap, HassEntity } from '@hapulse/core';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
+import type { TFunction, StateLabel } from '../../i18n/useT';
 import './ActivityCard.css';
-
-type TFunction = ReturnType<typeof useT>;
 
 interface ActivityCardProps {
   entities: HassEntityMap;
@@ -73,7 +72,7 @@ function activityChipStyle(entity: HassEntity): { bg: string; color: string } {
   }
 }
 
-function shortActivityDescription(entity: HassEntity, t: TFunction): string {
+function shortActivityDescription(entity: HassEntity, t: TFunction, sl: StateLabel): string {
   const domain = domainOf(entity.entity_id);
   const state = entity.state;
   switch (domain) {
@@ -83,22 +82,24 @@ function shortActivityDescription(entity: HassEntity, t: TFunction): string {
     case 'media_player':
       if (state === 'playing') return t('home.activity.playing');
       if (state === 'paused') return t('home.activity.paused');
-      return state;
+      return sl(domain, state);
     case 'lock': return state === 'locked' ? t('home.activity.locked') : t('home.activity.unlocked');
     case 'climate': {
       const temp = entity.attributes.temperature;
       if (temp != null) return t('home.activity.setTo', { temp: Math.round(temp as number) });
-      return state;
+      return sl(domain, state);
     }
-    case 'alarm_control_panel': return state.replace(/_/g, ' ');
+    case 'alarm_control_panel': return sl(domain, state);
     case 'binary_sensor': {
       const dc = entity.attributes.device_class as string | undefined;
       if (dc === 'motion') return state === 'on' ? t('home.activity.motionDetected') : t('home.activity.noMotion');
       if (dc === 'door') return state === 'on' ? t('home.activity.doorOpened') : t('home.activity.doorClosed');
       if (dc === 'window') return state === 'on' ? t('home.activity.windowOpened') : t('home.activity.windowClosed');
-      return state;
+      return sl(domain, state, { deviceClass: dc });
     }
-    default: return state;
+    default: return sl(domain, state, {
+      deviceClass: entity.attributes.device_class as string | undefined,
+    });
   }
 }
 
@@ -116,6 +117,7 @@ function formatActivityTime(isoString: string): string {
 export function ActivityCard({ entities, hideSeeAll = false }: ActivityCardProps) {
   const navigate = useNavigate();
   const t = useT();
+  const sl = useStateLabel();
   const recent = Object.values(entities)
     .filter((e) => {
       if (e.state === 'unavailable' || e.state === 'unknown') return false;
@@ -157,7 +159,7 @@ export function ActivityCard({ entities, hideSeeAll = false }: ActivityCardProps
         {recent.map((entity) => {
           const chip = activityChipStyle(entity);
           const name = (entity.attributes.friendly_name ?? entity.entity_id.split('.')[1]!).replace(/_/g, ' ');
-          const desc = shortActivityDescription(entity, t);
+          const desc = shortActivityDescription(entity, t, sl);
           const time = formatActivityTime(entity.last_changed);
 
           return (

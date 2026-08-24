@@ -85,8 +85,12 @@ const SNAPSHOT_KEYS = [
   'accentHue',
   'customization',
   'userName',
+  'appName',
+  'appIcon',
+  'appIconHidden',
   'sidebarCollapsed',
   'language',
+  'lastSeenVersion',
 ] as const;
 
 function isValidSnapshot(value: unknown): value is Record<string, unknown> {
@@ -241,9 +245,13 @@ export function startHASettingsSync(): void {
       state.mode !== prevState.mode ||
       state.accentHue !== prevState.accentHue ||
       state.userName !== prevState.userName ||
+      state.appName !== prevState.appName ||
+      state.appIcon !== prevState.appIcon ||
+      state.appIconHidden !== prevState.appIconHidden ||
       state.sidebarCollapsed !== prevState.sidebarCollapsed ||
       state.customization !== prevState.customization ||
-      state.language !== prevState.language
+      state.language !== prevState.language ||
+      state.lastSeenVersion !== prevState.lastSeenVersion
     ) {
       schedulePush();
     }

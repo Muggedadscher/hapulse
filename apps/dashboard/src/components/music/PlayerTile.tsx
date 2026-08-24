@@ -8,7 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './PlayerTile.css';
@@ -30,6 +30,7 @@ interface PlayerTileProps {
 
 export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileProps) {
   const t = useT();
+  const sl = useStateLabel();
   const { url } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
   const attrs = entity.attributes;
@@ -58,7 +59,7 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
     [entity.entity_id]
   );
 
-  const stateLabel = isPlaying && title ? title : entity.state;
+  const stateLabel = isPlaying && title ? title : sl('media_player', entity.state);
 
   return (
     <Card

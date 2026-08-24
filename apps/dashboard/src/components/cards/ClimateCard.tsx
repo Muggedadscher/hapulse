@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Thermometer, Flame, Snowflake, Wind, Power, RefreshCw } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 
@@ -21,6 +21,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
 
 export function ClimateCard({ entity, name }: ClimateCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const entityId = entity.entity_id;
   const currentTemp = entity.attributes.current_temperature as number | undefined;
   const targetTemp = entity.attributes.temperature as number | undefined;
@@ -54,7 +55,9 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
     [entityId]
   );
 
-  const actionLabel = hvacAction ? hvacAction.replace(/_/g, ' ') : currentMode;
+  const actionLabel = hvacAction
+    ? sl('climate', hvacAction, { attribute: 'hvac_action' })
+    : sl('climate', currentMode);
 
   return (
     <Card className="climate-card">
@@ -120,7 +123,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
               aria-pressed={mode === currentMode}
             >
               {MODE_ICONS[mode] ?? null}
-              {mode}
+              {sl('climate', mode)}
             </button>
           ))}
         </div>

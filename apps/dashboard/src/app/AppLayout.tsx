@@ -46,12 +46,14 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { WeatherModal } from '../components/home/chipmodals';
 import { NotificationsPanel } from '../components/notifications/NotificationsPanel';
+import { ChangelogModal } from '../components/changelog/ChangelogModal';
 import { useConnectionStatus, useWeatherEntity, useCurrentUserAvatar } from '../ha/hooks';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
-import { useT } from '../i18n/useT';
+import { releasesSince, indexSystemMonitor, pickSystemMetrics } from '@hapulse/core';
+import { useT, useStateLabel } from '../i18n/useT';
 import type { TKey } from '../i18n/useT';
 import './AppLayout.css';
 
@@ -121,29 +123,21 @@ function SystemStatusPill() {
   const hiddenNav      = useSettingsStore(useShallow((s) => s.customization.hiddenNav));
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
 
-  // Identify System Monitor entities via registry platform field
-  const systemMonitorIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const re of (registries?.entities ?? [])) {
-      if (re.platform === 'systemmonitor') ids.add(re.entity_id);
-    }
-    return ids;
-  }, [registries]);
+  const sysIndex = useMemo(() => indexSystemMonitor(registries), [registries]);
 
   const sysEntities = useMemo(
-    () => Object.values(entities).filter((e) => systemMonitorIds.has(e.entity_id)),
-    [entities, systemMonitorIds]
+    () => Object.values(entities).filter((e) => sysIndex.ids.has(e.entity_id)),
+    [entities, sysIndex]
   );
+
+  const metrics = useMemo(() => pickSystemMetrics(sysEntities, sysIndex), [sysEntities, sysIndex]);
 
   // All hooks above this line — early return only after all hooks
   if (hiddenNav.includes('system')) return null;
 
   const allEntities = Object.values(entities);
 
-  // Key metrics (same patterns as SystemHeroCard)
-  const cpu  = sysEntities.find((e) => /processor_use/.test(e.entity_id) && !/nice/.test(e.entity_id));
-  const mem  = sysEntities.find((e) => /memory_use_percent/.test(e.entity_id));
-  const disk = sysEntities.find((e) => /disk_use_percent/.test(e.entity_id));
+  const { cpu, memory: mem, disk } = metrics;
 
   const cpuVal  = cpu  ? parseFloat(cpu.state)  : NaN;
   const memVal  = mem  ? parseFloat(mem.state)  : NaN;
@@ -213,11 +207,12 @@ interface WeatherGlanceProps {
 
 function WeatherGlance({ onClick }: WeatherGlanceProps) {
   const t = useT();
+  const sl = useStateLabel();
   const weather = useWeatherEntity();
   if (!weather) return null;
 
   const temp = weather.attributes.temperature as number | undefined;
-  const condition = weather.state as string;
+  const condition = sl('weather', weather.state);
   const unit = (weather.attributes.temperature_unit as string | undefined) ?? '°';
   const tempPart = temp != null ? `, ${temp}${unit}` : '';
 
@@ -313,8 +308,30 @@ export function AppLayout({ children }: AppLayoutProps) {
   const sidebarCollapsed  = useSettingsStore((s) => s.sidebarCollapsed);
   const setSidebarCollapsed = useSettingsStore((s) => s.setSidebarCollapsed);
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
+  const appName = useSettingsStore((s) => s.appName);
+  const appIcon = useSettingsStore((s) => s.appIcon);
+  const appIconHidden = useSettingsStore((s) => s.appIconHidden);
 
   const editMode = useUIStore((s) => s.editMode);
+
+  /* ---- What's New ----
+     Opens once per release. `lastSeenVersion` is seeded to the running version
+     on a fresh install and backfilled to 1.0.0 for an existing one (see
+     settingsStore's `merge`), so a first-time user is never shown a changelog
+     while an upgrading user always is. Reading it before the first paint would
+     race persist hydration, hence the effect. */
+  const lastSeenVersion = useSettingsStore((s) => s.lastSeenVersion);
+  const markVersionSeen = useSettingsStore((s) => s.markVersionSeen);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+
+  useEffect(() => {
+    if (releasesSince(lastSeenVersion).length > 0) setWhatsNewOpen(true);
+  }, [lastSeenVersion]);
+
+  const closeWhatsNew = useCallback(() => {
+    setWhatsNewOpen(false);
+    markVersionSeen();
+  }, [markVersionSeen]);
 
   /* ---- Derived nav order ---- */
   // All IDs in user-stored order (new IDs appended after stored ones)
@@ -626,7 +643,13 @@ export function AppLayout({ children }: AppLayoutProps) {
       >
         {/* Logo / wordmark */}
         <div className="app-sidebar__header">
-          <PulseLogo size={32} wordmark={!sidebarCollapsed} />
+          <PulseLogo
+            size={32}
+            wordmark={!sidebarCollapsed}
+            name={appName || 'HAPulse'}
+            icon={appIcon}
+            hideIcon={appIconHidden}
+          />
         </div>
 
         {/* Nav list */}
@@ -733,6 +756,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           </button>
         )}
       </nav>
+
+      <ChangelogModal
+        open={whatsNewOpen}
+        onClose={closeWhatsNew}
+        mode="whats-new"
+        since={lastSeenVersion}
+      />
     </div>
   );
 }

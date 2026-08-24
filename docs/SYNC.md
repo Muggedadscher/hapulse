@@ -114,11 +114,15 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`- + `historyRange`-Setting |
 | `apps/dashboard/src/app/Router.tsx` | Route `/nvr` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" (`labelKey: 'nav.nvr'`) |
-| `packages/core/locales/en.json` | i18n-Keys `nav.nvr`, `history.*`, `nvr.*` (am Dateiende angehängt) |
+| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `history.*`, `nvr.*` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
-> Hinweis: `en.json` erlaubt keine `[fork]`-Kommentare (JSON). Deshalb sind alle
-> Fork-Keys eindeutig unter `history.*` / `nvr.*` (+ `nav.nvr`) benannt und am
-> **Dateiende** angehängt — so bleibt die Merge-Fläche minimal.
+> Hinweis: JSON erlaubt keine `[fork]`-Kommentare. Deshalb sind alle Fork-Keys
+> eindeutig unter `history.*` / `nvr.*` (+ `nav.nvr`) benannt und am **Dateiende**
+> jeder Locale angehängt — so bleibt die Merge-Fläche minimal.
+>
+> **Wichtig:** Der Parity-Test (`packages/core/scripts/smoke.mjs`) verlangt
+> **identische Keys in allen Sprachen**. Neue Fork-Strings also immer in *jede*
+> `locales/*.json` eintragen, sonst wird `npm test` rot.
 
 ---
 

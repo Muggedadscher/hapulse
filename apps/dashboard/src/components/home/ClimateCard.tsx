@@ -6,7 +6,7 @@ import { Minus, Plus, Thermometer, ChevronRight } from 'lucide-react';
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import './ClimateCard.css';
 
 interface ClimateCardProps {
@@ -129,6 +129,7 @@ function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'v
 
 export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   // Build list of rooms that have at least one climate entity
@@ -213,9 +214,9 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
 
   // Gauge centre label — what the unit is currently doing
   const hvacAction = activeEntity.attributes.hvac_action as string | undefined;
-  const gaugeLabel = (hvacAction ?? activeEntity.state)
-    .charAt(0).toUpperCase() +
-    (hvacAction ?? activeEntity.state).slice(1).replace(/_/g, ' ');
+  const gaugeLabel = hvacAction
+    ? sl('climate', hvacAction, { attribute: 'hvac_action' })
+    : sl('climate', activeEntity.state);
 
   const isOff = activeEntity.state === 'off';
 

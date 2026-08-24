@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './OtherPlayersCard.css';
@@ -24,13 +24,14 @@ interface PlayerRowProps {
 
 function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
   const t          = useT();
+  const sl         = useStateLabel();
   const attrs      = entity.attributes;
   const isPlaying  = entity.state === 'playing';
   const name       = (attrs['friendly_name'] as string | undefined) ?? entity.entity_id;
   const title      = attrs['media_title'] as string | undefined;
   const entityPic  = attrs['entity_picture'] as string | null | undefined;
   const artworkUrl = resolveEntityPicture(entityPic, baseUrl);
-  const stateLabel = isPlaying && title ? title : entity.state;
+  const stateLabel = isPlaying && title ? title : sl('media_player', entity.state);
 
   const handlePlayPause = useCallback(
     (e: React.MouseEvent) => {

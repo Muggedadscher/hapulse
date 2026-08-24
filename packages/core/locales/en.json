@@ -1,8 +1,5 @@
 {
   "nav.rooms": "Rooms",
-  "devices.count.one": "{count} device",
-  "devices.count.other": "{count} devices",
-
   "nav.overview": "Overview",
   "nav.devices": "Devices",
   "nav.automations": "Automations",
@@ -32,9 +29,7 @@
   "nav.systemStatus.ariaLabel": "System status: {status}. Go to System page.",
   "nav.systemStatus.label": "Home Status",
   "nav.weatherGlance.ariaLabel": "Weather: {condition}{tempPart}. Click for details.",
-
   "rooms.empty": "no rooms — set areas in home assistant",
-
   "notifications.title": "Notifications",
   "notifications.dismissAll": "Dismiss all notifications",
   "notifications.dismissAllButton": "Dismiss all",
@@ -42,30 +37,23 @@
   "notifications.dismissOne": "Dismiss: {title}",
   "notifications.unread.one": "Notifications ({count} unread)",
   "notifications.unread.other": "Notifications ({count} unread)",
-
   "common.close": "Close",
   "common.back": "Back",
   "common.loading": "Loading…",
-
   "app.loading": "loading…",
-
   "banner.reconnecting": "reconnecting to home assistant…",
   "banner.disconnected": "connection lost — check your home assistant instance",
-
   "editToggle.doneAria": "done editing",
   "editToggle.editAria": "edit page",
   "editToggle.doneTitle": "Done editing",
   "editToggle.editTitle": "Edit page",
-
   "sectionResize.noLimit": "no limit",
   "sectionResize.levelOf": "{level} of {max}",
   "sectionResize.ariaLabel": "Drag up / down to set max height — currently {desc}",
   "sectionResize.title": "Drag up / down to set max height ({desc})",
-
   "userAvatar.account": "Account: {name}",
   "userAvatar.signedInSettings": "signed in as {name} — open settings",
   "userAvatar.signedIn": "signed in as {name}",
-
   "editBadge.mobileToggleDefault": "toggle hidden on mobile",
   "editBadge.entityDefault": "entity",
   "editBadge.favorite": "favorite {entity}",
@@ -76,10 +64,8 @@
   "editBadge.moveRightTitle": "Move right",
   "editBadge.hide": "hide {label}",
   "editBadge.show": "show {label}",
-
   "columnResize.ariaLabel": "Drag to resize — currently {span} of {max} columns",
   "columnResize.title": "Drag left / right to resize ({span} of {max} columns)",
-
   "onboarding.errorMissingUrl": "Please enter your Home Assistant URL.",
   "onboarding.oauthMixedContent": "Mixed content blocked: this page is served over HTTPS but your HA URL uses HTTP. Use your Nabu Casa URL (https://…ui.nabu.casa) or set up a reverse proxy with HTTPS.",
   "onboarding.signInFailed": "Sign-in failed: invalid response from Home Assistant.",
@@ -106,7 +92,6 @@
   "onboarding.tokenHint": "your token is stored only in this browser",
   "onboarding.divider": "or",
   "onboarding.demoButton": "Explore the demo home",
-
   "home.section.hide.scenes": "hide Scenes",
   "home.section.show.scenes": "show Scenes",
   "home.section.hideMobile.scenes": "hide Scenes on mobile",
@@ -143,7 +128,6 @@
   "home.section.show.rooms": "show Rooms",
   "home.section.hideMobile.rooms": "hide Rooms on mobile",
   "home.section.showMobile.rooms": "show Rooms on mobile",
-
   "home.activity.title": "Activity",
   "home.activity.detailsAria": "Go to system details",
   "home.activity.details": "Details",
@@ -198,10 +182,6 @@
   "home.devices.listAria": "Active favorite devices",
   "home.devices.turnOffAria": "Turn off {name}",
   "home.devices.turnOnAria": "Turn on {name}",
-  "home.devices.cleaning": "Cleaning",
-  "home.devices.returning": "Returning",
-  "home.devices.playing": "Playing",
-  "home.devices.paused": "Paused",
   "home.energy.title": "Energy",
   "home.energy.titleToday": "Energy Today",
   "home.energy.promptText": "Set up the Energy dashboard in Home Assistant to see your usage here.",
@@ -346,9 +326,9 @@
   "home.chipmodals.weather.hourlyForecast": "Hourly Forecast",
   "home.chipmodals.weather.dailyForecast": "Daily Forecast",
   "home.chipmodals.weather.today": "Today",
-
   "automations.title": "Automations",
   "automations.emptyFilter": "No automations match your filters.",
+  "automations.section.generalLabel": "General",
   "automations.section.hide.hero": "hide Overview",
   "automations.section.show.hero": "show Overview",
   "automations.section.hideMobile.hero": "hide Overview on mobile",
@@ -361,7 +341,6 @@
   "automations.section.showCategory": "show {label}",
   "automations.section.hideMobileCategory": "hide {label} on mobile",
   "automations.section.showMobileCategory": "show {label} on mobile",
-
   "energy.title": "Energy",
   "energy.loading": "Loading energy data…",
   "energy.error": "Couldn’t load energy data. Check your Home Assistant connection.",
@@ -389,7 +368,6 @@
   "energy.section.show.gas": "show Gas",
   "energy.section.hideMobile.gas": "hide Gas on mobile",
   "energy.section.showMobile.gas": "show Gas on mobile",
-
   "music.title": "Music",
   "music.empty.title": "no media players found",
   "music.empty.description": "Connect a media player in Home Assistant to get started.",
@@ -406,7 +384,6 @@
   "music.section.show.otherPlayers": "show Players",
   "music.section.hideMobile.otherPlayers": "hide Players on mobile",
   "music.section.showMobile.otherPlayers": "show Players on mobile",
-
   "scenes.title": "Scenes",
   "scenes.section.hide.hero": "hide Overview",
   "scenes.section.show.hero": "show Overview",
@@ -421,7 +398,6 @@
   "scenes.section.hideMobileRoom": "hide {label} on mobile",
   "scenes.section.showMobileRoom": "show {label} on mobile",
   "scenes.section.generalLabel": "General",
-
   "security.title": "Security",
   "security.empty.title": "nothing to secure yet",
   "security.empty.description": "Add an alarm panel, cameras, door sensors, or locks in Home Assistant.",
@@ -460,7 +436,6 @@
   "security.section.show.motion": "show Motion",
   "security.section.hideMobile.motion": "hide Motion on mobile",
   "security.section.showMobile.motion": "show Motion on mobile",
-
   "system.title": "System",
   "system.section.hide.systemHero": "hide System Overview",
   "system.section.show.systemHero": "show System Overview",
@@ -478,16 +453,13 @@
   "system.section.show.batteries": "show Batteries",
   "system.section.hideMobile.batteries": "hide Batteries on mobile",
   "system.section.showMobile.batteries": "show Batteries on mobile",
-
   "devices.title": "Devices",
   "devices.loading": "Loading devices…",
   "devices.loadingHint": "Gathering devices and entities from Home Assistant.",
   "devices.empty.title": "no devices found",
   "devices.empty.description": "connect a Home Assistant instance with devices to see them here.",
   "devices.emptyFilter": "No devices match your filters.",
-
   "placeholder.body": "coming soon — this section isn't built yet.",
-
   "room.notFound.title": "room not found",
   "room.backToHome": "← back to home",
   "room.empty.title": "no entities in this room",
@@ -501,7 +473,7 @@
   "room.section.label.button": "Buttons",
   "room.section.label.vacuum": "Vacuums",
   "room.section.label.sensor": "Sensors",
-  "room.section.label.other": "Other",
+  "room.section.label.misc": "Other",
   "room.section.dragReorder.scene": "Drag to reorder Scenes section",
   "room.section.dragReorder.light": "Drag to reorder Lights section",
   "room.section.dragReorder.climate": "Drag to reorder Climate section",
@@ -511,8 +483,7 @@
   "room.section.dragReorder.button": "Drag to reorder Buttons section",
   "room.section.dragReorder.vacuum": "Drag to reorder Vacuums section",
   "room.section.dragReorder.sensor": "Drag to reorder Sensors section",
-  "room.section.dragReorder.other": "Drag to reorder Other section",
-
+  "room.section.dragReorder.misc": "Drag to reorder Other section",
   "settings.title": "Settings",
   "settings.section.connection": "connection",
   "settings.section.appearance": "appearance",
@@ -520,14 +491,12 @@
   "settings.section.rooms": "rooms",
   "settings.section.backup": "backup",
   "settings.section.about": "about",
-
   "settings.status.demo": "demo mode",
   "settings.status.connected": "connected",
   "settings.status.reconnecting": "reconnecting…",
   "settings.status.disconnected": "disconnected",
   "settings.status.error": "connection error",
   "settings.status.idle": "idle",
-
   "settings.connection.demoUser": "Demo User",
   "settings.connection.demoHome": "Demo Home",
   "settings.connection.badge.demo": "demo home",
@@ -545,7 +514,17 @@
   "settings.connection.signOut": "Sign Out",
   "settings.connection.connectHA": "Connect your Home Assistant",
   "settings.connection.disconnect": "Disconnect",
-
+  "settings.appearance.appName.label": "App name",
+  "settings.appearance.appIcon.label": "Icon",
+  "settings.appearance.appIcon.none": "No icon",
+  "settings.appearance.appIcon.pulse": "Pulse",
+  "settings.appearance.appIcon.home": "Home",
+  "settings.appearance.appIcon.sparkles": "Sparkles",
+  "settings.appearance.appIcon.zap": "Lightning",
+  "settings.appearance.appIcon.star": "Star",
+  "settings.appearance.appIcon.heart": "Heart",
+  "settings.appearance.appIcon.flame": "Flame",
+  "settings.appearance.appIcon.leaf": "Leaf",
   "settings.appearance.mode.label": "Appearance",
   "settings.appearance.mode.groupAria": "Appearance mode",
   "settings.appearance.mode.light": "Light",
@@ -555,7 +534,9 @@
   "settings.appearance.accent.label": "Accent colour",
   "settings.appearance.accent.reset": "reset",
   "settings.appearance.accent.hueAria": "Accent hue",
-
+  "settings.language.label": "Language",
+  "settings.language.groupAria": "Language",
+  "settings.language.auto": "Auto",
   "settings.entities.searchPlaceholder": "search by name or id…",
   "settings.entities.searchAria": "Search entities",
   "settings.entities.uncategorised": "uncategorised",
@@ -563,14 +544,11 @@
   "settings.entities.empty": "no entities found.",
   "settings.entities.modalTitle": "Entities",
   "settings.entities.loading": "Loading entities…",
-
   "settings.admin.editingLabel": "Editing",
   "settings.admin.editingToggleAria": "Enable editing controls",
   "settings.admin.entitiesLabel": "Entities",
   "settings.admin.editEntitiesBtn": "Edit Entities",
-
   "settings.rooms.empty": "no rooms found — add areas in home assistant to organise entities.",
-
   "settings.backup.hint": "export your theme, customization, and display name as a JSON file. import it on any device.",
   "settings.backup.exportBtn": "Export settings",
   "settings.backup.importBtn": "Import settings",
@@ -588,19 +566,17 @@
   "settings.backup.importSuccess": "Settings imported successfully.",
   "settings.backup.syncStatus.connected": "Settings are saved to your Home Assistant and sync across your devices.",
   "settings.backup.syncStatus.pending": "Settings will sync to your Home Assistant once connected.",
-
-  "settings.about.version": "version 1.0.0",
+  "settings.about.version": "version {version}",
   "settings.about.tagline": "made for home assistant — open source, self-hosted.",
-
   "devices.hero.title": "All Devices",
-  "devices.hero.deviceCount": "{count} devices",
+  "devices.hero.deviceCount.one": "{count} device",
+  "devices.hero.deviceCount.other": "{count} devices",
   "devices.hero.roomCount.one": "{count} room",
   "devices.hero.roomCount.other": "{count} rooms",
   "devices.hero.stat.integrations": "Integrations",
   "devices.hero.stat.devices": "Devices",
   "devices.hero.stat.entities": "Entities",
   "devices.hero.stat.rooms": "Rooms",
-
   "devices.toolbar.searchPlaceholder": "Search devices…",
   "devices.toolbar.searchAria": "Search devices",
   "devices.toolbar.roomFilterAria": "Filter by room",
@@ -610,11 +586,9 @@
   "devices.toolbar.viewModeAria": "View mode",
   "devices.toolbar.listViewAria": "List view",
   "devices.toolbar.gridViewAria": "Grid view",
-
   "devices.card.unassigned": "Unassigned",
   "devices.card.entityCount.one": "{count} entity",
   "devices.card.entityCount.other": "{count} entities",
-
   "devices.row.toggleAria": "Toggle {name}",
   "devices.row.decreaseAria": "Decrease",
   "devices.row.increaseAria": "Increase",
@@ -636,14 +610,12 @@
   "devices.row.unfavoriteLabel": "Unfavorite {name}",
   "devices.row.showLabel": "Show {name}",
   "devices.row.hideLabel": "Hide {name}",
-
   "devices.modal.category.controls": "Controls",
   "devices.modal.category.sensors": "Sensors",
   "devices.modal.category.config": "Configuration",
   "devices.modal.category.diagnostic": "Diagnostic",
   "devices.modal.showAllEntities": "Show all entities",
   "devices.modal.hideAllEntities": "Hide all entities",
-
   "devices.integration.unknown": "Unknown",
   "devices.integration.hue": "Philips Hue",
   "devices.integration.tplink": "TP-Link",
@@ -660,20 +632,17 @@
   "devices.integration.sun": "Sun",
   "devices.integration.mqtt": "MQTT",
   "devices.integration.spotify": "Spotify",
-
   "energy.period.ariaLabel": "Time period",
   "energy.period.today": "Today",
   "energy.period.week": "Week",
   "energy.period.month": "Month",
   "energy.period.year": "Year",
-
   "energy.hero.homeConsumption": "Home consumption",
   "energy.hero.fromGrid": "From grid",
   "energy.hero.returned": "Returned",
   "energy.hero.solar": "Solar",
   "energy.hero.batteryOut": "Battery out",
   "energy.hero.gridCost": "Grid cost",
-
   "energy.sources.title": "Sources",
   "energy.sources.legendGrid": "Grid",
   "energy.sources.legendSolar": "Solar",
@@ -682,48 +651,37 @@
   "energy.sources.totalFromGrid": "From grid",
   "energy.sources.totalSolarProduced": "Solar produced",
   "energy.sources.totalReturnedToGrid": "Returned to grid",
-
   "energy.devices.title": "Devices",
   "energy.devices.empty": "No individual devices configured.",
-
   "energy.solar.title": "Solar",
   "energy.solar.selfConsumed": "Self-consumed",
   "energy.solar.returnedToGrid": "Returned to grid",
   "energy.solar.selfConsumedPercent": "{percent}% self-consumed",
-
   "energy.water.title": "Water",
-
   "energy.gas.title": "Gas",
-
   "energy.notConfigured.title": "Energy isn’t set up yet",
   "energy.notConfigured.description": "HAPulse reads your Home Assistant Energy dashboard configuration. Set up your grid, solar, battery and devices in Home Assistant, and they’ll appear here automatically.",
   "energy.notConfigured.openSettings": "Open Energy settings in Home Assistant",
-
   "cards.button.press": "Press",
   "cards.button.pressAria": "Press {name}",
-
   "cards.climate.decreaseAria": "Decrease temperature",
   "cards.climate.increaseAria": "Increase temperature",
   "cards.climate.current": "Current",
   "cards.climate.target": "Target",
-
   "cards.cover.percentOpen": "{percent}% open",
   "cards.cover.open": "Open",
   "cards.cover.stop": "Stop",
   "cards.cover.close": "Close",
-
   "cards.light.toggleAria": "Toggle {name}",
   "cards.light.brightness": "Brightness",
   "cards.light.colorTemp": "Color Temp",
   "cards.light.colorTemperatureAria": "Color Temperature",
-
+  "cards.light.color": "Color",
   "cards.lock.unlock": "Unlock",
   "cards.lock.lock": "Lock",
-
   "cards.media.play": "Play",
   "cards.media.pause": "Pause",
   "cards.media.volumeAria": "Volume",
-
   "cards.sensor.open": "Open",
   "cards.sensor.closed": "Closed",
   "cards.sensor.detected": "Detected",
@@ -739,15 +697,6 @@
   "cards.sensor.locked": "Locked",
   "cards.sensor.on": "On",
   "cards.sensor.off": "Off",
-
-  "cards.vacuum.cleaning": "Cleaning",
-  "cards.vacuum.docked": "Docked",
-  "cards.vacuum.idle": "Idle",
-  "cards.vacuum.paused": "Paused",
-  "cards.vacuum.returning": "Returning",
-  "cards.vacuum.error": "Error",
-  "cards.vacuum.unknown": "Unknown",
-  "cards.vacuum.unavailable": "Unavailable",
   "cards.vacuum.startCleaningAria": "Start cleaning",
   "cards.vacuum.start": "Start",
   "cards.vacuum.resume": "Resume",
@@ -763,14 +712,12 @@
   "common.time.hoursAgo.other": "{count}h ago",
   "common.time.daysAgo.one": "{count}d ago",
   "common.time.daysAgo.other": "{count}d ago",
-
   "security.alarmCard.fallbackName": "Alarm",
   "security.alarmCard.codePlaceholder": "Code",
   "security.alarmCard.codeAria": "Alarm code",
   "security.alarmCard.armHome": "Arm Home",
   "security.alarmCard.armAway": "Arm Away",
   "security.alarmCard.disarm": "Disarm",
-
   "security.alarmPanel.fallbackName": "Alarm Panel",
   "security.alarmPanel.action.armHome": "Arm Home",
   "security.alarmPanel.action.armAway": "Arm Away",
@@ -784,32 +731,28 @@
   "security.alarmPanel.numpad.backspace": "Backspace",
   "security.alarmPanel.numpad.confirm": "Confirm",
   "security.alarmPanel.numpad.cancel": "Cancel",
-
   "security.cameras.motionDetectedAria": "Motion detected",
   "security.sensor.open": "open",
   "security.sensor.closed": "closed",
   "security.sensor.motion": "motion",
   "security.sensor.clear": "clear",
-
   "security.locks.title": "Locks",
   "security.locks.count": "{locked}/{total} locked",
   "security.locks.lockAll": "Lock All",
   "security.locks.unlockAll": "Unlock All",
   "security.locks.lock": "Lock",
   "security.locks.unlock": "Unlock",
-
   "security.people.title": "People",
   "security.people.count": "{home}/{total} home",
   "security.people.home": "Home",
   "security.people.away": "Away",
-
   "security.hero.alarmFallbackName": "Alarm",
   "security.hero.notConfigured": "Not configured",
   "security.hero.personHomeTitle": "{name}: Home",
   "security.hero.personAwayTitle": "{name}: Away",
   "security.hero.personIsHome": "{name} is home",
   "security.hero.someoneIsHome": "Someone is home",
-  "security.hero.peopleHome.one": "{count} people home",
+  "security.hero.peopleHome.one": "{count} person home",
   "security.hero.peopleHome.other": "{count} people home",
   "security.hero.allLocked": "All locked",
   "security.hero.unlockedCount.one": "{count} unlocked",
@@ -823,14 +766,12 @@
   "security.hero.detectedCount.other": "{count} detected",
   "security.hero.cameraCount.one": "{count} camera",
   "security.hero.cameraCount.other": "{count} cameras",
-
   "security.sensorSection.detected.one": "{count} detected",
   "security.sensorSection.detected.other": "{count} detected",
   "security.sensorSection.open.one": "{count} open",
   "security.sensorSection.open.other": "{count} open",
   "security.sensorSection.total.one": "{count} total",
   "security.sensorSection.total.other": "{count} total",
-
   "music.control.play": "Play",
   "music.control.pause": "Pause",
   "music.control.previous": "Previous",
@@ -842,15 +783,12 @@
   "music.control.unmute": "Unmute",
   "music.control.source": "Source",
   "music.control.repeatAria": "Repeat: {mode}",
-
   "music.player.selectAria": "Select {name}",
   "music.player.playNamed": "Play {name}",
   "music.player.pauseNamed": "Pause {name}",
-
   "music.players.title": "Players",
   "music.players.empty": "No other players",
   "music.players.listAria": "Other media players",
-
   "music.zones.title": "Zones",
   "music.zones.count": "{active} / {total} playing",
   "music.zones.viewModeAria": "View mode",
@@ -863,12 +801,10 @@
   "music.zones.muteRoom": "Mute {room}",
   "music.zones.unmuteRoom": "Unmute {room}",
   "music.zones.roomVolume": "{room} volume",
-
   "system.batteries.title": "Batteries",
   "system.batteries.lowCount.one": "{count} low",
   "system.batteries.lowCount.other": "{count} low",
   "system.batteries.listAria": "Battery levels",
-
   "system.hero.status.healthy": "All systems healthy",
   "system.hero.status.warning": "System under load",
   "system.hero.status.critical": "System critical",
@@ -881,17 +817,15 @@
   "system.hero.unavailableCount.one": "{count} unavailable",
   "system.hero.unavailableCount.other": "{count} unavailable",
   "system.hero.noMetrics": "No metrics available",
-
   "system.monitor.title": "System Monitor",
   "system.monitor.group.processor": "Processor",
   "system.monitor.group.memory": "Memory",
   "system.monitor.group.disk": "Disk",
   "system.monitor.group.network": "Network",
   "system.monitor.group.system": "System",
-  "system.monitor.group.other": "Other",
+  "system.monitor.group.misc": "Other",
   "system.monitor.uptimeDaysHours": "{days}d {hours}h",
   "system.monitor.uptimeHoursAgo": "{hours}h ago",
-
   "automations.time.never": "Never",
   "automations.time.justNow": "Just now",
   "automations.time.minutesAgo.one": "{count}m ago",
@@ -902,19 +836,16 @@
   "automations.time.daysAgo.one": "{count}d ago",
   "automations.time.daysAgo.other": "{count}d ago",
   "automations.time.unknown": "—",
-
   "automations.activity.title": "Recent Activity",
   "automations.activity.ranToday.one": "{count} ran today",
   "automations.activity.ranToday.other": "{count} ran today",
   "automations.activity.empty": "No automations have run yet.",
   "automations.activity.listAria": "Recent automation activity",
   "automations.activity.ranAria": "ran {time}",
-
   "automations.category.countAria": "{active} of {total} active",
   "automations.category.listAria": "{category} automations",
   "automations.row.enabledAria": "{name}: enabled",
   "automations.row.disabledAria": "{name}: disabled",
-
   "automations.hero.totalAria.one": "{count} total automations",
   "automations.hero.totalAria.other": "{count} total automations",
   "automations.hero.totalLabel": "total automations",
@@ -925,14 +856,12 @@
   "automations.hero.statDisabled": "disabled",
   "automations.hero.categoryLabel.one": "category",
   "automations.hero.categoryLabel.other": "categories",
-
   "automations.toolbar.searchPlaceholder": "Search automations…",
   "automations.toolbar.searchAria": "Search automations",
   "automations.toolbar.roomFilterAria": "Filter by room",
   "automations.toolbar.categoryFilterAria": "Filter by category",
   "automations.toolbar.allRooms": "All rooms",
   "automations.toolbar.allCategories": "All categories",
-
   "scenes.time.never": "Never",
   "scenes.time.justNow": "Just now",
   "scenes.time.minutesAgo.one": "{count}m ago",
@@ -943,14 +872,12 @@
   "scenes.time.daysAgo.one": "{count}d ago",
   "scenes.time.daysAgo.other": "{count}d ago",
   "scenes.time.unknown": "—",
-
   "scenes.activity.title": "Recent Activity",
   "scenes.activity.usedToday.one": "{count} used today",
   "scenes.activity.usedToday.other": "{count} used today",
   "scenes.activity.empty": "No scenes have been activated yet.",
   "scenes.activity.listAria": "Recently activated scenes",
   "scenes.activity.activatedAria": "activated {time}",
-
   "scenes.hero.totalAria.one": "{count} total scenes",
   "scenes.hero.totalAria.other": "{count} total scenes",
   "scenes.hero.totalLabel": "total scenes",
@@ -960,11 +887,9 @@
   "scenes.hero.statUsedToday": "used today",
   "scenes.hero.roomLabel.one": "room",
   "scenes.hero.roomLabel.other": "rooms",
-
   "scenes.room.countAria.one": "{count} scenes",
   "scenes.room.countAria.other": "{count} scenes",
   "scenes.room.activateAria": "Activate scene: {name}",
-
   "settings.entities.renameAria": "Rename {name}",
   "settings.entities.confirmRename": "Confirm rename",
   "settings.entities.cancelRename": "Cancel rename",
@@ -972,13 +897,20 @@
   "settings.entities.unfavoriteAria": "Unfavorite {name}",
   "settings.entities.showAria": "Show {name}",
   "settings.entities.hideAria": "Hide {name}",
-
   "settings.rooms.moveUpAria": "Move {name} up",
   "settings.rooms.moveDownAria": "Move {name} down",
   "settings.rooms.showAria": "Show {name}",
   "settings.rooms.hideAria": "Hide {name}",
-
   "settings.appearance.theme.selectAria": "Select {name} theme",
+  "entityState.unavailable": "Unavailable",
+  "entityState.unknown": "Unknown",
+  "changelog.kind.added": "Added",
+  "changelog.kind.changed": "Changed",
+  "changelog.kind.fixed": "Fixed",
+  "changelog.whatsNew.title": "What's new in {version}",
+  "changelog.whatsNew.dismiss": "Got it",
+  "changelog.history.title": "Changelog",
+  "settings.about.whatsNew": "What's new",
 
   "history.error": "Could not load history.",
   "history.empty": "No history recorded for this range.",

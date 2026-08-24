@@ -22,7 +22,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
-import { useT } from '../../i18n/useT';
+import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './NowPlayingCard.css';
@@ -87,6 +87,7 @@ interface NowPlayingCardProps {
 
 export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
   const t = useT();
+  const sl = useStateLabel();
   const { url } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
   const attrs = entity.attributes;
@@ -225,7 +226,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
               </>
             ) : (
               <p className="now-playing-card__title now-playing-card__title--state">
-                {entity.state}
+                {sl('media_player', entity.state)}
               </p>
             )}
           </div>

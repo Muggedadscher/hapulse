@@ -381,6 +381,47 @@
 }
 
 /* =============================================================
+   App icon picker
+   ============================================================= */
+
+.icon-swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.icon-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-control);
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-subtle);
+  transition: border-color 160ms ease-out, transform 160ms ease-out;
+}
+
+.icon-swatch:active {
+  transform: scale(0.94);
+}
+
+.icon-swatch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon-swatch--active {
+  border-color: var(--accent);
+}
+
+.icon-swatch--none {
+  color: var(--text-faint);
+}
+
+/* =============================================================
    Accent hue slider
    ============================================================= */
 
@@ -852,4 +893,43 @@ details[open] .entity-group__chevron {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ---- Language select ------------------------------------------------------
+   Mirrors .automations-select / .devices-select. A native <select> is used
+   instead of a mode-toggle button group because the locale list (seven and
+   growing) overflows a horizontal row on narrow screens. */
+.settings-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.settings-select__native {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 2rem 0.5rem 0.875rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text);
+  cursor: pointer;
+  max-width: 200px;
+}
+.settings-select__chevron {
+  position: absolute;
+  right: 0.625rem;
+  pointer-events: none;
+  color: var(--text-faint);
+}
+
+/* The changelog opener sits in the About card's link row, so it borrows
+   .about-card__link's look and only resets the <button> defaults. */
+.about-card__link--button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }

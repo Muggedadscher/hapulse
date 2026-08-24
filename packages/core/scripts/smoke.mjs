@@ -14,6 +14,8 @@
  *  - buildHAAuthorizeUrl / exchangeHAAuthCode / connectWithAuthData (mobile OAuth)
  *  - HAConnection.suspend is exported
  *  - resolveEntityAreaId() device-area fallback precedence
+ *  - en/sv dictionary parity (keys, placeholders, .one/.other pairing)
+ *  - System Monitor metrics resolve on a non-English HA (localized entity_ids)
  */
 
 import {
@@ -51,7 +53,25 @@ import {
   HAConnection,
   translate,
   resolveLanguage,
+  LOCALES,
+  lookupEntityState,
+  humanizeState,
+  RELEASES,
+  CURRENT_VERSION,
+  CHANGE_KINDS,
+  releasesSince,
+  compareVersions,
+  indexSystemMonitor,
+  pickSystemMetrics,
 } from '../dist/index.js';
+import { readFileSync } from 'node:fs';
+import EN_DICT from '../locales/en.json' with { type: 'json' };
+import DE_DICT from '../locales/de.json' with { type: 'json' };
+import ES_DICT from '../locales/es.json' with { type: 'json' };
+import FR_DICT from '../locales/fr.json' with { type: 'json' };
+import IT_DICT from '../locales/it.json' with { type: 'json' };
+import PT_DICT from '../locales/pt.json' with { type: 'json' };
+import SV_DICT from '../locales/sv.json' with { type: 'json' };
 
 let passed = 0;
 let failed = 0;
@@ -713,6 +733,175 @@ assertEqual(resolveLanguage('auto', null, [], AVAIL), 'en', 'aucune information 
 assertEqual(resolveLanguage('fr', null, [], ['en']), 'en', 'préférence indisponible → en');
 
 // ---------------------------------------------------------------------------
+// i18n — dictionary parity, across every shipped locale
+//
+// Generic over LOCALE_DICTS rather than one hand-written block per language:
+// each added locale otherwise means another near-identical block, and two of
+// them landing at once is a merge conflict (which is exactly what fr and sv
+// did). Adding a language is now one entry in LOCALE_DICTS.
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: dictionary parity ──');
+
+/** Every translated locale, keyed by its code. `en` is the source of truth. */
+const LOCALE_DICTS = { de: DE_DICT, es: ES_DICT, fr: FR_DICT, it: IT_DICT, pt: PT_DICT, sv: SV_DICT };
+
+const enKeys = Object.keys(EN_DICT).sort();
+const placeholders = (s) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(',');
+
+assertEqual(
+  Object.keys(LOCALE_DICTS).sort().join(','),
+  LOCALES.filter((l) => l !== 'en').sort().join(','),
+  'every locale in LOCALES has a dictionary under test',
+);
+
+for (const [code, dict] of Object.entries(LOCALE_DICTS)) {
+  const keys = Object.keys(dict).sort();
+
+  const missing = enKeys.filter((k) => !keys.includes(k));
+  const extra = keys.filter((k) => !enKeys.includes(k));
+  assert(missing.length === 0, `${code}.json omits nothing (missing: ${missing.join(', ') || 'none'})`);
+  assert(extra.length === 0, `${code}.json adds nothing (extra: ${extra.join(', ') || 'none'})`);
+
+  // Placeholders must survive translation. One aggregated assertion per locale,
+  // not one per key: 900 ticks per language would drown every other block's
+  // failures, and this runner's stdout is its only report.
+  const drifted = enKeys
+    .map((k) => ({ k, en: placeholders(EN_DICT[k]), tr: placeholders(dict[k] ?? '') }))
+    .filter(({ en, tr }) => en !== tr)
+    .map(({ k, en, tr }) => `${k} (expected ${JSON.stringify(en)}, got ${JSON.stringify(tr)})`);
+  assert(drifted.length === 0,
+    `${code}.json preserves placeholders across ${enKeys.length} keys${drifted.length > 0 ? ` — drift: ${drifted.join('; ')}` : ''}`);
+
+  // translate() always tries `${key}.other` as the plural fallback, so a lone
+  // .one silently resolves to the raw key for every non-singular count.
+  // Not checked in reverse per-locale: a bare ".other" is sometimes a category
+  // literally named "Other", not a plural pair missing its .one.
+  const oneWithoutOther = keys
+    .filter((k) => k.endsWith('.one'))
+    .filter((k) => dict[`${k.slice(0, -'.one'.length)}.other`] === undefined);
+  assert(oneWithoutOther.length === 0,
+    `${code}.json: every .one has its .other (missing: ${oneWithoutOther.join(', ') || 'none'})`);
+}
+
+// ---------------------------------------------------------------------------
+// i18n — plural coverage (en.json)
+//
+// Found three times by hand while reviewing translations
+// (security.hero.peopleHome.one, three orphaned .other keys,
+// devices.hero.deviceCount): the one recurring defect, until now without a net.
+// Checked bidirectionally here because en.json is the source every translation
+// is generated from — an orphan here propagates to all seven languages.
+// ---------------------------------------------------------------------------
+console.log('\n── i18n: plural coverage ──');
+
+const enKeySet = new Set(enKeys);
+
+const unpairedPlurals = enKeys
+  .filter((k) => k.endsWith('.one') || k.endsWith('.other'))
+  .map((k) => {
+    const base = k.endsWith('.one') ? k.slice(0, -'.one'.length) : k.slice(0, -'.other'.length);
+    const sibling = k.endsWith('.one') ? `${base}.other` : `${base}.one`;
+    return enKeySet.has(sibling) ? null : `${k} (missing ${sibling})`;
+  })
+  .filter((msg) => msg !== null);
+
+assert(unpairedPlurals.length === 0,
+  `every .one/.other key has its counterpart${unpairedPlurals.length > 0 ? ` — orphans: ${unpairedPlurals.join(', ')}` : ''}`);
+
+// Any value containing {count} must belong to a .one/.other pair.
+const countOutsidePlural = enKeys
+  .filter((k) => !k.endsWith('.one') && !k.endsWith('.other'))
+  .filter((k) => /\{count\}/.test(EN_DICT[k]))
+  .map((k) => `${k} (${JSON.stringify(EN_DICT[k])})`);
+
+assert(countOutsidePlural.length === 0,
+  `{count} appears only in .one/.other keys${countOutsidePlural.length > 0 ? ` — outside a pair: ${countOutsidePlural.join(', ')}` : ''}`);
+
+// ---------------------------------------------------------------------------
+// Entity states — Home Assistant's own translations
+//
+// Key shape verified against homeassistant/helpers/translation.py and the
+// integrations' strings.json: `component.{domain}.entity_component.{device
+// class}.state.{state}`, with `_` as the device-class-less bucket.
+// ---------------------------------------------------------------------------
+console.log('\n── entity states ──');
+
+const HA_STATES = {
+  'component.weather.entity_component._.state.partlycloudy': 'Partiellement nuageux',
+  'component.climate.entity_component._.state.fan_only': 'Ventilation seule',
+  'component.climate.entity_component._.state_attributes.hvac_action.state.heating': 'Chauffage',
+  'component.binary_sensor.entity_component._.state.on': 'Actif',
+  'component.binary_sensor.entity_component.motion.state.on': 'Détecté',
+};
+
+assertEqual(lookupEntityState(HA_STATES, 'weather', 'partlycloudy'), 'Partiellement nuageux',
+  'plain state resolved');
+
+assertEqual(lookupEntityState(HA_STATES, 'climate', 'heating', { attribute: 'hvac_action' }),
+  'Chauffage', 'attribute value resolved');
+
+// Device class wins over the `_` bucket — the whole point of binary_sensor
+// ("Détecté" rather than "Actif").
+assertEqual(lookupEntityState(HA_STATES, 'binary_sensor', 'on', { deviceClass: 'motion' }),
+  'Détecté', 'device class takes precedence');
+
+// A device class HA draws no distinction for must fall back to `_`, not fail.
+assertEqual(lookupEntityState(HA_STATES, 'binary_sensor', 'on', { deviceClass: 'plug' }),
+  'Actif', 'unknown device class → `_` bucket');
+
+assertEqual(lookupEntityState(HA_STATES, 'vacuum', 'cleaning'), undefined,
+  'absent domain → undefined (caller picks the fallback)');
+assertEqual(lookupEntityState({}, 'weather', 'sunny'), undefined,
+  'empty dictionary → undefined');
+assertEqual(lookupEntityState(HA_STATES, 'weather', ''), undefined, 'empty state → undefined');
+
+// Fallback when HA is silent: demo mode, dropped connection, untranslated state.
+assertEqual(humanizeState('fan_only'), 'Fan only', 'underscores flattened and capitalised');
+assertEqual(humanizeState('clear-night'), 'Clear night', 'hyphens flattened');
+assertEqual(humanizeState('armed_custom_bypass'), 'Armed custom bypass', 'several separators');
+assertEqual(humanizeState('on'), 'On', 'short state');
+
+// formatEntityState: the label is optional, and applies only to non-numeric
+// states — a sensor with a unit stays a number.
+const CLIMATE_ENTITY = {
+  entity_id: 'climate.living_room',
+  state: 'fan_only',
+  attributes: {},
+  last_changed: '',
+  last_updated: '',
+  context: { id: '' },
+};
+const label = (domain, state, opts) =>
+  lookupEntityState(HA_STATES, domain, state, opts) ?? humanizeState(state);
+
+assertEqual(formatEntityState(CLIMATE_ENTITY), 'fan_only',
+  'without a label: raw state (non-UI callers)');
+assertEqual(formatEntityState(CLIMATE_ENTITY, 'fr', label), 'Ventilation seule',
+  'with a label: translated state');
+
+const TEMP_SENSOR = {
+  ...CLIMATE_ENTITY,
+  entity_id: 'sensor.outside',
+  state: '21.34',
+  attributes: { unit_of_measurement: '°C' },
+};
+// The narrow no-break space between number and unit comes from upstream (U+202F).
+assertEqual(formatEntityState(TEMP_SENSOR, 'fr', label), '21.3 °C',
+  'numeric value untouched despite the label');
+
+const UNAVAILABLE = { ...CLIMATE_ENTITY, state: 'unavailable' };
+assertEqual(formatEntityState(UNAVAILABLE, 'fr', label), 'Unavailable',
+  'unavailable goes through the label');
+assertEqual(formatEntityState({ ...CLIMATE_ENTITY, state: 'unknown' }, 'fr', label), 'Unavailable',
+  'unknown stays folded onto unavailable');
+
+// The HAPulse dictionary must not grow back into a state vocabulary: these two
+// pseudo-states are the only ones HA does not ship under entity_component.
+const ownStateKeys = enKeys.filter((k) => k.startsWith('entityState.'));
+assertEqual(ownStateKeys.sort().join(','), 'entityState.unavailable,entityState.unknown',
+  'HAPulse names only the pseudo-states HA lacks');
+
+// ---------------------------------------------------------------------------
 // Finish (after ticker or timeout)
 // ---------------------------------------------------------------------------
 
@@ -731,3 +920,141 @@ function finish() {
     process.exit(1);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Changelog
+//
+// The release list is the version source for the whole app (Settings → About
+// reads CURRENT_VERSION, the What's New modal diffs against it, and
+// CHANGELOG.md is generated from it), so the invariants that keep it honest
+// are worth asserting: newest first, well-formed, and in step with the
+// package.json versions a release also has to bump.
+// ---------------------------------------------------------------------------
+console.log('\n── changelog ──');
+
+assert(RELEASES.length > 0, 'at least one release is documented');
+assertEqual(CURRENT_VERSION, RELEASES[0].version, 'CURRENT_VERSION is the newest release');
+
+const SEMVER = /^\d+\.\d+\.\d+$/;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const malformed = RELEASES.flatMap((r) => {
+  const problems = [];
+  if (!SEMVER.test(r.version)) problems.push(`${r.version}: version is not major.minor.patch`);
+  if (!ISO_DATE.test(r.date)) problems.push(`${r.version}: date is not YYYY-MM-DD`);
+  if (!r.title || typeof r.title !== 'string') problems.push(`${r.version}: missing title`);
+  if (!Array.isArray(r.sections) || r.sections.length === 0) problems.push(`${r.version}: no sections`);
+  for (const section of r.sections ?? []) {
+    if (!CHANGE_KINDS.includes(section.kind)) problems.push(`${r.version}: unknown kind "${section.kind}"`);
+    if (!Array.isArray(section.items) || section.items.length === 0) {
+      problems.push(`${r.version}/${section.kind}: no items`);
+    }
+    for (const item of section.items ?? []) {
+      // A trailing period reads as a sentence fragment next to its siblings;
+      // the list renders as bullets, not prose.
+      if (item.endsWith('.')) problems.push(`${r.version}/${section.kind}: "${item}" ends with a period`);
+    }
+  }
+  return problems;
+});
+assert(malformed.length === 0, `every release is well-formed${malformed.length > 0 ? ` — ${malformed.join('; ')}` : ''}`);
+
+// Newest first, and no duplicate versions — releasesSince() relies on both.
+const misordered = RELEASES.slice(1)
+  .map((r, i) => (compareVersions(RELEASES[i].version, r.version) > 0
+    ? null
+    : `${RELEASES[i].version} is not newer than ${r.version}`))
+  .filter((m) => m !== null);
+assert(misordered.length === 0,
+  `releases are ordered newest first${misordered.length > 0 ? ` — ${misordered.join('; ')}` : ''}`);
+
+assertEqual(compareVersions('1.2.0', '1.10.0') < 0, true, 'version compare is numeric, not lexical');
+assertEqual(compareVersions('1.1.0', '1.1.0'), 0, 'equal versions compare equal');
+
+// A fresh install must not be shown a changelog; an upgrade must be.
+assertEqual(releasesSince(null).length, 0, 'a fresh install sees no releases');
+assertEqual(releasesSince(CURRENT_VERSION).length, 0, 'an up-to-date install sees no releases');
+assert(releasesSince('0.0.1').length === RELEASES.length, 'an ancient install sees every release');
+assertEqual(
+  releasesSince(RELEASES[RELEASES.length - 1].version).length,
+  RELEASES.length - 1,
+  'an install on the oldest release sees everything after it',
+);
+
+// The version shown in Settings → About must match what is published.
+const PKG_PATHS = ['package.json', 'packages/core/package.json', 'apps/dashboard/package.json'];
+const repoRoot = new URL('../../../', import.meta.url);
+const drifted = PKG_PATHS
+  .map((rel) => {
+    const version = JSON.parse(readFileSync(new URL(rel, repoRoot), 'utf8')).version;
+    return version === CURRENT_VERSION ? null : `${rel} is ${version}, expected ${CURRENT_VERSION}`;
+  })
+  .filter((m) => m !== null);
+assert(drifted.length === 0,
+  `package.json versions match CURRENT_VERSION${drifted.length > 0 ? ` — ${drifted.join('; ')}` : ''}`);
+
+
+// ---------------------------------------------------------------------------
+// System Monitor — metrics must resolve whatever HA's language is
+// ---------------------------------------------------------------------------
+
+console.log('\n── indexSystemMonitor / pickSystemMetrics ──');
+
+const smState = (entity_id, state) => ({
+  entity_id, state, attributes: {}, last_changed: '', last_updated: '',
+  context: { id: '', parent_id: null, user_id: null },
+});
+
+// A French HA: entity_ids are translated, translation_key/unique_id are not.
+const frRegistries = {
+  areas: [], devices: [],
+  entities: [
+    { entity_id: 'sensor.system_monitor_utilisation_du_processeur', platform: 'systemmonitor', translation_key: 'processor_use' },
+    { entity_id: 'sensor.system_monitor_utilisation_de_la_memoire', platform: 'systemmonitor', translation_key: 'memory_use_percent' },
+    { entity_id: 'sensor.system_monitor_utilisation_du_disque_ssl', platform: 'systemmonitor', unique_id: 'disk_use_percent_ssl', translation_key: 'disk_use_percent' },
+    { entity_id: 'sensor.system_monitor_utilisation_du_disque', platform: 'systemmonitor', unique_id: 'disk_use_percent', translation_key: 'disk_use_percent' },
+    // last_boot is named through device_class: uptime — no translation_key, so
+    // the unique_id is the only stable handle HA gives us here.
+    { entity_id: 'sensor.system_monitor_dernier_demarrage', platform: 'systemmonitor', translation_key: null, unique_id: 'last_boot' },
+    { entity_id: 'sensor.system_monitor_io_pressure_some_total', platform: 'systemmonitor', translation_key: 'io_pressure_some_total' },
+    { entity_id: 'sensor.temperature_salon', platform: 'zwave_js' },
+  ],
+};
+const frIndex = indexSystemMonitor(frRegistries);
+const frEntities = [
+  smState('sensor.system_monitor_utilisation_du_processeur', '22'),
+  smState('sensor.system_monitor_utilisation_de_la_memoire', '80.1'),
+  smState('sensor.system_monitor_utilisation_du_disque_ssl', '17.2'),
+  smState('sensor.system_monitor_utilisation_du_disque', '17.2'),
+  smState('sensor.temperature_salon', '21'),
+];
+
+assertEqual(frIndex.ids.size, 6, 'only systemmonitor entities are indexed');
+assertEqual(frIndex.ids.has('sensor.temperature_salon'), false, 'non-systemmonitor entities are not indexed');
+assertEqual(frIndex.familyOf('sensor.system_monitor_dernier_demarrage'), 'system', 'uptime is grouped as system');
+assertEqual(frIndex.familyOf('sensor.system_monitor_utilisation_du_processeur'), 'processor', 'CPU is grouped as processor');
+assertEqual(frIndex.keyOf('sensor.system_monitor_dernier_demarrage'), 'last_boot', 'a sensor without translation_key falls back to unique_id');
+assertEqual(frIndex.familyOf('sensor.system_monitor_io_pressure_some_total'), 'disk', 'I/O pressure is grouped with disk');
+
+const frMetrics = pickSystemMetrics(frEntities, frIndex);
+assertEqual(frMetrics.cpu?.entity_id, 'sensor.system_monitor_utilisation_du_processeur', 'CPU found on a French HA');
+assertEqual(frMetrics.memory?.entity_id, 'sensor.system_monitor_utilisation_de_la_memoire', 'RAM found on a French HA');
+assertEqual(frMetrics.disk?.entity_id, 'sensor.system_monitor_utilisation_du_disque', 'disk picks the root mount, not /ssl');
+
+// An English HA whose registry carries no keys must still work (old HA, demo data).
+const enIndex = indexSystemMonitor({
+  areas: [], devices: [],
+  entities: [
+    { entity_id: 'sensor.system_monitor_processor_use', platform: 'systemmonitor' },
+    { entity_id: 'sensor.system_monitor_memory_use_percent', platform: 'systemmonitor' },
+    { entity_id: 'sensor.system_monitor_disk_use_percent', platform: 'systemmonitor' },
+  ],
+});
+const enMetrics = pickSystemMetrics([
+  smState('sensor.system_monitor_processor_use', '10'),
+  smState('sensor.system_monitor_memory_use_percent', '40'),
+  smState('sensor.system_monitor_disk_use_percent', '50'),
+], enIndex);
+assertEqual(enMetrics.cpu?.entity_id, 'sensor.system_monitor_processor_use', 'CPU still found without registry keys');
+assertEqual(enMetrics.memory?.entity_id, 'sensor.system_monitor_memory_use_percent', 'RAM still found without registry keys');
+assertEqual(enMetrics.disk?.entity_id, 'sensor.system_monitor_disk_use_percent', 'disk still found without registry keys');

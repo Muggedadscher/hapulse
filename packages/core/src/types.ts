@@ -125,6 +125,9 @@ export interface EntityRegistryEntry {
   original_name: string | null;
   icon: string | null;
   platform?: string;
+  /** Integration-set, never translated — the stable way to identify a sensor. */
+  translation_key?: string | null;
+  unique_id?: string | null;
 }
 
 export interface Registries {

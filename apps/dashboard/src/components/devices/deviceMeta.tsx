@@ -7,9 +7,7 @@ import {
   Lightbulb, Plug, Fan, Thermometer, Blinds, Lock, Speaker, Video,
   Gauge, ShieldCheck, Sparkles, User, CloudSun, Sun, CircleDot, Cpu,
 } from 'lucide-react';
-import type { useT, TKey } from '../../i18n/useT';
-
-type TFunction = ReturnType<typeof useT>;
+import type { TKey, TFunction } from '../../i18n/useT';
 
 const DOMAIN_ICON: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
   light: Lightbulb,
