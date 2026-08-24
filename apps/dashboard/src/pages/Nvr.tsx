@@ -12,7 +12,7 @@
  * (mixed content). For those cases the "Open" button launches it in a new tab.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Cctv, ExternalLink, Pencil, Check } from 'lucide-react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { Card } from '../components/ui/Card';
@@ -29,6 +29,17 @@ function normalizeUrl(input: string): string {
   return withScheme.replace(/\/+$/, '');
 }
 
+/**
+ * Append embed + theme hints so an embed-aware NVR UI (e.g. Sentinel NVR) hides
+ * its own chrome and matches HAPulse's light/dark mode. Harmless for NVRs that
+ * ignore the params.
+ */
+function withEmbedParams(url: string, mode: string): string {
+  if (!url) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}embed=1&theme=${mode === 'dark' ? 'dark' : 'light'}`;
+}
+
 export function Nvr() {
   const t = useT();
   const scryptedUrl = useSettingsStore((s) => s.customization.scryptedUrl);
@@ -36,6 +47,16 @@ export function Nvr() {
 
   const [editing, setEditing] = useState(!scryptedUrl);
   const [draft, setDraft] = useState(scryptedUrl);
+
+  // Track HAPulse's resolved light/dark mode so the embedded NVR can match it.
+  const [mode, setMode] = useState(() => document.documentElement.getAttribute('data-mode') || 'light');
+  useEffect(() => {
+    const el = document.documentElement;
+    const obs = new MutationObserver(() => setMode(el.getAttribute('data-mode') || 'light'));
+    obs.observe(el, { attributes: true, attributeFilter: ['data-mode'] });
+    return () => obs.disconnect();
+  }, []);
+  const frameSrc = useMemo(() => withEmbedParams(scryptedUrl, mode), [scryptedUrl, mode]);
 
   const save = () => {
     const url = normalizeUrl(draft);
@@ -128,7 +149,7 @@ export function Nvr() {
         <div className="nvr-frame-wrap">
           <iframe
             className="nvr-frame"
-            src={scryptedUrl}
+            src={frameSrc}
             title={t('nvr.frameTitle')}
             allow="fullscreen; autoplay; camera; microphone; picture-in-picture"
             allowFullScreen
