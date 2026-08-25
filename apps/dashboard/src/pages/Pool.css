@@ -1,0 +1,581 @@
+/* [fork] Pool page — native pool-pump control, HAPulse "Daylight" styling.
+   Tokens only (see docs/DESIGN.md): no hex, no theme-specific assumptions. */
+
+.pool-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+/* ---- Shared card scaffolding ---- */
+
+.pool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+.pool-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pool-card__icon {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pool-card__title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Hero ---- */
+
+.pool-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+}
+
+.pool-hero__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pool-hero__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  transition: background 180ms ease-out, color 180ms ease-out;
+}
+
+.pool-hero--running .pool-hero__icon {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: var(--shadow-active);
+}
+
+.pool-hero__headings {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pool-hero__title {
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.pool-hero__status {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.pool-hero--running .pool-hero__status {
+  color: var(--accent);
+}
+
+.pool-hero__glance {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+  flex-wrap: wrap;
+}
+
+.pool-hero__glance-value {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pool-hero__glance-label {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* ---- Mode segmented control ---- */
+
+.pool-mode {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+  padding: 5px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-control);
+}
+
+.pool-mode__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 8px;
+  min-height: 44px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.pool-mode__btn:active { transform: scale(0.98); }
+
+.pool-mode__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pool-mode__btn--active {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow: var(--shadow-card);
+}
+
+.pool-mode__btn--active.pool-mode__btn--auto   { color: var(--accent); }
+.pool-mode__btn--active.pool-mode__btn--manual { color: var(--info); }
+.pool-mode__btn--active.pool-mode__btn--off    { color: var(--text-dim); }
+
+/* ---- Radial gauge ---- */
+
+.pool-gauge {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pool-gauge__track {
+  stroke: var(--bg-subtle);
+}
+
+.pool-gauge__value {
+  transition: stroke-dasharray 500ms ease-out, stroke 200ms ease-out;
+}
+
+.pool-gauge__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.pool-gauge__primary {
+  font-family: var(--font-data);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.pool-gauge__unit { font-size: 0.8125rem; }
+
+.pool-gauge__secondary {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* ---- Solar ---- */
+
+.pool-solar__body {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.pool-solar__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.pool-chip {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pool-chip--positive { background: var(--positive-soft); color: var(--positive); }
+.pool-chip--muted    { background: var(--bg-subtle);     color: var(--text-dim); }
+
+/* ---- Stepper ---- */
+
+.pool-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pool-stepper__label {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.pool-stepper__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pool-stepper__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 160ms ease-out, transform 160ms ease-out;
+}
+
+.pool-stepper__btn:hover:not(:disabled) { background: var(--bg-subtle); }
+.pool-stepper__btn:active:not(:disabled) { transform: scale(0.94); }
+.pool-stepper__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pool-stepper__value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 70px;
+  text-align: center;
+}
+
+.pool-stepper__unit { font-size: 0.8125rem; color: var(--text-faint); }
+
+/* ---- Manual timer ---- */
+
+.pool-manual__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.pool-manual__until {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+}
+
+.pool-manual__idle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0;
+  color: var(--text-faint);
+}
+
+.pool-manual__idle p { margin: 0; font-size: 0.9375rem; }
+
+/* ---- Data tiles ---- */
+
+.pool-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.pool-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+  position: relative;
+}
+
+.pool-tile__icon {
+  background: var(--bg-card);
+  color: var(--text-dim);
+}
+
+.pool-tile__value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pool-tile__label {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.pool-tile--clickable { cursor: pointer; transition: background 160ms ease-out, transform 160ms ease-out; }
+.pool-tile--clickable:hover { background: var(--bg-card-hover); }
+.pool-tile--clickable:active { transform: scale(0.99); }
+.pool-tile--clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- Toggle switch (schedule enable + admin) ---- */
+
+.pool-switch { position: relative; display: inline-flex; flex-shrink: 0; }
+
+.pool-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.pool-switch__track {
+  display: inline-flex;
+  align-items: center;
+  width: 46px;
+  height: 28px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-subtle);
+  transition: background 180ms ease-out;
+}
+
+.pool-switch__thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  transition: transform 180ms ease-out;
+}
+
+.pool-switch input:checked + .pool-switch__track { background: var(--accent); }
+.pool-switch input:checked + .pool-switch__track .pool-switch__thumb { transform: translateX(18px); }
+.pool-switch input:focus-visible + .pool-switch__track { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- Schedule ---- */
+
+.pool-schedule__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pool-schedule__body--disabled { opacity: 0.5; }
+
+.pool-schedule__next {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pool-schedule__next-label {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pool-schedule__next-value { display: flex; align-items: baseline; gap: 8px; }
+.pool-schedule__next-value strong { font-size: 1.25rem; color: var(--text); font-weight: 600; }
+.pool-schedule__next-action { font-size: 0.8125rem; color: var(--text-dim); }
+
+.pool-weekchips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.pool-weekchip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pool-weekchip--active { background: var(--accent-soft); color: var(--accent); }
+
+.pool-windows { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+.pool-window-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--info-soft);
+  color: var(--info);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.pool-schedule__perday { font-size: 0.8125rem; color: var(--text-faint); }
+
+.pool-schedule__empty { margin: 0; font-size: 0.9375rem; color: var(--text-faint); }
+
+.pool-schedule__edit { align-self: flex-start; gap: 7px; }
+
+/* ---- Schedule editor modal ---- */
+
+.pool-editor { display: flex; flex-direction: column; gap: 22px; }
+
+.pool-editor__section { display: flex; flex-direction: column; gap: 10px; }
+
+.pool-editor__section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+
+.pool-editor__label {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pool-editor__total { font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+
+.pool-editor__days { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.pool-daytoggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease-out, color 160ms ease-out, border-color 160ms ease-out;
+}
+
+.pool-daytoggle:active { transform: scale(0.97); }
+
+.pool-daytoggle--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: transparent;
+}
+
+.pool-editor__windows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+.pool-editor__window { display: flex; align-items: center; gap: 10px; }
+
+.pool-editor__window-dash { color: var(--text-faint); }
+
+.pool-time-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text);
+  font-family: var(--font-data);
+  font-size: 1rem;
+}
+
+.pool-time-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.pool-editor__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 160ms ease-out, color 160ms ease-out;
+}
+
+.pool-editor__remove:hover { background: var(--danger-soft); color: var(--danger); }
+
+.pool-editor__add { align-self: flex-start; gap: 7px; }
+
+.pool-editor__hint { margin: 0; font-size: 0.8125rem; color: var(--text-faint); }
+.pool-editor__hint--warn { color: var(--danger); }
+
+.pool-editor__footer { display: flex; justify-content: flex-end; gap: 10px; width: 100%; }
+
+/* ---- Admin ---- */
+
+.pool-admin__rows { display: flex; flex-direction: column; gap: 4px; }
+
+.pool-admin__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.pool-admin__row:last-child { border-bottom: none; }
+
+.pool-admin__row-label { font-size: 0.9375rem; color: var(--text); }
+
+.pool-admin__restart { align-self: flex-start; gap: 7px; }
+
+/* Motion off */
+@media (prefers-reduced-motion: reduce) {
+  .pool-gauge__value,
+  .pool-switch__thumb,
+  .pool-mode__btn,
+  .pool-tile--clickable { transition: none; }
+}

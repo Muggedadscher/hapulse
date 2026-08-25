@@ -25,6 +25,17 @@ sauber übernehmen können.
   `apps/dashboard/src/components/history/*`.
 - **NVR-Seite**: bettet die Scrypted-Web-UI per iframe ein. Route `/nvr`,
   `apps/dashboard/src/pages/Nvr.{tsx,css}`, Setting `customization.scryptedUrl`.
+- **Pool-Seite**: native Poolpumpen-Steuerung im HAPulse-Stil (ersetzt das
+  Lovelace-`dashboard-pool`). Route `/pool`, `apps/dashboard/src/pages/Pool.{tsx,css}`,
+  Karten unter `apps/dashboard/src/components/pool/*`, Entity-Wiring in
+  `poolConfig.ts`, Service-Facade `apps/dashboard/src/ha/pool.ts`. Enthält
+  Hero-Pumpenstatus + Modus-Umschalter, Solar-Gauge mit editierbarer Schwelle,
+  Manuell-Timer-Ring, Laufzeit/Verbrauch (History-Modal wiederverwendet), einen
+  **vollen Zeitplan-Editor** (schreibt via `scheduler.edit`) und eine
+  Admin-Sektion (nur HA-Admins). Scheduler-Konvertierung (Timeslots ↔
+  On-Fenster) liegt DOM-frei in `packages/core/src/pool.ts` (getestet in
+  `packages/core/scripts/smoke.mjs`). Home-Kurzkarte: `PoolSummaryCard`.
+  Blendet sich aus, wenn die Pool-Entities fehlen.
 
 ## Geplantes Feature — Trigger „mach es"
 

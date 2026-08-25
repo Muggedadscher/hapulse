@@ -63,6 +63,14 @@ import {
   compareVersions,
   indexSystemMonitor,
   pickSystemMetrics,
+  parseScheduleAttributes,
+  buildScheduleTimeslots,
+  normalizeWindows,
+  weekdaysToScheduler,
+  parseWeekdays,
+  minutesToHHMM,
+  hhmmToMinutes,
+  scheduleOnMinutes,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1058,3 +1066,84 @@ const enMetrics = pickSystemMetrics([
 assertEqual(enMetrics.cpu?.entity_id, 'sensor.system_monitor_processor_use', 'CPU still found without registry keys');
 assertEqual(enMetrics.memory?.entity_id, 'sensor.system_monitor_memory_use_percent', 'RAM still found without registry keys');
 assertEqual(enMetrics.disk?.entity_id, 'sensor.system_monitor_disk_use_percent', 'disk still found without registry keys');
+
+// ---------------------------------------------------------------------------
+// [fork] Pool pump — schedule model round-trip
+//
+// The Pool page edits "on" windows; what we write back must stay compatible
+// with the nielsfaber scheduler-component timeslot format (contiguous slots
+// partitioning the day, each with a turn_on/turn_off action). These assertions
+// pin the conversion in both directions.
+// ---------------------------------------------------------------------------
+
+console.log('\n── pool schedule ──');
+
+// Time helpers
+assertEqual(minutesToHHMM(0), '00:00', 'minutesToHHMM(0)');
+assertEqual(minutesToHHMM(1440), '00:00', 'minutesToHHMM(1440) folds to 00:00');
+assertEqual(minutesToHHMM(12 * 60 + 30), '12:30', 'minutesToHHMM(750)');
+assertEqual(hhmmToMinutes('12:00:00'), 720, 'hhmmToMinutes with seconds');
+assertEqual(hhmmToMinutes('nope'), null, 'hhmmToMinutes rejects garbage');
+
+// normalizeWindows merges adjacent + overlapping and drops empties
+const norm = normalizeWindows([
+  { start: 600, stop: 720 },   // 10:00–12:00
+  { start: 720, stop: 780 },   // 12:00–13:00 (adjacent → merge)
+  { start: 60, stop: 120 },    // 01:00–02:00 (out of order)
+  { start: 300, stop: 300 },   // empty → drop
+  { start: 700, stop: 760 },   // overlaps the first block → merge
+]);
+assertEqual(JSON.stringify(norm), JSON.stringify([{ start: 60, stop: 120 }, { start: 600, stop: 780 }]),
+  'normalizeWindows sorts, merges adjacency/overlap, drops empties');
+
+// weekdays compaction
+assertEqual(JSON.stringify(weekdaysToScheduler(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])), JSON.stringify(['daily']),
+  'all seven weekdays → ["daily"]');
+assertEqual(JSON.stringify(weekdaysToScheduler(['sat', 'mon'])), JSON.stringify(['mon', 'sat']),
+  'partial weekdays are Monday-first');
+assertEqual(JSON.stringify(parseWeekdays(['daily'])), JSON.stringify(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  'parseWeekdays expands "daily"');
+assertEqual(JSON.stringify(parseWeekdays(['weekend'])), JSON.stringify(['sat', 'sun']),
+  'parseWeekdays expands "weekend"');
+
+// Parse the user's real schedule attributes → one 12:00–14:00 on-window
+const realAttrs = {
+  weekdays: ['daily'],
+  timeslots: [
+    '00:00:00 - 10:00:00', '10:00:00 - 11:00:00', '11:00:00 - 12:00:00',
+    '12:00:00 - 14:00:00', '14:00:00 - 15:00:00', '15:00:00 - 16:00:00',
+    '16:00:00 - 00:00:00',
+  ],
+  actions: [
+    { service: 'input_boolean.turn_off' }, { service: 'input_boolean.turn_off' },
+    { service: 'input_boolean.turn_off' }, { service: 'input_boolean.turn_on' },
+    { service: 'input_boolean.turn_off' }, { service: 'input_boolean.turn_off' },
+    { service: 'input_boolean.turn_off' },
+  ],
+  repeat_type: 'repeat',
+};
+const model = parseScheduleAttributes(realAttrs);
+assertEqual(JSON.stringify(model.windows), JSON.stringify([{ start: 720, stop: 840 }]),
+  'parseScheduleAttributes extracts the single on-window (12:00–14:00)');
+assertEqual(model.repeatType, 'repeat', 'parseScheduleAttributes keeps repeat_type');
+assertEqual(model.weekdays.length, 7, 'parseScheduleAttributes expands daily to 7 weekdays');
+
+// Build timeslots back from that window → contiguous off/on/off covering the day
+const slots = buildScheduleTimeslots(model.windows, { entityId: 'input_boolean.poolpumpe_zeitplan' });
+assertEqual(slots.length, 3, 'buildScheduleTimeslots produces off/on/off around one window');
+assertEqual(JSON.stringify(slots.map((s) => [s.start, s.stop])),
+  JSON.stringify([['00:00', '12:00'], ['12:00', '14:00'], ['14:00', '00:00']]),
+  'timeslots partition the day and end at 00:00');
+assertEqual(slots[1].actions[0].service, 'input_boolean.turn_on', 'the on-window slot turns on');
+assertEqual(slots[1].actions[0].entity_id, 'input_boolean.poolpumpe_zeitplan', 'action carries the entity_id');
+assertEqual(slots[0].actions[0].service, 'input_boolean.turn_off', 'the leading slot turns off');
+
+// Edge cases: no windows → single all-day off slot; full day → single on slot
+assertEqual(JSON.stringify(buildScheduleTimeslots([], { entityId: 'x' }).map((s) => [s.start, s.stop, s.actions[0].service])),
+  JSON.stringify([['00:00', '00:00', 'input_boolean.turn_off']]),
+  'empty schedule → one all-day off slot');
+assertEqual(JSON.stringify(buildScheduleTimeslots([{ start: 0, stop: 1440 }], { entityId: 'x' }).map((s) => [s.start, s.stop, s.actions[0].service])),
+  JSON.stringify([['00:00', '00:00', 'input_boolean.turn_on']]),
+  'full-day window → one all-day on slot');
+
+assertEqual(scheduleOnMinutes(model.windows), 120, 'scheduleOnMinutes counts the on-window (2h = 120min)');

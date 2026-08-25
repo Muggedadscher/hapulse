@@ -23,6 +23,7 @@ import {
   Activity,
   ShieldCheck,
   Cctv,
+  Waves,
   Sparkles,
   Music,
   Settings,
@@ -70,6 +71,7 @@ type NavId =
   | 'energy'
   | 'security'
   | 'nvr'
+  | 'pool'
   | 'music'
   | 'scenes'
   | 'system'
@@ -99,6 +101,7 @@ const NAV_CONFIG: NavConfigItem[] = [
   { id: 'energy',      icon: <Activity   size={20} strokeWidth={1.75} />, labelKey: 'nav.energy',      to: '/energy' },
   { id: 'security',    icon: <ShieldCheck size={20} strokeWidth={1.75} />, labelKey: 'nav.security',   to: '/security' },
   { id: 'nvr',         icon: <Cctv       size={20} strokeWidth={1.75} />, labelKey: 'nav.nvr',         to: '/nvr' }, // [fork]
+  { id: 'pool',        icon: <Waves      size={20} strokeWidth={1.75} />, labelKey: 'nav.pool',        to: '/pool' }, // [fork]
   { id: 'music',       icon: <Music      size={20} strokeWidth={1.75} />, labelKey: 'nav.music',       to: '/music' },
   { id: 'scenes',      icon: <Sparkles   size={20} strokeWidth={1.75} />, labelKey: 'nav.scenes',      to: '/scenes' },
   { id: 'system',      icon: <Monitor    size={20} strokeWidth={1.75} />, labelKey: 'nav.system',      to: '/system' },
