@@ -988,5 +988,5 @@
   "home.chipmodals.pool.footerLink": "öppna poolsidan",
   "pool.schedule.editor.on": "På",
   "pool.schedule.editor.off": "Av",
-  "pool.schedule.editor.timelineHint": "Tryck på ett avsnitt av dygnet för att slå på eller av det."
+  "pool.schedule.editor.timelineHint": "Tryck på ett avsnitt för att slå på eller av det, eller dra i ett handtag för att flytta en tid."
 }

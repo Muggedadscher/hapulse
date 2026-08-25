@@ -988,5 +988,5 @@
   "home.chipmodals.pool.footerLink": "abrir página de piscina",
   "pool.schedule.editor.on": "Enc.",
   "pool.schedule.editor.off": "Apag.",
-  "pool.schedule.editor.timelineHint": "Toca un tramo del día para encenderlo o apagarlo."
+  "pool.schedule.editor.timelineHint": "Toca un tramo para encenderlo o apagarlo, o arrastra un tirador para mover una hora."
 }

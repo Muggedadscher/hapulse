@@ -988,5 +988,5 @@
   "home.chipmodals.pool.footerLink": "apri pagina piscina",
   "pool.schedule.editor.on": "Acceso",
   "pool.schedule.editor.off": "Spento",
-  "pool.schedule.editor.timelineHint": "Tocca una fascia della giornata per accenderla o spegnerla."
+  "pool.schedule.editor.timelineHint": "Tocca una fascia per accenderla o spegnerla, oppure trascina una maniglia per spostare un orario."
 }

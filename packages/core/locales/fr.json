@@ -988,5 +988,5 @@
   "home.chipmodals.pool.footerLink": "ouvrir la page piscine",
   "pool.schedule.editor.on": "Marche",
   "pool.schedule.editor.off": "Arrêt",
-  "pool.schedule.editor.timelineHint": "Touchez une plage de la journée pour l’activer ou la désactiver."
+  "pool.schedule.editor.timelineHint": "Touchez une plage pour l’activer ou la désactiver, ou faites glisser une poignée pour déplacer une heure."
 }

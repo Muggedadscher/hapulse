@@ -988,5 +988,5 @@
   "home.chipmodals.pool.footerLink": "poolseite öffnen",
   "pool.schedule.editor.on": "Ein",
   "pool.schedule.editor.off": "Aus",
-  "pool.schedule.editor.timelineHint": "Tippe auf einen Tagesabschnitt, um ihn ein- oder auszuschalten."
+  "pool.schedule.editor.timelineHint": "Tippe auf einen Abschnitt zum Ein-/Ausschalten, oder ziehe einen Griff, um eine Zeit zu verschieben."
 }
