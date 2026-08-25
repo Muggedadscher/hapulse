@@ -153,6 +153,7 @@ export {
   parseScheduleAttributes,
   buildScheduleTimeslots,
   scheduleOnMinutes,
+  tidyDaySlots,
   normalizeDaySlots,
   windowsToDaySlots,
   daySlotsToWindows,

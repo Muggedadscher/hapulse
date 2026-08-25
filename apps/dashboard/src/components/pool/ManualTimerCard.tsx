@@ -29,7 +29,7 @@ export function ManualTimerCard() {
   return (
     <Card className="pool-card pool-manual">
       <div className="pool-card__head">
-        <span className="pool-card__icon icon-chip" aria-hidden="true">
+        <span className="pool-card__icon" aria-hidden="true">
           <Timer size={16} strokeWidth={1.75} />
         </span>
         <h2 className="pool-card__title">{t('pool.manual.title')}</h2>

@@ -29,7 +29,16 @@
   gap: 10px;
 }
 
+/* Self-contained icon chip (does NOT depend on cards.css `.icon-chip`, which is
+   not in the Pool page bundle on a direct load). */
 .pool-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
   background: var(--accent-soft);
   color: var(--accent);
 }
@@ -340,6 +349,13 @@
 }
 
 .pool-tile__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
   background: var(--bg-card);
   color: var(--text-dim);
 }
