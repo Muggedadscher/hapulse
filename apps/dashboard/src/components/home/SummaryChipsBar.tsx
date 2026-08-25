@@ -14,7 +14,7 @@ import {
   DoorsModal,
   AlarmModal,
   MediaModal,
-  PoolModal,
+  PoolModal, // [fork]
 } from './chipmodals';
 import { useEntityMap, useCustomization } from '../../ha/hooks';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -97,7 +97,7 @@ export function SummaryChipsBar({ className, editMode = false }: SummaryChipsBar
           <DoorsModal open={openModal === 'doors'} onClose={closeModal} />
           <AlarmModal open={openModal === 'alarm'} onClose={closeModal} />
           <MediaModal open={openModal === 'media'} onClose={closeModal} />
-          <PoolModal open={openModal === 'pool'} onClose={closeModal} />
+          <PoolModal open={openModal === 'pool'} onClose={closeModal} /> {/* [fork] */}
         </>
       )}
     </div>

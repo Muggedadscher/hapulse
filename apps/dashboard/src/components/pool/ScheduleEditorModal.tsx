@@ -24,14 +24,8 @@ import {
 import type { PoolScheduleModel, PoolWeekday, PoolDaySlot } from '@hapulse/core';
 import { Modal } from '../ui/Modal';
 import { useT } from '../../i18n/useT';
-import type { TKey } from '../../i18n/useT';
 import { savePoolSchedule } from '../../ha/pool';
-import { POOL_ENTITIES } from './poolConfig';
-
-const WEEKDAY_KEYS: Record<PoolWeekday, TKey> = {
-  mon: 'pool.weekday.mon', tue: 'pool.weekday.tue', wed: 'pool.weekday.wed',
-  thu: 'pool.weekday.thu', fri: 'pool.weekday.fri', sat: 'pool.weekday.sat', sun: 'pool.weekday.sun',
-};
+import { POOL_ENTITIES, POOL_WEEKDAY_KEYS } from './poolConfig';
 
 interface ScheduleEditorModalProps {
   open: boolean;
@@ -205,7 +199,7 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
                 aria-pressed={weekdays.includes(d)}
                 onClick={() => toggleDay(d)}
               >
-                {t(WEEKDAY_KEYS[d])}
+                {t(POOL_WEEKDAY_KEYS[d])}
               </button>
             ))}
           </div>
