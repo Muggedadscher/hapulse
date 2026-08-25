@@ -1,8 +1,9 @@
 import React from 'react';
 import {
-  Users, Lightbulb, DoorOpen, ShieldAlert, Music2,
+  Users, Lightbulb, DoorOpen, ShieldAlert, Music2, Waves,
 } from 'lucide-react';
 import { EditBadge } from '../ui/EditBadge';
+import { POOL_ENTITIES, POOL_REQUIRED_ENTITIES } from '../pool/poolConfig'; // [fork]
 import { SortableGrid } from '../ui/SortableGrid';
 import { SortableItem } from '../ui/SortableItem';
 import { applyStoredOrder } from '../../lib/order';
@@ -12,7 +13,7 @@ import type { HassEntityMap } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './home.css';
 
-const ALL_CHIP_IDS = ['people', 'lights', 'doors', 'alarm', 'media'] as const;
+const ALL_CHIP_IDS = ['people', 'lights', 'doors', 'alarm', 'media', 'pool'] as const; // [fork] pool chip
 type ChipId = (typeof ALL_CHIP_IDS)[number];
 
 interface SummaryChipsProps {
@@ -80,6 +81,10 @@ export function SummaryChips({
     (e) => e.entity_id.startsWith('media_player.') && e.state === 'playing'
   ).length;
 
+  // [fork] Pool pump — chip shown only when the pool entities exist.
+  const poolPresent = POOL_REQUIRED_ENTITIES.every((id) => entities[id] != null);
+  const poolRunning = entities[POOL_ENTITIES.pump]?.state === 'on';
+
   type ChipDef = {
     id: ChipId;
     icon: React.ReactNode;
@@ -124,15 +129,23 @@ export function SummaryChips({
       label: mediaPlaying > 0 ? t('home.summaryChips.mediaCount', { count: mediaPlaying }) : t('home.summaryChips.nothingPlaying'),
       active: mediaPlaying > 0,
     },
+    // [fork] Pool chip — dimmed when the pump is off, like the media chip.
+    {
+      id: 'pool',
+      icon: <Waves size={16} strokeWidth={1.75} />,
+      label: poolRunning ? t('home.summaryChips.poolRunning') : t('home.summaryChips.poolIdle'),
+      active: poolRunning,
+    },
   ];
 
   // In edit mode: show all chip defs; otherwise filter to enabledChips,
   // and skip alarm chip when no alarm entity exists (matches original behavior).
   const visibleDefs = editMode
-    ? chipDefs
+    ? chipDefs.filter((c) => c.id !== 'pool' || poolPresent) // [fork] hide phantom pool chip without a pool
     : chipDefs.filter((c) => {
         if (!enabledChips.includes(c.id)) return false;
         if (c.id === 'alarm' && !alarm) return false;
+        if (c.id === 'pool' && !poolPresent) return false; // [fork]
         return true;
       });
 

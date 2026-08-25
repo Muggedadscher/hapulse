@@ -134,6 +134,23 @@ export interface CustomizationSettings {
    * (`1h`/`6h`/`24h`/`7d`/`30d`). Remembered across sensors, per user.
    */
   historyRange: string;
+  /**
+   * [fork] One-time marker: the pool summary chip has been added to `homeChips`.
+   * Lets the chip default ON for existing installs (whose stored homeChips
+   * predate it) exactly once, while still allowing it to be hidden afterwards.
+   */
+  poolChipMigrated: boolean;
+}
+
+/**
+ * [fork] Ensure the pool summary chip is enabled by default the first time an
+ * install with pre-existing homeChips is loaded. Idempotent via the marker, so
+ * a user who later hides the chip keeps it hidden.
+ */
+function migratePoolChip(cust: CustomizationSettings): CustomizationSettings {
+  if (cust.poolChipMigrated) return cust;
+  const homeChips = cust.homeChips.includes('pool') ? cust.homeChips : [...cust.homeChips, 'pool'];
+  return { ...cust, homeChips, poolChipMigrated: true };
 }
 
 interface SettingsState {
@@ -189,7 +206,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   hiddenRooms: [],
   hiddenEntities: [],
   entityOverrides: {},
-  homeChips: ['people', 'lights', 'doors', 'alarm', 'media'],
+  homeChips: ['people', 'lights', 'doors', 'alarm', 'media', 'pool'], // [fork] pool chip
   entityOrder: {},
   favorites: [],
   weatherEntity: '',
@@ -234,6 +251,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   mobileHiddenEnergySections: [],
   scryptedUrl: '', // [fork]
   historyRange: '24h', // [fork]
+  poolChipMigrated: false, // [fork]
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
@@ -356,12 +374,12 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: {
+            customization: migratePoolChip({
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
               entityOrder,
               favorites,
-            },
+            }),
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -405,10 +423,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenVersion,
           theme: migrated?.theme ?? current.theme,
           mode,
-          customization: {
+          customization: migratePoolChip({
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),
-          },
+          }),
         };
       },
     }

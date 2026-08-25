@@ -1,24 +1,27 @@
 /**
- * [fork] ScheduleEditorModal — edit the pump schedule inside HAPulse.
+ * [fork] ScheduleEditorModal — graphical pump-schedule editor.
  *
- * Rebuilds the essence of the scheduler-card for this one on/off schedule:
- * pick the weekdays, add/remove/adjust "run" time windows, and save. On save
- * the windows are normalized (overlaps merged) and converted to the
- * scheduler-component timeslot partition via `savePoolSchedule`, so what we
- * write stays compatible with the original card.
+ * The day is shown as a horizontal timeline of on/off segments. Tapping a
+ * segment flips it between "pump schedule on" (accent) and "off" (muted); the
+ * list below gives each switch point a precise time and an explicit on/off
+ * choice. On save the segments collapse back into the scheduler-component
+ * on-window model (`daySlotsToWindows` → `savePoolSchedule`), so the result
+ * stays compatible with the original scheduler-card.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CalendarClock, Plus, Trash2, Check } from 'lucide-react';
 import {
   minutesToHHMM,
   hhmmToMinutes,
-  normalizeWindows,
+  windowsToDaySlots,
+  daySlotsToWindows,
+  normalizeDaySlots,
   scheduleOnMinutes,
   POOL_WEEKDAYS,
   POOL_DAY_MINUTES,
 } from '@hapulse/core';
-import type { PoolScheduleModel, PoolWeekday, PoolWindow } from '@hapulse/core';
+import type { PoolScheduleModel, PoolWeekday, PoolDaySlot } from '@hapulse/core';
 import { Modal } from '../ui/Modal';
 import { useT } from '../../i18n/useT';
 import type { TKey } from '../../i18n/useT';
@@ -36,48 +39,66 @@ interface ScheduleEditorModalProps {
   initial: PoolScheduleModel;
 }
 
-/** Convert a time-input value to minutes; a stop of 00:00 means end-of-day. */
-function stopFromInput(value: string): number {
-  const min = hhmmToMinutes(value);
-  if (min == null) return POOL_DAY_MINUTES;
-  return min === 0 ? POOL_DAY_MINUTES : min;
-}
+const SNAP = 15; // minute granularity for added boundaries
 
 export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorModalProps) {
   const t = useT();
   const [weekdays, setWeekdays] = useState<PoolWeekday[]>(initial.weekdays);
-  const [windows, setWindows] = useState<PoolWindow[]>(initial.windows);
+  const [slots, setSlots] = useState<PoolDaySlot[]>(() => windowsToDaySlots(initial.windows));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
 
-  // Seed local state from the current schedule each time the editor opens.
+  // Reseed each time the editor opens.
   useEffect(() => {
     if (open) {
       setWeekdays(initial.weekdays);
-      setWindows(initial.windows.length > 0 ? initial.windows : []);
+      setSlots(windowsToDaySlots(initial.windows));
       setSaving(false);
       setError(false);
     }
   }, [open, initial]);
 
-  const toggleDay = (d: PoolWeekday) => {
+  const setSlotsNorm = (next: PoolDaySlot[]) => setSlots(normalizeDaySlots(next));
+
+  const toggleDay = (d: PoolWeekday) =>
     setWeekdays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
+
+  const slotEnd = (i: number) => (i + 1 < slots.length ? slots[i + 1]!.start : POOL_DAY_MINUTES);
+
+  const setAction = (i: number, action: 'on' | 'off') =>
+    setSlotsNorm(slots.map((s, idx) => (idx === i ? { ...s, action } : s)));
+
+  const setStart = (i: number, minutes: number) => {
+    if (i === 0) return; // first slot is anchored at 00:00
+    const lo = slots[i - 1]!.start + 1;
+    const hi = slotEnd(i) - 1;
+    const clamped = Math.max(lo, Math.min(hi, minutes));
+    setSlotsNorm(slots.map((s, idx) => (idx === i ? { ...s, start: clamped } : s)));
   };
 
-  const addWindow = () => {
-    setWindows((prev) => [...prev, { start: 8 * 60, stop: 10 * 60 }]);
+  const removeSlot = (i: number) => {
+    if (i === 0) return;
+    setSlotsNorm(slots.filter((_, idx) => idx !== i));
   };
 
-  const removeWindow = (idx: number) => {
-    setWindows((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const updateWindow = (idx: number, patch: Partial<PoolWindow>) => {
-    setWindows((prev) => prev.map((w, i) => (i === idx ? { ...w, ...patch } : w)));
+  const addBoundary = () => {
+    // Split the widest segment at its (snapped) midpoint, flipping its action.
+    let widest = 0;
+    let widestLen = -1;
+    for (let i = 0; i < slots.length; i++) {
+      const len = slotEnd(i) - slots[i]!.start;
+      if (len > widestLen) { widestLen = len; widest = i; }
+    }
+    const start = slots[widest]!.start;
+    const end = slotEnd(widest);
+    const mid = Math.round((start + end) / 2 / SNAP) * SNAP;
+    const safeMid = Math.max(start + SNAP, Math.min(end - SNAP, mid));
+    if (safeMid <= start || safeMid >= end) return; // too narrow to split
+    setSlotsNorm([...slots, { start: safeMid, action: slots[widest]!.action === 'on' ? 'off' : 'on' }]);
   };
 
   const noWeekdays = weekdays.length === 0;
-  const onHours = scheduleOnMinutes(windows) / 60;
+  const onHours = useMemo(() => scheduleOnMinutes(daySlotsToWindows(slots)) / 60, [slots]);
 
   const save = async () => {
     if (noWeekdays) return;
@@ -86,7 +107,7 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
     try {
       const model: PoolScheduleModel = {
         weekdays,
-        windows: normalizeWindows(windows),
+        windows: daySlotsToWindows(slots),
         repeatType: initial.repeatType,
       };
       await savePoolSchedule(POOL_ENTITIES.scheduleSwitch, POOL_ENTITIES.scheduleBoolean, model);
@@ -118,6 +139,7 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
       }
     >
       <div className="pool-editor">
+        {/* Weekdays */}
         <section className="pool-editor__section">
           <h3 className="pool-editor__label">{t('pool.schedule.editor.weekdays')}</h3>
           <div className="pool-editor__days">
@@ -136,53 +158,96 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
           {noWeekdays && <p className="pool-editor__hint pool-editor__hint--warn">{t('pool.schedule.editor.noWeekdays')}</p>}
         </section>
 
+        {/* Graphical timeline */}
         <section className="pool-editor__section">
           <div className="pool-editor__section-head">
             <h3 className="pool-editor__label">{t('pool.schedule.editor.windows')}</h3>
-            {windows.length > 0 && (
-              <span className="pool-editor__total data-font">{Math.round(onHours * 10) / 10} h</span>
-            )}
+            <span className="pool-editor__total data-font">{Math.round(onHours * 10) / 10} h</span>
           </div>
 
-          {windows.length === 0 ? (
-            <p className="pool-editor__hint">{t('pool.schedule.editor.empty')}</p>
-          ) : (
-            <ul className="pool-editor__windows">
-              {windows.map((w, i) => (
-                <li key={i} className="pool-editor__window">
+          <div className="pool-timeline" role="group" aria-label={t('pool.schedule.editor.windows')}>
+            <div className="pool-timeline__bar">
+              {slots.map((s, i) => {
+                const widthPct = ((slotEnd(i) - s.start) / POOL_DAY_MINUTES) * 100;
+                return (
+                  <button
+                    key={`${s.start}-${i}`}
+                    type="button"
+                    className={`pool-timeline__seg pool-timeline__seg--${s.action}`}
+                    style={{ width: `${widthPct}%` }}
+                    onClick={() => setAction(i, s.action === 'on' ? 'off' : 'on')}
+                    title={`${minutesToHHMM(s.start)}–${minutesToHHMM(slotEnd(i))} · ${s.action === 'on' ? t('pool.schedule.editor.on') : t('pool.schedule.editor.off')}`}
+                    aria-label={`${minutesToHHMM(s.start)}–${minutesToHHMM(slotEnd(i))} · ${s.action === 'on' ? t('pool.schedule.editor.on') : t('pool.schedule.editor.off')}`}
+                  >
+                    {widthPct > 14 && <span className="pool-timeline__seg-label">{minutesToHHMM(s.start)}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="pool-timeline__scale" aria-hidden="true">
+              {[0, 6, 12, 18, 24].map((h) => (
+                <span key={h} className="pool-timeline__tick">{String(h).padStart(2, '0')}</span>
+              ))}
+            </div>
+          </div>
+
+          <p className="pool-editor__hint">{t('pool.schedule.editor.timelineHint')}</p>
+
+          {/* Precise switch points */}
+          <ul className="pool-editor__slots">
+            {slots.map((s, i) => (
+              <li key={`row-${s.start}-${i}`} className="pool-editor__slot">
+                {i === 0 ? (
+                  <span className="pool-editor__slot-time pool-editor__slot-time--fixed data-font">00:00</span>
+                ) : (
                   <input
                     type="time"
-                    className="pool-time-input"
-                    value={minutesToHHMM(w.start)}
-                    onChange={(e) => updateWindow(i, { start: hhmmToMinutes(e.target.value) ?? w.start })}
-                    aria-label={`${t('pool.schedule.editor.windows')} ${i + 1} — ${t('pool.pump.running')}`}
+                    className="pool-time-input pool-editor__slot-time"
+                    value={minutesToHHMM(s.start)}
+                    onChange={(e) => setStart(i, hhmmToMinutes(e.target.value) ?? s.start)}
+                    aria-label={`${t('pool.schedule.editor.windows')} ${i + 1}`}
                   />
-                  <span className="pool-editor__window-dash" aria-hidden="true">–</span>
-                  <input
-                    type="time"
-                    className="pool-time-input"
-                    value={minutesToHHMM(w.stop)}
-                    onChange={(e) => updateWindow(i, { stop: stopFromInput(e.target.value) })}
-                    aria-label={`${t('pool.schedule.editor.windows')} ${i + 1} — ${t('pool.pump.idle')}`}
-                  />
+                )}
+
+                <div className="pool-slotaction" role="group">
+                  <button
+                    type="button"
+                    className={`pool-slotaction__btn${s.action === 'on' ? ' pool-slotaction__btn--on' : ''}`}
+                    aria-pressed={s.action === 'on'}
+                    onClick={() => setAction(i, 'on')}
+                  >
+                    {t('pool.schedule.editor.on')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`pool-slotaction__btn${s.action === 'off' ? ' pool-slotaction__btn--off' : ''}`}
+                    aria-pressed={s.action === 'off'}
+                    onClick={() => setAction(i, 'off')}
+                  >
+                    {t('pool.schedule.editor.off')}
+                  </button>
+                </div>
+
+                {i === 0 ? (
+                  <span className="pool-editor__slot-spacer" aria-hidden="true" />
+                ) : (
                   <button
                     type="button"
                     className="pool-editor__remove"
-                    onClick={() => removeWindow(i)}
+                    onClick={() => removeSlot(i)}
                     aria-label={t('pool.schedule.editor.remove')}
                   >
                     <Trash2 size={16} strokeWidth={1.75} />
                   </button>
-                </li>
-              ))}
-            </ul>
-          )}
+                )}
+              </li>
+            ))}
+          </ul>
 
-          <button type="button" className="btn btn--secondary pool-editor__add" onClick={addWindow}>
+          <button type="button" className="btn btn--secondary pool-editor__add" onClick={addBoundary}>
             <Plus size={16} strokeWidth={2} />
             {t('pool.schedule.editor.addWindow')}
           </button>
-          <p className="pool-editor__hint">{t('pool.schedule.editor.overlapHint')}</p>
           {error && <p className="pool-editor__hint pool-editor__hint--warn">{t('pool.schedule.editor.error')}</p>}
         </section>
       </div>

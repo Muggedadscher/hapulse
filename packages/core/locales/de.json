@@ -929,10 +929,6 @@
   "nvr.setup.hint": "Scrypted läuft meist auf Port 10443 (https) oder 11080 (http). Bleibt der Rahmen leer, blockiert dein NVR evtl. das Einbetten — nutze dann „Öffnen“, um es in einem neuen Tab zu starten.",
   "nvr.frameTitle": "Scrypted NVR",
   "nav.pool": "Pool",
-  "home.section.hide.pool": "Pool ausblenden",
-  "home.section.show.pool": "Pool einblenden",
-  "home.section.hideMobile.pool": "Pool auf Mobilgeräten ausblenden",
-  "home.section.showMobile.pool": "Pool auf Mobilgeräten einblenden",
   "pool.title": "Pool",
   "pool.notConfigured.title": "Kein Pool gefunden",
   "pool.notConfigured.desc": "Diese Seite steuert eine in Home Assistant eingerichtete Poolpumpe. Auf dieser Verbindung wurden keine der erwarteten Entitäten gefunden.",
@@ -969,7 +965,6 @@
   "pool.schedule.editor.addWindow": "Zeit hinzufügen",
   "pool.schedule.editor.remove": "Entfernen",
   "pool.schedule.editor.empty": "Noch keine Laufzeiten. Füge unten eine hinzu.",
-  "pool.schedule.editor.overlapHint": "Überlappende Zeiten werden automatisch zusammengefasst.",
   "pool.schedule.editor.save": "Zeitplan speichern",
   "pool.schedule.editor.saving": "Speichern…",
   "pool.schedule.editor.cancel": "Abbrechen",
@@ -987,5 +982,11 @@
   "pool.weekday.thu": "Do",
   "pool.weekday.fri": "Fr",
   "pool.weekday.sat": "Sa",
-  "pool.weekday.sun": "So"
+  "pool.weekday.sun": "So",
+  "home.summaryChips.poolRunning": "läuft",
+  "home.summaryChips.poolIdle": "pumpe aus",
+  "home.chipmodals.pool.footerLink": "poolseite öffnen",
+  "pool.schedule.editor.on": "Ein",
+  "pool.schedule.editor.off": "Aus",
+  "pool.schedule.editor.timelineHint": "Tippe auf einen Tagesabschnitt, um ihn ein- oder auszuschalten."
 }

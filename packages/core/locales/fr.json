@@ -929,10 +929,6 @@
   "nvr.setup.hint": "Scrypted tourne généralement sur le port 10443 (https) ou 11080 (http). Si le cadre reste vide, ton NVR bloque peut-être l'intégration — utilise « Ouvrir » pour l'ouvrir dans un nouvel onglet.",
   "nvr.frameTitle": "Scrypted NVR",
   "nav.pool": "Piscine",
-  "home.section.hide.pool": "masquer Piscine",
-  "home.section.show.pool": "afficher Piscine",
-  "home.section.hideMobile.pool": "masquer Piscine sur mobile",
-  "home.section.showMobile.pool": "afficher Piscine sur mobile",
   "pool.title": "Piscine",
   "pool.notConfigured.title": "Aucune piscine trouvée",
   "pool.notConfigured.desc": "Cette page pilote une pompe de piscine configurée dans Home Assistant. Aucune des entités attendues n’a été trouvée sur cette connexion.",
@@ -969,7 +965,6 @@
   "pool.schedule.editor.addWindow": "Ajouter une plage",
   "pool.schedule.editor.remove": "Supprimer",
   "pool.schedule.editor.empty": "Aucune plage pour l’instant. Ajoutez-en une ci-dessous.",
-  "pool.schedule.editor.overlapHint": "Les plages qui se chevauchent sont fusionnées automatiquement.",
   "pool.schedule.editor.save": "Enregistrer",
   "pool.schedule.editor.saving": "Enregistrement…",
   "pool.schedule.editor.cancel": "Annuler",
@@ -987,5 +982,11 @@
   "pool.weekday.thu": "Jeu",
   "pool.weekday.fri": "Ven",
   "pool.weekday.sat": "Sam",
-  "pool.weekday.sun": "Dim"
+  "pool.weekday.sun": "Dim",
+  "home.summaryChips.poolRunning": "en marche",
+  "home.summaryChips.poolIdle": "pompe arrêtée",
+  "home.chipmodals.pool.footerLink": "ouvrir la page piscine",
+  "pool.schedule.editor.on": "Marche",
+  "pool.schedule.editor.off": "Arrêt",
+  "pool.schedule.editor.timelineHint": "Touchez une plage de la journée pour l’activer ou la désactiver."
 }
