@@ -139,3 +139,27 @@ export type {
   EnergyWaterUsage,
   EnergySeriesPoint,
 } from './energy.js';
+
+// [fork] Pool pump — schedule model + timeslot conversion (DOM-free)
+export {
+  POOL_DAY_MINUTES,
+  POOL_WEEKDAYS,
+  hhmmToMinutes,
+  minutesToHHMM,
+  normalizeWindows,
+  sortWeekdays,
+  parseWeekdays,
+  weekdaysToScheduler,
+  parseScheduleAttributes,
+  buildScheduleTimeslots,
+  scheduleOnMinutes,
+} from './pool.js';
+export type {
+  PoolWeekday,
+  PoolWindow,
+  PoolScheduleModel,
+  PoolScheduleAction,
+  PoolTimeslot,
+  RawScheduleAttributes,
+  BuildTimeslotsOptions,
+} from './pool.js';
