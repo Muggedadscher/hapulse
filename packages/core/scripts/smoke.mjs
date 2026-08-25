@@ -75,6 +75,7 @@ import {
   daySlotsToWindows,
   normalizeDaySlots,
   tidyDaySlots,
+  dailyRuntimeBars,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1184,3 +1185,25 @@ assertEqual(JSON.stringify(tidyDaySlots([{ start: 0, action: 'off' }, { start: 7
 assertEqual(JSON.stringify(normalizeDaySlots([{ start: 0, action: 'off' }, { start: 720, action: 'off' }, { start: 840, action: 'off' }])),
   JSON.stringify([{ start: 0, action: 'off' }]),
   'normalizeDaySlots still merges them (for saving)');
+
+// dailyRuntimeBars — per-day max of a resetting "runtime today" sensor.
+const DAY = 86_400_000;
+const d0 = 1_000_000_000_000; // arbitrary midnight
+const bars = dailyRuntimeBars(
+  [
+    { t: d0 + 3_600_000, v: 1.0 },       // day 0
+    { t: d0 + 7_200_000, v: 2.5 },       // day 0 (peak)
+    { t: d0 + 5_000_000, v: 1.2 },       // day 0
+    { t: d0 + DAY + 3_600_000, v: 0.4 }, // day 1
+    { t: d0 + 2 * DAY + 60_000, v: 3.1 },// day 2 (last bucket → +inf)
+  ],
+  [d0, d0 + DAY, d0 + 2 * DAY],
+);
+assertEqual(bars.length, 3, 'dailyRuntimeBars returns one bar per day boundary');
+assertEqual(bars[0].value, 2.5, 'day 0 bar is the peak runtime (2.5)');
+assertEqual(bars[0].hasData, true, 'day 0 has data');
+assertEqual(bars[1].value, 0.4, 'day 1 bar is its peak (0.4)');
+assertEqual(bars[2].value, 3.1, 'last bucket runs to +inf and catches day 2');
+const empty = dailyRuntimeBars([], [d0, d0 + DAY]);
+assertEqual(empty[0].hasData, false, 'a day with no samples has hasData=false');
+assertEqual(empty[0].value, 0, 'a day with no samples has value 0');

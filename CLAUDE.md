@@ -32,15 +32,16 @@ sauber übernehmen können.
   Hero-Pumpenstatus + Modus-Umschalter, Solar-Gauge mit editierbarer Schwelle,
   Manuell-Timer-Ring, Laufzeit/Verbrauch (History-Modal wiederverwendet), einen
   **vollen Zeitplan-Editor** (grafische Tages-Timeline, schreibt via
-  `scheduler.edit`), einen **Verbrauchs-Chart** (`PoolChartCard`, nutzt
-  `HistoryChart`) und eine Admin-Sektion (nur HA-Admins). Scheduler- und
-  Slot-Konvertierung (Timeslots ↔ On-Fenster ↔ Tages-Slots) liegt DOM-frei in
-  `packages/core/src/pool.ts` (getestet in `packages/core/scripts/smoke.mjs`).
-  Die Seite ist ein **editierbares Sektions-Grid** wie Home/Energie/System
-  (Stift: umsortieren/ein-/ausblenden/Größe), Settings-Felder `poolSection*`.
-  Pool erscheint zudem als **Chip** in der Home-Summary-Leiste (`PoolModal`,
-  `home.summaryChips.pool*`). Alles blendet sich aus, wenn die Pool-Entities
-  fehlen.
+  `scheduler.edit`), einen **Laufzeit-Chart** (`PoolChartCard`: Balken der
+  Pumpen-Laufzeit pro Tag aus der State-History, Tages-Max) und eine
+  Admin-Sektion (nur HA-Admins). Scheduler-/Slot-Konvertierung (Timeslots ↔
+  On-Fenster ↔ Tages-Slots) und das Tages-Bucketing (`dailyRuntimeBars`) liegen
+  DOM-frei in `packages/core/src/pool.ts` (getestet in
+  `packages/core/scripts/smoke.mjs`). Die Seite ist ein **festes Layout**
+  (Hero + fließendes Karten-Grid, NICHT editierbar — bewusst schlank für
+  Upstream-Merges). Pool erscheint zudem als **Chip** in der Home-Summary-Leiste
+  (`PoolModal`, `home.summaryChips.pool*`). Alles blendet sich aus, wenn die
+  Pool-Entities fehlen.
 
 ## Geplantes Feature — Trigger „mach es"
 

@@ -157,6 +157,7 @@ export {
   normalizeDaySlots,
   windowsToDaySlots,
   daySlotsToWindows,
+  dailyRuntimeBars,
 } from './pool.js';
 export type {
   PoolWeekday,
@@ -167,4 +168,5 @@ export type {
   RawScheduleAttributes,
   BuildTimeslotsOptions,
   PoolDaySlot,
+  PoolDayRuntime,
 } from './pool.js';

@@ -1,92 +1,108 @@
 /**
- * [fork] PoolChartCard — the pump's power draw over time.
+ * [fork] PoolChartCard — pump runtime per day, as bars.
  *
- * Reuses the fork's sensor-history feature (useHistory + HistoryChart, plus the
- * history modal's range/plot/stats styling) to show the pool pump's estimated
- * power over a selectable window — a fuller "consumption over time" view than
- * the numeric tiles. Renders nothing meaningful without the power sensor (the
- * section is gated on its presence in Pool.tsx).
+ * `sensor…laufzeit_poolpumpe_heute` counts up through the day and resets at
+ * midnight, so the per-day maximum of its state history is that day's total
+ * runtime. We fetch the recorder history (self-contained — no long-term
+ * statistics infra) and bucket it via core's `dailyRuntimeBars`. Days older
+ * than the recorder retention are dropped (they'd otherwise read as 0).
  */
 
-import React, { useState } from 'react';
-import { LineChart } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BarChart3 } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { HISTORY_RANGES, formatEntityState } from '@hapulse/core';
-import type { HistoryRange } from '@hapulse/core';
+import { dailyRuntimeBars } from '@hapulse/core';
+import type { PoolDayRuntime } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
-import { useHistory } from '../../ha/useHistory';
-import { HistoryChart } from '../history/HistoryChart';
 import { useLocale, useT } from '../../i18n/useT';
+import { getHistory } from '../../ha/history';
 import { POOL_ENTITIES } from './poolConfig';
-import '../history/history.css';
 
-const DEFAULT_RANGE: HistoryRange = '24h';
+const DAYS = 14;
+const DAY_MS = 86_400_000;
+
+type LoadState = 'loading' | 'ready' | 'empty' | 'error';
 
 export function PoolChartCard() {
   const t = useT();
   const locale = useLocale();
-  const power = useEntity(POOL_ENTITIES.power);
-  const [range, setRange] = useState<HistoryRange>(DEFAULT_RANGE);
+  const runtime = useEntity(POOL_ENTITIES.runtimeToday);
+  const unit = (runtime?.attributes['unit_of_measurement'] as string | undefined) ?? 'h';
 
-  const { loading, error, empty, points, summary } = useHistory(
-    power ? POOL_ENTITIES.power : null,
-    range,
-  );
+  const [bars, setBars] = useState<PoolDayRuntime[]>([]);
+  const [state, setState] = useState<LoadState>('loading');
 
-  const unit = power?.attributes['unit_of_measurement'] as string | undefined;
-  const color = 'var(--accent)';
-  const hasChart = points.length > 0;
+  useEffect(() => {
+    let cancelled = false;
+    setState('loading');
+    (async () => {
+      try {
+        const midnight = new Date();
+        midnight.setHours(0, 0, 0, 0);
+        const dayStarts = Array.from({ length: DAYS }, (_, i) => midnight.getTime() - (DAYS - 1 - i) * DAY_MS);
+        const points = await getHistory(POOL_ENTITIES.runtimeToday, dayStarts[0]!, Date.now());
+        if (cancelled) return;
+        const all = dailyRuntimeBars(points, dayStarts);
+        // Drop leading days outside the recorder's retention window.
+        const firstWithData = all.findIndex((b) => b.hasData);
+        const trimmed = firstWithData >= 0 ? all.slice(firstWithData) : [];
+        setBars(trimmed);
+        setState(trimmed.length === 0 ? 'empty' : 'ready');
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('[HAPulse] pool runtime chart failed:', err);
+          setState('error');
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+    // Re-fetch when the sensor's day rolls over (its state resets to ~0 at midnight).
+  }, [runtime?.entity_id, runtime?.attributes['last_reset']]);
+
+  const maxVal = Math.max(0.001, ...bars.map((b) => b.value));
+  const totalH = Math.round(bars.reduce((s, b) => s + b.value, 0) * 10) / 10;
+  const fmtDay = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit' });
+  const fmtWeekday = new Intl.DateTimeFormat(locale, { weekday: 'short' });
 
   return (
     <Card className="pool-card pool-chart">
       <div className="pool-card__head">
         <span className="pool-card__icon" aria-hidden="true">
-          <LineChart size={16} strokeWidth={1.75} />
+          <BarChart3 size={16} strokeWidth={1.75} />
         </span>
         <h2 className="pool-card__title">{t('pool.chart.title')}</h2>
-        {power && <span className="pool-chart__current data-font" style={{ color }}>{formatEntityState(power, locale)}</span>}
+        {state === 'ready' && <span className="pool-chart__total data-font">Σ {totalH} {unit}</span>}
       </div>
 
-      <div className="history__ranges" role="group" aria-label={t('pool.chart.title')}>
-        {HISTORY_RANGES.map((r) => (
-          <button
-            key={r.id}
-            type="button"
-            className={`history__range-btn${range === r.id ? ' history__range-btn--active' : ''}`}
-            onClick={() => setRange(r.id)}
-            aria-pressed={range === r.id}
-          >
-            {r.label}
-          </button>
-        ))}
+      <div className="pool-chart__body">
+        {state === 'loading' && <p className="pool-chart__msg">{t('common.loading')}</p>}
+        {state === 'error' && <p className="pool-chart__msg">{t('history.error')}</p>}
+        {state === 'empty' && <p className="pool-chart__msg">{t('history.empty')}</p>}
+        {state === 'ready' && (
+          <div className="pool-bars">
+            {bars.map((b, i) => {
+              const isToday = i === bars.length - 1;
+              const pct = Math.round((b.value / maxVal) * 100);
+              const d = new Date(b.start);
+              return (
+                <div
+                  key={b.start}
+                  className="pool-bar"
+                  title={`${fmtDay.format(d)}: ${Math.round(b.value * 10) / 10} ${unit}`}
+                >
+                  <div className="pool-bar__track">
+                    <div
+                      className={`pool-bar__fill${isToday ? ' pool-bar__fill--today' : ''}`}
+                      style={{ height: `${Math.max(pct, b.value > 0 ? 4 : 0)}%` }}
+                    />
+                  </div>
+                  <span className="pool-bar__label">{fmtWeekday.format(d).slice(0, 2)}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-
-      <div className={`history__plot${loading && hasChart ? ' history__plot--loading' : ''}`}>
-        {hasChart && <HistoryChart points={points} color={color} unit={unit} />}
-        {!hasChart && loading && <div className="history__msg">{t('common.loading')}</div>}
-        {!hasChart && !loading && error && <div className="history__msg">{t('history.error')}</div>}
-        {!hasChart && !loading && !error && empty && <div className="history__msg">{t('history.empty')}</div>}
-      </div>
-
-      {summary && hasChart && (
-        <div className="history__stats">
-          <Stat label={t('history.stat.min')} value={summary.min} unit={unit} />
-          <Stat label={t('history.stat.avg')} value={summary.avg} unit={unit} />
-          <Stat label={t('history.stat.max')} value={summary.max} unit={unit} />
-        </div>
-      )}
     </Card>
-  );
-}
-
-function Stat({ label, value, unit }: { label: string; value: number; unit?: string | undefined }) {
-  return (
-    <div className="history-stat">
-      <span className="history-stat__label">{label}</span>
-      <span className="history-stat__value">
-        {Math.round(value * 10) / 10}
-        {unit ? <span className="history-stat__unit"> {unit}</span> : null}
-      </span>
-    </div>
   );
 }
