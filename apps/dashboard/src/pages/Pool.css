@@ -30,14 +30,15 @@
 }
 
 /* Self-contained icon chip (does NOT depend on cards.css `.icon-chip`, which is
-   not in the Pool page bundle on a direct load). */
+   not in the Pool page bundle on a direct load). Sized to match the overview
+   card-header chips (`.{card}-card__icon-chip`: 30×30, radius 9). */
 .pool-card__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   flex-shrink: 0;
   background: var(--accent-soft);
   color: var(--accent);
@@ -348,13 +349,15 @@
   position: relative;
 }
 
+/* Sized to match the Energy page's stat-tile chips (`.energy-stat__icon`:
+   34×34, radius 9) — the pool data tiles are the same kind of stat tile. */
 .pool-tile__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   flex-shrink: 0;
   background: var(--bg-card);
   color: var(--text-dim);
