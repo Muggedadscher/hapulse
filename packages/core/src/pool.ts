@@ -91,7 +91,7 @@ export function hhmmToMinutes(value: string): number | null {
   if (!m) return null;
   const h = Number(m[1]);
   const min = Number(m[2]);
-  if (h > 24 || min > 59) return null;
+  if (h > 23 || min > 59) return null;
   return h * 60 + min;
 }
 

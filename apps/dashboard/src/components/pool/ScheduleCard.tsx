@@ -15,18 +15,11 @@ import {
   scheduleOnMinutes,
   POOL_WEEKDAYS,
 } from '@hapulse/core';
-import type { PoolWeekday } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
-import type { TKey } from '../../i18n/useT';
 import { setSwitch } from '../../ha/pool';
-import { POOL_ENTITIES } from './poolConfig';
+import { POOL_ENTITIES, POOL_WEEKDAY_KEYS } from './poolConfig';
 import { ScheduleEditorModal } from './ScheduleEditorModal';
-
-const WEEKDAY_KEYS: Record<PoolWeekday, TKey> = {
-  mon: 'pool.weekday.mon', tue: 'pool.weekday.tue', wed: 'pool.weekday.wed',
-  thu: 'pool.weekday.thu', fri: 'pool.weekday.fri', sat: 'pool.weekday.sat', sun: 'pool.weekday.sun',
-};
 
 export function ScheduleCard() {
   const t = useT();
@@ -55,8 +48,6 @@ export function ScheduleCard() {
     const turnsOn = typeof service === 'string' ? /turn_on$/.test(service) : null;
     return { time, turnsOn };
   }, [scheduleSwitch?.attributes, enabled, locale]);
-
-  const activeDays = POOL_WEEKDAYS.filter((d) => model.weekdays.includes(d));
 
   return (
     <Card className="pool-card pool-schedule">
@@ -95,9 +86,9 @@ export function ScheduleCard() {
           {POOL_WEEKDAYS.map((d) => (
             <span
               key={d}
-              className={`pool-weekchip${activeDays.includes(d) ? ' pool-weekchip--active' : ''}`}
+              className={`pool-weekchip${model.weekdays.includes(d) ? ' pool-weekchip--active' : ''}`}
             >
-              {t(WEEKDAY_KEYS[d])}
+              {t(POOL_WEEKDAY_KEYS[d])}
             </span>
           ))}
         </div>

@@ -1088,6 +1088,8 @@ assertEqual(minutesToHHMM(1440), '00:00', 'minutesToHHMM(1440) folds to 00:00');
 assertEqual(minutesToHHMM(12 * 60 + 30), '12:30', 'minutesToHHMM(750)');
 assertEqual(hhmmToMinutes('12:00:00'), 720, 'hhmmToMinutes with seconds');
 assertEqual(hhmmToMinutes('nope'), null, 'hhmmToMinutes rejects garbage');
+assertEqual(hhmmToMinutes('24:30'), null, 'hhmmToMinutes rejects hour 24 (out of clock range)');
+assertEqual(hhmmToMinutes('23:59'), 1439, 'hhmmToMinutes accepts the last valid minute');
 
 // normalizeWindows merges adjacent + overlapping and drops empties
 const norm = normalizeWindows([

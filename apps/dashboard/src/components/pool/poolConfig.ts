@@ -10,6 +10,15 @@
  * so shipping these defaults is harmless for installs without a pool.
  */
 
+import type { PoolWeekday } from '@hapulse/core';
+import type { TKey } from '../../i18n/useT';
+
+/** Weekday → i18n key, shared by the schedule card and its editor. */
+export const POOL_WEEKDAY_KEYS: Record<PoolWeekday, TKey> = {
+  mon: 'pool.weekday.mon', tue: 'pool.weekday.tue', wed: 'pool.weekday.wed',
+  thu: 'pool.weekday.thu', fri: 'pool.weekday.fri', sat: 'pool.weekday.sat', sun: 'pool.weekday.sun',
+};
+
 export const POOL_ENTITIES = {
   /** input_select with the operating mode (off / automatic / manual). */
   mode: 'input_select.modus_poolpumpe',
@@ -54,11 +63,15 @@ export type PoolModeTone = 'off' | 'auto' | 'manual' | 'neutral';
  * control can show the right icon/colour without hard-coding the German option
  * strings. Falls back to `neutral` for anything unrecognised — the option label
  * still comes straight from Home Assistant.
+ *
+ * Auto/manual are matched first (more specific), then "off": the short off
+ * tokens (`aus`/`off`/`av`) are word-boundary-anchored so a label that merely
+ * *contains* them (e.g. "Pause") isn't mis-classified as off.
  */
 export function poolModeTone(option: string): PoolModeTone {
   const o = option.toLowerCase();
-  if (/(aus|off|ausgeschal|apagad|arrêt|spent|deslig|\bav\b)/.test(o)) return 'off';
   if (/(auto|automat)/.test(o)) return 'auto';
   if (/(manu|hand)/.test(o)) return 'manual';
+  if (/\b(aus|off|av)\b|ausgeschal|apagad|arret|arrêt|spent|deslig/.test(o)) return 'off';
   return 'neutral';
 }
