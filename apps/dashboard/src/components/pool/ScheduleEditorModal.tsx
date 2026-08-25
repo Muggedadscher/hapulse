@@ -9,7 +9,7 @@
  * stays compatible with the original scheduler-card.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarClock, Plus, Trash2, Check } from 'lucide-react';
 import {
   minutesToHHMM,
@@ -39,7 +39,9 @@ interface ScheduleEditorModalProps {
   initial: PoolScheduleModel;
 }
 
-const SNAP = 15; // minute granularity for added boundaries
+const SNAP = 15;      // minute granularity for added boundaries
+const SNAP_DRAG = 5;  // finer snap while dragging a boundary
+const MIN_GAP = 5;    // keep segments at least this many minutes wide
 
 export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorModalProps) {
   const t = useT();
@@ -47,6 +49,8 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
   const [slots, setSlots] = useState<PoolDaySlot[]>(() => windowsToDaySlots(initial.windows));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
+  const [dragging, setDragging] = useState<number | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
 
   // Reseed each time the editor opens.
   useEffect(() => {
@@ -79,6 +83,51 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
   const removeSlot = (i: number) => {
     if (i === 0) return;
     setSlotsNorm(slots.filter((_, idx) => idx !== i));
+  };
+
+  /**
+   * Move boundary `j` (the start of slot j, j>0) to `rawMinute`, clamped between
+   * its neighbours. Uses a functional update so a touch drag stays correct as
+   * state changes, and does NOT normalize mid-drag (that could merge/reindex
+   * slots and drop the handle being dragged).
+   */
+  const moveBoundary = (j: number, rawMinute: number) => {
+    setSlots((prev) => {
+      if (j <= 0 || j >= prev.length) return prev;
+      const lo = prev[j - 1]!.start + MIN_GAP;
+      const hi = (j + 1 < prev.length ? prev[j + 1]!.start : POOL_DAY_MINUTES) - MIN_GAP;
+      const snapped = Math.round(rawMinute / SNAP_DRAG) * SNAP_DRAG;
+      const clamped = Math.max(lo, Math.min(hi, snapped));
+      if (clamped === prev[j]!.start) return prev;
+      return prev.map((s, idx) => (idx === j ? { ...s, start: clamped } : s));
+    });
+  };
+
+  const minuteFromClientX = (clientX: number): number => {
+    const bar = barRef.current;
+    if (!bar) return 0;
+    const rect = bar.getBoundingClientRect();
+    const frac = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    return frac * POOL_DAY_MINUTES;
+  };
+
+  const onHandleDown = (e: React.PointerEvent, j: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.target as Element).setPointerCapture(e.pointerId);
+    setDragging(j);
+  };
+
+  const onHandleMove = (e: React.PointerEvent, j: number) => {
+    if (dragging !== j) return;
+    moveBoundary(j, minuteFromClientX(e.clientX));
+  };
+
+  const onHandleUp = (e: React.PointerEvent) => {
+    if (dragging == null) return;
+    try { (e.target as Element).releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+    setDragging(null);
+    setSlots((prev) => normalizeDaySlots(prev));
   };
 
   const addBoundary = () => {
@@ -166,7 +215,7 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
           </div>
 
           <div className="pool-timeline" role="group" aria-label={t('pool.schedule.editor.windows')}>
-            <div className="pool-timeline__bar">
+            <div className={`pool-timeline__bar${dragging != null ? ' pool-timeline__bar--dragging' : ''}`} ref={barRef}>
               {slots.map((s, i) => {
                 const widthPct = ((slotEnd(i) - s.start) / POOL_DAY_MINUTES) * 100;
                 return (
@@ -183,6 +232,35 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
                   </button>
                 );
               })}
+
+              {/* Draggable boundary handles (touch-friendly) — one per internal boundary. */}
+              {slots.map((s, i) =>
+                i === 0 ? null : (
+                  <div
+                    key={`handle-${i}`}
+                    className={`pool-timeline__handle${dragging === i ? ' pool-timeline__handle--active' : ''}`}
+                    style={{ left: `${(s.start / POOL_DAY_MINUTES) * 100}%` }}
+                    role="slider"
+                    tabIndex={0}
+                    aria-label={`${t('pool.schedule.editor.windows')} ${i + 1}`}
+                    aria-valuemin={0}
+                    aria-valuemax={24 * 60}
+                    aria-valuenow={s.start}
+                    aria-valuetext={minutesToHHMM(s.start)}
+                    onPointerDown={(e) => onHandleDown(e, i)}
+                    onPointerMove={(e) => onHandleMove(e, i)}
+                    onPointerUp={onHandleUp}
+                    onPointerCancel={onHandleUp}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowLeft') { e.preventDefault(); moveBoundary(i, s.start - SNAP_DRAG); setSlots((p) => normalizeDaySlots(p)); }
+                      else if (e.key === 'ArrowRight') { e.preventDefault(); moveBoundary(i, s.start + SNAP_DRAG); setSlots((p) => normalizeDaySlots(p)); }
+                    }}
+                  >
+                    <span className="pool-timeline__handle-grip" aria-hidden="true" />
+                    <span className="pool-timeline__handle-time data-font">{minutesToHHMM(s.start)}</span>
+                  </div>
+                )
+              )}
             </div>
             <div className="pool-timeline__scale" aria-hidden="true">
               {[0, 6, 12, 18, 24].map((h) => (

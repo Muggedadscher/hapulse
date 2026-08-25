@@ -989,5 +989,5 @@
   "home.chipmodals.pool.footerLink": "open pool page",
   "pool.schedule.editor.on": "On",
   "pool.schedule.editor.off": "Off",
-  "pool.schedule.editor.timelineHint": "Tap a section of the day to switch it on or off."
+  "pool.schedule.editor.timelineHint": "Tap a section to switch it on or off, or drag a handle to move a time."
 }

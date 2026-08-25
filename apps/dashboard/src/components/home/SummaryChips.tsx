@@ -152,10 +152,18 @@ export function SummaryChips({
   if (visibleDefs.length === 0) return null;
 
   // Apply the stored chip order (in both edit and normal mode).
-  const orderedDefs = applyStoredOrder(
-    visibleDefs.map((d) => d.id),
-    order
-  )
+  const orderedIds = applyStoredOrder(visibleDefs.map((d) => d.id), order);
+
+  // [fork] Default placement for a pool chip the user hasn't explicitly ordered:
+  // just before the media chip. Once the user drags chips (so `order` includes
+  // 'pool'), their arrangement is respected instead.
+  if (orderedIds.includes('pool') && orderedIds.includes('media') && !order?.includes('pool')) {
+    const withoutPool = orderedIds.filter((id) => id !== 'pool');
+    withoutPool.splice(withoutPool.indexOf('media'), 0, 'pool');
+    orderedIds.splice(0, orderedIds.length, ...withoutPool);
+  }
+
+  const orderedDefs = orderedIds
     .map((id) => visibleDefs.find((d) => d.id === id))
     .filter((d): d is ChipDef => d != null);
 

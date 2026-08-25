@@ -988,5 +988,5 @@
   "home.chipmodals.pool.footerLink": "abrir página da piscina",
   "pool.schedule.editor.on": "Ligado",
   "pool.schedule.editor.off": "Deslig.",
-  "pool.schedule.editor.timelineHint": "Toca num troço do dia para o ligar ou desligar."
+  "pool.schedule.editor.timelineHint": "Toca num troço para o ligar ou desligar, ou arrasta uma pega para mover uma hora."
 }
