@@ -31,11 +31,16 @@ sauber übernehmen können.
   `poolConfig.ts`, Service-Facade `apps/dashboard/src/ha/pool.ts`. Enthält
   Hero-Pumpenstatus + Modus-Umschalter, Solar-Gauge mit editierbarer Schwelle,
   Manuell-Timer-Ring, Laufzeit/Verbrauch (History-Modal wiederverwendet), einen
-  **vollen Zeitplan-Editor** (schreibt via `scheduler.edit`) und eine
-  Admin-Sektion (nur HA-Admins). Scheduler-Konvertierung (Timeslots ↔
-  On-Fenster) liegt DOM-frei in `packages/core/src/pool.ts` (getestet in
-  `packages/core/scripts/smoke.mjs`). Home-Kurzkarte: `PoolSummaryCard`.
-  Blendet sich aus, wenn die Pool-Entities fehlen.
+  **vollen Zeitplan-Editor** (grafische Tages-Timeline, schreibt via
+  `scheduler.edit`), einen **Verbrauchs-Chart** (`PoolChartCard`, nutzt
+  `HistoryChart`) und eine Admin-Sektion (nur HA-Admins). Scheduler- und
+  Slot-Konvertierung (Timeslots ↔ On-Fenster ↔ Tages-Slots) liegt DOM-frei in
+  `packages/core/src/pool.ts` (getestet in `packages/core/scripts/smoke.mjs`).
+  Die Seite ist ein **editierbares Sektions-Grid** wie Home/Energie/System
+  (Stift: umsortieren/ein-/ausblenden/Größe), Settings-Felder `poolSection*`.
+  Pool erscheint zudem als **Chip** in der Home-Summary-Leiste (`PoolModal`,
+  `home.summaryChips.pool*`). Alles blendet sich aus, wenn die Pool-Entities
+  fehlen.
 
 ## Geplantes Feature — Trigger „mach es"
 

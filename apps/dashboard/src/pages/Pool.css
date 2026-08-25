@@ -1,18 +1,11 @@
 /* [fork] Pool page — native pool-pump control, HAPulse "Daylight" styling.
    Tokens only (see docs/DESIGN.md): no hex, no theme-specific assumptions. */
 
-.pool-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+/* The Pool page uses the shared `.overview-grid` (see Page.css) so it supports
+   the same edit-mode reorder / hide / resize as Home, Energy, System, … */
 
-.pool-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  align-items: start;
-}
+/* Cards fill their grid cell so equal-span cards line up. */
+.overview-grid__cell > .pool-card { height: 100%; }
 
 /* ---- Shared card scaffolding ---- */
 
@@ -52,6 +45,12 @@
   margin: 0;
   flex: 1;
   min-width: 0;
+}
+
+/* Chart card — current value shown top-right of the head. */
+.pool-chart__current {
+  font-size: 1.0625rem;
+  font-weight: 600;
 }
 
 /* ---- Hero ---- */
