@@ -140,6 +140,16 @@ export interface CustomizationSettings {
    * predate it) exactly once, while still allowing it to be hidden afterwards.
    */
   poolChipMigrated: boolean;
+  /** [fork] Ordered Pool page section ids. */
+  poolSectionOrder: string[];
+  /** [fork] Pool section ids that are hidden. */
+  hiddenPoolSections: string[];
+  /** [fork] Pool section ids hidden on mobile only. */
+  mobileHiddenPoolSections: string[];
+  /** [fork] Per-section column span overrides on the pool grid (1–4). */
+  poolSectionSpans: Record<string, number>;
+  /** [fork] Per-section max-height level on the pool grid (0 = no cap, 1–4). */
+  poolSectionHeights: Record<string, number>;
 }
 
 /**
@@ -252,6 +262,11 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   scryptedUrl: '', // [fork]
   historyRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
+  poolSectionOrder: [], // [fork]
+  hiddenPoolSections: [], // [fork]
+  mobileHiddenPoolSections: [], // [fork]
+  poolSectionSpans: {}, // [fork]
+  poolSectionHeights: {}, // [fork]
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
