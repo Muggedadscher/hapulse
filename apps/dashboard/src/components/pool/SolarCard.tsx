@@ -43,7 +43,7 @@ export function SolarCard() {
   return (
     <Card className="pool-card pool-solar">
       <div className="pool-card__head">
-        <span className="pool-card__icon icon-chip" aria-hidden="true">
+        <span className="pool-card__icon" aria-hidden="true">
           <Sun size={16} strokeWidth={1.75} />
         </span>
         <h2 className="pool-card__title">{t('pool.solar.title')}</h2>

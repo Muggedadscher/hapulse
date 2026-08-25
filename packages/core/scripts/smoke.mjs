@@ -74,6 +74,7 @@ import {
   windowsToDaySlots,
   daySlotsToWindows,
   normalizeDaySlots,
+  tidyDaySlots,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1172,3 +1173,12 @@ assertEqual(JSON.stringify(normalizeDaySlots([{ start: 600, action: 'on' }, { st
 assertEqual(JSON.stringify(daySlotsToWindows([{ start: 0, action: 'on' }, { start: 480, action: 'off' }, { start: 1020, action: 'on' }])),
   JSON.stringify([{ start: 0, stop: 480 }, { start: 1020, stop: 1440 }]),
   'two on-segments (morning + evening) → two windows');
+
+// tidyDaySlots keeps same-action neighbours (the editor relies on this so a
+// segment toggled off stays visible instead of merging away).
+assertEqual(JSON.stringify(tidyDaySlots([{ start: 0, action: 'off' }, { start: 720, action: 'off' }, { start: 840, action: 'off' }])),
+  JSON.stringify([{ start: 0, action: 'off' }, { start: 720, action: 'off' }, { start: 840, action: 'off' }]),
+  'tidyDaySlots preserves distinct same-action segments (no merge)');
+assertEqual(JSON.stringify(normalizeDaySlots([{ start: 0, action: 'off' }, { start: 720, action: 'off' }, { start: 840, action: 'off' }])),
+  JSON.stringify([{ start: 0, action: 'off' }]),
+  'normalizeDaySlots still merges them (for saving)');

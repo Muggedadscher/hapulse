@@ -33,7 +33,7 @@ function DataTile({ entity, label, icon, color }: DataTileProps) {
 
   const inner = (
     <>
-      <span className="pool-tile__icon icon-chip" aria-hidden="true">{icon}</span>
+      <span className="pool-tile__icon" aria-hidden="true">{icon}</span>
       <span className="pool-tile__value data-font">{value}</span>
       <span className="pool-tile__label">{label}</span>
     </>
@@ -73,7 +73,7 @@ export function PoolDataCard() {
   return (
     <Card className="pool-card pool-data">
       <div className="pool-card__head">
-        <span className="pool-card__icon icon-chip" aria-hidden="true">
+        <span className="pool-card__icon" aria-hidden="true">
           <Zap size={16} strokeWidth={1.75} />
         </span>
         <h2 className="pool-card__title">{t('pool.data.title')}</h2>

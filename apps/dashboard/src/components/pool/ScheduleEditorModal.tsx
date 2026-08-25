@@ -16,7 +16,7 @@ import {
   hhmmToMinutes,
   windowsToDaySlots,
   daySlotsToWindows,
-  normalizeDaySlots,
+  tidyDaySlots,
   scheduleOnMinutes,
   POOL_WEEKDAYS,
   POOL_DAY_MINUTES,
@@ -51,18 +51,23 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
   const [error, setError] = useState(false);
   const [dragging, setDragging] = useState<number | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  const wasOpen = useRef(false);
 
-  // Reseed each time the editor opens.
+  // Seed ONLY on the transition from closed → open. Reseeding whenever `initial`
+  // changes would wipe the user's in-progress edits every time the underlying
+  // scheduler entity pushes an update (its next_trigger/current_slot change over
+  // time), which is exactly what made the on/off toggles appear to do nothing.
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpen.current) {
       setWeekdays(initial.weekdays);
       setSlots(windowsToDaySlots(initial.windows));
       setSaving(false);
       setError(false);
     }
+    wasOpen.current = open;
   }, [open, initial]);
 
-  const setSlotsNorm = (next: PoolDaySlot[]) => setSlots(normalizeDaySlots(next));
+  const setSlotsNorm = (next: PoolDaySlot[]) => setSlots(tidyDaySlots(next));
 
   const toggleDay = (d: PoolWeekday) =>
     setWeekdays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
@@ -127,7 +132,7 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
     if (dragging == null) return;
     try { (e.target as Element).releasePointerCapture(e.pointerId); } catch { /* ignore */ }
     setDragging(null);
-    setSlots((prev) => normalizeDaySlots(prev));
+    setSlots((prev) => tidyDaySlots(prev));
   };
 
   const addBoundary = () => {
@@ -252,8 +257,8 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
                     onPointerUp={onHandleUp}
                     onPointerCancel={onHandleUp}
                     onKeyDown={(e) => {
-                      if (e.key === 'ArrowLeft') { e.preventDefault(); moveBoundary(i, s.start - SNAP_DRAG); setSlots((p) => normalizeDaySlots(p)); }
-                      else if (e.key === 'ArrowRight') { e.preventDefault(); moveBoundary(i, s.start + SNAP_DRAG); setSlots((p) => normalizeDaySlots(p)); }
+                      if (e.key === 'ArrowLeft') { e.preventDefault(); moveBoundary(i, s.start - SNAP_DRAG); setSlots((p) => tidyDaySlots(p)); }
+                      else if (e.key === 'ArrowRight') { e.preventDefault(); moveBoundary(i, s.start + SNAP_DRAG); setSlots((p) => tidyDaySlots(p)); }
                     }}
                   >
                     <span className="pool-timeline__handle-grip" aria-hidden="true" />

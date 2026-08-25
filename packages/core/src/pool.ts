@@ -302,11 +302,13 @@ export interface PoolDaySlot {
 }
 
 /**
- * Canonicalize a day-slot list: clamp/sort starts, drop duplicate starts
- * (last wins), guarantee a slot at 00:00, and merge neighbouring slots that
- * share an action. The result is a clean partition of the day.
+ * Tidy a day-slot list WITHOUT collapsing neighbours: clamp/sort starts, drop
+ * duplicate starts (last wins), and guarantee a slot at 00:00. Neighbouring
+ * slots that share an action are kept as distinct segments — this is what the
+ * editor uses so a segment toggled off stays visible (and togglable) instead of
+ * merging into its neighbours and disappearing.
  */
-export function normalizeDaySlots(slots: PoolDaySlot[]): PoolDaySlot[] {
+export function tidyDaySlots(slots: PoolDaySlot[]): PoolDaySlot[] {
   const cleaned = slots
     .map((s) => ({ start: clampMinutes(s.start), action: (s.action === 'on' ? 'on' : 'off') as 'on' | 'off' }))
     .filter((s) => s.start < POOL_DAY_MINUTES)
@@ -324,10 +326,18 @@ export function normalizeDaySlots(slots: PoolDaySlot[]): PoolDaySlot[] {
   if (deduped.length === 0 || deduped[0]!.start !== 0) {
     deduped.unshift({ start: 0, action: 'off' });
   }
+  return deduped;
+}
 
-  // Merge neighbouring same-action slots.
+/**
+ * Canonicalize a day-slot list: {@link tidyDaySlots} plus merging neighbouring
+ * slots that share an action. Used when converting to/from the on-window model
+ * (load + save); the editor itself uses tidyDaySlots to keep segments distinct.
+ */
+export function normalizeDaySlots(slots: PoolDaySlot[]): PoolDaySlot[] {
+  const tidy = tidyDaySlots(slots);
   const merged: PoolDaySlot[] = [];
-  for (const s of deduped) {
+  for (const s of tidy) {
     const last = merged[merged.length - 1];
     if (last && last.action === s.action) continue;
     merged.push(s);
