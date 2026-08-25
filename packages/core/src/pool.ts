@@ -283,3 +283,90 @@ export function buildScheduleTimeslots(
 export function scheduleOnMinutes(windows: PoolWindow[]): number {
   return normalizeWindows(windows).reduce((sum, w) => sum + (w.stop - w.start), 0);
 }
+
+// ---------------------------------------------------------------------------
+// Day-slot model — the graphical editor's representation
+//
+// Instead of "on windows", the timeline editor works with an ordered list of
+// contiguous day slots, each explicitly on OR off. The first slot always starts
+// at 00:00; every slot runs until the next slot's start (the last until
+// midnight). This lets the UI give each segment an explicit action, while these
+// converters keep it interchangeable with the on-window model used for saving.
+// ---------------------------------------------------------------------------
+
+/** One contiguous slot of the day with an explicit action. */
+export interface PoolDaySlot {
+  /** Start of the slot in minutes from midnight (first slot is always 0). */
+  start: number;
+  action: 'on' | 'off';
+}
+
+/**
+ * Canonicalize a day-slot list: clamp/sort starts, drop duplicate starts
+ * (last wins), guarantee a slot at 00:00, and merge neighbouring slots that
+ * share an action. The result is a clean partition of the day.
+ */
+export function normalizeDaySlots(slots: PoolDaySlot[]): PoolDaySlot[] {
+  const cleaned = slots
+    .map((s) => ({ start: clampMinutes(s.start), action: (s.action === 'on' ? 'on' : 'off') as 'on' | 'off' }))
+    .filter((s) => s.start < POOL_DAY_MINUTES)
+    .sort((a, b) => a.start - b.start);
+
+  // Deduplicate identical starts, keeping the later definition.
+  const deduped: PoolDaySlot[] = [];
+  for (const s of cleaned) {
+    const last = deduped[deduped.length - 1];
+    if (last && last.start === s.start) deduped[deduped.length - 1] = s;
+    else deduped.push(s);
+  }
+
+  // Guarantee a slot anchored at midnight.
+  if (deduped.length === 0 || deduped[0]!.start !== 0) {
+    deduped.unshift({ start: 0, action: 'off' });
+  }
+
+  // Merge neighbouring same-action slots.
+  const merged: PoolDaySlot[] = [];
+  for (const s of deduped) {
+    const last = merged[merged.length - 1];
+    if (last && last.action === s.action) continue;
+    merged.push(s);
+  }
+  return merged;
+}
+
+/** Expand on-windows into a full-day slot partition (on inside, off outside). */
+export function windowsToDaySlots(windows: PoolWindow[]): PoolDaySlot[] {
+  const norm = normalizeWindows(windows);
+  if (norm.length === 0) return [{ start: 0, action: 'off' }];
+
+  const bounds = new Set<number>([0]);
+  for (const w of norm) {
+    bounds.add(w.start);
+    bounds.add(w.stop);
+  }
+  bounds.delete(POOL_DAY_MINUTES); // midnight is an end, never a slot start
+  const points = [...bounds].sort((a, b) => a - b);
+
+  const slots: PoolDaySlot[] = [];
+  for (let i = 0; i < points.length; i++) {
+    const start = points[i]!;
+    const next = i + 1 < points.length ? points[i + 1]! : POOL_DAY_MINUTES;
+    const on = norm.some((w) => start >= w.start && next <= w.stop);
+    slots.push({ start, action: on ? 'on' : 'off' });
+  }
+  return normalizeDaySlots(slots);
+}
+
+/** Collapse a day-slot partition back into on-windows for saving. */
+export function daySlotsToWindows(slots: PoolDaySlot[]): PoolWindow[] {
+  const norm = normalizeDaySlots(slots);
+  const windows: PoolWindow[] = [];
+  for (let i = 0; i < norm.length; i++) {
+    if (norm[i]!.action !== 'on') continue;
+    const start = norm[i]!.start;
+    const stop = i + 1 < norm.length ? norm[i + 1]!.start : POOL_DAY_MINUTES;
+    windows.push({ start, stop });
+  }
+  return normalizeWindows(windows);
+}

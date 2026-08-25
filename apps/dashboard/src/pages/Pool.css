@@ -507,11 +507,101 @@
   border-color: transparent;
 }
 
-.pool-editor__windows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+/* Graphical day timeline */
+.pool-timeline { display: flex; flex-direction: column; gap: 6px; }
 
-.pool-editor__window { display: flex; align-items: center; gap: 10px; }
+.pool-timeline__bar {
+  display: flex;
+  width: 100%;
+  height: 52px;
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
 
-.pool-editor__window-dash { color: var(--text-faint); }
+.pool-timeline__seg {
+  position: relative;
+  height: 100%;
+  min-width: 2px;
+  border: none;
+  border-right: 1px solid var(--bg-card);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  transition: background 160ms ease-out;
+}
+
+.pool-timeline__seg:last-child { border-right: none; }
+.pool-timeline__seg--off { background: var(--bg-subtle); }
+.pool-timeline__seg--on  { background: var(--accent); }
+.pool-timeline__seg:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+
+.pool-timeline__seg-label {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  padding: 4px 5px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.pool-timeline__seg--on .pool-timeline__seg-label { color: var(--on-accent); }
+
+.pool-timeline__scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+}
+
+/* Precise switch-point rows */
+.pool-editor__slots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+.pool-editor__slot { display: flex; align-items: center; gap: 10px; }
+
+.pool-editor__slot-time { flex: 0 0 auto; width: 120px; }
+.pool-editor__slot-time--fixed {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 12px;
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+  color: var(--text-faint);
+  font-size: 1rem;
+}
+
+.pool-editor__slot-spacer { width: 40px; flex-shrink: 0; }
+
+/* On/off segmented toggle per slot */
+.pool-slotaction {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-control);
+  flex: 1;
+}
+
+.pool-slotaction__btn {
+  flex: 1;
+  min-height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.pool-slotaction__btn--on  { background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-card); }
+.pool-slotaction__btn--off { background: var(--bg-card); color: var(--text); box-shadow: var(--shadow-card); }
 
 .pool-time-input {
   flex: 1;
@@ -577,5 +667,7 @@
   .pool-gauge__value,
   .pool-switch__thumb,
   .pool-mode__btn,
+  .pool-timeline__seg,
+  .pool-slotaction__btn,
   .pool-tile--clickable { transition: none; }
 }

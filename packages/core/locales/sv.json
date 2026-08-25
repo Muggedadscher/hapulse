@@ -929,10 +929,6 @@
   "nvr.setup.hint": "Scrypted körs oftast på port 10443 (https) eller 11080 (http). Om rutan förblir tom kan din NVR blockera inbäddning — använd ”Öppna” för att öppna den i en ny flik.",
   "nvr.frameTitle": "Scrypted NVR",
   "nav.pool": "Pool",
-  "home.section.hide.pool": "dölj Pool",
-  "home.section.show.pool": "visa Pool",
-  "home.section.hideMobile.pool": "dölj Pool på mobil",
-  "home.section.showMobile.pool": "visa Pool på mobil",
   "pool.title": "Pool",
   "pool.notConfigured.title": "Ingen pool hittades",
   "pool.notConfigured.desc": "Den här sidan styr en poolpump som konfigurerats i Home Assistant. Inga av de förväntade entiteterna hittades på den här anslutningen.",
@@ -969,7 +965,6 @@
   "pool.schedule.editor.addWindow": "Lägg till tid",
   "pool.schedule.editor.remove": "Ta bort",
   "pool.schedule.editor.empty": "Inga körtider ännu. Lägg till en nedan.",
-  "pool.schedule.editor.overlapHint": "Överlappande tider slås ihop automatiskt.",
   "pool.schedule.editor.save": "Spara schema",
   "pool.schedule.editor.saving": "Sparar…",
   "pool.schedule.editor.cancel": "Avbryt",
@@ -987,5 +982,11 @@
   "pool.weekday.thu": "Tor",
   "pool.weekday.fri": "Fre",
   "pool.weekday.sat": "Lör",
-  "pool.weekday.sun": "Sön"
+  "pool.weekday.sun": "Sön",
+  "home.summaryChips.poolRunning": "igång",
+  "home.summaryChips.poolIdle": "pump av",
+  "home.chipmodals.pool.footerLink": "öppna poolsidan",
+  "pool.schedule.editor.on": "På",
+  "pool.schedule.editor.off": "Av",
+  "pool.schedule.editor.timelineHint": "Tryck på ett avsnitt av dygnet för att slå på eller av det."
 }

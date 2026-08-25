@@ -9,8 +9,6 @@ import { DevicesCard } from '../components/home/DevicesCard';
 import { ClimateCard } from '../components/home/ClimateCard';
 import { BlindsCard } from '../components/home/BlindsCard';
 import { SecurityCard } from '../components/home/SecurityCard';
-import { PoolSummaryCard } from '../components/home/PoolSummaryCard'; // [fork]
-import { POOL_REQUIRED_ENTITIES } from '../components/pool/poolConfig'; // [fork]
 import { ActivityCard } from '../components/home/ActivityCard';
 import { RoomsQuickAccess } from '../components/home/RoomsQuickAccess';
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
@@ -142,7 +140,6 @@ const SECTION_IDS = [
   'climate',
   'blinds',
   'security',
-  'pool', // [fork]
   'activity',
   'rooms',
 ] as const;
@@ -193,13 +190,6 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     show: 'home.section.show.security',
     hideMobile: 'home.section.hideMobile.security',
     showMobile: 'home.section.showMobile.security',
-  },
-  // [fork] Pool summary section
-  pool: {
-    hide: 'home.section.hide.pool',
-    show: 'home.section.show.pool',
-    hideMobile: 'home.section.hideMobile.pool',
-    showMobile: 'home.section.showMobile.pool',
   },
   activity: {
     hide: 'home.section.hide.activity',
@@ -258,13 +248,8 @@ export function Home() {
     .map((id) => rooms.find((r) => r.id === id))
     .filter((r): r is NonNullable<typeof r> => r != null);
 
-  // [fork] The Pool section only exists when the pool entities are present, so
-  // installs without a pool never see it (even in edit mode).
-  const poolPresent = POOL_REQUIRED_ENTITIES.every((id) => entities[id] != null);
-
   // Compute display order from stored order
-  const orderedIds = applyStoredOrder([...SECTION_IDS], homeSectionOrder)
-    .filter((id) => id !== 'pool' || poolPresent); // [fork]
+  const orderedIds = applyStoredOrder([...SECTION_IDS], homeSectionOrder);
 
   // In non-edit mode, filter hidden + non-rendering sections.
   // Energy always renders: the widget self-manages its states (ready / prompt /
@@ -387,8 +372,6 @@ export function Home() {
         );
       case 'security':
         return <SecurityCard entities={entities} />;
-      case 'pool': // [fork]
-        return <PoolSummaryCard />;
       case 'activity':
         return <ActivityCard entities={entities} />;
       case 'rooms':

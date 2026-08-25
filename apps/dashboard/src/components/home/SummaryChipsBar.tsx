@@ -14,11 +14,12 @@ import {
   DoorsModal,
   AlarmModal,
   MediaModal,
+  PoolModal,
 } from './chipmodals';
 import { useEntityMap, useCustomization } from '../../ha/hooks';
 import { useSettingsStore } from '../../stores/settingsStore';
 
-const ALL_CHIPS = ['people', 'lights', 'doors', 'alarm', 'media'] as const;
+const ALL_CHIPS = ['people', 'lights', 'doors', 'alarm', 'media', 'pool'] as const; // [fork] pool chip
 type ChipId = (typeof ALL_CHIPS)[number];
 
 const CHIP_ORDER_KEY = '__home:chips';
@@ -96,6 +97,7 @@ export function SummaryChipsBar({ className, editMode = false }: SummaryChipsBar
           <DoorsModal open={openModal === 'doors'} onClose={closeModal} />
           <AlarmModal open={openModal === 'alarm'} onClose={closeModal} />
           <MediaModal open={openModal === 'media'} onClose={closeModal} />
+          <PoolModal open={openModal === 'pool'} onClose={closeModal} />
         </>
       )}
     </div>

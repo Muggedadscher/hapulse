@@ -929,10 +929,6 @@
   "nvr.setup.hint": "Scrypted suele ejecutarse en el puerto 10443 (https) o 11080 (http). Si el marco queda en blanco, puede que tu NVR bloquee la inserción — usa «Abrir» para abrirlo en una pestaña nueva.",
   "nvr.frameTitle": "Scrypted NVR",
   "nav.pool": "Piscina",
-  "home.section.hide.pool": "ocultar Piscina",
-  "home.section.show.pool": "mostrar Piscina",
-  "home.section.hideMobile.pool": "ocultar Piscina en el móvil",
-  "home.section.showMobile.pool": "mostrar Piscina en el móvil",
   "pool.title": "Piscina",
   "pool.notConfigured.title": "No se encontró piscina",
   "pool.notConfigured.desc": "Esta página controla una bomba de piscina configurada en Home Assistant. No se encontró ninguna de las entidades esperadas en esta conexión.",
@@ -969,7 +965,6 @@
   "pool.schedule.editor.addWindow": "Añadir hora",
   "pool.schedule.editor.remove": "Quitar",
   "pool.schedule.editor.empty": "Aún no hay horas. Añade una abajo.",
-  "pool.schedule.editor.overlapHint": "Las horas superpuestas se combinan automáticamente.",
   "pool.schedule.editor.save": "Guardar programación",
   "pool.schedule.editor.saving": "Guardando…",
   "pool.schedule.editor.cancel": "Cancelar",
@@ -987,5 +982,11 @@
   "pool.weekday.thu": "Jue",
   "pool.weekday.fri": "Vie",
   "pool.weekday.sat": "Sáb",
-  "pool.weekday.sun": "Dom"
+  "pool.weekday.sun": "Dom",
+  "home.summaryChips.poolRunning": "en marcha",
+  "home.summaryChips.poolIdle": "bomba apagada",
+  "home.chipmodals.pool.footerLink": "abrir página de piscina",
+  "pool.schedule.editor.on": "Enc.",
+  "pool.schedule.editor.off": "Apag.",
+  "pool.schedule.editor.timelineHint": "Toca un tramo del día para encenderlo o apagarlo."
 }

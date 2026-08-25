@@ -71,6 +71,9 @@ import {
   minutesToHHMM,
   hhmmToMinutes,
   scheduleOnMinutes,
+  windowsToDaySlots,
+  daySlotsToWindows,
+  normalizeDaySlots,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1147,3 +1150,25 @@ assertEqual(JSON.stringify(buildScheduleTimeslots([{ start: 0, stop: 1440 }], { 
   'full-day window → one all-day on slot');
 
 assertEqual(scheduleOnMinutes(model.windows), 120, 'scheduleOnMinutes counts the on-window (2h = 120min)');
+
+// Day-slot model (graphical editor) — round-trips with the on-window model.
+const daySlots = windowsToDaySlots(model.windows);
+assertEqual(JSON.stringify(daySlots),
+  JSON.stringify([{ start: 0, action: 'off' }, { start: 720, action: 'on' }, { start: 840, action: 'off' }]),
+  'windowsToDaySlots partitions the day off/on/off');
+assertEqual(JSON.stringify(daySlotsToWindows(daySlots)), JSON.stringify([{ start: 720, stop: 840 }]),
+  'daySlotsToWindows round-trips back to the on-window');
+
+// Empty schedule → single all-day off slot, and back to no windows.
+assertEqual(JSON.stringify(windowsToDaySlots([])), JSON.stringify([{ start: 0, action: 'off' }]),
+  'windowsToDaySlots of empty → one off slot');
+assertEqual(JSON.stringify(daySlotsToWindows([{ start: 0, action: 'off' }])), JSON.stringify([]),
+  'all-off slots → no windows');
+
+// normalizeDaySlots: anchors 00:00, merges neighbours, dedups starts.
+assertEqual(JSON.stringify(normalizeDaySlots([{ start: 600, action: 'on' }, { start: 800, action: 'on' }])),
+  JSON.stringify([{ start: 0, action: 'off' }, { start: 600, action: 'on' }]),
+  'normalizeDaySlots anchors midnight and merges same-action neighbours');
+assertEqual(JSON.stringify(daySlotsToWindows([{ start: 0, action: 'on' }, { start: 480, action: 'off' }, { start: 1020, action: 'on' }])),
+  JSON.stringify([{ start: 0, stop: 480 }, { start: 1020, stop: 1440 }]),
+  'two on-segments (morning + evening) → two windows');

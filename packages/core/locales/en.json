@@ -930,10 +930,6 @@
   "nvr.setup.hint": "Scrypted usually runs on port 10443 (https) or 11080 (http). If the frame stays blank, your NVR may block embedding — use Open to launch it in a new tab instead.",
   "nvr.frameTitle": "Scrypted NVR",
   "nav.pool": "Pool",
-  "home.section.hide.pool": "hide Pool",
-  "home.section.show.pool": "show Pool",
-  "home.section.hideMobile.pool": "hide Pool on mobile",
-  "home.section.showMobile.pool": "show Pool on mobile",
   "pool.title": "Pool",
   "pool.notConfigured.title": "No pool found",
   "pool.notConfigured.desc": "This page controls a pool pump set up in Home Assistant. None of the expected entities were found on this connection.",
@@ -970,7 +966,6 @@
   "pool.schedule.editor.addWindow": "Add time",
   "pool.schedule.editor.remove": "Remove",
   "pool.schedule.editor.empty": "No run times yet. Add one below.",
-  "pool.schedule.editor.overlapHint": "Overlapping times are merged automatically.",
   "pool.schedule.editor.save": "Save schedule",
   "pool.schedule.editor.saving": "Saving…",
   "pool.schedule.editor.cancel": "Cancel",
@@ -988,5 +983,11 @@
   "pool.weekday.thu": "Thu",
   "pool.weekday.fri": "Fri",
   "pool.weekday.sat": "Sat",
-  "pool.weekday.sun": "Sun"
+  "pool.weekday.sun": "Sun",
+  "home.summaryChips.poolRunning": "running",
+  "home.summaryChips.poolIdle": "pump off",
+  "home.chipmodals.pool.footerLink": "open pool page",
+  "pool.schedule.editor.on": "On",
+  "pool.schedule.editor.off": "Off",
+  "pool.schedule.editor.timelineHint": "Tap a section of the day to switch it on or off."
 }

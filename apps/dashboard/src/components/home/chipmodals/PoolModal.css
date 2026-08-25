@@ -1,0 +1,117 @@
+/* [fork] PoolModal — compact pool glance opened from the summary chip. Tokens only. */
+
+.pool-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pool-modal__status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+}
+
+.pool-modal__status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-control);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  transition: background 180ms ease-out, color 180ms ease-out;
+}
+
+.pool-modal__status--running .pool-modal__status-icon {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pool-modal__status-text { display: flex; flex-direction: column; gap: 2px; }
+.pool-modal__status-label { font-size: 0.75rem; color: var(--text-faint); }
+.pool-modal__status-value { font-family: var(--font-display); font-size: 1.375rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.pool-modal__status--running .pool-modal__status-value { color: var(--accent); }
+
+/* Mode segmented control */
+.pool-modal__mode {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+  padding: 5px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-control);
+}
+
+.pool-modal__mode-btn {
+  padding: 10px 8px;
+  min-height: 44px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.pool-modal__mode-btn:active { transform: scale(0.98); }
+
+.pool-modal__mode-btn--active {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow: var(--shadow-card);
+}
+
+.pool-modal__mode-btn--active.pool-modal__mode-btn--auto   { color: var(--accent); }
+.pool-modal__mode-btn--active.pool-modal__mode-btn--manual { color: var(--info); }
+
+/* Glance rows */
+.pool-modal__glances { display: flex; flex-direction: column; gap: 2px; }
+
+.pool-modal__glance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pool-modal__glance:last-child { border-bottom: none; }
+
+.pool-modal__glance-icon { color: var(--text-faint); display: flex; }
+.pool-modal__glance-label { font-size: 0.9375rem; color: var(--text-dim); flex: 1; }
+.pool-modal__glance-value { font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+.pool-modal__glance-value--positive { color: var(--positive); }
+
+/* Footer link — mirrors the media modal footer link */
+.pool-modal__footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 8px 4px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pool-modal__status-icon,
+  .pool-modal__mode-btn { transition: none; }
+}
