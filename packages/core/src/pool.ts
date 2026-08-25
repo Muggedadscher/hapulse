@@ -368,6 +368,45 @@ export function windowsToDaySlots(windows: PoolWindow[]): PoolDaySlot[] {
   return normalizeDaySlots(slots);
 }
 
+// ---------------------------------------------------------------------------
+// Daily runtime bars — for the "runtime per day" chart
+//
+// `sensor…laufzeit_poolpumpe_heute` counts up through the day and resets at
+// midnight, so the MAX value within a calendar day equals that day's total
+// runtime. Bucketing the state history by day and taking the max gives one bar
+// per day. Kept pure (the caller supplies the local-midnight day boundaries so
+// this stays timezone-agnostic and testable).
+// ---------------------------------------------------------------------------
+
+export interface PoolDayRuntime {
+  /** Local-midnight epoch-ms marking the start of the day. */
+  start: number;
+  /** The day's peak runtime value (its total), or 0. */
+  value: number;
+  /** Whether any history sample fell in this day (false = outside retention). */
+  hasData: boolean;
+}
+
+/**
+ * Bucket runtime history into per-day maxima. `dayStarts` is an ascending list
+ * of local-midnight timestamps; bucket i spans `[dayStarts[i], dayStarts[i+1])`,
+ * and the last bucket runs to `+∞` (today, still in progress).
+ */
+export function dailyRuntimeBars(points: { t: number; v: number }[], dayStarts: number[]): PoolDayRuntime[] {
+  return dayStarts.map((start, i) => {
+    const end = i + 1 < dayStarts.length ? dayStarts[i + 1]! : Infinity;
+    let value = 0;
+    let hasData = false;
+    for (const p of points) {
+      if (p.t >= start && p.t < end) {
+        hasData = true;
+        if (p.v > value) value = p.v;
+      }
+    }
+    return { start, value, hasData };
+  });
+}
+
 /** Collapse a day-slot partition back into on-windows for saving. */
 export function daySlotsToWindows(slots: PoolDaySlot[]): PoolWindow[] {
   const norm = normalizeDaySlots(slots);

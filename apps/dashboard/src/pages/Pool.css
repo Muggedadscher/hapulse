@@ -1,11 +1,20 @@
 /* [fork] Pool page — native pool-pump control, HAPulse "Daylight" styling.
    Tokens only (see docs/DESIGN.md): no hex, no theme-specific assumptions. */
 
-/* The Pool page uses the shared `.overview-grid` (see Page.css) so it supports
-   the same edit-mode reorder / hide / resize as Home, Energy, System, … */
+/* Fixed layout: a full-width hero, then cards that flow and wrap at their
+   natural height (no forced equal-height stretching). */
+.pool-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-/* Cards fill their grid cell so equal-span cards line up. */
-.overview-grid__cell > .pool-card { height: 100%; }
+.pool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
 
 /* ---- Shared card scaffolding ---- */
 
@@ -47,10 +56,72 @@
   min-width: 0;
 }
 
-/* Chart card — current value shown top-right of the head. */
-.pool-chart__current {
-  font-size: 1.0625rem;
+/* ---- Runtime-per-day bar chart ---- */
+.pool-chart__total {
+  font-size: 0.9375rem;
   font-weight: 600;
+  color: var(--text-dim);
+}
+
+.pool-chart__body {
+  min-height: 132px;
+  display: flex;
+  align-items: stretch;
+}
+
+.pool-chart__msg {
+  margin: auto;
+  font-size: 0.9375rem;
+  color: var(--text-faint);
+}
+
+.pool-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  width: 100%;
+  height: 132px;
+}
+
+.pool-bar {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.pool-bar__track {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.pool-bar__fill {
+  width: 100%;
+  max-width: 22px;
+  min-height: 2px;
+  border-radius: 5px 5px 0 0;
+  background: var(--accent-soft);
+  transition: height 400ms ease-out;
+}
+
+.pool-bar__fill--today {
+  background: var(--accent);
+}
+
+.pool-bar__label {
+  font-size: 0.625rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pool-bar__fill { transition: none; }
 }
 
 /* ---- Hero ---- */

@@ -38,9 +38,7 @@ export const POOL_ENTITIES = {
   scheduleSwitch: 'switch.schedule_zeitplan_poolpumpe',
   /** The input_boolean the schedule toggles on/off. */
   scheduleBoolean: 'input_boolean.poolpumpe_zeitplan',
-  /** Live estimated power draw of the pump (W) — used for the history chart. */
-  power: 'sensor.geschatzter_verbrauch_poolpumpe_power',
-  /** Total pump runtime today. */
+  /** Total pump runtime today (resets at midnight) — drives the runtime chart. */
   runtimeToday: 'sensor.laufzeit_poolpumpe_heute',
   /** Estimated pump energy — today / this week / this month. */
   consumptionToday: 'sensor.geschatzter_verbrauch_poolpumpe_energy_daily',
