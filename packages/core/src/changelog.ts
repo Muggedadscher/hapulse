@@ -44,6 +44,30 @@ export interface Release {
 /** Newest first. */
 export const RELEASES: Release[] = [
   {
+    version: '1.2.0',
+    date: '2026-08-26',
+    title: 'Every entity gets a detail view',
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          'A detail view for every entity, like Home Assistant\u2019s more-info dialog: current state, a history timeline (or a value chart for numeric sensors) switchable between 24 hours and 7 days, and the recent activity list',
+          'Sensors open it with a tap; cards with controls (media, climate, covers, locks, vacuums) open it by tapping the card body; lights, switches and buttons open it with a press-and-hold \u2014 mouse and touch alike',
+          'Cameras open a live view \u2014 the camera\u2019s stream on top, its activity below \u2014 from any camera tile',
+          'Group entities list their members in the detail view, and tapping a member opens its own details',
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          'A room picture no longer breaks the hero card when the section has a custom height \u2014 the image could render at full size inside a scrolling card, or vanish entirely',
+          'The alarm chip in the header now agrees with the Security page when a home has several alarm panels: the armed one wins over a stray disarmed one, and hidden panels are ignored everywhere',
+          'The alarm dialog shows every alarm panel, not just the first one Home Assistant happened to list',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.1.1',
     date: '2026-08-23',
     title: 'Fixes for translated installs, colour lights and deep links',

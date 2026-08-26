@@ -30,6 +30,8 @@ import type {
   StatisticsPeriod,
 } from './energy.js';
 import type { StateTranslations } from './entityStates.js';
+import { parseHistoryStates, parseLogbookEntries } from './history.js';
+import type { HistoryPoint, LogbookEntry } from './history.js';
 
 /** Raw payload shape returned by `auth/current_user` WebSocket message. */
 interface RawCurrentUser {
@@ -229,6 +231,49 @@ export class HAConnection {
       return res.resources ?? {};
     } catch {
       return {};
+    }
+  }
+
+  /**
+   * Fetch an entity's state history over [start, end].
+   *
+   * Uses `history/history_during_period` with `minimal_response` and
+   * `no_attributes` — the detail modal only draws states over time, and the
+   * compressed shape keeps a week of a chatty sensor small. Returns an empty
+   * series on failure; the modal then shows its empty state.
+   */
+  async fetchHistory(entityId: string, start: Date, end: Date): Promise<HistoryPoint[]> {
+    try {
+      const res = await this.#conn.sendMessagePromise<Record<string, unknown[]>>({
+        type: 'history/history_during_period',
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        entity_ids: [entityId],
+        minimal_response: true,
+        no_attributes: true,
+      });
+      return parseHistoryStates(res?.[entityId] ?? []);
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Fetch an entity's logbook (activity) entries over [start, end], newest
+   * first. Only state-change rows are kept — service-call noise is dropped by
+   * the parser. Returns an empty list on failure.
+   */
+  async fetchLogbook(entityId: string, start: Date, end: Date): Promise<LogbookEntry[]> {
+    try {
+      const res = await this.#conn.sendMessagePromise<unknown[]>({
+        type: 'logbook/get_events',
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        entity_ids: [entityId],
+      });
+      return parseLogbookEntries(Array.isArray(res) ? res : []);
+    } catch {
+      return [];
     }
   }
 

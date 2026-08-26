@@ -909,5 +909,16 @@
   "changelog.whatsNew.title": "Nyheter i {version}",
   "changelog.whatsNew.dismiss": "Uppfattat",
   "changelog.history.title": "Ändringslogg",
-  "settings.about.whatsNew": "Nyheter"
+  "settings.about.whatsNew": "Nyheter",
+  "entityDetail.history": "Historik",
+  "entityDetail.activity": "Aktivitet",
+  "entityDetail.showMore": "Visa mer",
+  "entityDetail.showLess": "Visa mindre",
+  "entityDetail.range7d": "7 dagar",
+  "entityDetail.range24h": "24 timmar",
+  "entityDetail.historyEmpty": "Ingen registrerad historik för denna period",
+  "entityDetail.activityEmpty": "Ingen aktivitet nyligen",
+  "entityDetail.members": "Grupperade entiteter",
+  "entityDetail.today": "Idag",
+  "entityDetail.yesterday": "Igår"
 }

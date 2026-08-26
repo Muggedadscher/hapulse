@@ -2,7 +2,7 @@
  * HeroRoomCard — large hero card spanning 2 columns showing the most active room.
  * Gradient background (no photos), glance chips, frosted device pills.
  */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Lightbulb, Thermometer, Droplets, Wind, Minus, Plus, ChevronRight,
@@ -19,8 +19,9 @@ import './HeroRoomCard.css';
 /** Resolve an HA area picture path against the connection URL. */
 function resolvePicture(picture: string | null | undefined, baseUrl: string): string | null {
   if (!picture) return null;
-  if (picture.startsWith('http://') || picture.startsWith('https://')) return picture;
-  return baseUrl ? `${baseUrl}${picture}` : picture;
+  if (picture.startsWith('http://') || picture.startsWith('https://') || picture.startsWith('data:')) return picture;
+  if (!baseUrl) return picture;
+  return `${baseUrl.replace(/\/+$/, '')}/${picture.replace(/^\/+/, '')}`;
 }
 
 interface HeroRoomCardProps {
@@ -78,6 +79,23 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   const [imgFailed, setImgFailed] = useState(false);
   const room = pickHeroRoom(rooms, entities);
 
+  // The photo renders as a CSS background (::before), not an <img> child —
+  // a child element is caught by the capped-section sticky-header rules in
+  // Page.css (`> :first-child`), which override its absolute positioning and
+  // break the card (issue #17). A pseudo-element cannot be selected there.
+  // Load failures are detected by preloading, replacing <img onError>.
+  const candidateUrl = resolvePicture(room?.picture, baseUrl);
+  useEffect(() => {
+    setImgFailed(false);
+    if (!candidateUrl) return;
+    const probe = new Image();
+    probe.onerror = () => setImgFailed(true);
+    probe.src = candidateUrl;
+    return () => {
+      probe.onerror = null;
+    };
+  }, [candidateUrl]);
+
   const handleNavigate = useCallback(() => {
     if (room) void navigate(`/room/${room.id}`);
   }, [navigate, room]);
@@ -99,7 +117,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
 
   const summary = roomSummary(room, entities);
   const gradient = roomGradient(room.name);
-  const photoUrl = imgFailed ? null : resolvePicture(room.picture, baseUrl);
+  const photoUrl = imgFailed ? null : candidateUrl;
   const hasPhoto = photoUrl != null;
 
   // Device counts for subtitle
@@ -177,23 +195,14 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
       aria-label={t('home.hero.roomAria', { name: room.name })}
       onClick={handleNavigate}
       onKeyDown={handleKeyDown}
-      style={{ '--hero-gradient': gradient } as React.CSSProperties}
+      style={{
+        '--hero-gradient': gradient,
+        ...(hasPhoto ? { '--hero-photo': `url("${photoUrl.replace(/"/g, '%22')}")` } : {}),
+      } as React.CSSProperties}
     >
-      {/* Background: area photo (with scrim) when available, else gradient */}
-      {hasPhoto ? (
-        <>
-          <img
-            className="hero-room-card__photo"
-            src={photoUrl}
-            alt=""
-            aria-hidden="true"
-            onError={() => setImgFailed(true)}
-          />
-          <div className="hero-room-card__scrim" aria-hidden="true" />
-        </>
-      ) : (
-        <div className="hero-room-card__bg" aria-hidden="true" />
-      )}
+      {/* Backdrop (photo or gradient) is pure CSS — see the ::before/::after
+          rules. The title row below is deliberately the card's first CHILD so
+          the capped-section header rules in Page.css act on the right element. */}
 
       {/* Content */}
       <div className="hero-room-card__top">

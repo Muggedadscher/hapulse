@@ -909,5 +909,16 @@
   "changelog.whatsNew.title": "Novità della versione {version}",
   "changelog.whatsNew.dismiss": "Ho capito",
   "changelog.history.title": "Registro delle modifiche",
-  "settings.about.whatsNew": "Novità"
+  "settings.about.whatsNew": "Novità",
+  "entityDetail.history": "Cronologia",
+  "entityDetail.activity": "Attività",
+  "entityDetail.showMore": "Mostra di più",
+  "entityDetail.showLess": "Mostra meno",
+  "entityDetail.range7d": "7 giorni",
+  "entityDetail.range24h": "24 ore",
+  "entityDetail.historyEmpty": "Nessuna cronologia registrata per questo periodo",
+  "entityDetail.activityEmpty": "Nessuna attività recente",
+  "entityDetail.members": "Entità raggruppate",
+  "entityDetail.today": "Oggi",
+  "entityDetail.yesterday": "Ieri"
 }

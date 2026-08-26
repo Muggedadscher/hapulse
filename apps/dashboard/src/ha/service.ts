@@ -5,7 +5,13 @@
  * Components must import callService from here — never touch the HAConnection directly.
  */
 
-import { applyDemoService, DEMO_NOTIFICATIONS } from '@hapulse/core';
+import {
+  applyDemoService,
+  DEMO_NOTIFICATIONS,
+  generateDemoHistory,
+  demoLogbookFromHistory,
+} from '@hapulse/core';
+import type { HistoryPoint, LogbookEntry } from '@hapulse/core';
 import type { PersistentNotification, UnsubscribeFunc } from '@hapulse/core';
 import { useConnectionStore, getLiveConnection } from '../stores/connectionStore';
 import { useEntityStore } from '../stores/entityStore';
@@ -96,4 +102,38 @@ export function subscribeNotifications(
   }
 
   return conn.subscribeNotifications(cb);
+}
+
+// ---------------------------------------------------------------------------
+// Entity history + logbook (detail modal)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch an entity's state history for the last `hours`.
+ * Demo mode fabricates a deterministic series ending on the current state, so
+ * the modal is fully explorable without a Home Assistant.
+ */
+export async function getEntityHistory(entityId: string, hours: number): Promise<HistoryPoint[]> {
+  const end = Date.now();
+  const start = end - hours * 3_600_000;
+  const { demo } = useConnectionStore.getState();
+  if (demo) {
+    const entity = useEntityStore.getState().entities[entityId];
+    return entity ? generateDemoHistory(entity, start, end) : [];
+  }
+  const conn = getLiveConnection();
+  return conn ? conn.fetchHistory(entityId, new Date(start), new Date(end)) : [];
+}
+
+/** Fetch an entity's activity (state changes) for the last `hours`, newest first. */
+export async function getEntityLogbook(entityId: string, hours: number): Promise<LogbookEntry[]> {
+  const end = Date.now();
+  const start = end - hours * 3_600_000;
+  const { demo } = useConnectionStore.getState();
+  if (demo) {
+    const entity = useEntityStore.getState().entities[entityId];
+    return entity ? demoLogbookFromHistory(generateDemoHistory(entity, start, end)) : [];
+  }
+  const conn = getLiveConnection();
+  return conn ? conn.fetchLogbook(entityId, new Date(start), new Date(end)) : [];
 }

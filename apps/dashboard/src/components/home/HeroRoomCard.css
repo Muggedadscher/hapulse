@@ -22,13 +22,21 @@
   transform: scale(0.99);
 }
 
-/* Gradient BG layer */
-.hero-room-card__bg {
+/* Backdrop — a pseudo-element, NOT a child. Child backdrops get caught by the
+   capped-section rules in Page.css (`> :first-child` becomes a sticky header),
+   which turned an area photo into an in-flow, natural-size image inside a
+   scrolling card (issue #17). Pseudo-elements are unreachable there, and the
+   card's first child is now the title row those rules were written for. */
+.hero-room-card::before {
+  content: '';
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: var(--hero-gradient);
   pointer-events: none;
-  border-radius: var(--radius-card);
+}
+.hero-room-card--photo::before {
+  background: var(--hero-photo) center / cover no-repeat;
 }
 
 .hero-room-card__top {
@@ -218,32 +226,54 @@
   color: var(--on-accent);
 }
 
-/* --- Area photo background (with gradient fallback handled in TSX) --- */
-.hero-room-card__photo {
+/* Text-anchored scrims: dark bands behind the title (top) and the pills
+   (bottom), leaving the middle of the photo untouched. A single dark wash
+   grays the whole image — over a pale picture it reads as a broken/dirty
+   image — while vertical bands keep the photo looking like the photo and
+   make the white text safe over any image, light or dark. */
+.hero-room-card--photo::after {
+  content: '';
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.52) 0%, rgba(0, 0, 0, 0.28) 30%, rgba(0, 0, 0, 0) 52%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0.2) 26%, rgba(0, 0, 0, 0) 46%);
 }
-.hero-room-card__scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    105deg,
-    rgba(0, 0, 0, 0.55) 0%,
-    rgba(0, 0, 0, 0.32) 45%,
-    rgba(0, 0, 0, 0.12) 100%
-  );
+
+/* Capped photo hero: crop, don't scroll. The generic capped-card fallback
+   pins a card-coloured sticky header, which over a photo paints an opaque bar
+   across the image; a hero photo card cropped at the cap reads better. The
+   doubled class outranks the Page.css fallback whatever the CSS import order. */
+.overview-grid__cell[class*='section-h-']:not(.overview-grid__cell--editing)
+  > .hero-room-card--photo.hero-room-card {
+  overflow: hidden;
+  padding-top: 1.375rem;
 }
-/* Over a photo, content must read light regardless of theme/mode. */
-.hero-room-card--photo .hero-room-card__name { color: #fff; }
-.hero-room-card--photo .hero-room-card__sub { color: rgba(255, 255, 255, 0.82); }
+.overview-grid__cell[class*='section-h-']:not(.overview-grid__cell--editing)
+  > .hero-room-card--photo.hero-room-card > :first-child {
+  position: static;
+  padding-top: 0;
+  background: none;
+}
+/* Over a photo, content must read light regardless of theme/mode. The text
+   shadow is a second line of defence for the band's soft mid-section. */
+.hero-room-card--photo .hero-room-card__name {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.hero-room-card--photo .hero-room-card__sub {
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+/* Glance chips sit at the top-right where the band is thinnest — a dark
+   translucent chip stays readable over a white wall, which the previous
+   white-tinted chip did not. */
 .hero-room-card--photo .hero-room-card__glance-chip {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.32);
   color: #fff;
   backdrop-filter: blur(8px);
-  border-color: rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.18);
 }

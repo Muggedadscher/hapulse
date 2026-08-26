@@ -46,6 +46,7 @@ import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { WeatherModal } from '../components/home/chipmodals';
 import { NotificationsPanel } from '../components/notifications/NotificationsPanel';
 import { ChangelogModal } from '../components/changelog/ChangelogModal';
+import { EntityDetailModal } from '../components/home/EntityDetailModal';
 import { useConnectionStatus, useWeatherEntity, useCurrentUserAvatar } from '../ha/hooks';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
@@ -240,6 +241,8 @@ function HeaderCluster() {
   const navigate = useNavigate();
   const avatarInfo = useCurrentUserAvatar();
   const editMode = useUIStore((s) => s.editMode);
+  const detailEntityId = useUIStore((s) => s.detailEntityId);
+  const closeEntityDetail = useUIStore((s) => s.closeEntityDetail);
   const isHome = location.pathname === '/';
   const isRoom = location.pathname.startsWith('/room/');
 
@@ -310,6 +313,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const appIconHidden = useSettingsStore((s) => s.appIconHidden);
 
   const editMode = useUIStore((s) => s.editMode);
+  const detailEntityId = useUIStore((s) => s.detailEntityId);
+  const closeEntityDetail = useUIStore((s) => s.closeEntityDetail);
 
   /* ---- What's New ----
      Opens once per release. `lastSeenVersion` is seeded to the running version
@@ -760,6 +765,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         mode="whats-new"
         since={lastSeenVersion}
       />
+
+      {/* Global entity detail (more-info) modal — opened from any card. */}
+      <EntityDetailModal entityId={detailEntityId} onClose={closeEntityDetail} />
     </div>
   );
 }

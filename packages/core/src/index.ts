@@ -42,6 +42,19 @@ export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from
 export type { DeviceAreaMap } from './rooms.js';
 
 // System Monitor metric identification
+// Alarm panel selection
+export { pickAlarmPanel, sortAlarmPanels } from './alarm.js';
+
+// Entity history + logbook (detail modal)
+export {
+  parseHistoryStates,
+  parseLogbookEntries,
+  isNumericHistory,
+  generateDemoHistory,
+  demoLogbookFromHistory,
+} from './history.js';
+export type { HistoryPoint, LogbookEntry } from './history.js';
+
 export { indexSystemMonitor, pickSystemMetrics } from './systemMonitor.js';
 export type { SystemMonitorIndex, SystemMetricFamily, SystemMetrics } from './systemMonitor.js';
 

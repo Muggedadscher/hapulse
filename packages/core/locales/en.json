@@ -909,5 +909,16 @@
   "changelog.whatsNew.title": "What's new in {version}",
   "changelog.whatsNew.dismiss": "Got it",
   "changelog.history.title": "Changelog",
-  "settings.about.whatsNew": "What's new"
+  "settings.about.whatsNew": "What's new",
+  "entityDetail.history": "History",
+  "entityDetail.activity": "Activity",
+  "entityDetail.showMore": "Show more",
+  "entityDetail.showLess": "Show less",
+  "entityDetail.range7d": "7 days",
+  "entityDetail.range24h": "24 hours",
+  "entityDetail.historyEmpty": "No recorded history for this period",
+  "entityDetail.activityEmpty": "No recent activity",
+  "entityDetail.members": "Grouped entities",
+  "entityDetail.today": "Today",
+  "entityDetail.yesterday": "Yesterday"
 }

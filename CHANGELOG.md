@@ -5,6 +5,23 @@ All notable changes to HAPulse are recorded here.
 <!-- Generated from packages/core/src/changelog.ts by `npm run changelog`.
      Edit that file, not this one — this file is overwritten. -->
 
+## 1.2.0 — 2026-08-26
+
+_Every entity gets a detail view_
+
+### Added
+
+- A detail view for every entity, like Home Assistant’s more-info dialog: current state, a history timeline (or a value chart for numeric sensors) switchable between 24 hours and 7 days, and the recent activity list
+- Sensors open it with a tap; cards with controls (media, climate, covers, locks, vacuums) open it by tapping the card body; lights, switches and buttons open it with a press-and-hold — mouse and touch alike
+- Cameras open a live view — the camera’s stream on top, its activity below — from any camera tile
+- Group entities list their members in the detail view, and tapping a member opens its own details
+
+### Fixed
+
+- A room picture no longer breaks the hero card when the section has a custom height — the image could render at full size inside a scrolling card, or vanish entirely
+- The alarm chip in the header now agrees with the Security page when a home has several alarm panels: the armed one wins over a stray disarmed one, and hidden panels are ignored everywhere
+- The alarm dialog shows every alarm panel, not just the first one Home Assistant happened to list
+
 ## 1.1.1 — 2026-08-23
 
 _Fixes for translated installs, colour lights and deep links_

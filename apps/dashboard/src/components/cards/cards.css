@@ -1151,3 +1151,15 @@
   opacity: 0.5;
   filter: saturate(0.25);
 }
+
+/* ---- Entity-detail press wrapper (issue #14) ----
+   Wraps every EntityCard: long-press opens the detail modal, so the native
+   touch callout / text selection during the hold must be suppressed. */
+.entity-card-press {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.entity-card-press--tappable {
+  cursor: pointer;
+}

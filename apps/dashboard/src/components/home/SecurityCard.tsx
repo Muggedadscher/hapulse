@@ -11,6 +11,7 @@ import {
 import { Card } from '../ui/Card';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
+import { pickAlarmPanel } from '@hapulse/core';
 import type { HassEntityMap } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './SecurityCard.css';
@@ -31,7 +32,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   );
 
   // Alarm
-  const alarm = all.find((e) => e.entity_id.startsWith('alarm_control_panel.'));
+  const alarm = pickAlarmPanel(all);
   const alarmState = alarm?.state ?? null;
   const alarmLabel = alarmState
     ? sl('alarm_control_panel', alarmState)

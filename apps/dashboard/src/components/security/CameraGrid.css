@@ -84,3 +84,6 @@
   color: var(--text-faint);
   flex-shrink: 0;
 }
+
+/* Tiles open the camera's detail (live view + activity) on tap. */
+.camera-tile--pressable { cursor: pointer; }

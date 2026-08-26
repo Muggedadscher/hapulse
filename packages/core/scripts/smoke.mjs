@@ -56,6 +56,13 @@ import {
   LOCALES,
   lookupEntityState,
   humanizeState,
+  pickAlarmPanel,
+  sortAlarmPanels,
+  parseHistoryStates,
+  parseLogbookEntries,
+  isNumericHistory,
+  generateDemoHistory,
+  demoLogbookFromHistory,
   RELEASES,
   CURRENT_VERSION,
   CHANGE_KINDS,
@@ -1058,3 +1065,79 @@ const enMetrics = pickSystemMetrics([
 assertEqual(enMetrics.cpu?.entity_id, 'sensor.system_monitor_processor_use', 'CPU still found without registry keys');
 assertEqual(enMetrics.memory?.entity_id, 'sensor.system_monitor_memory_use_percent', 'RAM still found without registry keys');
 assertEqual(enMetrics.disk?.entity_id, 'sensor.system_monitor_disk_use_percent', 'disk still found without registry keys');
+
+// ---------------------------------------------------------------------------
+// Alarm panel selection (issue #16)
+//
+// With several panels (Alarmo master + per-area), every summary surface must
+// agree, and the armed one must win over a stray disarmed one.
+// ---------------------------------------------------------------------------
+console.log('\n── pickAlarmPanel ──');
+
+const mkPanel = (id, state) => ({
+  entity_id: `alarm_control_panel.${id}`, state, attributes: {},
+  last_changed: '', last_updated: '', context: { id: '' },
+});
+
+const PANELS = [
+  mkPanel('area_garage', 'disarmed'),
+  mkPanel('alarmo', 'armed_night'),
+  { entity_id: 'light.hall', state: 'on', attributes: {}, last_changed: '', last_updated: '', context: { id: '' } },
+];
+assertEqual(pickAlarmPanel(PANELS)?.entity_id, 'alarm_control_panel.alarmo',
+  'the armed panel wins over a disarmed one, whatever the list order');
+assertEqual(pickAlarmPanel([mkPanel('b', 'disarmed'), mkPanel('a', 'disarmed')])?.entity_id,
+  'alarm_control_panel.a', 'equal severity ties break on entity_id — deterministic');
+assertEqual(pickAlarmPanel([mkPanel('a', 'armed_home'), mkPanel('b', 'triggered')])?.entity_id,
+  'alarm_control_panel.b', 'triggered outranks armed');
+assertEqual(pickAlarmPanel([mkPanel('a', 'unavailable'), mkPanel('b', 'disarmed')])?.entity_id,
+  'alarm_control_panel.b', 'a real state outranks unavailable');
+assertEqual(pickAlarmPanel([]), undefined, 'no panels → undefined');
+assertEqual(sortAlarmPanels(PANELS).length, 2, 'sortAlarmPanels keeps only alarm panels');
+
+// ---------------------------------------------------------------------------
+// Entity history (issue #14)
+// ---------------------------------------------------------------------------
+console.log('\n── history parsing + demo generators ──');
+
+// The WS command returns compressed rows; REST-shaped rows must parse too.
+const parsed = parseHistoryStates([
+  { s: 'on', lu: 1000 },
+  { state: 'off', last_updated: '1970-01-01T00:33:20.000Z' }, // 2000s
+  { s: 'on', lu: 1500 },
+  { bogus: true },
+]);
+assertEqual(parsed.map((p) => p.state).join(','), 'on,on,off',
+  'compressed and REST rows both parse, sorted by time, junk dropped');
+assertEqual(parsed[0].start, 1000_000, 'lu seconds become ms');
+
+assertEqual(
+  parseLogbookEntries([{ when: 2, state: 'off' }, { when: 5, state: 'on' }, { when: 3 }])
+    .map((e) => e.state).join(','),
+  'on,off', 'logbook: newest first, stateless rows dropped');
+
+assertEqual(isNumericHistory([{ state: '21.5', start: 0 }, { state: 'unavailable', start: 1 }]), true,
+  'numeric series stays numeric despite unavailability gaps');
+assertEqual(isNumericHistory([{ state: 'on', start: 0 }]), false, 'discrete series is not numeric');
+
+const DEMO_BINARY = {
+  entity_id: 'binary_sensor.office_motion', state: 'on', attributes: {},
+  last_changed: '', last_updated: '', context: { id: '' },
+};
+const T0 = 1_000_000_000_000;
+const series = generateDemoHistory(DEMO_BINARY, T0, T0 + 24 * 3_600_000);
+assert(series.length > 1, 'demo binary history has multiple segments');
+assertEqual(series[series.length - 1].state, 'on', 'demo history ends on the current state');
+assertEqual(new Set(series.map((p) => p.state)).size, 2, 'demo binary history alternates two states');
+const series2 = generateDemoHistory(DEMO_BINARY, T0, T0 + 24 * 3_600_000);
+assertEqual(JSON.stringify(series), JSON.stringify(series2),
+  'demo history is deterministic per entity (same on reopen)');
+
+const DEMO_TEMP = { ...DEMO_BINARY, entity_id: 'sensor.office_temp', state: '21.4' };
+const tempSeries = generateDemoHistory(DEMO_TEMP, T0, T0 + 24 * 3_600_000);
+assertEqual(isNumericHistory(tempSeries), true, 'demo numeric history is numeric');
+assertEqual(tempSeries[tempSeries.length - 1].state, '21.4', 'numeric demo history lands on the current value');
+
+const activity = demoLogbookFromHistory(series);
+assert(activity.length >= 2, 'demo logbook derives transitions');
+assert(activity[0].when >= activity[activity.length - 1].when, 'demo logbook is newest first');

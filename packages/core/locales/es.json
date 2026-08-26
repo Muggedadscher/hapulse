@@ -909,5 +909,16 @@
   "changelog.whatsNew.title": "Novedades de {version}",
   "changelog.whatsNew.dismiss": "Entendido",
   "changelog.history.title": "Registro de cambios",
-  "settings.about.whatsNew": "Novedades"
+  "settings.about.whatsNew": "Novedades",
+  "entityDetail.history": "Historial",
+  "entityDetail.activity": "Actividad",
+  "entityDetail.showMore": "Mostrar más",
+  "entityDetail.showLess": "Mostrar menos",
+  "entityDetail.range7d": "7 días",
+  "entityDetail.range24h": "24 horas",
+  "entityDetail.historyEmpty": "Sin historial registrado para este periodo",
+  "entityDetail.activityEmpty": "Sin actividad reciente",
+  "entityDetail.members": "Entidades agrupadas",
+  "entityDetail.today": "Hoy",
+  "entityDetail.yesterday": "Ayer"
 }

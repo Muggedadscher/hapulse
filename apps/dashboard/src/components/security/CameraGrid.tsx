@@ -16,6 +16,7 @@ import { Card } from '../ui/Card';
 import { resolveEntityPicture } from '../../lib/media';
 import type { HassEntity, Room } from '@hapulse/core';
 import { getRoomName } from './roomUtils';
+import { useUIStore } from '../../stores/uiStore';
 import './CameraGrid.css';
 
 const REFRESH_INTERVAL_MS = 10_000;
@@ -55,8 +56,21 @@ function CameraTile({ entity, motionActive, roomName }: CameraTileProps) {
 
   const src = base ? `${base}${base.includes('?') ? '&' : '?'}_ts=${tick}` : null;
 
+  const openEntityDetail = useUIStore((st) => st.openEntityDetail);
+
   return (
-    <Card className="camera-tile">
+    <Card
+      className="camera-tile camera-tile--pressable"
+      onClick={() => openEntityDetail(entity.entity_id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openEntityDetail(entity.entity_id);
+        }
+      }}
+    >
       <div className="camera-tile__frame">
         {src && !error ? (
           <img
