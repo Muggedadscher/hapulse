@@ -128,6 +128,9 @@ export interface EntityRegistryEntry {
   /** Integration-set, never translated — the stable way to identify a sensor. */
   translation_key?: string | null;
   unique_id?: string | null;
+  /** Config entry the entity belongs to — resolves an integration's services
+   *  (e.g. Music Assistant's get_library) without an admin-only lookup. */
+  config_entry_id?: string | null;
 }
 
 export interface Registries {

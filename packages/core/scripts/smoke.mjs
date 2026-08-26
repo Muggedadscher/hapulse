@@ -63,6 +63,14 @@ import {
   isNumericHistory,
   generateDemoHistory,
   demoLogbookFromHistory,
+  findMusicAssistant,
+  parseMALibraryPage,
+  parseMASearchResults,
+  parseMAQueue,
+  demoQueueSnapshot,
+  demoLibraryPage,
+  MA_MEDIA_TYPES,
+  DEMO_MA_LIBRARY,
   RELEASES,
   CURRENT_VERSION,
   CHANGE_KINDS,
@@ -1141,3 +1149,119 @@ assertEqual(tempSeries[tempSeries.length - 1].state, '21.4', 'numeric demo histo
 const activity = demoLogbookFromHistory(series);
 assert(activity.length >= 2, 'demo logbook derives transitions');
 assert(activity[0].when >= activity[activity.length - 1].when, 'demo logbook is newest first');
+
+// ---------------------------------------------------------------------------
+// Music Assistant (issue #2)
+// ---------------------------------------------------------------------------
+console.log('\n── music assistant ──');
+
+// Registry shapes verified against a real HA: partial dicts carry platform
+// and config_entry_id.
+const MA_REGISTRIES = {
+  areas: [], devices: [],
+  entities: [
+    { entity_id: 'media_player.kitchen_nest_2', platform: 'music_assistant', config_entry_id: 'ENTRY1' },
+    { entity_id: 'media_player.living_room_nest_2', platform: 'music_assistant', config_entry_id: 'ENTRY1' },
+    { entity_id: 'sensor.ma_diag', platform: 'music_assistant', config_entry_id: 'ENTRY1' },
+    { entity_id: 'media_player.kitchen', platform: 'universal' },
+  ],
+};
+const maInfo = findMusicAssistant(MA_REGISTRIES);
+assertEqual(maInfo?.configEntryId, 'ENTRY1', 'MA config entry resolved from the registry');
+assertEqual(maInfo?.playerIds.join(','),
+  'media_player.kitchen_nest_2,media_player.living_room_nest_2',
+  'only MA media players are listed (sorted, no universal wrappers, no diag sensors)');
+assertEqual(findMusicAssistant({ areas: [], devices: [], entities: [] }), null,
+  'no MA entities → null (Music page keeps its regular layout)');
+assertEqual(findMusicAssistant(null), null, 'null registries → null');
+
+// get_library response parsing — shape captured from a live call.
+const LIVE_LIBRARY_RESPONSE = {
+  items: [
+    { media_type: 'playlist', uri: 'library://playlist/34', name: 'Morning', version: '', image: 'https://cdn/img.jpg', favorite: true, explicit: null },
+    { media_type: 'playlist', uri: 'library://playlist/90', name: '', version: '', image: '', favorite: false },
+    { bogus: true },
+  ],
+  limit: 25, offset: 0, order_by: 'name', media_type: 'playlist',
+};
+const page = parseMALibraryPage(LIVE_LIBRARY_RESPONSE, 'playlist');
+assertEqual(page.items.length, 2, 'items parsed, junk rows dropped');
+assertEqual(page.items[0].favorite, true, 'favorite flag kept');
+assertEqual(page.items[1].image, null, 'empty image string becomes null (placeholder path)');
+assertEqual(page.limit, 25, 'pagination fields kept');
+assertEqual(parseMALibraryPage(null, 'album').items.length, 0, 'null response → empty page');
+
+// Demo library: every tab has content, and pagination/filtering behave.
+for (const type of MA_MEDIA_TYPES) {
+  assert(DEMO_MA_LIBRARY[type].length > 0, `demo library has ${type}s`);
+}
+assertEqual(demoLibraryPage('playlist', { favorite: true }).items.every((i) => i.favorite), true,
+  'demo favourite filter filters');
+assertEqual(demoLibraryPage('playlist', { search: 'coffee' }).items.length, 1,
+  'demo search matches case-insensitively');
+assertEqual(demoLibraryPage('album', { offset: 10, limit: 5 }).items.length,
+  Math.max(0, Math.min(5, DEMO_MA_LIBRARY.album.length - 10)),
+  'demo pagination slices');
+
+// music_assistant.search response — shape captured from a live call (Spotify
+// provider enabled). Buckets are PLURAL; artist credits become the subtitle.
+const LIVE_SEARCH_RESPONSE = {
+  artists: [],
+  albums: [
+    {
+      media_type: 'album', uri: 'spotify--oDU8PC5W://album/4m2880j', name: 'Random Access Memories',
+      version: '', image: 'https://i.scdn.co/image/x.jpg', favorite: false, explicit: null,
+      artists: [{ media_type: 'artist', uri: 'spotify--x://artist/1', name: 'Daft Punk' }],
+    },
+    { media_type: 'album', uri: 'spotify--x://album/2', name: 'Discovery', version: 'Radio Edit', image: '', favorite: false, artists: [] },
+  ],
+  tracks: [], playlists: [], radio: [],
+};
+const found = parseMASearchResults(LIVE_SEARCH_RESPONSE, 'album');
+assertEqual(found.length, 2, 'search results parsed from the plural bucket');
+assertEqual(found[0].subtitle, 'Daft Punk', 'artist credits become the subtitle');
+assertEqual(found[0].uri.startsWith('spotify--'), true, 'provider URIs pass through for play_media');
+assertEqual(found[1].subtitle, undefined, 'no artists → no subtitle (version shows instead)');
+assertEqual(parseMASearchResults(LIVE_SEARCH_RESPONSE, 'track').length, 0, 'empty bucket → empty');
+assertEqual(parseMASearchResults(null, 'album').length, 0, 'null response → empty');
+
+// music_assistant.get_queue — response keyed by entity_id (shape captured live).
+const LIVE_QUEUE_RESPONSE = {
+  'media_player.kitchen_nest_2': {
+    queue_id: 'c8a75856', active: true, name: 'Kitchen Nest', items: 23,
+    shuffle_enabled: true, repeat_mode: 'all', current_index: 4, elapsed_time: 12,
+    current_item: { name: 'Coastline', media_item: { name: 'Coastline', image: 'https://cdn/a.jpg', artists: [{ name: 'Echo Atlas' }] } },
+    next_item: { media_item: { name: 'Amber' } },
+  },
+};
+const queue = parseMAQueue(LIVE_QUEUE_RESPONSE, 'media_player.kitchen_nest_2');
+assertEqual(queue?.items, 23, 'queue count parsed');
+assertEqual(queue?.shuffle, true, 'shuffle parsed');
+assertEqual(queue?.repeat, 'all', 'repeat parsed');
+assertEqual(queue?.position, 5, 'current_index becomes a 1-based position');
+assertEqual(queue?.current?.name, 'Coastline', 'current item name');
+assertEqual(queue?.current?.artist, 'Echo Atlas', 'artist credits joined');
+assertEqual(queue?.next?.name, 'Amber', 'next item name from nested media_item');
+assertEqual(parseMAQueue(LIVE_QUEUE_RESPONSE, 'media_player.other'), null, 'unknown player → null');
+assertEqual(parseMAQueue(null, 'x'), null, 'null response → null');
+
+const demoQ = demoQueueSnapshot({ media_title: 'Midnight Rain', media_artist: 'Taylor Swift' });
+assertEqual(demoQ.current?.name, 'Midnight Rain', 'demo queue mirrors the playing item');
+assert(demoQ.next != null && demoQ.items > 0, 'demo queue fabricates a next item and count');
+assertEqual(demoQueueSnapshot({}).current, null, 'idle demo player → empty queue');
+
+// Demo speaker grouping — join lists the leader first on every member; unjoin
+// dissolves groups of one.
+const GROUP_BASE = {
+  'media_player.a': { entity_id: 'media_player.a', state: 'idle', attributes: { group_members: [] }, last_changed: '', last_updated: '', context: { id: '' } },
+  'media_player.b': { entity_id: 'media_player.b', state: 'idle', attributes: { group_members: [] }, last_changed: '', last_updated: '', context: { id: '' } },
+};
+const joined = applyDemoService(GROUP_BASE, 'media_player', 'join',
+  { group_members: ['media_player.b'] }, { entity_id: 'media_player.a' });
+assertEqual(joined['media_player.a'].attributes.group_members.join(','), 'media_player.a,media_player.b',
+  'join: leader lists the group, itself first');
+assertEqual(joined['media_player.b'].attributes.group_members.join(','), 'media_player.a,media_player.b',
+  'join: member mirrors the group');
+const unjoined = applyDemoService(joined, 'media_player', 'unjoin', {}, { entity_id: 'media_player.b' });
+assertEqual(unjoined['media_player.b'].attributes.group_members.length, 0, 'unjoin clears the member');
+assertEqual(unjoined['media_player.a'].attributes.group_members.length, 0, 'a group of one dissolves');

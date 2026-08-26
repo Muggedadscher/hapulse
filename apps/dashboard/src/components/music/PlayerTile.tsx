@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useArtworkUrl } from '../../lib/useImageFallback';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
@@ -38,7 +39,9 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
   const name = (attrs['friendly_name'] as string | undefined) ?? entity.entity_id;
   const title = attrs['media_title'] as string | undefined;
   const entityPicture = attrs['entity_picture'] as string | null | undefined;
-  const artworkUrl = resolveEntityPicture(entityPicture, url);
+  const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
+    resolveEntityPicture(entityPicture, url),
+  );
   const volumeLevel = (attrs['volume_level'] as number | undefined) ?? 0;
 
   const target = { entity_id: entity.entity_id };
@@ -75,7 +78,7 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
       {/* Artwork thumb */}
       <div className="player-tile__artwork">
         {artworkUrl ? (
-          <img src={artworkUrl} alt="" className="player-tile__artwork-img" />
+          <img src={artworkUrl} alt="" className="player-tile__artwork-img" onError={onArtworkError} />
         ) : (
           <div className="player-tile__artwork-fallback" aria-hidden="true">
             <Music size={20} strokeWidth={1.5} />

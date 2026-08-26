@@ -44,6 +44,30 @@ export interface Release {
 /** Newest first. */
 export const RELEASES: Release[] = [
   {
+    version: '1.3.0',
+    date: '2026-08-26',
+    title: 'Music Assistant, fully at home',
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          'A music library browser on the Music page when Music Assistant is set up: playlists, albums, artists, tracks and radio, with artwork, favourites, pagination and per-item queueing (play now, play next, add, replace)',
+          'Search spans every provider Music Assistant knows \u2014 Spotify included \u2014 and results play directly on any of your speakers',
+          'Speaker grouping: link speakers to play together, straight from the queue card \u2014 works for any integration that supports grouping',
+          'A play queue card: what\u2019s playing, what\u2019s next, shuffle, repeat, and moving the queue to another speaker mid-play',
+          'Connect Music Assistant directly (server URL + API token, one-time) and the queue becomes the full list \u2014 scroll it, drag tracks to reorder, remove them',
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          'Album covers and artwork that cannot load \u2014 typically http:// images blocked on the hosted (https) version \u2014 now fall back to a tidy placeholder everywhere instead of a broken image',
+          'Popovers (like the speaker group menu) no longer render underneath sections further down the page',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-08-26',
     title: 'Every entity gets a detail view',

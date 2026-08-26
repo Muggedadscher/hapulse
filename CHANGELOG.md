@@ -5,6 +5,23 @@ All notable changes to HAPulse are recorded here.
 <!-- Generated from packages/core/src/changelog.ts by `npm run changelog`.
      Edit that file, not this one — this file is overwritten. -->
 
+## 1.3.0 — 2026-08-26
+
+_Music Assistant, fully at home_
+
+### Added
+
+- A music library browser on the Music page when Music Assistant is set up: playlists, albums, artists, tracks and radio, with artwork, favourites, pagination and per-item queueing (play now, play next, add, replace)
+- Search spans every provider Music Assistant knows — Spotify included — and results play directly on any of your speakers
+- Speaker grouping: link speakers to play together, straight from the queue card — works for any integration that supports grouping
+- A play queue card: what’s playing, what’s next, shuffle, repeat, and moving the queue to another speaker mid-play
+- Connect Music Assistant directly (server URL + API token, one-time) and the queue becomes the full list — scroll it, drag tracks to reorder, remove them
+
+### Fixed
+
+- Album covers and artwork that cannot load — typically http:// images blocked on the hosted (https) version — now fall back to a tidy placeholder everywhere instead of a broken image
+- Popovers (like the speaker group menu) no longer render underneath sections further down the page
+
 ## 1.2.0 — 2026-08-26
 
 _Every entity gets a detail view_

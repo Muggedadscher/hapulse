@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useArtworkUrl } from '../../lib/useImageFallback';
 import { useT } from '../../i18n/useT';
 import type { TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
@@ -81,7 +82,9 @@ function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
   const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic } =
     getZoneState(players, t);
 
-  const artworkUrl = isActive ? resolveEntityPicture(entityPic, baseUrl) : null;
+  const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
+    isActive ? resolveEntityPicture(entityPic, baseUrl) : null,
+  );
 
   const handleMute = useCallback(() => {
     playingPlayers.forEach((p) =>
@@ -103,7 +106,7 @@ function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
     <li className={`zone-row${isActive ? '' : ' zone-row--inactive'}`}>
       <div className="zone-row__art">
         {artworkUrl ? (
-          <img src={artworkUrl} alt="" className="zone-row__art-img" />
+          <img src={artworkUrl} alt="" className="zone-row__art-img" onError={onArtworkError} />
         ) : (
           <div className="zone-row__art-fallback" aria-hidden="true">
             <RoomIcon name={iconName} size={18} strokeWidth={1.5} />
@@ -172,7 +175,9 @@ function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
   const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic } =
     getZoneState(players, t);
 
-  const artworkUrl = isActive ? resolveEntityPicture(entityPic, baseUrl) : null;
+  const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
+    isActive ? resolveEntityPicture(entityPic, baseUrl) : null,
+  );
 
   const handleMute = useCallback(() => {
     playingPlayers.forEach((p) =>
@@ -195,7 +200,7 @@ function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
       <div className="zone-grid-card__top">
         <div className="zone-grid-card__art">
           {artworkUrl ? (
-            <img src={artworkUrl} alt="" className="zone-grid-card__art-img" />
+            <img src={artworkUrl} alt="" className="zone-grid-card__art-img" onError={onArtworkError} />
           ) : (
             <div className="zone-grid-card__art-fallback" aria-hidden="true">
               <RoomIcon name={iconName} size={18} strokeWidth={1.5} />

@@ -169,6 +169,7 @@ export const DEMO_REGISTRIES: Registries = {
     { entity_id: 'sensor.bedroom_temperature', area_id: null, device_id: 'dev_br_sensor', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Temperature', icon: null },
     { entity_id: 'sensor.bedroom_humidity', area_id: null, device_id: 'dev_br_sensor', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Humidity', icon: null },
     { entity_id: 'media_player.bedroom_speaker', area_id: null, device_id: 'dev_br_speaker', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Bedroom Speaker', icon: null },
+    { entity_id: 'media_player.kitchen_speaker', area_id: 'kitchen', device_id: null, entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Kitchen Speaker', icon: null },
     { entity_id: 'binary_sensor.bedroom_window', area_id: null, device_id: 'dev_br_sensor', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Bedroom Window', icon: null },
     // --- Office ---
     { entity_id: 'light.office_ceiling', area_id: null, device_id: 'dev_of_lights', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Office Ceiling', icon: null },
@@ -502,8 +503,20 @@ export const DEMO_ENTITIES: HassEntityMap = {
     is_volume_muted: false,
     source: 'Spotify',
     source_list: ['Spotify', 'AirPlay', 'Bluetooth'],
-    // PAUSE|VOLUME_SET|VOLUME_MUTE|PREV|NEXT|SELECT_SOURCE|PLAY|SHUFFLE|REPEAT
-    supported_features: 1 | 4 | 8 | 16 | 32 | 2048 | 16384 | 32768 | 262144,
+    group_members: [],
+    // PAUSE|VOLUME_SET|VOLUME_MUTE|PREV|NEXT|SELECT_SOURCE|PLAY|SHUFFLE|REPEAT|GROUPING
+    supported_features: 1 | 4 | 8 | 16 | 32 | 2048 | 16384 | 32768 | 262144 | 524288,
+  }),
+  'media_player.kitchen_speaker': makeEntity('media_player.kitchen_speaker', 'idle', {
+    friendly_name: 'Kitchen Speaker',
+    entity_picture: null,
+    volume_level: 0.3,
+    is_volume_muted: false,
+    source: 'Spotify',
+    source_list: ['Spotify', 'AirPlay'],
+    group_members: [],
+    // Same speaker family as the bedroom one — groupable with it.
+    supported_features: 1 | 4 | 8 | 16 | 32 | 2048 | 16384 | 32768 | 262144 | 524288,
   }),
 
   // --- Covers ---
@@ -818,6 +831,12 @@ export function applyDemoService(
       ? [target.entity_id]
       : Object.keys(entities).filter((id) => id.startsWith(domain + '.'));
 
+  // Speaker grouping mutates SEVERAL entities (leader and members all carry
+  // the group in group_members), so it is handled before per-entity dispatch.
+  if (domain === 'media_player' && (service === 'join' || service === 'unjoin')) {
+    return applyGroupingService(updated, service, data, targetIds, now);
+  }
+
   for (const entityId of targetIds) {
     const entity = updated[entityId];
     if (!entity) continue;
@@ -1035,4 +1054,46 @@ function deepCloneEntities(entities: HassEntityMap): HassEntityMap {
     out[id] = { ...entity, attributes: { ...entity.attributes } };
   }
   return out;
+}
+
+/** Demo simulation of media_player.join / unjoin — mirrors HA's convention:
+ *  every group member's `group_members` lists the leader first. */
+function applyGroupingService(
+  updated: HassEntityMap,
+  service: string,
+  data: Record<string, unknown>,
+  targetIds: string[],
+  now: string,
+): HassEntityMap {
+  const touch = (id: string, groupMembers: string[]) => {
+    const e = updated[id];
+    if (!e) return;
+    updated[id] = {
+      ...e,
+      attributes: { ...e.attributes, group_members: groupMembers },
+      last_changed: now,
+      last_updated: now,
+    };
+  };
+
+  if (service === 'join') {
+    const leader = targetIds[0];
+    if (!leader) return updated;
+    const raw = data['group_members'];
+    const members = Array.isArray(raw) ? raw.filter((m): m is string => typeof m === 'string') : [];
+    const group = [leader, ...members.filter((m) => m !== leader)];
+    for (const id of group) touch(id, group);
+    return updated;
+  }
+
+  // unjoin: remove each target from whatever group it is in.
+  for (const id of targetIds) {
+    const current = updated[id]?.attributes['group_members'];
+    const group = Array.isArray(current) ? (current as string[]) : [];
+    const remaining = group.filter((m) => m !== id);
+    touch(id, []);
+    // A group of one is no group at all.
+    for (const m of remaining) touch(m, remaining.length > 1 ? remaining : []);
+  }
+  return updated;
 }

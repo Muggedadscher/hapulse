@@ -41,6 +41,12 @@ export interface CustomizationSettings {
   entityOrder: Record<string, string[]>;
   /** Entity IDs pinned to the favorites strip on the Home page */
   favorites: string[];
+  /** Music Assistant library: last chosen playback target (entity_id). */
+  libraryPlayerId: string | null;
+  /** Direct Music Assistant connection (full queue): server URL + API token.
+   *  Optional — without it the queue card shows HA's summary only. */
+  maServerUrl: string | null;
+  maToken: string | null;
   /** Chosen weather.* entity id for the header glance + weather modal. Empty = auto (first weather entity). */
   weatherEntity: string;
   /** Ordered Home Overview section ids (e.g. scenes/hero/energy/...). */
@@ -222,6 +228,9 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   mobileHiddenSecuritySections: [],
   mobileHiddenSystemSections: [],
   mobileHiddenEnergySections: [],
+  libraryPlayerId: null,
+  maServerUrl: null,
+  maToken: null,
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(

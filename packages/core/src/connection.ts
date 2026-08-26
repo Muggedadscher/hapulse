@@ -263,6 +263,30 @@ export class HAConnection {
    * first. Only state-change rows are kept — service-call noise is dropped by
    * the parser. Returns an empty list on failure.
    */
+  /**
+   * Call a service that returns response data (`SupportsResponse` services,
+   * e.g. `music_assistant.get_library`). The plain `callService` wrapper drops
+   * the response; this sends the WS `call_service` command with
+   * `return_response` and hands the caller the raw response payload.
+   * Throws on failure — callers decide their fallback.
+   */
+  async callServiceWithResponse<T = unknown>(
+    domain: string,
+    service: string,
+    serviceData?: Record<string, unknown>,
+    target?: { entity_id?: string | string[] },
+  ): Promise<T> {
+    const result = await this.#conn.sendMessagePromise<{ response?: T }>({
+      type: 'call_service',
+      domain,
+      service,
+      ...(serviceData !== undefined ? { service_data: serviceData } : {}),
+      ...(target !== undefined ? { target } : {}),
+      return_response: true,
+    });
+    return result?.response as T;
+  }
+
   async fetchLogbook(entityId: string, start: Date, end: Date): Promise<LogbookEntry[]> {
     try {
       const res = await this.#conn.sendMessagePromise<unknown[]>({

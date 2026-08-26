@@ -42,6 +42,30 @@ export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from
 export type { DeviceAreaMap } from './rooms.js';
 
 // System Monitor metric identification
+// Music Assistant (library browsing — issue #2)
+export {
+  MA_MEDIA_TYPES,
+  findMusicAssistant,
+  parseMALibraryPage,
+  parseMASearchResults,
+  parseMAQueue,
+  demoQueueSnapshot,
+  DEMO_MA_LIBRARY,
+  demoLibraryPage,
+} from './musicAssistant.js';
+export { MusicAssistantClient, parseMAFullQueueItems } from './maClient.js';
+export type { MAFullQueueItem } from './maClient.js';
+
+export type {
+  MAQueueItem,
+  MAQueueSnapshot,
+  MAMediaType,
+  MAEnqueueMode,
+  MAMediaItem,
+  MALibraryPage,
+  MusicAssistantInfo,
+} from './musicAssistant.js';
+
 // Alarm panel selection
 export { pickAlarmPanel, sortAlarmPanels } from './alarm.js';
 
