@@ -5,6 +5,15 @@ All notable changes to HAPulse are recorded here.
 <!-- Generated from packages/core/src/changelog.ts by `npm run changelog`.
      Edit that file, not this one — this file is overwritten. -->
 
+## 1.3.1 — 2026-08-26
+
+_Real covers on the hosted version_
+
+### Fixed
+
+- With the direct Music Assistant connection set up, the Now Playing card, the player list and the Zones now show the real album cover — fetched from the music provider itself — whenever the Home Assistant one cannot load on the hosted (https) version
+- Artwork the browser would block anyway (http:// images on an https page) is skipped up front instead of producing a console warning per cover
+
 ## 1.3.0 — 2026-08-26
 
 _Music Assistant, fully at home_

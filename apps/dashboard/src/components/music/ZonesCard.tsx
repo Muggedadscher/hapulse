@@ -5,6 +5,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
 import { useArtworkUrl } from '../../lib/useImageFallback';
+import { useMAArtwork } from '../../lib/maArtwork';
 import { useT } from '../../i18n/useT';
 import type { TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
@@ -66,6 +67,7 @@ function getZoneState(players: HassEntity[], t: TFunction) {
     canVolume: volPlayers.length > 0,
     subline,
     entityPic,
+    firstActive,
   };
 }
 
@@ -79,11 +81,12 @@ interface ZoneRowProps {
 function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
   const t = useT();
   const { room, iconName, players } = zone;
-  const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic } =
+  const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic, firstActive } =
     getZoneState(players, t);
 
   const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
     isActive ? resolveEntityPicture(entityPic, baseUrl) : null,
+    useMAArtwork(isActive ? firstActive : null),
   );
 
   const handleMute = useCallback(() => {
@@ -172,11 +175,12 @@ interface ZoneGridCardProps {
 function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
   const t = useT();
   const { room, iconName, players } = zone;
-  const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic } =
+  const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic, firstActive } =
     getZoneState(players, t);
 
   const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
     isActive ? resolveEntityPicture(entityPic, baseUrl) : null,
+    useMAArtwork(isActive ? firstActive : null),
   );
 
   const handleMute = useCallback(() => {

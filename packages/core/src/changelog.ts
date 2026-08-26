@@ -44,6 +44,20 @@ export interface Release {
 /** Newest first. */
 export const RELEASES: Release[] = [
   {
+    version: '1.3.1',
+    date: '2026-08-26',
+    title: 'Real covers on the hosted version',
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          'With the direct Music Assistant connection set up, the Now Playing card, the player list and the Zones now show the real album cover \u2014 fetched from the music provider itself \u2014 whenever the Home Assistant one cannot load on the hosted (https) version',
+          'Artwork the browser would block anyway (http:// images on an https page) is skipped up front instead of producing a console warning per cover',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-08-26',
     title: 'Music Assistant, fully at home',

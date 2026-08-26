@@ -53,8 +53,8 @@ export {
   DEMO_MA_LIBRARY,
   demoLibraryPage,
 } from './musicAssistant.js';
-export { MusicAssistantClient, parseMAFullQueueItems } from './maClient.js';
-export type { MAFullQueueItem } from './maClient.js';
+export { MusicAssistantClient, parseMAFullQueueItems, parseMAQueuesArtwork } from './maClient.js';
+export type { MAFullQueueItem, MAQueueArtwork } from './maClient.js';
 
 export type {
   MAQueueItem,

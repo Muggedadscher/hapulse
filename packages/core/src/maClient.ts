@@ -163,11 +163,38 @@ export class MusicAssistantClient {
     });
   }
 
+  /**
+   * Artwork for every active queue in one call (`player_queues/all`) — feeds
+   * the Now Playing / Players / Zones artwork fallback when entity_picture
+   * cannot load (mixed content on the hosted dashboard).
+   */
+  async queuesArtwork(): Promise<MAQueueArtwork[]> {
+    const result = await this.#request<unknown[]>('player_queues/all', {});
+    return parseMAQueuesArtwork(result);
+  }
+
   close(): void {
     this.#ws?.close();
     this.#ws = null;
     this.#ready = null;
   }
+}
+
+/** Artwork for one active queue: what's playing and its (loadable) cover. */
+export interface MAQueueArtwork {
+  queueId: string;
+  /** Current item's title, for matching wrapper players by media_title. */
+  title: string | null;
+  /** Remotely-accessible artwork URL, or null. */
+  image: string | null;
+}
+
+/** ImageType dict → URL, but only when a browser can load it directly
+ *  (proxied-only images need MA's image proxy and stay null). */
+function remotelyAccessibleImage(raw: unknown): string | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const img = raw as Record<string, unknown>;
+  return img['remotely_accessible'] === true && typeof img['path'] === 'string' ? img['path'] : null;
 }
 
 /** Defensive parse of `player_queues/items` rows. */
@@ -189,21 +216,40 @@ export function parseMAFullQueueItems(rows: unknown): MAFullQueueItem[] {
           .map((a) => (typeof a === 'object' && a !== null ? (a as Record<string, unknown>)['name'] : null))
           .filter((n): n is string => typeof n === 'string')
       : [];
-    // ImageType dict: only remotely-accessible URLs load from a browser
-    // without MA's image proxy.
-    const img = typeof it['image'] === 'object' && it['image'] !== null
-      ? (it['image'] as Record<string, unknown>)
-      : null;
-    const image =
-      img != null && img['remotely_accessible'] === true && typeof img['path'] === 'string'
-        ? img['path']
-        : null;
+    const image = remotelyAccessibleImage(it['image']) ?? remotelyAccessibleImage(media['image']);
     out.push({
       queueItemId: id,
       name,
       artist: artists.length > 0 ? artists.join(', ') : null,
       image,
       durationSeconds: typeof it['duration'] === 'number' ? it['duration'] : null,
+    });
+  }
+  return out;
+}
+
+/** Defensive parse of `player_queues/all` into per-queue artwork entries. */
+export function parseMAQueuesArtwork(rows: unknown): MAQueueArtwork[] {
+  if (!Array.isArray(rows)) return [];
+  const out: MAQueueArtwork[] = [];
+  for (const raw of rows) {
+    if (typeof raw !== 'object' || raw === null) continue;
+    const q = raw as Record<string, unknown>;
+    const queueId = typeof q['queue_id'] === 'string' ? q['queue_id'] : null;
+    if (queueId == null) continue;
+    const current = typeof q['current_item'] === 'object' && q['current_item'] !== null
+      ? (q['current_item'] as Record<string, unknown>)
+      : null;
+    if (current == null) continue;
+    const media = typeof current['media_item'] === 'object' && current['media_item'] !== null
+      ? (current['media_item'] as Record<string, unknown>)
+      : {};
+    const title = typeof current['name'] === 'string' ? current['name']
+      : typeof media['name'] === 'string' ? media['name'] : null;
+    out.push({
+      queueId,
+      title,
+      image: remotelyAccessibleImage(current['image']) ?? remotelyAccessibleImage(media['image']),
     });
   }
   return out;

@@ -67,6 +67,7 @@ import {
   parseMALibraryPage,
   parseMASearchResults,
   parseMAQueue,
+  parseMAQueuesArtwork,
   demoQueueSnapshot,
   demoLibraryPage,
   MA_MEDIA_TYPES,
@@ -1265,3 +1266,29 @@ assertEqual(joined['media_player.b'].attributes.group_members.join(','), 'media_
 const unjoined = applyDemoService(joined, 'media_player', 'unjoin', {}, { entity_id: 'media_player.b' });
 assertEqual(unjoined['media_player.b'].attributes.group_members.length, 0, 'unjoin clears the member');
 assertEqual(unjoined['media_player.a'].attributes.group_members.length, 0, 'a group of one dissolves');
+
+// player_queues/all → artwork entries (Now Playing / Zones fallback).
+const QUEUES_ALL = [
+  {
+    queue_id: 'q1', display_name: 'Office Nest', items: 12,
+    current_item: {
+      name: 'Hotline Bling',
+      image: { type: 'thumb', path: 'https://i.scdn.co/image/abc', provider: 'spotify', remotely_accessible: true },
+      media_item: { name: 'Hotline Bling', artists: [{ name: 'Drake' }] },
+    },
+  },
+  {
+    queue_id: 'q2', current_item: {
+      name: 'Local Track',
+      image: { type: 'thumb', path: 'track.jpg', provider: 'file', remotely_accessible: false },
+    },
+  },
+  { queue_id: 'q3', current_item: null },
+  { bogus: true },
+];
+const art = parseMAQueuesArtwork(QUEUES_ALL);
+assertEqual(art.length, 2, 'queues without a current item are skipped');
+assertEqual(art[0].image, 'https://i.scdn.co/image/abc', 'remotely-accessible artwork kept');
+assertEqual(art[0].title, 'Hotline Bling', 'title kept for wrapper-player matching');
+assertEqual(art[1].image, null, 'proxied-only artwork stays null');
+assertEqual(parseMAQueuesArtwork(null).length, 0, 'null response → empty');

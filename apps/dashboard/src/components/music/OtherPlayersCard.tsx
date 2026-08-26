@@ -5,6 +5,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
 import { useArtworkUrl } from '../../lib/useImageFallback';
+import { useMAArtwork } from '../../lib/maArtwork';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
@@ -33,6 +34,7 @@ function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
   const entityPic  = attrs['entity_picture'] as string | null | undefined;
   const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
     resolveEntityPicture(entityPic, baseUrl),
+    useMAArtwork(entity),
   );
   const stateLabel = isPlaying && title ? title : sl('media_player', entity.state);
 

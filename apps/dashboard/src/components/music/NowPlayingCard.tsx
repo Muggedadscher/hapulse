@@ -23,6 +23,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
 import { useArtworkUrl } from '../../lib/useImageFallback';
+import { useMAArtwork } from '../../lib/maArtwork';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
@@ -118,6 +119,9 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
   const entityPicture = attrs['entity_picture'] as string | null | undefined;
   const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
     resolveEntityPicture(entityPicture, url),
+    // Music Assistant knows the provider's own (https) cover for whatever is
+    // playing — rescues artwork the hosted dashboard cannot load from HA.
+    useMAArtwork(entity),
   );
 
   // ---- Source dropdown ----

@@ -21,6 +21,7 @@ import {
 import type {
   MAQueueSnapshot,
   MAFullQueueItem,
+  MAQueueArtwork,
   HistoryPoint,
   LogbookEntry,
   MAEnqueueMode,
@@ -403,4 +404,18 @@ export async function deleteMAQueueItem(queueId: string, queueItemId: string): P
   const client = directClient();
   if (!client) return;
   await client.deleteItem(queueId, queueItemId);
+}
+
+/** Artwork for every active queue — feeds the players/zones artwork fallback. */
+export async function getMAQueuesArtwork(): Promise<MAQueueArtwork[] | null> {
+  const { demo } = useConnectionStore.getState();
+  if (demo) return [];
+  const client = directClient();
+  if (!client) return null;
+  try {
+    return await client.queuesArtwork();
+  } catch (err) {
+    console.warn('[HAPulse] music assistant: queues artwork failed:', err);
+    return null;
+  }
 }

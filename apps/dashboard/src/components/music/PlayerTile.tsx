@@ -9,6 +9,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
 import { useArtworkUrl } from '../../lib/useImageFallback';
+import { useMAArtwork } from '../../lib/maArtwork';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
@@ -41,6 +42,7 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
   const entityPicture = attrs['entity_picture'] as string | null | undefined;
   const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
     resolveEntityPicture(entityPicture, url),
+    useMAArtwork(entity),
   );
   const volumeLevel = (attrs['volume_level'] as number | undefined) ?? 0;
 
