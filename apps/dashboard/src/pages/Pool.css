@@ -64,7 +64,7 @@
 }
 
 .pool-chart__body {
-  min-height: 132px;
+  min-height: 148px;
   display: flex;
   align-items: stretch;
 }
@@ -80,7 +80,7 @@
   align-items: flex-end;
   gap: 6px;
   width: 100%;
-  height: 132px;
+  height: 148px;
 }
 
 .pool-bar {
@@ -91,6 +91,15 @@
   align-items: center;
   gap: 6px;
   height: 100%;
+}
+
+.pool-bar__value {
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-dim);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .pool-bar__track {
