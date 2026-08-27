@@ -252,6 +252,10 @@ const HISTORY_RANGES = [
   { id: '30d', hours: 30 * 24, label: '30D' },
 ] as const;
 const RANGE_DEFAULT_H = HISTORY_RANGES[0].hours;
+/** [fork] Hours for a stored range id, falling back to the default (24h). */
+function rangeHoursFromId(id: string): number {
+  return HISTORY_RANGES.find((r) => r.id === id)?.hours ?? RANGE_DEFAULT_H;
+}
 const ACTIVITY_COLLAPSED = 6;
 
 interface EntityDetailModalProps {
@@ -268,7 +272,10 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const entityOverrides = useSettingsStore((s) => s.customization.entityOverrides);
   const openEntityDetail = useUIStore((s) => s.openEntityDetail);
 
-  const [rangeH, setRangeH] = useState<number>(RANGE_DEFAULT_H);
+  // [fork] Selected history range is remembered per user (synced to HA storage).
+  const detailRange = useSettingsStore((s) => s.customization.detailHistoryRange);
+  const updateCustomization = useSettingsStore((s) => s.updateCustomization);
+  const rangeH = rangeHoursFromId(detailRange);
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [logbook, setLogbook] = useState<LogbookEntry[] | null>(null);
   const [activityExpanded, setActivityExpanded] = useState(false);
@@ -276,8 +283,8 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const [windowEnd, setWindowEnd] = useState(() => Date.now());
 
   // Reset per-entity view state when the modal switches target.
+  // ([fork] the history range persists across entities via settings.)
   useEffect(() => {
-    setRangeH(RANGE_DEFAULT_H);
     setActivityExpanded(false);
     setAttrsOpen(false);
   }, [entityId]);
@@ -368,9 +375,9 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
                 <button
                   key={r.id}
                   type="button"
-                  className={`entity-detail__range-btn${rangeH === r.hours ? ' entity-detail__range-btn--active' : ''}`}
-                  onClick={() => setRangeH(r.hours)}
-                  aria-pressed={rangeH === r.hours}
+                  className={`entity-detail__range-btn${detailRange === r.id ? ' entity-detail__range-btn--active' : ''}`}
+                  onClick={() => updateCustomization({ detailHistoryRange: r.id })}
+                  aria-pressed={detailRange === r.id}
                 >
                   {r.label}
                 </button>
