@@ -136,11 +136,6 @@ export interface CustomizationSettings {
    */
   scryptedUrl: string;
   /**
-   * [fork] Last-selected time range in the reusable sensor HistoryModal
-   * (`1h`/`6h`/`24h`/`7d`/`30d`), used by the Pool page. Remembered per user.
-   */
-  historyRange: string;
-  /**
    * [fork] One-time marker: the pool summary chip has been added to `homeChips`.
    * Lets the chip default ON for existing installs (whose stored homeChips
    * predate it) exactly once, while still allowing it to be hidden afterwards.
@@ -256,7 +251,6 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   mobileHiddenSystemSections: [],
   mobileHiddenEnergySections: [],
   scryptedUrl: '', // [fork]
-  historyRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
   libraryPlayerId: null,
   maServerUrl: null,

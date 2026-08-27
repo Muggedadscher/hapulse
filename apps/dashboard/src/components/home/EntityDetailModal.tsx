@@ -244,8 +244,14 @@ function ActivityList({ entries, locale, sl, domain, deviceClass, t }: {
 // Modal
 // ---------------------------------------------------------------------------
 
-const RANGE_DEFAULT_H = 24;
-const RANGE_EXPANDED_H = 7 * 24;
+// [fork] History range options shown as pills (replaces upstream's single
+// 24h/7d toggle). `hours` drives getEntityHistory; `label` is shown on the pill.
+const HISTORY_RANGES = [
+  { id: '24h', hours: 24, label: '24H' },
+  { id: '7d', hours: 7 * 24, label: '7D' },
+  { id: '30d', hours: 30 * 24, label: '30D' },
+] as const;
+const RANGE_DEFAULT_H = HISTORY_RANGES[0].hours;
 const ACTIVITY_COLLAPSED = 6;
 
 interface EntityDetailModalProps {
@@ -262,7 +268,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const entityOverrides = useSettingsStore((s) => s.customization.entityOverrides);
   const openEntityDetail = useUIStore((s) => s.openEntityDetail);
 
-  const [rangeH, setRangeH] = useState(RANGE_DEFAULT_H);
+  const [rangeH, setRangeH] = useState<number>(RANGE_DEFAULT_H);
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [logbook, setLogbook] = useState<LogbookEntry[] | null>(null);
   const [activityExpanded, setActivityExpanded] = useState(false);
@@ -356,13 +362,20 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
         <section className="entity-detail__section">
           <div className="entity-detail__section-head">
             <h3 className="entity-detail__section-title">{t('entityDetail.history')}</h3>
-            <button
-              type="button"
-              className="entity-detail__section-action"
-              onClick={() => setRangeH((r) => (r === RANGE_DEFAULT_H ? RANGE_EXPANDED_H : RANGE_DEFAULT_H))}
-            >
-              {rangeH === RANGE_DEFAULT_H ? t('entityDetail.range7d') : t('entityDetail.range24h')}
-            </button>
+            {/* [fork] Range pills (24H/7D/30D) — replaces the 24h/7d toggle. */}
+            <div className="entity-detail__ranges" role="group" aria-label={t('entityDetail.history')}>
+              {HISTORY_RANGES.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className={`entity-detail__range-btn${rangeH === r.hours ? ' entity-detail__range-btn--active' : ''}`}
+                  onClick={() => setRangeH(r.hours)}
+                  aria-pressed={rangeH === r.hours}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
           </div>
           {history == null ? (
             <div className="entity-detail__placeholder">{t('common.loading')}</div>

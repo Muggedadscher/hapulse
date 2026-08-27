@@ -265,9 +265,9 @@ export class HAConnection {
    *
    * Distinct from `fetchHistory` above (which parses into the detail modal's
    * `HistoryPoint` state-interval shape): this returns the raw samples so the
-   * numeric sensor-history charts (HistoryModal, reused by the Pool page) can
-   * turn them into `{ t, v }` points via `parseNumericHistory`. `start`/`end`
-   * are ISO 8601 strings; returns `[]` when there is no history.
+   * Pool runtime chart (`PoolChartCard`) can turn them into `{ t, v }` points
+   * via `parseNumericHistory`. `start`/`end` are ISO 8601 strings; returns `[]`
+   * when there is no history.
    */
   async fetchSensorHistory(
     entityId: string,

@@ -93,12 +93,8 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 
 | Datei | Zweck |
 |---|---|
-| `packages/core/src/sensorHistory.ts` | Sensor-History-Typen, Parsing, Ranges, Demo-Daten (umbenannt von `history.ts`, um mit Upstreams eigener `history.ts` zu koexistieren) |
-| `apps/dashboard/src/ha/history.ts` | History-Facade (live/demo) |
-| `apps/dashboard/src/ha/useHistory.ts` | Hook: lädt History on demand |
-| `apps/dashboard/src/components/history/HistoryChart.tsx` | Inline-SVG-Chart |
-| `apps/dashboard/src/components/history/HistoryModal.tsx` | Verlauf-Modal |
-| `apps/dashboard/src/components/history/history.css` | Styles dafür |
+| `packages/core/src/sensorHistory.ts` | Numerisches Sample-Parsing + Demo-Daten für den Pool-Laufzeit-Chart (umbenannt von `history.ts`, um mit Upstreams eigener `history.ts` zu koexistieren) |
+| `apps/dashboard/src/ha/history.ts` | History-Facade (`getHistory`, live/demo) — nur noch für `PoolChartCard` |
 | `apps/dashboard/src/pages/Nvr.tsx` | NVR-Seite (Scrypted-Embed) |
 | `apps/dashboard/src/pages/Nvr.css` | Styles dafür |
 | `docs/SYNC.md` | dieses Dokument |
@@ -109,11 +105,12 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 |---|---|
 | `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben) |
 | `packages/core/src/index.ts` | Export des `sensorHistory`- und `pool`-Moduls |
-| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`-, `historyRange`- + Pool-Chip-Setting (`poolChipMigrated`) |
+| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`- + Pool-Chip-Setting (`poolChipMigrated`) |
 | `apps/dashboard/src/components/home/SummaryChips.tsx` | Pool-Chip in der Home-Leiste |
+| `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}` | Bereichs-**Pills** (24H/7D/30D) statt Upstreams 24h/7d-Umschalter |
 | `apps/dashboard/src/app/Router.tsx` | Routen `/nvr`, `/pool` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Einträge „NVR" + „Pool" (`nav.nvr`, `nav.pool`) |
-| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.*`, `nvr.*`, `pool.*` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
+| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
 > Hinweis: `SensorTile.tsx` und die `.sensor-tile--clickable`-CSS-Regel sind seit
 > dem v1.2.0-Merge **wieder Upstream-Stand** — siehe „Feature: Sensor-Verlauf".
@@ -153,23 +150,25 @@ Hinweise:
   verbieten das Einbetten → dann bleibt der Rahmen leer; der **Open**-Button
   öffnet Scrypted in einem neuen Tab.
 
-## Feature: Sensor-Verlauf (History-Modal)
+## Feature: Sensor-Verlauf
 
-Das `HistoryModal` zeigt den Werteverlauf einer numerischen Entity
-(1H/6H/24H/7D/30D) plus min/avg/max. Die Daten kommen aus dem HA-Recorder
-(`history/history_during_period`); im Demo-Modus wird eine synthetische Kurve
-erzeugt.
+**Stand seit Upstream v1.2.0:** Upstream hat ein eigenes **Entity-Detail-Modal**
+(„more-info", Werte-Chart + Logbook für *alle* Entities) eingeführt, das beim Tap
+auf eine Kachel über `uiStore.openEntityDetail` (via `EntityCard`) aufgeht. Ein
+Sensor-Tap öffnet jetzt dieses Modal. Das frühere eigene History-Modal des Forks
+war damit redundant und wurde **entfernt** (`components/history/*`,
+`ha/useHistory.ts`); `SensorTile.tsx` ist wieder Upstream-Stand.
 
-**Änderung durch Upstream v1.2.0:** Upstream hat ein eigenes **Entity-Detail-Modal**
-(„more-info", Chart + Logbook für *alle* Entities) eingeführt, das beim Tap auf
-eine Kachel über `uiStore.openEntityDetail` (via `EntityCard`) aufgeht. Damit ist
-das frühere Fork-Verhalten „Sensor-Kachel klickbar → eigenes History-Modal"
-redundant und wurde entfernt — `SensorTile.tsx` ist wieder Upstream-Stand, ein
-Sensor-Tap öffnet jetzt Upstreams Detail-Modal.
+**Fork-Anpassung am Detail-Modal:** Upstreams schlichter 24h/7d-Umschalter wurde
+durch eine **Pill-Auswahl (24H/7D/30D)** ersetzt — `[fork]`-markiert in
+`EntityDetailModal.{tsx,css}` (`.entity-detail__ranges`/`__range-btn`, Stil des
+alten History-Modals). Auch die **Pool-Kacheln** („Usage & runtime") öffnen jetzt
+dieses Detail-Modal statt eines eigenen Modals.
 
-Die Fork-History-Infrastruktur bleibt aber bestehen, weil die **Pool-Seite** sie
-wiederverwendet (`PoolDataCard` öffnet das `HistoryModal`, `PoolChartCard` nutzt
-`getHistory`). Um nicht mit Upstreams `packages/core/src/history.ts` zu kollidieren,
-wurde das Fork-Core-Modul zu **`sensorHistory.ts`** umbenannt (Typ `HistoryPoint` →
-`SensorHistoryPoint`) und die Connection-Methode zu **`fetchSensorHistory`**.
-Upstreams `history.ts`/`fetchHistory`/`HistoryPoint` existieren unverändert daneben.
+**Was vom Fork-History bleibt (nur für den Pool-Laufzeit-Chart):**
+`packages/core/src/sensorHistory.ts` (numerisches Sample-Parsing + Demo-Daten;
+umbenannt von `history.ts`, um mit Upstreams `history.ts` zu koexistieren) und
+`apps/dashboard/src/ha/history.ts` (`getHistory`). Die HA-Fetch-Methode heißt
+`HAConnection.fetchSensorHistory` — Upstreams `fetchHistory`/`history.ts`/
+`HistoryPoint` existieren unverändert daneben. `PoolChartCard` bucketet die
+State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.

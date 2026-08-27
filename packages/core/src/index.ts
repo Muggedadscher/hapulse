@@ -161,22 +161,10 @@ export type {
   EnergySeriesPoint,
 } from './energy.js';
 
-// [fork] Sensor history — numeric value charts for the reusable HistoryModal
-// (Pool page). Distinct from upstream's history.ts (entity detail modal).
-export {
-  HISTORY_RANGES,
-  historyRangeSpec,
-  parseNumericHistory,
-  summarizeHistory,
-  demoHistory,
-} from './sensorHistory.js';
-export type {
-  RawHistoryState,
-  SensorHistoryPoint,
-  HistoryRange,
-  HistoryRangeSpec,
-  HistorySummary,
-} from './sensorHistory.js';
+// [fork] Sensor history — numeric sample parsing + demo data for the Pool
+// runtime chart. Distinct from upstream's history.ts (entity detail modal).
+export { parseNumericHistory, demoHistory } from './sensorHistory.js';
+export type { RawHistoryState, SensorHistoryPoint } from './sensorHistory.js';
 
 // [fork] Pool pump — schedule model + timeslot conversion (DOM-free)
 export {
