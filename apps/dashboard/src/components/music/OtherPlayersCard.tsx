@@ -4,6 +4,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useArtworkUrl } from '../../lib/useImageFallback';
+import { useMAArtwork } from '../../lib/maArtwork';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
@@ -30,7 +32,10 @@ function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
   const name       = (attrs['friendly_name'] as string | undefined) ?? entity.entity_id;
   const title      = attrs['media_title'] as string | undefined;
   const entityPic  = attrs['entity_picture'] as string | null | undefined;
-  const artworkUrl = resolveEntityPicture(entityPic, baseUrl);
+  const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
+    resolveEntityPicture(entityPic, baseUrl),
+    useMAArtwork(entity),
+  );
   const stateLabel = isPlaying && title ? title : sl('media_player', entity.state);
 
   const handlePlayPause = useCallback(
@@ -53,7 +58,7 @@ function PlayerRow({ entity, selected, onSelect, baseUrl }: PlayerRowProps) {
     >
       <div className="other-player-row__art">
         {artworkUrl ? (
-          <img src={artworkUrl} alt="" className="other-player-row__art-img" />
+          <img src={artworkUrl} alt="" className="other-player-row__art-img" onError={onArtworkError} />
         ) : (
           <div className="other-player-row__art-fallback" aria-hidden="true">
             <Music size={16} strokeWidth={1.5} />

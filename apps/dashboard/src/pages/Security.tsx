@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Shield, DoorOpen, Grid2x2, Activity, Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
+import { pickAlarmPanel } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
@@ -210,8 +211,13 @@ export function Security() {
 
   const allEntities = useMemo(() => Object.values(entities), [entities]);
 
+  // The alarm pick respects hiddenEntities (unlike the raw lists below, which
+  // are filtered later) and severity-picks across panels — a hidden or
+  // secondary disarmed panel must not drive the hero state (issue #16).
+  const alarm       = pickAlarmPanel(
+    allEntities.filter((e) => !hiddenEntities.includes(e.entity_id)),
+  );
   // Raw entity lists (before visibility filter)
-  const alarm       = allEntities.find((e) => e.entity_id.startsWith('alarm_control_panel.'));
   const allPeople   = allEntities.filter((e) => e.entity_id.startsWith('person.'));
   const allCameras  = allEntities.filter((e) => e.entity_id.startsWith('camera.'));
   const allBinary   = allEntities.filter((e) => e.entity_id.startsWith('binary_sensor.'));

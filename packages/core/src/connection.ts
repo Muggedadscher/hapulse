@@ -29,8 +29,10 @@ import type {
   StatisticsMap,
   StatisticsPeriod,
 } from './energy.js';
-import type { RawHistoryState } from './history.js';
 import type { StateTranslations } from './entityStates.js';
+import { parseHistoryStates, parseLogbookEntries } from './history.js';
+import type { HistoryPoint, LogbookEntry } from './history.js';
+import type { RawHistoryState } from './sensorHistory.js'; // [fork]
 
 /** Raw payload shape returned by `auth/current_user` WebSocket message. */
 interface RawCurrentUser {
@@ -180,33 +182,6 @@ export class HAConnection {
   }
 
   /**
-   * Fetch recorder state history for a single entity over a time range
-   * (`history/history_during_period`).
-   *
-   * Requests a compact response (`minimal_response` + `no_attributes`) — HA
-   * returns a map keyed by entity_id; this unwraps the requested entity's
-   * samples (or `[]` when there is no history). `start`/`end` are ISO 8601
-   * strings. Use `parseNumericHistory` to turn the result into chartable
-   * numeric points.
-   */
-  async fetchHistory(
-    entityId: string,
-    start: string,
-    end?: string
-  ): Promise<RawHistoryState[]> {
-    const result = await this.#conn.sendMessagePromise<Record<string, RawHistoryState[]>>({
-      type: 'history/history_during_period',
-      start_time: start,
-      ...(end != null ? { end_time: end } : {}),
-      entity_ids: [entityId],
-      minimal_response: true,
-      no_attributes: true,
-      significant_changes_only: false,
-    });
-    return result?.[entityId] ?? [];
-  }
-
-  /**
    * Fetch the configured currency from HA core config (`get_config`).
    * Returns null on failure.
    */
@@ -257,6 +232,100 @@ export class HAConnection {
       return res.resources ?? {};
     } catch {
       return {};
+    }
+  }
+
+  /**
+   * Fetch an entity's state history over [start, end].
+   *
+   * Uses `history/history_during_period` with `minimal_response` and
+   * `no_attributes` — the detail modal only draws states over time, and the
+   * compressed shape keeps a week of a chatty sensor small. Returns an empty
+   * series on failure; the modal then shows its empty state.
+   */
+  async fetchHistory(entityId: string, start: Date, end: Date): Promise<HistoryPoint[]> {
+    try {
+      const res = await this.#conn.sendMessagePromise<Record<string, unknown[]>>({
+        type: 'history/history_during_period',
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        entity_ids: [entityId],
+        minimal_response: true,
+        no_attributes: true,
+      });
+      return parseHistoryStates(res?.[entityId] ?? []);
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * [fork] Fetch recorder state history for a single entity over a time range
+   * as raw compact samples (`history/history_during_period`).
+   *
+   * Distinct from `fetchHistory` above (which parses into the detail modal's
+   * `HistoryPoint` state-interval shape): this returns the raw samples so the
+   * numeric sensor-history charts (HistoryModal, reused by the Pool page) can
+   * turn them into `{ t, v }` points via `parseNumericHistory`. `start`/`end`
+   * are ISO 8601 strings; returns `[]` when there is no history.
+   */
+  async fetchSensorHistory(
+    entityId: string,
+    start: string,
+    end?: string
+  ): Promise<RawHistoryState[]> {
+    const result = await this.#conn.sendMessagePromise<Record<string, RawHistoryState[]>>({
+      type: 'history/history_during_period',
+      start_time: start,
+      ...(end != null ? { end_time: end } : {}),
+      entity_ids: [entityId],
+      minimal_response: true,
+      no_attributes: true,
+      significant_changes_only: false,
+    });
+    return result?.[entityId] ?? [];
+  }
+
+  /**
+   * Fetch an entity's logbook (activity) entries over [start, end], newest
+   * first. Only state-change rows are kept — service-call noise is dropped by
+   * the parser. Returns an empty list on failure.
+   */
+  /**
+   * Call a service that returns response data (`SupportsResponse` services,
+   * e.g. `music_assistant.get_library`). The plain `callService` wrapper drops
+   * the response; this sends the WS `call_service` command with
+   * `return_response` and hands the caller the raw response payload.
+   * Throws on failure — callers decide their fallback.
+   */
+  async callServiceWithResponse<T = unknown>(
+    domain: string,
+    service: string,
+    serviceData?: Record<string, unknown>,
+    target?: { entity_id?: string | string[] },
+  ): Promise<T> {
+    const result = await this.#conn.sendMessagePromise<{ response?: T }>({
+      type: 'call_service',
+      domain,
+      service,
+      ...(serviceData !== undefined ? { service_data: serviceData } : {}),
+      ...(target !== undefined ? { target } : {}),
+      return_response: true,
+    });
+    return result?.response as T;
+  }
+
+  async fetchLogbook(entityId: string, start: Date, end: Date): Promise<LogbookEntry[]> {
+    try {
+      const res = await this.#conn.sendMessagePromise<unknown[]>({
+        type: 'logbook/get_events',
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        entity_ids: [entityId],
+      });
+      return parseLogbookEntries(Array.isArray(res) ? res : []);
+    } catch {
+      return [];
     }
   }
 

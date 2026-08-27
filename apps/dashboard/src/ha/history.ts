@@ -7,7 +7,7 @@
  */
 
 import { parseNumericHistory, demoHistory } from '@hapulse/core';
-import type { HistoryPoint } from '@hapulse/core';
+import type { SensorHistoryPoint } from '@hapulse/core';
 import { useConnectionStore, getLiveConnection } from '../stores/connectionStore';
 import { useEntityStore } from '../stores/entityStore';
 
@@ -20,7 +20,7 @@ export async function getHistory(
   entityId: string,
   startMs: number,
   endMs: number
-): Promise<HistoryPoint[]> {
+): Promise<SensorHistoryPoint[]> {
   const { demo } = useConnectionStore.getState();
 
   if (demo) {
@@ -32,7 +32,7 @@ export async function getHistory(
   const conn = getLiveConnection();
   if (!conn) return [];
 
-  const raw = await conn.fetchHistory(
+  const raw = await conn.fetchSensorHistory(
     entityId,
     new Date(startMs).toISOString(),
     new Date(endMs).toISOString()

@@ -42,6 +42,43 @@ export { buildRooms, roomSummary, resolveEntityAreaId, buildDeviceAreaMap } from
 export type { DeviceAreaMap } from './rooms.js';
 
 // System Monitor metric identification
+// Music Assistant (library browsing — issue #2)
+export {
+  MA_MEDIA_TYPES,
+  findMusicAssistant,
+  parseMALibraryPage,
+  parseMASearchResults,
+  parseMAQueue,
+  demoQueueSnapshot,
+  DEMO_MA_LIBRARY,
+  demoLibraryPage,
+} from './musicAssistant.js';
+export { MusicAssistantClient, parseMAFullQueueItems, parseMAQueuesArtwork } from './maClient.js';
+export type { MAFullQueueItem, MAQueueArtwork } from './maClient.js';
+
+export type {
+  MAQueueItem,
+  MAQueueSnapshot,
+  MAMediaType,
+  MAEnqueueMode,
+  MAMediaItem,
+  MALibraryPage,
+  MusicAssistantInfo,
+} from './musicAssistant.js';
+
+// Alarm panel selection
+export { pickAlarmPanel, sortAlarmPanels } from './alarm.js';
+
+// Entity history + logbook (detail modal)
+export {
+  parseHistoryStates,
+  parseLogbookEntries,
+  isNumericHistory,
+  generateDemoHistory,
+  demoLogbookFromHistory,
+} from './history.js';
+export type { HistoryPoint, LogbookEntry } from './history.js';
+
 export { indexSystemMonitor, pickSystemMetrics } from './systemMonitor.js';
 export type { SystemMonitorIndex, SystemMetricFamily, SystemMetrics } from './systemMonitor.js';
 
@@ -95,22 +132,6 @@ export type {
   DevicesSummary,
 } from './devices.js';
 
-// History
-export {
-  HISTORY_RANGES,
-  historyRangeSpec,
-  parseNumericHistory,
-  summarizeHistory,
-  demoHistory,
-} from './history.js';
-export type {
-  RawHistoryState,
-  HistoryPoint,
-  HistoryRange,
-  HistoryRangeSpec,
-  HistorySummary,
-} from './history.js';
-
 // Energy
 export {
   computeEnergyDashboard,
@@ -139,6 +160,23 @@ export type {
   EnergyWaterUsage,
   EnergySeriesPoint,
 } from './energy.js';
+
+// [fork] Sensor history — numeric value charts for the reusable HistoryModal
+// (Pool page). Distinct from upstream's history.ts (entity detail modal).
+export {
+  HISTORY_RANGES,
+  historyRangeSpec,
+  parseNumericHistory,
+  summarizeHistory,
+  demoHistory,
+} from './sensorHistory.js';
+export type {
+  RawHistoryState,
+  SensorHistoryPoint,
+  HistoryRange,
+  HistoryRangeSpec,
+  HistorySummary,
+} from './sensorHistory.js';
 
 // [fork] Pool pump — schedule model + timeslot conversion (DOM-free)
 export {

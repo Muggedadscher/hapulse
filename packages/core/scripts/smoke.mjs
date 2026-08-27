@@ -56,6 +56,22 @@ import {
   LOCALES,
   lookupEntityState,
   humanizeState,
+  pickAlarmPanel,
+  sortAlarmPanels,
+  parseHistoryStates,
+  parseLogbookEntries,
+  isNumericHistory,
+  generateDemoHistory,
+  demoLogbookFromHistory,
+  findMusicAssistant,
+  parseMALibraryPage,
+  parseMASearchResults,
+  parseMAQueue,
+  parseMAQueuesArtwork,
+  demoQueueSnapshot,
+  demoLibraryPage,
+  MA_MEDIA_TYPES,
+  DEMO_MA_LIBRARY,
   RELEASES,
   CURRENT_VERSION,
   CHANGE_KINDS,
@@ -1207,3 +1223,221 @@ assertEqual(bars[2].value, 3.1, 'last bucket runs to +inf and catches day 2');
 const empty = dailyRuntimeBars([], [d0, d0 + DAY]);
 assertEqual(empty[0].hasData, false, 'a day with no samples has hasData=false');
 assertEqual(empty[0].value, 0, 'a day with no samples has value 0');
+
+// ---------------------------------------------------------------------------
+// Alarm panel selection (issue #16)
+//
+// With several panels (Alarmo master + per-area), every summary surface must
+// agree, and the armed one must win over a stray disarmed one.
+// ---------------------------------------------------------------------------
+console.log('\n── pickAlarmPanel ──');
+
+const mkPanel = (id, state) => ({
+  entity_id: `alarm_control_panel.${id}`, state, attributes: {},
+  last_changed: '', last_updated: '', context: { id: '' },
+});
+
+const PANELS = [
+  mkPanel('area_garage', 'disarmed'),
+  mkPanel('alarmo', 'armed_night'),
+  { entity_id: 'light.hall', state: 'on', attributes: {}, last_changed: '', last_updated: '', context: { id: '' } },
+];
+assertEqual(pickAlarmPanel(PANELS)?.entity_id, 'alarm_control_panel.alarmo',
+  'the armed panel wins over a disarmed one, whatever the list order');
+assertEqual(pickAlarmPanel([mkPanel('b', 'disarmed'), mkPanel('a', 'disarmed')])?.entity_id,
+  'alarm_control_panel.a', 'equal severity ties break on entity_id — deterministic');
+assertEqual(pickAlarmPanel([mkPanel('a', 'armed_home'), mkPanel('b', 'triggered')])?.entity_id,
+  'alarm_control_panel.b', 'triggered outranks armed');
+assertEqual(pickAlarmPanel([mkPanel('a', 'unavailable'), mkPanel('b', 'disarmed')])?.entity_id,
+  'alarm_control_panel.b', 'a real state outranks unavailable');
+assertEqual(pickAlarmPanel([]), undefined, 'no panels → undefined');
+assertEqual(sortAlarmPanels(PANELS).length, 2, 'sortAlarmPanels keeps only alarm panels');
+
+// ---------------------------------------------------------------------------
+// Entity history (issue #14)
+// ---------------------------------------------------------------------------
+console.log('\n── history parsing + demo generators ──');
+
+// The WS command returns compressed rows; REST-shaped rows must parse too.
+const parsed = parseHistoryStates([
+  { s: 'on', lu: 1000 },
+  { state: 'off', last_updated: '1970-01-01T00:33:20.000Z' }, // 2000s
+  { s: 'on', lu: 1500 },
+  { bogus: true },
+]);
+assertEqual(parsed.map((p) => p.state).join(','), 'on,on,off',
+  'compressed and REST rows both parse, sorted by time, junk dropped');
+assertEqual(parsed[0].start, 1000_000, 'lu seconds become ms');
+
+assertEqual(
+  parseLogbookEntries([{ when: 2, state: 'off' }, { when: 5, state: 'on' }, { when: 3 }])
+    .map((e) => e.state).join(','),
+  'on,off', 'logbook: newest first, stateless rows dropped');
+
+assertEqual(isNumericHistory([{ state: '21.5', start: 0 }, { state: 'unavailable', start: 1 }]), true,
+  'numeric series stays numeric despite unavailability gaps');
+assertEqual(isNumericHistory([{ state: 'on', start: 0 }]), false, 'discrete series is not numeric');
+
+const DEMO_BINARY = {
+  entity_id: 'binary_sensor.office_motion', state: 'on', attributes: {},
+  last_changed: '', last_updated: '', context: { id: '' },
+};
+const T0 = 1_000_000_000_000;
+const series = generateDemoHistory(DEMO_BINARY, T0, T0 + 24 * 3_600_000);
+assert(series.length > 1, 'demo binary history has multiple segments');
+assertEqual(series[series.length - 1].state, 'on', 'demo history ends on the current state');
+assertEqual(new Set(series.map((p) => p.state)).size, 2, 'demo binary history alternates two states');
+const series2 = generateDemoHistory(DEMO_BINARY, T0, T0 + 24 * 3_600_000);
+assertEqual(JSON.stringify(series), JSON.stringify(series2),
+  'demo history is deterministic per entity (same on reopen)');
+
+const DEMO_TEMP = { ...DEMO_BINARY, entity_id: 'sensor.office_temp', state: '21.4' };
+const tempSeries = generateDemoHistory(DEMO_TEMP, T0, T0 + 24 * 3_600_000);
+assertEqual(isNumericHistory(tempSeries), true, 'demo numeric history is numeric');
+assertEqual(tempSeries[tempSeries.length - 1].state, '21.4', 'numeric demo history lands on the current value');
+
+const activity = demoLogbookFromHistory(series);
+assert(activity.length >= 2, 'demo logbook derives transitions');
+assert(activity[0].when >= activity[activity.length - 1].when, 'demo logbook is newest first');
+
+// ---------------------------------------------------------------------------
+// Music Assistant (issue #2)
+// ---------------------------------------------------------------------------
+console.log('\n── music assistant ──');
+
+// Registry shapes verified against a real HA: partial dicts carry platform
+// and config_entry_id.
+const MA_REGISTRIES = {
+  areas: [], devices: [],
+  entities: [
+    { entity_id: 'media_player.kitchen_nest_2', platform: 'music_assistant', config_entry_id: 'ENTRY1' },
+    { entity_id: 'media_player.living_room_nest_2', platform: 'music_assistant', config_entry_id: 'ENTRY1' },
+    { entity_id: 'sensor.ma_diag', platform: 'music_assistant', config_entry_id: 'ENTRY1' },
+    { entity_id: 'media_player.kitchen', platform: 'universal' },
+  ],
+};
+const maInfo = findMusicAssistant(MA_REGISTRIES);
+assertEqual(maInfo?.configEntryId, 'ENTRY1', 'MA config entry resolved from the registry');
+assertEqual(maInfo?.playerIds.join(','),
+  'media_player.kitchen_nest_2,media_player.living_room_nest_2',
+  'only MA media players are listed (sorted, no universal wrappers, no diag sensors)');
+assertEqual(findMusicAssistant({ areas: [], devices: [], entities: [] }), null,
+  'no MA entities → null (Music page keeps its regular layout)');
+assertEqual(findMusicAssistant(null), null, 'null registries → null');
+
+// get_library response parsing — shape captured from a live call.
+const LIVE_LIBRARY_RESPONSE = {
+  items: [
+    { media_type: 'playlist', uri: 'library://playlist/34', name: 'Morning', version: '', image: 'https://cdn/img.jpg', favorite: true, explicit: null },
+    { media_type: 'playlist', uri: 'library://playlist/90', name: '', version: '', image: '', favorite: false },
+    { bogus: true },
+  ],
+  limit: 25, offset: 0, order_by: 'name', media_type: 'playlist',
+};
+const page = parseMALibraryPage(LIVE_LIBRARY_RESPONSE, 'playlist');
+assertEqual(page.items.length, 2, 'items parsed, junk rows dropped');
+assertEqual(page.items[0].favorite, true, 'favorite flag kept');
+assertEqual(page.items[1].image, null, 'empty image string becomes null (placeholder path)');
+assertEqual(page.limit, 25, 'pagination fields kept');
+assertEqual(parseMALibraryPage(null, 'album').items.length, 0, 'null response → empty page');
+
+// Demo library: every tab has content, and pagination/filtering behave.
+for (const type of MA_MEDIA_TYPES) {
+  assert(DEMO_MA_LIBRARY[type].length > 0, `demo library has ${type}s`);
+}
+assertEqual(demoLibraryPage('playlist', { favorite: true }).items.every((i) => i.favorite), true,
+  'demo favourite filter filters');
+assertEqual(demoLibraryPage('playlist', { search: 'coffee' }).items.length, 1,
+  'demo search matches case-insensitively');
+assertEqual(demoLibraryPage('album', { offset: 10, limit: 5 }).items.length,
+  Math.max(0, Math.min(5, DEMO_MA_LIBRARY.album.length - 10)),
+  'demo pagination slices');
+
+// music_assistant.search response — shape captured from a live call (Spotify
+// provider enabled). Buckets are PLURAL; artist credits become the subtitle.
+const LIVE_SEARCH_RESPONSE = {
+  artists: [],
+  albums: [
+    {
+      media_type: 'album', uri: 'spotify--oDU8PC5W://album/4m2880j', name: 'Random Access Memories',
+      version: '', image: 'https://i.scdn.co/image/x.jpg', favorite: false, explicit: null,
+      artists: [{ media_type: 'artist', uri: 'spotify--x://artist/1', name: 'Daft Punk' }],
+    },
+    { media_type: 'album', uri: 'spotify--x://album/2', name: 'Discovery', version: 'Radio Edit', image: '', favorite: false, artists: [] },
+  ],
+  tracks: [], playlists: [], radio: [],
+};
+const found = parseMASearchResults(LIVE_SEARCH_RESPONSE, 'album');
+assertEqual(found.length, 2, 'search results parsed from the plural bucket');
+assertEqual(found[0].subtitle, 'Daft Punk', 'artist credits become the subtitle');
+assertEqual(found[0].uri.startsWith('spotify--'), true, 'provider URIs pass through for play_media');
+assertEqual(found[1].subtitle, undefined, 'no artists → no subtitle (version shows instead)');
+assertEqual(parseMASearchResults(LIVE_SEARCH_RESPONSE, 'track').length, 0, 'empty bucket → empty');
+assertEqual(parseMASearchResults(null, 'album').length, 0, 'null response → empty');
+
+// music_assistant.get_queue — response keyed by entity_id (shape captured live).
+const LIVE_QUEUE_RESPONSE = {
+  'media_player.kitchen_nest_2': {
+    queue_id: 'c8a75856', active: true, name: 'Kitchen Nest', items: 23,
+    shuffle_enabled: true, repeat_mode: 'all', current_index: 4, elapsed_time: 12,
+    current_item: { name: 'Coastline', media_item: { name: 'Coastline', image: 'https://cdn/a.jpg', artists: [{ name: 'Echo Atlas' }] } },
+    next_item: { media_item: { name: 'Amber' } },
+  },
+};
+const queue = parseMAQueue(LIVE_QUEUE_RESPONSE, 'media_player.kitchen_nest_2');
+assertEqual(queue?.items, 23, 'queue count parsed');
+assertEqual(queue?.shuffle, true, 'shuffle parsed');
+assertEqual(queue?.repeat, 'all', 'repeat parsed');
+assertEqual(queue?.position, 5, 'current_index becomes a 1-based position');
+assertEqual(queue?.current?.name, 'Coastline', 'current item name');
+assertEqual(queue?.current?.artist, 'Echo Atlas', 'artist credits joined');
+assertEqual(queue?.next?.name, 'Amber', 'next item name from nested media_item');
+assertEqual(parseMAQueue(LIVE_QUEUE_RESPONSE, 'media_player.other'), null, 'unknown player → null');
+assertEqual(parseMAQueue(null, 'x'), null, 'null response → null');
+
+const demoQ = demoQueueSnapshot({ media_title: 'Midnight Rain', media_artist: 'Taylor Swift' });
+assertEqual(demoQ.current?.name, 'Midnight Rain', 'demo queue mirrors the playing item');
+assert(demoQ.next != null && demoQ.items > 0, 'demo queue fabricates a next item and count');
+assertEqual(demoQueueSnapshot({}).current, null, 'idle demo player → empty queue');
+
+// Demo speaker grouping — join lists the leader first on every member; unjoin
+// dissolves groups of one.
+const GROUP_BASE = {
+  'media_player.a': { entity_id: 'media_player.a', state: 'idle', attributes: { group_members: [] }, last_changed: '', last_updated: '', context: { id: '' } },
+  'media_player.b': { entity_id: 'media_player.b', state: 'idle', attributes: { group_members: [] }, last_changed: '', last_updated: '', context: { id: '' } },
+};
+const joined = applyDemoService(GROUP_BASE, 'media_player', 'join',
+  { group_members: ['media_player.b'] }, { entity_id: 'media_player.a' });
+assertEqual(joined['media_player.a'].attributes.group_members.join(','), 'media_player.a,media_player.b',
+  'join: leader lists the group, itself first');
+assertEqual(joined['media_player.b'].attributes.group_members.join(','), 'media_player.a,media_player.b',
+  'join: member mirrors the group');
+const unjoined = applyDemoService(joined, 'media_player', 'unjoin', {}, { entity_id: 'media_player.b' });
+assertEqual(unjoined['media_player.b'].attributes.group_members.length, 0, 'unjoin clears the member');
+assertEqual(unjoined['media_player.a'].attributes.group_members.length, 0, 'a group of one dissolves');
+
+// player_queues/all → artwork entries (Now Playing / Zones fallback).
+const QUEUES_ALL = [
+  {
+    queue_id: 'q1', display_name: 'Office Nest', items: 12,
+    current_item: {
+      name: 'Hotline Bling',
+      image: { type: 'thumb', path: 'https://i.scdn.co/image/abc', provider: 'spotify', remotely_accessible: true },
+      media_item: { name: 'Hotline Bling', artists: [{ name: 'Drake' }] },
+    },
+  },
+  {
+    queue_id: 'q2', current_item: {
+      name: 'Local Track',
+      image: { type: 'thumb', path: 'track.jpg', provider: 'file', remotely_accessible: false },
+    },
+  },
+  { queue_id: 'q3', current_item: null },
+  { bogus: true },
+];
+const art = parseMAQueuesArtwork(QUEUES_ALL);
+assertEqual(art.length, 2, 'queues without a current item are skipped');
+assertEqual(art[0].image, 'https://i.scdn.co/image/abc', 'remotely-accessible artwork kept');
+assertEqual(art[0].title, 'Hotline Bling', 'title kept for wrapper-player matching');
+assertEqual(art[1].image, null, 'proxied-only artwork stays null');
+assertEqual(parseMAQueuesArtwork(null).length, 0, 'null response → empty');

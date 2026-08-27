@@ -3,10 +3,12 @@
  * All hooks are selector-based — no component subscribes to the whole entity map.
  */
 
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useEntityStore } from '../stores/entityStore';
 import { useConnectionStore } from '../stores/connectionStore';
-import type { HassEntity, Room } from '@hapulse/core';
+import { findMusicAssistant } from '@hapulse/core';
+import type { HassEntity, Room, MusicAssistantInfo } from '@hapulse/core';
 import type { StoreStatus } from '../stores/connectionStore';
 
 /**
@@ -251,4 +253,24 @@ export function useCurrentUserAvatar(): CurrentUserAvatarInfo | null {
 export function useCanEdit(): boolean {
   const currentUser = useConnectionStore((s) => s.currentUser);
   return currentUser?.is_admin === true;
+}
+
+/**
+ * Music Assistant presence (issue #2). Detected from the entity registry
+ * (platform === 'music_assistant'); demo mode reports a synthetic install so
+ * the public demo can showcase the library browser. Null → no MA, and the
+ * Music page keeps its regular layout.
+ */
+export function useMusicAssistant(): MusicAssistantInfo | null {
+  const demo = useConnectionStore((s) => s.demo);
+  const registries = useEntityStore((s) => s.registries);
+  return useMemo(() => {
+    if (demo) {
+      const players = Object.keys(useEntityStore.getState().entities)
+        .filter((id) => id.startsWith('media_player.'))
+        .sort();
+      return players.length > 0 ? { configEntryId: 'demo', playerIds: players } : null;
+    }
+    return findMusicAssistant(registries);
+  }, [demo, registries]);
 }

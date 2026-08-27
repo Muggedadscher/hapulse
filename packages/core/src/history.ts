@@ -1,153 +1,163 @@
 /**
- * State history — types, parsing, ranges and demo data for the entity
- * history charts.
+ * Entity history and logbook — types, response parsing, and demo generators.
  *
- * Framework-agnostic (no DOM / React), like the rest of `@hapulse/core`.
- * The live fetch lives on `HAConnection.fetchHistory` (connection.ts); this
- * module owns the pure data shapes and transforms consumed by the dashboard.
+ * Feeds the entity detail (more-info) modal: the state timeline / value chart
+ * and the activity list. Live data comes over two WebSocket commands
+ * (`history/history_during_period` and `logbook/get_events`, wrapped by
+ * HAConnection); demo mode fabricates deterministic data here so the modal is
+ * fully explorable without a Home Assistant.
  */
 
-/**
- * A single raw sample as returned by the `history/history_during_period`
- * WebSocket command with `minimal_response` + `no_attributes`.
- *
- * Home Assistant sends a compact object per sample: `s` is the state string,
- * `lu`/`lc` are the last-updated / last-changed timestamps as **Unix epoch
- * seconds** (float). Intermediate samples may omit one of the timestamps.
- */
-export interface RawHistoryState {
-  /** State value, as HA stores it (string). */
-  s?: string;
-  /** last_updated — Unix epoch **seconds** (float). */
-  lu?: number;
-  /** last_changed — Unix epoch **seconds** (float). */
-  lc?: number;
-}
+import type { HassEntity } from './types.js';
 
-/** A parsed numeric datapoint ready for charting. */
+/** One state interval: `state` held from `start` until the next point (ms epoch). */
 export interface HistoryPoint {
-  /** Unix epoch **milliseconds**. */
-  t: number;
-  /** Numeric value. */
-  v: number;
+  state: string;
+  start: number;
 }
 
-/** Selectable look-back windows for the history chart. */
-export type HistoryRange = '1h' | '6h' | '24h' | '7d' | '30d';
-
-export interface HistoryRangeSpec {
-  id: HistoryRange;
-  /** Short label for the range selector (e.g. "24H"). */
-  label: string;
-  /** Window length in milliseconds. */
-  durationMs: number;
+/** One activity row (a state change, newest use is a reverse-sorted list). */
+export interface LogbookEntry {
+  when: number; // ms epoch
+  state: string;
 }
 
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
-
-export const HISTORY_RANGES: readonly HistoryRangeSpec[] = [
-  { id: '1h', label: '1H', durationMs: HOUR },
-  { id: '6h', label: '6H', durationMs: 6 * HOUR },
-  { id: '24h', label: '24H', durationMs: DAY },
-  { id: '7d', label: '7D', durationMs: 7 * DAY },
-  { id: '30d', label: '30D', durationMs: 30 * DAY },
-];
-
-/** The default range spec used when an unknown range id is passed. */
-const DEFAULT_RANGE_SPEC: HistoryRangeSpec = { id: '24h', label: '24H', durationMs: DAY };
-
-/** Look up the spec for a range id, falling back to 24h. */
-export function historyRangeSpec(range: HistoryRange): HistoryRangeSpec {
-  return HISTORY_RANGES.find((r) => r.id === range) ?? DEFAULT_RANGE_SPEC;
-}
+// ---------------------------------------------------------------------------
+// Response parsing
+// ---------------------------------------------------------------------------
 
 /**
- * Convert raw samples into sorted numeric points, dropping any that are
- * non-numeric (`unavailable`, `unknown`, text states) or missing a timestamp.
- */
-export function parseNumericHistory(raw: RawHistoryState[]): HistoryPoint[] {
-  const points: HistoryPoint[] = [];
-  for (const item of raw) {
-    if (item == null || item.s == null) continue;
-    const v = parseFloat(item.s);
-    if (Number.isNaN(v)) continue;
-    const epochSec = item.lu ?? item.lc;
-    if (epochSec == null || Number.isNaN(epochSec)) continue;
-    points.push({ t: Math.round(epochSec * 1000), v });
-  }
-  points.sort((a, b) => a.t - b.t);
-  return points;
-}
-
-/** Summary statistics over a series. */
-export interface HistorySummary {
-  min: number;
-  max: number;
-  avg: number;
-  first: number;
-  last: number;
-}
-
-/** Compute min / max / avg / first / last, or null for an empty series. */
-export function summarizeHistory(points: HistoryPoint[]): HistorySummary | null {
-  const first = points[0];
-  const last = points[points.length - 1];
-  if (first === undefined || last === undefined) return null;
-
-  let min = first.v;
-  let max = first.v;
-  let sum = 0;
-  for (const p of points) {
-    if (p.v < min) min = p.v;
-    if (p.v > max) max = p.v;
-    sum += p.v;
-  }
-  return { min, max, avg: sum / points.length, first: first.v, last: last.v };
-}
-
-/**
- * Generate a smooth, deterministic synthetic series for demo mode so the
- * history chart looks alive without a live Home Assistant connection.
+ * Parse one entity's series from `history/history_during_period`.
  *
- * The shape is seeded from `entityId`, so a given entity always produces the
- * same-looking curve, and it lands on `currentValue` at the end for continuity
- * with the tile the user just tapped.
+ * The WS command returns a compressed shape — `{ s: state, lu: seconds }` —
+ * but REST-shaped rows (`state` / `last_updated` ISO strings) are accepted too
+ * so the parser doesn't care which endpoint fed it.
  */
-export function demoHistory(
-  entityId: string,
-  startMs: number,
-  endMs: number,
-  currentValue: number,
-  opts?: { min?: number; max?: number },
-): HistoryPoint[] {
-  const span = Math.max(endMs - startMs, 1);
-  const count = 96;
+export function parseHistoryStates(rows: unknown[]): HistoryPoint[] {
+  const out: HistoryPoint[] = [];
+  for (const raw of rows) {
+    if (typeof raw !== 'object' || raw === null) continue;
+    const r = raw as Record<string, unknown>;
+    const state = typeof r['s'] === 'string' ? r['s'] : typeof r['state'] === 'string' ? r['state'] : null;
+    let when: number | null = null;
+    if (typeof r['lu'] === 'number') when = r['lu'] * 1000;
+    else if (typeof r['last_updated'] === 'string') when = Date.parse(r['last_updated']);
+    else if (typeof r['last_changed'] === 'string') when = Date.parse(r['last_changed']);
+    if (state == null || when == null || Number.isNaN(when)) continue;
+    out.push({ state, start: when });
+  }
+  return out.sort((a, b) => a.start - b.start);
+}
 
-  // Cheap deterministic seed from the entity id.
-  let seed = 0;
-  for (let i = 0; i < entityId.length; i++) {
-    seed = (seed * 31 + entityId.charCodeAt(i)) >>> 0;
+/** Parse `logbook/get_events` rows for one entity into state-change entries. */
+export function parseLogbookEntries(rows: unknown[]): LogbookEntry[] {
+  const out: LogbookEntry[] = [];
+  for (const raw of rows) {
+    if (typeof raw !== 'object' || raw === null) continue;
+    const r = raw as Record<string, unknown>;
+    if (typeof r['when'] !== 'number' || typeof r['state'] !== 'string') continue;
+    out.push({ when: r['when'] * 1000, state: r['state'] });
   }
-  const phase = (seed % 100) / 16;
-  const amp = Math.max(Math.abs(currentValue) * 0.08, 1);
+  return out.sort((a, b) => b.when - a.when);
+}
 
-  const points: HistoryPoint[] = [];
-  for (let i = 0; i <= count; i++) {
-    const frac = i / count;
-    const t = Math.round(startMs + span * frac);
-    const wave = Math.sin(frac * Math.PI * 3 + phase);
-    const noise = Math.sin(frac * 37.7 + seed) * 0.2;
-    let v = currentValue + amp * (wave + noise - 0.5 * wave * (1 - frac));
-    if (opts?.min !== undefined) v = Math.max(v, opts.min);
-    if (opts?.max !== undefined) v = Math.min(v, opts.max);
-    points.push({ t, v: Math.round(v * 10) / 10 });
+/** True when a history series is numeric (a sensor charting a value). */
+export function isNumericHistory(points: HistoryPoint[]): boolean {
+  const real = points.filter((p) => p.state !== 'unavailable' && p.state !== 'unknown');
+  if (real.length === 0) return false;
+  return real.every((p) => p.state !== '' && !Number.isNaN(Number(p.state)));
+}
+
+// ---------------------------------------------------------------------------
+// Demo generators — deterministic per entity, so reopening the modal shows
+// the same past and the series always ends on the entity's current state.
+// ---------------------------------------------------------------------------
+
+/** Small deterministic PRNG (mulberry32) seeded from a string. */
+function seededRandom(seed: string): () => number {
+  let h = 1779033703;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
   }
-  // Land exactly on the current value so the chart is continuous with the tile.
-  const lastIdx = points.length - 1;
-  const last = points[lastIdx];
-  if (last !== undefined) {
-    points[lastIdx] = { t: last.t, v: Math.round(currentValue * 10) / 10 };
+  let a = h >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** The state a demo entity toggles to when it isn't in its current one. */
+function counterpartState(entity: HassEntity): string {
+  const domain = entity.entity_id.split('.')[0]!;
+  const cur = entity.state;
+  if (domain === 'binary_sensor' || domain === 'switch' || domain === 'light' || domain === 'input_boolean' || domain === 'fan') {
+    return cur === 'on' ? 'off' : 'on';
   }
-  return points;
+  if (domain === 'lock') return cur === 'locked' ? 'unlocked' : 'locked';
+  if (domain === 'cover') return cur === 'open' ? 'closed' : 'open';
+  if (domain === 'media_player') return cur === 'playing' ? 'idle' : 'playing';
+  if (domain === 'person' || domain === 'device_tracker') return cur === 'home' ? 'not_home' : 'home';
+  if (domain === 'climate') return cur === 'heat' ? 'off' : 'heat';
+  if (domain === 'alarm_control_panel') return cur === 'disarmed' ? 'armed_home' : 'disarmed';
+  return cur; // stateless-ish domains: a flat bar
+}
+
+/**
+ * Fabricate a plausible history for a demo entity over [start, end] (ms).
+ * Numeric sensors get a random walk around their current value; everything
+ * else gets alternating intervals that end on the current state.
+ */
+export function generateDemoHistory(entity: HassEntity, start: number, end: number): HistoryPoint[] {
+  const rand = seededRandom(entity.entity_id);
+  const numeric = entity.state !== '' && !Number.isNaN(Number(entity.state));
+
+  if (numeric) {
+    const current = Number(entity.state);
+    // Spread scales with magnitude so a 21° room and a 730 W plug both wander believably.
+    const spread = Math.max(Math.abs(current) * 0.15, 1);
+    const stepMs = Math.max((end - start) / 96, 5 * 60_000);
+    const points: HistoryPoint[] = [];
+    let value = current + (rand() - 0.5) * spread;
+    for (let ts = start; ts < end; ts += stepMs) {
+      value += (rand() - 0.5) * spread * 0.4;
+      // Drift back toward current so the series lands where the entity is now.
+      value += (current - value) * 0.08;
+      points.push({ state: (Math.round(value * 10) / 10).toString(), start: ts });
+    }
+    points.push({ state: entity.state, start: end - 1000 });
+    return points;
+  }
+
+  const other = counterpartState(entity);
+  if (other === entity.state) {
+    return [{ state: entity.state, start }];
+  }
+  // Build segments backwards from `end` so the last one is the current state.
+  const segments: HistoryPoint[] = [];
+  let cursor = end;
+  let state = entity.state;
+  while (cursor > start) {
+    const durationMs = (10 + rand() * 110) * 60_000; // 10–120 min
+    cursor -= durationMs;
+    segments.push({ state, start: Math.max(cursor, start) });
+    state = state === entity.state ? other : entity.state;
+  }
+  return segments.reverse();
+}
+
+/** Activity entries derived from a history series (transitions, newest first). */
+export function demoLogbookFromHistory(points: HistoryPoint[]): LogbookEntry[] {
+  const out: LogbookEntry[] = [];
+  let prev: string | null = null;
+  for (const p of points) {
+    if (p.state !== prev) {
+      out.push({ when: p.start, state: p.state });
+      prev = p.state;
+    }
+  }
+  return out.reverse();
 }
