@@ -986,6 +986,7 @@
   "pool.schedule.editor.off": "Aus",
   "pool.schedule.editor.timelineHint": "Tippe auf einen Abschnitt zum Ein-/Ausschalten, oder ziehe einen Griff, um eine Zeit zu verschieben.",
   "pool.chart.title": "Laufzeit pro Tag",
+  "pool.chart.today": "Heute",
   "entityDetail.history": "Verlauf",
   "entityDetail.activity": "Aktivität",
   "entityDetail.showMore": "Mehr anzeigen",

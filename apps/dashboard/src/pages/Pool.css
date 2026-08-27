@@ -57,14 +57,35 @@
 }
 
 /* ---- Runtime-per-day bar chart ---- */
-.pool-chart__total {
-  font-size: 0.9375rem;
+/* Header readout: the selected day's runtime (defaults to today), updated as
+   bars are hovered or tapped — so the value is always visible, chart stays clean. */
+.pool-chart__readout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  text-align: right;
+}
+
+.pool-chart__readout-value {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pool-chart__readout-unit {
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-dim);
 }
 
+.pool-chart__readout-day {
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+}
+
 .pool-chart__body {
-  min-height: 148px;
+  min-height: 132px;
   display: flex;
   align-items: stretch;
 }
@@ -80,9 +101,10 @@
   align-items: flex-end;
   gap: 6px;
   width: 100%;
-  height: 148px;
+  height: 132px;
 }
 
+/* Each bar is a button: hover/tap points the header readout at that day. */
 .pool-bar {
   flex: 1 1 0;
   min-width: 0;
@@ -91,15 +113,13 @@
   align-items: center;
   gap: 6px;
   height: 100%;
-}
-
-.pool-bar__value {
-  font-size: 0.625rem;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--text-dim);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .pool-bar__track {
@@ -116,17 +136,31 @@
   min-height: 2px;
   border-radius: 5px 5px 0 0;
   background: var(--accent-soft);
-  transition: height 400ms ease-out;
+  transition: height 400ms ease-out, background 160ms ease-out;
 }
 
-.pool-bar__fill--today {
+.pool-bar__fill--active {
   background: var(--accent);
+}
+
+.pool-bar:focus-visible {
+  outline: none;
+}
+
+.pool-bar:focus-visible .pool-bar__fill {
+  box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent);
 }
 
 .pool-bar__label {
   font-size: 0.625rem;
   color: var(--text-faint);
   white-space: nowrap;
+  transition: color 160ms ease-out;
+}
+
+.pool-bar--active .pool-bar__label {
+  color: var(--text-dim);
+  font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {

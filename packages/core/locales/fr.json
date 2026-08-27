@@ -986,6 +986,7 @@
   "pool.schedule.editor.off": "Arrêt",
   "pool.schedule.editor.timelineHint": "Touchez une plage pour l’activer ou la désactiver, ou faites glisser une poignée pour déplacer une heure.",
   "pool.chart.title": "Durée par jour",
+  "pool.chart.today": "Aujourd'hui",
   "entityDetail.history": "Historique",
   "entityDetail.activity": "Activité",
   "entityDetail.showMore": "Afficher plus",

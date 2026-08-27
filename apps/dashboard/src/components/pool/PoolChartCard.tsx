@@ -31,6 +31,9 @@ export function PoolChartCard() {
 
   const [bars, setBars] = useState<PoolDayRuntime[]>([]);
   const [state, setState] = useState<LoadState>('loading');
+  // Which day's runtime the header reads out. null → today (the last bar);
+  // hovering or tapping a bar points it at that day instead.
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +50,7 @@ export function PoolChartCard() {
         const firstWithData = all.findIndex((b) => b.hasData);
         const trimmed = firstWithData >= 0 ? all.slice(firstWithData) : [];
         setBars(trimmed);
+        setActiveIdx(null);
         setState(trimmed.length === 0 ? 'empty' : 'ready');
       } catch (err) {
         if (!cancelled) {
@@ -60,13 +64,16 @@ export function PoolChartCard() {
   }, [runtime?.entity_id, runtime?.attributes['last_reset']]);
 
   const maxVal = Math.max(0.001, ...bars.map((b) => b.value));
-  const totalH = Math.round(bars.reduce((s, b) => s + b.value, 0) * 10) / 10;
-  const fmtDay = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit' });
+  const fmtDay = new Intl.DateTimeFormat(locale, { weekday: 'short', day: '2-digit', month: '2-digit' });
   const fmtWeekday = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-  // Compact per-bar value: one decimal below 10, whole hours above — keeps the
-  // label narrow enough to sit over even 14 crowded columns.
+  // Compact runtime value: one decimal below 10, whole hours above.
   const fmtVal = (v: number) =>
     new Intl.NumberFormat(locale, { maximumFractionDigits: v < 10 ? 1 : 0 }).format(v);
+
+  // The day whose runtime the header reads out (defaults to today).
+  const lastIdx = bars.length - 1;
+  const shownIdx = activeIdx != null && activeIdx >= 0 && activeIdx <= lastIdx ? activeIdx : lastIdx;
+  const shown = bars[shownIdx];
 
   return (
     <Card className="pool-card pool-chart">
@@ -75,7 +82,16 @@ export function PoolChartCard() {
           <BarChart3 size={16} strokeWidth={1.75} />
         </span>
         <h2 className="pool-card__title">{t('pool.chart.title')}</h2>
-        {state === 'ready' && <span className="pool-chart__total data-font">Σ {totalH} {unit}</span>}
+        {state === 'ready' && shown && (
+          <div className="pool-chart__readout">
+            <span className="pool-chart__readout-value data-font">
+              {fmtVal(shown.value)}<span className="pool-chart__readout-unit"> {unit}</span>
+            </span>
+            <span className="pool-chart__readout-day">
+              {shownIdx === lastIdx ? t('pool.chart.today') : fmtDay.format(new Date(shown.start))}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="pool-chart__body">
@@ -83,26 +99,29 @@ export function PoolChartCard() {
         {state === 'error' && <p className="pool-chart__msg">{t('history.error')}</p>}
         {state === 'empty' && <p className="pool-chart__msg">{t('history.empty')}</p>}
         {state === 'ready' && (
-          <div className="pool-bars">
+          <div className="pool-bars" onMouseLeave={() => setActiveIdx(null)}>
             {bars.map((b, i) => {
-              const isToday = i === bars.length - 1;
+              const isActive = i === shownIdx;
               const pct = Math.round((b.value / maxVal) * 100);
               const d = new Date(b.start);
               return (
-                <div
+                <button
                   key={b.start}
-                  className="pool-bar"
-                  title={`${fmtDay.format(d)}: ${Math.round(b.value * 10) / 10} ${unit}`}
+                  type="button"
+                  className={`pool-bar${isActive ? ' pool-bar--active' : ''}`}
+                  aria-label={`${fmtDay.format(d)}: ${fmtVal(b.value)} ${unit}`}
+                  onMouseEnter={() => setActiveIdx(i)}
+                  onFocus={() => setActiveIdx(i)}
+                  onClick={() => setActiveIdx(i)}
                 >
-                  <span className="pool-bar__value data-font">{fmtVal(b.value)}</span>
                   <div className="pool-bar__track">
                     <div
-                      className={`pool-bar__fill${isToday ? ' pool-bar__fill--today' : ''}`}
+                      className={`pool-bar__fill${isActive ? ' pool-bar__fill--active' : ''}`}
                       style={{ height: `${Math.max(pct, b.value > 0 ? 4 : 0)}%` }}
                     />
                   </div>
                   <span className="pool-bar__label">{fmtWeekday.format(d).slice(0, 2)}</span>
-                </div>
+                </button>
               );
             })}
           </div>
