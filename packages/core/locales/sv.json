@@ -986,6 +986,7 @@
   "pool.schedule.editor.off": "Av",
   "pool.schedule.editor.timelineHint": "Tryck på ett avsnitt för att slå på eller av det, eller dra i ett handtag för att flytta en tid.",
   "pool.chart.title": "Drifttid per dag",
+  "pool.chart.today": "Idag",
   "entityDetail.history": "Historik",
   "entityDetail.activity": "Aktivitet",
   "entityDetail.showMore": "Visa mer",

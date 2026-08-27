@@ -986,6 +986,7 @@
   "pool.schedule.editor.off": "Off",
   "pool.schedule.editor.timelineHint": "Tap a section to switch it on or off, or drag a handle to move a time.",
   "pool.chart.title": "Runtime per day",
+  "pool.chart.today": "Today",
   "entityDetail.history": "History",
   "entityDetail.activity": "Activity",
   "entityDetail.showMore": "Show more",

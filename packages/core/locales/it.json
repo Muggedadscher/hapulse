@@ -986,6 +986,7 @@
   "pool.schedule.editor.off": "Spento",
   "pool.schedule.editor.timelineHint": "Tocca una fascia per accenderla o spegnerla, oppure trascina una maniglia per spostare un orario.",
   "pool.chart.title": "Durata al giorno",
+  "pool.chart.today": "Oggi",
   "entityDetail.history": "Cronologia",
   "entityDetail.activity": "Attività",
   "entityDetail.showMore": "Mostra di più",

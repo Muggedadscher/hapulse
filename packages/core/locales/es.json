@@ -986,6 +986,7 @@
   "pool.schedule.editor.off": "Apag.",
   "pool.schedule.editor.timelineHint": "Toca un tramo para encenderlo o apagarlo, o arrastra un tirador para mover una hora.",
   "pool.chart.title": "Marcha por día",
+  "pool.chart.today": "Hoy",
   "entityDetail.history": "Historial",
   "entityDetail.activity": "Actividad",
   "entityDetail.showMore": "Mostrar más",
