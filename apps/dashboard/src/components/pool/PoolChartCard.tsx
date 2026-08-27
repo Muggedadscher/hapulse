@@ -63,6 +63,10 @@ export function PoolChartCard() {
   const totalH = Math.round(bars.reduce((s, b) => s + b.value, 0) * 10) / 10;
   const fmtDay = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit' });
   const fmtWeekday = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+  // Compact per-bar value: one decimal below 10, whole hours above — keeps the
+  // label narrow enough to sit over even 14 crowded columns.
+  const fmtVal = (v: number) =>
+    new Intl.NumberFormat(locale, { maximumFractionDigits: v < 10 ? 1 : 0 }).format(v);
 
   return (
     <Card className="pool-card pool-chart">
@@ -90,6 +94,7 @@ export function PoolChartCard() {
                   className="pool-bar"
                   title={`${fmtDay.format(d)}: ${Math.round(b.value * 10) / 10} ${unit}`}
                 >
+                  <span className="pool-bar__value data-font">{fmtVal(b.value)}</span>
                   <div className="pool-bar__track">
                     <div
                       className={`pool-bar__fill${isToday ? ' pool-bar__fill--today' : ''}`}
