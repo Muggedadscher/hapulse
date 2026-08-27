@@ -136,6 +136,11 @@ export interface CustomizationSettings {
    */
   scryptedUrl: string;
   /**
+   * [fork] Last-selected time range in the entity detail modal's history
+   * chart (`24h`/`7d`/`30d`). Remembered across entities, per user.
+   */
+  detailHistoryRange: string;
+  /**
    * [fork] One-time marker: the pool summary chip has been added to `homeChips`.
    * Lets the chip default ON for existing installs (whose stored homeChips
    * predate it) exactly once, while still allowing it to be hidden afterwards.
@@ -251,6 +256,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   mobileHiddenSystemSections: [],
   mobileHiddenEnergySections: [],
   scryptedUrl: '', // [fork]
+  detailHistoryRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
   libraryPlayerId: null,
   maServerUrl: null,

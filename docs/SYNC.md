@@ -105,7 +105,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 |---|---|
 | `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben) |
 | `packages/core/src/index.ts` | Export des `sensorHistory`- und `pool`-Moduls |
-| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`- + Pool-Chip-Setting (`poolChipMigrated`) |
+| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`) |
 | `apps/dashboard/src/components/home/SummaryChips.tsx` | Pool-Chip in der Home-Leiste |
 | `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}` | Bereichs-**Pills** (24H/7D/30D) statt Upstreams 24h/7d-Umschalter |
 | `apps/dashboard/src/app/Router.tsx` | Routen `/nvr`, `/pool` |
@@ -162,8 +162,10 @@ war damit redundant und wurde **entfernt** (`components/history/*`,
 **Fork-Anpassung am Detail-Modal:** Upstreams schlichter 24h/7d-Umschalter wurde
 durch eine **Pill-Auswahl (24H/7D/30D)** ersetzt — `[fork]`-markiert in
 `EntityDetailModal.{tsx,css}` (`.entity-detail__ranges`/`__range-btn`, Stil des
-alten History-Modals). Auch die **Pool-Kacheln** („Usage & runtime") öffnen jetzt
-dieses Detail-Modal statt eines eigenen Modals.
+alten History-Modals). Die Auswahl wird **pro User in den Settings gespeichert**
+(`customization.detailHistoryRange`) und bleibt über Entities/Öffnen hinweg
+erhalten. Auch die **Pool-Kacheln** („Usage & runtime") öffnen jetzt dieses
+Detail-Modal statt eines eigenen Modals.
 
 **Was vom Fork-History bleibt (nur für den Pool-Laufzeit-Chart):**
 `packages/core/src/sensorHistory.ts` (numerisches Sample-Parsing + Demo-Daten;

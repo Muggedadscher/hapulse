@@ -25,7 +25,8 @@ sauber übernehmen können.
   wurde entfernt (`components/history/*`, `ha/useHistory.ts`). **Fork-Anpassung
   am Detail-Modal:** Upstreams schlichter 24h/7d-Umschalter wurde durch eine
   **Pill-Auswahl (24H/7D/30D)** ersetzt — `[fork]`-markiert in
-  `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}`. Was vom
+  `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}`; die Auswahl
+  wird pro User gespeichert (`customization.detailHistoryRange`). Was vom
   Fork-History bleibt: `packages/core/src/sensorHistory.ts` (DOM-frei; nur noch
   `parseNumericHistory` + `demoHistory`) und `apps/dashboard/src/ha/history.ts`
   (`getHistory` via `HAConnection.fetchSensorHistory`) — beides ausschließlich
