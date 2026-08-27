@@ -157,6 +157,35 @@
 }
 .entity-detail__section-action:hover { text-decoration: underline; }
 
+/* [fork] History range pills (24H/7D/30D) — replaces upstream's toggle. */
+.entity-detail__ranges {
+  display: inline-flex;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-pill);
+  align-self: center;
+}
+.entity-detail__range-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.25rem 0.5625rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 160ms ease-out, color 160ms ease-out;
+}
+.entity-detail__range-btn:hover { color: var(--text); }
+.entity-detail__range-btn--active {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow: var(--shadow-card);
+}
+
 .entity-detail__placeholder {
   font-size: 0.875rem;
   color: var(--text-faint);

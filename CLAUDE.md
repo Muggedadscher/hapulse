@@ -19,17 +19,17 @@ sauber übernehmen können.
 
 ## Bereits umgesetzte Fork-Features
 
-- **Sensor-Verlauf (History-Modal)**: Inline-SVG-Wertechart mit Zeitbereichen
-  (1H/6H/24H/7D/30D) + min/avg/max. Dateien:
-  `packages/core/src/sensorHistory.ts` (DOM-frei; **umbenannt** von `history.ts`,
-  seit Upstream v1.2.0 eine eigene `history.ts` für sein Entity-Detail-Modal
-  hat — Kollision vermieden), `apps/dashboard/src/ha/{history.ts,useHistory.ts}`,
-  `apps/dashboard/src/components/history/*`. Die HA-Fetch-Methode heißt
-  `HAConnection.fetchSensorHistory` (nicht `fetchHistory`, das gehört Upstream).
-  **Hinweis:** Seit dem Upstream-Merge öffnet ein Tap auf eine Sensor-Kachel
-  Upstreams **Entity-Detail-Modal** (Chart + Logbook, für *alle* Entities) —
-  nicht mehr dieses Modal. Das History-Modal wird jetzt nur noch von der
-  **Pool-Seite** wiederverwendet (`PoolDataCard`, `PoolChartCard`).
+- **Sensor-Verlauf**: Ein Tap auf eine Sensor-Kachel (bzw. eine Pool-Kachel)
+  öffnet Upstreams **Entity-Detail-Modal** (Chart + Logbook, für *alle*
+  Entities). Das frühere eigene History-Modal des Forks ist damit abgelöst und
+  wurde entfernt (`components/history/*`, `ha/useHistory.ts`). **Fork-Anpassung
+  am Detail-Modal:** Upstreams schlichter 24h/7d-Umschalter wurde durch eine
+  **Pill-Auswahl (24H/7D/30D)** ersetzt — `[fork]`-markiert in
+  `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}`. Was vom
+  Fork-History bleibt: `packages/core/src/sensorHistory.ts` (DOM-frei; nur noch
+  `parseNumericHistory` + `demoHistory`) und `apps/dashboard/src/ha/history.ts`
+  (`getHistory` via `HAConnection.fetchSensorHistory`) — beides ausschließlich
+  für den Pool-Laufzeit-Chart (`PoolChartCard`).
 - **NVR-Seite**: bettet die Scrypted-Web-UI per iframe ein. Route `/nvr`,
   `apps/dashboard/src/pages/Nvr.{tsx,css}`, Setting `customization.scryptedUrl`.
 - **Pool-Seite**: native Poolpumpen-Steuerung im HAPulse-Stil (ersetzt das
@@ -37,7 +37,8 @@ sauber übernehmen können.
   Karten unter `apps/dashboard/src/components/pool/*`, Entity-Wiring in
   `poolConfig.ts`, Service-Facade `apps/dashboard/src/ha/pool.ts`. Enthält
   Hero-Pumpenstatus + Modus-Umschalter, Solar-Gauge mit editierbarer Schwelle,
-  Manuell-Timer-Ring, Laufzeit/Verbrauch (History-Modal wiederverwendet), einen
+  Manuell-Timer-Ring, Laufzeit/Verbrauch (Kacheln öffnen Upstreams
+  Entity-Detail-Modal), einen
   **vollen Zeitplan-Editor** (grafische Tages-Timeline, schreibt via
   `scheduler.edit`), einen **Laufzeit-Chart** (`PoolChartCard`: Balken der
   Pumpen-Laufzeit pro Tag aus der State-History, Tages-Max) und eine

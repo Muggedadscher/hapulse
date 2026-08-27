@@ -1,12 +1,11 @@
 /**
- * Sensor history — types, parsing, ranges and demo data for the numeric
- * sensor-history charts (the reusable HistoryModal, used by the Pool page).
+ * Sensor history — raw sample types, numeric parsing and demo data.
  *
- * [fork] Renamed from `history.ts` to coexist with upstream's own `history.ts`
- * (which feeds the entity detail modal). Framework-agnostic (no DOM / React),
- * like the rest of `@hapulse/core`. The live fetch lives on
- * `HAConnection.fetchSensorHistory` (connection.ts); this module owns the pure
- * data shapes and transforms consumed by the dashboard.
+ * [fork] Feeds the Pool runtime chart (`PoolChartCard` → `getHistory` →
+ * `dailyRuntimeBars`). Renamed from `history.ts` to coexist with upstream's own
+ * `history.ts` (which feeds the entity detail modal). Framework-agnostic
+ * (no DOM / React), like the rest of `@hapulse/core`. The live fetch lives on
+ * `HAConnection.fetchSensorHistory` (connection.ts).
  */
 
 /**
@@ -34,36 +33,6 @@ export interface SensorHistoryPoint {
   v: number;
 }
 
-/** Selectable look-back windows for the history chart. */
-export type HistoryRange = '1h' | '6h' | '24h' | '7d' | '30d';
-
-export interface HistoryRangeSpec {
-  id: HistoryRange;
-  /** Short label for the range selector (e.g. "24H"). */
-  label: string;
-  /** Window length in milliseconds. */
-  durationMs: number;
-}
-
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
-
-export const HISTORY_RANGES: readonly HistoryRangeSpec[] = [
-  { id: '1h', label: '1H', durationMs: HOUR },
-  { id: '6h', label: '6H', durationMs: 6 * HOUR },
-  { id: '24h', label: '24H', durationMs: DAY },
-  { id: '7d', label: '7D', durationMs: 7 * DAY },
-  { id: '30d', label: '30D', durationMs: 30 * DAY },
-];
-
-/** The default range spec used when an unknown range id is passed. */
-const DEFAULT_RANGE_SPEC: HistoryRangeSpec = { id: '24h', label: '24H', durationMs: DAY };
-
-/** Look up the spec for a range id, falling back to 24h. */
-export function historyRangeSpec(range: HistoryRange): HistoryRangeSpec {
-  return HISTORY_RANGES.find((r) => r.id === range) ?? DEFAULT_RANGE_SPEC;
-}
-
 /**
  * Convert raw samples into sorted numeric points, dropping any that are
  * non-numeric (`unavailable`, `unknown`, text states) or missing a timestamp.
@@ -80,32 +49,6 @@ export function parseNumericHistory(raw: RawHistoryState[]): SensorHistoryPoint[
   }
   points.sort((a, b) => a.t - b.t);
   return points;
-}
-
-/** Summary statistics over a series. */
-export interface HistorySummary {
-  min: number;
-  max: number;
-  avg: number;
-  first: number;
-  last: number;
-}
-
-/** Compute min / max / avg / first / last, or null for an empty series. */
-export function summarizeHistory(points: SensorHistoryPoint[]): HistorySummary | null {
-  const first = points[0];
-  const last = points[points.length - 1];
-  if (first === undefined || last === undefined) return null;
-
-  let min = first.v;
-  let max = first.v;
-  let sum = 0;
-  for (const p of points) {
-    if (p.v < min) min = p.v;
-    if (p.v > max) max = p.v;
-    sum += p.v;
-  }
-  return { min, max, avg: sum / points.length, first: first.v, last: last.v };
 }
 
 /**

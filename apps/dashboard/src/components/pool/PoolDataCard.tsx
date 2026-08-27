@@ -2,30 +2,29 @@
  * [fork] PoolDataCard — runtime & energy figures.
  *
  * Four numeric tiles (runtime today, energy today / this week / this month).
- * Each numeric tile opens the shared HistoryModal on tap, reusing the fork's
- * sensor-history feature so the pump's trend is one click away.
+ * Each numeric tile opens upstream's entity detail modal (chart + logbook) on
+ * tap, the same "more-info" view sensor tiles use elsewhere.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Clock, Zap } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
-import { HistoryModal } from '../history/HistoryModal';
+import { useUIStore } from '../../stores/uiStore';
 import { POOL_ENTITIES } from './poolConfig';
 
 interface DataTileProps {
   entity: HassEntity | undefined;
   label: string;
   icon: React.ReactNode;
-  color: string;
 }
 
-function DataTile({ entity, label, icon, color }: DataTileProps) {
-  const [open, setOpen] = useState(false);
+function DataTile({ entity, label, icon }: DataTileProps) {
   const locale = useLocale();
+  const openEntityDetail = useUIStore((s) => s.openEntityDetail);
   if (!entity) return null;
 
   const value = formatEntityState(entity, locale);
@@ -41,25 +40,23 @@ function DataTile({ entity, label, icon, color }: DataTileProps) {
 
   if (!numeric) return <div className="pool-tile">{inner}</div>;
 
+  const open = () => openEntityDetail(entity.entity_id);
   return (
-    <>
-      <div
-        className="pool-tile pool-tile--clickable"
-        role="button"
-        tabIndex={0}
-        aria-label={`${label} — ${value}`}
-        onClick={() => setOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-      >
-        {inner}
-      </div>
-      <HistoryModal open={open} onClose={() => setOpen(false)} entity={entity} name={label} color={color} />
-    </>
+    <div
+      className="pool-tile pool-tile--clickable"
+      role="button"
+      tabIndex={0}
+      aria-label={`${label} — ${value}`}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          open();
+        }
+      }}
+    >
+      {inner}
+    </div>
   );
 }
 
@@ -80,10 +77,10 @@ export function PoolDataCard() {
       </div>
 
       <div className="pool-tiles">
-        <DataTile entity={runtime} label={t('pool.data.runtimeToday')} icon={<Clock size={16} strokeWidth={1.75} />} color="var(--info)" />
-        <DataTile entity={today} label={t('pool.data.consumptionToday')} icon={<Zap size={16} strokeWidth={1.75} />} color="var(--accent)" />
-        <DataTile entity={week} label={t('pool.data.consumptionWeek')} icon={<Zap size={16} strokeWidth={1.75} />} color="var(--accent)" />
-        <DataTile entity={month} label={t('pool.data.consumptionMonth')} icon={<Zap size={16} strokeWidth={1.75} />} color="var(--accent)" />
+        <DataTile entity={runtime} label={t('pool.data.runtimeToday')} icon={<Clock size={16} strokeWidth={1.75} />} />
+        <DataTile entity={today} label={t('pool.data.consumptionToday')} icon={<Zap size={16} strokeWidth={1.75} />} />
+        <DataTile entity={week} label={t('pool.data.consumptionWeek')} icon={<Zap size={16} strokeWidth={1.75} />} />
+        <DataTile entity={month} label={t('pool.data.consumptionMonth')} icon={<Zap size={16} strokeWidth={1.75} />} />
       </div>
     </Card>
   );
