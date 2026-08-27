@@ -5,6 +5,8 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { AlarmPanelCard } from '../../security/AlarmPanelCard';
 import { useEntityStore } from '../../../stores/entityStore';
+import { useSettingsStore } from '../../../stores/settingsStore';
+import { sortAlarmPanels } from '@hapulse/core';
 import { useT } from '../../../i18n/useT';
 
 interface AlarmModalProps {
@@ -14,10 +16,15 @@ interface AlarmModalProps {
 
 export function AlarmModal({ open, onClose }: AlarmModalProps) {
   const t = useT();
-  const alarm = useEntityStore(
+  // All visible panels, most severe first — a home can have a master plus
+  // per-area panels (Alarmo), and a hidden panel must not appear here.
+  const hiddenEntities = useSettingsStore(
+    useShallow((s) => s.customization.hiddenEntities)
+  );
+  const panels = useEntityStore(
     useShallow((s) =>
-      Object.values(s.entities).find((e) =>
-        e.entity_id.startsWith('alarm_control_panel.')
+      sortAlarmPanels(
+        Object.values(s.entities).filter((e) => !hiddenEntities.includes(e.entity_id))
       )
     )
   );
@@ -29,7 +36,7 @@ export function AlarmModal({ open, onClose }: AlarmModalProps) {
       title={t('home.chipmodals.alarm.title')}
       icon={<ShieldAlert size={20} strokeWidth={1.75} />}
     >
-      {!alarm ? (
+      {panels.length === 0 ? (
         <EmptyState
           icon={<ShieldAlert size={32} strokeWidth={1.5} />}
           title={t('home.chipmodals.alarm.emptyTitle')}
@@ -37,7 +44,9 @@ export function AlarmModal({ open, onClose }: AlarmModalProps) {
         />
       ) : (
         <div className="alarm-modal__content">
-          <AlarmPanelCard entity={alarm} />
+          {panels.map((panel) => (
+            <AlarmPanelCard key={panel.entity_id} entity={panel} />
+          ))}
         </div>
       )}
     </Modal>

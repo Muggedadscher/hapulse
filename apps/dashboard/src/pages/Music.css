@@ -74,3 +74,8 @@
     order: 1;
   }
 }
+
+/* Library row spans the full page width below the two player columns. */
+.music-page__library-row {
+  margin-top: 1rem;
+}

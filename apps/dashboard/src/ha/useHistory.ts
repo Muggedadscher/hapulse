@@ -13,7 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import { historyRangeSpec, summarizeHistory } from '@hapulse/core';
-import type { HistoryPoint, HistoryRange, HistorySummary } from '@hapulse/core';
+import type { SensorHistoryPoint, HistoryRange, HistorySummary } from '@hapulse/core';
 import { getHistory } from './history';
 
 export interface UseHistoryResult {
@@ -24,7 +24,7 @@ export interface UseHistoryResult {
   /** A fetch finished with zero points. */
   empty: boolean;
   /** Most recently loaded series (kept during a refetch). */
-  points: HistoryPoint[];
+  points: SensorHistoryPoint[];
   summary: HistorySummary | null;
 }
 
@@ -33,7 +33,7 @@ export interface UseHistoryResult {
  * @param range    - look-back window
  */
 export function useHistory(entityId: string | null, range: HistoryRange): UseHistoryResult {
-  const [points, setPoints] = useState<HistoryPoint[]>([]);
+  const [points, setPoints] = useState<SensorHistoryPoint[]>([]);
   const [summary, setSummary] = useState<HistorySummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);

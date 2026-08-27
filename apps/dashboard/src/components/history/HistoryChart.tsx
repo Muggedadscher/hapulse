@@ -13,10 +13,10 @@
  */
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { HistoryPoint } from '@hapulse/core';
+import type { SensorHistoryPoint } from '@hapulse/core';
 
 interface HistoryChartProps {
-  points: HistoryPoint[];
+  points: SensorHistoryPoint[];
   /** Stroke/fill colour — pass a CSS variable, e.g. `var(--danger)`. */
   color: string;
   /** Unit appended to the min/max axis labels (e.g. "°C"). */
@@ -57,7 +57,7 @@ function tickTimeLabel(t: number, spanMs: number): string {
 
 /** Resample a series to exactly `n` points, evenly spaced across its own time
  *  range, linearly interpolating the value. Enables a 1:1 morph tween. */
-function resample(points: HistoryPoint[], n: number): HistoryPoint[] {
+function resample(points: SensorHistoryPoint[], n: number): SensorHistoryPoint[] {
   const len = points.length;
   if (len === 0) return [];
   const first = points[0]!;
@@ -67,7 +67,7 @@ function resample(points: HistoryPoint[], n: number): HistoryPoint[] {
   const t0 = first.t;
   const span = last.t - t0 || 1;
 
-  const out: HistoryPoint[] = [];
+  const out: SensorHistoryPoint[] = [];
   let j = 0;
   for (let i = 0; i < n; i++) {
     const tt = t0 + (span * i) / (n - 1);
@@ -82,9 +82,9 @@ function resample(points: HistoryPoint[], n: number): HistoryPoint[] {
 }
 
 /** Linear interpolation between two equal-length resampled series. */
-function lerpSeries(from: HistoryPoint[], to: HistoryPoint[], p: number): HistoryPoint[] {
+function lerpSeries(from: SensorHistoryPoint[], to: SensorHistoryPoint[], p: number): SensorHistoryPoint[] {
   const n = to.length;
-  const out: HistoryPoint[] = new Array(n);
+  const out: SensorHistoryPoint[] = new Array(n);
   for (let i = 0; i < n; i++) {
     const a = from[i] ?? to[i]!;
     const b = to[i]!;
@@ -104,8 +104,8 @@ export function HistoryChart({ points, color, unit }: HistoryChartProps) {
 
   const target = useMemo(() => resample(points, SAMPLES), [points]);
 
-  const [display, setDisplay] = useState<HistoryPoint[]>(target);
-  const displayRef = useRef<HistoryPoint[]>(target);
+  const [display, setDisplay] = useState<SensorHistoryPoint[]>(target);
+  const displayRef = useRef<SensorHistoryPoint[]>(target);
   const firstRef = useRef(true);
 
   // Tween `display` from its current shape into every new `target`.

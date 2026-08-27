@@ -44,6 +44,68 @@ export interface Release {
 /** Newest first. */
 export const RELEASES: Release[] = [
   {
+    version: '1.3.1',
+    date: '2026-08-26',
+    title: 'Real covers on the hosted version',
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          'With the direct Music Assistant connection set up, the Now Playing card, the player list and the Zones now show the real album cover \u2014 fetched from the music provider itself \u2014 whenever the Home Assistant one cannot load on the hosted (https) version',
+          'Artwork the browser would block anyway (http:// images on an https page) is skipped up front instead of producing a console warning per cover',
+        ],
+      },
+    ],
+  },
+  {
+    version: '1.3.0',
+    date: '2026-08-26',
+    title: 'Music Assistant, fully at home',
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          'A music library browser on the Music page when Music Assistant is set up: playlists, albums, artists, tracks and radio, with artwork, favourites, pagination and per-item queueing (play now, play next, add, replace)',
+          'Search spans every provider Music Assistant knows \u2014 Spotify included \u2014 and results play directly on any of your speakers',
+          'Speaker grouping: link speakers to play together, straight from the queue card \u2014 works for any integration that supports grouping',
+          'A play queue card: what\u2019s playing, what\u2019s next, shuffle, repeat, and moving the queue to another speaker mid-play',
+          'Connect Music Assistant directly (server URL + API token, one-time) and the queue becomes the full list \u2014 scroll it, drag tracks to reorder, remove them',
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          'Album covers and artwork that cannot load \u2014 typically http:// images blocked on the hosted (https) version \u2014 now fall back to a tidy placeholder everywhere instead of a broken image',
+          'Popovers (like the speaker group menu) no longer render underneath sections further down the page',
+        ],
+      },
+    ],
+  },
+  {
+    version: '1.2.0',
+    date: '2026-08-26',
+    title: 'Every entity gets a detail view',
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          'A detail view for every entity, like Home Assistant\u2019s more-info dialog: current state, a history timeline (or a value chart for numeric sensors) switchable between 24 hours and 7 days, and the recent activity list',
+          'Sensors open it with a tap; cards with controls (media, climate, covers, locks, vacuums) open it by tapping the card body; lights, switches and buttons open it with a press-and-hold \u2014 mouse and touch alike',
+          'Cameras open a live view \u2014 the camera\u2019s stream on top, its activity below \u2014 from any camera tile',
+          'Group entities list their members in the detail view, and tapping a member opens its own details',
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          'A room picture no longer breaks the hero card when the section has a custom height \u2014 the image could render at full size inside a scrolling card, or vanish entirely',
+          'The alarm chip in the header now agrees with the Security page when a home has several alarm panels: the armed one wins over a stray disarmed one, and hidden panels are ignored everywhere',
+          'The alarm dialog shows every alarm panel, not just the first one Home Assistant happened to list',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.1.1',
     date: '2026-08-23',
     title: 'Fixes for translated installs, colour lights and deep links',

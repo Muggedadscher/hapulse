@@ -41,6 +41,12 @@ export interface CustomizationSettings {
   entityOrder: Record<string, string[]>;
   /** Entity IDs pinned to the favorites strip on the Home page */
   favorites: string[];
+  /** Music Assistant library: last chosen playback target (entity_id). */
+  libraryPlayerId: string | null;
+  /** Direct Music Assistant connection (full queue): server URL + API token.
+   *  Optional — without it the queue card shows HA's summary only. */
+  maServerUrl: string | null;
+  maToken: string | null;
   /** Chosen weather.* entity id for the header glance + weather modal. Empty = auto (first weather entity). */
   weatherEntity: string;
   /** Ordered Home Overview section ids (e.g. scenes/hero/energy/...). */
@@ -130,8 +136,8 @@ export interface CustomizationSettings {
    */
   scryptedUrl: string;
   /**
-   * [fork] Last-selected time range in the sensor history modal
-   * (`1h`/`6h`/`24h`/`7d`/`30d`). Remembered across sensors, per user.
+   * [fork] Last-selected time range in the reusable sensor HistoryModal
+   * (`1h`/`6h`/`24h`/`7d`/`30d`), used by the Pool page. Remembered per user.
    */
   historyRange: string;
   /**
@@ -252,6 +258,9 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   scryptedUrl: '', // [fork]
   historyRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
+  libraryPlayerId: null,
+  maServerUrl: null,
+  maToken: null,
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(

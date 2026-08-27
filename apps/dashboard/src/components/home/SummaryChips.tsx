@@ -1,3 +1,4 @@
+import { pickAlarmPanel } from '@hapulse/core';
 import React from 'react';
 import {
   Users, Lightbulb, DoorOpen, ShieldAlert, Music2, Waves,
@@ -73,7 +74,9 @@ export function SummaryChips({
   }).length;
 
   // Alarm
-  const alarm = allEntities.find((e) => e.entity_id.startsWith('alarm_control_panel.'));
+  // Severity-picked so the chip agrees with the security page when several
+  // panels exist (issue #16) — see pickAlarmPanel in core.
+  const alarm = pickAlarmPanel(allEntities);
   const alarmState = alarm?.state ?? null;
 
   // Media playing

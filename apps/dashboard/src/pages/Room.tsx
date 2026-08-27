@@ -14,14 +14,6 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { EntityCard } from '../components/cards/EntityCard';
-import { LightCard } from '../components/cards/LightCard';
-import { ClimateCard } from '../components/cards/ClimateCard';
-import { MediaCard } from '../components/cards/MediaCard';
-import { CoverCard } from '../components/cards/CoverCard';
-import { ToggleCard } from '../components/cards/ToggleCard';
-import { SensorTile } from '../components/cards/SensorTile';
-import { ButtonCard } from '../components/cards/ButtonCard';
-import { VacuumCard } from '../components/cards/VacuumCard';
 import { HeroRoomCard } from '../components/home/HeroRoomCard';
 import { callService } from '../ha/service';
 import { useRoom, useEntityMap, useCustomization } from '../ha/hooks';
@@ -423,7 +415,10 @@ export function Room() {
     const isHidden = hiddenEntities.includes(entityId);
 
     const cardNode: React.ReactNode = (() => {
-      if (isSensor) return <SensorTile key={entityId} entity={entity} name={name} />;
+      // All domain cards render through EntityCard, which adds the detail
+      // press behaviour (tap on read-only cards, long press on interactive
+      // ones — issue #14). Scene tiles stay bespoke: their tap activates.
+      if (isSensor) return <EntityCard key={entityId} entity={entity} name={name} />;
       if (key === 'scene') {
         const palette = SCENE_ICON_COLORS[idx % SCENE_ICON_COLORS.length]!;
         const displayName = name.replace(/_/g, ' ');
@@ -442,16 +437,7 @@ export function Room() {
           </button>
         );
       }
-      switch (key) {
-        case 'light':        return <LightCard   key={entityId} entity={entity} name={name} />;
-        case 'climate':      return <ClimateCard  key={entityId} entity={entity} name={name} />;
-        case 'media_player': return <MediaCard    key={entityId} entity={entity} name={name} />;
-        case 'cover':        return <CoverCard    key={entityId} entity={entity} name={name} />;
-        case 'switches':     return <ToggleCard   key={entityId} entity={entity} name={name} />;
-        case 'button':       return <ButtonCard   key={entityId} entity={entity} name={name} />;
-        case 'vacuum':       return <VacuumCard   key={entityId} entity={entity} name={name} />;
-        default:             return <EntityCard   key={entityId} entity={entity} name={name} />;
-      }
+      return <EntityCard key={entityId} entity={entity} name={name} />;
     })();
 
     const isUnavailable = entity.state === 'unavailable';

@@ -22,6 +22,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService } from '../../ha/service';
 import { resolveEntityPicture } from '../../lib/media';
+import { useArtworkUrl } from '../../lib/useImageFallback';
+import { useMAArtwork } from '../../lib/maArtwork';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
@@ -115,7 +117,12 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
 
   // ---- Artwork URL ----
   const entityPicture = attrs['entity_picture'] as string | null | undefined;
-  const artworkUrl = resolveEntityPicture(entityPicture, url);
+  const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
+    resolveEntityPicture(entityPicture, url),
+    // Music Assistant knows the provider's own (https) cover for whatever is
+    // playing — rescues artwork the hosted dashboard cannot load from HA.
+    useMAArtwork(entity),
+  );
 
   // ---- Source dropdown ----
   const sourceList = attrs['source_list'] as string[] | undefined;
@@ -185,7 +192,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
     >
       {hasBackdrop && (
         <div className="now-playing-card__bg" aria-hidden="true">
-          <img src={artworkUrl!} alt="" />
+          <img src={artworkUrl!} alt="" onError={onArtworkError} />
         </div>
       )}
       <div className="now-playing-card__inner">
@@ -197,6 +204,7 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
               className="now-playing-card__artwork"
               src={artworkUrl}
               alt={title ?? name}
+              onError={onArtworkError}
             />
           ) : (
             <div className="now-playing-card__artwork-fallback" aria-hidden="true">

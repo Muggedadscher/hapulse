@@ -8,8 +8,11 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { EditToggle } from '../components/ui/EditToggle';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { EditBadge } from '../components/ui/EditBadge';
+import { useMusicAssistant } from '../ha/hooks';
 import { useT, type TKey } from '../i18n/useT';
 import { NowPlayingCard } from '../components/music/NowPlayingCard';
+import { LibraryCard } from '../components/music/LibraryCard';
+import { QueueCard } from '../components/music/QueueCard';
 import { OtherPlayersCard } from '../components/music/OtherPlayersCard';
 import { ZonesCard, type ZoneData } from '../components/music/ZonesCard';
 import { roomIconName } from '@hapulse/core';
@@ -29,7 +32,7 @@ function pickHeroPlayer(players: HassEntity[]): HassEntity | undefined {
 
 // ── Section IDs ───────────────────────────────────────────────────────────────
 
-const SECTIONS = ['now_playing', 'zones', 'other_players'] as const;
+const SECTIONS = ['now_playing', 'zones', 'other_players', 'library', 'queue'] as const;
 type SectionId = typeof SECTIONS[number];
 
 type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
@@ -53,6 +56,18 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     hideMobile: 'music.section.hideMobile.otherPlayers',
     showMobile: 'music.section.showMobile.otherPlayers',
   },
+  library: {
+    hide: 'music.section.hide.library',
+    show: 'music.section.show.library',
+    hideMobile: 'music.section.hideMobile.library',
+    showMobile: 'music.section.showMobile.library',
+  },
+  queue: {
+    hide: 'music.section.hide.queue',
+    show: 'music.section.show.queue',
+    hideMobile: 'music.section.hideMobile.queue',
+    showMobile: 'music.section.showMobile.queue',
+  },
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -66,6 +81,9 @@ export function Music() {
   );
   const rooms    = useEntityStore((s) => s.rooms);
   const editMode = useUIStore((s) => s.editMode);
+  // Music Assistant: when detected (or in demo), the page gains the Library
+  // browser below the player sections. Without it, nothing changes (issue #2).
+  const musicAssistant = useMusicAssistant();
 
   const hiddenEntities      = useSettingsStore((s) => s.customization.hiddenEntities);
   const hiddenMusicSections = useSettingsStore(useShallow((s) => s.customization.hiddenMusicSections));
@@ -211,6 +229,7 @@ export function Music() {
               : <div className="music-page__no-player">{t('music.noPlayer')}</div>
           )}
           {wrapSection('zones', <ZonesCard zones={zones} />)}
+          {musicAssistant && wrapSection('queue', <QueueCard ma={musicAssistant} />)}
         </div>
 
         {/* Right column: Other Players — capped to the left column's measured height */}
@@ -227,6 +246,13 @@ export function Music() {
           )}
         </div>
       </div>
+
+      {/* Full-width Library row — only with Music Assistant (or the demo). */}
+      {musicAssistant && (
+        <div className="music-page__library-row">
+          {wrapSection('library', <LibraryCard ma={musicAssistant} />)}
+        </div>
+      )}
     </div>
   );
 }

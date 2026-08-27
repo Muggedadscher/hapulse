@@ -19,10 +19,17 @@ sauber übernehmen können.
 
 ## Bereits umgesetzte Fork-Features
 
-- **Sensor-Verlauf**: Klick auf numerische Sensor-Kachel → History-Modal
-  (Inline-SVG-Chart). Dateien: `packages/core/src/history.ts`,
-  `apps/dashboard/src/ha/{history.ts,useHistory.ts}`,
-  `apps/dashboard/src/components/history/*`.
+- **Sensor-Verlauf (History-Modal)**: Inline-SVG-Wertechart mit Zeitbereichen
+  (1H/6H/24H/7D/30D) + min/avg/max. Dateien:
+  `packages/core/src/sensorHistory.ts` (DOM-frei; **umbenannt** von `history.ts`,
+  seit Upstream v1.2.0 eine eigene `history.ts` für sein Entity-Detail-Modal
+  hat — Kollision vermieden), `apps/dashboard/src/ha/{history.ts,useHistory.ts}`,
+  `apps/dashboard/src/components/history/*`. Die HA-Fetch-Methode heißt
+  `HAConnection.fetchSensorHistory` (nicht `fetchHistory`, das gehört Upstream).
+  **Hinweis:** Seit dem Upstream-Merge öffnet ein Tap auf eine Sensor-Kachel
+  Upstreams **Entity-Detail-Modal** (Chart + Logbook, für *alle* Entities) —
+  nicht mehr dieses Modal. Das History-Modal wird jetzt nur noch von der
+  **Pool-Seite** wiederverwendet (`PoolDataCard`, `PoolChartCard`).
 - **NVR-Seite**: bettet die Scrypted-Web-UI per iframe ein. Route `/nvr`,
   `apps/dashboard/src/pages/Nvr.{tsx,css}`, Setting `customization.scryptedUrl`.
 - **Pool-Seite**: native Poolpumpen-Steuerung im HAPulse-Stil (ersetzt das

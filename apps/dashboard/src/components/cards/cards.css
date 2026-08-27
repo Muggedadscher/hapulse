@@ -711,26 +711,6 @@
   overflow: hidden;
 }
 
-/* [fork] Clickable numeric sensor tiles — open the history chart on tap */
-.sensor-tile--clickable {
-  cursor: pointer;
-  transition: background 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
-}
-
-.sensor-tile--clickable:hover {
-  background: var(--bg-card-hover);
-  box-shadow: var(--shadow-card);
-}
-
-.sensor-tile--clickable:active {
-  transform: scale(0.98);
-}
-
-.sensor-tile--clickable:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
 .sensor-tile__chip {
   background: var(--bg-subtle);
   color: var(--text-faint);
@@ -1170,4 +1150,16 @@
 .edit-entity-wrap--unavailable {
   opacity: 0.5;
   filter: saturate(0.25);
+}
+
+/* ---- Entity-detail press wrapper (issue #14) ----
+   Wraps every EntityCard: long-press opens the detail modal, so the native
+   touch callout / text selection during the hold must be suppressed. */
+.entity-card-press {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.entity-card-press--tappable {
+  cursor: pointer;
 }
