@@ -242,17 +242,25 @@
     linear-gradient(to top, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0.2) 26%, rgba(0, 0, 0, 0) 46%);
 }
 
-/* Capped photo hero: crop, don't scroll. The generic capped-card fallback
-   pins a card-coloured sticky header, which over a photo paints an opaque bar
-   across the image; a hero photo card cropped at the cap reads better. The
-   doubled class outranks the Page.css fallback whatever the CSS import order. */
+/* Capped hero: crop, don't scroll. The generic capped-card fallback pins a
+   card-coloured sticky header, which paints an opaque bar across the photo or
+   gradient backdrop (issue #18 — the backdrop is a ::before, so the header's
+   --bg-card fill can't blend with it); a hero cropped at the cap reads
+   better. Applies to every hero (a photo hero whose image fails to load
+   degrades to the gradient) and to both the view and edit-mode cap paths.
+   The tripled class outranks the Page.css fallback — including its :hover
+   variant — whatever the CSS import order. */
 .overview-grid__cell[class*='section-h-']:not(.overview-grid__cell--editing)
-  > .hero-room-card--photo.hero-room-card {
+  > .hero-room-card.hero-room-card.hero-room-card,
+.overview-grid__cell--editing[class*='section-h-'] .edit-section-outline
+  > .hero-room-card.hero-room-card.hero-room-card {
   overflow: hidden;
   padding-top: 1.375rem;
 }
 .overview-grid__cell[class*='section-h-']:not(.overview-grid__cell--editing)
-  > .hero-room-card--photo.hero-room-card > :first-child {
+  > .hero-room-card.hero-room-card.hero-room-card > :first-child,
+.overview-grid__cell--editing[class*='section-h-'] .edit-section-outline
+  > .hero-room-card.hero-room-card.hero-room-card > :first-child {
   position: static;
   padding-top: 0;
   background: none;

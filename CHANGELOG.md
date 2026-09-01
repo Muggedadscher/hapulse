@@ -5,6 +5,14 @@ All notable changes to HAPulse are recorded here.
 <!-- Generated from packages/core/src/changelog.ts by `npm run changelog`.
      Edit that file, not this one — this file is overwritten. -->
 
+## 1.3.2 — 2026-09-01
+
+_Room name blends into the hero card again_
+
+### Fixed
+
+- On a height-capped Overview hero card, the room name no longer sits on an opaque block over the gradient or photo — the card now crops at the cap with the backdrop showing through, in normal view and in edit mode
+
 ## 1.3.1 — 2026-08-26
 
 _Real covers on the hosted version_
