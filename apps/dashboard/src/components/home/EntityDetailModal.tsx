@@ -13,7 +13,7 @@
  * demo mode — so the modal works identically in both.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { EntityCard } from '../cards/EntityCard';
@@ -281,6 +281,13 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const [activityExpanded, setActivityExpanded] = useState(false);
   const [attrsOpen, setAttrsOpen] = useState(false);
   const [windowEnd, setWindowEnd] = useState(() => Date.now());
+  // [fork] The range the *displayed* series was fetched for, and whether a new
+  // range is currently loading. Keeping the old chart on screen (dimmed) during
+  // a range switch — instead of blanking to a placeholder — lets it cross-fade
+  // into the new series rather than vanishing and popping back.
+  const [histRangeH, setHistRangeH] = useState<number>(rangeH);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const prevEntityRef = useRef<string | null>(null);
 
   // Reset per-entity view state when the modal switches target.
   // ([fork] the history range persists across entities via settings.)
@@ -292,17 +299,29 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   useEffect(() => {
     if (!entityId) return;
     let cancelled = false;
-    setHistory(null);
-    setLogbook(null);
+    // [fork] Only blank to the loading placeholder when the *entity* changes.
+    // On a mere range switch keep the old series visible until the new one
+    // arrives, so the chart cross-fades instead of disappearing.
+    const entityChanged = prevEntityRef.current !== entityId;
+    prevEntityRef.current = entityId;
+    if (entityChanged) {
+      setHistory(null);
+      setLogbook(null);
+    }
+    setHistoryLoading(true);
     const end = Date.now();
-    setWindowEnd(end);
+    const fetchedRangeH = rangeH;
     void Promise.all([
-      getEntityHistory(entityId, rangeH),
-      getEntityLogbook(entityId, rangeH),
+      getEntityHistory(entityId, fetchedRangeH),
+      getEntityLogbook(entityId, fetchedRangeH),
     ]).then(([h, l]) => {
       if (cancelled) return;
+      // Swap points and their matching window together so the axes never lag.
+      setWindowEnd(end);
+      setHistRangeH(fetchedRangeH);
       setHistory(h);
       setLogbook(l);
+      setHistoryLoading(false);
     });
     return () => {
       cancelled = true;
@@ -321,7 +340,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
     entity.entity_id;
 
   const stateLabel = formatEntityState(entity, locale, (d, s, o) => sl(d, s, o));
-  const windowStart = windowEnd - rangeH * 3_600_000;
+  const windowStart = windowEnd - histRangeH * 3_600_000; // [fork] matches the displayed series
   const numeric = history != null && history.length > 0 && isNumericHistory(history);
   const ticks = timeTicks(windowStart, windowEnd, locale);
 
@@ -389,7 +408,11 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
           ) : history.length === 0 ? (
             <div className="entity-detail__placeholder">{t('entityDetail.historyEmpty')}</div>
           ) : (
-            <>
+            /* [fork] Dims while a new range loads; the old series stays put and
+               eases back to full opacity when the new one arrives. */
+            <div
+              className={`entity-detail__history-view${historyLoading ? ' entity-detail__history-view--loading' : ''}`}
+            >
               {numeric ? (
                 <ValueChart points={history} start={windowStart} end={windowEnd} unit={unit} />
               ) : (
@@ -405,7 +428,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
               <div className="entity-detail__ticks" aria-hidden="true">
                 {ticks.map((tick, i) => <span key={i}>{tick}</span>)}
               </div>
-            </>
+            </div>
           )}
         </section>
 

@@ -186,6 +186,23 @@
   box-shadow: var(--shadow-card);
 }
 
+/* [fork] History chart area — cross-fades on a range switch instead of blanking.
+   The old series stays visible and dims while the new range loads, then eases
+   back to full opacity when it arrives. */
+.entity-detail__history-view {
+  opacity: 1;
+  transition: opacity 260ms ease;
+}
+.entity-detail__history-view--loading {
+  opacity: 0.45;
+}
+@media (prefers-reduced-motion: reduce) {
+  .entity-detail__history-view {
+    transition: none;
+  }
+  .entity-detail__history-view--loading { opacity: 0.6; }
+}
+
 .entity-detail__placeholder {
   font-size: 0.875rem;
   color: var(--text-faint);
