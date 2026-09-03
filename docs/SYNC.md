@@ -164,7 +164,9 @@ durch eine **Pill-Auswahl (24H/7D/30D)** ersetzt — `[fork]`-markiert in
 `EntityDetailModal.{tsx,css}` (`.entity-detail__ranges`/`__range-btn`, Stil des
 alten History-Modals). Die Auswahl wird **pro User in den Settings gespeichert**
 (`customization.detailHistoryRange`) und bleibt über Entities/Öffnen hinweg
-erhalten. Auch die **Pool-Kacheln** („Usage & runtime") öffnen jetzt dieses
+erhalten. Beim Umschalten bleibt das alte Diagramm stehen und dimmt kurz ab,
+bis die neuen Daten da sind (Cross-Fade statt Blank) — `.entity-detail__history-view`
+in der CSS. Auch die **Pool-Kacheln** („Usage & runtime") öffnen jetzt dieses
 Detail-Modal statt eines eigenen Modals.
 
 **Was vom Fork-History bleibt (nur für den Pool-Laufzeit-Chart):**
