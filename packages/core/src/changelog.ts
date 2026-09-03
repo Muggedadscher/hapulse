@@ -44,6 +44,19 @@ export interface Release {
 /** Newest first. */
 export const RELEASES: Release[] = [
   {
+    version: '1.3.2',
+    date: '2026-09-01',
+    title: 'Room name blends into the hero card again',
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          'On a height-capped Overview hero card, the room name no longer sits on an opaque block over the gradient or photo — the card now crops at the cap with the backdrop showing through, in normal view and in edit mode',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.3.1',
     date: '2026-08-26',
     title: 'Real covers on the hosted version',
