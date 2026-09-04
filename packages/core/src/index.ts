@@ -196,3 +196,7 @@ export type {
   PoolDaySlot,
   PoolDayRuntime,
 } from './pool.js';
+
+// [fork] Waste collection — auto-detect + de-duplicate bin sensors (DOM-free)
+export { detectWasteBins, parseWasteSensor, parseWasteDate, wasteTypeName } from './waste.js';
+export type { WasteBin, WasteCollection, DetectWasteOptions } from './waste.js';

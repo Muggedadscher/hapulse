@@ -92,6 +92,10 @@ import {
   normalizeDaySlots,
   tidyDaySlots,
   dailyRuntimeBars,
+  detectWasteBins,
+  parseWasteSensor,
+  wasteTypeName,
+  parseWasteDate,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1441,3 +1445,90 @@ assertEqual(art[0].image, 'https://i.scdn.co/image/abc', 'remotely-accessible ar
 assertEqual(art[0].title, 'Hotline Bling', 'title kept for wrapper-player matching');
 assertEqual(art[1].image, null, 'proxied-only artwork stays null');
 assertEqual(parseMAQueuesArtwork(null).length, 0, 'null response → empty');
+
+// ---------------------------------------------------------------------------
+// [fork] Waste collection — sensor detection, de-duplication, sorting.
+//
+// The Home "Waste collection" card auto-detects `waste_collection_schedule`
+// sensors: several sensors often describe the same bin (a base one, a
+// `_komplett` one folding in rescheduled "(verlegt)" dates, a `_verlegt` one),
+// so we group by collection type and keep the richest, then sort soonest-first
+// and drop bins with nothing scheduled. These assertions pin that behaviour on
+// the user's real Kreis-Emmendingen entity shapes.
+// ---------------------------------------------------------------------------
+console.log('\n── waste collection ──');
+
+// Small helpers reused across the cases.
+assertEqual(wasteTypeName('Graue Tonne (verlegt)'), 'Graue Tonne', 'wasteTypeName strips "(verlegt)"');
+assertEqual(wasteTypeName('Gelber Sack'), 'Gelber Sack', 'wasteTypeName leaves a plain name');
+assertEqual(parseWasteDate('2026-09-18T00:00:00'), '2026-09-18', 'parseWasteDate takes the date part of a datetime');
+assertEqual(parseWasteDate('2026-13-40'), null, 'parseWasteDate rejects an impossible date');
+assertEqual(parseWasteDate('nope'), null, 'parseWasteDate rejects garbage');
+
+const wasteSensor = (entity_id, daysTo, types, upcoming, icon = 'mdi:trash-can') =>
+  makeEntity(entity_id, `${types[0]} in ${daysTo} days`, { daysTo, types, upcoming, icon });
+
+// The three sensors that describe one grey-bin type: base, komplett (2 types),
+// verlegt. Only the komplett one should survive de-duplication.
+const grayBase = wasteSensor('sensor.grauetonne', 7, ['Graue Tonne'],
+  [{ date: '2026-09-11', type: 'Graue Tonne' }, { date: '2026-09-25', type: 'Graue Tonne' }]);
+const grayKomplett = wasteSensor('sensor.grauetonne_komplett', 7, ['Graue Tonne (verlegt)', 'Graue Tonne'],
+  [{ date: '2026-09-11', type: 'Graue Tonne' }, { date: '2026-09-25', type: 'Graue Tonne' }]);
+const grayVerlegt = makeEntity('sensor.grauetonne_verlegt', 'unknown',
+  { types: ['Graue Tonne (verlegt)'], upcoming: [], daysTo: undefined, icon: 'mdi:trash-can' });
+const yellow = wasteSensor('sensor.gelbersack_komplett', 14, ['Gelber Sack', 'Gelber Sack (verlegt)'],
+  [{ date: '2026-09-18', type: 'Gelber Sack' }], 'mdi:recycle-variant');
+const hazard = wasteSensor('sensor.schadstoffsammlung', 35, ['Schadstoffsammlung'],
+  [{ date: '2026-10-09', type: 'Schadstoffsammlung' }]);
+// A seasonal sensor with nothing scheduled — must be dropped.
+const xmas = makeEntity('sensor.christbaumabfuhr', 'unknown',
+  { types: ['Christbaumabfuhr'], upcoming: [], icon: 'mdi:trash-can' });
+// A plain non-waste sensor — must be ignored.
+const temperature = makeEntity('sensor.living_temperature', '21.5', { unit_of_measurement: '°C' });
+
+const wasteEntities = Object.fromEntries(
+  [grayBase, grayKomplett, grayVerlegt, yellow, hazard, xmas, temperature].map((e) => [e.entity_id, e])
+);
+
+const bins = detectWasteBins(wasteEntities);
+assertEqual(bins.length, 3, 'detectWasteBins keeps grey + yellow + hazard, drops the empty seasonal one');
+assertEqual(bins.map((b) => b.entityId).join(','),
+  'sensor.grauetonne_komplett,sensor.gelbersack_komplett,sensor.schadstoffsammlung',
+  'de-dup keeps the richest grey sensor and sorts soonest-first (7d, 14d, 35d)');
+assertEqual(bins[0].name, 'Graue Tonne', 'display name comes from the plain type, not the "(verlegt)" one');
+assertEqual(bins[0].daysTo, 7, 'daysTo is read from the sensor attribute');
+assertEqual(bins[0].nextDate, '2026-09-11', 'nextDate is the soonest upcoming date');
+assertEqual(bins[1].icon, 'mdi:recycle-variant', 'each bin keeps its own icon');
+
+// hidden entities are skipped entirely.
+const hiddenBins = detectWasteBins(wasteEntities, { hidden: ['sensor.grauetonne_komplett', 'sensor.grauetonne'] });
+assertEqual(hiddenBins.some((b) => b.name === 'Graue Tonne'), false, 'hidden sensors are excluded from detection');
+
+// With a clock, past dates are filtered and daysTo falls back to computation.
+const noDaysTo = makeEntity('sensor.papiertonne', 'Papiertonne', {
+  types: ['Papiertonne'],
+  upcoming: [{ date: '2020-01-01', type: 'Papiertonne' }, { date: '2026-09-08', type: 'Papiertonne' }],
+  icon: 'mdi:trash-can',
+});
+const nowMs = new Date(2026, 8, 4).getTime(); // 2026-09-04 local
+const paperBins = detectWasteBins({ [noDaysTo.entity_id]: noDaysTo }, { nowMs });
+assertEqual(paperBins.length, 1, 'a sensor with only a future date is still a bin');
+assertEqual(paperBins[0].nextDate, '2026-09-08', 'the past date (2020) is filtered out');
+assertEqual(paperBins[0].upcoming.length, 1, 'only future pickups remain in upcoming');
+assertEqual(paperBins[0].daysTo, 4, 'daysTo is computed from the next date when the attribute is absent');
+
+assertEqual(parseWasteSensor(temperature), null, 'a plain sensor is not a waste sensor');
+assertEqual(detectWasteBins({}).length, 0, 'no entities → no bins');
+
+// [fork] daysTo: null (the integration's "no next collection") must NOT be
+// coerced to a 0-day "today" phantom bin, and a numeric-string daysTo is fine.
+const nullDaysTo = makeEntity('sensor.restmuell', 'unknown',
+  { types: ['Restmüll'], upcoming: [], daysTo: null, icon: 'mdi:trash-can' });
+assertEqual(parseWasteSensor(nullDaysTo), null, 'daysTo:null with no upcoming is not a waste bin');
+assertEqual(detectWasteBins({ 'sensor.restmuell': nullDaysTo }).length, 0, 'a null-daysTo empty sensor yields no phantom "today" bin');
+
+const strDaysTo = makeEntity('sensor.biotonne', 'Biotonne in 3 days',
+  { types: ['Biotonne'], daysTo: '3', upcoming: [{ date: '2026-09-07', type: 'Biotonne' }], icon: 'mdi:leaf' });
+const strBins = detectWasteBins({ 'sensor.biotonne': strDaysTo });
+assertEqual(strBins.length, 1, 'a numeric-string daysTo sensor is a bin');
+assertEqual(strBins[0].daysTo, 3, 'numeric-string daysTo is parsed to a number');

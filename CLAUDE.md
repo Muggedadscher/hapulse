@@ -51,6 +51,22 @@ sauber übernehmen können.
   Upstream-Merges). Pool erscheint zudem als **Chip** in der Home-Summary-Leiste
   (`PoolModal`, `home.summaryChips.pool*`). Alles blendet sich aus, wenn die
   Pool-Entities fehlen.
+- **Müll-Übersicht**: eine **Karte im Home-Grid** („Waste collection" /
+  „Müllabholung"), die die Sensoren der `waste_collection_schedule`-Integration
+  **automatisch erkennt** — eine Kachel je Tonne (nächster Termin zuerst) mit
+  typgetöntem Icon, Name, Datum und Countdown („Heute" / „in 3 Tagen"). Ein Tap
+  öffnet ein Modal mit den nächsten Terminen (aus dem `upcoming`-Attribut, inkl.
+  „(verlegt)"-Kennzeichnung). Erkennung/Dedup (mehrere Sensoren je Tonne:
+  Basis/`_komplett`/`_verlegt` werden per Kollektionstyp gruppiert, der reichste
+  gewinnt) liegt DOM-frei in `packages/core/src/waste.ts` (`detectWasteBins`,
+  getestet in `packages/core/scripts/smoke.mjs`). UI: `components/waste/*`
+  (`WasteCard`, `WasteBinModal`, `wasteDisplay.ts` mit Ton-Heuristik +
+  Datumsformat). In `Home.tsx` als Section `'waste'` verdrahtet (Reorder/Resize/
+  Hide wie andere Karten); `settingsStore` `wasteSectionMigrated` gibt der Karte
+  bei bestehenden Section-Ordnungen einmalig einen Platz nach „Security". I18n:
+  `waste.*` + `home.section.*.waste` in allen sieben Locales. Respektiert
+  `customization.hiddenEntities` (einzelne Tonne ausblenden) und blendet sich
+  komplett aus, wenn keine Müll-Sensoren existieren.
 
 ## Geplantes Feature — Trigger „mach es"
 
