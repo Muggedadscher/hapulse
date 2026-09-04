@@ -994,7 +994,6 @@
   "waste.inDays.other": "in {count} Tagen",
   "waste.upcoming": "Nächste Termine",
   "waste.noUpcoming": "Keine anstehenden Termine",
-  "waste.openAria": "Nächste Termine für {name} anzeigen",
   "home.section.hide.waste": "Müllabholung ausblenden",
   "home.section.show.waste": "Müllabholung einblenden",
   "home.section.hideMobile.waste": "Müllabholung auf Mobilgeräten ausblenden",

@@ -994,7 +994,6 @@
   "waste.inDays.other": "om {count} dagar",
   "waste.upcoming": "Kommande hämtningar",
   "waste.noUpcoming": "Inga kommande hämtningar",
-  "waste.openAria": "Visa kommande datum för {name}",
   "home.section.hide.waste": "dölj Sophämtning",
   "home.section.show.waste": "visa Sophämtning",
   "home.section.hideMobile.waste": "dölj Sophämtning på mobil",

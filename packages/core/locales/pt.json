@@ -994,7 +994,6 @@
   "waste.inDays.other": "em {count} dias",
   "waste.upcoming": "Próximas recolhas",
   "waste.noUpcoming": "Sem recolhas agendadas",
-  "waste.openAria": "Mostrar próximas datas de {name}",
   "home.section.hide.waste": "ocultar Recolha de lixo",
   "home.section.show.waste": "mostrar Recolha de lixo",
   "home.section.hideMobile.waste": "ocultar Recolha de lixo em dispositivos móveis",

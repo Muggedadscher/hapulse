@@ -52,7 +52,10 @@ export function WasteCard({ bins }: WasteCardProps) {
                 className="waste-tile"
                 onClick={() => setOpenBin(bin)}
                 aria-haspopup="dialog"
-                aria-label={t('waste.openAria', { name: bin.name })}
+                // No aria-label: the visible name + date + countdown ARE the
+                // accessible name, so screen readers hear the next pickup too
+                // (an overriding label would suppress that text). aria-haspopup
+                // conveys that activating opens a dialog.
               >
                 <span
                   className="waste-tile__icon"

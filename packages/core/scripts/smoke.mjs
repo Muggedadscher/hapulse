@@ -1519,3 +1519,16 @@ assertEqual(paperBins[0].daysTo, 4, 'daysTo is computed from the next date when 
 
 assertEqual(parseWasteSensor(temperature), null, 'a plain sensor is not a waste sensor');
 assertEqual(detectWasteBins({}).length, 0, 'no entities → no bins');
+
+// [fork] daysTo: null (the integration's "no next collection") must NOT be
+// coerced to a 0-day "today" phantom bin, and a numeric-string daysTo is fine.
+const nullDaysTo = makeEntity('sensor.restmuell', 'unknown',
+  { types: ['Restmüll'], upcoming: [], daysTo: null, icon: 'mdi:trash-can' });
+assertEqual(parseWasteSensor(nullDaysTo), null, 'daysTo:null with no upcoming is not a waste bin');
+assertEqual(detectWasteBins({ 'sensor.restmuell': nullDaysTo }).length, 0, 'a null-daysTo empty sensor yields no phantom "today" bin');
+
+const strDaysTo = makeEntity('sensor.biotonne', 'Biotonne in 3 days',
+  { types: ['Biotonne'], daysTo: '3', upcoming: [{ date: '2026-09-07', type: 'Biotonne' }], icon: 'mdi:leaf' });
+const strBins = detectWasteBins({ 'sensor.biotonne': strDaysTo });
+assertEqual(strBins.length, 1, 'a numeric-string daysTo sensor is a bin');
+assertEqual(strBins[0].daysTo, 3, 'numeric-string daysTo is parsed to a number');

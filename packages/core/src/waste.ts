@@ -135,7 +135,18 @@ export function parseWasteSensor(entity: HassEntity, opts: DetectWasteOptions = 
   const rawTypes = Array.isArray(attrs['types'])
     ? (attrs['types'] as unknown[]).filter((t): t is string => typeof t === 'string')
     : [];
-  const attrDaysTo = Number(attrs['daysTo']);
+  // Trust `daysTo` only when it is genuinely numeric (a real number, or a
+  // numeric string like "7"). `Number()` alone is a trap here: the integration
+  // serializes "no next collection" as `daysTo: null`, and `Number(null)` — like
+  // Number('')/false/[] — is 0, which would fake a 0-day "today" countdown and
+  // slip a phantom bin past the drop-empty filter below.
+  const rawDaysTo = attrs['daysTo'];
+  const attrDaysTo =
+    typeof rawDaysTo === 'number'
+      ? rawDaysTo
+      : typeof rawDaysTo === 'string' && rawDaysTo.trim() !== '' && Number.isFinite(Number(rawDaysTo))
+        ? Number(rawDaysTo)
+        : NaN;
   const hasAttrDaysTo = Number.isFinite(attrDaysTo);
 
   // Fingerprint gate: must look like a waste sensor.
