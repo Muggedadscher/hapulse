@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { GreetingBlock } from '../components/home/GreetingBlock';
@@ -11,6 +11,7 @@ import { BlindsCard } from '../components/home/BlindsCard';
 import { SecurityCard } from '../components/home/SecurityCard';
 import { ActivityCard } from '../components/home/ActivityCard';
 import { RoomsQuickAccess } from '../components/home/RoomsQuickAccess';
+import { WasteCard } from '../components/waste/WasteCard'; // [fork]
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
 import { SortableGrid } from '../components/ui/SortableGrid';
@@ -25,6 +26,7 @@ import {
   useEntityMap,
   useDisplayName,
 } from '../ha/hooks';
+import { detectWasteBins } from '@hapulse/core'; // [fork]
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
@@ -140,6 +142,7 @@ const SECTION_IDS = [
   'climate',
   'blinds',
   'security',
+  'waste', // [fork]
   'activity',
   'rooms',
 ] as const;
@@ -191,6 +194,13 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     hideMobile: 'home.section.hideMobile.security',
     showMobile: 'home.section.showMobile.security',
   },
+  // [fork] Waste collection card.
+  waste: {
+    hide: 'home.section.hide.waste',
+    show: 'home.section.show.waste',
+    hideMobile: 'home.section.hideMobile.waste',
+    showMobile: 'home.section.showMobile.waste',
+  },
   activity: {
     hide: 'home.section.hide.activity',
     show: 'home.section.show.activity',
@@ -233,6 +243,11 @@ export function Home() {
   const roomOrder = useSettingsStore(
     useShallow((s) => s.customization.roomOrder)
   );
+  // [fork] Waste card respects the user's hidden-entities list (its escape hatch
+  // for suppressing a single detected bin sensor).
+  const hiddenEntities = useSettingsStore(
+    useShallow((s) => s.customization.hiddenEntities)
+  );
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
 
   const editMode = useUIStore((s) => s.editMode);
@@ -248,19 +263,27 @@ export function Home() {
     .map((id) => rooms.find((r) => r.id === id))
     .filter((r): r is NonNullable<typeof r> => r != null);
 
+  // [fork] Auto-detected waste bins — also gates whether the waste section shows.
+  const wasteBins = useMemo(
+    () => detectWasteBins(entities, { hidden: hiddenEntities, nowMs: Date.now() }),
+    [entities, hiddenEntities]
+  );
+  const hasWaste = wasteBins.length > 0;
+
   // Compute display order from stored order
   const orderedIds = applyStoredOrder([...SECTION_IDS], homeSectionOrder);
 
   // In non-edit mode, filter hidden + non-rendering sections.
   // Energy always renders: the widget self-manages its states (ready / prompt /
   // loading) — when energy isn't configured in HA it prompts the user to set it up.
-  const visibleIds = editMode
+  const visibleIds = (editMode
     ? orderedIds
     : orderedIds.filter((id) => {
         if (hiddenSections.includes(id)) return false;
         if (id === 'rooms' && roomsWithDevices.length === 0) return false;
         return true;
-      });
+      })
+  ).filter((id) => id !== 'waste' || hasWaste); // [fork] hide the waste card when no bins exist
 
   /** Toggle a section's hidden state. */
   function handleToggleHidden(id: string) {
@@ -372,6 +395,8 @@ export function Home() {
         );
       case 'security':
         return <SecurityCard entities={entities} />;
+      case 'waste': // [fork]
+        return <WasteCard bins={wasteBins} />;
       case 'activity':
         return <ActivityCard entities={entities} />;
       case 'rooms':

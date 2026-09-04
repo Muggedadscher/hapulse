@@ -146,6 +146,13 @@ export interface CustomizationSettings {
    * predate it) exactly once, while still allowing it to be hidden afterwards.
    */
   poolChipMigrated: boolean;
+  /**
+   * [fork] One-time marker: the waste-collection card has been slotted into a
+   * pre-existing `homeSectionOrder`. Gives it a sensible default position (after
+   * Security) for installs that had already reordered their Home sections,
+   * exactly once — a later manual move is preserved.
+   */
+  wasteSectionMigrated: boolean;
 }
 
 /**
@@ -157,6 +164,28 @@ function migratePoolChip(cust: CustomizationSettings): CustomizationSettings {
   if (cust.poolChipMigrated) return cust;
   const homeChips = cust.homeChips.includes('pool') ? cust.homeChips : [...cust.homeChips, 'pool'];
   return { ...cust, homeChips, poolChipMigrated: true };
+}
+
+/**
+ * [fork] Give the waste-collection card a good default slot (right after
+ * Security) for installs that already have an explicit `homeSectionOrder`
+ * predating it. An empty order needs no help — the natural SECTION_IDS position
+ * already applies — so this only touches a non-empty, waste-less order.
+ * Idempotent via the marker; a later manual reorder is respected.
+ */
+function migrateWasteSection(cust: CustomizationSettings): CustomizationSettings {
+  if (cust.wasteSectionMigrated) return cust;
+  let homeSectionOrder = cust.homeSectionOrder;
+  if (homeSectionOrder.length > 0 && !homeSectionOrder.includes('waste')) {
+    const anchor = homeSectionOrder.indexOf('security');
+    const insertAt = anchor >= 0 ? anchor + 1 : homeSectionOrder.length;
+    homeSectionOrder = [
+      ...homeSectionOrder.slice(0, insertAt),
+      'waste',
+      ...homeSectionOrder.slice(insertAt),
+    ];
+  }
+  return { ...cust, homeSectionOrder, wasteSectionMigrated: true };
 }
 
 interface SettingsState {
@@ -258,6 +287,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   scryptedUrl: '', // [fork]
   detailHistoryRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
+  wasteSectionMigrated: false, // [fork]
   libraryPlayerId: null,
   maServerUrl: null,
   maToken: null,
@@ -383,12 +413,12 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: migratePoolChip({
+            customization: migrateWasteSection(migratePoolChip({
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
               entityOrder,
               favorites,
-            }),
+            })),
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -432,10 +462,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenVersion,
           theme: migrated?.theme ?? current.theme,
           mode,
-          customization: migratePoolChip({
+          customization: migrateWasteSection(migratePoolChip({
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),
-          }),
+          })),
         };
       },
     }
