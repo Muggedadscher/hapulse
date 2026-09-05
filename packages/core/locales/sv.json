@@ -988,6 +988,7 @@
   "pool.chart.title": "Drifttid per dag",
   "pool.chart.today": "Idag",
   "waste.title": "Sophämtning",
+  "waste.next": "Nästa hämtning",
   "waste.today": "Idag",
   "waste.tomorrow": "Imorgon",
   "waste.inDays.one": "om {count} dag",
