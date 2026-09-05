@@ -988,6 +988,7 @@
   "pool.chart.title": "Runtime per day",
   "pool.chart.today": "Today",
   "waste.title": "Waste collection",
+  "waste.next": "Next collection",
   "waste.today": "Today",
   "waste.tomorrow": "Tomorrow",
   "waste.inDays.one": "in {count} day",

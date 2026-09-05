@@ -988,6 +988,7 @@
   "pool.chart.title": "Laufzeit pro Tag",
   "pool.chart.today": "Heute",
   "waste.title": "Müllabholung",
+  "waste.next": "Als Nächstes",
   "waste.today": "Heute",
   "waste.tomorrow": "Morgen",
   "waste.inDays.one": "in {count} Tag",

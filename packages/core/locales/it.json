@@ -988,6 +988,7 @@
   "pool.chart.title": "Durata al giorno",
   "pool.chart.today": "Oggi",
   "waste.title": "Raccolta rifiuti",
+  "waste.next": "Prossima raccolta",
   "waste.today": "Oggi",
   "waste.tomorrow": "Domani",
   "waste.inDays.one": "tra {count} giorno",
