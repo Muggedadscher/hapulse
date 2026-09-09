@@ -709,7 +709,35 @@ export const DEMO_ENTITIES: HassEntityMap = {
   'sensor.bedroom_sensor_battery': makeEntity('sensor.bedroom_sensor_battery', '64', {
     friendly_name: 'Bedroom Sensor Battery', unit_of_measurement: '%', device_class: 'battery', state_class: 'measurement',
   }),
+
+  // [fork] Waste collection — a few `waste_collection_schedule`-style sensors so
+  // the Home "Waste collection" card has something to show in the public demo.
+  // Dates are computed relative to today so the card always shows future pickups.
+  ...demoWasteSensors(),
 };
+
+/** [fork] Build demo waste sensors with future `upcoming` dates + `daysTo`. */
+function demoWasteSensors(): HassEntityMap {
+  const iso = (offsetDays: number): string => {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const bin = (id: string, name: string, icon: string, offsets: number[]) =>
+    makeEntity(id, `${name} in ${offsets[0]} days`, {
+      friendly_name: `Waste Collection Schedule ${id.split('.')[1]}`,
+      types: [name],
+      daysTo: offsets[0]!,
+      icon,
+      upcoming: offsets.map((o) => ({ date: iso(o), type: name, icon })),
+    });
+  return {
+    'sensor.grauetonne_komplett': bin('sensor.grauetonne_komplett', 'Graue Tonne', 'mdi:trash-can', [2, 16, 30]),
+    'sensor.gelbersack_komplett': bin('sensor.gelbersack_komplett', 'Gelber Sack', 'mdi:recycle-variant', [9, 23, 37]),
+    'sensor.papiertonne_komplett': bin('sensor.papiertonne_komplett', 'Papiertonne', 'mdi:newspaper-variant-outline', [27, 55]),
+    'sensor.schadstoffsammlung': bin('sensor.schadstoffsammlung', 'Schadstoffsammlung', 'mdi:alert-octagon-outline', [30]),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Demo ticker — simulates live state changes
