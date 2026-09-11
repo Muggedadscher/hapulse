@@ -206,3 +206,39 @@ export type {
 // [fork] Waste collection — auto-detect + de-duplicate bin sensors (DOM-free)
 export { detectWasteBins, parseWasteSensor, parseWasteDate, wasteTypeName } from './waste.js';
 export type { WasteBin, WasteCollection, DetectWasteOptions } from './waste.js';
+
+// [fork] Sentinel NVR — data model + DOM-free helpers for the native integration
+export {
+  SENTINEL_EVENT_CLASSES,
+  SENTINEL_DAY_MS,
+  SENTINEL_ENDPOINT_PATH,
+  parseSentinelSetup,
+  sentinelPublicBase,
+  sentinelLoginBase,
+  sentinelUrl,
+  sentinelTimelineLink,
+  sentinelClassOf,
+  sentinelClassesOf,
+  sentinelEventPlayTs,
+  sentinelStorageForecast,
+  sentinelClipRuns,
+  sentinelClipIndexFor,
+  sentinelDayOf,
+  sentinelMergeDays,
+  sentinelHumanBytes,
+} from './sentinel.js';
+export type {
+  SentinelEventClass,
+  SentinelBox,
+  SentinelCamera,
+  SentinelStats,
+  SentinelRecentEvent,
+  SentinelEventBox,
+  SentinelEvent,
+  SentinelClip,
+  SentinelClipsResponse,
+  SentinelSetup,
+  SentinelStorageStatus,
+  SentinelStorageForecast,
+  SentinelRun,
+} from './sentinel.js';

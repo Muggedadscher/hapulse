@@ -12,6 +12,8 @@ import { SecurityCard } from '../components/home/SecurityCard';
 import { ActivityCard } from '../components/home/ActivityCard';
 import { RoomsQuickAccess } from '../components/home/RoomsQuickAccess';
 import { WasteCard } from '../components/waste/WasteCard'; // [fork]
+import { NvrHomeCard } from '../nvr/NvrHomeCard'; // [fork]
+import { useNvrConfigured } from '../nvr/config'; // [fork]
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
 import { SortableGrid } from '../components/ui/SortableGrid';
@@ -143,6 +145,7 @@ const SECTION_IDS = [
   'blinds',
   'security',
   'waste', // [fork]
+  'nvr', // [fork]
   'activity',
   'rooms',
 ] as const;
@@ -200,6 +203,13 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     show: 'home.section.show.waste',
     hideMobile: 'home.section.hideMobile.waste',
     showMobile: 'home.section.showMobile.waste',
+  },
+  // [fork] Sentinel NVR card.
+  nvr: {
+    hide: 'home.section.hide.nvr',
+    show: 'home.section.show.nvr',
+    hideMobile: 'home.section.hideMobile.nvr',
+    showMobile: 'home.section.showMobile.nvr',
   },
   activity: {
     hide: 'home.section.hide.activity',
@@ -269,6 +279,7 @@ export function Home() {
     [entities, hiddenEntities]
   );
   const hasWaste = wasteBins.length > 0;
+  const hasNvr = useNvrConfigured(); // [fork] NVR card only when a Sentinel connection is configured
 
   // Compute display order from stored order
   const orderedIds = applyStoredOrder([...SECTION_IDS], homeSectionOrder);
@@ -283,7 +294,8 @@ export function Home() {
         if (id === 'rooms' && roomsWithDevices.length === 0) return false;
         return true;
       })
-  ).filter((id) => id !== 'waste' || hasWaste); // [fork] hide the waste card when no bins exist
+  ).filter((id) => id !== 'waste' || hasWaste) // [fork] hide the waste card when no bins exist
+   .filter((id) => id !== 'nvr' || hasNvr); // [fork] hide the NVR card without a connection
 
   /** Toggle a section's hidden state. */
   function handleToggleHidden(id: string) {
@@ -397,6 +409,8 @@ export function Home() {
         return <SecurityCard entities={entities} />;
       case 'waste': // [fork]
         return <WasteCard bins={wasteBins} />;
+      case 'nvr': // [fork]
+        return <NvrHomeCard />;
       case 'activity':
         return <ActivityCard entities={entities} />;
       case 'rooms':
