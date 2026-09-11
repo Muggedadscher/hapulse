@@ -1,14 +1,13 @@
 # Plan: Manuelle Pool-Laufzeit (inkl. 24 h) + Steuerung von NodeRED nach HA
 
-> **Status:** abgestimmter Plan, **noch nichts umgesetzt**. Erst nach Freigabe
-> Schritt für Schritt bauen — Fork-Konventionen wie in `docs/SYNC.md`
-> (neue Dateien bevorzugen, Upstream-Änderungen minimal + `// [fork]`-Marker).
+> **Status:** abgestimmter Plan, **noch nichts umgesetzt** (User prüft den Plan
+> vor dem Start). Fork-Konventionen wie in `docs/SYNC.md` (neue Dateien
+> bevorzugen, Upstream-Änderungen minimal + `// [fork]`-Marker).
 
 ## Ziel
 
 1. Die Poolpumpe soll **beliebig lange manuell** laufen können — Presets
-   (30 min / 1 h / 2 h / 6 h / 24 h) **plus frei einstellbar** — direkt in
-   HAPulse.
+   (30 min / 1 h / 2 h / 6 h / 24 h) **plus frei einstellbar** — direkt in HAPulse.
 2. Die heute in **NodeRED** liegende Pumpen-Logik **sauber nach Home-Assistant-
    Automationen** ziehen (versionierbar, lesbar, ohne NodeRED-Abhängigkeit).
 
@@ -16,10 +15,13 @@
 
 | Thema | Entscheidung |
 |---|---|
-| Vorgehen | Erst dieser Detail-Plan, dann Umsetzung nach Freigabe |
-| Nach Ablauf der manuellen Dauer | zurück auf **Automatik** (wie heute) |
-| Bedienung | **Presets + frei einstellbar** in HAPulse |
-| Siri-Taster `input_button.poolpumpe_manuell` | bleibt **fix 30 min** (Startpunkt für Siri); optional zusätzlich als UI-Button |
+| Vorgehen | Erst dieser Detail-Plan, User prüft, dann Umsetzung |
+| Nach Ablauf der manuellen Dauer | zurück auf **Automatik** |
+| **Stop**-Button in der Manuell-Karte | zurück auf **Automatik** |
+| Bedienung (UI) | **Presets + frei einstellbar** in HAPulse |
+| **Siri / Apple Home** | **eigene, einstellbare Dauer** (`input_number.poolpumpe_siri_dauer`, Default 30 min) — nicht mehr fix |
+| `switch.schalter_poolpumpe_manuell` (Apple Home) | **erhalten** → in HA als Template-Switch nachbauen (gleiche `entity_id`) |
+| **> 10 h-Benachrichtigung** | **unterdrücken**, während ein bewusster Manuell-Lauf aktiv ist |
 | Optik | nur **Müll-Icon** an den Akzent-Stil angleichen |
 
 ---
@@ -39,41 +41,50 @@ Manuell*):
 
 NodeRED **erzeugt zwei eigene Entities**, die ohne NodeRED verschwinden:
 - `binary_sensor.schwellwert_poolpumpe_solarleistung` (Solar ≥ Schwelle, 2 min
-  entprellt)
-- `switch.*` „Schalter Poolpumpe Manuell" (reiner UI-Umschalter, mit Modus
-  synchronisiert)
+  entprellt) → **muss in HA nachgebaut werden**.
+- `switch.schalter_poolpumpe_manuell` (Umschalter, mit Modus synchronisiert,
+  **in Apple Home genutzt**) → **muss in HA nachgebaut werden** (gleiche
+  `entity_id`, sonst bricht Apple Home).
 
-Weitere Einstiegspunkte in „Manuell": der Siri-Taster
-`input_button.poolpumpe_manuell` und der o. g. Schalter.
+Manuell-Einstiegspunkte: HAPulse (Modus), der Siri-Taster
+`input_button.poolpumpe_manuell` (HA-Helfer, bleibt) und der o. g. Apple-Home-
+Schalter.
 
-> Hinweis: Der NodeRED-Node „Pumpe über 12 h → notify" ist **unverdrahtet (tot)**.
-> Aktiv ist nur die HA-Automation `automation.poolpumpe_lange_laufzeit_benachrichtigung`
-> (**> 10 h**). Ein 24-h-Lauf würde diese auslösen → siehe Teil 2.7.
+> `input_boolean.poolpumpe_manuell` existiert ebenfalls als HA-Helfer, wird aber
+> im NodeRED-Flow **nicht** verwendet → bei der Umsetzung prüfen, ob er in Apple
+> Home / anderswo genutzt wird; sonst aufräumen. **Nicht ungefragt löschen.**
 
 ---
 
 ## Teil 2 — Ziel-Architektur in Home Assistant (ersetzt den NodeRED-Pool-Tab)
 
-Alles in **einem HA-Package** (`packages/pool.yaml` o. ä. via
-`homeassistant: packages:`), damit es an einer Stelle liegt und versionierbar ist.
+Alles in **einem HA-Package** (`packages/pool.yaml` via `homeassistant: packages:`),
+an einer Stelle und versionierbar.
 
 ### 2.1 Neue/ersetzte Entities
 
-**Neu — Dauer-Helfer** (für Presets + frei):
+**Neu — zwei Dauer-Helfer:**
 ```yaml
 input_number:
-  poolpumpe_manuell_dauer:
+  poolpumpe_manuell_dauer:      # aktive/ad-hoc Laufzeit (setzt, wer den Lauf startet)
     name: Poolpumpe Manuell Dauer
     min: 5
-    max: 1440          # 24 h
+    max: 1440                   # 24 h
     step: 5
     unit_of_measurement: min
     mode: box
     icon: mdi:timer-cog
+  poolpumpe_siri_dauer:         # feste, einstellbare Dauer für Siri / Apple Home
+    name: Poolpumpe Siri Dauer
+    min: 5
+    max: 1440
+    step: 5
+    unit_of_measurement: min
+    icon: mdi:apple
 ```
 
 **Ersetzt NodeRED — Solar-Schwelle als Template-Binärsensor** (gleiche
-`entity_id`, damit alles Weitere unverändert funktioniert):
+`entity_id`):
 ```yaml
 template:
   - binary_sensor:
@@ -82,20 +93,37 @@ template:
         state: >
           {{ states('sensor.balkonkraftwerk_power') | float(0)
              >= states('input_number.schwellwert_poolpumpe_solarleistung') | float(0) }}
-        delay_on:  "00:02:00"   # entspricht NodeReds 2-min-Entprellung
+        delay_on:  "00:02:00"
         delay_off: "00:02:00"
 ```
 
-**Timer** `timer.poolpumpe_manuell` bleibt (Default 30 min als Fallback); wir
-übergeben die Dauer künftig explizit beim Start.
+**Ersetzt NodeRED — Apple-Home-Schalter als Template-Switch** (gleiche
+`entity_id`, synchronisiert sich selbst mit dem Modus und startet dabei einen
+Lauf mit **Siri-Dauer**):
+```yaml
+switch:
+  - platform: template
+    switches:
+      schalter_poolpumpe_manuell:   # → switch.schalter_poolpumpe_manuell
+        friendly_name: Schalter Poolpumpe Manuell
+        value_template: "{{ is_state('input_select.modus_poolpumpe','Manuell') }}"
+        turn_on:
+          - service: input_number.set_value
+            target: { entity_id: input_number.poolpumpe_manuell_dauer }
+            data: { value: "{{ states('input_number.poolpumpe_siri_dauer') | int(30) }}" }
+          - service: input_select.select_option
+            target: { entity_id: input_select.modus_poolpumpe }
+            data: { option: Manuell }
+        turn_off:
+          - service: input_select.select_option
+            target: { entity_id: input_select.modus_poolpumpe }
+            data: { option: Automatik }
+```
 
-**„Schalter Poolpumpe Manuell":** siehe offene Mini-Entscheidung — löschen oder
-als `input_boolean` ersetzen (nur nötig, falls du ihn auf einem Wand-/Lovelace-
-Dashboard nutzt).
+**Timer** `timer.poolpumpe_manuell` bleibt; die Dauer wird künftig **explizit**
+beim Start übergeben.
 
-### 2.2 Eine gemeinsame „Automatik-Auswertung" (DRY)
-
-Regel als Skript, das die Modus- und die Nachführ-Automation teilen:
+### 2.2 Gemeinsame „Automatik-Auswertung" (DRY)
 ```yaml
 script:
   pool_automatik_auswerten:
@@ -116,12 +144,12 @@ script:
 
 ### 2.3 Automationen (ersetzen die NodeRED-Nodes)
 
-1. **Modus: Ausgeschalten** — trigger `to: Ausgeschalten` → Zeitplan-Schalter aus,
+1. **Modus: Ausgeschalten** — `to: Ausgeschalten` → Zeitplan-Schalter aus,
    Boolean aus, `timer.cancel`, Pumpe aus.
-2. **Modus: Automatik** — trigger `to: Automatik` → Zeitplan-Schalter an,
-   danach `script.pool_automatik_auswerten`.
-3. **Modus: Manuell** — trigger `to: Manuell` → Zeitplan aus, Boolean aus,
-   Timer mit gewählter Dauer starten, Pumpe an:
+2. **Modus: Automatik** — `to: Automatik` → Zeitplan-Schalter an, dann
+   `script.pool_automatik_auswerten`.
+3. **Modus: Manuell** — `to: Manuell` → Zeitplan aus, Boolean aus, Timer mit
+   **gewählter Dauer** starten, Pumpe an:
    ```yaml
    - service: timer.start
      target: { entity_id: timer.poolpumpe_manuell }
@@ -132,95 +160,103 @@ script:
    - service: switch.turn_on
      target: { entity_id: switch.esppoolpumpe_poolpumpe }
    ```
-4. **Automatik nachführen** — trigger: State-Änderung von
+4. **Automatik nachführen** — Trigger: State-Änderung von
    `binary_sensor.schwellwert_poolpumpe_solarleistung` **und**
-   `input_boolean.poolpumpe_zeitplan`; condition Modus = Automatik →
+   `input_boolean.poolpumpe_zeitplan`; Condition Modus = Automatik →
    `script.pool_automatik_auswerten`.
-5. **Manuell-Timer fertig** — trigger `event: timer.finished` (Timer
-   `poolpumpe_manuell`) → Modus = **Automatik**.
-6. **Siri-Schnellstart 30 min** — trigger: `input_button.poolpumpe_manuell`
-   gedrückt → `input_number = 30`; wenn schon Manuell: Timer 30 min neu starten +
-   Pumpe an; sonst Modus = Manuell (Automation 3 übernimmt).
+5. **Manuell-Timer fertig** — `event: timer.finished` (Timer `poolpumpe_manuell`)
+   → Modus = **Automatik**.
+6. **Siri-Taster** — Trigger `input_button.poolpumpe_manuell` gedrückt →
+   `poolpumpe_manuell_dauer = poolpumpe_siri_dauer`; wenn schon Manuell: Timer mit
+   dieser Dauer neu starten + Pumpe an; sonst Modus = Manuell (Automation 3
+   übernimmt).
 
-> Damit ist die HA-Fassung **einfacher** als NodeRED: die verschachtelten
-> „Schwellwert/Zeitplan"-Zweige werden zu **einer** ODER-Regel (2.2).
+> Der Apple-Home-Schalter (2.1) nutzt denselben Weg wie der Siri-Taster:
+> beide starten mit **Siri-Dauer**. HAPulse setzt dagegen `poolpumpe_manuell_dauer`
+> direkt auf den in der UI gewählten Wert und schaltet dann auf Manuell.
+> So läuft Siri/Apple-Home unabhängig von der letzten UI-Auswahl.
 
 ### 2.4 Lange-Laufzeit-Benachrichtigung
 
-`automation.poolpumpe_lange_laufzeit_benachrichtigung` feuert ab 10 h — bei einem
-gewollten 24-h-Lauf unerwünscht. Vorschlag: Condition ergänzen „nur benachrichtigen,
-wenn **kein** bewusst langer Manuell-Lauf aktiv ist" (z. B. Timer inaktiv **oder**
-Dauer ≤ 6 h). Alternativ Schwelle anheben. → offene Mini-Entscheidung.
+`automation.poolpumpe_lange_laufzeit_benachrichtigung` (feuert ab 10 h) bekommt
+eine **Condition**, damit sie bei bewusst langem Manuell-Lauf schweigt:
+```yaml
+condition:
+  - condition: template
+    value_template: >
+      {{ not (is_state('input_select.modus_poolpumpe','Manuell')
+              or is_state('timer.poolpumpe_manuell','active')) }}
+```
 
 ---
 
 ## Teil 3 — HAPulse (Dashboard)
 
 ### 3.1 `apps/dashboard/src/components/pool/poolConfig.ts`
-Neue Rollen ergänzen:
 ```ts
 manualDuration: 'input_number.poolpumpe_manuell_dauer',
-manualSiriButton: 'input_button.poolpumpe_manuell', // optionaler UI-Schnellstart
+siriDuration:   'input_number.poolpumpe_siri_dauer',
+// switch.schalter_poolpumpe_manuell wird NICHT in HAPulse gebraucht (nur Apple Home)
 ```
 
-### 3.2 `apps/dashboard/src/ha/pool.ts`
-Dünne Wrapper (Fork-Datei):
+### 3.2 `apps/dashboard/src/ha/pool.ts` (Fork-Datei)
 ```ts
-/** Manuell-Laufzeit (Minuten) setzen. */
-export function setManualDuration(entityId: string, minutes: number): Promise<void> {
+/** input_number-Wert (Minuten) setzen – für Manuell- und Siri-Dauer. */
+export function setDurationMinutes(entityId: string, minutes: number): Promise<void> {
   return callService('input_number', 'set_value', { value: minutes }, { entity_id: entityId });
 }
 ```
-`setPoolMode` (Manuell) und `pressButton` (Siri) existieren bereits.
+`setPoolMode` (Manuell/Automatik) und `pressButton` existieren bereits.
 
 ### 3.3 `apps/dashboard/src/components/pool/ManualTimerCard.tsx` (Fork-Datei)
-- **Idle-Zustand:** Preset-Chips **30 min / 1 h / 2 h / 6 h / 24 h** + freie
-  Eingabe (Stepper/Zahlfeld) + **Start**-Button.
-  Start = `setManualDuration(min)` → `setPoolMode(Manuell)`.
-  Optionaler kleiner „30 min (Siri)"-Schnellstart = `pressButton(manualSiriButton)`
-  (exakt derselbe Weg wie Siri).
-- **Aktiv-Zustand:** bestehender Ring/Countdown bleibt; zusätzlich **Stop**
-  (→ Modus Automatik, konsistent mit „Timer fertig") und optional **+30 min**
-  (Timer verlängern).
-- Nur vorhandene Bausteine/Design-Tokens verwenden (kein Hex).
+- **Idle:** Preset-Chips **30 min / 1 h / 2 h / 6 h / 24 h** + freie Eingabe +
+  **Start** (`setDurationMinutes(manualDuration, m)` → `setPoolMode(Manuell)`).
+- **Aktiv:** bestehender Ring/Countdown + **Stop** (→ Modus Automatik) und
+  optional **+30 min** (Timer verlängern).
+- **Siri-Dauer-Einstellung:** kleine Zeile „Siri-/Apple-Home-Start: `X` min" mit
+  Stepper (`setDurationMinutes(siriDuration, m)`), damit du steuerst, wie lange
+  ein Start per Siri/Apple-Home-Schalter läuft.
+- Nur vorhandene Bausteine/Design-Tokens (kein Hex).
 
-### 3.4 `packages/core/src/pool.ts` (DOM-frei, getestet)
-Kleine reine Helfer + Tests in `packages/core/scripts/smoke.mjs`:
+### 3.4 `packages/core/src/pool.ts` (DOM-frei, getestet in `scripts/smoke.mjs`)
 ```ts
 export const POOL_MANUAL_PRESETS_MIN = [30, 60, 120, 360, 1440] as const;
-export function minutesToDurationString(min: number): string { /* "HH:MM:00" */ }
-export function clampManualMinutes(min: number): number { /* 5..1440 */ }
+export function minutesToDurationString(min: number): string; // "HH:MM:00"
+export function clampManualMinutes(min: number): number;        // 5..1440
 ```
 
 ### 3.5 i18n — `packages/core/locales/{de,en,es,fr,it,pt,sv}.json`
-Neu unter `pool.manual.*`: `durationTitle`, `start`, `stop`, `extend`,
-`custom` (freie Eingabe, aria), `siriQuick`, sowie Preset-Labels (bzw. über
-vorhandene Zahlen-/Zeit-Formatierung). In **allen sieben** Locales.
+Neu unter `pool.manual.*`: `durationTitle`, `start`, `stop`, `extend`, `custom`,
+`siriDuration`, ggf. Preset-Labels. In **allen sieben** Locales.
 
 ### 3.6 Müll-Icon orange — `apps/dashboard/src/components/waste/WasteCard.css`
 `.waste-card__icon-chip` (Z. 29–30): `--bg-subtle`/`--text-dim` →
-`--accent-soft`/`--accent`. Reine Fork-Datei, eine Zeile.
+`--accent-soft`/`--accent`. Eine Zeile, reine Fork-Datei.
 
 ---
 
-## Teil 4 — Migrations-Reihenfolge (wichtig, Kollisionen vermeiden)
+## Teil 4 — Migrations-Reihenfolge
 
-Der Template-Binärsensor teilt sich die `entity_id` mit dem NodeRED-Sensor →
-Reihenfolge zählt. Umschalten, wenn die Pumpe idle ist:
+> **Voraussetzung:** Der NodeRED-Pool-Tab wird **deaktiviert** (macht der User).
+> Solange NodeRED aus und die HA-Seite noch nicht steht, ist der Pool ungesteuert
+> → **Modus „Ausgeschalten" / Pumpe aus lassen.**
 
-1. HA: `input_number.poolpumpe_manuell_dauer` anlegen (harmlos).
-2. HA: Skript + 6 Automationen anlegen, zunächst **deaktiviert**.
-3. Modus auf **Ausgeschalten** (Pumpe sicher aus).
-4. In **NodeRED** den **Pool-Tab deaktivieren** (Solar-Sensor + Schalter geben
-   die `entity_id` frei).
-5. HA: Template-Binärsensor anlegen/laden → belegt jetzt
-   `binary_sensor.schwellwert_poolpumpe_solarleistung`. Prüfen, dass die id
-   **exakt** stimmt (nicht `_2`).
-6. HA-Automationen **aktivieren**, Modus auf Automatik, alle drei Modi + Solar +
-   Zeitplan + Timer-Ende durchtesten.
-7. „Schalter Poolpumpe Manuell" löschen oder als `input_boolean` ersetzen.
-8. HAPulse-Änderungen (Teil 3), `npm run typecheck && npm run build &&
-   npm test -w @hapulse/core`, committen + auf den Feature-Branch pushen.
+1. Pumpe sicher aus (Modus **Ausgeschalten**).
+2. **NodeRED-Pool-Tab aus** (durch User) → `binary_sensor.schwellwert_…` und
+   `switch.schalter_poolpumpe_manuell` werden „unavailable".
+3. Die zwei **verwaisten Entities aus der Registry entfernen** (sonst bekommt der
+   Nachbau `…_2`).
+4. HA-Package anlegen: Dauer-Helfer, Template-Binärsensor, Template-Switch,
+   Skript, 6 Automationen. `entity_id`s **exakt** prüfen
+   (`binary_sensor.schwellwert_poolpumpe_solarleistung`,
+   `switch.schalter_poolpumpe_manuell`).
+5. **Apple Home prüfen:** Erscheint `switch.schalter_poolpumpe_manuell` wieder?
+   (Ggf. HomeKit-Bridge neu laden / neu koppeln.)
+6. Alle drei Modi + Solar + Zeitplan + Timer-Ende + Siri-Taster + Apple-Home-
+   Schalter durchtesten.
+7. HAPulse-Änderungen (Teil 3): `npm run typecheck && npm run build &&
+   npm test -w @hapulse/core`, dann committen + auf `claude/fervent-sagan-cecepz`
+   pushen.
 
 ---
 
@@ -230,33 +266,34 @@ Reihenfolge zählt. Umschalten, wenn die Pumpe idle ist:
 - **Build:** `npm run typecheck && npm run build`.
 - **Live in HA (mit dir):**
   - Manuell 5 min über UI → Pumpe an, Timer läuft, nach 5 min → Automatik.
-  - 24 h wählen → Timer zeigt 24:00:00 (ohne durchlaufen zu lassen wieder stoppen).
-  - Siri-Taster → immer 30 min.
-  - Automatik: Solar über/unter Schwelle (2 min) schaltet korrekt; Zeitplan-
-    Fenster schaltet korrekt; Pumpe nur aus, wenn **beides** aus.
-  - Stop-Button → Automatik; +30 min verlängert.
+  - 24 h wählen → Timer 24:00:00 (nicht durchlaufen lassen, wieder stoppen).
+  - Siri-Taster **und** Apple-Home-Schalter → laufen mit eingestellter Siri-Dauer.
+  - Siri-Dauer in HAPulse ändern → nächster Siri-Start nutzt den neuen Wert.
+  - Automatik: Solar über/unter Schwelle (2 min) + Zeitplan-Fenster schalten
+    korrekt; Pumpe nur aus, wenn **beides** aus.
+  - Stop → Automatik; +30 min verlängert; > 10 h-Meldung bleibt bei langem
+    Manuell-Lauf stumm.
 
 ---
 
-## Offene Mini-Entscheidungen
+## Offene Mini-Entscheidungen (für die Plan-Prüfung)
 
-1. **„Schalter Poolpumpe Manuell"**: ersatzlos löschen, oder als `input_boolean`
-   nachbauen? (Nutzt du ihn irgendwo außerhalb von HAPulse/Siri?)
-2. **> 10 h-Benachrichtigung** bei langem Lauf: während bewusst langer Manuell-
-   Läufe unterdrücken, oder Schwelle anheben, oder unverändert lassen?
-3. **Stop-Button** in der Manuell-Karte: zurück auf **Automatik** (empfohlen) oder
-   auf **Ausgeschalten**?
-4. **Siri-Weg zusätzlich als UI-Button** (30 min Schnellstart) — ja/nein, und wie
-   beschriften?
+1. **`input_boolean.poolpumpe_manuell`** (Alt-Helfer, ungenutzt im Flow): in Apple
+   Home / anderswo gebraucht? Sonst aufräumen.
+2. **Siri-Dauer separat** (`poolpumpe_siri_dauer`, empfohlen) oder doch **eine**
+   gemeinsame Dauer mit der UI teilen?
+3. **HomeKit-Re-Expose:** nach Neuanlage des Schalters ggf. HomeKit-Bridge neu
+   laden — ok für dich?
 
 ---
 
 ## Risiken & Rollback
 
-- **Doppelte Steuerung** (NodeRED + HA gleichzeitig) unbedingt vermeiden → Schritt 4
-  vor 6.
-- **Rollback:** Der exportierte NodeRED-Flow bleibt erhalten → bei Problemen
-  Pool-Tab wieder aktivieren, HA-Automationen deaktivieren. HA-Teil liegt in
-  **einem** Package → schnell abschaltbar.
+- **Doppelte Steuerung** (NodeRED + HA) vermeiden → NodeRED bleibt aus, bevor die
+  HA-Automationen aktiv sind.
+- **Rollback:** Der exportierte NodeRED-Flow bleibt erhalten → Pool-Tab wieder
+  aktivieren, HA-Package deaktivieren. HA-Teil liegt in **einem** Package.
+- **Apple Home:** Nach dem Schalter-Nachbau kurz gegenprüfen, dass er in Apple
+  Home weiter funktioniert.
 - **Solar-Semantik:** `delay_on/off: 2 min` exakt wie NodeRED; nach Umschaltung
   einmal beobachten.
