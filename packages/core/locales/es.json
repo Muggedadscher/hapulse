@@ -937,6 +937,7 @@
   "pool.manual.idle": "Sin temporizador activo",
   "pool.manual.runsUntil": "Funciona hasta las {time}",
   "pool.manual.durationTitle": "Elegir duración",
+  "pool.manual.startTitle": "Iniciar modo manual",
   "pool.manual.start": "Iniciar",
   "pool.manual.stop": "Detener",
   "pool.manual.siriLabel": "Siri / Apple Home",

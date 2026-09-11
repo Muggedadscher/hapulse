@@ -444,14 +444,15 @@
 
 .pool-manual__idle p { margin: 0; font-size: 0.9375rem; }
 
-/* Manual: duration setup (presets + free stepper + start) */
-.pool-manual__setup {
+/* Manual: duration picker (presets + free stepper), shared by the start popup */
+.pool-duration {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 10px;
   width: 100%;
 }
+
+.pool-manual-modal { max-width: 420px; }
 
 .pool-manual__label {
   font-size: 0.8125rem;
