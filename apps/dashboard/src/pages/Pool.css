@@ -444,6 +444,98 @@
 
 .pool-manual__idle p { margin: 0; font-size: 0.9375rem; }
 
+/* Manual: duration picker (presets + free stepper), shared by the start popup */
+.pool-duration {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pool-manual-modal { max-width: 420px; }
+
+.pool-manual__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.pool-manual__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pool-manual__preset {
+  flex: 1 1 auto;
+  min-width: 56px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--line);
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease-out, color 140ms ease-out, border-color 140ms ease-out;
+}
+
+.pool-manual__preset:hover { background: var(--bg-raised); }
+
+.pool-manual__preset--active {
+  background: var(--info-soft);
+  border-color: var(--info);
+  color: var(--info);
+}
+
+.pool-manual__custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.pool-manual__custom-value {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 90px;
+  text-align: center;
+}
+
+.pool-manual__action { width: 100%; margin-top: 2px; }
+
+/* Siri / Apple-Home start duration — its own persistent setting */
+.pool-manual__siri {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.pool-manual__siri-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pool-manual__siri-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.pool-manual__siri-desc {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
 /* ---- Data tiles ---- */
 
 .pool-tiles {
