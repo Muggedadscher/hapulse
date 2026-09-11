@@ -1170,5 +1170,9 @@
   "home.section.hide.nvr": "dölj Sentinel NVR",
   "home.section.show.nvr": "visa Sentinel NVR",
   "home.section.hideMobile.nvr": "dölj Sentinel NVR på mobil",
-  "home.section.showMobile.nvr": "visa Sentinel NVR på mobil"
+  "home.section.showMobile.nvr": "visa Sentinel NVR på mobil",
+  "security.section.hide.nvr": "dölj Sentinel NVR",
+  "security.section.show.nvr": "visa Sentinel NVR",
+  "security.section.hideMobile.nvr": "dölj Sentinel NVR på mobil",
+  "security.section.showMobile.nvr": "visa Sentinel NVR på mobil"
 }

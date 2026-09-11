@@ -311,6 +311,16 @@
 .nvr-dt__time { flex: 1; min-height: 40px; padding: 0.375rem 0.625rem; }
 .nvr-dt__foot .btn { min-height: 40px; padding: 0.5rem 0.875rem; }
 
+/* ---- Security page section ---------------------------------------------- */
+.nvr-sec { display: flex; flex-direction: column; gap: 0.75rem; }
+.nvr-sec__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.nvr-sec__meta { font-size: 0.8125rem; color: var(--text-dim); }
+.nvr-sec__meta b { color: var(--text); }
+.nvr-sec .nvr-strip { padding-bottom: 0; }
+.nvr-sec__head .nvr-home__title { white-space: nowrap; }
+.nvr-sec__head .nvr-home__link { white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 560px) { .nvr-sec__meta { display: none; } }
+
 /* ---- Home card ----------------------------------------------------------- */
 .nvr-home { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; height: 100%; max-height: 400px; overflow: hidden; }
 .nvr-home__header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-shrink: 0; }

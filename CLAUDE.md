@@ -37,7 +37,7 @@ sauber übernehmen können.
   (`pages/Nvr.tsx` = Routen-Einstieg), alles Weitere im abgegrenzten Modul
   `apps/dashboard/src/nvr/**` (API-Client, Store, Port von Sentinels
   `PlayerController`/`webrtc.ts`/`VerticalTimeline`, Komponenten, Seiten,
-  Home-Karte `'nvr'`, `nvr.css`) + DOM-freies `packages/core/src/sentinel.ts`
+  Home-Karte `'nvr'`, Sicherheits-Sektion `'nvr'` in `Security.tsx`, `nvr.css`) + DOM-freies `packages/core/src/sentinel.ts`
   (getestet in `smoke.mjs`). Settings `customization.scryptedUrl` +
   `scryptedToken` (Browser spricht den `/public/`-Endpoint direkt — HAPulse hat
   kein Backend). **Sentinel selbst nur lesend nutzen; Änderungen dort erst mit
