@@ -26,8 +26,9 @@
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: var(--bg-subtle);
-  color: var(--text-dim);
+  /* [fork] Akzent-Chip wie Geräte/Szenen/Aktivität statt neutralem Grau. */
+  background: var(--accent-soft);
+  color: var(--accent);
   flex-shrink: 0;
 }
 

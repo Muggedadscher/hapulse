@@ -21,6 +21,15 @@ export function setSolarThreshold(entityId: string, value: number): Promise<void
   return callService('input_number', 'set_value', { value }, { entity_id: entityId });
 }
 
+/**
+ * Set a duration input_number (minutes) — used for both the manual-run and the
+ * Siri/Apple-Home durations. The HA automation reads the value when a manual
+ * run starts, so HAPulse only needs to write it before switching to Manuell.
+ */
+export function setDurationMinutes(entityId: string, minutes: number): Promise<void> {
+  return callService('input_number', 'set_value', { value: minutes }, { entity_id: entityId });
+}
+
 /** Turn a switch (pump, bypass, schedule) on or off. */
 export function setSwitch(entityId: string, on: boolean): Promise<void> {
   return callService('switch', on ? 'turn_on' : 'turn_off', undefined, { entity_id: entityId });

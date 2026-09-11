@@ -28,6 +28,10 @@ export const POOL_ENTITIES = {
   bypass: 'switch.esppoolpumpe_schalter_uberbrucken',
   /** Countdown timer that runs while the pump is in manual mode. */
   manualTimer: 'timer.poolpumpe_manuell',
+  /** Chosen duration (minutes) for a manual run started from HAPulse. */
+  manualDuration: 'input_number.poolpumpe_manuell_dauer',
+  /** Configurable duration (minutes) for a start via Siri / the Apple-Home switch. */
+  siriDuration: 'input_number.poolpumpe_siri_dauer',
   /** Live solar production feeding the solar automation. */
   solarPower: 'sensor.balkonkraftwerk_power',
   /** Editable switch-on threshold for the solar automation. */

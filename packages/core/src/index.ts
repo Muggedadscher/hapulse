@@ -184,6 +184,12 @@ export {
   windowsToDaySlots,
   daySlotsToWindows,
   dailyRuntimeBars,
+  POOL_MANUAL_MIN_MINUTES,
+  POOL_MANUAL_MAX_MINUTES,
+  POOL_MANUAL_PRESETS_MIN,
+  clampManualMinutes,
+  minutesToDurationString,
+  formatManualDuration,
 } from './pool.js';
 export type {
   PoolWeekday,

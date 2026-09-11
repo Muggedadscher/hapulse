@@ -1,8 +1,38 @@
 # Plan: Manuelle Pool-Laufzeit (inkl. 24 h) + Steuerung von NodeRED nach HA
 
-> **Status:** abgestimmter Plan, **noch nichts umgesetzt** (User prüft den Plan
-> vor dem Start). Fork-Konventionen wie in `docs/SYNC.md` (neue Dateien
-> bevorzugen, Upstream-Änderungen minimal + `// [fork]`-Marker).
+> **Status: UMGESETZT & live getestet.** Fork-Konventionen wie in `docs/SYNC.md`
+> (neue Dateien bevorzugt, Upstream-Änderungen minimal + `// [fork]`-Marker).
+
+## Umgesetzt
+
+**Home Assistant** (über den Connector, alles via Config-API, best-practice-konform):
+- Helfer `input_number.poolpumpe_manuell_dauer` und `input_number.poolpumpe_siri_dauer`
+  (5–1440 min, Schritt 5).
+- `binary_sensor.schwellwert_poolpumpe_solarleistung` als **Template-Helper**
+  neu (gleiche `entity_id`); die 2-Min-Entprellung liegt als `for:` an der
+  Nachführ-Automation.
+- `switch.schalter_poolpumpe_manuell` als **Template-Switch-Helper** neu (gleiche
+  `entity_id`, spiegelt den Modus; `turn_on` setzt Siri-Dauer → Manuell,
+  `turn_off` → Automatik). HomeKit-Bridge (Port 21063) neu geladen → Apple-Home-
+  Kachel bleibt.
+- Skripte `pool_automatik_auswerten` (Pumpe = Solar ODER Zeitplan) und
+  `pool_manuell_timer_starten` (Timer mit gewählter Dauer + Pumpe an).
+- 6 Automationen: Modus Aus/Automatik/Manuell, Automatik-Nachführung,
+  Timer-fertig→Automatik, Siri-Taster. **Verfeinerung ggü. Plan:** die
+  Automatik-Automation bricht beim Eintritt zusätzlich den Manuell-Timer ab
+  (Manuell→Automatik lässt keinen Rest-Timer laufen).
+- „>10 h"-Benachrichtigung: schweigt bei bewusstem Manuell-Lauf.
+- NodeRED-Pool-Tab bleibt deaktiviert (Rollback-Reserve).
+
+**HAPulse:** Core-Helfer + Tests (`packages/core/src/pool.ts`,
+`scripts/smoke.mjs`), `setDurationMinutes` (`ha/pool.ts`), neue Rollen in
+`poolConfig.ts`, überarbeitete `ManualTimerCard` (Presets 30 min–24 h + freier
+Stepper + Start/Stop + Siri-Dauer-Einstellung), i18n in 7 Locales, Müll-Icon
+im Akzent-Stil. `typecheck` + `build` + `npm test -w @hapulse/core` (404) grün.
+
+**Live getestet:** Manuell 5 min, Timer-Ende→Automatik, Siri-Dauer 45,
+Apple-Home-Schalter an/aus (inkl. Timer-Cancel), Automatik „Solar ODER
+Zeitplan", 24 h → Timer `24:00:00`. Endzustand: Modus Automatik, Pumpe aus.
 
 ## Ziel
 
