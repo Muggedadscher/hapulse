@@ -95,8 +95,10 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 |---|---|
 | `packages/core/src/sensorHistory.ts` | Numerisches Sample-Parsing + Demo-Daten für den Pool-Laufzeit-Chart (umbenannt von `history.ts`, um mit Upstreams eigener `history.ts` zu koexistieren) |
 | `apps/dashboard/src/ha/history.ts` | History-Facade (`getHistory`, live/demo) — nur noch für `PoolChartCard` |
-| `apps/dashboard/src/pages/Nvr.tsx` | NVR-Seite (Scrypted-Embed) |
-| `apps/dashboard/src/pages/Nvr.css` | Styles dafür |
+| `apps/dashboard/src/pages/Nvr.tsx` | NVR-Routen-Einstieg (`/nvr/*`) der nativen Sentinel-Integration |
+| `apps/dashboard/src/nvr/**` | Native Sentinel-NVR-Integration (API-Client, Store, Player-Port, Komponenten, Seiten, Home-Karte, CSS) — siehe `docs/NVR-INTEGRATION.md` |
+| `packages/core/src/sentinel.ts` | DOM-freies Sentinel-Datenmodell + Helfer (Setup-Parsing, Speicherprognose, Zeitleisten-Runs) |
+| `docs/NVR-INTEGRATION.md` | Architektur + Rausnehmen/Neu-Integrieren der NVR-Integration |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -104,13 +106,15 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | Datei | Änderung |
 |---|---|
 | `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben) |
-| `packages/core/src/index.ts` | Export des `sensorHistory`- und `pool`-Moduls |
-| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`) |
+| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`- und `sentinel`-Moduls |
+| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`), `wasteSectionMigrated` |
+| `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
+| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“ |
 | `apps/dashboard/src/components/home/SummaryChips.tsx` | Pool-Chip in der Home-Leiste |
 | `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}` | Bereichs-**Pills** (24H/7D/30D) statt Upstreams 24h/7d-Umschalter |
-| `apps/dashboard/src/app/Router.tsx` | Routen `/nvr`, `/pool` |
+| `apps/dashboard/src/app/Router.tsx` | Routen `/nvr/*`, `/pool` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Einträge „NVR" + „Pool" (`nav.nvr`, `nav.pool`) |
-| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
+| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `home.section.*.{waste,nvr}` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
 > Hinweis: `SensorTile.tsx` und die `.sensor-tile--clickable`-CSS-Regel sind seit
 > dem v1.2.0-Merge **wieder Upstream-Stand** — siehe „Feature: Sensor-Verlauf".
@@ -136,19 +140,16 @@ npm test -w @hapulse/core
 
 ---
 
-## Feature: NVR (Scrypted)
+## Feature: NVR (Sentinel NVR, nativ)
 
 Scrypted-Kameras sind i. d. R. **nicht** als HA-Entities exportiert, tauchen
-also nicht auf der Security-Seite auf. Die neue **NVR**-Seite bettet stattdessen
-die Scrypted-Weboberfläche per `<iframe>` ein. Die URL wird direkt auf der Seite
+also nicht auf der Security-Seite auf. Die **NVR**-Seite rendert stattdessen
+Sentinel NVR (Scrypted-Plugin) **nativ** über dessen HTTP/WebSocket-API:
+Übersicht (`/nvr`), Kamera-Zeitleiste mit Live/Aufnahme-Video (`/nvr/:id`)
+und eine Home-Karte. Verbindung (Scrypted-URL + Token) wird auf der Seite
 gesetzt und in den (mit HA synchronisierten) Einstellungen gespeichert.
-
-Hinweise:
-- Läuft HAPulse über **https**, muss Scrypted ebenfalls über **https** erreichbar
-  sein (Mixed-Content-Blockade des Browsers). Scrypted: meist `https://<host>:10443`.
-- Manche Oberflächen setzen `X-Frame-Options` / CSP `frame-ancestors` und
-  verbieten das Einbetten → dann bleibt der Rahmen leer; der **Open**-Button
-  öffnet Scrypted in einem neuen Tab.
+Architektur, CORS-Details und die Anleitung zum **kompletten Rausnehmen**:
+`docs/NVR-INTEGRATION.md`. Die frühere iframe-Einbettung ist damit abgelöst.
 
 ## Feature: Sensor-Verlauf
 

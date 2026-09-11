@@ -79,7 +79,7 @@ export function AppRouter({ basename }: { basename?: string | undefined }) {
                     <Route path="/room/:areaId" element={<Room />} />
                     <Route path="/music" element={<Music />} />
                     <Route path="/security" element={<Security />} />
-                    <Route path="/nvr" element={<Nvr />} /> {/* [fork] */}
+                    <Route path="/nvr/*" element={<Nvr />} /> {/* [fork] overview + /nvr/:cameraId */}
                     <Route path="/pool" element={<Pool />} /> {/* [fork] */}
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/devices" element={<Devices />} />

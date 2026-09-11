@@ -1,5 +1,11 @@
 # Roadmap: native Kamera-Integration im HAPulse-Stil
 
+> **Status 2026-09-11:** Die **Sentinel-NVR-Integration** (Scrypted-Kameras,
+> Ereignisse, Aufnahmen, Live-Video nativ in HAPulse) ist **umgesetzt** — siehe
+> `docs/NVR-INTEGRATION.md`. Dieser Plan beschreibt den davon unabhängigen,
+> optionalen Ausbau für **HA-`camera.*`-Entities** (HLS/WebRTC über Home
+> Assistant) und ist weiterhin offen.
+
 > **Trigger:** Wenn der User sinngemäß sagt „**mach es**" / „mach die native
 > Integration", ist **dieser Plan** gemeint. Dann Schritt für Schritt umsetzen
 > wie unten, mit denselben Fork-Konventionen (`docs/SYNC.md`): neue Dateien

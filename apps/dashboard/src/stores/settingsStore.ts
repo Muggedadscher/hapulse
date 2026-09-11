@@ -131,10 +131,18 @@ export interface CustomizationSettings {
   mobileHiddenSystemSections: string[];
   mobileHiddenEnergySections: string[];
   /**
-   * [fork] Base URL of the Scrypted (NVR) web interface, embedded on the NVR
-   * page. Empty = not configured (the page shows a setup prompt).
+   * [fork] Scrypted origin (e.g. `https://host:10443`) of the Sentinel NVR the
+   * native NVR pages talk to. Empty = not configured (the page shows a setup
+   * prompt). Any pasted Sentinel URL is normalised by `parseSentinelSetup`.
    */
   scryptedUrl: string;
+  /**
+   * [fork] Sentinel NVR access token (plugin settings → "Sicherheit"). Together
+   * with `scryptedUrl` this is the native NVR integration's connection; the
+   * browser talks to the plugin's `/public/` endpoint directly (HAPulse has no
+   * backend). Stored like `maToken` — per HA user, never sent anywhere else.
+   */
+  scryptedToken: string;
   /**
    * [fork] Last-selected time range in the entity detail modal's history
    * chart (`24h`/`7d`/`30d`). Remembered across entities, per user.
@@ -285,6 +293,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   mobileHiddenSystemSections: [],
   mobileHiddenEnergySections: [],
   scryptedUrl: '', // [fork]
+  scryptedToken: '', // [fork]
   detailHistoryRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
   wasteSectionMigrated: false, // [fork]

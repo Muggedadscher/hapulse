@@ -31,8 +31,18 @@ sauber übernehmen können.
   `parseNumericHistory` + `demoHistory`) und `apps/dashboard/src/ha/history.ts`
   (`getHistory` via `HAConnection.fetchSensorHistory`) — beides ausschließlich
   für den Pool-Laufzeit-Chart (`PoolChartCard`).
-- **NVR-Seite**: bettet die Scrypted-Web-UI per iframe ein. Route `/nvr`,
-  `apps/dashboard/src/pages/Nvr.{tsx,css}`, Setting `customization.scryptedUrl`.
+- **Sentinel NVR (nativ)**: Sentinel NVR (Scrypted-Plugin, Repo
+  `Muggedadscher/sentinel-nvr`, Schnittstelle dessen `docs/API.md`) wird
+  **nativ im HAPulse-Stil** gerendert — kein iframe mehr. Route `/nvr/*`
+  (`pages/Nvr.tsx` = Routen-Einstieg), alles Weitere im abgegrenzten Modul
+  `apps/dashboard/src/nvr/**` (API-Client, Store, Port von Sentinels
+  `PlayerController`/`webrtc.ts`/`VerticalTimeline`, Komponenten, Seiten,
+  Home-Karte `'nvr'`, `nvr.css`) + DOM-freies `packages/core/src/sentinel.ts`
+  (getestet in `smoke.mjs`). Settings `customization.scryptedUrl` +
+  `scryptedToken` (Browser spricht den `/public/`-Endpoint direkt — HAPulse hat
+  kein Backend). **Sentinel selbst nur lesend nutzen; Änderungen dort erst mit
+  dem User klären.** Architektur, CORS-Regeln und die Anleitung zum kompletten
+  Rausnehmen/Neu-Integrieren: **`docs/NVR-INTEGRATION.md`**.
 - **Pool-Seite**: native Poolpumpen-Steuerung im HAPulse-Stil (ersetzt das
   Lovelace-`dashboard-pool`). Route `/pool`, `apps/dashboard/src/pages/Pool.{tsx,css}`,
   Karten unter `apps/dashboard/src/components/pool/*`, Entity-Wiring in
@@ -68,9 +78,9 @@ sauber übernehmen können.
   `customization.hiddenEntities` (einzelne Tonne ausblenden) und blendet sich
   komplett aus, wenn keine Müll-Sensoren existieren.
 
-## Geplantes Feature — Trigger „mach es"
+## Optionales Folge-Feature — HA-Kameras live
 
-Wenn der User sinngemäß **„mach es"** / „mach die native Integration" sagt, ist
-die **native Live-Kamera-Integration im HAPulse-Stil** gemeint. Der vollständige,
-umsetzungsfertige Plan steht in **`docs/NVR-NATIVE-PLAN.md`** — dann diesen Plan
-Schritt für Schritt abarbeiten.
+`docs/NVR-NATIVE-PLAN.md` beschreibt einen **anderen**, noch nicht gebauten
+Ausbau: Live-Streams für **beliebige HA-`camera.*`-Entities** (HLS/WebRTC über
+Home Assistant) in der Security-`CameraGrid`. Die Sentinel-Integration oben ist
+davon unabhängig und bereits umgesetzt.
