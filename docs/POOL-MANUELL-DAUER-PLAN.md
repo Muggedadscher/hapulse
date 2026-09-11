@@ -250,8 +250,9 @@ Neu unter `pool.manual.*`: `durationTitle`, `start`, `stop`, `extend`, `custom`,
    Skript, 6 Automationen. `entity_id`s **exakt** prüfen
    (`binary_sensor.schwellwert_poolpumpe_solarleistung`,
    `switch.schalter_poolpumpe_manuell`).
-5. **Apple Home prüfen:** Erscheint `switch.schalter_poolpumpe_manuell` wieder?
-   (Ggf. HomeKit-Bridge neu laden / neu koppeln.)
+5. **Apple Home prüfen:** HomeKit-Bridge „Home Assistant Bridge" (Port 21063) neu
+   laden; `switch.schalter_poolpumpe_manuell` muss als dieselbe Kachel wieder
+   erscheinen (gleiche `entity_id` → kein Neu-Koppeln nötig).
 6. Alle drei Modi + Solar + Zeitplan + Timer-Ende + Siri-Taster + Apple-Home-
    Schalter durchtesten.
 7. HAPulse-Änderungen (Teil 3): `npm run typecheck && npm run build &&
@@ -276,14 +277,19 @@ Neu unter `pool.manual.*`: `durationTitle`, `start`, `stop`, `extend`, `custom`,
 
 ---
 
-## Offene Mini-Entscheidungen (für die Plan-Prüfung)
+## Geklärte Mini-Entscheidungen
 
-1. **`input_boolean.poolpumpe_manuell`** (Alt-Helfer, ungenutzt im Flow): in Apple
-   Home / anderswo gebraucht? Sonst aufräumen.
-2. **Siri-Dauer separat** (`poolpumpe_siri_dauer`, empfohlen) oder doch **eine**
-   gemeinsame Dauer mit der UI teilen?
-3. **HomeKit-Re-Expose:** nach Neuanlage des Schalters ggf. HomeKit-Bridge neu
-   laden — ok für dich?
+1. **`input_boolean.poolpumpe_manuell`**: **nicht** in der HomeKit-Bridge, nicht im
+   Flow, nicht in Automationen → ungenutzt. Bleibt vorerst stehen (schadet nicht);
+   auf Wunsch am Ende aufräumen.
+2. **Siri-Dauer: separat** → eigener Helfer `input_number.poolpumpe_siri_dauer`.
+3. **HomeKit-Reload nach Neuanlage: ok.**
+
+**HomeKit-Kontext (bestätigt):** `switch.schalter_poolpumpe_manuell` ist über die
+**HomeKit-Bridge „Home Assistant Bridge" (Port 21063)** per `include_entities`
+freigegeben. Weil HomeKit-Accessoires an die **`entity_id`** gebunden sind, bleibt
+die Apple-Home-Kachel erhalten, wenn der Template-Switch **dieselbe `entity_id`**
+bekommt — nach dem Nachbau einmal die HomeKit-Bridge neu laden.
 
 ---
 
