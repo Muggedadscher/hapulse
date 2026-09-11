@@ -6,7 +6,7 @@
  * own options), and today's runtime as a glance stat.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Waves, Power, PowerOff, CirclePause, RefreshCw, Hand, Clock } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
@@ -14,6 +14,7 @@ import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
 import { setPoolMode } from '../../ha/pool';
 import { POOL_ENTITIES, poolModeTone } from './poolConfig';
+import { PumpManualModal } from './PumpManualModal';
 
 function ModeIcon({ option }: { option: string }) {
   const tone = poolModeTone(option);
@@ -31,6 +32,7 @@ export function PumpHeroCard() {
   const pump = useEntity(POOL_ENTITIES.pump);
   const mode = useEntity(POOL_ENTITIES.mode);
   const runtime = useEntity(POOL_ENTITIES.runtimeToday);
+  const [manualOpen, setManualOpen] = useState(false);
 
   const running = pump?.state === 'on';
   const options = (mode?.attributes['options'] as string[] | undefined) ?? [];
@@ -67,7 +69,11 @@ export function PumpHeroCard() {
                 type="button"
                 className={`pool-mode__btn pool-mode__btn--${poolModeTone(opt)}${active ? ' pool-mode__btn--active' : ''}`}
                 aria-pressed={active}
-                onClick={() => { if (!active) void setPoolMode(POOL_ENTITIES.mode, opt); }}
+                onClick={() => {
+                  // Manuell opens the duration popup; the other modes switch directly.
+                  if (poolModeTone(opt) === 'manual') { setManualOpen(true); return; }
+                  if (!active) void setPoolMode(POOL_ENTITIES.mode, opt);
+                }}
               >
                 <ModeIcon option={opt} />
                 <span className="pool-mode__label">{opt}</span>
@@ -76,6 +82,8 @@ export function PumpHeroCard() {
           })}
         </div>
       )}
+
+      <PumpManualModal open={manualOpen} onClose={() => setManualOpen(false)} />
     </Card>
   );
 }

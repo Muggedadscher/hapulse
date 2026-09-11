@@ -937,6 +937,7 @@
   "pool.manual.idle": "Nessun timer attivo",
   "pool.manual.runsUntil": "In funzione fino alle {time}",
   "pool.manual.durationTitle": "Scegli la durata",
+  "pool.manual.startTitle": "Avvia manuale",
   "pool.manual.start": "Avvia",
   "pool.manual.stop": "Ferma",
   "pool.manual.siriLabel": "Siri / Apple Home",
