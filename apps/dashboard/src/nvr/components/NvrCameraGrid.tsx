@@ -71,23 +71,28 @@ function CameraTile({ client, cam, tick }: { client: SentinelClient; cam: Sentin
   );
 }
 
-export function NvrCameraGrid({ client, cameras }: { client: SentinelClient; cameras: SentinelCamera[] }) {
+/** The tile grid alone (shared with the Security page section). */
+export function NvrCameraTiles({ client, cameras }: { client: SentinelClient; cameras: SentinelCamera[] }) {
   const t = useT();
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => { if (document.visibilityState === 'visible') setTick(Date.now()); }, SNAPSHOT_MS);
     return () => clearInterval(id);
   }, []);
+  if (cameras.length === 0) return <p className="nvr-muted">{t('nvr.cameras.none')}</p>;
+  return (
+    <div className="nvr-camgrid">
+      {cameras.map((c) => <CameraTile key={c.id} client={client} cam={c} tick={tick} />)}
+    </div>
+  );
+}
+
+export function NvrCameraGrid({ client, cameras }: { client: SentinelClient; cameras: SentinelCamera[] }) {
+  const t = useT();
   return (
     <section className="nvr-section">
       <h2 className="section-label nvr-section__label">{t('nvr.cameras.title')}</h2>
-      {cameras.length === 0 ? (
-        <p className="nvr-muted">{t('nvr.cameras.none')}</p>
-      ) : (
-        <div className="nvr-camgrid">
-          {cameras.map((c) => <CameraTile key={c.id} client={client} cam={c} tick={tick} />)}
-        </div>
-      )}
+      <NvrCameraTiles client={client} cameras={cameras} />
     </section>
   );
 }

@@ -20,6 +20,8 @@ import { LocksSectionCard } from '../components/security/LocksSectionCard';
 import { SensorSectionCard } from '../components/security/SensorSectionCard';
 import { CameraGrid } from '../components/security/CameraGrid';
 import { applyStoredOrder } from '../lib/order';
+import { NvrSecuritySection } from '../nvr/NvrSecuritySection'; // [fork]
+import { useNvrConfigured } from '../nvr/config'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import './Page.css';
 import './Security.css';
@@ -40,7 +42,7 @@ function isMotion(e: HassEntity)  { const dc = e.attributes['device_class'] as s
 // Section config
 // ---------------------------------------------------------------------------
 
-const SECTION_IDS = ['security_hero', 'alarm_panel', 'cameras', 'people', 'locks', 'doors', 'windows', 'motion'] as const;
+const SECTION_IDS = ['security_hero', 'alarm_panel', 'cameras', 'nvr', 'people', 'locks', 'doors', 'windows', 'motion'] as const; // [fork] nvr
 type SectionId = typeof SECTION_IDS[number];
 
 type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
@@ -63,6 +65,13 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     show: 'security.section.show.cameras',
     hideMobile: 'security.section.hideMobile.cameras',
     showMobile: 'security.section.showMobile.cameras',
+  },
+  // [fork] Sentinel NVR cameras + events.
+  nvr: {
+    hide: 'security.section.hide.nvr',
+    show: 'security.section.show.nvr',
+    hideMobile: 'security.section.hideMobile.nvr',
+    showMobile: 'security.section.showMobile.nvr',
   },
   people: {
     hide: 'security.section.hide.people',
@@ -102,6 +111,7 @@ const DEFAULT_SPANS: Record<string, number> = {
   security_hero: 2,
   alarm_panel:   2,
   cameras:       4,
+  nvr:           4, // [fork]
   people:        1,
   locks:         2,
   doors:         1,
@@ -208,6 +218,7 @@ export function Security() {
   const securitySectionHeights = useSettingsStore(useShallow((s) => s.customization.securitySectionHeights));
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
   const editMode = useUIStore((s) => s.editMode);
+  const hasNvr = useNvrConfigured(); // [fork] Sentinel NVR section only with a configured connection
 
   const allEntities = useMemo(() => Object.values(entities), [entities]);
 
@@ -261,6 +272,7 @@ export function Security() {
     security_hero: true, // always show if any data
     alarm_panel:   hasAlarm,
     cameras:       hasCameras,
+    nvr:           hasNvr, // [fork]
     people:        hasPeople,
     locks:         hasLocks,
     doors:         hasDoors,
@@ -308,7 +320,7 @@ export function Security() {
   }, [updateCustomization]);
 
   // Empty state
-  if (totalEntities === 0) {
+  if (totalEntities === 0 && !hasNvr) { // [fork] an NVR alone is enough for the page
     return (
       <div className="page security-page stagger-rise">
         <div className="page__header-row">
@@ -350,6 +362,8 @@ export function Security() {
             </div>
           </div>
         );
+      case 'nvr': // [fork]
+        return <NvrSecuritySection />;
       case 'people':
         return <PeopleList people={people} />;
       case 'locks':

@@ -14,6 +14,7 @@ wurde für diese Integration **nicht** verändert (nur gelesen).
 |---|---|
 | **`/nvr`** (Übersicht) | Hero („Sentinel NVR" – Ereignisse heute, Kameras online, Aufnahme, Speicher, Aufbewahrung), Ereignis-Leiste (letzte 24 h, Objekt-Ausschnitte + Klassen-Badges), Kamera-Kacheln (Snapshot alle 5 s, Aufnahme-Punkt, Offline-Badge, „N heute · vor 5 min"), „Ereignisse pro Stunde", „Speicher & Aufbewahrung" (Meter + Prognose, dieselbe Rechnung wie Sentinels Status-Seite). |
 | **`/nvr/:cameraId`** (Kamera) | 1:1-Port von Sentinels Zeitleisten-Seite: Bühne mit Live/Aufnahme-Video, Steuer-Pille (±15 s, Play/Pause, Tempo 1/2/4/8×), Stumm-Knopf, Snapshot/PiP/Vollbild; rechts Tabs Zeitleiste/Ereignisse, Klassenfilter, **vertikale Mehrtages-Zeitleiste** (Scroll = Scrub-Zeitraffer über `api/relay-rate`, Halten/Loslassen = Seek, Zoom, Live-Linie, Ereignis-Thumbnails), Datum-Chip + Datum/Uhrzeit-Dialog. Tastatur: Leertaste, ←/→ (±10 s, Shift 60 s), n/p Ereignis, l Live. Deep-Link `?at=<ms>&ev=<ts>`. |
+| **Sicherheits-Seite**, Sektion „Sentinel NVR" | Kamera-Kacheln + Ereignis-Leiste des NVR direkt unter Home Assistants eigener Kamera-Sektion (Section-ID `nvr`, volle Breite, Reorder/Hide/Resize wie die übrigen Sektionen). Erscheint nur bei konfigurierter Verbindung; ein NVR allein reicht, damit die Seite nicht leer ist. |
 | **Home-Karte** „Sentinel NVR" | Kamera-Snapshots + die letzten 4 Ereignisse; Tap → Kamera-Zeitleiste (am Ereignis). Section-ID `nvr` (Reorder/Hide/Resize wie andere Karten), erscheint nur bei konfigurierter Verbindung. |
 | **Einrichtung** | Auf der NVR-Seite (Setup-Karte bzw. Zahnrad-Modal): Scrypted-URL + Zugriffs-Token, „Verbindung testen" (`api/stats`). Die alte Embed-URL mit `?token=` kann direkt eingefügt werden — der Token wird daraus übernommen. |
 
@@ -75,7 +76,7 @@ cross-origin freischalten und die opaken Steuer-Antworten lesbar machen.
 | `apps/dashboard/src/nvr/paths.ts` | Routen-Helfer. |
 | `apps/dashboard/src/nvr/player/{controller,webrtc,rlog}.ts` | Port von Sentinels `ui/src/player/*` (Client injiziert, Labels als i18n-Keys, MSE nur same-origin). |
 | `apps/dashboard/src/nvr/components/*` | `ClassBadge`, `NvrHero` (+`StatTile`/`CardTitle`), `NvrEventsStrip`, `NvrCameraGrid`, `NvrStatsCards`, `NvrSetup` (Karte + Modal), `VerticalTimeline` (Port), `EventList`, `DatePickerModal`. |
-| `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens; `--nvr-c-*` auf HAPulse-Semantik gemappt). |
+| `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `NvrSecuritySection.tsx`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens; `--nvr-c-*` auf HAPulse-Semantik gemappt). |
 | `apps/dashboard/src/pages/Nvr.tsx` | Routen-Einstieg `/nvr/*` (Fork-Datei, war vorher die iframe-Seite). |
 | `docs/NVR-INTEGRATION.md` | dieses Dokument |
 
@@ -89,16 +90,17 @@ cross-origin freischalten und die opaken Steuer-Antworten lesbar machen.
 | `apps/dashboard/src/app/Router.tsx` | Route `/nvr` → `/nvr/*` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" (bestand schon) |
 | `apps/dashboard/src/pages/Home.tsx` | Section `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
-| `packages/core/locales/*.json` | `nvr.*`, `nav.nvr`, `home.section.*.nvr` in allen sieben Sprachen (am Dateiende) |
+| `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Import, ID, Toggle-Keys, Span 4, Gate, Empty-State-Bedingung, `renderWidget`) |
+| `packages/core/locales/*.json` | `nvr.*`, `nav.nvr`, `home.section.*.nvr`, `security.section.*.nvr` in allen sieben Sprachen (am Dateiende) |
 
 ## Rausnehmen (komplett)
 
 ```bash
 git rm -r apps/dashboard/src/nvr apps/dashboard/src/pages/Nvr.tsx packages/core/src/sentinel.ts docs/NVR-INTEGRATION.md
-git grep -n "\[fork\]" -- apps/dashboard/src/pages/Home.tsx apps/dashboard/src/app/Router.tsx \
+git grep -n "\[fork\]" -- apps/dashboard/src/pages/Home.tsx apps/dashboard/src/pages/Security.tsx apps/dashboard/src/app/Router.tsx \
   apps/dashboard/src/app/AppLayout.tsx apps/dashboard/src/stores/settingsStore.ts \
   packages/core/src/index.ts packages/core/scripts/smoke.mjs   # NVR-Zeilen entfernen
-# Locales: alle Keys nvr.*, nav.nvr, home.section.*.nvr aus packages/core/locales/*.json löschen
+# Locales: alle Keys nvr.*, nav.nvr, home.section.*.nvr, security.section.*.nvr aus packages/core/locales/*.json löschen
 npm run typecheck && npm run build && npm test -w @hapulse/core
 ```
 

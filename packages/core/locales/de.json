@@ -1170,5 +1170,9 @@
   "home.section.hide.nvr": "Sentinel NVR ausblenden",
   "home.section.show.nvr": "Sentinel NVR einblenden",
   "home.section.hideMobile.nvr": "Sentinel NVR auf Mobilgeräten ausblenden",
-  "home.section.showMobile.nvr": "Sentinel NVR auf Mobilgeräten einblenden"
+  "home.section.showMobile.nvr": "Sentinel NVR auf Mobilgeräten einblenden",
+  "security.section.hide.nvr": "Sentinel NVR ausblenden",
+  "security.section.show.nvr": "Sentinel NVR einblenden",
+  "security.section.hideMobile.nvr": "Sentinel NVR auf Mobilgeräten ausblenden",
+  "security.section.showMobile.nvr": "Sentinel NVR auf Mobilgeräten einblenden"
 }

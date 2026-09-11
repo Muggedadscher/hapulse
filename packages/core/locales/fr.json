@@ -1170,5 +1170,9 @@
   "home.section.hide.nvr": "masquer Sentinel NVR",
   "home.section.show.nvr": "afficher Sentinel NVR",
   "home.section.hideMobile.nvr": "masquer Sentinel NVR sur mobile",
-  "home.section.showMobile.nvr": "afficher Sentinel NVR sur mobile"
+  "home.section.showMobile.nvr": "afficher Sentinel NVR sur mobile",
+  "security.section.hide.nvr": "masquer Sentinel NVR",
+  "security.section.show.nvr": "afficher Sentinel NVR",
+  "security.section.hideMobile.nvr": "masquer Sentinel NVR sur mobile",
+  "security.section.showMobile.nvr": "afficher Sentinel NVR sur mobile"
 }
