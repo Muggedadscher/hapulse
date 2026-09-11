@@ -407,6 +407,46 @@ export function dailyRuntimeBars(points: { t: number; v: number }[], dayStarts: 
   });
 }
 
+// ---------------------------------------------------------------------------
+// Manual run duration — for the manual-timer card's presets + free input
+//
+// A manual pump run is an HA `timer.start` whose duration is chosen in HAPulse
+// (or via the Apple-Home switch / Siri shortcut). HAPulse only writes the
+// chosen minutes into an `input_number`; the HA automation turns that into the
+// timer duration. These pure helpers give the card its presets, clamping and
+// labels, and mirror the HA side's minutes→duration format for parity.
+// ---------------------------------------------------------------------------
+
+/** Smallest / largest manual run, in minutes (matches the HA input_number). */
+export const POOL_MANUAL_MIN_MINUTES = 5;
+export const POOL_MANUAL_MAX_MINUTES = POOL_DAY_MINUTES; // 1440 = 24 h
+
+/** Quick-pick manual durations (minutes) offered on the card. 1440 = 24 h. */
+export const POOL_MANUAL_PRESETS_MIN: readonly number[] = [30, 60, 120, 360, 1440];
+
+/** Clamp a manual-run duration to the allowed [5, 1440] minute range. */
+export function clampManualMinutes(min: number): number {
+  if (!Number.isFinite(min)) return POOL_MANUAL_MIN_MINUTES;
+  return Math.max(POOL_MANUAL_MIN_MINUTES, Math.min(POOL_MANUAL_MAX_MINUTES, Math.round(min)));
+}
+
+/**
+ * Format whole minutes as the zero-padded "HH:MM:SS" duration string HA's
+ * `timer.start` accepts — e.g. 30 → "00:30:00", 1440 → "24:00:00". Mirrors the
+ * Jinja `'%02d:%02d:00'` used in the HA automation so both paths agree.
+ */
+export function minutesToDurationString(min: number): string {
+  const m = clampManualMinutes(min);
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}:00`;
+}
+
+/** Short label for a duration: "30 min" under an hour, else "1 h" / "1.5 h". */
+export function formatManualDuration(min: number): string {
+  if (min < 60) return `${min} min`;
+  const hours = min / 60;
+  return `${Number.isInteger(hours) ? hours : hours.toFixed(1)} h`;
+}
+
 /** Collapse a day-slot partition back into on-windows for saving. */
 export function daySlotsToWindows(slots: PoolDaySlot[]): PoolWindow[] {
   const norm = normalizeDaySlots(slots);

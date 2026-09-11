@@ -92,6 +92,10 @@ import {
   normalizeDaySlots,
   tidyDaySlots,
   dailyRuntimeBars,
+  POOL_MANUAL_PRESETS_MIN,
+  clampManualMinutes,
+  minutesToDurationString,
+  formatManualDuration,
   detectWasteBins,
   parseWasteSensor,
   wasteTypeName,
@@ -1224,6 +1228,21 @@ assertEqual(bars[0].value, 2.5, 'day 0 bar is the peak runtime (2.5)');
 assertEqual(bars[0].hasData, true, 'day 0 has data');
 assertEqual(bars[1].value, 0.4, 'day 1 bar is its peak (0.4)');
 assertEqual(bars[2].value, 3.1, 'last bucket runs to +inf and catches day 2');
+
+// Manual run duration — presets, clamping, and the minutes→duration format.
+assertEqual(JSON.stringify(POOL_MANUAL_PRESETS_MIN), JSON.stringify([30, 60, 120, 360, 1440]),
+  'manual presets are 30min / 1h / 2h / 6h / 24h');
+assertEqual(clampManualMinutes(0), 5, 'clampManualMinutes floors to 5');
+assertEqual(clampManualMinutes(99999), 1440, 'clampManualMinutes caps at 1440 (24h)');
+assertEqual(clampManualMinutes(31.6), 32, 'clampManualMinutes rounds');
+assertEqual(clampManualMinutes(NaN), 5, 'clampManualMinutes handles NaN');
+assertEqual(minutesToDurationString(30), '00:30:00', 'minutesToDurationString(30) → 00:30:00');
+assertEqual(minutesToDurationString(1440), '24:00:00', 'minutesToDurationString(24h) → 24:00:00');
+assertEqual(minutesToDurationString(90), '01:30:00', 'minutesToDurationString(90) → 01:30:00');
+assertEqual(formatManualDuration(30), '30 min', 'formatManualDuration under an hour');
+assertEqual(formatManualDuration(120), '2 h', 'formatManualDuration whole hours');
+assertEqual(formatManualDuration(90), '1.5 h', 'formatManualDuration half hours');
+assertEqual(formatManualDuration(1440), '24 h', 'formatManualDuration 24h');
 const empty = dailyRuntimeBars([], [d0, d0 + DAY]);
 assertEqual(empty[0].hasData, false, 'a day with no samples has hasData=false');
 assertEqual(empty[0].value, 0, 'a day with no samples has value 0');
