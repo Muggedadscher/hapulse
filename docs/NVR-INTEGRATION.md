@@ -1,12 +1,14 @@
 # Sentinel NVR — native Integration in HAPulse
 
-Stand: 2026-09-11. Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
+Stand: 2026-09-12. Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
 auf der NVR-Seite. Die Integration ist **bewusst als abgegrenztes Modul**
 gebaut, damit sie sich (Sentinel ist in starker Entwicklung) jederzeit
 **komplett entfernen und neu aufsetzen** lässt — siehe „Rausnehmen" unten.
 
-Schnittstelle: `docs/API.md` im Sentinel-NVR-Repo (verbindlich). Sentinel
-wurde für diese Integration **nicht** verändert (nur gelesen).
+Schnittstelle: `docs/API.md` im Sentinel-NVR-Repo (verbindlich). **Benötigt
+Sentinel ≥ `567c8a0`** (CORS auf jeder Antwort + Preflight, 2026-09-12); ältere
+Builds laufen mit Einschränkungen (siehe CORS unten). Sentinel wurde von der
+HAPulse-Seite aus nicht verändert (nur gelesen).
 
 ## Was es tut
 
@@ -19,10 +21,10 @@ wurde für diese Integration **nicht** verändert (nur gelesen).
 | **Einrichtung** | Auf der NVR-Seite (Setup-Karte bzw. Zahnrad-Modal): Scrypted-URL + Zugriffs-Token, „Verbindung testen" (`api/stats`). Die alte Embed-URL mit `?token=` kann direkt eingefügt werden — der Token wird daraus übernommen. |
 
 Wiedergabe-Pfade (aus Sentinels `PlayerController`, unverändert übernommen):
-Live = WebRTC über WebSocket-Signaling (Trickle-ICE) → MJPEG-Fallback;
-Aufnahme = WebRTC-**Relay** (server-seitiger Seek ohne Renegotiation,
-Scrub-Zeitraffer in place, Watchdog über präsentierte Frames) → natives
-`<video src=segment>`-Fallback. Client-Telemetrie geht wie bei Sentinels
+Live = WebRTC über WebSocket-Signaling (Trickle-ICE) → Live-MSE (fMP4) →
+MJPEG; Aufnahme = WebRTC-**Relay** (server-seitiger Seek ohne Renegotiation,
+Scrub-Zeitraffer in place, Watchdog über präsentierte Frames) → MSE
+(progressive Segmente, Trick-Play) → natives `<video src=segment>`. Client-Telemetrie geht wie bei Sentinels
 eigener UI an `api/clientlog` (Serverlog `[client]`, erkennbar an `b:hapulse`).
 
 ## Architektur-Entscheid: Browser → Sentinel direkt (kein Backend)
@@ -41,26 +43,53 @@ Konsequenzen:
   Wer das nicht will, braucht einen kleinen Proxy (z. B. nginx-`location`
   mit `proxy_set_header x-sentinel-token`) — dann in `nvr/api.ts` die
   Basis-URL auf den Proxy zeigen lassen; alles andere bleibt gleich.
-- **CORS** (Stand Sentinel `main.ts`): JSON-Antworten tragen
-  `Access-Control-Allow-Origin: *` → normale `fetch`s mit `?token=` (keine
-  Preflight). Die 204/404-**Steuer-Antworten** (`relay-seek`, `relay-rate`,
-  `relay-scrub`, `webrtc-stop`, `clientlog`) tragen **keinen** CORS-Header →
-  sie werden mit `mode: 'no-cors'` geschickt (Server führt aus, Antwort ist
-  opak; „angekommen" gilt als Erfolg, tote Sessions erkennt der Watchdog
-  über `relay-pos` wie bei Sentinel selbst). Bilder/Video laufen über
-  `<img>`/`<video>` (kein CORS nötig). **MSE-Pfade** (`api/segment`,
-  `api/livemse` per `fetch`) funktionieren cross-origin **nicht** und sind
-  nur bei Same-Origin aktiv (`SentinelClient.corsMedia`).
+- **CORS** (Sentinel ≥ `567c8a0`): *jede* Antwort trägt
+  `Access-Control-Allow-Origin: *` — JSON, die 204-Steuerantworten
+  (`relay-seek`, `relay-rate`, `relay-scrub`, `webrtc-stop`, `clientlog`),
+  `api/segment` inkl. `206`, `api/livemse`, Bilder, Fehler — und `OPTIONS`
+  wird beantwortet. Der Client schickt deshalb überall normale `fetch`s mit
+  `?token=` (kein Preflight nötig, kein `no-cors`), liest die Statuscodes der
+  Steuerantworten (404 = Session weg) und lädt Bild/Video mit
+  `crossOrigin="anonymous"` (Freeze-Canvas bleibt sauber → Schnappschuss-
+  Download funktioniert auch im MJPEG-/Segment-Fallback). Die **MSE-Pfade**
+  (Live-MSE, Aufnahme-MSE) sind damit auch cross-origin aktiv.
+  **Ältere Sentinel-Builds** (CORS nur auf JSON) degradieren sauber:
+  `control()` wertet eine nicht lesbare Antwort als „zugestellt" (wie
+  Sentinels eigener Client), MSE-Fetches scheitern in den nächsten Fallback
+  (MJPEG bzw. natives `<video src>`); nur `crossOrigin`-Bilder würden dort
+  nicht laden → im Zweifel Sentinel aktualisieren.
 - WebSocket-Signaling (`wss://…/public/?token=…&camera=…&signaling=1`) kennt
   keine CORS-Beschränkung — Live und Aufnahme per WebRTC laufen vollständig.
 - Zertifikat: Scrypted nutzt ein selbstsigniertes Zertifikat. Es muss im
   Browser einmal akzeptiert werden (Setup-Hinweis), sonst blockt der Browser
   still. Läuft HAPulse über http, ist https zu Scrypted trotzdem erlaubt.
 
-**Wünsche an Sentinel** (nicht umgesetzt, nur notiert — Sentinel bleibt
-unverändert): `Access-Control-Allow-Origin: *` auch auf den 204-Antworten
-und auf `api/segment`/`api/livemse` würde die Fallback-Pfade (MSE) auch
-cross-origin freischalten und die opaken Steuer-Antworten lesbar machen.
+Die beiden ursprünglichen Wünsche an Sentinel (CORS auf 204-Antworten und
+auf `api/segment`/`api/livemse`) sind dort seit `567c8a0` umgesetzt; der
+Client nutzt sie wie oben beschrieben.
+
+## Abweichungen zu Sentinels eigener Web-UI
+
+Die Spielmechanik (Player, Relay-Seek/Scrub, Watchdog, Zeitleiste) ist ein
+1:1-Port. Abweichungen gibt es dort, wo HAPulse-Konventionen gelten oder wo
+Sentinels UI eine eigenständige App ist:
+
+| Bereich | Sentinel-UI | HAPulse |
+|---|---|---|
+| Shell | eigene Sidebar (Kameras / Zeitleiste / Status), Hell/Dunkel-Schalter + Uhr im Fuß, auf der Zeitleisten-Seite ein 64-px-Icon-Rail ohne Breitenkappe, `?embed=1`-Modus | HAPulse-Shell (Sidebar/Tab-Bar, „NVR“ ist ein Nav-Eintrag), kein Rail — die Bühne bekommt die Content-Breite der Seite (Shell-Maximum 1400 px, dadurch etwas kleiner als bei Sentinel), Theme = HAPulse-Theme (alle vier Identities + Akzent-Hue statt nur `aurora`), kein eigener Theme-Schalter, keine Uhr, kein Embed-Modus |
+| Seiten | drei Seiten: Home (Ereignisleiste + Kameragrid), Zeitleiste, Status | zwei Routen: **Übersicht** = Home **und** Status in einer Seite (Hero oben, dann Ereignisse, Kameras, Histogramm/Speicher), **Kamera** = Zeitleiste. Zusätzlich Home-Karte und Sicherheits-Sektion, die Sentinel nicht hat |
+| Kopfzeile | Zeitleisten-Seite mobil ohne Seitentitel (Name + Zurück in der Bühnen-Leiste) | HAPulse-Seitenkopf auf allen Breiten (Zurück-Chevron + Kameraname, „Sentinel öffnen“, Glocke/Avatar mobil); der Zurück-Knopf in der Bühnen-Leiste entfällt |
+| Einrichtung | keine (URL trägt Token bzw. Scrypted-Login) | Setup-Karte / Zahnrad-Modal mit Scrypted-URL, Token und Verbindungstest; Fehler-/Stale-Zustände, 10-s-Request-Timeout |
+| Kamera-Kacheln | Name als Text mit Schatten auf dem Bild, roter Punkt, Meta-Text | Name und Meta in Blur-Pills, **Offline-Badge** (neu), Fallback Snapshot → Segment-Thumbnail → Platzhalter, HAPulse-Card-Radius/-Schatten |
+| Klassen-Badges | Buchstaben-Glyphen (P/F/Z/T/K/M) in NVR-eigenen Farben `--c-*` | Lucide-Icons (Person/Auto/Rad/Pfote/Paket/Aktivität), Farben auf HAPulse-Semantik gemappt (Person = info, Fahrzeug = accent, Zweirad = info/danger-Mix, Tier = positive, Paket = warning, Bewegung = text-faint); Aufnahmeband = info-Mix statt `--rec` |
+| Sprache/Format | Deutsch fest verdrahtet, Datum „Fr. 11.09.“ | sieben Sprachen, Datum/Zeit per `Intl` (z. B. „Fr., 11. Sept.“), Pluralformen |
+| Zeitleiste | — | identisch (Playhead 35 %, Lineal, Thumbnails, Live-Linie, Zoom, Datum-Chip); Filter-Chips zeigen Icon-Badges, Chip-Pfeile sind Lucide-Chevrons |
+| Datum/Uhrzeit-Dialog | eigenes Overlay | HAPulse-`Modal` (mobil Bottom-Sheet), Monats-/Wochentagsnamen per `Intl`, Tage vor der Aufbewahrungsgrenze sind auch im Kalender gesperrt (Sentinel sperrt nur die Chip-Pfeile) |
+| Histogramm | 24 Balken | gleich, zusätzlich ist die **aktuelle Stunde** hervorgehoben |
+| Status-Labels | „Live …“, „Wiedergabe“, „Spule“ … | dieselben Zustände, übersetzt (`nvr.player.*`) |
+| Mobil-Zeitleiste | Dokument-Scroll ist gesperrt (`html.lock`), nur die Zeitleisten-Spalte scrollt | **nicht gesperrt** — die HAPulse-Seite bleibt scrollbar (die Zeitleiste scrollt intern mit `overscroll-behavior: contain`). Läuft eine Geste am Spaltenende aus, kann die Seite mitscrollen; bewusst so gelassen, weil ein globaler Scroll-Lock die HAPulse-Shell beträfe |
+| Telemetrie | `b:<build-id>` | `b:hapulse` (so sind Zeilen der Integration im Sentinel-Serverlog unterscheidbar), Nutzlast unter `d:` wie bei Sentinel |
+| Nicht übernommen | Anmeldeseite, iOS-Homescreen-Meta, `/status`-Route, Theme-Schalter, Uhr, Embed-Modus | (HAPulse liefert das selbst; Menschen öffnen Sentinels UI über „Sentinel öffnen“) |
 
 ## Dateien
 
@@ -69,12 +98,12 @@ cross-origin freischalten und die opaken Steuer-Antworten lesbar machen.
 | Datei | Zweck |
 |---|---|
 | `packages/core/src/sentinel.ts` | DOM-freies Datenmodell (Typen aus `API.md`), `parseSentinelSetup`, URL-Helfer, Ereignisklassen, `sentinelEventPlayTs`, `sentinelStorageForecast`, `sentinelClipRuns`, `sentinelMergeDays` — getestet in `packages/core/scripts/smoke.mjs` („sentinel nvr"). |
-| `apps/dashboard/src/nvr/api.ts` | `SentinelClient` (URLs mit Token, JSON, `control()` no-cors, Signaling-URL, Medien-URL-Helfer). |
+| `apps/dashboard/src/nvr/api.ts` | `SentinelClient` (URLs mit Token, JSON mit 10-s-Timeout, `control()` für die 204-Endpunkte, Signaling-URL, Medien-URL-Helfer). |
 | `apps/dashboard/src/nvr/config.ts` | Verbindung aus den Settings ableiten (`useNvrConfig`, `getNvrConfig`). |
 | `apps/dashboard/src/nvr/store.ts` | Übersichts-Store + gemeinsamer Poller (`useNvrOverview`). |
 | `apps/dashboard/src/nvr/format.ts` | Intl-Formatierung (Zeit, Tag, relativ, Tage). |
 | `apps/dashboard/src/nvr/paths.ts` | Routen-Helfer. |
-| `apps/dashboard/src/nvr/player/{controller,webrtc,rlog}.ts` | Port von Sentinels `ui/src/player/*` (Client injiziert, Labels als i18n-Keys, MSE nur same-origin). |
+| `apps/dashboard/src/nvr/player/{controller,webrtc,rlog}.ts` | Port von Sentinels `ui/src/player/*` (Client injiziert, Labels als i18n-Keys, Poster mit `crossOrigin`). |
 | `apps/dashboard/src/nvr/components/*` | `ClassBadge`, `NvrHero` (+`StatTile`/`CardTitle`), `NvrEventsStrip`, `NvrCameraGrid`, `NvrStatsCards`, `NvrSetup` (Karte + Modal), `VerticalTimeline` (Port), `EventList`, `DatePickerModal`. |
 | `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `NvrSecuritySection.tsx`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens; `--nvr-c-*` auf HAPulse-Semantik gemappt). |
 | `apps/dashboard/src/pages/Nvr.tsx` | Routen-Einstieg `/nvr/*` (Fork-Datei, war vorher die iframe-Seite). |
