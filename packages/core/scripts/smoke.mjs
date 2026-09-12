@@ -103,6 +103,7 @@ import {
   parseSentinelSetup,
   sentinelPublicBase,
   sentinelLoginBase,
+  sentinelEntryUrl,
   sentinelUrl,
   sentinelTimelineLink,
   sentinelClassOf,
@@ -1582,7 +1583,8 @@ assertEqual(sentinelLoginBase('https://nvr:10443'), 'https://nvr:10443/endpoint/
 assertEqual(sentinelUrl('https://x/public/', 'T', 'api/cameras'), 'https://x/public/api/cameras?token=T', 'token appended as first query param');
 assertEqual(sentinelUrl('https://x/public/', 'T', 'api/snapshot?camera=33'), 'https://x/public/api/snapshot?camera=33&token=T', 'token appended to an existing query');
 assertEqual(sentinelUrl('https://x/public/', '', 'api/cameras'), 'https://x/public/api/cameras', 'no token → no param');
-assertEqual(sentinelTimelineLink('https://nvr:10443', '33', 1700000000000.4), 'https://nvr:10443/endpoint/@local/sentinel-nvr/#/timeline/33?at=1700000000000', 'timeline deep link with rounded position');
+assertEqual(sentinelEntryUrl('https://nvr:10443'), 'https://nvr:10443/endpoint/@local/sentinel-nvr/public/', 'humans enter via the public base without a token (sign-in page / 302)');
+assertEqual(sentinelTimelineLink('https://nvr:10443', '33', 1700000000000.4), 'https://nvr:10443/endpoint/@local/sentinel-nvr/public/#/timeline/33?at=1700000000000', 'timeline deep link via the entry URL, rounded position');
 
 assertEqual(sentinelClassOf({ classes: ['car', 'person'] }), 'car', 'first class wins');
 assertEqual(sentinelClassOf({ classes: ['laptop'] }), 'motion', 'unknown class collapses to motion');

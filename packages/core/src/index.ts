@@ -215,6 +215,7 @@ export {
   parseSentinelSetup,
   sentinelPublicBase,
   sentinelLoginBase,
+  sentinelEntryUrl,
   sentinelUrl,
   sentinelTimelineLink,
   sentinelClassOf,
