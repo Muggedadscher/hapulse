@@ -35,7 +35,7 @@ export function NvrOverviewPage() {
         <div className="nvr-actions">
           {cfg && (
             <>
-              <a className="btn btn--ghost nvr-actions__btn" href={cfg.client.loginBase} target="_blank" rel="noreferrer noopener">
+              <a className="btn btn--ghost nvr-actions__btn" href={cfg.client.entryUrl} target="_blank" rel="noreferrer noopener">
                 <ExternalLink size={16} strokeWidth={1.75} />
                 <span className="nvr-actions__label">{t('nvr.open')}</span>
               </a>
