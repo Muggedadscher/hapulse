@@ -224,8 +224,8 @@ export function NvrCameraPage() {
           <Card className="nvr-stage-card">
             <div className="nvr-stage-wrap">
               <div className="nvr-stage" ref={stage}>
-                <video ref={video} playsInline autoPlay muted className="nvr-stage__video" />
-                <img ref={img} className="nvr-stage__video nvr-stage__img hidden" alt="" />
+                <video ref={video} playsInline autoPlay muted crossOrigin="anonymous" className="nvr-stage__video" />
+                <img ref={img} crossOrigin="anonymous" className="nvr-stage__video nvr-stage__img hidden" alt="" />
                 <canvas ref={freeze} className="nvr-stage__video nvr-stage__freeze hidden" />
                 {!mjpeg && (
                   <button type="button" className="nvr-mute" aria-label={t('nvr.player.sound')} aria-pressed={ps.sound} onClick={() => ctl.current?.setSound(!ps.sound)}>

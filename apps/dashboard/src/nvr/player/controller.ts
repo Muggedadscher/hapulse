@@ -4,9 +4,11 @@
  * vanilla client) with three changes for HAPulse:
  *   - the API client is injected (`SentinelClient`) — other origin, token URLs;
  *   - status labels are i18n KEYS (`nvr.player.<label>`), React translates;
- *   - the MSE paths (segment / live-fMP4 fetches) are only offered same-origin:
- *     the plugin serves media without CORS headers, so cross-origin the chain is
- *     WebRTC → MJPEG (live) and WebRTC relay → native <video src> (recorded).
+ *   - the MSE paths (segment / live-fMP4 fetches) are gated on
+ *     `SentinelClient.corsMedia` (always on since Sentinel sends CORS on media;
+ *     if it ever fails the chain degrades to MJPEG / native <video src>);
+ *   - poster images are loaded with crossOrigin="anonymous" so the freeze
+ *     canvas stays untainted (snapshot download works cross-origin).
  * Everything else (watchdog, freeze/poster rules, relay seek/rate/scrub
  * coalescing, cmdSeq guard) is kept verbatim — see Sentinel's CLAUDE.md.
  * Framework-free: it owns a <video>, a freeze <canvas> and an MJPEG <img>,
@@ -172,10 +174,10 @@ export class PlayerController {
   private posterUp(): boolean { return !this.fz.classList.contains('hidden'); }
   freezeHold(): void { if (this.freezeT) { clearTimeout(this.freezeT); this.freezeT = window.setTimeout(() => this.freezeHide(), 5000); } }
   /** Event click: the stored frame is the poster until the seek lands. */
-  posterEvent(ts: number): void { const cam = this.camId; const img = new Image(); img.onload = () => { if (this.camId !== cam) return; this.freezeFromImage(img, true, !!this.rw?.active && !!this.rw.id, 'event'); }; img.src = this.api.url(`api/evframe?camera=${encodeURIComponent(cam)}&ts=${ts}`); }
+  posterEvent(ts: number): void { const cam = this.camId; const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => { if (this.camId !== cam) return; this.freezeFromImage(img, true, !!this.rw?.active && !!this.rw.id, 'event'); }; img.src = this.api.url(`api/evframe?camera=${encodeURIComponent(cam)}&ts=${ts}`); }
   /** Camera opened: newest snapshot in front of the black stage until live plays. */
-  posterFromSnapshot(): void { const cam = this.camId; const img = new Image(); img.onload = () => { if (this.camId !== cam || this.rw?.active || this.recPaused || this.posterUp()) return; if (this.v.readyState >= 2 && this.v.videoWidth && !this.v.paused) return; this.freezeFromImage(img, true, false, 'snapshot'); }; img.src = this.api.url(`api/snapshot?camera=${encodeURIComponent(cam)}`) + `&_=${Date.now()}`; }
-  private posterShow(ts: number): void { try { if (this.posterUp()) return; if (this.v.readyState >= 2 && this.v.videoWidth) return; const i = this.clipIndexFor(ts); const c = i >= 0 ? this.clips[i] : undefined; if (!c?.thumbnailId) return; const img = new Image(); img.onload = () => { if (!this.posterUp()) this.freezeFromImage(img, true, false, 'thumb'); }; img.src = this.api.url(`api/thumb?id=${encodeURIComponent(c.thumbnailId)}`); } catch { /* ignore */ } }
+  posterFromSnapshot(): void { const cam = this.camId; const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => { if (this.camId !== cam || this.rw?.active || this.recPaused || this.posterUp()) return; if (this.v.readyState >= 2 && this.v.videoWidth && !this.v.paused) return; this.freezeFromImage(img, true, false, 'snapshot'); }; img.src = this.api.url(`api/snapshot?camera=${encodeURIComponent(cam)}`) + `&_=${Date.now()}`; }
+  private posterShow(ts: number): void { try { if (this.posterUp()) return; if (this.v.readyState >= 2 && this.v.videoWidth) return; const i = this.clipIndexFor(ts); const c = i >= 0 ? this.clips[i] : undefined; if (!c?.thumbnailId) return; const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => { if (!this.posterUp()) this.freezeFromImage(img, true, false, 'thumb'); }; img.src = this.api.url(`api/thumb?id=${encodeURIComponent(c.thumbnailId)}`); } catch { /* ignore */ } }
 
   private safePlay(): void {
     let pr: Promise<void>; try { pr = this.v.play(); } catch { return; }
