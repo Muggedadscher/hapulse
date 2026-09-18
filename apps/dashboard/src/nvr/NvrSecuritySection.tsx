@@ -11,8 +11,8 @@ import { useNavigate } from 'react-router';
 import { Cctv, ChevronRight, WifiOff } from 'lucide-react';
 import { useT } from '../i18n/useT';
 import { useNvrOverview } from './store';
-import { NvrCameraTiles } from './components/NvrCameraGrid';
-import { NvrEventsStrip } from './components/NvrEventsStrip';
+import { CameraTiles, EventsStrip } from '@sentinel-nvr/web/ui';
+import { NvrUi } from './ui';
 import { NVR_ROOT } from './paths';
 import './nvr.css';
 
@@ -47,10 +47,10 @@ export function NvrSecuritySection() {
       {status === 'error' ? (
         <p className="nvr-muted"><WifiOff size={14} strokeWidth={2} />{errorStatus === 401 ? t('nvr.error.unauthorized') : t('nvr.error.unreachable')}</p>
       ) : (
-        <>
-          <NvrCameraTiles client={cfg.client} cameras={cameras} />
-          <NvrEventsStrip client={cfg.client} events={recent.slice(0, 20)} />
-        </>
+        <NvrUi client={cfg.client}>
+          <CameraTiles cameras={cameras} />
+          <EventsStrip events={recent.slice(0, 20)} />
+        </NvrUi>
       )}
     </div>
   );

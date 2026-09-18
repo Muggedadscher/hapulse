@@ -103,6 +103,7 @@ Sentinels UI eine eigenständige App ist:
 | `apps/dashboard/src/nvr/store.ts` | Übersichts-Store + gemeinsamer Poller (`useNvrOverview`). |
 | `apps/dashboard/src/nvr/format.ts` | Intl-Formatierung (Zeit, Tag, relativ, Tage). |
 | `apps/dashboard/src/nvr/paths.ts` | Routen-Helfer. |
+| npm `@sentinel-nvr/web/ui` | React-Komponenten (Hero/Stats, Ereignisleiste, Kamerakacheln, Ereignisliste, vertikale Zeitleiste, Datumswahl), `SentinelUiProvider` (Client, `t`, Locale, Navigation), Themes und die `nvr.*`-Wörterbücher; Styles `@sentinel-nvr/web/ui/ui.css`. Host-Wrapper: `nvr/ui.tsx`. |
 | npm `@sentinel-nvr/web/player` | `PlayerController`/`WebRtcSession`/`rlog` aus dem gemeinsamen Paket (Client injiziert, Labels als i18n-Keys, `storagePrefix`/`brand` als Host-Nähte). |
 | `apps/dashboard/src/nvr/components/*` | `ClassBadge`, `NvrHero` (+`StatTile`/`CardTitle`), `NvrEventsStrip`, `NvrCameraGrid`, `NvrStatsCards`, `NvrSetup` (Karte + Modal), `VerticalTimeline` (Port), `EventList`, `DatePickerModal`. |
 | `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `NvrSecuritySection.tsx`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens; `--nvr-c-*` auf HAPulse-Semantik gemappt). |

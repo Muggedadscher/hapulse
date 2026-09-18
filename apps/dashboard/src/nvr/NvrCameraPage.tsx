@@ -26,10 +26,9 @@ import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { useT, useLocale, type TKey } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { PlayerController, type PlayerLabel, type PlayerState } from '@sentinel-nvr/web/player';
-import { VerticalTimeline, type ScrubHandlers } from './components/VerticalTimeline';
-import { EventList } from './components/EventList';
+import { VerticalTimeline, EventList, ClassBadge, classLabel, type ScrubHandlers } from '@sentinel-nvr/web/ui';
 import { DatePickerModal } from './components/DatePickerModal';
-import { ClassBadge, classLabel } from './components/ClassBadge';
+import { NvrUi, useNvrT } from './ui';
 import { fmtDay, fmtTimeSec } from './format';
 import { NVR_ROOT } from './paths';
 import './nvr.css';
@@ -52,6 +51,7 @@ const LABEL_KEYS: Record<Exclude<PlayerLabel, ''>, TKey> = {
 
 export function NvrCameraPage() {
   const t = useT();
+  const ut = useNvrT();
   const locale = useLocale();
   const navigate = useNavigate();
   const { cameraId: camId = '' } = useParams();
@@ -207,6 +207,7 @@ export function NvrCameraPage() {
   const openLink = sentinelTimelineLink(cfg.origin, camId, ps.live ? undefined : (ctl.current?.currentTs() ?? undefined));
 
   return (
+    <NvrUi client={cfg.client}>
     <div className="page nvr-page nvr-cam">
       <div className="page__header-row nvr-cam__head">
         <div className="nvr-cam__title">
@@ -267,7 +268,7 @@ export function NvrCameraPage() {
                 type="button"
                 className={'nvr-fchip' + (filterOff[k] ? ' nvr-fchip--off' : '')}
                 onClick={() => setFilterOff((f) => ({ ...f, [k]: !f[k] }))}
-                title={classLabel(t, k)}
+                title={classLabel(ut, k)}
                 aria-pressed={!filterOff[k]}
               >
                 <ClassBadge cls={k} size={18} />{present[k]}
@@ -276,13 +277,12 @@ export function NvrCameraPage() {
           </div>
           {tab === 'tl' ? (
             <VerticalTimeline
-              client={cfg.client} t={t} locale={locale}
               camId={camId} rangeStart={merged.rangeStart} rangeEnd={merged.rangeEnd} clips={merged.clips} events={merged.events} motion={merged.motion}
               live={ps.live} playhead={() => ctl.current?.currentTs() ?? null} following={() => !psRef.current.paused} filterOff={filterOff}
               onEvent={playEvent} onGoLive={goLive} scrub={scrub} onCenter={onCenter} jump={jump}
             />
           ) : (
-            <EventList client={cfg.client} camId={camId} events={merged.events} filterOff={filterOff} onPick={playEvent} />
+            <EventList camId={camId} events={merged.events} filterOff={filterOff} onPick={playEvent} />
           )}
           <div className={'nvr-datechip' + (ps.live ? '' : ' nvr-datechip--rec')}>
             <button type="button" onClick={() => void goToDay(centerDay - DAY)} disabled={centerDay - DAY < oldestAllowed} aria-label={t('nvr.date.prevDay')}><ChevronLeft size={14} /></button>
@@ -307,5 +307,6 @@ export function NvrCameraPage() {
         />
       )}
     </div>
+    </NvrUi>
   );
 }

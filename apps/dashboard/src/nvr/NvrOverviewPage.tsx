@@ -13,10 +13,8 @@ import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { useT } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { NvrSetupCard, NvrSetupModal } from './components/NvrSetup';
-import { NvrHero } from './components/NvrHero';
-import { NvrEventsStrip } from './components/NvrEventsStrip';
-import { NvrCameraGrid } from './components/NvrCameraGrid';
-import { NvrHistogramCard, NvrStorageCard } from './components/NvrStatsCards';
+import { Hero, EventsStrip, CameraGrid, HistogramCard, StorageCard } from '@sentinel-nvr/web/ui';
+import { NvrUi } from './ui';
 import './nvr.css';
 
 export function NvrOverviewPage() {
@@ -69,18 +67,20 @@ export function NvrOverviewPage() {
       ) : !stats ? (
         <EmptyState icon={<Cctv size={28} strokeWidth={1.75} />} title={t('nvr.loading')} />
       ) : (
-        <div className="nvr-layout">
-          {errorStatus != null && (
-            <p className="nvr-banner" role="status"><WifiOff size={14} strokeWidth={2} />{t('nvr.error.stale')}</p>
-          )}
-          <NvrHero cameras={cameras} stats={stats} />
-          <NvrEventsStrip client={cfg.client} events={recent} />
-          <NvrCameraGrid client={cfg.client} cameras={cameras} />
-          <div className="nvr-grid">
-            <NvrHistogramCard histogram={histogram} />
-            <NvrStorageCard stats={stats} />
+        <NvrUi client={cfg.client}>
+          <div className="nvr-layout">
+            {errorStatus != null && (
+              <p className="nvr-banner" role="status"><WifiOff size={14} strokeWidth={2} />{t('nvr.error.stale')}</p>
+            )}
+            <Hero cameras={cameras} stats={stats} />
+            <EventsStrip events={recent} />
+            <CameraGrid cameras={cameras} />
+            <div className="nvr-grid">
+              <HistogramCard histogram={histogram} />
+              <StorageCard stats={stats} />
+            </div>
           </div>
-        </div>
+        </NvrUi>
       )}
 
       <NvrSetupModal open={setupOpen} onClose={() => setSetupOpen(false)} />
