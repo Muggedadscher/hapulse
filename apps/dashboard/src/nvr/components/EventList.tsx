@@ -4,7 +4,7 @@
  */
 
 import React, { Fragment } from 'react';
-import { sentinelClassOf, type SentinelEvent } from '@hapulse/core';
+import { sentinelClassOf, type SentinelEvent } from '@sentinel-nvr/web/api';
 import type { SentinelClient } from '../api';
 import { useT, useLocale } from '../../i18n/useT';
 import { fmtDay, fmtTimeSec } from '../format';

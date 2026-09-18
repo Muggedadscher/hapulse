@@ -6,8 +6,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { sentinelEventPlayTs } from '@hapulse/core';
-import type { SentinelRecentEvent } from '@hapulse/core';
+import { sentinelEventPlayTs } from '@sentinel-nvr/web/api';
+import type { SentinelRecentEvent } from '@sentinel-nvr/web/api';
 import type { SentinelClient } from '../api';
 import { useT, useLocale } from '../../i18n/useT';
 import { fmtTime } from '../format';

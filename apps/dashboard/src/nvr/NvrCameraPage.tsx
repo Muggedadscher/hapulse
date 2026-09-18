@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 import {
   SENTINEL_DAY_MS as DAY, SENTINEL_EVENT_CLASSES, sentinelClassOf, sentinelDayOf as dayOf, sentinelEventPlayTs, sentinelMergeDays, sentinelTimelineLink,
-} from '@hapulse/core';
-import type { SentinelClip, SentinelClipsResponse, SentinelEvent, SentinelEventClass } from '@hapulse/core';
+} from '@sentinel-nvr/web/api';
+import type { SentinelClip, SentinelClipsResponse, SentinelEvent, SentinelEventClass } from '@sentinel-nvr/web/api';
 import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
 import { IconButton } from '../components/ui/IconButton';

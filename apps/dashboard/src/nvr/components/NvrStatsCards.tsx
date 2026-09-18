@@ -6,8 +6,8 @@
 
 import React from 'react';
 import { BarChart3, HardDrive } from 'lucide-react';
-import { sentinelHumanBytes, sentinelStorageForecast } from '@hapulse/core';
-import type { SentinelStats } from '@hapulse/core';
+import { sentinelHumanBytes, sentinelStorageForecast } from '@sentinel-nvr/web/api';
+import type { SentinelStats } from '@sentinel-nvr/web/api';
 import { Card } from '../../components/ui/Card';
 import { useT } from '../../i18n/useT';
 import { fmtDays } from '../format';

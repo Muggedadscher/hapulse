@@ -35,10 +35,11 @@ sauber übernehmen können.
   `Muggedadscher/sentinel-nvr`, Schnittstelle dessen `docs/API.md`) wird
   **nativ im HAPulse-Stil** gerendert — kein iframe mehr. Route `/nvr/*`
   (`pages/Nvr.tsx` = Routen-Einstieg), alles Weitere im abgegrenzten Modul
-  `apps/dashboard/src/nvr/**` (API-Client, Store, Port von Sentinels
-  `PlayerController`/`webrtc.ts`/`VerticalTimeline`, Komponenten, Seiten,
-  Home-Karte `'nvr'`, Sicherheits-Sektion `'nvr'` in `Security.tsx`, `nvr.css`) + DOM-freies `packages/core/src/sentinel.ts`
-  (getestet in `smoke.mjs`). Settings `customization.scryptedUrl` +
+  `apps/dashboard/src/nvr/**` (Store, `VerticalTimeline`, Komponenten, Seiten,
+  Home-Karte `'nvr'`, Sicherheits-Sektion `'nvr'` in `Security.tsx`, `nvr.css`).
+  Datenmodell, API-Client und Player kommen aus dem gemeinsamen npm-Paket
+  **`@sentinel-nvr/web`** (`/api`, `/player`; Repo `Muggedadscher/sentinel-nvr-web`,
+  dort getestet) — `nvr/api.ts`/`nvr/format.ts` re-exportieren nur. Settings `customization.scryptedUrl` +
   `scryptedToken` (Browser spricht den `/public/`-Endpoint direkt — HAPulse hat
   kein Backend). **Sentinel selbst nur lesend nutzen; Änderungen dort erst mit
   dem User klären.** Architektur, CORS-Regeln und die Anleitung zum kompletten

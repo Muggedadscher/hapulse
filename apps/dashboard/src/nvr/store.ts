@@ -7,7 +7,7 @@
 
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import type { SentinelCamera, SentinelRecentEvent, SentinelStats } from '@hapulse/core';
+import type { SentinelCamera, SentinelRecentEvent, SentinelStats } from '@sentinel-nvr/web/api';
 import type { SentinelClient } from './api';
 import { useNvrConfig } from './config';
 
