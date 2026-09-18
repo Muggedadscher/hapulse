@@ -365,8 +365,13 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
 
       exportSettings() {
         const { theme, mode, accentHue, customization, userName, appName, appIcon, appIconHidden, sidebarCollapsed, language, lastSeenVersion } = get();
+        // Never let connection secrets ride along in a shared/exported settings
+        // file. scryptedToken and maToken grant full access to the NVR / Music
+        // Assistant; the importer re-enters them. URLs are kept.
+        const { scryptedToken: _st, maToken: _mt, ...safeCustomization } = customization;
+        void _st; void _mt;
         return JSON.stringify(
-          { theme, mode, accentHue, customization, userName, appName, appIcon, appIconHidden, sidebarCollapsed, language, lastSeenVersion },
+          { theme, mode, accentHue, customization: safeCustomization, userName, appName, appIcon, appIconHidden, sidebarCollapsed, language, lastSeenVersion },
           null,
           2
         );

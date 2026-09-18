@@ -6,7 +6,10 @@
 .nvr-page,
 .nvr-home {
   --nvr-c-person: var(--info);
-  --nvr-c-car: var(--accent);
+  /* not var(--accent): the accent is user-controllable (accentHue) and collides
+     with --warning (package) in amber identities like sunset. A fixed warm mix
+     keeps 'car' distinct from 'package' in every identity, still theme-tuned. */
+  --nvr-c-car: color-mix(in srgb, var(--warning) 58%, var(--danger));
   --nvr-c-bike: color-mix(in srgb, var(--info) 55%, var(--danger));
   --nvr-c-animal: var(--positive);
   --nvr-c-package: var(--warning);

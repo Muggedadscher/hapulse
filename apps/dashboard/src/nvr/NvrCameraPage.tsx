@@ -132,6 +132,7 @@ export function NvrCameraPage() {
     Promise.all([ensureDay(target), ensureDay(target - DAY), target !== t0 ? ensureDay(t0) : Promise.resolve(), target === t0 ? Promise.resolve() : ensureDay(target + DAY)])
       .then(() => {
         if (c.camId !== camId || ctl.current !== c) return;
+        setLoadError(false); // a prior failure must not stick once a load succeeds
         const m = mergedRef.current; c.setClips(m.clips, m.codecs, m.rangeStart, m.rangeEnd);
         if (startAt) { c.playAt(startAt, {}); setJump({ ts: startAt, n: Date.now() }); } else c.goLive();
       })

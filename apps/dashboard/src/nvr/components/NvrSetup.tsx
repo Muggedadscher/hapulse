@@ -124,7 +124,7 @@ export function NvrSetupCard() {
       <span className="nvr-setup__icon" aria-hidden="true"><Cctv size={26} strokeWidth={1.75} /></span>
       <h2 className="nvr-setup__title">{t('nvr.setup.title')}</h2>
       <p className="nvr-setup__desc">{t('nvr.setup.desc')}</p>
-      <form className="nvr-setup__form" onSubmit={(e) => { e.preventDefault(); if (valid) save(); }}>
+      <form className="nvr-setup__form" noValidate onSubmit={(e) => { e.preventDefault(); if (valid) save(); }}>
         {fields}
         {actions}
       </form>
