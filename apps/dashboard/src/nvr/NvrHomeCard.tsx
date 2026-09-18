@@ -12,7 +12,8 @@ import { Card } from '../components/ui/Card';
 import { useT, useLocale } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { fmtTime, fmtRelative } from './format';
-import { EventBadges, eventLabel } from './components/ClassBadge';
+import { EventBadges, eventLabel } from '@sentinel-nvr/web/ui';
+import { useNvrT } from './ui';
 import { cameraPath, NVR_ROOT } from './paths';
 import './nvr.css';
 
@@ -21,6 +22,7 @@ const MAX_EVENTS = 4;
 
 export function NvrHomeCard() {
   const t = useT();
+  const ut = useNvrT();
   const locale = useLocale();
   const navigate = useNavigate();
   const { cfg, status, cameras, recent, stats, errorStatus } = useNvrOverview(15_000);
@@ -79,7 +81,7 @@ export function NvrHomeCard() {
                   <button type="button" className="nvr-home__ev" onClick={() => navigate(cameraPath(e.camera, sentinelEventPlayTs(e), e.ts))}>
                     <img className="nvr-home__ev-img" src={client.eventThumbUrl(e.camera, e.ts)} alt="" loading="lazy" />
                     <span className="nvr-home__ev-text">
-                      <span className="nvr-home__ev-cls"><EventBadges ev={e} size={16} t={t} /> {eventLabel(t, e)}</span>
+                      <span className="nvr-home__ev-cls"><EventBadges ev={e} size={16} t={ut} /> {eventLabel(ut, e)}</span>
                       <span className="nvr-home__ev-sub">{e.cameraName} · {fmtRelative(e.ts, t)}</span>
                     </span>
                     <span className="nvr-home__ev-time data-font">{fmtTime(e.ts, locale)}</span>
