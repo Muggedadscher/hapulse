@@ -97,13 +97,13 @@ Sentinels UI eine eigenständige App ist:
 
 | Datei | Zweck |
 |---|---|
-| `packages/core/src/sentinel.ts` | DOM-freies Datenmodell (Typen aus `API.md`), `parseSentinelSetup`, URL-Helfer, Ereignisklassen, `sentinelEventPlayTs`, `sentinelStorageForecast`, `sentinelClipRuns`, `sentinelMergeDays` — getestet in `packages/core/scripts/smoke.mjs` („sentinel nvr"). |
+| npm `@sentinel-nvr/web/api` | DOM-freies Datenmodell (Typen aus `API.md`), `parseSentinelSetup`, URL-Helfer, Ereignisklassen, `sentinelEventPlayTs`, `sentinelStorageForecast`, `sentinelClipRuns`, `sentinelMergeDays`, Intl-Formatierer und der `SentinelClient` — gemeinsames Paket (Repo `Muggedadscher/sentinel-nvr-web`, dort getestet). `nvr/api.ts`/`nvr/format.ts` re-exportieren nur. |
 | `apps/dashboard/src/nvr/api.ts` | `SentinelClient` (URLs mit Token, JSON mit 10-s-Timeout, `control()` für die 204-Endpunkte, Signaling-URL, Medien-URL-Helfer). |
 | `apps/dashboard/src/nvr/config.ts` | Verbindung aus den Settings ableiten (`useNvrConfig`, `getNvrConfig`). |
 | `apps/dashboard/src/nvr/store.ts` | Übersichts-Store + gemeinsamer Poller (`useNvrOverview`). |
 | `apps/dashboard/src/nvr/format.ts` | Intl-Formatierung (Zeit, Tag, relativ, Tage). |
 | `apps/dashboard/src/nvr/paths.ts` | Routen-Helfer. |
-| `apps/dashboard/src/nvr/player/{controller,webrtc,rlog}.ts` | Port von Sentinels `ui/src/player/*` (Client injiziert, Labels als i18n-Keys, Poster mit `crossOrigin`). |
+| npm `@sentinel-nvr/web/player` | `PlayerController`/`WebRtcSession`/`rlog` aus dem gemeinsamen Paket (Client injiziert, Labels als i18n-Keys, `storagePrefix`/`brand` als Host-Nähte). |
 | `apps/dashboard/src/nvr/components/*` | `ClassBadge`, `NvrHero` (+`StatTile`/`CardTitle`), `NvrEventsStrip`, `NvrCameraGrid`, `NvrStatsCards`, `NvrSetup` (Karte + Modal), `VerticalTimeline` (Port), `EventList`, `DatePickerModal`. |
 | `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `NvrSecuritySection.tsx`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens; `--nvr-c-*` auf HAPulse-Semantik gemappt). |
 | `apps/dashboard/src/pages/Nvr.tsx` | Routen-Einstieg `/nvr/*` (Fork-Datei, war vorher die iframe-Seite). |
@@ -125,7 +125,7 @@ Sentinels UI eine eigenständige App ist:
 ## Rausnehmen (komplett)
 
 ```bash
-git rm -r apps/dashboard/src/nvr apps/dashboard/src/pages/Nvr.tsx packages/core/src/sentinel.ts docs/NVR-INTEGRATION.md
+git rm -r apps/dashboard/src/nvr apps/dashboard/src/pages/Nvr.tsx docs/NVR-INTEGRATION.md   # + Dependency @sentinel-nvr/web aus apps/dashboard/package.json
 git grep -n "\[fork\]" -- apps/dashboard/src/pages/Home.tsx apps/dashboard/src/pages/Security.tsx apps/dashboard/src/app/Router.tsx \
   apps/dashboard/src/app/AppLayout.tsx apps/dashboard/src/stores/settingsStore.ts \
   packages/core/src/index.ts packages/core/scripts/smoke.mjs   # NVR-Zeilen entfernen
@@ -139,7 +139,7 @@ verwirft unbekannte Keys nicht, sie bleiben schlicht ungenutzt).
 
 **Neu integrieren** = dieses Verzeichnis-Layout wieder anlegen; die
 Schnittstelle bleibt `API.md`. Bei API-Änderungen in Sentinel zuerst
-`packages/core/src/sentinel.ts` (Typen) und `nvr/api.ts` (Routen) anpassen.
+das Paket `@sentinel-nvr/web` (Typen + Client) versionieren und die Dependency anheben.
 
 ## Prüfen
 

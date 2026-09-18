@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Cctv, Check, KeyRound, Link2, RefreshCw } from 'lucide-react';
-import { parseSentinelSetup } from '@hapulse/core';
+import { parseSentinelSetup } from '@sentinel-nvr/web/api';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { Card } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';

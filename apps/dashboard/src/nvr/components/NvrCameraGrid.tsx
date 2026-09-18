@@ -8,7 +8,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Camera, WifiOff } from 'lucide-react';
-import type { SentinelCamera } from '@hapulse/core';
+import type { SentinelCamera } from '@sentinel-nvr/web/api';
 import type { SentinelClient } from '../api';
 import { Card } from '../../components/ui/Card';
 import { useT } from '../../i18n/useT';

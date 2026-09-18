@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   SENTINEL_DAY_MS as DAY, sentinelClassOf as classOf, sentinelClipRuns, sentinelEventPlayTs as eventPlayTs,
   type SentinelClip as Clip, type SentinelEvent as NvrEvent,
-} from '@hapulse/core';
+} from '@sentinel-nvr/web/api';
 import type { Locale } from '@hapulse/core';
 import type { SentinelClient } from '../api';
 import type { TFunction } from '../../i18n/useT';

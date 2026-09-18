@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { User, Car, Bike, PawPrint, Package, Activity } from 'lucide-react';
-import { sentinelClassesOf, type SentinelEventClass } from '@hapulse/core';
+import { sentinelClassesOf, type SentinelEventClass } from '@sentinel-nvr/web/api';
 import type { TFunction, TKey } from '../../i18n/useT';
 
 const ICONS: Record<SentinelEventClass, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {

@@ -100,20 +100,6 @@ import {
   parseWasteSensor,
   wasteTypeName,
   parseWasteDate,
-  parseSentinelSetup,
-  sentinelPublicBase,
-  sentinelLoginBase,
-  sentinelEntryUrl,
-  sentinelUrl,
-  sentinelTimelineLink,
-  sentinelClassOf,
-  sentinelClassesOf,
-  sentinelEventPlayTs,
-  sentinelStorageForecast,
-  sentinelClipRuns,
-  sentinelClipIndexFor,
-  sentinelMergeDays,
-  sentinelHumanBytes,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1565,66 +1551,3 @@ const strDaysTo = makeEntity('sensor.biotonne', 'Biotonne in 3 days',
 const strBins = detectWasteBins({ 'sensor.biotonne': strDaysTo });
 assertEqual(strBins.length, 1, 'a numeric-string daysTo sensor is a bin');
 assertEqual(strBins[0].daysTo, 3, 'numeric-string daysTo is parsed to a number');
-
-// ---------------------------------------------------------------------------
-// [fork] Sentinel NVR — setup parsing, event classes, storage forecast, timeline runs
-// ---------------------------------------------------------------------------
-console.log('\n── sentinel nvr ──');
-
-assertEqual(parseSentinelSetup('192.168.2.120:10443')?.origin, 'https://192.168.2.120:10443', 'bare host gets https and keeps the port');
-assertEqual(parseSentinelSetup('https://192.168.2.120:10443/')?.token, null, 'root URL has no token');
-const embed = parseSentinelSetup('https://192.168.2.120:10443/endpoint/@local/sentinel-nvr/public/?token=c0a4ff&embed=1');
-assertEqual(embed?.origin, 'https://192.168.2.120:10443', 'embed URL collapses to the Scrypted origin');
-assertEqual(embed?.token, 'c0a4ff', 'embed URL yields its token');
-assertEqual(parseSentinelSetup('   '), null, 'blank input is rejected');
-assertEqual(parseSentinelSetup('http://'), null, 'scheme without host is rejected');
-assertEqual(sentinelPublicBase('https://nvr:10443/'), 'https://nvr:10443/endpoint/@local/sentinel-nvr/public/', 'public base below the plugin endpoint');
-assertEqual(sentinelLoginBase('https://nvr:10443'), 'https://nvr:10443/endpoint/@local/sentinel-nvr/', 'login base below the plugin endpoint');
-assertEqual(sentinelUrl('https://x/public/', 'T', 'api/cameras'), 'https://x/public/api/cameras?token=T', 'token appended as first query param');
-assertEqual(sentinelUrl('https://x/public/', 'T', 'api/snapshot?camera=33'), 'https://x/public/api/snapshot?camera=33&token=T', 'token appended to an existing query');
-assertEqual(sentinelUrl('https://x/public/', '', 'api/cameras'), 'https://x/public/api/cameras', 'no token → no param');
-assertEqual(sentinelEntryUrl('https://nvr:10443'), 'https://nvr:10443/endpoint/@local/sentinel-nvr/public/', 'humans enter via the public base without a token (sign-in page / 302)');
-assertEqual(sentinelTimelineLink('https://nvr:10443', '33', 1700000000000.4), 'https://nvr:10443/endpoint/@local/sentinel-nvr/public/#/timeline/33?at=1700000000000', 'timeline deep link via the entry URL, rounded position');
-
-assertEqual(sentinelClassOf({ classes: ['car', 'person'] }), 'car', 'first class wins');
-assertEqual(sentinelClassOf({ classes: ['laptop'] }), 'motion', 'unknown class collapses to motion');
-assertEqual(sentinelClassOf({ classes: [] }), 'motion', 'no classes → motion');
-assertEqual(sentinelClassesOf({ classes: ['car', 'person', 'car', 'laptop'] }).join(','), 'car,person,motion', 'distinct known classes in order');
-assertEqual(sentinelClassesOf({ classes: [] }).join(','), 'motion', 'badge list never empty');
-assertEqual(sentinelEventPlayTs({ timestamp: 10000, startTs: 8000 }), 6000, 'playback 2 s before first sighting');
-assertEqual(sentinelEventPlayTs({ ts: 10000 }), 7000, 'playback 3 s before the trigger without startTs');
-
-const DAY_MS = 86400000;
-const now = 1_800_000_000_000;
-const stats = { cameras: 1, recording: 1, eventsToday: 3, segments: 887, bytes: 8_000_000_000, earliest: now - 4 * DAY_MS, retentionDays: 14, diskFree: 7_000_000_000, diskTotal: 21_000_000_000, minFreeBytes: 7_000_000_000 };
-const fc = sentinelStorageForecast(stats, now);
-assertEqual(Math.round(fc.spanDays), 4, 'span = earliest → now in days');
-assertEqual(fc.ratePerDay, 2_000_000_000, 'rate = bytes / span');
-assertEqual(fc.usableFree, 0, 'free at the reserve → nothing usable');
-assertEqual(fc.capacity, 8_000_000_000, 'capacity = archive + usable free');
-assertEqual(fc.fitsDays, 4, 'fits = capacity / rate');
-assertEqual(fc.steady, true, 'at the reserve the disk is in steady state');
-assertEqual(fc.status, 'unreachable', '4 days fit < 95 % of the 14-day target');
-const roomy = sentinelStorageForecast({ ...stats, diskTotal: 200_000_000_000, diskFree: 150_000_000_000 }, now);
-assertEqual(roomy.status, 'filling', 'plenty of room and archive younger than the target → filling');
-assertEqual(Math.round(roomy.fillsInDays), 72, 'fills in = usable free / rate');
-assertEqual(sentinelStorageForecast({ ...stats, earliest: undefined }, now).status, 'unknown', 'no archive → unknown');
-assertEqual(sentinelStorageForecast({ ...stats, earliest: now - 20 * DAY_MS, diskTotal: 200_000_000_000, diskFree: 150_000_000_000 }, now).status, 'reachable', 'archive older than the target with room → reachable');
-
-const clips = [
-  { id: 'a', startTime: 0, duration: 60000 },
-  { id: 'b', startTime: 60000, duration: 60000 },
-  { id: 'c', startTime: 125000, duration: 60000 },
-];
-const runs = sentinelClipRuns(clips);
-assertEqual(runs.length, 2, 'a 5-s gap splits the band; the 0-s gap does not');
-assertEqual(runs[0].e, 120000, 'first run spans both contiguous segments');
-assertEqual(sentinelClipIndexFor(clips, 130000), 2, 'clip index by timestamp');
-assertEqual(sentinelClipIndexFor(clips, 122000), -1, 'no clip inside a gap');
-const merged = sentinelMergeDays({ [DAY_MS]: { clips: [{ id: 'y', startTime: DAY_MS + 5 }], events: [{ id: 'e2', timestamp: DAY_MS + 9, classes: [], score: 0, source: 'motion' }], motion: [[1, 2]], codecs: 'v' }, [0]: { clips: [{ id: 'x', startTime: 1 }], events: [{ id: 'e1', timestamp: 3, classes: [], score: 0, source: 'motion' }], motion: [] } });
-assertEqual(merged.clips.map((c) => c.id).join(','), 'x,y', 'clips sorted across days');
-assertEqual(merged.events.map((e) => e.id).join(','), 'e1,e2', 'events sorted across days');
-assertEqual(merged.codecs, 'v', 'codec string carried over');
-assertEqual(merged.oldestDay, 0, 'oldest loaded day');
-assertEqual(sentinelHumanBytes(8_303_816_824).value + ' ' + sentinelHumanBytes(8_303_816_824).unit, '7.7 GB', 'binary byte formatting');
-assertEqual(sentinelHumanBytes(0).unit, 'B', 'zero bytes');

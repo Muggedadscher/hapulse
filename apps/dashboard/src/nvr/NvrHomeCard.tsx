@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Cctv, ChevronRight, Camera, WifiOff } from 'lucide-react';
-import { sentinelEventPlayTs } from '@hapulse/core';
+import { sentinelEventPlayTs } from '@sentinel-nvr/web/api';
 import { Card } from '../components/ui/Card';
 import { useT, useLocale } from '../i18n/useT';
 import { useNvrOverview } from './store';

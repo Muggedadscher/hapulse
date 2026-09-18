@@ -6,8 +6,8 @@
 
 import React from 'react';
 import { Cctv, Video, Database, Clock, Zap, Gauge } from 'lucide-react';
-import { sentinelHumanBytes, sentinelStorageForecast } from '@hapulse/core';
-import type { SentinelCamera, SentinelStats } from '@hapulse/core';
+import { sentinelHumanBytes, sentinelStorageForecast } from '@sentinel-nvr/web/api';
+import type { SentinelCamera, SentinelStats } from '@sentinel-nvr/web/api';
 import { Card } from '../../components/ui/Card';
 import { useT } from '../../i18n/useT';
 import { fmtDays } from '../format';
