@@ -15,7 +15,7 @@ import type { SentinelClient } from '../api';
 import type { TFunction } from '../../i18n/useT';
 import { fmtDay as dayLabel, fmtTime, fmtTimeSec } from '../format';
 import { EventBadges, classLabel } from './ClassBadge';
-import { rlog } from '../player/rlog';
+import { rlog } from '@sentinel-nvr/web/player';
 
 export interface ScrubHandlers {
   /** first touch/wheel of a gesture (freeze, scrub profile on) */

@@ -25,7 +25,7 @@ import { IconButton } from '../components/ui/IconButton';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { useT, useLocale, type TKey } from '../i18n/useT';
 import { useNvrOverview } from './store';
-import { PlayerController, type PlayerLabel, type PlayerState } from './player/controller';
+import { PlayerController, type PlayerLabel, type PlayerState } from '@sentinel-nvr/web/player';
 import { VerticalTimeline, type ScrubHandlers } from './components/VerticalTimeline';
 import { EventList } from './components/EventList';
 import { DatePickerModal } from './components/DatePickerModal';
@@ -114,6 +114,8 @@ export function NvrCameraPage() {
     const c = new PlayerController(client, {
       onState: (s) => setPs(s),
       onClipsRefresh: async (): Promise<SentinelClip[]> => { await ensureDay(todayStart(), true); return mergedRef.current.clips; },
+      storagePrefix: 'hapulse-nvr-ar-', // keep the aspect cache key this install already uses
+      brand: 'hapulse',                 // telemetry lines stay distinguishable from Sentinel's own UI
     });
     c.attach({ video: video.current!, freeze: freeze.current!, img: img.current!, stage: stage.current! });
     ctl.current = c;
