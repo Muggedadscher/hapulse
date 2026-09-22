@@ -1,0 +1,31 @@
+{
+  "name": "HAPulse",
+  "short_name": "HAPulse",
+  "description": "Your Home Assistant, beautifully simplified.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#161310",
+  "theme_color": "#161310",
+  "icons": [
+    {
+      "src": "/icons/star-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/star-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/star.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
