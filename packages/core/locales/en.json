@@ -1174,5 +1174,14 @@
   "security.section.hide.nvr": "hide Sentinel NVR",
   "security.section.show.nvr": "show Sentinel NVR",
   "security.section.hideMobile.nvr": "hide Sentinel NVR on mobile",
-  "security.section.showMobile.nvr": "show Sentinel NVR on mobile"
+  "security.section.showMobile.nvr": "show Sentinel NVR on mobile",
+  "nvr.setup.authToken": "Access token",
+  "nvr.setup.authLogin": "Scrypted account",
+  "nvr.setup.userLabel": "Username",
+  "nvr.setup.passwordLabel": "Password",
+  "nvr.setup.loginFailed": "Sign-in refused (401) — check username and password",
+  "nvr.setup.loginDisabled": "Token access is switched off in the plugin (403)",
+  "nvr.setup.loginOld": "This Sentinel has no sign-in exchange yet (404) — update the plugin or enter the token",
+  "nvr.setup.loginBusy": "Too many attempts — wait a moment (429)",
+  "nvr.setup.loginHint": "Sign in with your Scrypted account; HAPulse fetches the access token itself. The password is not stored."
 }
