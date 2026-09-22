@@ -161,6 +161,8 @@ export interface CustomizationSettings {
    * exactly once — a later manual move is preserved.
    */
   wasteSectionMigrated: boolean;
+  /** [fork] Same one-time placement for the Sentinel NVR home card (after Waste/Security). */
+  nvrSectionMigrated: boolean;
 }
 
 /**
@@ -194,6 +196,22 @@ function migrateWasteSection(cust: CustomizationSettings): CustomizationSettings
     ];
   }
   return { ...cust, homeSectionOrder, wasteSectionMigrated: true };
+}
+
+/**
+ * [fork] Same for the Sentinel NVR home card: an install with an explicit
+ * `homeSectionOrder` from before the card existed would otherwise append it LAST
+ * (below Rooms, especially visible on mobile). Place it right after Waste/Security once.
+ */
+function migrateNvrSection(cust: CustomizationSettings): CustomizationSettings {
+  if (cust.nvrSectionMigrated) return cust;
+  let homeSectionOrder = cust.homeSectionOrder;
+  if (homeSectionOrder.length > 0 && !homeSectionOrder.includes('nvr')) {
+    const anchor = Math.max(homeSectionOrder.indexOf('waste'), homeSectionOrder.indexOf('security'));
+    const insertAt = anchor >= 0 ? anchor + 1 : homeSectionOrder.length;
+    homeSectionOrder = [...homeSectionOrder.slice(0, insertAt), 'nvr', ...homeSectionOrder.slice(insertAt)];
+  }
+  return { ...cust, homeSectionOrder, nvrSectionMigrated: true };
 }
 
 interface SettingsState {
@@ -297,6 +315,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   detailHistoryRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
   wasteSectionMigrated: false, // [fork]
+  nvrSectionMigrated: false, // [fork]
   libraryPlayerId: null,
   maServerUrl: null,
   maToken: null,
@@ -435,14 +454,14 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: migrateWasteSection(migratePoolChip({
+            customization: migrateNvrSection(migrateWasteSection(migratePoolChip({
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
               scryptedToken,
               maToken,
               entityOrder,
               favorites,
-            })),
+            }))),
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -486,10 +505,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenVersion,
           theme: migrated?.theme ?? current.theme,
           mode,
-          customization: migrateWasteSection(migratePoolChip({
+          customization: migrateNvrSection(migrateWasteSection(migratePoolChip({
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),
-          })),
+          }))),
         };
       },
     }
