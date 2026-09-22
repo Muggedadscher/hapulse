@@ -10,9 +10,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="HAPulse" />
 
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="apple-touch-icon" href="/icon.svg" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- [fork] app icon set per selectable symbol (public/icons, gen-app-icons.mjs); the chosen symbol is
+         swapped in at runtime (syncAppIcon). iOS needs a PNG apple-touch-icon — it ignores SVG. -->
+    <link rel="icon" type="image/svg+xml" href="/icons/pulse.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/pulse-180.png" />
+    <link rel="manifest" href="/icons/pulse.webmanifest" />
 
     <title>HAPulse</title>
   </head>

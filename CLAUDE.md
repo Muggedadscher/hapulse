@@ -47,6 +47,13 @@ sauber übernehmen können.
   kein Backend). **Sentinel selbst nur lesend nutzen; Änderungen dort erst mit
   dem User klären.** Architektur, CORS-Regeln und die Anleitung zum kompletten
   Rausnehmen/Neu-Integrieren: **`docs/NVR-INTEGRATION.md`**.
+- **App-Icons / PWA**: das in Settings gewählte „Symbol" steuert auch Favicon,
+  iOS-Touch-Icon und Web-App-Manifest (`app/appIcon.ts` → `syncAppIcon`, in
+  `DashboardApp` neben dem Titel-Sync). Je Symbol liegt ein Satz unter
+  `apps/dashboard/public/icons/<id>.{svg,webmanifest}` + `<id>-{180,192,512}.png`;
+  erzeugt mit `apps/dashboard/scripts/gen-app-icons.mjs` (Lucide-Glyphen wie
+  `PulseLogo`) und `render-app-icons.sh` (Chromium headless), Ergebnisse sind
+  eingecheckt. Neues Symbol in `APP_ICON_ALTERNATES` → beide Skripte erneut laufen lassen.
 - **Pool-Seite**: native Poolpumpen-Steuerung im HAPulse-Stil (ersetzt das
   Lovelace-`dashboard-pool`). Route `/pool`, `apps/dashboard/src/pages/Pool.{tsx,css}`,
   Karten unter `apps/dashboard/src/components/pool/*`, Entity-Wiring in

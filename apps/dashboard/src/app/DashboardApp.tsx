@@ -13,6 +13,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { applyTheme, watchSystemMode } from '../theme/themes';
+import { syncAppIcon } from './appIcon'; // [fork]
 import { useSettingsStore } from '../stores/settingsStore';
 import { useConnectionStore, hasResumableConnection } from '../stores/connectionStore';
 import { AppRouter } from './Router';
@@ -64,11 +65,13 @@ export function DashboardApp({ basename, accountMenu, demo = false }: DashboardA
     const s = useSettingsStore.getState();
     applyTheme(s.theme, s.mode, s.accentHue);
     document.title = s.appName || 'HAPulse';
+    syncAppIcon(s.appIcon, s.appIconHidden); // [fork]
 
     // Keep the DOM in sync with future settings changes.
     useSettingsStore.subscribe((state) => {
       applyTheme(state.theme, state.mode, state.accentHue);
       document.title = state.appName || 'HAPulse';
+      syncAppIcon(state.appIcon, state.appIconHidden); // [fork]
     });
 
     // Keep the DOM in sync with OS color-scheme changes (auto mode).
