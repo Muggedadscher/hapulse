@@ -1,195 +1,37 @@
 /**
- * [fork] Camera timeline page (`/nvr/:cameraId`) — port of Sentinel NVR's
- * `Timeline.tsx` into HAPulse: stage left (video, control pill, mute FAB,
- * info bar with snapshot / PiP / fullscreen), vertical multi-day timeline +
- * events list right (stacked on mobile). Days are loaded on demand around the
- * view centre and merged into ONE continuous range; the PlayerController owns
- * every playback decision (live → relay → fallbacks).
+ * [fork] Camera timeline page (`/nvr/:cameraId`) — the shared `CameraPage` from
+ * @sentinel-nvr/web/ui (ONE implementation for HAPulse and the plugin's own UI).
+ * This host adds routing, the header row (back + name, "open in Sentinel",
+ * page actions) and its Modal around the date picker.
  *
  * Deep link: `?at=<ms>&ev=<eventTs>` (from the events strip / Home card)
  * starts playback at `at` with the event frame as poster.
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
-import {
-  Calendar, Camera, ChevronLeft, ChevronRight, ExternalLink, FastForward, Maximize2, Pause, PictureInPicture2, Play, Rewind, Volume2, VolumeX,
-} from 'lucide-react';
-import {
-  SENTINEL_DAY_MS as DAY, SENTINEL_EVENT_CLASSES, sentinelClassOf, sentinelDayOf as dayOf, sentinelEventPlayTs, sentinelMergeDays, sentinelTimelineLink,
-} from '@sentinel-nvr/web/api';
-import type { SentinelClip, SentinelClipsResponse, SentinelEvent, SentinelEventClass } from '@sentinel-nvr/web/api';
-import { Card } from '../components/ui/Card';
+import { ExternalLink } from 'lucide-react';
+import { sentinelTimelineLink } from '@sentinel-nvr/web/api';
+import { CameraPage, CameraTitle } from '@sentinel-nvr/web/ui';
 import { EmptyState } from '../components/ui/EmptyState';
-import { IconButton } from '../components/ui/IconButton';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
-import { useT, useLocale, type TKey } from '../i18n/useT';
+import { useT } from '../i18n/useT';
 import { useNvrOverview } from './store';
-import { PlayerController, type PlayerLabel, type PlayerState } from '@sentinel-nvr/web/player';
-import { VerticalTimeline, EventList, ClassBadge, classLabel, type ScrubHandlers } from '@sentinel-nvr/web/ui';
 import { DatePickerModal } from './components/DatePickerModal';
-import { NvrUi, useNvrT } from './ui';
-import { fmtDay, fmtTimeSec } from './format';
+import { NvrUi } from './ui';
 import { NVR_ROOT } from './paths';
 import './nvr.css';
 
-const IDLE: PlayerState = { live: true, label: 'live', playhead: null, rate: 1, sound: false, paused: false, transport: 'none', muted: true };
-const todayStart = () => dayOf(Date.now());
-type Days = Record<number, SentinelClipsResponse>;
-
-const LABEL_KEYS: Record<Exclude<PlayerLabel, ''>, TKey> = {
-  live: 'nvr.player.live',
-  liveWebrtc: 'nvr.player.liveWebrtc',
-  liveMse: 'nvr.player.liveMse',
-  liveMjpeg: 'nvr.player.liveMjpeg',
-  loading: 'nvr.player.loading',
-  playing: 'nvr.player.playing',
-  paused: 'nvr.player.paused',
-  scrub: 'nvr.player.scrub',
-  noRecording: 'nvr.player.noRecording',
-};
-
 export function NvrCameraPage() {
   const t = useT();
-  const ut = useNvrT();
-  const locale = useLocale();
   const navigate = useNavigate();
   const { cameraId: camId = '' } = useParams();
   const [q] = useSearchParams();
   const { cfg, cameras, stats } = useNvrOverview(30_000);
-  const client = cfg?.client ?? null;
   const cam = cameras.find((c) => c.id === camId);
-  const earliest = stats?.earliest;
   const name = cam?.name || camId;
   const startAt = q.get('at') ? Number(q.get('at')) : 0;
   const posterTs = q.get('ev') ? Number(q.get('ev')) : 0;
-
-  const [days, setDays] = useState<Days>({});
-  const [nowTick, setNowTick] = useState(Date.now());
-  useEffect(() => { const i = setInterval(() => setNowTick(Date.now()), 30000); return () => clearInterval(i); }, []);
-  const [centerDay, setCenterDay] = useState(todayStart());
-  const [jump, setJump] = useState<{ ts: number; n: number } | null>(null);
-  const [tab, setTab] = useState<'tl' | 'ev'>('tl');
-  const [filterOff, setFilterOff] = useState<Record<string, boolean>>({});
-  const [ps, setPs] = useState<PlayerState>(IDLE);
-  const [loadError, setLoadError] = useState(false);
-  const [dt, setDt] = useState(false);
-  const stage = useRef<HTMLDivElement>(null); const video = useRef<HTMLVideoElement>(null); const freeze = useRef<HTMLCanvasElement>(null); const img = useRef<HTMLImageElement>(null);
-  const ctl = useRef<PlayerController | null>(null);
-  const psRef = useRef(ps); psRef.current = ps;
-  const loading = useRef(new Set<number>()); const daysRef = useRef(days); daysRef.current = days;
-  const camRef = useRef(camId); camRef.current = camId;
-
-  // ---- data: one request per day, merged into a continuous range
-  const merged = useMemo(() => {
-    const m = sentinelMergeDays(days);
-    const rangeStart = m.oldestDay ?? todayStart();
-    // a little headroom above LIVE, not the whole rest of the day (moves with the clock)
-    const rangeEnd = Math.min(todayStart() + DAY, nowTick + 20 * 60000);
-    return { ...m, rangeStart, rangeEnd };
-  }, [days, nowTick]);
-  const mergedRef = useRef(merged); mergedRef.current = merged;
-  useEffect(() => { ctl.current?.setClips(merged.clips, merged.codecs, merged.rangeStart, merged.rangeEnd); }, [merged]);
-
-  const fetchDay = useCallback(async (ds: number): Promise<SentinelClipsResponse> => {
-    if (!client) throw new Error('no client');
-    const d = await client.getJson<SentinelClipsResponse>(`api/clips?camera=${encodeURIComponent(camId)}&start=${ds}&end=${ds + DAY}`);
-    d.clips = (d.clips || []).sort((a, b) => a.startTime - b.startTime); d.events = d.events || []; d.motion = d.motion || [];
-    return d;
-  }, [client, camId]);
-  /** load a day once (retention floor: nothing older than the oldest recording); `force` = refresh (today while live) */
-  const ensureDay = useCallback(async (ds: number, force = false): Promise<void> => {
-    if (ds > todayStart()) return;
-    if (earliest && ds + DAY < dayOf(earliest)) return;
-    if (!force && (daysRef.current[ds] || loading.current.has(ds))) return;
-    loading.current.add(ds);
-    try { const d = await fetchDay(ds); if (camRef.current !== camId) return; setDays((prev) => ({ ...prev, [ds]: d })); }
-    finally { loading.current.delete(ds); }
-  }, [fetchDay, earliest, camId]);
-  const onCenter = useCallback((ts: number) => { const d = dayOf(ts); setCenterDay(d); void ensureDay(d); void ensureDay(d - DAY); void ensureDay(d + DAY); }, [ensureDay]);
-
-  // ---- controller: one per mounted page (re-created when the connection changes)
-  useEffect(() => {
-    if (!client) return;
-    const c = new PlayerController(client, {
-      onState: (s) => setPs(s),
-      onClipsRefresh: async (): Promise<SentinelClip[]> => { await ensureDay(todayStart(), true); return mergedRef.current.clips; },
-      storagePrefix: 'hapulse-nvr-ar-', // keep the aspect cache key this install already uses
-      brand: 'hapulse',                 // telemetry lines stay distinguishable from Sentinel's own UI
-    });
-    c.attach({ video: video.current!, freeze: freeze.current!, img: img.current!, stage: stage.current! });
-    ctl.current = c;
-    (window as unknown as { __snvr?: unknown }).__snvr = { ctl: c, state: () => psRef.current };
-    return () => { c.destroy(); ctl.current = null; delete (window as unknown as { __snvr?: unknown }).__snvr; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client]);
-
-  // open camera (deep link: ?at=<ts>&ev=<eventTs> from the overview strip)
-  useEffect(() => {
-    const c = ctl.current; if (!c || !camId) return;
-    c.setCamera(camId, name);
-    setDays({}); daysRef.current = {}; setFilterOff({}); setTab('tl'); setLoadError(false); loading.current.clear();
-    if (startAt) c.posterEvent(posterTs || startAt); else c.posterFromSnapshot();
-    const t0 = todayStart(); const target = startAt ? dayOf(startAt) : t0;
-    Promise.all([ensureDay(target), ensureDay(target - DAY), target !== t0 ? ensureDay(t0) : Promise.resolve(), target === t0 ? Promise.resolve() : ensureDay(target + DAY)])
-      .then(() => {
-        if (c.camId !== camId || ctl.current !== c) return;
-        setLoadError(false); // a prior failure must not stick once a load succeeds
-        const m = mergedRef.current; c.setClips(m.clips, m.codecs, m.rangeStart, m.rangeEnd);
-        if (startAt) { c.playAt(startAt, {}); setJump({ ts: startAt, n: Date.now() }); } else c.goLive();
-      })
-      .catch(() => setLoadError(true));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camId, client]);
-  useEffect(() => { if (ctl.current && cam?.name) ctl.current.camName = cam.name; }, [cam?.name]);
-  // today upkeep: fresh clips/events/motion while live (no seek, no stage reset)
-  useEffect(() => { const i = setInterval(() => { if (psRef.current.live) ensureDay(todayStart(), true).catch(() => { /* keep */ }); }, 15000); return () => clearInterval(i); }, [ensureDay]);
-
-  const present = useMemo(() => { const m: Partial<Record<SentinelEventClass, number>> = {}; for (const e of merged.events) { const k = sentinelClassOf(e); m[k] = (m[k] ?? 0) + 1; } return m; }, [merged.events]);
-  const visEvents = useMemo(() => merged.events.filter((e) => !filterOff[sentinelClassOf(e)]), [merged.events, filterOff]);
-  const goLive = useCallback(() => { ctl.current?.goLive(); setJump({ ts: Date.now(), n: Date.now() }); }, []);
-  const playEvent = useCallback((ev: SentinelEvent) => { const c = ctl.current; if (!c) return; setTab('tl'); c.posterEvent(ev.timestamp); c.playAt(sentinelEventPlayTs(ev), {}); }, []);
-  const jumpEvent = useCallback((dir: 1 | -1) => {
-    const c = ctl.current; if (!c) return; const ts = c.currentTs() ?? Date.now();
-    let best: SentinelEvent | undefined;
-    if (dir > 0) best = visEvents.find((e) => e.timestamp > ts + 500);
-    else { for (let i = visEvents.length - 1; i >= 0; i--) { const e = visEvents[i]!; if (e.timestamp < ts - 500) { best = e; break; } } }
-    if (best) playEvent(best);
-  }, [visEvents, playEvent]);
-  /** go to a day (chip arrows / picker): load it, then play from `at` (or the first recording at/after it, else the last one of that day) */
-  const goToDay = useCallback(async (ds: number, at?: number) => {
-    const c = ctl.current; if (!c) return;
-    await Promise.all([ensureDay(ds), ensureDay(ds - DAY), ensureDay(ds + DAY)]);
-    if (camRef.current !== camId) return;
-    if (ds === todayStart() && at == null) { goLive(); return; }
-    const want = at ?? ds + DAY / 2;
-    if (want > Date.now()) { goLive(); return; }
-    const m = mergedRef.current; c.setClips(m.clips, m.codecs, m.rangeStart, m.rangeEnd);
-    const inDay = m.clips.filter((x) => x.startTime >= ds && x.startTime < ds + DAY);
-    const exact = c.clipIndexFor(want) >= 0;
-    const pick = exact ? want : (inDay.find((x) => x.startTime >= want) || inDay[inDay.length - 1])?.startTime;
-    setJump({ ts: pick ?? want, n: Date.now() });
-    if (pick != null) c.playAt(pick, {}); else setPs((s) => ({ ...s, live: false, label: 'noRecording', playhead: null }));
-  }, [ensureDay, camId, goLive]);
-  const scrub = useMemo<ScrubHandlers>(() => ({
-    begin: () => ctl.current?.scrubBegin(),
-    move: (c, v, s) => ctl.current?.scrubMove(c, v, s),
-    seek: (ts) => ctl.current?.scrubSeek(ts),
-    idle: () => ctl.current?.scrubIdle(),
-  }), []);
-
-  // keyboard: space play/pause, ←/→ ±10 s (shift ±60), n/p events, l live
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => {
-      if (dt) return;
-      const tag = ((e.target as HTMLElement | null)?.tagName || '').toLowerCase(); if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
-      const c = ctl.current; if (!c) return;
-      if (e.key === ' ') { e.preventDefault(); c.togglePlayPause(); }
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); const ts = c.currentTs(); if (ts == null) return; c.playAt(ts + (e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 60 : 10) * 1000, {}); }
-      else if (e.key === 'n') jumpEvent(1); else if (e.key === 'p') jumpEvent(-1); else if (e.key === 'l' || e.key === 'L') goLive();
-    };
-    document.addEventListener('keydown', k); return () => document.removeEventListener('keydown', k);
-  }, [dt, jumpEvent, goLive]);
 
   if (!cfg) {
     return (
@@ -199,114 +41,27 @@ export function NvrCameraPage() {
     );
   }
 
-  const mjpeg = ps.transport === 'mjpeg';
-  const oldestAllowed = earliest ? dayOf(earliest) : -Infinity;
-  const labelText = loadError ? t('nvr.error.loadFailed') : ps.label ? t(LABEL_KEYS[ps.label]) : '';
-  const playheadText = ps.playhead != null ? (dayOf(ps.playhead) === todayStart() ? '' : fmtDay(ps.playhead, locale) + ' ') + fmtTimeSec(ps.playhead, locale) : '';
-  const statusText = ps.live ? labelText : `${labelText}${playheadText ? ' · ' + playheadText : ''}`;
-  const openLink = sentinelTimelineLink(cfg.origin, camId, ps.live ? undefined : (ctl.current?.currentTs() ?? undefined));
-
+  const openLink = sentinelTimelineLink(cfg.origin, camId);
   return (
     <NvrUi client={cfg.client}>
-    <div className="page nvr-page nvr-cam">
-      <div className="page__header-row nvr-cam__head">
-        <div className="nvr-cam__title">
-          <IconButton label={t('nvr.back')} variant="ghost" size={36} onClick={() => navigate(NVR_ROOT)}><ChevronLeft size={20} /></IconButton>
-          <h1 className="page__title">{name}</h1>
-        </div>
-        <div className="nvr-actions">
-          <a className="btn btn--ghost nvr-actions__btn" href={openLink} target="_blank" rel="noreferrer noopener">
-            <ExternalLink size={16} strokeWidth={1.75} />
-            <span className="nvr-actions__label">{t('nvr.open')}</span>
-          </a>
-          <PageHeaderActions />
-        </div>
-      </div>
-
-      <div className="nvr-cam__body">
-        <div className="nvr-cam__left">
-          <Card className="nvr-stage-card">
-            <div className="nvr-stage-wrap">
-              <div className="nvr-stage" ref={stage}>
-                <video ref={video} playsInline autoPlay muted crossOrigin="anonymous" className="nvr-stage__video" />
-                <img ref={img} crossOrigin="anonymous" className="nvr-stage__video nvr-stage__img hidden" alt="" />
-                <canvas ref={freeze} className="nvr-stage__video nvr-stage__freeze hidden" />
-                {!mjpeg && (
-                  <button type="button" className="nvr-mute" aria-label={t('nvr.player.sound')} aria-pressed={ps.sound} onClick={() => ctl.current?.setSound(!ps.sound)}>
-                    {ps.sound && !ps.muted ? <Volume2 size={18} /> : <VolumeX size={18} />}
-                  </button>
-                )}
-                <div className={'nvr-pill-ctl' + (ps.live ? ' nvr-pill-ctl--live' : '')}>
-                  <button type="button" className="nvr-pb" aria-label={t('nvr.player.back15')} onClick={() => ctl.current?.skip(-15000)}><Rewind size={18} /></button>
-                  <button type="button" className="nvr-pb" aria-label={ps.paused ? t('nvr.player.play') : t('nvr.player.pause')} disabled={ps.live} onClick={() => ctl.current?.togglePlayPause()}>{ps.paused ? <Play size={18} /> : <Pause size={18} />}</button>
-                  <button type="button" className="nvr-pb" aria-label={t('nvr.player.fwd15')} disabled={ps.live} onClick={() => ctl.current?.skip(15000)}><FastForward size={18} /></button>
-                  <button type="button" className="nvr-pb nvr-pb--speed data-font" aria-label={t('nvr.player.speed')} disabled={ps.live} onClick={() => ctl.current?.cycleSpeed()}>{ps.rate}×</button>
-                </div>
-              </div>
-            </div>
-            <div className="nvr-stage-bar">
-              <span className={'nvr-statusdot' + (ps.live ? ' nvr-statusdot--live' : '')} aria-hidden="true" />
-              <span className="nvr-stage-title"><b>{name}</b><small>{statusText}</small></span>
-              <span className="nvr-stage-actions">
-                <IconButton label={t('nvr.player.snapshot')} variant="ghost" size={36} onClick={() => ctl.current?.snapshot()}><Camera size={16} /></IconButton>
-                <IconButton label={t('nvr.player.pip')} variant="ghost" size={36} onClick={() => ctl.current?.pip()}><PictureInPicture2 size={16} /></IconButton>
-                <IconButton label={t('nvr.player.fullscreen')} variant="ghost" size={36} onClick={() => ctl.current?.fullscreen()}><Maximize2 size={16} /></IconButton>
-              </span>
-            </div>
-          </Card>
-        </div>
-
-        <Card as="aside" className="nvr-cam__right">
-          <div className="nvr-tabs" role="tablist">
-            <button type="button" role="tab" aria-selected={tab === 'tl'} className={tab === 'tl' ? 'nvr-tabs__tab--active' : ''} onClick={() => setTab('tl')}>{t('nvr.tab.timeline')}</button>
-            <button type="button" role="tab" aria-selected={tab === 'ev'} className={tab === 'ev' ? 'nvr-tabs__tab--active' : ''} onClick={() => setTab('ev')}>{t('nvr.tab.events')}{visEvents.length ? ` (${visEvents.length})` : ''}</button>
-          </div>
-          <div className="nvr-filters">
-            {SENTINEL_EVENT_CLASSES.filter((k) => present[k]).map((k) => (
-              <button
-                key={k}
-                type="button"
-                className={'nvr-fchip' + (filterOff[k] ? ' nvr-fchip--off' : '')}
-                onClick={() => setFilterOff((f) => ({ ...f, [k]: !f[k] }))}
-                title={classLabel(ut, k)}
-                aria-pressed={!filterOff[k]}
-              >
-                <ClassBadge cls={k} size={18} />{present[k]}
-              </button>
-            ))}
-          </div>
-          {tab === 'tl' ? (
-            <VerticalTimeline
-              camId={camId} rangeStart={merged.rangeStart} rangeEnd={merged.rangeEnd} clips={merged.clips} events={merged.events} motion={merged.motion}
-              live={ps.live} playhead={() => ctl.current?.currentTs() ?? null} following={() => !psRef.current.paused} filterOff={filterOff}
-              onEvent={playEvent} onGoLive={goLive} scrub={scrub} onCenter={onCenter} jump={jump}
-            />
-          ) : (
-            <EventList camId={camId} events={merged.events} filterOff={filterOff} onPick={playEvent} />
-          )}
-          <div className={'nvr-datechip' + (ps.live ? '' : ' nvr-datechip--rec')}>
-            <button type="button" onClick={() => void goToDay(centerDay - DAY)} disabled={centerDay - DAY < oldestAllowed} aria-label={t('nvr.date.prevDay')}><ChevronLeft size={14} /></button>
-            <button type="button" className="nvr-datechip__lbl data-font" onClick={() => setDt(true)} aria-label={t('nvr.date.title')}><Calendar size={13} />{fmtDay(centerDay, locale)}</button>
-            <button type="button" onClick={() => void goToDay(centerDay + DAY)} disabled={centerDay >= todayStart()} aria-label={t('nvr.date.nextDay')}><ChevronRight size={14} /></button>
-          </div>
-        </Card>
-      </div>
-
-      {dt && (
-        <DatePickerModal
-          open
-          dayStart={centerDay}
-          timeTs={ps.live ? Date.now() : (ctl.current?.currentTs() ?? Date.now())}
-          oldestAllowed={oldestAllowed}
-          onClose={() => setDt(false)}
-          onGo={(ds, time) => {
-            setDt(false);
-            const at = time ? ds + (Number(time.split(':')[0]) * 3600 + Number(time.split(':')[1]) * 60) * 1000 : undefined;
-            goToDay(ds, at).catch(() => { /* keep */ });
-          }}
+      <div className="page nvr-page">
+        <CameraPage
+          camId={camId} name={name} earliest={stats?.earliest} startAt={startAt} posterTs={posterTs}
+          storagePrefix="hapulse-nvr-ar-" // keep the aspect cache key this install already uses
+          brand="hapulse"                 // telemetry lines stay distinguishable from Sentinel's own UI
+          crossOrigin
+          header={
+            <CameraTitle name={name} onBack={() => navigate(NVR_ROOT)}>
+              <a className="btn btn--ghost nvr-actions__btn" href={openLink} target="_blank" rel="noreferrer noopener">
+                <ExternalLink size={16} strokeWidth={1.75} />
+                <span className="nvr-actions__label">{t('nvr.open')}</span>
+              </a>
+              <PageHeaderActions />
+            </CameraTitle>
+          }
+          renderDatePicker={(req) => <DatePickerModal open dayStart={req.dayStart} timeTs={req.timeTs} oldestAllowed={req.oldestAllowed} onGo={req.onGo} onClose={req.onClose} />}
         />
-      )}
-    </div>
+      </div>
     </NvrUi>
   );
 }
