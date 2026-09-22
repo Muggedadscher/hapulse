@@ -423,6 +423,14 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               ? data.lastSeenVersion
               : get().lastSeenVersion;
 
+          // [fork] Connection secrets are device-local: exportSettings() strips them, so
+          // every snapshot (manual import, HA settings sync from this or another device)
+          // arrives without them. Keep what THIS device has unless the snapshot carries a
+          // value — otherwise the NVR / Music Assistant token was wiped on every HA connect.
+          const cur = get().customization;
+          const scryptedToken = typeof incoming.scryptedToken === 'string' && incoming.scryptedToken ? incoming.scryptedToken : cur.scryptedToken;
+          const maToken = typeof incoming.maToken === 'string' && incoming.maToken ? incoming.maToken : cur.maToken;
+
           set({
             theme: migrated.theme,
             mode,
@@ -430,6 +438,8 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             customization: migrateWasteSection(migratePoolChip({
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
+              scryptedToken,
+              maToken,
               entityOrder,
               favorites,
             })),
