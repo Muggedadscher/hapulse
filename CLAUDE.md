@@ -37,9 +37,12 @@ sauber übernehmen können.
   (`pages/Nvr.tsx` = Routen-Einstieg), alles Weitere im abgegrenzten Modul
   `apps/dashboard/src/nvr/**` (Store, `VerticalTimeline`, Komponenten, Seiten,
   Home-Karte `'nvr'`, Sicherheits-Sektion `'nvr'` in `Security.tsx`, `nvr.css`).
-  Datenmodell, API-Client und Player kommen aus dem gemeinsamen npm-Paket
-  **`@sentinel-nvr/web`** (`/api`, `/player`; Repo `Muggedadscher/sentinel-nvr-web`,
-  dort getestet) — `nvr/api.ts`/`nvr/format.ts` re-exportieren nur. Settings `customization.scryptedUrl` +
+  Datenmodell, API-Client, Player UND die komplette Kameraseite (`CameraPage`) kommen aus dem
+  gemeinsamen npm-Paket **`@sentinel-nvr/web`** (`/api`, `/player`, `/ui`; Repo
+  `Muggedadscher/sentinel-nvr-web`, dort getestet) — `nvr/api.ts`/`nvr/format.ts` re-exportieren nur,
+  `NvrCameraPage.tsx` ist ein Wrapper. UI-Fixes an der Kameraseite gehören ins Paket (beide Konsumenten
+  sehen dann dasselbe). `scryptedToken`/`maToken` sind GERÄTELOKAL: `exportSettings()` strippt sie,
+  `importSettings()` (auch HA-Settings-Sync) behält den lokalen Wert, wenn der Snapshot keinen trägt. Settings `customization.scryptedUrl` +
   `scryptedToken` (Browser spricht den `/public/`-Endpoint direkt — HAPulse hat
   kein Backend). **Sentinel selbst nur lesend nutzen; Änderungen dort erst mit
   dem User klären.** Architektur, CORS-Regeln und die Anleitung zum kompletten
