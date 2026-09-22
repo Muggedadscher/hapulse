@@ -1174,5 +1174,14 @@
   "security.section.hide.nvr": "Sentinel NVR ausblenden",
   "security.section.show.nvr": "Sentinel NVR einblenden",
   "security.section.hideMobile.nvr": "Sentinel NVR auf Mobilgeräten ausblenden",
-  "security.section.showMobile.nvr": "Sentinel NVR auf Mobilgeräten einblenden"
+  "security.section.showMobile.nvr": "Sentinel NVR auf Mobilgeräten einblenden",
+  "nvr.setup.authToken": "Zugriffs-Token",
+  "nvr.setup.authLogin": "Scrypted-Konto",
+  "nvr.setup.userLabel": "Benutzername",
+  "nvr.setup.passwordLabel": "Passwort",
+  "nvr.setup.loginFailed": "Anmeldung abgelehnt (401) — Benutzername und Passwort prüfen",
+  "nvr.setup.loginDisabled": "Token-Zugang ist im Plugin ausgeschaltet (403)",
+  "nvr.setup.loginOld": "Dieses Sentinel kennt den Login-Tausch noch nicht (404) — Plugin aktualisieren oder das Token eintragen",
+  "nvr.setup.loginBusy": "Zu viele Versuche — kurz warten (429)",
+  "nvr.setup.loginHint": "Mit deinem Scrypted-Konto anmelden; HAPulse holt sich das Zugriffs-Token selbst. Das Passwort wird nicht gespeichert."
 }

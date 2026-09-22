@@ -1174,5 +1174,14 @@
   "security.section.hide.nvr": "dölj Sentinel NVR",
   "security.section.show.nvr": "visa Sentinel NVR",
   "security.section.hideMobile.nvr": "dölj Sentinel NVR på mobil",
-  "security.section.showMobile.nvr": "visa Sentinel NVR på mobil"
+  "security.section.showMobile.nvr": "visa Sentinel NVR på mobil",
+  "nvr.setup.authToken": "Åtkomsttoken",
+  "nvr.setup.authLogin": "Scrypted-konto",
+  "nvr.setup.userLabel": "Användarnamn",
+  "nvr.setup.passwordLabel": "Lösenord",
+  "nvr.setup.loginFailed": "Inloggning nekad (401) – kontrollera användarnamn och lösenord",
+  "nvr.setup.loginDisabled": "Tokenåtkomst är avstängd i insticksmodulen (403)",
+  "nvr.setup.loginOld": "Den här Sentinel saknar inloggningsutbyte (404) – uppdatera insticksmodulen eller ange token",
+  "nvr.setup.loginBusy": "För många försök – vänta en stund (429)",
+  "nvr.setup.loginHint": "Logga in med ditt Scrypted-konto; HAPulse hämtar åtkomsttoken själv. Lösenordet sparas inte."
 }
