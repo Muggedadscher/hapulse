@@ -27,7 +27,7 @@
     "@fontsource/spline-sans-mono": "^5.0.0",
     "@hapulse/core": "*",
     "@mdi/js": "^7.4.47",
-    "@sentinel-nvr/web": "^0.5.3",
+    "@sentinel-nvr/web": "^0.5.4",
     "lucide-react": "^0.469.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
