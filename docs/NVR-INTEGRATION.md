@@ -142,6 +142,11 @@ verwirft unbekannte Keys nicht, sie bleiben schlicht ungenutzt).
 Schnittstelle bleibt `API.md`. Bei API-Änderungen in Sentinel zuerst
 das Paket `@sentinel-nvr/web` (Typen + Client) versionieren und die Dependency anheben.
 
+**Server-Stand:** das Paket ab 0.7 setzt neuere Relay-Endpunkte des Sentinel-Plugins voraus (Tabelle „Server
+compatibility" im README von `sentinel-nvr-web`): 0.7 Scrub nach Ziel (`relay-target`), 0.8 Sprünge mit Standbild
+(`relay-seek&mark=1`), 0.9 Tempo an Ort und Stelle (`relay-speed`). Ältere Server funktionieren weiter, nur ohne diese
+Verbesserungen. Stand 25.09.2026: Paket 0.9.0, Plugin-`main` passend.
+
 ## Prüfen
 
 ```bash
@@ -151,4 +156,7 @@ npm run typecheck && npm run build && npm test -w @hapulse/core
 Manuell (echte Kamera): NVR-Seite → Setup (Scrypted-URL + Token) → „Verbindung
 testen" → Kachel öffnen → Live (WebRTC), Ereignis-Klick → Aufnahme via Relay,
 Scrollen in der Zeitleiste → Zeitraffer, `l` → Live. Auf dem Handy zuerst das
-Serverlog von Sentinel lesen (`[client]`-Zeilen mit `b:hapulse`).
+Serverlog von Sentinel lesen (`[client]`-Zeilen mit `b:hapulse`). Nützliche Zeilen: `swap` (`how`: `marker` = Standbild
+beim ersten Frame der neuen Position aufgehoben, `timer` = Server ohne Markierung oder Tempowechsel, `cap` = Sicherheitsnetz),
+`cadence` (Stalls/Bildrate alle 30 s), `stall-snap`/`relay-recover` (Watchdog). Tempo 1/2/4/8× darf beim Umschalten weder
+zurückspringen noch „Lädt …" zeigen.
