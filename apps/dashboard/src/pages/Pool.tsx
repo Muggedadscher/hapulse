@@ -11,7 +11,9 @@ import React from 'react';
 import { Waves } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
-import { useEntityMap, useCanEdit } from '../ha/hooks';
+import { useCanEdit } from '../ha/hooks';
+import { useShallow } from 'zustand/react/shallow';
+import { useEntityStore } from '../stores/entityStore';
 import { useT } from '../i18n/useT';
 import { PumpHeroCard } from '../components/pool/PumpHeroCard';
 import { SolarCard } from '../components/pool/SolarCard';
@@ -26,11 +28,15 @@ import './Pool.css';
 
 export function Pool() {
   const t = useT();
-  const entities = useEntityMap();
   const canEdit = useCanEdit();
 
-  const present = POOL_REQUIRED_ENTITIES.every((id) => entities[id] != null);
-  const hasRuntime = entities[POOL_ENTITIES.runtimeToday] != null;
+  // only the two presence checks — not the whole entity map (every state change re-rendered the page)
+  const { present, hasRuntime } = useEntityStore(
+    useShallow((s) => ({
+      present: POOL_REQUIRED_ENTITIES.every((id) => s.entities[id] != null),
+      hasRuntime: s.entities[POOL_ENTITIES.runtimeToday] != null,
+    })),
+  );
 
   return (
     <div className="page pool-page stagger-rise">
