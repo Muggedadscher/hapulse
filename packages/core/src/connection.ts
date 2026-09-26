@@ -384,6 +384,19 @@ export class HAConnection {
    * etc.) and resolves to `null` — like `fetchEnergyPrefs`, a missing/broken
    * frontend storage command must never break app boot.
    */
+  /**
+   * [fork] Like getUserData, but a failed read THROWS instead of resolving to null. The settings sync
+   * must tell "HA has no snapshot" (seed it) from "reading failed" (leave HA alone) — a timeout right
+   * after connect used to overwrite the HA snapshot with this device's (possibly default) settings.
+   */
+  async getUserDataStrict<T = unknown>(key: string): Promise<T | null> {
+    const result = await this.#conn.sendMessagePromise<{ value: T | null }>({
+      type: 'frontend/get_user_data',
+      key,
+    });
+    return result?.value ?? null;
+  }
+
   async getUserData<T = unknown>(key: string): Promise<T | null> {
     try {
       const result = await this.#conn.sendMessagePromise<{ value: T | null }>({
