@@ -194,3 +194,7 @@ echten Mausereignissen durch (HA im Demo-Modus, Kameras aus einem echten Sentine
 Live“, Pause/Play, Tempo, Ton, Schnappschuss, Vollbild, Tabs, Filter, Ereignisliste, Zoom, Datumsdialog, LIVE-Chip,
 Tastatur) und die Security-Sektion; rot bei JS-/Konsolenfehlern oder HTTP ≥ 400. Chromium auf Port 9222 startet
 Sentinels `scripts/cdp-run.sh`; im Labor (CT 213) `/root/lab/hp-nvr-sweep.sh [mobile]`.
+
+Allgemein (ohne NVR): `apps/dashboard/scripts/click-fuzz-test.cjs <hapulse-url> [mobile]` öffnet im HA-Demo-Modus jede Seite
+und klickt jedes Bedienelement einmal (Dialoge zu, zerstörerische Knöpfe ausgelassen); rot bei JS-/Konsolenfehler,
+Fehlerkarte oder HTTP ≥ 400. Labor: `/root/lab/hp-fuzz.sh [mobile]`.
