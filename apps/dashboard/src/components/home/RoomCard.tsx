@@ -7,7 +7,8 @@ import { RoomIcon } from '../ui/RoomIcon';
 import { roomDisplayIcon } from '../../lib/roomIcon';
 import { roomSummary } from '@hapulse/core';
 import type { Room, HassEntityMap } from '@hapulse/core';
-import { useT } from '../../i18n/useT';
+import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
+import { formatNumber } from '@hapulse/core'; // [fork]
 import './home.css';
 
 interface RoomCardProps {
@@ -37,6 +38,7 @@ export function RoomCard({
 }: RoomCardProps) {
   const navigate = useNavigate();
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const summary = roomSummary(room, entities);
   const anyLightsOn = summary.lightsOn > 0;
   const { iconName, isStatus } = roomDisplayIcon(room, entities);
@@ -85,7 +87,7 @@ export function RoomCard({
 
         {summary.temperature != null && (
           <div className="room-card__temp">
-            {summary.temperature.toFixed(1)}°
+            {formatNumber(summary.temperature, locale, { minDecimals: 1, maxDecimals: 1 })}°{/* [fork] locale */}
           </div>
         )}
 

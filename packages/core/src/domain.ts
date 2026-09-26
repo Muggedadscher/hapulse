@@ -4,6 +4,10 @@
 
 import type { HassEntity } from './types.js';
 import type { EntityStateLabel } from './entityStates.js';
+import { formatNumber } from './numberFormat.js'; // [fork]
+
+/** [fork] Domains whose unit-less numeric state is a value (formatted), not an enum. */
+const NUMERIC_DOMAINS = new Set(['sensor', 'number', 'input_number', 'counter']);
 
 /**
  * Determines whether a favorited entity should be shown in the favorites strip.
@@ -142,8 +146,14 @@ export function formatEntityState(
   if (unit !== undefined && unit !== null) {
     const num = parseFloat(state);
     if (!isNaN(num)) {
-      return `${Math.round(num * 10) / 10} ${unit}`;
+      return `${formatNumber(num, locale)} ${unit}`; // [fork] locale decimal separator (was always a point)
     }
+  }
+
+  // [fork] A plain numeric state (no unit) of a value-like entity: format it like the others. It used to
+  // go through humanizeState, which shows the raw point AND drops a minus sign ("-3.5" → "3.5").
+  if (NUMERIC_DOMAINS.has(domainOf(entity.entity_id)) && /^\s*-?\d+(\.\d+)?\s*$/.test(state)) {
+    return formatNumber(parseFloat(state), locale, { maxDecimals: 2 });
   }
 
   if (!label) return state;

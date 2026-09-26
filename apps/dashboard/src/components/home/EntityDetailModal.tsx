@@ -26,7 +26,7 @@ import { Camera } from 'lucide-react';
 import { getEntityHistory, getEntityLogbook } from '../../ha/service';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
-import { domainOf, formatEntityState, isNumericHistory } from '@hapulse/core';
+import { domainOf, formatEntityState, formatNumber, isNumericHistory } from '@hapulse/core'; // [fork] formatNumber
 import type { HassEntity, HistoryPoint, LogbookEntry } from '@hapulse/core';
 import { useT, useLocale, useStateLabel } from '../../i18n/useT';
 import './EntityDetailModal.css';
@@ -77,14 +77,15 @@ function humanizeKey(key: string): string {
 }
 
 /** Render an attribute value compactly for display. */
-function formatValue(value: unknown): string {
+function formatValue(value: unknown, locale?: string): string { // [fork] locale
   if (value == null) return '—';
   if (Array.isArray(value)) {
-    return value.length ? value.map((v) => formatValue(v)).join(', ') : '—';
+    return value.length ? value.map((v) => formatValue(v, locale)).join(', ') : '—';
   }
   if (typeof value === 'object') return JSON.stringify(value);
   if (typeof value === 'number') {
-    return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+    // [fork] decimal comma; whole numbers stay ungrouped (ids, bit masks like supported_features)
+    return Number.isInteger(value) ? String(value) : formatNumber(value, locale, { maxDecimals: 2 });
   }
   return String(value);
 }
@@ -148,7 +149,8 @@ function TimelineBar({ points, start, end, sl, domain, deviceClass }: {
   );
 }
 
-function ValueChart({ points, start, end, unit }: {
+function ValueChart({ points, start, end, unit, locale }: { // [fork] locale
+  locale?: string;
   points: HistoryPoint[];
   start: number;
   end: number;
@@ -172,7 +174,7 @@ function ValueChart({ points, start, end, unit }: {
 
   const line = numeric.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.t).toFixed(2)},${y(p.v).toFixed(2)}`).join(' ');
   const area = `${line} L${W},${H} L0,${H} Z`;
-  const fmt = (v: number) => `${Math.round(v * 10) / 10}${unit ? ` ${unit}` : ''}`;
+  const fmt = (v: number) => `${formatNumber(v, locale)}${unit ? ` ${unit}` : ''}`; // [fork] locale
 
   return (
     <div className="entity-detail__chart-wrap">
@@ -432,7 +434,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
               className={`entity-detail__history-view${historyLoading ? ' entity-detail__history-view--loading' : ''}`}
             >
               {numeric ? (
-                <ValueChart points={history} start={windowStart} end={windowEnd} unit={unit} />
+                <ValueChart points={history} start={windowStart} end={windowEnd} unit={unit} locale={locale} /> // [fork] locale
               ) : (
                 <TimelineBar
                   points={history}
@@ -511,7 +513,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
                 {attrRows.map(([key, value]) => (
                   <div key={key} className="entity-detail__attr-row">
                     <dt className="entity-detail__attr-key">{humanizeKey(key)}</dt>
-                    <dd className="entity-detail__attr-value">{formatValue(value)}</dd>
+                    <dd className="entity-detail__attr-value">{formatValue(value, locale)}</dd>{/* [fork] locale */}
                   </div>
                 ))}
               </dl>

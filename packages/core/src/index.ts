@@ -210,3 +210,5 @@ export type { WasteBin, WasteCollection, DetectWasteOptions } from './waste.js';
 
 // [fork] Sentinel NVR — the data model now lives in the shared package @sentinel-nvr/web/api
 export { oauthCallbackMatches } from './oauthGuard.js'; // [fork]
+export { formatNumber } from './numberFormat.js'; // [fork]
+export type { NumberFormatOptions } from './numberFormat.js'; // [fork]

@@ -13,12 +13,13 @@ import { Card } from '../ui/Card';
 import { useEnergy } from '../../ha/useEnergy';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { fmtEnergy } from '../energy/EnergyCards';
-import { useT } from '../../i18n/useT';
+import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
 import './EnergyWidget.css';
 
 export function EnergyWidget() {
   const navigate = useNavigate();
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const haUrl = useConnectionStore((s) => s.url);
   const { state, dashboard } = useEnergy('today');
 
@@ -84,7 +85,7 @@ export function EnergyWidget() {
 
       <div className="card-scroll-body card-scroll-wrap">
       <div className="energy-widget__value-row">
-        <span className="energy-widget__value">{fmtEnergy(dashboard.homeConsumption)}</span>
+        <span className="energy-widget__value">{fmtEnergy(dashboard.homeConsumption, locale)}</span>
         <span className="energy-widget__unit">kWh</span>
       </div>
 

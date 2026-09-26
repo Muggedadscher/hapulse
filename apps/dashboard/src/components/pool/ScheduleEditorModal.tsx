@@ -23,7 +23,8 @@ import {
 } from '@hapulse/core';
 import type { PoolScheduleModel, PoolWeekday, PoolDaySlot } from '@hapulse/core';
 import { Modal } from '../ui/Modal';
-import { useT } from '../../i18n/useT';
+import { useLocale, useT } from '../../i18n/useT';
+import { formatNumber } from '@hapulse/core';
 import { savePoolSchedule } from '../../ha/pool';
 import { POOL_ENTITIES, POOL_WEEKDAY_KEYS } from './poolConfig';
 
@@ -39,6 +40,7 @@ const MIN_GAP = 5;    // keep segments at least this many minutes wide
 
 export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorModalProps) {
   const t = useT();
+  const locale = useLocale();
   const [weekdays, setWeekdays] = useState<PoolWeekday[]>(initial.weekdays);
   const [slots, setSlots] = useState<PoolDaySlot[]>(() => windowsToDaySlots(initial.windows));
   const [saving, setSaving] = useState(false);
@@ -210,7 +212,7 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
         <section className="pool-editor__section">
           <div className="pool-editor__section-head">
             <h3 className="pool-editor__label">{t('pool.schedule.editor.windows')}</h3>
-            <span className="pool-editor__total data-font">{Math.round(onHours * 10) / 10} h</span>
+            <span className="pool-editor__total data-font">{formatNumber(onHours, locale)} h</span>
           </div>
 
           <div className="pool-timeline" role="group" aria-label={t('pool.schedule.editor.windows')}>

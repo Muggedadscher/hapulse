@@ -8,6 +8,8 @@
  * selected by the native Intl.PluralRules — no plural rules of our own to maintain.
  */
 
+import { formatNumber } from './numberFormat.js'; // [fork]
+
 export type Dict = Record<string, string>;
 
 export const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'pt', 'sv'] as const;
@@ -26,11 +28,17 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 
 /** Replaces `{name}` with vars.name. An unprovided variable is left visible on
  *  purpose: a literal `{name}` in the UI reveals the bug, an empty string hides it. */
-function interpolate(template: string, vars?: Record<string, string | number>): string {
+function interpolate(template: string, vars?: Record<string, string | number>, locale?: string): string {
   if (!vars) return template;
   return template.replace(/\{(\w+)\}/g, (match, name: string) =>
-    name in vars ? String(vars[name]) : match,
+    name in vars ? fmtVar(vars[name]!, locale) : match,
   );
+}
+
+/** [fork] A fractional number gets the locale's decimal separator ("1,5 h"); whole numbers stay as they
+ *  are, so status codes, years or ids ("404", "2026") are never digit-grouped. */
+function fmtVar(v: string | number, locale?: string): string {
+  return typeof v === 'number' && !Number.isInteger(v) ? formatNumber(v, locale, { maxDecimals: 2 }) : String(v);
 }
 
 /** `Intl.PluralRules` instances are locale-only (no dict/key state), so one per
@@ -71,7 +79,7 @@ export function translate(
 
   for (const candidate of candidates) {
     const hit = dict[candidate] ?? fallback[candidate];
-    if (hit !== undefined) return interpolate(hit, vars);
+    if (hit !== undefined) return interpolate(hit, vars, locale); // [fork] locale for number vars
   }
   return key;
 }

@@ -17,7 +17,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { useT } from '../../i18n/useT';
+import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
+import { formatNumber } from '@hapulse/core'; // [fork]
 import type { TKey } from '../../i18n/useT';
 import type { EnergyDashboard, EnergyPeriod } from '@hapulse/core';
 import './EnergyCards.css';
@@ -31,15 +32,21 @@ const CURRENCY_SYMBOL: Record<string, string> = {
   DKK: 'kr', PLN: 'zł', AUD: 'A$', CAD: 'C$',
 };
 
-export function fmtEnergy(n: number): string {
+export function fmtEnergy(n: number, locale?: string): string { // [fork] locale (decimal comma, grouping)
   const abs = Math.abs(n);
   const digits = abs >= 100 ? 0 : abs >= 10 ? 1 : 2;
-  return n.toFixed(digits);
+  return formatNumber(n, locale, { minDecimals: digits, maxDecimals: digits }); // [fork] was n.toFixed(digits)
 }
 
-export function fmtCost(n: number, currency: string | null): string {
+export function fmtCost(n: number, currency: string | null, locale?: string): string { // [fork] locale
+  // [fork] Currency the way the language writes it ("12,34 €" in German, "€12.34" in English).
+  if (currency) {
+    try {
+      return new Intl.NumberFormat(locale ?? 'en', { style: 'currency', currency }).format(n);
+    } catch { /* unknown currency code → symbol below */ }
+  }
   const sym = currency ? (CURRENCY_SYMBOL[currency] ?? `${currency} `) : '';
-  return `${sym}${n.toFixed(2)}`;
+  return `${sym}${formatNumber(n, locale, { minDecimals: 2, maxDecimals: 2 })}`; // [fork] was n.toFixed(2)
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +125,7 @@ export function EnergyHeroCard({
   currency: string | null;
 }) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   return (
     <Card className="energy-hero">
       <div className="energy-hero__header">
@@ -135,7 +143,7 @@ export function EnergyHeroCard({
           <House size={14} strokeWidth={2} /> {t('energy.hero.homeConsumption')}
         </span>
         <span className="energy-hero__primary-value data-font">
-          {fmtEnergy(dashboard.homeConsumption)}
+          {fmtEnergy(dashboard.homeConsumption, locale)}
           <span className="energy-hero__primary-unit"> kWh</span>
         </span>
       </div>
@@ -145,7 +153,7 @@ export function EnergyHeroCard({
           <StatTile
             icon={<ArrowDownToLine size={16} strokeWidth={1.75} />}
             label={t('energy.hero.fromGrid')}
-            value={fmtEnergy(dashboard.gridConsumed)}
+            value={fmtEnergy(dashboard.gridConsumed, locale)}
             unit="kWh"
             tone="info"
           />
@@ -154,7 +162,7 @@ export function EnergyHeroCard({
           <StatTile
             icon={<ArrowUpFromLine size={16} strokeWidth={1.75} />}
             label={t('energy.hero.returned')}
-            value={fmtEnergy(dashboard.gridReturned)}
+            value={fmtEnergy(dashboard.gridReturned, locale)}
             unit="kWh"
             tone="positive"
           />
@@ -163,7 +171,7 @@ export function EnergyHeroCard({
           <StatTile
             icon={<Sun size={16} strokeWidth={1.75} />}
             label={t('energy.hero.solar')}
-            value={fmtEnergy(dashboard.solarProduced)}
+            value={fmtEnergy(dashboard.solarProduced, locale)}
             unit="kWh"
             tone="accent"
           />
@@ -172,7 +180,7 @@ export function EnergyHeroCard({
           <StatTile
             icon={<BatteryCharging size={16} strokeWidth={1.75} />}
             label={t('energy.hero.batteryOut')}
-            value={fmtEnergy(dashboard.batteryOut)}
+            value={fmtEnergy(dashboard.batteryOut, locale)}
             unit="kWh"
             tone="neutral"
           />
@@ -181,7 +189,7 @@ export function EnergyHeroCard({
           <StatTile
             icon={<Zap size={16} strokeWidth={1.75} />}
             label={t('energy.hero.gridCost')}
-            value={fmtCost(dashboard.cost, currency)}
+            value={fmtCost(dashboard.cost, currency, locale)}
             tone="danger"
           />
         )}
@@ -196,6 +204,7 @@ export function EnergyHeroCard({
 
 export function EnergySourcesCard({ dashboard }: { dashboard: EnergyDashboard }) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const { series } = dashboard;
   const max = Math.max(
     0.001,
@@ -253,21 +262,21 @@ export function EnergySourcesCard({ dashboard }: { dashboard: EnergyDashboard })
           <div className="energy-total">
             <span className="energy-total__dot energy-total__dot--grid" />
             <span className="energy-total__label">{t('energy.sources.totalFromGrid')}</span>
-            <span className="energy-total__value data-font">{fmtEnergy(dashboard.gridConsumed)} kWh</span>
+            <span className="energy-total__value data-font">{fmtEnergy(dashboard.gridConsumed, locale)} kWh</span>
           </div>
         )}
         {dashboard.hasSolar && (
           <div className="energy-total">
             <span className="energy-total__dot energy-total__dot--solar" />
             <span className="energy-total__label">{t('energy.sources.totalSolarProduced')}</span>
-            <span className="energy-total__value data-font">{fmtEnergy(dashboard.solarProduced)} kWh</span>
+            <span className="energy-total__value data-font">{fmtEnergy(dashboard.solarProduced, locale)} kWh</span>
           </div>
         )}
         {dashboard.hasGrid && (
           <div className="energy-total">
             <span className="energy-total__dot energy-total__dot--return" />
             <span className="energy-total__label">{t('energy.sources.totalReturnedToGrid')}</span>
-            <span className="energy-total__value data-font">{fmtEnergy(dashboard.gridReturned)} kWh</span>
+            <span className="energy-total__value data-font">{fmtEnergy(dashboard.gridReturned, locale)} kWh</span>
           </div>
         )}
       </div>
@@ -281,6 +290,7 @@ export function EnergySourcesCard({ dashboard }: { dashboard: EnergyDashboard })
 
 export function EnergyDevicesCard({ dashboard }: { dashboard: EnergyDashboard }) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const max = Math.max(0.001, ...dashboard.devices.map((d) => d.consumed));
 
   return (
@@ -292,7 +302,7 @@ export function EnergyDevicesCard({ dashboard }: { dashboard: EnergyDashboard })
           </span>
           <span className="energy-card__title">{t('energy.devices.title')}</span>
         </div>
-        <span className="energy-card__sub data-font">{fmtEnergy(dashboard.devicesTotal)} kWh</span>
+        <span className="energy-card__sub data-font">{fmtEnergy(dashboard.devicesTotal, locale)} kWh</span>
       </div>
 
       {dashboard.devices.length === 0 ? (
@@ -308,7 +318,7 @@ export function EnergyDevicesCard({ dashboard }: { dashboard: EnergyDashboard })
                   style={{ width: `${(d.consumed / max) * 100}%` }}
                 />
               </span>
-              <span className="energy-device__value data-font">{fmtEnergy(d.consumed)} kWh</span>
+              <span className="energy-device__value data-font">{fmtEnergy(d.consumed, locale)} kWh</span>
             </li>
           ))}
         </ul>
@@ -323,6 +333,7 @@ export function EnergyDevicesCard({ dashboard }: { dashboard: EnergyDashboard })
 
 export function EnergySolarCard({ dashboard }: { dashboard: EnergyDashboard }) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const produced = dashboard.solarProduced;
   const selfPct = produced > 0 ? Math.round((dashboard.solarSelfConsumed / produced) * 100) : 0;
 
@@ -335,17 +346,17 @@ export function EnergySolarCard({ dashboard }: { dashboard: EnergyDashboard }) {
           </span>
           <span className="energy-card__title">{t('energy.solar.title')}</span>
         </div>
-        <span className="energy-card__sub data-font">{fmtEnergy(produced)} kWh</span>
+        <span className="energy-card__sub data-font">{fmtEnergy(produced, locale)} kWh</span>
       </div>
 
       <div className="energy-solar__rows">
         <div className="energy-kv">
           <span className="energy-kv__label">{t('energy.solar.selfConsumed')}</span>
-          <span className="energy-kv__value data-font">{fmtEnergy(dashboard.solarSelfConsumed)} kWh</span>
+          <span className="energy-kv__value data-font">{fmtEnergy(dashboard.solarSelfConsumed, locale)} kWh</span>
         </div>
         <div className="energy-kv">
           <span className="energy-kv__label">{t('energy.solar.returnedToGrid')}</span>
-          <span className="energy-kv__value data-font">{fmtEnergy(dashboard.gridReturned)} kWh</span>
+          <span className="energy-kv__value data-font">{fmtEnergy(dashboard.gridReturned, locale)} kWh</span>
         </div>
       </div>
 
@@ -363,6 +374,7 @@ export function EnergySolarCard({ dashboard }: { dashboard: EnergyDashboard }) {
 
 export function EnergyWaterCard({ dashboard }: { dashboard: EnergyDashboard }) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   return (
     <Card className="energy-water">
       <div className="energy-card__header">
@@ -373,7 +385,7 @@ export function EnergyWaterCard({ dashboard }: { dashboard: EnergyDashboard }) {
           <span className="energy-card__title">{t('energy.water.title')}</span>
         </div>
         <span className="energy-card__sub data-font">
-          {fmtEnergy(dashboard.waterConsumed)} {dashboard.waterUnit}
+          {fmtEnergy(dashboard.waterConsumed, locale)} {dashboard.waterUnit}
         </span>
       </div>
 
@@ -382,7 +394,7 @@ export function EnergyWaterCard({ dashboard }: { dashboard: EnergyDashboard }) {
           {dashboard.water.map((w) => (
             <li key={w.id} className="energy-kv">
               <span className="energy-kv__label">{w.id.split('.')[1]?.replace(/_/g, ' ') ?? w.id}</span>
-              <span className="energy-kv__value data-font">{fmtEnergy(w.consumed)} {dashboard.waterUnit}</span>
+              <span className="energy-kv__value data-font">{fmtEnergy(w.consumed, locale)} {dashboard.waterUnit}</span>
             </li>
           ))}
         </ul>
@@ -397,6 +409,7 @@ export function EnergyWaterCard({ dashboard }: { dashboard: EnergyDashboard }) {
 
 export function EnergyGasCard({ dashboard }: { dashboard: EnergyDashboard }) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   return (
     <Card className="energy-gas">
       <div className="energy-card__header">
@@ -407,7 +420,7 @@ export function EnergyGasCard({ dashboard }: { dashboard: EnergyDashboard }) {
           <span className="energy-card__title">{t('energy.gas.title')}</span>
         </div>
         <span className="energy-card__sub data-font">
-          {fmtEnergy(dashboard.gasConsumed)} {dashboard.gasUnit}
+          {fmtEnergy(dashboard.gasConsumed, locale)} {dashboard.gasUnit}
         </span>
       </div>
     </Card>

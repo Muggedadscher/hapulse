@@ -10,7 +10,7 @@ import React, { useCallback, useState } from 'react';
 import { Waves, ArrowRight, Sun, Clock, Timer } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { Modal } from '../../ui/Modal';
-import { formatEntityState } from '@hapulse/core';
+import { formatEntityState, formatNumber } from '@hapulse/core';
 import { useEntity } from '../../../ha/hooks';
 import { useLocale, useT } from '../../../i18n/useT';
 import { setPoolMode } from '../../../ha/pool';
@@ -109,7 +109,7 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
               <span className="pool-modal__glance-label">{t('pool.solar.current')}</span>
               <span className={`pool-modal__glance-value${isExceeded ? ' pool-modal__glance-value--positive' : ''}`}>
                 {formatEntityState(solarPower, locale)}
-                {threshold ? ` / ${Math.round(parseFloat(threshold.state))} ${(threshold.attributes['unit_of_measurement'] as string | undefined) ?? 'W'}` : ''}
+                {threshold ? ` / ${formatNumber(parseFloat(threshold.state), locale, { maxDecimals: 0 })} ${(threshold.attributes['unit_of_measurement'] as string | undefined) ?? 'W'}` : ''}
               </span>
             </div>
           )}

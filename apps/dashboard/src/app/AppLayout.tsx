@@ -55,8 +55,8 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
-import { releasesSince, indexSystemMonitor, pickSystemMetrics } from '@hapulse/core';
-import { useT, useStateLabel } from '../i18n/useT';
+import { releasesSince, indexSystemMonitor, pickSystemMetrics, formatNumber } from '@hapulse/core'; // [fork] formatNumber
+import { useT, useStateLabel, useLocale } from '../i18n/useT'; // [fork] useLocale
 import type { TKey } from '../i18n/useT';
 import './AppLayout.css';
 
@@ -212,6 +212,7 @@ interface WeatherGlanceProps {
 
 function WeatherGlance({ onClick }: WeatherGlanceProps) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const sl = useStateLabel();
   const weather = useWeatherEntity();
   if (!weather) return null;
@@ -219,7 +220,7 @@ function WeatherGlance({ onClick }: WeatherGlanceProps) {
   const temp = weather.attributes.temperature as number | undefined;
   const condition = sl('weather', weather.state);
   const unit = (weather.attributes.temperature_unit as string | undefined) ?? '°';
-  const tempPart = temp != null ? `, ${temp}${unit}` : '';
+  const tempPart = temp != null ? `, ${formatNumber(temp, locale)}${unit}` : ''; // [fork] locale
 
   return (
     <button

@@ -117,7 +117,7 @@ export function ManualTimerCard() {
             >
               <Minus size={16} strokeWidth={2} />
             </button>
-            <span className="pool-stepper__value data-font">{formatManualDuration(siriMinutes)}</span>
+            <span className="pool-stepper__value data-font">{formatManualDuration(siriMinutes, locale)}</span>
             <button
               type="button"
               className="pool-stepper__btn"

@@ -19,6 +19,8 @@
  */
 
 /** Minutes in a full day. A stop at exactly midnight means end-of-day. */
+import { formatNumber } from './numberFormat.js';
+
 export const POOL_DAY_MINUTES = 1440;
 
 /** Weekday identifiers, in display/week order (Monday first). */
@@ -456,11 +458,10 @@ export function minutesToDurationString(min: number): string {
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}:00`;
 }
 
-/** Short label for a duration: "30 min" under an hour, else "1 h" / "1.5 h". */
-export function formatManualDuration(min: number): string {
+/** Short label for a duration: "30 min" under an hour, else "1 h" / "1.5 h" ("1,5 h" in German). */
+export function formatManualDuration(min: number, locale?: string): string {
   if (min < 60) return `${min} min`;
-  const hours = min / 60;
-  return `${Number.isInteger(hours) ? hours : hours.toFixed(1)} h`;
+  return `${formatNumber(min / 60, locale)} h`;
 }
 
 /** Collapse a day-slot partition back into on-windows for saving. */

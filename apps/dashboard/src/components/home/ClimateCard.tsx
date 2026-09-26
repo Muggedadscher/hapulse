@@ -6,7 +6,8 @@ import { Minus, Plus, Thermometer, ChevronRight } from 'lucide-react';
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
-import { useT, useStateLabel } from '../../i18n/useT';
+import { useT, useStateLabel, useLocale } from '../../i18n/useT'; // [fork] useLocale
+import { formatNumber } from '@hapulse/core'; // [fork]
 import './ClimateCard.css';
 import { climateSetpoint, gaugeRange, stepSetpoint } from './climateLogic'; // [fork]
 
@@ -130,6 +131,7 @@ function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'v
 
 export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const sl = useStateLabel();
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
@@ -274,7 +276,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
             <Minus size={14} strokeWidth={2.5} />
           </button>
           <span className="climate-card__setpoint">
-            {setpointTemp == null ? '–' : `${setpointTemp.toFixed(sp.decimals)}°`}
+            {setpointTemp == null ? '–' : `${formatNumber(setpointTemp, locale, { minDecimals: sp.decimals, maxDecimals: sp.decimals })}°` /* [fork] locale */}
           </span>
           <button
             className="climate-card__step-btn"
@@ -294,7 +296,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
           const entryKey = hvacColorKey(entry.entity);
           const isSelected = entry.name === activeRoom.name;
           const temp = entry.currentTemp != null
-            ? `${entry.currentTemp.toFixed(1)}°`
+            ? `${formatNumber(entry.currentTemp, locale, { minDecimals: 1, maxDecimals: 1 })}°` // [fork] locale
             : '—';
 
           return (
