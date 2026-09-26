@@ -16,6 +16,7 @@ import './styles/global.css';
 import { applyTheme, THEME_NAMES } from './theme/themes';
 import type { ThemeName, ThemeMode } from './theme/themes';
 import { DashboardApp } from './app/DashboardApp';
+import { installChunkReload } from './app/chunkReload'; // [fork]
 
 // Map any legacy persisted theme value to the current { theme, mode } model.
 function legacyTheme(value: string | undefined): { theme: ThemeName; mode: ThemeMode } {
@@ -66,6 +67,8 @@ function legacyTheme(value: string | undefined): { theme: ThemeName; mode: Theme
 // ---------------------------------------------------------------------------
 // 2. Render — DashboardApp handles subscribe/watchSystemMode/init internally
 // ---------------------------------------------------------------------------
+installChunkReload(); // [fork] stale lazy chunks after a deploy → one reload
+
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('[HAPulse] No #root element found in index.html');
 
