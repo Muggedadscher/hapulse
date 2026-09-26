@@ -1236,5 +1236,7 @@
   "cameraSource.rooms.empty": "Inga kameror hittades.",
   "cameraSource.rooms.none": "Inget rum",
   "cameraSource.rooms.selectAria": "Rum för {name}",
-  "cameraSource.room.dragReorder": "Dra för att ordna om avsnittet Kameror"
+  "cameraSource.room.dragReorder": "Dra för att ordna om avsnittet Kameror",
+  "pool.manual.runsUntilTomorrow": "Körs till i morgon {time}",
+  "pool.manual.runsUntilDay": "Körs till {day} {time}"
 }

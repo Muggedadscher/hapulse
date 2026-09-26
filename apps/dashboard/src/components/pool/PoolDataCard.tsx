@@ -10,6 +10,7 @@ import React from 'react';
 import { Clock, Zap } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
+import { formatPoolValue } from './poolFormat';
 import type { HassEntity } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
@@ -27,7 +28,7 @@ function DataTile({ entity, label, icon }: DataTileProps) {
   const openEntityDetail = useUIStore((s) => s.openEntityDetail);
   if (!entity) return null;
 
-  const value = formatEntityState(entity, locale);
+  const value = formatPoolValue(entity, locale) ?? formatEntityState(entity, locale);
   const numeric = !isNaN(parseFloat(entity.state));
 
   const inner = (

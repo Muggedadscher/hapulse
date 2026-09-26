@@ -111,6 +111,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/home/FavoriteToggle.tsx` | Stern im Entity-Detailfenster (eigene Favoriten) |
 | `apps/dashboard/test/globalSettings.test.ts` | Tests mit nachgebautem HA (user_data/system_data) |
 | `apps/dashboard/test/cameraSource.test.ts` | Kameraquelle, Filter, Raumzuordnung, Namensvorschlag |
+| `apps/dashboard/src/components/pool/poolFormat.ts`, `test/poolFormat.test.ts` | Pool: Ring-Restzeit (h:mm ab 1 h), „bis morgen/Wochentag“, Zahlen mit Dezimalkomma |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -134,6 +135,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
+| `packages/core/src/demo.ts` | Demo-Pool-Entities (`demoPoolEntities`, IDs wie `poolConfig.ts`) — Pool-Seite in Demo/Labor |
 | `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“ |
 | `apps/dashboard/src/components/home/SummaryChips.tsx` | Pool-Chip in der Home-Leiste |
 | `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}` | Bereichs-**Pills** (24H/7D/30D) statt Upstreams 24h/7d-Umschalter |
