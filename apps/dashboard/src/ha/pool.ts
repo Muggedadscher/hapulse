@@ -30,6 +30,24 @@ export function setDurationMinutes(entityId: string, minutes: number): Promise<v
   return callService('input_number', 'set_value', { value: minutes }, { entity_id: entityId });
 }
 
+/**
+ * Start a manual run with `minutes`: the duration is written FIRST (the automation reads it when the mode turns
+ * to Manuell), then the mode is selected — or, if the pump is already in Manuell, the timer script restarts the
+ * run with the new duration (selecting the same option again changes nothing in HA). Rejects when a call fails.
+ */
+export async function startManualRun(
+  durationEntity: string,
+  modeEntity: string,
+  manualOption: string,
+  alreadyManual: boolean,
+  restartScript: string,
+  minutes: number,
+): Promise<void> {
+  await setDurationMinutes(durationEntity, minutes);
+  if (alreadyManual) await callService('script', 'turn_on', undefined, { entity_id: restartScript });
+  else await setPoolMode(modeEntity, manualOption);
+}
+
 /** Turn a switch (pump, bypass, schedule) on or off. */
 export function setSwitch(entityId: string, on: boolean): Promise<void> {
   return callService('switch', on ? 'turn_on' : 'turn_off', undefined, { entity_id: entityId });

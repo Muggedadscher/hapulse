@@ -14,7 +14,7 @@ import { Modal } from '../ui/Modal';
 import { useEntity } from '../../ha/hooks';
 import { useT } from '../../i18n/useT';
 import { POOL_ENTITIES, poolModeTone } from './poolConfig';
-import { setDurationMinutes, setPoolMode } from '../../ha/pool';
+import { startManualRun } from '../../ha/pool';
 import { PoolDurationPicker } from './PoolDurationPicker';
 
 interface PumpManualModalProps {
@@ -40,11 +40,17 @@ export function PumpManualModal({ open, onClose }: PumpManualModalProps) {
     wasOpen.current = open;
   }, [open, stored]);
 
+  const [starting, setStarting] = useState(false);
   const start = () => {
-    if (!manualOption) return;
-    void setDurationMinutes(POOL_ENTITIES.manualDuration, minutes);
-    void setPoolMode(POOL_ENTITIES.mode, manualOption);
-    onClose();
+    if (!manualOption || starting) return;
+    setStarting(true);
+    // sequential (duration before the mode switch); already in Manuell → restart the timer with the new duration.
+    // A failed call keeps the dialog open (callService shows the error).
+    startManualRun(POOL_ENTITIES.manualDuration, POOL_ENTITIES.mode, manualOption, mode?.state === manualOption,
+      POOL_ENTITIES.manualRestartScript, minutes)
+      .then(() => onClose())
+      .catch(() => { /* toast shown; stay open */ })
+      .finally(() => setStarting(false));
   };
 
   return (
@@ -59,7 +65,7 @@ export function PumpManualModal({ open, onClose }: PumpManualModalProps) {
           type="button"
           className="btn btn--primary pool-manual__action"
           onClick={start}
-          disabled={!manualOption}
+          disabled={!manualOption || starting}
         >
           <Play size={16} strokeWidth={2} />
           {t('pool.manual.start')}

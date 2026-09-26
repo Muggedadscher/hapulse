@@ -6,7 +6,7 @@
  * other chip modals (e.g. MediaModal) in structure and its "open page" footer.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Waves, ArrowRight, Sun, Clock, Timer } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { Modal } from '../../ui/Modal';
@@ -16,6 +16,7 @@ import { useLocale, useT } from '../../../i18n/useT';
 import { setPoolMode } from '../../../ha/pool';
 import { POOL_ENTITIES, poolModeTone } from '../../pool/poolConfig';
 import { usePoolTimer, formatCountdown } from '../../pool/usePoolTimer';
+import { PumpManualModal } from '../../pool/PumpManualModal';
 import './PoolModal.css';
 
 interface PoolModalProps {
@@ -42,6 +43,9 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
   const activeOption = mode?.state;
   const isExceeded = exceeded?.state === 'on';
 
+  // Manuell asks for the run length first (like the pump hero); the chip modal closes so dialogs don't stack
+  const [manualOpen, setManualOpen] = useState(false);
+
   const handleOpenPool = useCallback(() => {
     onClose();
     void navigate('/pool');
@@ -55,6 +59,7 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
   );
 
   return (
+    <>
     <Modal
       open={open}
       onClose={onClose}
@@ -85,7 +90,10 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
                   type="button"
                   className={`pool-modal__mode-btn pool-modal__mode-btn--${poolModeTone(opt)}${isActive ? ' pool-modal__mode-btn--active' : ''}`}
                   aria-pressed={isActive}
-                  onClick={() => { if (!isActive) void setPoolMode(POOL_ENTITIES.mode, opt); }}
+                  onClick={() => {
+                    if (poolModeTone(opt) === 'manual') { onClose(); setManualOpen(true); return; }
+                    if (!isActive) void setPoolMode(POOL_ENTITIES.mode, opt).catch(() => { /* toast shown */ });
+                  }}
                 >
                   {opt}
                 </button>
@@ -122,5 +130,7 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
         </div>
       </div>
     </Modal>
+    <PumpManualModal open={manualOpen} onClose={() => setManualOpen(false)} />
+    </>
   );
 }

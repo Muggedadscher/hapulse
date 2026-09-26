@@ -30,6 +30,9 @@ export const POOL_ENTITIES = {
   manualTimer: 'timer.poolpumpe_manuell',
   /** Chosen duration (minutes) for a manual run started from HAPulse. */
   manualDuration: 'input_number.poolpumpe_manuell_dauer',
+  /** HA script that (re)starts the manual timer with the stored duration — used when the mode is ALREADY Manuell
+   *  (re-selecting the option changes no state, so the automation would not run; same as the Siri automation). */
+  manualRestartScript: 'script.pool_manuell_timer_starten',
   /** Configurable duration (minutes) for a start via Siri / the Apple-Home switch. */
   siriDuration: 'input_number.poolpumpe_siri_dauer',
   /** Live solar production feeding the solar automation. */
