@@ -32,6 +32,8 @@ import { useT, useLocale, useStateLabel } from '../../i18n/useT';
 import './EntityDetailModal.css';
 import { FavoriteToggle } from './FavoriteToggle'; // [fork]
 import { useIsManaged } from '../../ha/managedHooks'; // [fork]
+import { useCameraSource } from '../../nvr/cameraSource'; // [fork]
+import { NvrCameraHint } from '../../nvr/components/NvrCameraHint'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -274,6 +276,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const entityOverrides = useSettingsStore((s) => s.customization.entityOverrides);
   const openEntityDetail = useUIStore((s) => s.openEntityDetail);
   const managed = useIsManaged(); // [fork] star for per-user favorites under global management
+  const cameraSource = useCameraSource(); // [fork]
 
   // [fork] Selected history range is remembered per user (synced to HA storage).
   const detailRange = useSettingsStore((s) => s.customization.detailHistoryRange);
@@ -388,7 +391,9 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
         </div>
 
         {/* ── Camera: live view ── */}
-        {domain === 'camera' && <CameraLiveView entity={entity} name={name} />}
+        {domain === 'camera' && (cameraSource === 'sentinel' // [fork] cameras come from Sentinel
+          ? <NvrCameraHint onNavigate={onClose} />
+          : <CameraLiveView entity={entity} name={name} />)}
 
         {/* ── Control (interactive domains only) ── */}
         {CONTROL_DOMAINS.has(domain) && (

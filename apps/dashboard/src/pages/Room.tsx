@@ -23,6 +23,8 @@ import { applyStoredOrder } from '../lib/order';
 import { useT, type TKey } from '../i18n/useT';
 import './Page.css';
 import './Room.css';
+import { useAreaCameraIds, useCameraSource } from '../nvr/cameraSource'; // [fork]
+import { NvrRoomCameras } from '../nvr/NvrRoomCameras'; // [fork]
 
 // ── Entity name helpers ───────────────────────────────────────────────────────
 
@@ -163,6 +165,7 @@ const DRAG_REORDER_KEYS: Record<SectionKey, TKey> = {
   sensor: 'room.section.dragReorder.sensor',
   binary_sensor: 'room.section.dragReorder.sensor',
   other: 'room.section.dragReorder.misc',
+  nvrCameras: 'cameraSource.room.dragReorder', // [fork]
 };
 
 function SortableSectionInner({
@@ -238,6 +241,7 @@ const SECTION_ORDER = [
   'sensor',
   'binary_sensor',
   'other',
+  'nvrCameras', // [fork] Sentinel cameras assigned to this room
 ] as const;
 
 type SectionKey = (typeof SECTION_ORDER)[number];
@@ -278,6 +282,8 @@ export function Room() {
   const { hiddenEntities, entityOverrides, entityOrder, favorites, roomSectionOrder, roomSectionSpans } = customization;
 
   // [fork] hooks before the early return (rules-of-hooks, React #310)
+  const cameraSource = useCameraSource(); // [fork] Sentinel replaces HA's camera entities
+  const areaCameraIds = useAreaCameraIds(areaId ?? ''); // [fork]
   const handleReorderSections = useCallback(
     (newKeys: string[]) => {
       if (!areaId) return;
@@ -356,6 +362,8 @@ export function Room() {
       domainMap[domain] = filtered;
     }
   }
+
+  if (cameraSource === 'sentinel') delete domainMap['camera']; // [fork] cameras come from Sentinel
 
   // Group switch and other ids
   const switchIds: string[] = [];
@@ -485,6 +493,8 @@ export function Room() {
 
   const allSectionDefs: SectionDef[] = [
     { key: 'scene',        label: t(SECTION_LABEL_KEYS['scene']!),        ids: sceneIds },
+    // [fork] Sentinel cameras the admin assigned to this room
+    { key: 'nvrCameras',   label: t('cameraSource.room.title'),           ids: cameraSource === 'sentinel' ? areaCameraIds : [] },
     { key: 'light',        label: t(SECTION_LABEL_KEYS['light']!),        ids: lightIds },
     { key: 'climate',      label: t(SECTION_LABEL_KEYS['climate']!),      ids: climateIds },
     { key: 'media_player', label: t(SECTION_LABEL_KEYS['media_player']!), ids: mediaIds },
@@ -510,6 +520,7 @@ export function Room() {
 
   function renderSectionContent(s: SectionDef): React.ReactNode {
     const { key, ids, isSensor } = s;
+    if (key === 'nvrCameras') return <NvrRoomCameras cameraIds={ids} />; // [fork]
     const gridClass = isSensor
       ? 'room-page__sensor-grid'
       : key === 'scene'

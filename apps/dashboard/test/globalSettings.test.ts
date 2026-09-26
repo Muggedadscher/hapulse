@@ -102,6 +102,7 @@ describe('scope table', () => {
       'hiddenEnergySections', 'energySectionSpans', 'energySectionHeights', 'mobileHiddenSections', 'mobileHiddenAutomationSections',
       'mobileHiddenSceneSections', 'mobileHiddenMusicSections', 'mobileHiddenSecuritySections', 'mobileHiddenSystemSections',
       'mobileHiddenEnergySections', 'scryptedUrl', 'poolChipMigrated', 'wasteSectionMigrated', 'nvrSectionMigrated', 'navOrderV2Migrated',
+      'nvrCameraRooms',
     ];
     const all = [...KNOWN_GLOBAL, ...scope.USER_CUSTOMIZATION_KEYS, ...scope.SECRET_CUSTOMIZATION_KEYS].sort();
     expect(Object.keys(INITIAL.customization).sort()).toEqual(all);

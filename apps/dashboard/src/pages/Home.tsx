@@ -14,6 +14,7 @@ import { RoomsQuickAccess } from '../components/home/RoomsQuickAccess';
 import { WasteCard } from '../components/waste/WasteCard'; // [fork]
 import { NvrHomeCard } from '../nvr/NvrHomeCard'; // [fork]
 import { useNvrConfigured } from '../nvr/config'; // [fork]
+import { useCameraSource, withoutHaCameras } from '../nvr/cameraSource'; // [fork]
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
 import { SortableGrid } from '../components/ui/SortableGrid';
@@ -241,9 +242,11 @@ export function Home() {
   const mobileHiddenSections = useSettingsStore(
     useShallow((s) => s.customization.mobileHiddenSections)
   );
-  const favorites = useSettingsStore(
+  const favoritesRaw = useSettingsStore(
     useShallow((s) => s.customization.favorites)
   );
+  const cameraSource = useCameraSource(); // [fork] no HA camera favorites while Sentinel is the source
+  const favorites = useMemo(() => withoutHaCameras(favoritesRaw, cameraSource), [favoritesRaw, cameraSource]); // [fork]
   const homeSectionSpans = useSettingsStore(
     useShallow((s) => s.customization.homeSectionSpans)
   );

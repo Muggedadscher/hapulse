@@ -22,6 +22,7 @@ import { CameraGrid } from '../components/security/CameraGrid';
 import { applyStoredOrder } from '../lib/order';
 import { NvrSecuritySection } from '../nvr/NvrSecuritySection'; // [fork]
 import { useNvrConfigured } from '../nvr/config'; // [fork]
+import { useCameraSource } from '../nvr/cameraSource'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import './Page.css';
 import './Security.css';
@@ -219,6 +220,7 @@ export function Security() {
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
   const editMode = useUIStore((s) => s.editMode);
   const hasNvr = useNvrConfigured(); // [fork] Sentinel NVR section only with a configured connection
+  const cameraSource = useCameraSource(); // [fork] with Sentinel, HA's camera entities are left out
 
   const allEntities = useMemo(() => Object.values(entities), [entities]);
 
@@ -230,7 +232,7 @@ export function Security() {
   );
   // Raw entity lists (before visibility filter)
   const allPeople   = allEntities.filter((e) => e.entity_id.startsWith('person.'));
-  const allCameras  = allEntities.filter((e) => e.entity_id.startsWith('camera.'));
+  const allCameras  = cameraSource === 'sentinel' ? [] : allEntities.filter((e) => e.entity_id.startsWith('camera.')); // [fork]
   const allBinary   = allEntities.filter((e) => e.entity_id.startsWith('binary_sensor.'));
   const allLocks    = allEntities.filter((e) => e.entity_id.startsWith('lock.'));
   const allDoors    = allBinary.filter(isDoor);

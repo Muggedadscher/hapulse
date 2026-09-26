@@ -15,6 +15,7 @@ import type { DeviceModel, DevicesSummary } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useEditingEnabled } from './managedHooks'; // [fork]
+import { isHaCameraEntity, useCameraSource } from '../nvr/cameraSource'; // [fork]
 
 const EMPTY_SUMMARY: DevicesSummary = { integrations: 0, devices: 0, entities: 0, rooms: 0 };
 
@@ -30,13 +31,17 @@ export function useDevices(): UseDevicesResult {
   const registries = useEntityStore((s) => s.registries);
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
   const editingEnabled = useEditingEnabled(); // [fork] admins only under global management
+  const cameraSource = useCameraSource(); // [fork] HA camera entities are left out while Sentinel is the source
 
   const devices = useMemo(
     () =>
       registries
-        ? buildDeviceModels(registries, useEntityStore.getState().entities, editingEnabled ? [] : hiddenEntities)
+        ? buildDeviceModels(registries, useEntityStore.getState().entities, [ // [fork] + camera.* with Sentinel
+            ...(editingEnabled ? [] : hiddenEntities),
+            ...(cameraSource === 'sentinel' ? registries.entities.map((e) => e.entity_id).filter(isHaCameraEntity) : []),
+          ])
         : [],
-    [registries, hiddenEntities, editingEnabled],
+    [registries, hiddenEntities, editingEnabled, cameraSource],
   );
 
   const summary = useMemo(() => summarizeDevices(devices), [devices]);

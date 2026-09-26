@@ -12,6 +12,7 @@ import type { SentinelClient } from './api';
 import { useNvrConfig } from './config';
 
 export type NvrStatus = 'idle' | 'loading' | 'ready' | 'error';
+export type NvrPollScope = 'cameras' | 'full';
 
 interface NvrState {
   /** Client key the data belongs to — a config change resets everything. */
@@ -24,7 +25,8 @@ interface NvrState {
   loadedAt: number;
   /** HTTP status (401 = bad token, 0 = unreachable) or null. */
   errorStatus: number | null;
-  refresh: (client: SentinelClient) => Promise<void>;
+  /** `cameras` fetches only the camera list (room pages, counters); `full` everything. */
+  refresh: (client: SentinelClient, scope?: NvrPollScope) => Promise<void>;
   reset: () => void;
 }
 
@@ -38,11 +40,17 @@ export const useNvrStore = create<NvrState>()((set, get) => ({
   loadedAt: 0,
   errorStatus: null,
 
-  async refresh(client) {
+  async refresh(client, scope = 'full') {
     if (get().key !== client.key) {
       set({ key: client.key, status: 'loading', cameras: [], recent: [], stats: null, histogram: [], loadedAt: 0, errorStatus: null });
     }
     try {
+      if (scope === 'cameras') {
+        const cameras = await client.getJson<SentinelCamera[]>('api/cameras');
+        if (get().key !== client.key) return;
+        set({ status: 'ready', cameras, loadedAt: Date.now(), errorStatus: null });
+        return;
+      }
       const [cameras, recent, stats, hist] = await Promise.all([
         client.getJson<SentinelCamera[]>('api/cameras'),
         client.getJson<SentinelRecentEvent[]>('api/recent-events?limit=40'),
@@ -70,18 +78,24 @@ export const useNvrStore = create<NvrState>()((set, get) => ({
 // Shared poller
 // ---------------------------------------------------------------------------
 
-const subscribers = new Map<symbol, number>();
+const subscribers = new Map<symbol, { ms: number; scope: NvrPollScope }>();
 let timer: ReturnType<typeof setInterval> | null = null;
 let timerMs = 0;
+
+/** The widest scope anybody currently needs: all four endpoints only while a `full` subscriber is mounted. */
+function currentScope(): NvrPollScope {
+  for (const s of subscribers.values()) if (s.scope === 'full') return 'full';
+  return 'cameras';
+}
 
 function restartTimer(): void {
   if (timer) { clearInterval(timer); timer = null; }
   if (subscribers.size === 0) return;
-  timerMs = Math.min(...subscribers.values());
+  timerMs = Math.min(...[...subscribers.values()].map((s) => s.ms));
   timer = setInterval(() => {
     if (document.visibilityState === 'hidden') return;
     const cfg = currentClient();
-    if (cfg) void useNvrStore.getState().refresh(cfg);
+    if (cfg) void useNvrStore.getState().refresh(cfg, currentScope());
   }, timerMs);
 }
 
@@ -91,22 +105,22 @@ let currentClient: () => SentinelClient | null = () => null;
  * Keep the overview data fresh while mounted. Refreshes immediately on mount
  * and whenever the tab becomes visible again.
  */
-export function useNvrPolling(client: SentinelClient | null, intervalMs = 10_000): void {
+export function useNvrPolling(client: SentinelClient | null, intervalMs = 10_000, scope: NvrPollScope = 'full'): void {
   useEffect(() => {
     if (!client) return;
     currentClient = () => client;
     const id = Symbol('nvr-poll');
-    subscribers.set(id, intervalMs);
+    subscribers.set(id, { ms: intervalMs, scope });
     restartTimer();
-    void useNvrStore.getState().refresh(client);
-    const vis = () => { if (document.visibilityState === 'visible') void useNvrStore.getState().refresh(client); };
+    void useNvrStore.getState().refresh(client, scope);
+    const vis = () => { if (document.visibilityState === 'visible') void useNvrStore.getState().refresh(client, currentScope()); };
     document.addEventListener('visibilitychange', vis);
     return () => {
       subscribers.delete(id);
       document.removeEventListener('visibilitychange', vis);
       restartTimer();
     };
-  }, [client, intervalMs]);
+  }, [client, intervalMs, scope]);
 }
 
 /** Convenience: config + polling in one call. */

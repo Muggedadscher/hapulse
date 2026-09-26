@@ -1225,5 +1225,16 @@
   "globalSettings.backup.userOnlyHint": "L'importazione porta solo le tue impostazioni (preferiti, lingua…); il resto è gestito dall'amministratore.",
   "globalSettings.favorite.add": "Aggiungi ai preferiti",
   "globalSettings.favorite.remove": "Rimuovi dai preferiti",
-  "globalSettings.nvr.notSetUp": "Sentinel non è ancora configurato: può farlo un amministratore."
+  "globalSettings.nvr.notSetUp": "Sentinel non è ancora configurato: può farlo un amministratore.",
+  "cameraSource.room.title": "Telecamere",
+  "cameraSource.detail.hint": "Le telecamere passano da Sentinel NVR.",
+  "cameraSource.detail.open": "Apri NVR",
+  "cameraSource.rooms.title": "Assegna le telecamere alle stanze",
+  "cameraSource.rooms.desc": "La pagina di una stanza mostra le telecamere assegnate.",
+  "cameraSource.rooms.suggest": "Suggerisci dal nome",
+  "cameraSource.rooms.save": "Salva",
+  "cameraSource.rooms.empty": "Nessuna telecamera trovata.",
+  "cameraSource.rooms.none": "Nessuna stanza",
+  "cameraSource.rooms.selectAria": "Stanza per {name}",
+  "cameraSource.room.dragReorder": "Trascina per riordinare la sezione Telecamere"
 }
