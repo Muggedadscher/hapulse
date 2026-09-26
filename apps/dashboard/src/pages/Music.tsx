@@ -32,8 +32,7 @@ function pickHeroPlayer(players: HassEntity[]): HassEntity | undefined {
 
 // ── Section IDs ───────────────────────────────────────────────────────────────
 
-const SECTIONS = ['now_playing', 'zones', 'other_players', 'library', 'queue'] as const;
-type SectionId = typeof SECTIONS[number];
+type SectionId = 'now_playing' | 'zones' | 'other_players' | 'library' | 'queue'; // [fork] plain union (lint: const was type-only)
 
 type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
 

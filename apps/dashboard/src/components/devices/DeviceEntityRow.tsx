@@ -11,7 +11,7 @@
  *  - everything else          → formatted state value
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react'; // [fork] useMemo
 import {
   Play, Pause, SkipBack, SkipForward, ChevronUp, ChevronDown,
   Square, House, Minus, Plus, Eye, EyeOff, Star,
@@ -115,12 +115,12 @@ export function DeviceEntityRow({
   const id = entity.entity_id;
   const domain = domainOf(id);
   const attrs = entity.attributes;
-  const target = { entity_id: id };
+  const target = useMemo(() => ({ entity_id: id }), [id]); // [fork] stable for the callbacks' deps (lint)
 
   const call = useCallback(
     (d: string, service: string, data?: Record<string, unknown>) =>
       void callService(d, service, data ?? {}, target),
-    [id],
+    [target], // [fork]
   );
   const lockAction = useLockAction(); // [fork] unlock confirmation / lock code
 

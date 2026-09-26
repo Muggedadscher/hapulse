@@ -160,6 +160,12 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 > **identische Keys in allen Sprachen**. Neue Fork-Strings also immer in *jede*
 > `locales/*.json` eintragen, sonst wird `npm test` rot.
 
+### Gelöschte Upstream-Dateien
+
+| Datei | Grund |
+|---|---|
+| `apps/dashboard/src/components/security/AlarmCard.{tsx,css}` | nirgends importiert (die Alarm-Bedienung ist `AlarmPanelCard`); bei einem Upstream-Merge „modified/deleted“ → gelöscht lassen, solange Upstream sie nicht wieder einbindet |
+
 ---
 
 ## 6. Vor jedem Push kurz prüfen

@@ -2,7 +2,7 @@
  * PlayerTile — Compact media player tile for the "other players" grid.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react'; // [fork] useMemo
 import { Play, Pause, Volume2, Music } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useConnectionStore } from '../../stores/connectionStore';
@@ -47,14 +47,14 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
   );
   const volumeLevel = (attrs['volume_level'] as number | undefined) ?? 0;
 
-  const target = { entity_id: entity.entity_id };
+  const target = useMemo(() => ({ entity_id: entity.entity_id }), [entity.entity_id]); // [fork] stable for the callbacks' deps (lint)
 
   const handlePlayPause = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       callService('media_player', isPlaying ? 'media_pause' : 'media_play', {}, target);
     },
-    [isPlaying, entity.entity_id]
+    [isPlaying, target] /* [fork] */
   );
 
   // [fork] commit on release, 300 ms while dragging (see useCommitRange)

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Monitor, Scaling } from 'lucide-react';
+import { Scaling } from 'lucide-react'; // [fork] unused Monitor removed (lint)
 import { useShallow } from 'zustand/react/shallow';
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
