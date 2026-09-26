@@ -6,7 +6,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useShallow } from 'zustand/react/shallow';
 import {
-  Github, ExternalLink,
+  FolderGit2, ExternalLink, // [fork] lucide 1.x has no brand icons (Github removed)
   ChevronDown, ChevronRight,
   Wifi, Hash, Sun, Palette, Download, Upload, Info, Languages, Type, EyeOff, Shapes,
   LayoutGrid, Pencil, List, ShieldCheck, Sparkles,
@@ -1022,7 +1022,7 @@ function AboutSection() {
           rel="noopener noreferrer"
           className="about-card__link"
         >
-          <Github size={14} strokeWidth={1.75} />
+          <FolderGit2 size={14} strokeWidth={1.75} />{/* [fork] was Github */}
           github.com/jlnbln/HAPulse
           <ExternalLink size={12} strokeWidth={1.75} />
         </a>
