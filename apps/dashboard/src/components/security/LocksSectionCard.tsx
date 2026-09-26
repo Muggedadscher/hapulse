@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Lock, LockOpen } from 'lucide-react';
-import { callService } from '../../ha/service';
+import { useLockAction } from './LockConfirm'; // [fork]
+import { lockBusy } from './lockLogic';
 import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { LocksList } from './LocksList';
@@ -18,13 +19,10 @@ export function LocksSectionCard({ locks, rooms }: LocksSectionCardProps) {
   const allLocked = lockedCount === locks.length;
   const allUnlocked = lockedCount === 0;
 
-  const lockAll = useCallback(() => {
-    locks.forEach((l) => callService('lock', 'lock', {}, { entity_id: l.entity_id }));
-  }, [locks]);
-
-  const unlockAll = useCallback(() => {
-    locks.forEach((l) => callService('lock', 'unlock', {}, { entity_id: l.entity_id }));
-  }, [locks]);
+  // [fork] "unlock all" asks first (with the count); only locks that can act right now are sent
+  const { request, dialog } = useLockAction();
+  const lockAll = () => request('lock', locks.filter((l) => l.state !== 'locked' && !lockBusy(l.state)));
+  const unlockAll = () => request('unlock', locks.filter((l) => l.state === 'locked'));
 
   return (
     <Card className="locks-section-card">
@@ -69,6 +67,7 @@ export function LocksSectionCard({ locks, rooms }: LocksSectionCardProps) {
 
       {/* Individual lock rows */}
       <LocksList locks={locks} rooms={rooms} />
+      {dialog}
     </Card>
   );
 }
