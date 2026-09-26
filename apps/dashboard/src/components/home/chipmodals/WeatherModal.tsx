@@ -12,6 +12,7 @@ import { useEditingEnabled } from '../../../ha/managedHooks'; // [fork]
 import { useLocale, useT, useStateLabel } from '../../../i18n/useT';
 import type { TFunction } from '../../../i18n/useT';
 import './WeatherModal.css';
+import { formatNumber } from '@hapulse/core'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Icon maps
@@ -285,7 +286,7 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
   // Build stat list — only show what's available
   const stats: StatProps[] = [];
   if (humidity != null) {
-    stats.push({ icon: <Droplets size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.humidity'), value: `${humidity}%` });
+    stats.push({ icon: <Droplets size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.humidity'), value: `${formatNumber(humidity, locale)}%` }); // [fork] locale
   }
   if (apparentTemp != null) {
     stats.push({ icon: <Thermometer size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.feelsLike'), value: `${Math.round(apparentTemp)}${tempUnit}` });
@@ -295,17 +296,17 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
     stats.push({
       icon: <Wind size={14} strokeWidth={1.75} />,
       label: t('home.chipmodals.weather.stat.wind'),
-      value: `${windSpeed} ${windUnit}${bearing ? ` ${bearing}` : ''}`,
+      value: `${formatNumber(windSpeed, locale)} ${windUnit}${bearing ? ` ${bearing}` : ''}`, // [fork] locale
     });
   }
   if (windGust != null) {
-    stats.push({ icon: <Wind size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.gusts'), value: `${windGust} ${windUnit}` });
+    stats.push({ icon: <Wind size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.gusts'), value: `${formatNumber(windGust, locale)} ${windUnit}` }); // [fork] locale
   }
   if (pressure != null) {
     stats.push({ icon: <Gauge size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.pressure'), value: `${Math.round(pressure)} ${pressureUnit}` });
   }
   if (visibility != null) {
-    stats.push({ icon: <Eye size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.visibility'), value: `${visibility} ${visibilityUnit}` });
+    stats.push({ icon: <Eye size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.visibility'), value: `${formatNumber(visibility, locale)} ${visibilityUnit}` }); // [fork] locale
   }
   if (dewPoint != null) {
     stats.push({ icon: <Thermometer size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.dewPoint'), value: `${Math.round(dewPoint)}${tempUnit}` });
@@ -314,7 +315,7 @@ function WeatherContent({ entity }: { entity: NonNullable<ReturnType<typeof useW
     stats.push({ icon: <Sun size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.uvIndex'), value: String(Math.round(uvIndex)) });
   }
   if (cloudCoverage != null) {
-    stats.push({ icon: <Cloud size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.cloudCover'), value: `${cloudCoverage}%` });
+    stats.push({ icon: <Cloud size={14} strokeWidth={1.75} />, label: t('home.chipmodals.weather.stat.cloudCover'), value: `${formatNumber(cloudCoverage, locale)}%` }); // [fork] locale
   }
 
   return (

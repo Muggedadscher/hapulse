@@ -11,13 +11,15 @@ import React from 'react';
 import { Sun, Minus, Plus } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { useEntity } from '../../ha/hooks';
-import { useT } from '../../i18n/useT';
+import { useLocale, useT } from '../../i18n/useT';
+import { formatNumber } from '@hapulse/core';
 import { setSolarThreshold } from '../../ha/pool';
 import { POOL_ENTITIES } from './poolConfig';
 import { PoolGauge } from './PoolGauge';
 
 export function SolarCard() {
   const t = useT();
+  const locale = useLocale();
   const power = useEntity(POOL_ENTITIES.solarPower);
   const threshold = useEntity(POOL_ENTITIES.solarThreshold);
   const exceeded = useEntity(POOL_ENTITIES.solarExceeded);
@@ -53,8 +55,8 @@ export function SolarCard() {
         <PoolGauge
           value={fraction}
           color={gaugeColor}
-          primary={<>{isNaN(powerW) ? '—' : Math.round(powerW)}<span className="pool-gauge__unit"> {unit}</span></>}
-          secondary={isNaN(thresholdW) ? undefined : `/ ${Math.round(thresholdW)} ${unit}`}
+          primary={<>{isNaN(powerW) ? '—' : formatNumber(powerW, locale, { maxDecimals: 0 })}<span className="pool-gauge__unit"> {unit}</span></>}
+          secondary={isNaN(thresholdW) ? undefined : `/ ${formatNumber(thresholdW, locale, { maxDecimals: 0 })} ${unit}`}
         />
 
         <div className="pool-solar__side">
@@ -75,7 +77,7 @@ export function SolarCard() {
                 <Minus size={16} strokeWidth={2} />
               </button>
               <span className="pool-stepper__value data-font">
-                {isNaN(thresholdW) ? '—' : Math.round(thresholdW)}<span className="pool-stepper__unit"> {unit}</span>
+                {isNaN(thresholdW) ? '—' : formatNumber(thresholdW, locale, { maxDecimals: 0 })}<span className="pool-stepper__unit"> {unit}</span>
               </span>
               <button
                 type="button"

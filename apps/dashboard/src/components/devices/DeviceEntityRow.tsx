@@ -17,6 +17,7 @@ import {
   Square, House, Minus, Plus, Eye, EyeOff, Star,
 } from 'lucide-react';
 import { domainOf, formatEntityState } from '@hapulse/core';
+import { formatNumber } from '@hapulse/core'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { useLockAction } from '../security/LockConfirm'; // [fork]
@@ -149,7 +150,7 @@ export function DeviceEntityRow({
       };
       control = (
         <Stepper
-          value={String(tempTarget)}
+          value={formatNumber(tempTarget, locale, { maxDecimals: 2 })} // [fork] locale (the value sent to HA is unchanged)
           unit="°"
           onStep={onStep}
           decreaseLabel={t('devices.row.decreaseAria')}
@@ -170,7 +171,7 @@ export function DeviceEntityRow({
       };
       control = (
         <Stepper
-          value={String(val)}
+          value={formatNumber(val, locale, { maxDecimals: 3 })} // [fork] locale
           {...(unit ? { unit: ` ${unit}` } : {})}
           onStep={onStep}
           decreaseLabel={t('devices.row.decreaseAria')}

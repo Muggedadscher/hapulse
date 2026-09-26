@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatPoolValue, formatRingCountdown, formatUntil } from '../src/components/pool/poolFormat';
+import { formatRingCountdown, formatUntil } from '../src/components/pool/poolFormat';
+import { formatEntityState } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
 
 const ent = (state: string, unit?: string) =>
@@ -23,11 +24,10 @@ describe('pool formatting', () => {
     expect(formatUntil(new Date(2026, 8, 27, 0, 5), new Date(2026, 8, 26, 23, 50), 'de').kind).toBe('tomorrow');
   });
 
-  it('values use the locale decimal separator (like the runtime chart)', () => {
-    expect(formatPoolValue(ent('5.47', 'h'), 'de')).toBe('5,5 h');
-    expect(formatPoolValue(ent('5.47', 'h'), 'en')).toBe('5.5 h');
-    expect(formatPoolValue(ent('67.1248', 'kWh'), 'de')).toBe('67,1 kWh');
-    expect(formatPoolValue(ent('1240.0754', 'kWh'), 'de')).toBe('1.240,1 kWh');
-    expect(formatPoolValue(ent('unavailable', 'h'), 'de')).toBeNull();
+  it('pool values use the locale decimal separator (via formatEntityState, like the runtime chart)', () => {
+    expect(formatEntityState(ent('5.47', 'h'), 'de')).toBe('5,5 h');
+    expect(formatEntityState(ent('5.47', 'h'), 'en')).toBe('5.5 h');
+    expect(formatEntityState(ent('67.1248', 'kWh'), 'de')).toBe('67,1 kWh');
+    expect(formatEntityState(ent('1240.0754', 'kWh'), 'de')).toBe('1.240,1 kWh');
   });
 });

@@ -97,6 +97,7 @@ import {
   clampManualMinutes,
   minutesToDurationString,
   formatManualDuration,
+  formatNumber,
   detectWasteBins,
   parseWasteSensor,
   wasteTypeName,
@@ -924,7 +925,7 @@ const TEMP_SENSOR = {
   attributes: { unit_of_measurement: '°C' },
 };
 // The narrow no-break space between number and unit comes from upstream (U+202F).
-assertEqual(formatEntityState(TEMP_SENSOR, 'fr', label), '21.3 °C',
+assertEqual(formatEntityState(TEMP_SENSOR, 'fr', label), '21,3 °C', // [fork] French decimal comma
   'numeric value untouched despite the label');
 
 const UNAVAILABLE = { ...CLIMATE_ENTITY, state: 'unavailable' };
@@ -1244,6 +1245,31 @@ assertEqual(formatManualDuration(30), '30 min', 'formatManualDuration under an h
 assertEqual(formatManualDuration(120), '2 h', 'formatManualDuration whole hours');
 assertEqual(formatManualDuration(90), '1.5 h', 'formatManualDuration half hours');
 assertEqual(formatManualDuration(1440), '24 h', 'formatManualDuration 24h');
+assertEqual(formatManualDuration(90, 'de'), '1,5 h', 'formatManualDuration German decimal comma');
+
+// [fork] Locale-aware numbers (numberFormat.ts) — decimal comma, grouping, sign, default 'en'.
+console.log('\n── number format ──');
+assertEqual(formatNumber(5.47), '5.5', 'formatNumber default is English, 1 decimal');
+assertEqual(formatNumber(5.47, 'de'), '5,5', 'formatNumber de decimal comma');
+assertEqual(formatNumber(5, 'de'), '5', 'formatNumber no trailing zeros by default');
+assertEqual(formatNumber(21, 'de', { minDecimals: 1, maxDecimals: 1 }), '21,0', 'formatNumber minDecimals');
+assertEqual(formatNumber(1250, 'de', { maxDecimals: 0 }), '1.250', 'formatNumber de grouping');
+assertEqual(formatNumber(1250, 'en', { maxDecimals: 0 }), '1,250', 'formatNumber en grouping');
+assertEqual(formatNumber(1250.5, 'es', { maxDecimals: 1 }), '1250,5', 'formatNumber es: no grouping below 10 000 (CLDR)');
+assertEqual(formatNumber(-3.5, 'de'), '-3,5', 'formatNumber keeps the minus sign');
+assertEqual(formatNumber(-0.04, 'de'), '0', 'formatNumber: no "-0"');
+assertEqual(formatNumber(1.5, 'xx-invalid'), '1.5', 'formatNumber: an invalid locale falls back to English');
+{
+  const s = (entity_id, state, attributes = {}) => ({ entity_id, state, attributes, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null } });
+  assertEqual(formatEntityState(s('sensor.t', '21.34', { unit_of_measurement: '°C' }), 'de'), '21,3 °C', 'formatEntityState de decimal comma');
+  assertEqual(formatEntityState(s('sensor.t', '21.34', { unit_of_measurement: '°C' })), '21.3 °C', 'formatEntityState without locale stays English');
+  assertEqual(formatEntityState(s('sensor.e', '1240.07', { unit_of_measurement: 'kWh' }), 'de'), '1.240,1 kWh', 'formatEntityState de grouping');
+  assertEqual(formatEntityState(s('sensor.x', '-3.5'), 'de'), '-3,5', 'formatEntityState unit-less numeric keeps the minus (was dropped by humanizeState)');
+  assertEqual(formatEntityState(s('counter.c', '7'), 'de'), '7', 'formatEntityState counter');
+  assertEqual(formatEntityState(s('input_select.m', '1'), 'de', () => 'label'), 'label', 'formatEntityState: non-value domains still go through the label');
+}
+assertEqual(translate(EN, EN, 'de', 'devices.count', { count: 1.5 }), '1,5 devices', 'translate: fractional number var gets the locale separator');
+assertEqual(translate({ k: 'HTTP {s} {y}' }, {}, 'de', 'k', { s: 404, y: 2026 }), 'HTTP 404 2026', 'translate: whole numbers are never grouped');
 // poolDayStarts — calendar days across the DST change (run in Europe/Berlin via the TZ below).
 {
   const prevTz = process.env.TZ;

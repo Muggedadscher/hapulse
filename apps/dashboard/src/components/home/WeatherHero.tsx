@@ -6,6 +6,7 @@ import {
 import type { HassEntity, Locale, WeatherForecast } from '@hapulse/core';
 import { useLocale, useStateLabel } from '../../i18n/useT';
 import './home.css';
+import { formatNumber } from '@hapulse/core'; // [fork]
 
 interface WeatherHeroProps {
   entity: HassEntity;
@@ -117,13 +118,13 @@ export function WeatherHero({ entity, isNight, favoritesSlot }: WeatherHeroProps
               {humidity != null && (
                 <span className="weather-hero__chip">
                   <Droplets size={12} strokeWidth={1.75} />
-                  {humidity}%
+                  {formatNumber(humidity, locale)}%{/* [fork] locale */}
                 </span>
               )}
               {windSpeed != null && (
                 <span className="weather-hero__chip">
                   <Wind size={12} strokeWidth={1.75} />
-                  {windSpeed} km/h
+                  {formatNumber(windSpeed, locale)} km/h{/* [fork] locale */}
                 </span>
               )}
             </div>

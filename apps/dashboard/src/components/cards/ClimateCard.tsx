@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Thermometer, Flame, Snowflake, Wind, Power, RefreshCw } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
-import { useT, useStateLabel } from '../../i18n/useT';
+import { useT, useStateLabel, useLocale } from '../../i18n/useT'; // [fork] useLocale
+import { formatNumber } from '@hapulse/core'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 import { climateSetpoint, stepSetpoint } from '../home/climateLogic'; // [fork]
@@ -22,6 +23,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
 
 export function ClimateCard({ entity, name }: ClimateCardProps) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   const sl = useStateLabel();
   const entityId = entity.entity_id;
   const currentTemp = entity.attributes.current_temperature as number | undefined;
@@ -85,7 +87,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
         <div className="climate-card__current">
           <span className="climate-card__current-label">{t('cards.climate.current')}</span>
           <span className="climate-card__current-value">
-            {currentTemp != null ? `${currentTemp.toFixed(1)}°` : '—'}
+            {currentTemp != null ? `${formatNumber(currentTemp, locale, { minDecimals: 1, maxDecimals: 1 })}°` : '—'}{/* [fork] locale */}
           </span>
         </div>
 
@@ -102,7 +104,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
                 −
               </button>
               <span className="climate-card__target-value data-font">
-                {localTemp.toFixed(1)}°
+                {formatNumber(localTemp, locale, { minDecimals: 1, maxDecimals: 1 })}°{/* [fork] locale */}
               </span>
               <button
                 className="climate-card__step-btn"

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Cpu, Database, HardDrive, Network, Clock, Activity } from 'lucide-react';
-import { useT } from '../../i18n/useT';
+import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
 import type { TKey, TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity, SystemMonitorIndex } from '@hapulse/core';
+import { formatNumber } from '@hapulse/core'; // [fork]
 import './SystemMonitorCard.css';
 
 interface SystemMonitorCardProps {
@@ -42,7 +43,7 @@ function categorise(entities: HassEntity[], index: SystemMonitorIndex): MetricGr
   return groups.filter((g) => g.entities.length > 0);
 }
 
-function formatValue(entity: HassEntity, t: TFunction, key: string): string {
+function formatValue(entity: HassEntity, t: TFunction, key: string, locale?: string): string { // [fork] locale
   const unit = entity.attributes.unit_of_measurement as string | undefined;
   const val = entity.state;
 
@@ -63,7 +64,7 @@ function formatValue(entity: HassEntity, t: TFunction, key: string): string {
 
   const num = parseFloat(val);
   if (!isNaN(num)) {
-    const rounded = num < 10 ? num.toFixed(1) : Math.round(num).toString();
+    const rounded = formatNumber(num, locale, { minDecimals: num < 10 ? 1 : 0, maxDecimals: num < 10 ? 1 : 0 }); // [fork] locale
     return unit ? `${rounded} ${unit}` : rounded;
   }
   return unit ? `${val} ${unit}` : val;
@@ -84,6 +85,7 @@ function barColorClass(val: number): string {
 
 export function SystemMonitorCard({ entities, index }: SystemMonitorCardProps) {
   const t = useT();
+  const locale = useLocale(); // [fork] number formatting
   if (entities.length === 0) return null;
 
   const groups = categorise(entities, index);
@@ -110,7 +112,7 @@ export function SystemMonitorCard({ entities, index }: SystemMonitorCardProps) {
                   entity.attributes.friendly_name ?? entity.entity_id.split('.')[1]!
                 ).replace(/_/g, ' ');
                 const barPct = metricBarWidth(entity);
-                const formatted = formatValue(entity, t, index.keyOf(entity.entity_id));
+                const formatted = formatValue(entity, t, index.keyOf(entity.entity_id), locale); // [fork] locale
 
                 return (
                   <div key={entity.entity_id} className="sys-metric-tile">

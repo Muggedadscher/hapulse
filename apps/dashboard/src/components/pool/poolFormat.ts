@@ -2,8 +2,6 @@
  * [fork] Display formatting for the Pool page (pure, tested in test/poolFormat.test.ts).
  */
 
-import type { HassEntity } from '@hapulse/core';
-
 /**
  * Remaining time for the manual-run ring. Under an hour "29:59" + "min"; from an hour on
  * "23:59" + "h" — seconds tick uselessly on long runs, and "23:59:46" does not fit the ring.
@@ -32,13 +30,4 @@ export function formatUntil(end: Date, now: Date, locale: string): UntilLabel {
   if (days <= 0) return { kind: 'today', time };
   if (days === 1) return { kind: 'tomorrow', time };
   return { kind: 'day', time, day: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(end) };
-}
-
-/** Numeric state + unit with the locale's decimal separator ("5,5 h"), like the runtime chart. */
-export function formatPoolValue(entity: HassEntity, locale: string): string | null {
-  const num = parseFloat(entity.state);
-  if (!Number.isFinite(num)) return null;
-  const unit = entity.attributes['unit_of_measurement'];
-  const value = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(num);
-  return typeof unit === 'string' && unit ? `${value} ${unit}` : value;
 }

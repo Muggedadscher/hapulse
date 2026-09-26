@@ -104,6 +104,10 @@ sauber übernehmen können.
   vom Admin zugeordneten Sentinel-Kameras (`customization.nvrCameraRooms`). Details:
   `docs/NVR-INTEGRATION.md` → „Kameraquelle“.
 
+- **Zahlen immer sprachabhängig**: Angezeigte Zahlen nur über `formatNumber` (`@hapulse/core`,
+  `numberFormat.ts`) bzw. `formatEntityState(entity, locale)` — nie `toFixed`/`${n}` in UI-Text
+  (Upstream zeigte überall „5.5“ statt „5,5“). Ausnahmen: Werte an HA, SVG/CSS, Uhrzeiten, Versionsnummern.
+
 ## Optionales Folge-Feature — HA-Kameras live
 
 `docs/NVR-NATIVE-PLAN.md` beschreibt einen **anderen**, noch nicht gebauten

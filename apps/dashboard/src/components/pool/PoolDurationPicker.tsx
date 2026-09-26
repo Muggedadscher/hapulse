@@ -15,6 +15,7 @@ import {
   clampManualMinutes,
   formatManualDuration,
 } from '@hapulse/core';
+import { useLocale } from '../../i18n/useT';
 
 /** ± step, matching the HA input_number. */
 const STEP = 5;
@@ -26,6 +27,7 @@ interface PoolDurationPickerProps {
 }
 
 export function PoolDurationPicker({ minutes, onChange, label }: PoolDurationPickerProps) {
+  const locale = useLocale();
   return (
     <div className="pool-duration">
       {label && <span className="pool-manual__label">{label}</span>}
@@ -38,7 +40,7 @@ export function PoolDurationPicker({ minutes, onChange, label }: PoolDurationPic
             aria-pressed={minutes === p}
             onClick={() => onChange(p)}
           >
-            {formatManualDuration(p)}
+            {formatManualDuration(p, locale)}
           </button>
         ))}
       </div>
@@ -52,7 +54,7 @@ export function PoolDurationPicker({ minutes, onChange, label }: PoolDurationPic
         >
           <Minus size={16} strokeWidth={2} />
         </button>
-        <span className="pool-manual__custom-value data-font">{formatManualDuration(minutes)}</span>
+        <span className="pool-manual__custom-value data-font">{formatManualDuration(minutes, locale)}</span>
         <button
           type="button"
           className="pool-stepper__btn"
