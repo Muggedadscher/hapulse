@@ -14,6 +14,7 @@ import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './PlayerTile.css';
+import { useCommitRange } from '../ui/useCommitRange'; // [fork]
 
 const FEATURE_VOLUME_SET = 4;
 
@@ -56,12 +57,14 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
     [isPlaying, entity.entity_id]
   );
 
+  // [fork] commit on release, 300 ms while dragging (see useCommitRange)
+  const volumeRange = useCommitRange(volumeLevel, (v) => { void callService('media_player', 'volume_set', { volume_level: v }, target).catch(() => {}); }, { throttleMs: 300 });
   const handleVolume = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       e.stopPropagation();
-      callService('media_player', 'volume_set', { volume_level: parseFloat(e.target.value) }, target);
+      volumeRange.onChange(e);
     },
-    [entity.entity_id]
+    [volumeRange]
   );
 
   const stateLabel = isPlaying && title ? title : sl('media_player', entity.state);
@@ -120,11 +123,14 @@ export function PlayerTile({ entity, roomName, selected, onSelect }: PlayerTileP
               min={0}
               max={1}
               step={0.01}
-              value={volumeLevel}
+              value={volumeRange.value}
               onChange={handleVolume}
+              onPointerUp={volumeRange.onPointerUp}
+              onKeyUp={volumeRange.onKeyUp}
+              onBlur={volumeRange.onBlur}
               onClick={(e) => e.stopPropagation()}
               aria-label={t('music.control.volume')}
-              style={{ '--progress-pct': `${volumeLevel * 100}%` } as React.CSSProperties}
+              style={{ '--progress-pct': `${volumeRange.value * 100}%` } as React.CSSProperties}
             />
           </div>
         )}

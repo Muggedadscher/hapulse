@@ -6,6 +6,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
+import { useCommitRange } from '../ui/useCommitRange'; // [fork]
 
 interface MediaCardProps {
   entity: HassEntity;
@@ -36,15 +37,10 @@ export function MediaCard({ entity, name }: MediaCardProps) {
     void callService('media_player', 'media_play_pause', {}, { entity_id: entityId });
   }, [entityId]);
 
-  const handleVolume = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = parseFloat(e.target.value);
-      void callService('media_player', 'volume_set', { volume_level: value }, { entity_id: entityId });
-    },
-    [entityId]
-  );
+  // [fork] commit on release, 300 ms while dragging (see useCommitRange)
+  const volumeRange = useCommitRange(volumeLevel ?? 0, (v) => { void callService('media_player', 'volume_set', { volume_level: v }, { entity_id: entityId }).catch(() => {}); }, { throttleMs: 300 });
 
-  const volumePercent = volumeLevel != null ? volumeLevel * 100 : 0;
+  const volumePercent = volumeLevel != null ? volumeRange.value * 100 : 0;
   const hasMedia = title || artist;
 
   return (
@@ -103,8 +99,11 @@ export function MediaCard({ entity, name }: MediaCardProps) {
               min={0}
               max={1}
               step={0.01}
-              value={volumeLevel}
-              onChange={handleVolume}
+              value={volumeRange.value}
+              onChange={volumeRange.onChange}
+              onPointerUp={volumeRange.onPointerUp}
+              onKeyUp={volumeRange.onKeyUp}
+              onBlur={volumeRange.onBlur}
               aria-label={t('cards.media.volumeAria')}
             />
           </div>

@@ -12,6 +12,7 @@ import { Card } from '../ui/Card';
 import { RoomIcon } from '../ui/RoomIcon';
 import type { HassEntity, Room } from '@hapulse/core';
 import './ZonesCard.css';
+import { useCommitRange } from '../ui/useCommitRange'; // [fork]
 
 const FEATURE_VOLUME_SET = 4;
 
@@ -81,7 +82,7 @@ interface ZoneRowProps {
 function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
   const t = useT();
   const { room, iconName, players } = zone;
-  const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic, firstActive } =
+  const { playingPlayers, volPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic, firstActive } =
     getZoneState(players, t);
 
   const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
@@ -89,21 +90,18 @@ function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
     useMAArtwork(isActive ? firstActive : null),
   );
 
+  // [fork] only players that support volume (others answered with errors); commit on release, 300 ms while dragging
   const handleMute = useCallback(() => {
-    playingPlayers.forEach((p) =>
-      callService('media_player', 'volume_mute', { is_volume_muted: !allMuted }, { entity_id: p.entity_id })
+    volPlayers.forEach((p) =>
+      void callService('media_player', 'volume_mute', { is_volume_muted: !allMuted }, { entity_id: p.entity_id }).catch(() => {})
     );
-  }, [allMuted, playingPlayers]);
+  }, [allMuted, volPlayers]);
 
-  const handleVolume = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const level = parseFloat(e.target.value);
-      playingPlayers.forEach((p) =>
-        callService('media_player', 'volume_set', { volume_level: level }, { entity_id: p.entity_id })
-      );
-    },
-    [playingPlayers]
-  );
+  const volumeRange = useCommitRange(effectiveVol, (level) => {
+    volPlayers.forEach((p) =>
+      void callService('media_player', 'volume_set', { volume_level: level }, { entity_id: p.entity_id }).catch(() => {})
+    );
+  }, { throttleMs: 300 });
 
   return (
     <li className={`zone-row${isActive ? '' : ' zone-row--inactive'}`}>
@@ -154,10 +152,13 @@ function ZoneRow({ zone, baseUrl }: ZoneRowProps) {
             min={0}
             max={1}
             step={0.01}
-            value={effectiveVol}
-            onChange={handleVolume}
+            value={volumeRange.value}
+            onChange={volumeRange.onChange}
+            onPointerUp={volumeRange.onPointerUp}
+            onKeyUp={volumeRange.onKeyUp}
+            onBlur={volumeRange.onBlur}
             aria-label={t('music.zones.roomVolume', { room: room.name })}
-            style={{ '--progress-pct': `${effectiveVol * 100}%` } as React.CSSProperties}
+            style={{ '--progress-pct': `${volumeRange.value * 100}%` } as React.CSSProperties}
           />
         </div>
       )}
@@ -175,7 +176,7 @@ interface ZoneGridCardProps {
 function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
   const t = useT();
   const { room, iconName, players } = zone;
-  const { playingPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic, firstActive } =
+  const { playingPlayers, volPlayers, isActive, allMuted, effectiveVol, canVolume, subline, entityPic, firstActive } =
     getZoneState(players, t);
 
   const { src: artworkUrl, onError: onArtworkError } = useArtworkUrl(
@@ -183,21 +184,18 @@ function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
     useMAArtwork(isActive ? firstActive : null),
   );
 
+  // [fork] only players that support volume (others answered with errors); commit on release, 300 ms while dragging
   const handleMute = useCallback(() => {
-    playingPlayers.forEach((p) =>
-      callService('media_player', 'volume_mute', { is_volume_muted: !allMuted }, { entity_id: p.entity_id })
+    volPlayers.forEach((p) =>
+      void callService('media_player', 'volume_mute', { is_volume_muted: !allMuted }, { entity_id: p.entity_id }).catch(() => {})
     );
-  }, [allMuted, playingPlayers]);
+  }, [allMuted, volPlayers]);
 
-  const handleVolume = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const level = parseFloat(e.target.value);
-      playingPlayers.forEach((p) =>
-        callService('media_player', 'volume_set', { volume_level: level }, { entity_id: p.entity_id })
-      );
-    },
-    [playingPlayers]
-  );
+  const volumeRange = useCommitRange(effectiveVol, (level) => {
+    volPlayers.forEach((p) =>
+      void callService('media_player', 'volume_set', { volume_level: level }, { entity_id: p.entity_id }).catch(() => {})
+    );
+  }, { throttleMs: 300 });
 
   return (
     <div className={`zone-grid-card${isActive ? '' : ' zone-grid-card--inactive'}`}>
@@ -250,10 +248,13 @@ function ZoneGridCard({ zone, baseUrl }: ZoneGridCardProps) {
             min={0}
             max={1}
             step={0.01}
-            value={effectiveVol}
-            onChange={handleVolume}
+            value={volumeRange.value}
+            onChange={volumeRange.onChange}
+            onPointerUp={volumeRange.onPointerUp}
+            onKeyUp={volumeRange.onKeyUp}
+            onBlur={volumeRange.onBlur}
             aria-label={t('music.zones.roomVolume', { room: room.name })}
-            style={{ '--progress-pct': `${effectiveVol * 100}%` } as React.CSSProperties}
+            style={{ '--progress-pct': `${volumeRange.value * 100}%` } as React.CSSProperties}
           />
         </div>
       )}
