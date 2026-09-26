@@ -1,0 +1,55 @@
+/* [fork] toast stack — bottom centre, above the mobile tab bar */
+.toaster {
+  position: fixed;
+  left: 50%;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(440px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  .toaster {
+    bottom: 24px;
+  }
+}
+
+.toaster__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 10px 14px;
+  border-radius: var(--radius-control);
+  background: var(--bg-raised);
+  border: 1px solid var(--danger);
+  box-shadow: var(--shadow-elevated);
+  color: var(--text);
+  font-size: 0.875rem;
+  pointer-events: auto;
+}
+
+.toaster__text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toaster__close {
+  flex: none;
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.toaster__close:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
