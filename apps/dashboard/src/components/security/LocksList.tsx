@@ -3,12 +3,13 @@
  * locked = positive color, unlocked = warning color.
  */
 
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Lock, LockOpen } from 'lucide-react';
 import type { HassEntity, Room } from '@hapulse/core';
 import { getRoomName } from './roomUtils';
 import { useT, useStateLabel } from '../../i18n/useT';
-import { callService } from '../../ha/service';
+import { useLockAction } from './LockConfirm'; // [fork]
+import { lockBusy } from './lockLogic';
 import './LocksList.css';
 
 interface LockRowProps {
@@ -21,15 +22,9 @@ function LockRow({ entity, roomName }: LockRowProps) {
   const sl = useStateLabel();
   const isLocked = entity.state === 'locked';
   const name = (entity.attributes['friendly_name'] as string | undefined) ?? entity.entity_id;
-  const target = { entity_id: entity.entity_id };
-
-  const handleLock = useCallback(() => {
-    callService('lock', 'lock', {}, target);
-  }, [entity.entity_id]);
-
-  const handleUnlock = useCallback(() => {
-    callService('lock', 'unlock', {}, target);
-  }, [entity.entity_id]);
+  // [fork] unlock asks first; no action while the lock moves, is jammed or unreachable
+  const { request, dialog } = useLockAction();
+  const busy = lockBusy(entity.state);
 
   return (
     <div className="locks-row">
@@ -46,8 +41,8 @@ function LockRow({ entity, roomName }: LockRowProps) {
       <div className="locks-row__actions">
         <button
           className="locks-row__btn locks-row__btn--lock"
-          onClick={handleLock}
-          disabled={isLocked}
+          onClick={() => request('lock', [entity])}
+          disabled={isLocked || busy}
           aria-label={t('security.locks.lock')}
           type="button"
         >
@@ -56,8 +51,8 @@ function LockRow({ entity, roomName }: LockRowProps) {
         </button>
         <button
           className="locks-row__btn locks-row__btn--unlock"
-          onClick={handleUnlock}
-          disabled={!isLocked}
+          onClick={() => request('unlock', [entity])}
+          disabled={!isLocked || busy}
           aria-label={t('security.locks.unlock')}
           type="button"
         >
@@ -65,6 +60,7 @@ function LockRow({ entity, roomName }: LockRowProps) {
           {t('security.locks.unlock')}
         </button>
       </div>
+      {dialog}
     </div>
   );
 }

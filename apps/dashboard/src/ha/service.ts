@@ -33,6 +33,7 @@ import type { PersistentNotification, UnsubscribeFunc } from '@hapulse/core';
 import { useConnectionStore, getLiveConnection } from '../stores/connectionStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
+import { useToastStore } from '../stores/toastStore'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Demo persistent notifications — in-memory, since demo mode has no live conn.
@@ -82,11 +83,28 @@ export async function callService(
 
   const conn = getLiveConnection();
   if (!conn) {
+    // [fork] visible + thrown: a lock/alarm action must never look done when nothing was sent
     console.warn('[service] callService called with no active connection');
-    return;
+    useToastStore.getState().push('toast.notConnected');
+    throw new Error('No connection to Home Assistant');
   }
 
-  await conn.callService(domain, service, data, target);
+  try {
+    await conn.callService(domain, service, data, target);
+  } catch (e) {
+    // [fork] HA rejects e.g. a wrong alarm code or an unknown option: show it, and rethrow
+    // so callers that wait for the result (alarm numpad, locks) can keep their UI open.
+    useToastStore.getState().push('toast.serviceFailed', { domain, service, message: serviceErrorMessage(e) });
+    throw e;
+  }
+}
+
+/** [fork] Readable message from an HA service error (home-assistant-js-websocket rejects with {code, message}). */
+export function serviceErrorMessage(e: unknown): string {
+  if (e && typeof e === 'object' && 'message' in e && typeof (e as { message: unknown }).message === 'string') {
+    return (e as { message: string }).message;
+  }
+  return typeof e === 'string' ? e : 'unknown error';
 }
 
 /**

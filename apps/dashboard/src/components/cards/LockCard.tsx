@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Lock, Unlock } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { callService } from '../../ha/service';
+import { useLockAction } from '../security/LockConfirm'; // [fork]
+import { lockBusy } from '../security/lockLogic';
 import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
@@ -14,12 +15,10 @@ interface LockCardProps {
 export function LockCard({ entity, name }: LockCardProps) {
   const t = useT();
   const sl = useStateLabel();
-  const entityId = entity.entity_id;
   const isLocked = entity.state === 'locked';
-
-  const handleToggle = useCallback(() => {
-    void callService('lock', isLocked ? 'unlock' : 'lock', {}, { entity_id: entityId });
-  }, [isLocked, entityId]);
+  // [fork] unlock asks first, code entry when needed, no action while moving/jammed/unavailable
+  const { request, dialog } = useLockAction();
+  const busy = lockBusy(entity.state);
 
   return (
     <Card className="lock-card">
@@ -38,11 +37,13 @@ export function LockCard({ entity, name }: LockCardProps) {
       <button
         type="button"
         className="lock-card__btn"
-        onClick={handleToggle}
+        onClick={() => request(isLocked ? 'unlock' : 'lock', [entity])}
+        disabled={busy}
         aria-label={isLocked ? t('cards.lock.unlock') : t('cards.lock.lock')}
       >
         {isLocked ? t('cards.lock.unlock') : t('cards.lock.lock')}
       </button>
+      {dialog}
     </Card>
   );
 }

@@ -19,6 +19,8 @@ import {
 import { domainOf, formatEntityState } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
 import { callService } from '../../ha/service';
+import { useLockAction } from '../security/LockConfirm'; // [fork]
+import { lockBusy } from '../security/lockLogic'; // [fork]
 import { DeviceIcon } from './deviceMeta';
 import { useLocale, useT, useStateLabel } from '../../i18n/useT';
 
@@ -119,6 +121,7 @@ export function DeviceEntityRow({
       void callService(d, service, data ?? {}, target),
     [id],
   );
+  const lockAction = useLockAction(); // [fork] unlock confirmation / lock code
 
   let control: React.ReactNode = null;
 
@@ -126,10 +129,11 @@ export function DeviceEntityRow({
     control = <RowToggle on={entity.state === 'on'} onToggle={() => call(domain, 'toggle')} label={t('devices.row.toggleAria', { name })} />;
   } else if (domain === 'lock') {
     const locked = entity.state === 'locked';
+    // [fork] unlock asks first (dialog rendered below); the toggle waits while the lock moves
     control = (
       <RowToggle
         on={locked}
-        onToggle={() => call('lock', locked ? 'unlock' : 'lock')}
+        onToggle={() => { if (!lockBusy(entity.state)) lockAction.request(locked ? 'unlock' : 'lock', [entity]); }}
         label={locked ? t('devices.row.unlockLabel', { name }) : t('devices.row.lockLabel', { name })}
       />
     );
@@ -238,6 +242,7 @@ export function DeviceEntityRow({
       <span className="device-entity-row__name" title={name}>{name}</span>
       <span className="device-entity-row__control">
         {control}
+        {lockAction.dialog /* [fork] */}
         {editable && (
           <span className="device-entity-row__edit">
             <button

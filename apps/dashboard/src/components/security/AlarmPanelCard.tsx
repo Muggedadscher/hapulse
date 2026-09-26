@@ -6,13 +6,12 @@ import { useT, useStateLabel } from '../../i18n/useT';
 import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
+import { isAlarmActionDisabled, isAlarmActionSupported, type AlarmAction } from './alarmLogic'; // [fork]
 import './AlarmPanelCard.css';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-type AlarmAction = 'disarm' | 'arm_home' | 'arm_away' | 'arm_night' | 'arm_vacation';
 
 interface ActionDef {
   id: AlarmAction;
@@ -35,13 +34,15 @@ const ACTIONS: ActionDef[] = [
 
 interface NumpadModalProps {
   actionLabel: string;
-  onConfirm: (code: string) => void;
+  /** [fork] resolves true when HA accepted the code; on false the pad stays open and clears */
+  onConfirm: (code: string) => Promise<boolean>;
   onCancel: () => void;
 }
 
 function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
   const t = useT();
   const [digits, setDigits] = useState('');
+  const [sending, setSending] = useState(false);
 
   const addDigit = useCallback((d: string) => {
     setDigits((prev) => (prev.length >= 8 ? prev : prev + d));
@@ -52,9 +53,16 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
   }, []);
 
   const confirm = useCallback(() => {
-    if (digits.length === 0) return;
-    onConfirm(digits);
-  }, [digits, onConfirm]);
+    if (digits.length === 0 || sending) return;
+    setSending(true);
+    void onConfirm(digits).then((ok) => {
+      // accepted → the parent closes the pad; rejected (wrong code) → stay open, start over
+      if (!ok) {
+        setDigits('');
+        setSending(false);
+      }
+    });
+  }, [digits, onConfirm, sending]);
 
   const KEYS = ['1','2','3','4','5','6','7','8','9'];
 
@@ -110,7 +118,7 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
             className="numpad-key numpad-key--confirm"
             onClick={confirm}
             aria-label={t('security.alarmPanel.numpad.confirm')}
-            disabled={digits.length === 0}
+            disabled={digits.length === 0 || sending}
           >
             ✓
           </button>
@@ -164,31 +172,38 @@ export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
   const codeFormat = entity.attributes['code_format'] as string | undefined;
   const requiresCode = !!codeFormat;
 
-  const [pendingAction, setPendingAction] = useState<ActionDef | null>(null);
+  // [fork] the pad remembers WHICH panel it was opened for: the page may show another
+  // (more severe) panel in this card meanwhile, and the code must not go there
+  const [pendingAction, setPendingAction] = useState<{ action: ActionDef; entityId: string } | null>(null);
 
-  const target = { entity_id: entity.entity_id };
-
-  function dispatchAction(action: AlarmAction, code?: string) {
+  /** Sends the action; true when HA accepted it (a failure is shown as a toast by callService). */
+  async function dispatchAction(action: AlarmAction, entityId: string, code?: string): Promise<boolean> {
     const serviceData = code ? { code } : {};
     const service = `alarm_${action}`;
-    callService('alarm_control_panel', service, serviceData, target);
+    try {
+      await callService('alarm_control_panel', service, serviceData, { entity_id: entityId });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function handleButtonClick(action: ActionDef) {
     if (requiresCode) {
-      setPendingAction(action);
+      setPendingAction({ action, entityId: entity.entity_id });
     } else {
-      dispatchAction(action.id);
+      void dispatchAction(action.id, entity.entity_id);
     }
   }
 
-  function handleNumpadConfirm(code: string) {
-    if (pendingAction) {
-      dispatchAction(pendingAction.id, code);
-      setPendingAction(null);
-    }
+  async function handleNumpadConfirm(code: string): Promise<boolean> {
+    if (!pendingAction) return false;
+    const ok = await dispatchAction(pendingAction.action.id, pendingAction.entityId, code);
+    if (ok) setPendingAction(null);
+    return ok;
   }
 
+  const supportedFeatures = entity.attributes['supported_features'];
   const isTransitioning = state === 'arming' || state === 'pending';
   const isTriggered = state === 'triggered';
 
@@ -215,7 +230,7 @@ export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
 
           {/* Action buttons */}
           <div className="alarm-panel-card__actions">
-            {ACTIONS.map((action) => {
+            {ACTIONS.filter((action) => isAlarmActionSupported(action.id, supportedFeatures)).map((action) => {
               const isActive = state === action.targetState;
               return (
                 <button
@@ -223,7 +238,7 @@ export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
                   type="button"
                   className={`alarm-btn ${action.colorClass}${isActive ? ' alarm-btn--active' : ''}`}
                   onClick={() => handleButtonClick(action)}
-                  disabled={isActive || isTransitioning}
+                  disabled={isAlarmActionDisabled(state, action.id, action.targetState)}
                   aria-pressed={isActive}
                 >
                   {t(action.labelKey)}
@@ -237,7 +252,7 @@ export function AlarmPanelCard({ entity }: AlarmPanelCardProps) {
 
       {pendingAction && ReactDOM.createPortal(
         <NumpadModal
-          actionLabel={t(pendingAction.labelKey)}
+          actionLabel={t(pendingAction.action.labelKey)}
           onConfirm={handleNumpadConfirm}
           onCancel={() => setPendingAction(null)}
         />,

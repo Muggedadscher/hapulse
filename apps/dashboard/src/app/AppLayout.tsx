@@ -49,6 +49,7 @@ import { WeatherModal } from '../components/home/chipmodals';
 import { NotificationsPanel } from '../components/notifications/NotificationsPanel';
 import { ChangelogModal } from '../components/changelog/ChangelogModal';
 import { EntityDetailModal } from '../components/home/EntityDetailModal';
+import { Toaster } from '../components/ui/Toaster'; // [fork]
 import { useConnectionStatus, useWeatherEntity, useCurrentUserAvatar } from '../ha/hooks';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
@@ -774,6 +775,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Global entity detail (more-info) modal — opened from any card. */}
       <EntityDetailModal entityId={detailEntityId} onClose={closeEntityDetail} />
+
+      {/* [fork] failed service calls */}
+      <Toaster />
     </div>
   );
 }

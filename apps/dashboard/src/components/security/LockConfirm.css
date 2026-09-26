@@ -1,0 +1,36 @@
+/* [fork] lock confirmation dialog */
+.lock-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lock-confirm__text {
+  margin: 0;
+  color: var(--text);
+}
+
+.lock-confirm__code {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font-family: var(--font-data);
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  min-height: 44px;
+}
+
+.lock-confirm__code:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.lock-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
