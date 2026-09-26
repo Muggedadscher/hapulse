@@ -1,13 +1,14 @@
 /**
  * ClimateCard — per-room climate overview with selectable room controls.
  */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Minus, Plus, Thermometer, ChevronRight } from 'lucide-react';
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './ClimateCard.css';
+import { climateSetpoint, gaugeRange, stepSetpoint } from './climateLogic'; // [fork]
 
 interface ClimateCardProps {
   entities: HassEntityMap;
@@ -61,7 +62,7 @@ const HVAC_DOT_COLOR: Record<HvacKey, string> = {
 // ── Arc Gauge ─────────────────────────────────────────────────────────────────
 
 interface ArcGaugeProps {
-  value: number;
+  value: number | null; // [fork] null = no reading (was drawn as 20°)
   min?: number;
   max?: number;
   label: string;
@@ -77,7 +78,7 @@ function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'v
   const strokeW = size * 0.075;
   const startAngle = 160;
   const totalDeg = 220;
-  const pct = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  const pct = value == null ? 0 : Math.max(0, Math.min(1, (value - min) / (max - min)));
   const fillDeg = pct * totalDeg;
 
   function polarToXY(angleDeg: number, radius: number) {
@@ -100,7 +101,7 @@ function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'v
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      aria-label={t('home.climate.gaugeAria', { value, label })}
+      aria-label={t('home.climate.gaugeAria', { value: value == null ? '–' : Math.round(value), label })}
       role="img"
     >
       <path d={trackPath} fill="none" stroke="var(--border)" strokeWidth={strokeW} strokeLinecap="round" />
@@ -112,7 +113,7 @@ function ArcGauge({ value, min = 15, max = 30, size = 120, label, fillColor = 'v
         textAnchor="middle" dominantBaseline="middle"
         style={{ fontFamily: 'var(--font-display)', fontSize: size * 0.22, fontWeight: 700, fill: 'var(--text)', letterSpacing: '-0.03em' }}
       >
-        {Math.round(value)}°
+        {value == null ? '–' : `${Math.round(value)}°`}
       </text>
       <text
         x={cx} y={cy + size * 0.14}
@@ -167,23 +168,38 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
   const activeEntity = activeRoom?.entity;
 
   // Temperatures
-  const currentTemp =
+  // [fork] no invented 20° reading, no current temperature as a setpoint; step/min/max from the entity; quick
+  // taps build on the value just sent until HA reports it (two taps = two steps, not the same value twice)
+  const currentTemp: number | null =
     activeRoom?.currentTemp ??
     (activeEntity?.attributes.current_temperature as number | undefined) ??
-    (activeEntity?.attributes.temperature as number | undefined) ??
-    20;
-  const setpointTemp =
-    (activeEntity?.attributes.temperature as number | undefined) ?? currentTemp;
+    null;
+  const sp = climateSetpoint((activeEntity?.attributes ?? {}) as Record<string, unknown>);
+  // the last value sent, synchronously (a ref: two taps before a re-render must still be two steps) + state to re-render
+  const pendingRef = useRef<{ entity: string; value: number; at: number } | null>(null);
+  const [, setPendingTick] = useState(0);
+  const pendingValid = (e: string | undefined) => {
+    const pd = pendingRef.current;
+    return pd && pd.entity === e && Date.now() - pd.at < 4000 ? pd : null;
+  };
+  const shownPending = pendingValid(activeEntity?.entity_id);
+  const setpointTemp = shownPending && shownPending.value !== sp.value ? shownPending.value : sp.value;
 
-  const handleDown = useCallback(() => {
+  const stepBy = useCallback((dir: 1 | -1) => {
     if (!activeEntity) return;
-    void callService('climate', 'set_temperature', { temperature: setpointTemp - 1 }, { entity_id: activeEntity.entity_id });
-  }, [activeEntity, setpointTemp]);
-
-  const handleUp = useCallback(() => {
-    if (!activeEntity) return;
-    void callService('climate', 'set_temperature', { temperature: setpointTemp + 1 }, { entity_id: activeEntity.entity_id });
-  }, [activeEntity, setpointTemp]);
+    const pd = pendingValid(activeEntity.entity_id);
+    const base = pd ? pd.value : sp.value;
+    if (base == null) return;
+    const next = stepSetpoint(base, dir, sp);
+    if (next === base) return;
+    pendingRef.current = { entity: activeEntity.entity_id, value: next, at: Date.now() };
+    setPendingTick((n) => n + 1);
+    void callService('climate', 'set_temperature', { temperature: next }, { entity_id: activeEntity.entity_id })
+      .catch(() => { pendingRef.current = null; setPendingTick((n) => n + 1); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeEntity, sp.value, sp.step, sp.min, sp.max]);
+  const handleDown = useCallback(() => stepBy(-1), [stepBy]);
+  const handleUp = useCallback(() => stepBy(1), [stepBy]);
 
   // No climate entities found — show the card with a prompt to hide it
   if (climateRooms.length === 0 || !activeRoom || !activeEntity) {
@@ -246,24 +262,24 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
       <div className="card-scroll-body card-scroll-wrap">
       {/* Controls — top, reflect selected room */}
       <div className="climate-card__gauge-wrap" data-hvac={colorKey}>
-        <ArcGauge value={currentTemp} label={gaugeLabel} size={128} fillColor={gaugeColor} />
+        <ArcGauge value={currentTemp} label={gaugeLabel} size={128} fillColor={gaugeColor} {...gaugeRange(sp)} />
         <div className="climate-card__controls">
           <button
             className="climate-card__step-btn"
             onClick={handleDown}
-            disabled={isOff}
+            disabled={isOff || setpointTemp == null || setpointTemp <= sp.min}
             aria-label={t('home.climate.lowerAria')}
             type="button"
           >
             <Minus size={14} strokeWidth={2.5} />
           </button>
           <span className="climate-card__setpoint">
-            {Math.round(setpointTemp)}°
+            {setpointTemp == null ? '–' : `${setpointTemp.toFixed(sp.decimals)}°`}
           </span>
           <button
             className="climate-card__step-btn"
             onClick={handleUp}
-            disabled={isOff}
+            disabled={isOff || setpointTemp == null || setpointTemp >= sp.max}
             aria-label={t('home.climate.raiseAria')}
             type="button"
           >

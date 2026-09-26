@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Thermometer, Flame, Snowflake, Wind, Power, RefreshCw } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
 import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
+import { climateSetpoint, stepSetpoint } from '../home/climateLogic'; // [fork]
 
 interface ClimateCardProps {
   entity: HassEntity;
@@ -44,15 +45,20 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
     [entityId]
   );
 
+  // [fork] the service call ran INSIDE the state updater (StrictMode runs updaters twice → two calls); step,
+  // min/max from the entity (climateLogic), nothing sent without a single target temperature (range mode)
+  const localRef = useRef(localTemp); localRef.current = localTemp;
+  const sp = climateSetpoint(entity.attributes as Record<string, unknown>);
   const handleTempStep = useCallback(
     (delta: number) => {
-      setLocalTemp((prev) => {
-        const next = Math.round((prev + delta) * 2) / 2;
-        void callService('climate', 'set_temperature', { temperature: next }, { entity_id: entityId });
-        return next;
-      });
+      if (sp.value == null) return;
+      const next = stepSetpoint(localRef.current, delta > 0 ? 1 : -1, sp);
+      if (next === localRef.current) return;
+      localRef.current = next;
+      setLocalTemp(next);
+      void callService('climate', 'set_temperature', { temperature: next }, { entity_id: entityId }).catch(() => {});
     },
-    [entityId]
+    [entityId, sp]
   );
 
   const actionLabel = hvacAction
