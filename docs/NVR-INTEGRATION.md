@@ -1,6 +1,6 @@
 # Sentinel NVR — native Integration in HAPulse
 
-Stand: 2026-09-12. Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
+Stand: 2026-09-26 (Paket `@sentinel-nvr/web` 0.11). Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
 auf der NVR-Seite. Die Integration ist **bewusst als abgegrenztes Modul**
 gebaut, damit sie sich (Sentinel ist in starker Entwicklung) jederzeit
 **komplett entfernen und neu aufsetzen** lässt — siehe „Rausnehmen" unten.
@@ -18,7 +18,7 @@ HAPulse-Seite aus nicht verändert (nur gelesen).
 | **`/nvr/:cameraId`** (Kamera) | 1:1-Port von Sentinels Zeitleisten-Seite: Bühne mit Live/Aufnahme-Video, Steuer-Pille (±15 s, Play/Pause, Tempo 1/2/4/8×), Stumm-Knopf, Snapshot/PiP/Vollbild; rechts Tabs Zeitleiste/Ereignisse, Klassenfilter, **vertikale Mehrtages-Zeitleiste** (Scroll = Scrub-Zeitraffer über `api/relay-rate`, Halten/Loslassen = Seek, Zoom, Live-Linie, Ereignis-Thumbnails), Datum-Chip + Datum/Uhrzeit-Dialog. Tastatur: Leertaste, ←/→ (±10 s, Shift 60 s), n/p Ereignis, l Live. Deep-Link `?at=<ms>&ev=<ts>`. |
 | **Sicherheits-Seite**, Sektion „Sentinel NVR" | Kamera-Kacheln + Ereignis-Leiste des NVR direkt unter Home Assistants eigener Kamera-Sektion (Section-ID `nvr`, volle Breite, Reorder/Hide/Resize wie die übrigen Sektionen). Erscheint nur bei konfigurierter Verbindung; ein NVR allein reicht, damit die Seite nicht leer ist. |
 | **Home-Karte** „Sentinel NVR" | Kamera-Snapshots + die letzten 4 Ereignisse; Tap → Kamera-Zeitleiste (am Ereignis). Section-ID `nvr` (Reorder/Hide/Resize wie andere Karten), erscheint nur bei konfigurierter Verbindung. |
-| **Einrichtung** | Auf der NVR-Seite (Setup-Karte bzw. Zahnrad-Modal): Scrypted-URL + Zugriffs-Token, „Verbindung testen" (`api/stats`). Die alte Embed-URL mit `?token=` kann direkt eingefügt werden — der Token wird daraus übernommen. |
+| **Einrichtung** | Auf der NVR-Seite (Setup-Karte bzw. Zahnrad-Modal, Enter speichert): Scrypted-URL + entweder Zugriffs-Token **oder** Anmeldung mit einem Scrypted-**Administrator**-Konto (Login-Tausch `api/token-exchange` → das Plugin gibt sein Token heraus; eingeschränkte Scrypted-Konten bekommen 403, Plugin ≥ 2026-09-26). „Verbindung testen" (`api/stats`). Die alte Embed-URL mit `?token=` kann direkt eingefügt werden — ihr Token ersetzt den Inhalt des Token-Felds. Hinter einem Reverse-Proxy mit Pfad-Präfix die volle Plugin-URL einfügen (`https://proxy/scrypted/endpoint/@local/sentinel-nvr/public/`): der Präfix vor `/endpoint/` bleibt erhalten. |
 
 Wiedergabe-Pfade (aus Sentinels `PlayerController`, unverändert übernommen):
 Live = WebRTC über WebSocket-Signaling (Trickle-ICE) → Live-MSE (fMP4) →
@@ -37,12 +37,12 @@ iframe-Einbettung mit `?token=` schon tat.
 
 Konsequenzen:
 
-- Das Token liegt in `customization.scryptedToken` — pro HA-Benutzer in
-  Home Assistants `frontend/user_data` (wie `maToken` von Music Assistant
-  im Upstream), nie anderswo. Es ist im Browser sichtbar (DevTools/URLs).
-  Wer das nicht will, braucht einen kleinen Proxy (z. B. nginx-`location`
-  mit `proxy_set_header x-sentinel-token`) — dann in `nvr/api.ts` die
-  Basis-URL auf den Proxy zeigen lassen; alles andere bleibt gleich.
+- Das Token liegt in `customization.scryptedToken` — **gerätelokal** (localStorage dieses Browsers). Export und der
+  HA-Settings-Sync (`frontend/user_data`) tragen es nie (`exportSettings` entfernt es, ebenso einen `?token=` in der
+  URL); ein importierter Snapshot, der auf einen **anderen** Server zeigt, übernimmt das Token dieses Geräts nicht
+  (`stores/settingsSecrets.ts`). Es ist im Browser sichtbar (DevTools/URLs). Wer das nicht will, setzt einen kleinen
+  Proxy davor (z. B. nginx-`location` mit `proxy_set_header x-sentinel-token`) und trägt dessen URL (mit Pfad-Präfix)
+  als Scrypted-URL ein — `nvr/config.ts` baut den Client mit diesem Präfix (`clientFor(origin, token, prefix)`).
 - **CORS** (Sentinel ≥ `567c8a0`): *jede* Antwort trägt
   `Access-Control-Allow-Origin: *` — JSON, die 204-Steuerantworten
   (`relay-seek`, `relay-rate`, `relay-scrub`, `webrtc-stop`, `clientlog`),
@@ -98,14 +98,15 @@ Sentinels UI eine eigenständige App ist:
 | Datei | Zweck |
 |---|---|
 | npm `@sentinel-nvr/web/api` | DOM-freies Datenmodell (Typen aus `API.md`), `parseSentinelSetup`, URL-Helfer, Ereignisklassen, `sentinelEventPlayTs`, `sentinelStorageForecast`, `sentinelClipRuns`, `sentinelMergeDays`, Intl-Formatierer und der `SentinelClient` — gemeinsames Paket (Repo `Muggedadscher/sentinel-nvr-web`, dort getestet). `nvr/api.ts`/`nvr/format.ts` re-exportieren nur. |
-| `apps/dashboard/src/nvr/api.ts` | `SentinelClient` (URLs mit Token, JSON mit 10-s-Timeout, `control()` für die 204-Endpunkte, Signaling-URL, Medien-URL-Helfer). |
-| `apps/dashboard/src/nvr/config.ts` | Verbindung aus den Settings ableiten (`useNvrConfig`, `getNvrConfig`). |
-| `apps/dashboard/src/nvr/store.ts` | Übersichts-Store + gemeinsamer Poller (`useNvrOverview`). |
+| `apps/dashboard/src/nvr/api.ts` | re-exportiert `SentinelClient`, `SentinelHttpError` usw. aus dem Paket. |
+| `apps/dashboard/src/nvr/config.ts` | Verbindung aus den Settings ableiten (`useNvrConfig`, `getNvrConfig`), Client inkl. Proxy-Präfix (`clientFor`, `storedNvrUrl`). |
+| `apps/dashboard/src/nvr/store.ts` | Übersichts-Store + gemeinsamer Poller (`useNvrOverview`); 401/403 schaltet auf Fehler (keine alten Daten als aktuell), das Histogramm ist optional. |
 | `apps/dashboard/src/nvr/format.ts` | Intl-Formatierung (Zeit, Tag, relativ, Tage). |
 | `apps/dashboard/src/nvr/paths.ts` | Routen-Helfer. |
 | npm `@sentinel-nvr/web/ui` | React-Komponenten (die komplette **Kameraseite** `CameraPage` + Kopfzeile `CameraTitle`, Hero/Stats, Ereignisleiste, Kamerakacheln, Ereignisliste, vertikale Zeitleiste, Datumswahl, `AppearanceSection`), `SentinelUiProvider` (Client, `t`, Locale, Navigation), Themes und die `nvr.*`-Wörterbücher; Styles `@sentinel-nvr/web/ui/ui.css`. Host-Wrapper: `nvr/ui.tsx`. |
 | npm `@sentinel-nvr/web/player` | `PlayerController`/`WebRtcSession`/`rlog` aus dem gemeinsamen Paket (Client injiziert, Labels als i18n-Keys, `storagePrefix`/`brand` als Host-Nähte). |
-| `apps/dashboard/src/nvr/components/*` | `ClassBadge`, `NvrHero` (+`StatTile`/`CardTitle`), `NvrEventsStrip`, `NvrCameraGrid`, `NvrStatsCards`, `NvrSetup` (Karte + Modal), `VerticalTimeline` (Port), `EventList`, `DatePickerModal`. |
+| `apps/dashboard/src/nvr/components/*` | nur noch `NvrSetup` (Karte + Modal) und `DatePickerModal` — alle übrigen Komponenten kommen aus `@sentinel-nvr/web/ui`. |
+| `apps/dashboard/src/stores/settingsSecrets.ts` | gerätelokale Tokens: Origin-Bindung beim Import, `?token=`-Migration aus der URL. |
 | `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `NvrSecuritySection.tsx`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens). `NvrCameraPage` ist seit 0.4.0 nur ein Wrapper um `CameraPage` (Routing, Kopfzeile mit Sentinel-Link, Modal um die Datumswahl); die Kameraseiten-Styles kommen aus dem Paket, `nvr.css` hält nur noch Setup/Home/Security. |
 | `apps/dashboard/src/pages/Nvr.tsx` | Routen-Einstieg `/nvr/*` (Fork-Datei, war vorher die iframe-Seite). |
 | `docs/NVR-INTEGRATION.md` | dieses Dokument |
@@ -114,9 +115,8 @@ Sentinels UI eine eigenständige App ist:
 
 | Datei | Änderung |
 |---|---|
-| `packages/core/src/index.ts` | Export-Block `sentinel.js` |
-| `packages/core/scripts/smoke.mjs` | Imports + Testblock „sentinel nvr" |
-| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedToken` (neben dem bestehenden `scryptedUrl`) |
+| `packages/core/src/index.ts` | nur noch ein Hinweis-Kommentar (das Modell liegt im Paket) |
+| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedToken` (neben dem bestehenden `scryptedUrl`), Tokens aus Export/Sync entfernt, `keepDeviceSecrets`/`migrateUrlToken` |
 | `apps/dashboard/src/app/Router.tsx` | Route `/nvr` → `/nvr/*` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" (bestand schon) |
 | `apps/dashboard/src/pages/Home.tsx` | Section `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
@@ -129,7 +129,7 @@ Sentinels UI eine eigenständige App ist:
 git rm -r apps/dashboard/src/nvr apps/dashboard/src/pages/Nvr.tsx docs/NVR-INTEGRATION.md   # + Dependency @sentinel-nvr/web aus apps/dashboard/package.json
 git grep -n "\[fork\]" -- apps/dashboard/src/pages/Home.tsx apps/dashboard/src/pages/Security.tsx apps/dashboard/src/app/Router.tsx \
   apps/dashboard/src/app/AppLayout.tsx apps/dashboard/src/stores/settingsStore.ts \
-  packages/core/src/index.ts packages/core/scripts/smoke.mjs   # NVR-Zeilen entfernen
+  packages/core/src/index.ts   # NVR-Zeilen entfernen (settingsSecrets.ts bleibt: gilt auch für Music Assistant)
 # Locales: alle Keys nvr.*, nav.nvr, home.section.*.nvr, security.section.*.nvr aus packages/core/locales/*.json löschen
 npm run typecheck && npm run build && npm test -w @hapulse/core
 ```
@@ -144,8 +144,9 @@ das Paket `@sentinel-nvr/web` (Typen + Client) versionieren und die Dependency a
 
 **Server-Stand:** das Paket ab 0.7 setzt neuere Relay-Endpunkte des Sentinel-Plugins voraus (Tabelle „Server
 compatibility" im README von `sentinel-nvr-web`): 0.7 Scrub nach Ziel (`relay-target`), 0.8 Sprünge mit Standbild
-(`relay-seek&mark=1`), 0.9 Tempo an Ort und Stelle (`relay-speed`). Ältere Server funktionieren weiter, nur ohne diese
-Verbesserungen. Stand 25.09.2026: Paket 0.9.0, Plugin-`main` passend.
+(`relay-seek&mark=1`), 0.9 Tempo an Ort und Stelle (`relay-speed`), 0.10 Kalendertage statt ±24 h (Zeitumstellung), 0.11
+Robustheit (Tempo übersteht neue Sessions, Timeouts, Live-Watchdog, Speicher-Warnung aus `stats.storageOk`). Ältere Server
+funktionieren weiter, nur ohne diese Verbesserungen. Stand 26.09.2026: Paket 0.11.0, Plugin-`main` passend.
 
 ## Prüfen
 
