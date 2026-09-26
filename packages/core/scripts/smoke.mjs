@@ -92,6 +92,7 @@ import {
   normalizeDaySlots,
   tidyDaySlots,
   dailyRuntimeBars,
+  poolDayStarts,
   POOL_MANUAL_PRESETS_MIN,
   clampManualMinutes,
   minutesToDurationString,
@@ -1243,6 +1244,16 @@ assertEqual(formatManualDuration(30), '30 min', 'formatManualDuration under an h
 assertEqual(formatManualDuration(120), '2 h', 'formatManualDuration whole hours');
 assertEqual(formatManualDuration(90), '1.5 h', 'formatManualDuration half hours');
 assertEqual(formatManualDuration(1440), '24 h', 'formatManualDuration 24h');
+// poolDayStarts — calendar days across the DST change (run in Europe/Berlin via the TZ below).
+{
+  const prevTz = process.env.TZ;
+  process.env.TZ = 'Europe/Berlin';
+  const starts = poolDayStarts(new Date(2026, 9, 27, 15, 0).getTime(), 4); // 24.–27.10.2026, 25.10. has 25 h
+  assertEqual(starts.map((t) => new Date(t).getHours()).join(','), '0,0,0,0', 'poolDayStarts: every bucket starts at local midnight across DST');
+  assertEqual(starts.map((t) => new Date(t).getDate()).join(','), '24,25,26,27', 'poolDayStarts: consecutive calendar days, today last');
+  assertEqual((starts[2] - starts[1]) / 3_600_000, 25, 'poolDayStarts: the fall-back day is 25 h long');
+  if (prevTz === undefined) delete process.env.TZ; else process.env.TZ = prevTz;
+}
 const empty = dailyRuntimeBars([], [d0, d0 + DAY]);
 assertEqual(empty[0].hasData, false, 'a day with no samples has hasData=false');
 assertEqual(empty[0].value, 0, 'a day with no samples has value 0');

@@ -11,7 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { dailyRuntimeBars } from '@hapulse/core';
+import { dailyRuntimeBars, poolDayStarts } from '@hapulse/core';
 import type { PoolDayRuntime } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
@@ -19,7 +19,6 @@ import { getHistory } from '../../ha/history';
 import { POOL_ENTITIES } from './poolConfig';
 
 const DAYS = 14;
-const DAY_MS = 86_400_000;
 
 type LoadState = 'loading' | 'ready' | 'empty' | 'error';
 
@@ -28,6 +27,7 @@ export function PoolChartCard() {
   const locale = useLocale();
   const runtime = useEntity(POOL_ENTITIES.runtimeToday);
   const unit = (runtime?.attributes['unit_of_measurement'] as string | undefined) ?? 'h';
+  const runtimeDay = runtime?.last_updated ? new Date(runtime.last_updated).toDateString() : ''; // [fork]
 
   const [bars, setBars] = useState<PoolDayRuntime[]>([]);
   const [state, setState] = useState<LoadState>('loading');
@@ -40,9 +40,7 @@ export function PoolChartCard() {
     setState('loading');
     (async () => {
       try {
-        const midnight = new Date();
-        midnight.setHours(0, 0, 0, 0);
-        const dayStarts = Array.from({ length: DAYS }, (_, i) => midnight.getTime() - (DAYS - 1 - i) * DAY_MS);
+        const dayStarts = poolDayStarts(Date.now(), DAYS); // calendar days (DST-safe)
         const points = await getHistory(POOL_ENTITIES.runtimeToday, dayStarts[0]!, Date.now());
         if (cancelled) return;
         const all = dailyRuntimeBars(points, dayStarts);
@@ -60,8 +58,9 @@ export function PoolChartCard() {
       }
     })();
     return () => { cancelled = true; };
-    // Re-fetch when the sensor's day rolls over (its state resets to ~0 at midnight).
-  }, [runtime?.entity_id, runtime?.attributes['last_reset']]);
+    // Re-fetch when the sensor's day rolls over (its state resets to ~0 at midnight). The sensor may have no
+    // last_reset attribute: the calendar day of its last update changes at the midnight reset as well.
+  }, [runtime?.entity_id, runtime?.attributes['last_reset'], runtimeDay]);
 
   const maxVal = Math.max(0.001, ...bars.map((b) => b.value));
   const fmtDay = new Intl.DateTimeFormat(locale, { weekday: 'short', day: '2-digit', month: '2-digit' });

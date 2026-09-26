@@ -392,6 +392,22 @@ export interface PoolDayRuntime {
  * of local-midnight timestamps; bucket i spans `[dayStarts[i], dayStarts[i+1])`,
  * and the last bucket runs to `+∞` (today, still in progress).
  */
+/**
+ * [fork] Local midnights of the last `days` calendar days (oldest first, today last).
+ * Steps calendar days, not 24 h: across a DST change `midnight − k·24 h` lands an hour off,
+ * so a bucket would take 23:00–24:00 of the previous day (and its runtime maximum).
+ */
+export function poolDayStarts(now: number, days: number): number[] {
+  const out: number[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    out.push(d.getTime());
+  }
+  return out;
+}
+
 export function dailyRuntimeBars(points: { t: number; v: number }[], dayStarts: number[]): PoolDayRuntime[] {
   return dayStarts.map((start, i) => {
     const end = i + 1 < dayStarts.length ? dayStarts[i + 1]! : Infinity;
