@@ -122,25 +122,35 @@ type SystemHealth = 'healthy' | 'warning' | 'critical' | 'unknown';
 
 function SystemStatusPill() {
   const t = useT();
-  const { entities, registries } = useEntityStore(
-    useShallow((s) => ({ entities: s.entities, registries: s.registries }))
-  );
+  // [fork] The pill is always mounted: it subscribed to the WHOLE entity map (a re-render on every state change)
+  // and filtered every entity against the hidden list (includes → O(n·m)). Now the selectors hand back only what
+  // it shows — the system-monitor entities and two counters — and it re-renders only when those change.
+  const registries = useEntityStore((s) => s.registries);
   const hiddenNav      = useSettingsStore(useShallow((s) => s.customization.hiddenNav));
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
+  const hiddenSet = useMemo(() => new Set(hiddenEntities), [hiddenEntities]);
 
   const sysIndex = useMemo(() => indexSystemMonitor(registries), [registries]);
 
-  const sysEntities = useMemo(
-    () => Object.values(entities).filter((e) => sysIndex.ids.has(e.entity_id)),
-    [entities, sysIndex]
+  const sysEntities = useEntityStore(
+    useShallow((s) => Object.values(s.entities).filter((e) => sysIndex.ids.has(e.entity_id)))
+  );
+  const { lowBatteries, unavailable } = useEntityStore(
+    useShallow((s) => {
+      let low = 0, unav = 0;
+      for (const e of Object.values(s.entities)) {
+        if (hiddenSet.has(e.entity_id)) continue;
+        if (e.state === 'unavailable') unav++;
+        else if (e.entity_id.startsWith('sensor.') && (e.attributes.device_class as string | undefined) === 'battery' && parseFloat(e.state) <= 20) low++;
+      }
+      return { lowBatteries: low, unavailable: unav };
+    })
   );
 
   const metrics = useMemo(() => pickSystemMetrics(sysEntities, sysIndex), [sysEntities, sysIndex]);
 
   // All hooks above this line — early return only after all hooks
   if (hiddenNav.includes('system')) return null;
-
-  const allEntities = Object.values(entities);
 
   const { cpu, memory: mem, disk } = metrics;
 
@@ -159,17 +169,6 @@ function SystemStatusPill() {
     (!isNaN(cpuVal) && cpuVal > 75) ||
     (!isNaN(memVal) && memVal > 80) ||
     (!isNaN(diskVal) && diskVal > 80);
-
-  const lowBatteries = allEntities.filter((e) =>
-    e.entity_id.startsWith('sensor.') &&
-    (e.attributes.device_class as string | undefined) === 'battery' &&
-    !hiddenEntities.includes(e.entity_id) &&
-    parseFloat(e.state) <= 20
-  ).length;
-
-  const unavailable = allEntities.filter(
-    (e) => e.state === 'unavailable' && !hiddenEntities.includes(e.entity_id)
-  ).length;
 
   const health: SystemHealth =
     metricsCrit                                            ? 'critical' :
