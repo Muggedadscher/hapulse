@@ -28,6 +28,7 @@ import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './NowPlayingCard.css';
+import { useCommitRange } from '../ui/useCommitRange'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Supported features bitmask constants
@@ -163,13 +164,6 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
     callService('media_player', 'volume_mute', { is_volume_muted: !isMuted }, target);
   }, [isMuted, entity.entity_id]);
 
-  const handleVolume = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    callService('media_player', 'volume_set', { volume_level: parseFloat(e.target.value) }, target);
-  }, [entity.entity_id]);
-
-  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    callService('media_player', 'media_seek', { seek_position: parseFloat(e.target.value) }, target);
-  }, [entity.entity_id]);
 
   const handleSource = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     callService('media_player', 'select_source', { source: e.target.value }, target);
@@ -183,6 +177,9 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
   const album = attrs['media_album_name'] as string | undefined;
 
   const effectiveVolume = isMuted ? 0 : volumeLevel;
+  // [fork] local draft while dragging; volume throttled to 300 ms, seek only on release (see useCommitRange)
+  const volumeRange = useCommitRange(effectiveVolume, (v) => { void callService('media_player', 'volume_set', { volume_level: v }, target).catch(() => {}); }, { throttleMs: 300 });
+  const seekRange = useCommitRange(clampedPosition, (v) => { void callService('media_player', 'media_seek', { seek_position: v }, target).catch(() => {}); });
 
   const hasBackdrop = Boolean(artworkUrl && isPlaying);
 
@@ -247,12 +244,15 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
                 className="slider now-playing-card__progress"
                 min={0}
                 max={duration}
-                value={clampedPosition}
+                value={seekRange.value}
                 step={1}
-                onChange={handleSeek}
+                onChange={seekRange.onChange}
+                onPointerUp={seekRange.onPointerUp}
+                onKeyUp={seekRange.onKeyUp}
+                onBlur={seekRange.onBlur}
                 disabled={!hasFeature(entity, FEATURE_SEEK)}
                 aria-label={t('music.control.seek')}
-                style={{ '--progress-pct': `${progressPct}%` } as React.CSSProperties}
+                style={{ '--progress-pct': `${duration ? (seekRange.value / duration) * 100 : progressPct}%` } as React.CSSProperties}
               />
               <div className="now-playing-card__time-row">
                 <span className="data-font now-playing-card__time-elapsed">
@@ -342,11 +342,14 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
                 className="slider now-playing-card__volume-slider"
                 min={0}
                 max={1}
-                value={effectiveVolume}
+                value={volumeRange.value}
                 step={0.01}
-                onChange={handleVolume}
+                onChange={volumeRange.onChange}
+                onPointerUp={volumeRange.onPointerUp}
+                onKeyUp={volumeRange.onKeyUp}
+                onBlur={volumeRange.onBlur}
                 aria-label={t('music.control.volume')}
-                style={{ '--progress-pct': `${effectiveVolume * 100}%` } as React.CSSProperties}
+                style={{ '--progress-pct': `${volumeRange.value * 100}%` } as React.CSSProperties}
               />
               <Volume2 size={18} strokeWidth={1.75} className="now-playing-card__vol-high" aria-hidden="true" />
             </div>

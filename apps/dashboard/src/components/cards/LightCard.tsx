@@ -68,7 +68,9 @@ export function LightCard({ entity, name }: LightCardProps) {
     setLocalBrightness(parseInt(e.target.value, 10));
   }, []);
 
-  const handleBrightnessCommit = useCallback((e: React.PointerEvent<HTMLInputElement>) => {
+  // [fork] also on key up / blur (keyboard changes were never sent and the ref stayed 'dragging'); nothing without a change
+  const handleBrightnessCommit = useCallback((e: React.SyntheticEvent<HTMLInputElement>) => {
+    if (!brightnessDragging.current) return;
     brightnessDragging.current = false;
     void callService('light', 'turn_on', { brightness: parseInt((e.target as HTMLInputElement).value, 10) }, { entity_id: entityId });
   }, [entityId]);
@@ -78,7 +80,9 @@ export function LightCard({ entity, name }: LightCardProps) {
     setLocalColorTemp(parseInt(e.target.value, 10));
   }, []);
 
-  const handleColorTempCommit = useCallback((e: React.PointerEvent<HTMLInputElement>) => {
+  // [fork] also on key up / blur (keyboard changes were never sent and the ref stayed 'dragging'); nothing without a change
+  const handleColorTempCommit = useCallback((e: React.SyntheticEvent<HTMLInputElement>) => {
+    if (!colorTempDragging.current) return;
     colorTempDragging.current = false;
     void callService('light', 'turn_on', { color_temp_kelvin: parseInt((e.target as HTMLInputElement).value, 10) }, { entity_id: entityId });
   }, [entityId]);
@@ -94,7 +98,9 @@ export function LightCard({ entity, name }: LightCardProps) {
     setLocalHue(parseInt(e.target.value, 10));
   }, []);
 
-  const handleHueCommit = useCallback((e: React.PointerEvent<HTMLInputElement>) => {
+  // [fork] also on key up / blur (keyboard changes were never sent and the ref stayed 'dragging'); nothing without a change
+  const handleHueCommit = useCallback((e: React.SyntheticEvent<HTMLInputElement>) => {
+    if (!hueDragging.current) return;
     hueDragging.current = false;
     const hue = parseInt((e.target as HTMLInputElement).value, 10);
     void callService('light', 'turn_on', { hs_color: [hue, currentSaturation] }, { entity_id: entityId });
@@ -170,6 +176,8 @@ export function LightCard({ entity, name }: LightCardProps) {
                   value={localBrightness}
                   onChange={handleBrightnessChange}
                   onPointerUp={handleBrightnessCommit}
+                  onKeyUp={handleBrightnessCommit}
+                  onBlur={handleBrightnessCommit}
                   aria-label={t('cards.light.brightness')}
                 />
               </div>
@@ -191,6 +199,8 @@ export function LightCard({ entity, name }: LightCardProps) {
                   value={localColorTemp}
                   onChange={handleColorTempChange}
                   onPointerUp={handleColorTempCommit}
+                  onKeyUp={handleColorTempCommit}
+                  onBlur={handleColorTempCommit}
                   aria-label={t('cards.light.colorTemperatureAria')}
                 />
               </div>
@@ -207,6 +217,8 @@ export function LightCard({ entity, name }: LightCardProps) {
                 value={localHue}
                 onChange={handleHueChange}
                 onPointerUp={handleHueCommit}
+                  onKeyUp={handleHueCommit}
+                  onBlur={handleHueCommit}
                 aria-label={t('cards.light.color')}
               />
             </div>
