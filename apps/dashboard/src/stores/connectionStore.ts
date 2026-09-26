@@ -20,6 +20,7 @@ import {
   createDemoTicker,
   HAAuthError,
   HAConnectionError,
+  oauthCallbackMatches, // [fork]
 } from '@hapulse/core';
 import type { HAConnection, AuthData, UnsubscribeFunc, HAUser, HassEntityMap } from '@hapulse/core';
 import { useEntityStore } from './entityStore';
@@ -193,6 +194,22 @@ async function loadHATokens(): Promise<AuthData | null | undefined> {
   }
 }
 
+// [fork] Boot-time retry: Home Assistant not reachable when the app starts (a wall tablet after a power cut boots
+// faster than HA). Before, the token mode ended in `error` (no banner, no retry — an empty dashboard until someone
+// reloaded) and OAuth stayed `disconnected` without ever trying again. Back-off 2 s → 60 s; any manual connect,
+// sign-out or success stops it.
+let _bootRetryT: ReturnType<typeof setTimeout> | null = null;
+let _bootRetryN = 0;
+function clearBootRetry(): void {
+  if (_bootRetryT) clearTimeout(_bootRetryT);
+  _bootRetryT = null;
+}
+function scheduleBootRetry(run: () => void): void {
+  clearBootRetry();
+  const delay = Math.min(60_000, 2000 * 2 ** _bootRetryN++);
+  _bootRetryT = setTimeout(() => { _bootRetryT = null; run(); }, delay);
+}
+
 function teardown(): void {
   cancelPendingEntities();
 
@@ -271,6 +288,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
 
     // ---- LLAT (token) connect ----
     async connect(url: string, token: string) {
+      clearBootRetry(); // [fork] a (manual or retried) connect replaces a pending boot retry
       teardown();
       set({ status: 'connecting', error: undefined, demo: false, mode: null });
 
@@ -298,6 +316,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
 
     // ---- OAuth: initiate redirect to HA login page ----
     async signInWithHomeAssistant(url: string) {
+      clearBootRetry(); // [fork]
       const normalised = url.replace(/\/+$/, '');
       teardown();
       // Clear stale tokens first: getAuth resolves WITHOUT redirecting when
@@ -341,6 +360,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
 
     // ---- Demo mode ----
     startDemo(persist = true) {
+      clearBootRetry(); // [fork]
       teardown();
       useEntityStore.getState().setRegistries(DEMO_REGISTRIES);
       useEntityStore.getState().setEntities(DEMO_ENTITIES);
@@ -366,6 +386,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
 
     // ---- Disconnect ----
     disconnect() {
+      clearBootRetry(); _bootRetryN = 0; // [fork]
       const mode = _get().mode;
 
       // Best-effort: revoke OAuth refresh token before disconnecting
@@ -401,11 +422,21 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
         }
 
         if (mode === 'token' && persisted.url && persisted.token) {
-          try {
-            await useConnectionStore.getState().connect(persisted.url, persisted.token);
-          } catch {
-            // Silent failure — the route guard will redirect to /onboarding
-          }
+          const url = persisted.url, token = persisted.token;
+          const attempt = async (): Promise<void> => {
+            try {
+              await useConnectionStore.getState().connect(url, token);
+              _bootRetryN = 0; // [fork]
+            } catch (err) {
+              // A rejected token → the route guard sends the user to /onboarding (unchanged).
+              // [fork] Unreachable HA → stay in the app with the "can't reach" banner and try again with back-off.
+              if (err instanceof HAAuthError) return;
+              if (useConnectionStore.getState().status === 'connected') return;
+              set({ status: 'disconnected', mode: 'token', url, token, error: err instanceof Error ? err.message : 'cannot reach home assistant' });
+              scheduleBootRetry(() => { void attempt(); });
+            }
+          };
+          await attempt();
           return;
         }
 
@@ -416,6 +447,14 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
 
           set({ status: 'connecting', error: undefined, url: persisted.url ?? '' });
 
+          // [fork] a callback whose state names ANOTHER Home Assistant than the one this sign-in was started for is
+          // dropped (login CSRF): strip it from the URL and resume the existing session instead.
+          if (!oauthCallbackMatches(window.location.search, persisted.url)) {
+            console.warn('[HAPulse] ignoring an OAuth callback for a different Home Assistant instance');
+            window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+          }
+
+          const resume = async (): Promise<void> => { // [fork] re-run by the boot retry
           try {
             const conn = await resumeHASession({
               clientId,
@@ -432,6 +471,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
             }
 
             await wireConnection(conn, set);
+            _bootRetryN = 0; // [fork]
 
             set({
               url: persisted.url ?? '',
@@ -468,9 +508,12 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
                 mode: 'oauth',
                 url: persisted.url ?? '',
               });
+              scheduleBootRetry(() => { void resume(); }); // [fork] …and HA coming back now really resumes
             }
             // Don't rethrow — init failure is handled by the route guard
           }
+          };
+          await resume();
         }
       } finally {
         set({ booted: true });
