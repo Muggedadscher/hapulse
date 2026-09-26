@@ -118,8 +118,12 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     const dlg = await until(`!!document.querySelector('dialog[open], [role=dialog]')`, 3000);
     step('date dialog opens', dlg);
     if (dlg) { await key('Escape', 'Escape'); step('date dialog closes', await until(`!document.querySelector('dialog[open], [role=dialog]')`, 3000)); }
-    await click('button.vlive-chip');
-    step('LIVE chip → live', await until(`__snvr.state().live&&__snvr.state().transport==='webrtc'`, 20000));
+    // the "↑ Live" pill is always there while not live; the chip on the now line only while now is in the rendered window
+    const hasPill = await ev(`!!document.querySelector('button.livejump')`);
+    step('not live: "↑ Live" pill present', hasPill);
+    const chipThere = await ev(`!!document.querySelector('button.vlive-chip')`);
+    await click(chipThere ? 'button.vlive-chip' : 'button.livejump');
+    step(chipThere ? 'LIVE chip → live' : '"↑ Live" pill → live', await until(`__snvr.state().live&&__snvr.state().transport==='webrtc'`, 20000), await st());
     await ev(`__snvr.ctl.playAt(Date.now()-3600000,{})`);
     await until(`!__snvr.state().live&&__snvr.state().label==='playing'`, 15000);
     await ev('document.activeElement&&document.activeElement.blur()');
