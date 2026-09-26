@@ -45,7 +45,7 @@ function legacyTheme(value: string | undefined): { theme: ThemeName; mode: Theme
     const raw = localStorage.getItem('hapulse:settings');
     if (raw) {
       const settings = JSON.parse(raw) as {
-        state?: { theme?: string; mode?: ThemeMode; accentHue?: number; appName?: string };
+        state?: { theme?: string; mode?: ThemeMode; modeOverride?: ThemeMode | null; accentHue?: number; appName?: string }; // [fork] modeOverride
       };
       const legacy = legacyTheme(settings?.state?.theme);
       theme = legacy.theme;
@@ -53,6 +53,9 @@ function legacyTheme(value: string | undefined): { theme: ThemeName; mode: Theme
         settings?.state?.mode === 'light' || settings?.state?.mode === 'dark' || settings?.state?.mode === 'auto'
           ? settings.state.mode
           : legacy.mode;
+      // [fork] light/dark chosen for this device only (global admin management)
+      const o = settings?.state?.modeOverride;
+      if (o === 'light' || o === 'dark' || o === 'auto') mode = o;
       accentHue = settings?.state?.accentHue;
       appName = settings?.state?.appName;
     }

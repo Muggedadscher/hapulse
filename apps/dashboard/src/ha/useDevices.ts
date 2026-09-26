@@ -14,6 +14,7 @@ import { buildDeviceModels, summarizeDevices } from '@hapulse/core';
 import type { DeviceModel, DevicesSummary } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useEditingEnabled } from './managedHooks'; // [fork]
 
 const EMPTY_SUMMARY: DevicesSummary = { integrations: 0, devices: 0, entities: 0, rooms: 0 };
 
@@ -28,7 +29,7 @@ export interface UseDevicesResult {
 export function useDevices(): UseDevicesResult {
   const registries = useEntityStore((s) => s.registries);
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
-  const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
+  const editingEnabled = useEditingEnabled(); // [fork] admins only under global management
 
   const devices = useMemo(
     () =>

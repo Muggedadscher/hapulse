@@ -11,6 +11,7 @@ import { DeviceCard } from '../components/devices/DeviceCard';
 import { DeviceDetailsModal } from '../components/devices/DeviceDetailsModal';
 import { integrationLabel } from '../components/devices/deviceMeta';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useEditingEnabled } from '../ha/managedHooks'; // [fork]
 import type { DeviceModel } from '@hapulse/core';
 import './Page.css';
 import './Devices.css';
@@ -20,7 +21,7 @@ export function Devices() {
   const locale = useLocale();
   const { state, progress, devices, summary } = useDevices();
 
-  const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
+  const editingEnabled = useEditingEnabled(); // [fork] admins only under global management
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
   const hiddenSet = useMemo(() => new Set(hiddenEntities), [hiddenEntities]);
 

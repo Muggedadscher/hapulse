@@ -89,6 +89,17 @@ sauber übernehmen können.
   `customization.hiddenEntities` (einzelne Tonne ausblenden) und blendet sich
   komplett aus, wenn keine Müll-Sensoren existieren.
 
+- **Einstellungen für alle (globale Verwaltung)**: Ein HA-Admin übernimmt seine Einstellungen
+  einmalig für alle HA-User (dauerhaft, kein Ausschalter). Ablage HA `frontend/system_data`
+  `hapulse:global` (alle lesen, nur Admins schreiben); Scope-Tabelle `stores/settingsScope.ts`
+  (GLOBAL / USER: Favoriten, Sprache, Lautsprecher, Verlaufsbereich, Bearbeiten-Schalter /
+  DEVICE: Seitenleiste eingeklappt, „Was ist neu“, Hell/Dunkel-Override / SECRET: NVR-/MA-Token,
+  optional vom Admin geteilt). Start-Reihenfolge in `wireConnection`: erst `ha/globalSettings.ts`,
+  dann `settingsSync` (im verwalteten Modus nur `ha/userSettingsSync.ts`, Key
+  `hapulse:user-settings`). Admin-Schreiben = Dreiwege-Diff gegen den zuletzt angewendeten
+  Stand. **Neue Settings-Felder immer in der Scope-Tabelle einordnen** — der Test
+  `test/globalSettings.test.ts` schlägt sonst fehl.
+
 ## Optionales Folge-Feature — HA-Kameras live
 
 `docs/NVR-NATIVE-PLAN.md` beschreibt einen **anderen**, noch nicht gebauten

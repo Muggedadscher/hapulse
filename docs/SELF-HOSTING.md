@@ -193,8 +193,10 @@ The browser still keeps a local copy so the first paint is instant and onboardin
 |---|---|---|
 | Home Assistant (per HA user) | `hapulse:settings` | Theme, accent color, room order, hidden rooms/entities, entity overrides — the source of truth once connected |
 | Browser `localStorage` | `hapulse:settings` | Local cache of the above |
-| Browser `localStorage` | `hapulse:connection` | HA URL, demo flag |
+| Browser `localStorage` | `hapulse:connection` | HA URL, demo flag, and in token mode the long-lived access token |
 | Browser `localStorage` | `hapulse:ha-tokens` | OAuth tokens / long-lived access token — **never** leaves your browser |
+
+**Settings for everyone (fork).** An admin can apply their settings to every Home Assistant user once (*Settings → Admin → Settings for everyone*). This is permanent. The shared settings then live in HA's `frontend/system_data` under `hapulse:global` (every user may read it, only admins may write), and each user keeps a small own part under `hapulse:user-settings` (favorites, language, music player, history range). Sidebar collapse and a light/dark override stay on the device. If the admin chooses to share Sentinel / Music Assistant access, those tokens are stored in `hapulse:global` too, readable by every HA user (and included in HA backups).
 
 Nothing is sent to any HAPulse server — the nginx container has no knowledge of your settings, and your access token is never written to Home Assistant or anywhere else. Settings only travel between your browser and your own HA instance.
 

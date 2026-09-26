@@ -30,6 +30,8 @@ import { domainOf, formatEntityState, isNumericHistory } from '@hapulse/core';
 import type { HassEntity, HistoryPoint, LogbookEntry } from '@hapulse/core';
 import { useT, useLocale, useStateLabel } from '../../i18n/useT';
 import './EntityDetailModal.css';
+import { FavoriteToggle } from './FavoriteToggle'; // [fork]
+import { useIsManaged } from '../../ha/managedHooks'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -271,6 +273,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const entity = useEntity(entityId ?? '');
   const entityOverrides = useSettingsStore((s) => s.customization.entityOverrides);
   const openEntityDetail = useUIStore((s) => s.openEntityDetail);
+  const managed = useIsManaged(); // [fork] star for per-user favorites under global management
 
   // [fork] Selected history range is remembered per user (synced to HA storage).
   const detailRange = useSettingsStore((s) => s.customization.detailHistoryRange);
@@ -381,6 +384,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
             </div>
           </div>
           <div className="entity-detail__header-state">{stateLabel}</div>
+          {managed && <FavoriteToggle entityId={entity.entity_id} />}{/* [fork] per-user favorites */}
         </div>
 
         {/* ── Camera: live view ── */}
