@@ -184,6 +184,7 @@ export {
   windowsToDaySlots,
   daySlotsToWindows,
   dailyRuntimeBars,
+  poolDayStarts, // [fork]
   POOL_MANUAL_MIN_MINUTES,
   POOL_MANUAL_MAX_MINUTES,
   POOL_MANUAL_PRESETS_MIN,
