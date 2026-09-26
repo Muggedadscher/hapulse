@@ -714,6 +714,10 @@ export const DEMO_ENTITIES: HassEntityMap = {
   // the Home "Waste collection" card has something to show in the public demo.
   // Dates are computed relative to today so the card always shows future pickups.
   ...demoWasteSensors(),
+
+  // [fork] Pool pump — the entities the fork's Pool page is wired to (poolConfig.ts), so the
+  // public demo (and the lab screenshots) show the page. A manual run of 2 h with 1.5 h left.
+  ...demoPoolEntities(),
 };
 
 /** [fork] Build demo waste sensors with future `upcoming` dates + `daysTo`. */
@@ -736,6 +740,35 @@ function demoWasteSensors(): HassEntityMap {
     'sensor.gelbersack_komplett': bin('sensor.gelbersack_komplett', 'Gelber Sack', 'mdi:recycle-variant', [9, 23, 37]),
     'sensor.papiertonne_komplett': bin('sensor.papiertonne_komplett', 'Papiertonne', 'mdi:newspaper-variant-outline', [27, 55]),
     'sensor.schadstoffsammlung': bin('sensor.schadstoffsammlung', 'Schadstoffsammlung', 'mdi:alert-octagon-outline', [30]),
+  };
+}
+
+/** [fork] Demo pool pump (entity ids as in the fork's poolConfig.ts). */
+function demoPoolEntities(): HassEntityMap {
+  const finishes = new Date(Date.now() + 90 * 60_000).toISOString();
+  const e = (id: string, state: string, attributes: HassEntityAttributes) => ({ [id]: makeEntity(id, state, attributes) });
+  return {
+    ...e('input_select.modus_poolpumpe', 'Manuell', { options: ['Ausgeschalten', 'Automatik', 'Manuell'], friendly_name: 'Modus Poolpumpe', icon: 'mdi:auto-mode' }),
+    ...e('switch.esppoolpumpe_poolpumpe', 'on', { friendly_name: 'Poolpumpe', icon: 'mdi:heat-pump-outline' }),
+    ...e('switch.esppoolpumpe_schalter_uberbrucken', 'on', { friendly_name: 'Schalter überbrücken', icon: 'mdi:meter-electric-outline' }),
+    ...e('timer.poolpumpe_manuell', 'active', { duration: '2:00:00', finishes_at: finishes, remaining: '2:00:00', friendly_name: 'Poolpumpe Manuell Timer', icon: 'mdi:timer' }),
+    ...e('input_number.poolpumpe_manuell_dauer', '120.0', { min: 5, max: 1440, step: 5, mode: 'box', unit_of_measurement: 'min', friendly_name: 'Poolpumpe Manuell Dauer' }),
+    ...e('script.pool_manuell_timer_starten', 'off', { friendly_name: 'Pool – Manuell-Timer starten', mode: 'restart' }),
+    ...e('input_number.poolpumpe_siri_dauer', '30.0', { min: 5, max: 1440, step: 5, mode: 'box', unit_of_measurement: 'min', friendly_name: 'Poolpumpe Siri Dauer' }),
+    ...e('sensor.balkonkraftwerk_power', '403', { unit_of_measurement: 'W', device_class: 'power', state_class: 'measurement', friendly_name: 'Balkonkraftwerk Leistung' }),
+    ...e('input_number.schwellwert_poolpumpe_solarleistung', '400.0', { min: 0, max: 800, step: 50, mode: 'slider', unit_of_measurement: 'W', friendly_name: 'Schwellwert Poolpumpe Solarleistung' }),
+    ...e('binary_sensor.schwellwert_poolpumpe_solarleistung', 'on', { friendly_name: 'Schwellwert Poolpumpe Solarleistung' }),
+    ...e('switch.schedule_zeitplan_poolpumpe', 'on', {
+      weekdays: ['daily'], timeslots: ['00:00 - 12:00', '12:00 - 14:00', '14:00 - 00:00'], entities: ['input_boolean.poolpumpe_zeitplan'],
+      actions: [{ service: 'input_boolean.turn_off' }, { service: 'input_boolean.turn_on' }, { service: 'input_boolean.turn_off' }],
+      current_slot: 2, next_slot: 0, tags: [], friendly_name: 'Scheduler Zeitplan Poolpumpe', icon: 'mdi:calendar-clock',
+    }),
+    ...e('input_boolean.poolpumpe_zeitplan', 'off', { friendly_name: 'Poolpumpe Zeitplan', icon: 'mdi:heat-pump-outline' }),
+    ...e('sensor.laufzeit_poolpumpe_heute', '5.47', { unit_of_measurement: 'h', device_class: 'duration', state_class: 'measurement', friendly_name: 'Laufzeit Poolpumpe Heute' }),
+    ...e('sensor.geschatzter_verbrauch_poolpumpe_energy_daily', '3.2168', { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing', friendly_name: 'Verbrauch Poolpumpe heute' }),
+    ...e('sensor.geschatzter_verbrauch_poolpumpe_energy_weekly', '14.7138', { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing', friendly_name: 'Verbrauch Poolpumpe Woche' }),
+    ...e('sensor.geschatzter_verbrauch_poolpumpe_energy_monthly', '67.1248', { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing', friendly_name: 'Verbrauch Poolpumpe Monat' }),
+    ...e('button.poolpumpe_esppoolpumpe_geraeteneustart', 'unknown', { device_class: 'restart', friendly_name: 'ESPPoolpumpe Geräteneustart' }),
   };
 }
 

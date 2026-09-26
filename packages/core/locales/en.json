@@ -1236,5 +1236,7 @@
   "cameraSource.rooms.empty": "No cameras found.",
   "cameraSource.rooms.none": "No room",
   "cameraSource.rooms.selectAria": "Room for {name}",
-  "cameraSource.room.dragReorder": "Drag to reorder the Cameras section"
+  "cameraSource.room.dragReorder": "Drag to reorder the Cameras section",
+  "pool.manual.runsUntilTomorrow": "Runs until tomorrow, {time}",
+  "pool.manual.runsUntilDay": "Runs until {day}, {time}"
 }

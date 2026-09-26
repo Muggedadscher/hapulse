@@ -1236,5 +1236,7 @@
   "cameraSource.rooms.empty": "Nessuna telecamera trovata.",
   "cameraSource.rooms.none": "Nessuna stanza",
   "cameraSource.rooms.selectAria": "Stanza per {name}",
-  "cameraSource.room.dragReorder": "Trascina per riordinare la sezione Telecamere"
+  "cameraSource.room.dragReorder": "Trascina per riordinare la sezione Telecamere",
+  "pool.manual.runsUntilTomorrow": "In funzione fino a domani alle {time}",
+  "pool.manual.runsUntilDay": "In funzione fino a {day} alle {time}"
 }

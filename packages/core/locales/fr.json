@@ -1236,5 +1236,7 @@
   "cameraSource.rooms.empty": "Aucune caméra trouvée.",
   "cameraSource.rooms.none": "Aucune pièce",
   "cameraSource.rooms.selectAria": "Pièce pour {name}",
-  "cameraSource.room.dragReorder": "Faites glisser pour réorganiser la section Caméras"
+  "cameraSource.room.dragReorder": "Faites glisser pour réorganiser la section Caméras",
+  "pool.manual.runsUntilTomorrow": "Fonctionne jusqu’à demain, {time}",
+  "pool.manual.runsUntilDay": "Fonctionne jusqu’à {day}, {time}"
 }

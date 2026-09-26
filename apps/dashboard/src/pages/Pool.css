@@ -287,6 +287,24 @@
   white-space: nowrap;
 }
 
+/* Phones: three segments are too narrow for "Ausgeschalten" next to an icon — stack icon
+   over label and let the label wrap instead of cutting it to "Ausgescha…". */
+@media (max-width: 480px) {
+  .pool-mode__btn {
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 2px;
+    font-size: 0.75rem;
+  }
+  .pool-mode__label {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: break-word; /* only if a single word still cannot fit (very narrow phones) */
+    line-height: 1.15;
+    text-align: center;
+  }
+}
+
 .pool-mode__btn--active {
   background: var(--bg-card);
   color: var(--text);
@@ -329,6 +347,10 @@
   font-weight: 600;
   line-height: 1.05;
 }
+
+/* Keep the value inside the ring's hole (it used to touch/overrun the stroke). */
+.pool-gauge__center { padding: 0 16px; }
+.pool-gauge__primary { white-space: nowrap; }
 
 .pool-gauge__unit { font-size: 0.8125rem; }
 

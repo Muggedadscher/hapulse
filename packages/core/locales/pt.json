@@ -1236,5 +1236,7 @@
   "cameraSource.rooms.empty": "Nenhuma câmara encontrada.",
   "cameraSource.rooms.none": "Sem divisão",
   "cameraSource.rooms.selectAria": "Divisão para {name}",
-  "cameraSource.room.dragReorder": "Arraste para reordenar a secção Câmaras"
+  "cameraSource.room.dragReorder": "Arraste para reordenar a secção Câmaras",
+  "pool.manual.runsUntilTomorrow": "Funciona até amanhã às {time}",
+  "pool.manual.runsUntilDay": "Funciona até {day} às {time}"
 }

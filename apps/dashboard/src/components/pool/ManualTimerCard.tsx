@@ -25,7 +25,8 @@ import { useLocale, useT } from '../../i18n/useT';
 import { POOL_ENTITIES, poolModeTone } from './poolConfig';
 import { setDurationMinutes, setPoolMode } from '../../ha/pool';
 import { PoolGauge } from './PoolGauge';
-import { usePoolTimer, formatCountdown } from './usePoolTimer';
+import { usePoolTimer } from './usePoolTimer';
+import { formatRingCountdown, formatUntil } from './poolFormat';
 import { PumpManualModal } from './PumpManualModal';
 
 /** ± step for the Siri-duration stepper, matching the HA input_number. */
@@ -45,9 +46,13 @@ export function ManualTimerCard() {
   const options = (mode?.attributes['options'] as string[] | undefined) ?? [];
   const autoOption = options.find((o) => poolModeTone(o) === 'auto');
 
-  const endLabel = info.finishesAt
-    ? new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(info.finishesAt)
-    : null;
+  // "tomorrow" / weekday when the run does not end today (a 24 h run read at 15:11 said "until 15:11")
+  const until = info.finishesAt ? formatUntil(info.finishesAt, new Date(), locale) : null;
+  const endLabel = !until ? null
+    : until.kind === 'today' ? t('pool.manual.runsUntil', { time: until.time })
+      : until.kind === 'tomorrow' ? t('pool.manual.runsUntilTomorrow', { time: until.time })
+        : t('pool.manual.runsUntilDay', { day: until.day, time: until.time });
+  const ring = formatRingCountdown(info.remainingSec);
 
   const stop = () => {
     if (autoOption) void setPoolMode(POOL_ENTITIES.mode, autoOption);
@@ -74,11 +79,11 @@ export function ManualTimerCard() {
             <PoolGauge
               value={info.fraction}
               color="var(--info)"
-              primary={<span className="data-font">{formatCountdown(info.remainingSec)}</span>}
+              primary={<span className="data-font">{ring.value}<span className="pool-gauge__unit"> {ring.unit}</span></span>}
               secondary={t('pool.manual.remaining')}
             />
             {endLabel && (
-              <p className="pool-manual__until">{t('pool.manual.runsUntil', { time: endLabel })}</p>
+              <p className="pool-manual__until">{endLabel}</p>
             )}
             <button type="button" className="btn btn--ghost pool-manual__action" onClick={stop} disabled={!autoOption}>
               <Square size={15} strokeWidth={2} />

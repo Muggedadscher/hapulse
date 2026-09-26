@@ -1236,5 +1236,7 @@
   "cameraSource.rooms.empty": "Keine Kameras gefunden.",
   "cameraSource.rooms.none": "Kein Raum",
   "cameraSource.rooms.selectAria": "Raum für {name}",
-  "cameraSource.room.dragReorder": "Ziehen, um den Bereich Kameras neu anzuordnen"
+  "cameraSource.room.dragReorder": "Ziehen, um den Bereich Kameras neu anzuordnen",
+  "pool.manual.runsUntilTomorrow": "Läuft bis morgen, {time}",
+  "pool.manual.runsUntilDay": "Läuft bis {day}, {time}"
 }

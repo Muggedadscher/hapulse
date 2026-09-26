@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { Waves, Power, PowerOff, CirclePause, RefreshCw, Hand, Clock } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
+import { formatPoolValue } from './poolFormat';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
 import { setPoolMode } from '../../ha/pool';
@@ -53,7 +54,7 @@ export function PumpHeroCard() {
         {runtime && !isNaN(parseFloat(runtime.state)) && (
           <div className="pool-hero__glance">
             <Clock size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span className="pool-hero__glance-value data-font">{formatEntityState(runtime, locale)}</span>
+            <span className="pool-hero__glance-value data-font">{formatPoolValue(runtime, locale) ?? formatEntityState(runtime, locale)}</span>
             <span className="pool-hero__glance-label">{t('pool.data.runtimeToday')}</span>
           </div>
         )}

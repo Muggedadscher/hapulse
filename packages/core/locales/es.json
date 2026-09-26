@@ -1236,5 +1236,7 @@
   "cameraSource.rooms.empty": "No se encontraron cámaras.",
   "cameraSource.rooms.none": "Sin habitación",
   "cameraSource.rooms.selectAria": "Habitación para {name}",
-  "cameraSource.room.dragReorder": "Arrastra para reordenar la sección Cámaras"
+  "cameraSource.room.dragReorder": "Arrastra para reordenar la sección Cámaras",
+  "pool.manual.runsUntilTomorrow": "Funciona hasta mañana a las {time}",
+  "pool.manual.runsUntilDay": "Funciona hasta el {day} a las {time}"
 }
