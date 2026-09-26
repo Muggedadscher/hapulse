@@ -35,6 +35,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # [fork] ESLint (errors fail the build; warnings are reported only)
+      - name: Lint
+        run: npm run lint
+
       - name: Build
         run: npm run build
 

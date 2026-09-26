@@ -58,7 +58,7 @@ function useSetupForm(onSaved?: () => void) {
   const test = async () => {
     if (!parsed) return;
     setProbe({ state: 'busy' });
-    let tok = '';
+    let tok: string;
     try { tok = await resolveToken(); } catch (e) {
       setProbe({ state: 'fail', status: e instanceof SentinelHttpError ? e.status : 0, step: 'login' }); return;
     }
@@ -73,7 +73,7 @@ function useSetupForm(onSaved?: () => void) {
 
   const save = async () => {
     if (!parsed || !valid) return;
-    let tok = '';
+    let tok: string;
     try { tok = await resolveToken(); } catch (e) {
       setProbe({ state: 'fail', status: e instanceof SentinelHttpError ? e.status : 0, step: 'login' }); return;
     }

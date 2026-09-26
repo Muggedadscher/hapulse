@@ -26,7 +26,7 @@ export function originOf(input: string | null | undefined): string | null {
 export function splitUrlToken(input: string): { url: string; token: string | null } {
   const m = /[?&]token=([^&#]*)/.exec(input);
   if (!m) return { url: input, token: null };
-  let token: string | null = null;
+  let token: string | null;
   try { token = decodeURIComponent(m[1] ?? '').trim() || null; } catch { token = (m[1] ?? '').trim() || null; }
   const url = input
     .replace(/([?&])token=[^&#]*&?/, '$1')

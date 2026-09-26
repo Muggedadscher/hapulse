@@ -290,7 +290,7 @@ function AppearanceSection() {
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     if (max === min) return 0;
     const d = max - min;
-    let h = 0;
+    let h: number; // [fork] no dead initial value (lint)
     if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
     else if (max === g) h = ((b - r) / d + 2) / 6;
     else h = ((r - g) / d + 4) / 6;
@@ -689,12 +689,11 @@ function EditEntitiesModal({ open, onClose }: { open: boolean; onClose: () => vo
 function AdminSection() {
   const t = useT();
   const canEdit = useCanEdit();
-  if (!canEdit) return null;
-
   const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
   const setEditMode = useUIStore((s) => s.setEditMode);
   const [entitiesOpen, setEntitiesOpen] = useState(false);
+  if (!canEdit) return null; // [fork] after all hooks (rules-of-hooks, React #310 when admin status loads)
 
   function handleToggleEditing(enabled: boolean) {
     updateCustomization({ editingEnabled: enabled });
