@@ -41,6 +41,9 @@ jobs:
       - name: Test @hapulse/core
         run: npm test -w @hapulse/core
 
+      - name: Test @hapulse/dashboard
+        run: npm test -w @hapulse/dashboard
+
   docker:
     name: Build and publish Docker image
     runs-on: ubuntu-latest

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router';
 import { Guard } from './Guard';
 import { AppLayout } from './AppLayout';
 import { useT } from '../i18n/useT';
+import { PageErrorBoundary } from './PageErrorBoundary'; // [fork]
 
 // Eager import for onboarding — always shown first
 import { Onboarding } from '../pages/Onboarding';
@@ -73,6 +74,7 @@ export function AppRouter({ basename }: { basename?: string | undefined }) {
           element={
             <Guard>
               <AppLayout>
+                <PageErrorBoundary>
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
                     <Route path="/" element={<Home />} />
@@ -89,6 +91,7 @@ export function AppRouter({ basename }: { basename?: string | undefined }) {
                     <Route path="/system" element={<System />} />
                   </Routes>
                 </Suspense>
+                </PageErrorBoundary>
               </AppLayout>
             </Guard>
           }
