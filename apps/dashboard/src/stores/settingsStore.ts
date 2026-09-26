@@ -13,6 +13,7 @@ import { LOCALES, CURRENT_VERSION } from '@hapulse/core';
 import type { Locale } from '@hapulse/core';
 import { keepDeviceSecrets, migrateUrlToken, splitUrlToken } from './settingsSecrets'; // [fork]
 import { sanitizeCustomization } from './settingsSanitize'; // [fork]
+import { migrateNavOrderV2 } from './navOrderMigration'; // [fork]
 
 /**
  * Migrate a pre-v0.5 theme value (dusk/dawn/midnight/sage — which encoded both
@@ -165,6 +166,8 @@ export interface CustomizationSettings {
   wasteSectionMigrated: boolean;
   /** [fork] Same one-time placement for the Sentinel NVR home card (after Waste/Security). */
   nvrSectionMigrated: boolean;
+  /** [fork] One-time sidebar reorder to Overview, Rooms, NVR, Pool, rest (see navOrderMigration.ts). */
+  navOrderV2Migrated: boolean;
 }
 
 /**
@@ -318,6 +321,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   poolChipMigrated: false, // [fork]
   wasteSectionMigrated: false, // [fork]
   nvrSectionMigrated: false, // [fork]
+  navOrderV2Migrated: false, // [fork]
   libraryPlayerId: null,
   maServerUrl: null,
   maToken: null,
@@ -460,14 +464,14 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: migrateUrlToken(migrateNvrSection(migrateWasteSection(migratePoolChip({ // [fork] migrateUrlToken
+            customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
               scryptedToken,
               maToken,
               entityOrder,
               favorites,
-            })))),
+            }))))),
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -511,10 +515,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenVersion,
           theme: migrated?.theme ?? current.theme,
           mode,
-          customization: migrateUrlToken(migrateNvrSection(migrateWasteSection(migratePoolChip({ // [fork] migrateUrlToken
+          customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),
-          })))),
+          }))))),
         };
       },
     }

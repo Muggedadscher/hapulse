@@ -32,7 +32,7 @@ Theming is **identity × mode**:
 ## Layout
 
 - **Desktop (≥ 900px):** left **sidebar** (~240px, `--bg-raised`): logo top, vertical nav list with icon + label, active item = a filled rounded-rect using `--bg-subtle`/`--accent-soft` with accent icon/text. A "Home Status" pill near the bottom (green check + "All systems normal") and a collapse chevron. Main area: a generous **widget grid** of cards (≈ 3 columns, cards span 1–2 cols; a large hero room card spans 2). 32px padding, max-width ~1400px.
-- **Mobile (< 900px):** bottom **tab bar** (Home, Rooms, Music, Security, Settings) — `--bg-raised`, blur, active = accent. Single-column stacked cards. Header: logo + greeting, then a weather row + avatar.
+- **Mobile (< 900px):** bottom **tab bar** — the first four visible nav items (fork default: Overview, Rooms, NVR, Pool) plus "More" — `--bg-raised`, blur, active = accent. Single-column stacked cards. Header: logo + greeting, then a weather row + avatar.
 - Header (both): greeting "Good morning, {name} 👋" (display font, bold) + subtitle; right side weather glance, notification bell, round avatar.
 
 ## Components / patterns (from the mockups)
