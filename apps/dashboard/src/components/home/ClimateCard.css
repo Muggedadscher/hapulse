@@ -194,7 +194,15 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  border-top: 1px solid var(--line);
+  /* [fork] The rows are pulled out by 0.375rem on both sides (see .climate-card__room-row), which
+     made them wider than the list — and a list scrolling vertically scrolls horizontally too (a few
+     px of sideways wobble on phones and trackpads). The list now owns that bleed: it is widened by
+     the same amount and pads it back, so the rows fit exactly, and horizontal scrolling is off.
+     The divider is drawn as a background at the original width instead of a (now wider) border. */
+  margin: 0 -0.375rem;
+  padding: 1px 0.375rem 0;
+  overflow-x: hidden;
+  background: linear-gradient(var(--line), var(--line)) no-repeat 0.375rem 0 / calc(100% - 0.75rem) 1px;
   /* Reduced to fit within the 400px card cap alongside the gauge section */
   max-height: 150px;
   overflow-y: auto;
