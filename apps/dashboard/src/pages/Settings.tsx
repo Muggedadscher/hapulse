@@ -9,7 +9,7 @@ import {
   FolderGit2, ExternalLink, // [fork] lucide 1.x has no brand icons (Github removed)
   ChevronDown, ChevronRight,
   Wifi, Hash, Sun, Palette, Download, Upload, Info, Languages, Type, EyeOff, Shapes,
-  LayoutGrid, Pencil, List, ShieldCheck, Sparkles,
+  LayoutGrid, Pencil, List, Sparkles, // [fork] unused ShieldCheck removed (lint)
 } from 'lucide-react';
 
 import { useSettingsStore } from '../stores/settingsStore';

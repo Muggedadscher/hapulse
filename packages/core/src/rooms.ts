@@ -8,8 +8,7 @@ import type {
   DeviceRegistryEntry,
   EntityRegistryEntry,
   Registries,
-  HassEntity,
-  HassEntityMap,
+  HassEntityMap, // [fork] unused HassEntity import removed (lint)
   Room,
   RoomSummary,
 } from './types.js';

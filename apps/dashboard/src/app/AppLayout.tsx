@@ -249,8 +249,7 @@ function HeaderCluster() {
   const navigate = useNavigate();
   const avatarInfo = useCurrentUserAvatar();
   const editMode = useUIStore((s) => s.editMode);
-  const detailEntityId = useUIStore((s) => s.detailEntityId);
-  const closeEntityDetail = useUIStore((s) => s.closeEntityDetail);
+  // [fork] unused detailEntityId/closeEntityDetail selectors removed (lint; the modal lives below)
   const isHome = location.pathname === '/';
   const isRoom = location.pathname.startsWith('/room/');
 
@@ -436,7 +435,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   /* ---- Render helpers ---- */
 
-  function renderSidebarItem(id: string, isFirst: boolean, isLast: boolean) {
+  function renderSidebarItem(id: string, _isFirst: boolean, _isLast: boolean) { // [fork] unused args marked (lint)
     const item = NAV_MAP.get(id);
     if (!item) return null;
 

@@ -14,8 +14,7 @@ import type { HassEntityMap } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './home.css';
 
-const ALL_CHIP_IDS = ['people', 'lights', 'doors', 'alarm', 'media', 'pool'] as const; // [fork] pool chip
-type ChipId = (typeof ALL_CHIP_IDS)[number];
+type ChipId = 'people' | 'lights' | 'doors' | 'alarm' | 'media' | 'pool'; // [fork] pool chip; plain union (lint: const was type-only)
 
 interface SummaryChipsProps {
   entities: HassEntityMap;

@@ -3,7 +3,7 @@
  * Shows artwork, title, artist, progress bar, transport controls, volume, source.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'; // [fork] useMemo
 import {
   Play,
   Pause,
@@ -33,7 +33,7 @@ import { useCommitRange } from '../ui/useCommitRange'; // [fork]
 // ---------------------------------------------------------------------------
 // Supported features bitmask constants
 // ---------------------------------------------------------------------------
-const FEATURE_PAUSE        = 1;
+// [fork] FEATURE_PAUSE (1) removed — unused (lint)
 const FEATURE_SEEK         = 2;
 const FEATURE_VOLUME_SET   = 4;
 const FEATURE_PREVIOUS     = 16;
@@ -137,37 +137,37 @@ export function NowPlayingCard({ entity, roomName }: NowPlayingCardProps) {
   const volumeLevel = (attrs['volume_level'] as number | undefined) ?? 0;
 
   // ---- Service calls ----
-  const target = { entity_id: entity.entity_id };
+  const target = useMemo(() => ({ entity_id: entity.entity_id }), [entity.entity_id]); // [fork] stable for the callbacks' deps (lint)
 
   const handlePlayPause = useCallback(() => {
     callService('media_player', isPlaying ? 'media_pause' : 'media_play', {}, target);
-  }, [isPlaying, entity.entity_id]);
+  }, [isPlaying, target] /* [fork] */);
 
   const handlePrevious = useCallback(() => {
     callService('media_player', 'media_previous_track', {}, target);
-  }, [entity.entity_id]);
+  }, [target] /* [fork] */);
 
   const handleNext = useCallback(() => {
     callService('media_player', 'media_next_track', {}, target);
-  }, [entity.entity_id]);
+  }, [target] /* [fork] */);
 
   const handleShuffle = useCallback(() => {
     callService('media_player', 'shuffle_set', { shuffle: !shuffleMode }, target);
-  }, [shuffleMode, entity.entity_id]);
+  }, [shuffleMode, target] /* [fork] */);
 
   const handleRepeat = useCallback(() => {
     const next = repeatMode === 'off' ? 'all' : repeatMode === 'all' ? 'one' : 'off';
     callService('media_player', 'repeat_set', { repeat: next }, target);
-  }, [repeatMode, entity.entity_id]);
+  }, [repeatMode, target] /* [fork] */);
 
   const handleMute = useCallback(() => {
     callService('media_player', 'volume_mute', { is_volume_muted: !isMuted }, target);
-  }, [isMuted, entity.entity_id]);
+  }, [isMuted, target] /* [fork] */);
 
 
   const handleSource = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     callService('media_player', 'select_source', { source: e.target.value }, target);
-  }, [entity.entity_id]);
+  }, [target] /* [fork] */);
 
   const clampedPosition = Math.min(position, duration);
   const progressPct = duration > 0 ? Math.min((clampedPosition / duration) * 100, 100) : 0;

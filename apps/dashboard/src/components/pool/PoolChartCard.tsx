@@ -28,6 +28,7 @@ export function PoolChartCard() {
   const runtime = useEntity(POOL_ENTITIES.runtimeToday);
   const unit = (runtime?.attributes['unit_of_measurement'] as string | undefined) ?? 'h';
   const runtimeDay = runtime?.last_updated ? new Date(runtime.last_updated).toDateString() : ''; // [fork]
+  const runtimeLastReset = runtime?.attributes['last_reset']; // plain value for the effect deps (lint)
 
   const [bars, setBars] = useState<PoolDayRuntime[]>([]);
   const [state, setState] = useState<LoadState>('loading');
@@ -60,7 +61,7 @@ export function PoolChartCard() {
     return () => { cancelled = true; };
     // Re-fetch when the sensor's day rolls over (its state resets to ~0 at midnight). The sensor may have no
     // last_reset attribute: the calendar day of its last update changes at the midnight reset as well.
-  }, [runtime?.entity_id, runtime?.attributes['last_reset'], runtimeDay]);
+  }, [runtime?.entity_id, runtimeLastReset, runtimeDay]);
 
   const maxVal = Math.max(0.001, ...bars.map((b) => b.value));
   const fmtDay = new Intl.DateTimeFormat(locale, { weekday: 'short', day: '2-digit', month: '2-digit' });

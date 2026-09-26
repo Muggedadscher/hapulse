@@ -54,7 +54,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   }
 
   const alarmColor = alarmColorKey(alarmState);
-  const alarmOk = !alarmState || alarmState === 'disarmed';
+  // [fork] unused alarmOk removed (lint)
 
   // Locks
   const locks = all.filter((e) => e.entity_id.startsWith('lock.'));

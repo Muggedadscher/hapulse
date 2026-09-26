@@ -18,8 +18,7 @@ interface EntityActions {
   reset: () => void;
 }
 
-const EMPTY_REGISTRIES: Registries = { areas: [], devices: [], entities: [] };
-
+// [fork] unused EMPTY_REGISTRIES removed (lint)
 const initialState: EntityState = {
   entities: {},
   registries: null,
