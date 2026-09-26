@@ -277,6 +277,27 @@ export function Room() {
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
   const { hiddenEntities, entityOverrides, entityOrder, favorites, roomSectionOrder, roomSectionSpans } = customization;
 
+  // [fork] hooks before the early return (rules-of-hooks, React #310)
+  const handleReorderSections = useCallback(
+    (newKeys: string[]) => {
+      if (!areaId) return;
+      updateCustomization({
+        roomSectionOrder: { ...roomSectionOrder, [areaId]: newKeys },
+      });
+    },
+    [areaId, roomSectionOrder, updateCustomization]
+  );
+
+  const handleSectionSpanChange = useCallback(
+    (sectionKey: string, newSpan: number) => {
+      if (!areaId) return;
+      updateCustomization({
+        roomSectionSpans: { ...roomSectionSpans, [roomSpanKey(areaId, sectionKey)]: newSpan },
+      });
+    },
+    [areaId, roomSectionSpans, updateCustomization]
+  );
+
   if (!areaId || !room) {
     return (
       <div className="page room-page stagger-rise">
@@ -324,26 +345,6 @@ export function Room() {
     }
     updateCustomization({ entityOrder: { ...entityOrder, [areaId]: combined } });
   }
-
-  const handleReorderSections = useCallback(
-    (newKeys: string[]) => {
-      if (!areaId) return;
-      updateCustomization({
-        roomSectionOrder: { ...roomSectionOrder, [areaId]: newKeys },
-      });
-    },
-    [areaId, roomSectionOrder, updateCustomization]
-  );
-
-  const handleSectionSpanChange = useCallback(
-    (sectionKey: string, newSpan: number) => {
-      if (!areaId) return;
-      updateCustomization({
-        roomSectionSpans: { ...roomSectionSpans, [roomSpanKey(areaId, sectionKey)]: newSpan },
-      });
-    },
-    [areaId, roomSectionSpans, updateCustomization]
-  );
 
   // Gather domain → ids
   const domainMap: Record<string, string[]> = {};

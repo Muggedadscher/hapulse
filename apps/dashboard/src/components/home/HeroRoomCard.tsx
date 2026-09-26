@@ -156,32 +156,34 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   const mediaIds = room.domains['media_player'] ?? [];
   const playingMedia = mediaIds.map((id) => entities[id]).find((e) => e?.state === 'playing');
 
-  const handleLightsToggle = useCallback((e: React.MouseEvent) => {
+  // [fork] plain handlers: these ran after the `!room` early return, so
+  // useCallback here broke rules-of-hooks (React #310 when a room appears).
+  const handleLightsToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (visibleLightIds.length === 0) return;
     const service = lightsOn ? 'turn_off' : 'turn_on';
     void callService('light', service, {}, { entity_id: visibleLightIds });
-  }, [visibleLightIds, lightsOn]);
+  };
 
-  const handleClimateDown = useCallback((e: React.MouseEvent) => {
+  const handleClimateDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!climateEntity) return;
     const cur = (climateEntity.attributes.temperature as number | undefined) ?? 20;
     void callService('climate', 'set_temperature', { temperature: cur - 1 }, { entity_id: climateEntity.entity_id });
-  }, [climateEntity]);
+  };
 
-  const handleClimateUp = useCallback((e: React.MouseEvent) => {
+  const handleClimateUp = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!climateEntity) return;
     const cur = (climateEntity.attributes.temperature as number | undefined) ?? 20;
     void callService('climate', 'set_temperature', { temperature: cur + 1 }, { entity_id: climateEntity.entity_id });
-  }, [climateEntity]);
+  };
 
-  const handleMediaToggle = useCallback((e: React.MouseEvent) => {
+  const handleMediaToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!playingMedia) return;
     void callService('media_player', 'media_play_pause', {}, { entity_id: playingMedia.entity_id });
-  }, [playingMedia]);
+  };
 
   const climateTemp = climateEntity
     ? ((climateEntity.attributes.temperature as number | undefined) ?? (climateEntity.attributes.current_temperature as number | undefined))
