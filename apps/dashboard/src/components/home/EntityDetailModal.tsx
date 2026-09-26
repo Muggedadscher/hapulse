@@ -322,6 +322,15 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
       setHistory(h);
       setLogbook(l);
       setHistoryLoading(false);
+    }).catch((err: unknown) => {
+      // [fork] a failed history/logbook fetch (timeout, entity not recorded) must not leave the chart dimmed forever
+      if (cancelled) return;
+      console.warn('[HAPulse] entity history failed:', err);
+      setWindowEnd(end);
+      setHistRangeH(fetchedRangeH);
+      setHistory([]);
+      setLogbook([]);
+      setHistoryLoading(false);
     });
     return () => {
       cancelled = true;
