@@ -17,9 +17,17 @@
     "build": "npm run build -w @hapulse/core && npm run build -w @hapulse/dashboard",
     "typecheck": "npm run typecheck -w @hapulse/core && npm run typecheck -w @hapulse/dashboard",
     "test": "npm test -w @hapulse/core && npm test -w @hapulse/dashboard",
-    "changelog": "npm run build -w @hapulse/core && node packages/core/scripts/gen-changelog.mjs"
+    "changelog": "npm run build -w @hapulse/core && node packages/core/scripts/gen-changelog.mjs",
+    "lint": "eslint ."
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.70.1"
   }
 }

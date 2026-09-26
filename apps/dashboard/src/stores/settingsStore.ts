@@ -407,7 +407,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           const incoming: Partial<CustomizationSettings> = sanitizeCustomization(data.customization ?? {}, DEFAULT_CUSTOMIZATION);
 
           // Validate entityOrder: must be an object whose values are string arrays
-          let entityOrder: Record<string, string[]> = {};
+          const entityOrder: Record<string, string[]> = {}; // [fork] const (lint)
           if (
             incoming.entityOrder != null &&
             typeof incoming.entityOrder === 'object' &&

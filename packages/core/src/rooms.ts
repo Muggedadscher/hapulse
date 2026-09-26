@@ -125,7 +125,6 @@ export function roomSummary(room: Room, entities: HassEntityMap): RoomSummary {
   let humidity: number | undefined;
   let climateState: string | undefined;
   let lightsOn = 0;
-  let lightsTotal = 0;
   let mediaPlaying = false;
   let anyMotion = false;
 
@@ -147,7 +146,7 @@ export function roomSummary(room: Room, entities: HassEntityMap): RoomSummary {
 
   // Lights
   const lightIds = room.domains['light'] ?? [];
-  lightsTotal = lightIds.length;
+  const lightsTotal = lightIds.length; // [fork] const (lint)
   for (const id of lightIds) {
     const entity = entities[id];
     if (entity?.state === 'on') lightsOn++;
