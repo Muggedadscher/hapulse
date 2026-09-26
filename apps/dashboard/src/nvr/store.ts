@@ -47,15 +47,17 @@ export const useNvrStore = create<NvrState>()((set, get) => ({
         client.getJson<SentinelCamera[]>('api/cameras'),
         client.getJson<SentinelRecentEvent[]>('api/recent-events?limit=40'),
         client.getJson<SentinelStats>('api/stats'),
-        client.getJson<{ buckets: number[] }>('api/events-histogram'),
+        // optional (older plugins have no histogram): its failure must not empty everything else
+        client.getJson<{ buckets: number[] }>('api/events-histogram').catch(() => ({ buckets: [] as number[] })),
       ]);
       if (get().key !== client.key) return; // config changed mid-flight
       set({ status: 'ready', cameras, recent, stats, histogram: hist.buckets ?? [], loadedAt: Date.now(), errorStatus: null });
     } catch (e) {
       if (get().key !== client.key) return;
       const status = typeof (e as { status?: unknown })?.status === 'number' ? (e as { status: number }).status : 0;
-      // Keep stale data visible on a transient failure; only flip to error when we have nothing.
-      set((s) => ({ status: s.loadedAt ? s.status : 'error', errorStatus: status }));
+      // Keep stale data visible on a transient failure; flip to error when we have nothing — or when access is
+      // gone (401/403: token rotated, token access off): old cameras/events must not pose as current forever.
+      set((s) => ({ status: s.loadedAt && status !== 401 && status !== 403 ? s.status : 'error', errorStatus: status }));
     }
   },
 

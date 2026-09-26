@@ -16,8 +16,9 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { Card } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
 import { useT } from '../../i18n/useT';
-import { SentinelClient, SentinelHttpError } from '../api';
+import { SentinelHttpError } from '../api';
 import { useNvrStore } from '../store';
+import { clientFor, storedNvrUrl } from '../config';
 
 type Probe = { state: 'idle' } | { state: 'busy' } | { state: 'ok'; cameras: number } | { state: 'fail'; status: number; step: 'login' | 'probe' };
 type AuthMode = 'token' | 'login';
@@ -39,18 +40,19 @@ function useSetupForm(onSaved?: () => void) {
   const typedToken = token.trim() || parsed?.token || '';
   const valid = parsed != null && (mode === 'token' ? typedToken !== '' : user.trim() !== '' && password !== '');
 
-  /** A pasted embed URL carries the token — surface it in the token field. */
+  /** A pasted embed URL carries the token — it replaces the token field (a rotated token in a freshly pasted URL
+   *  must win over the stored one the field was prefilled with). */
   const onUrlChange = (v: string) => {
     setUrl(v);
     const p = parseSentinelSetup(v);
-    if (p?.token && !token.trim()) setToken(p.token);
+    if (p?.token) setToken(p.token);
     setProbe({ state: 'idle' });
   };
 
   /** The token to use: typed/pasted, or fetched with the Scrypted account (login mode). */
   const resolveToken = async (): Promise<string> => {
     if (mode === 'token' || !parsed) return typedToken;
-    return exchangeSentinelToken(parsed.origin, user.trim(), password);
+    return exchangeSentinelToken(parsed.origin, user.trim(), password, 10_000, parsed.prefix ?? '');
   };
 
   const test = async () => {
@@ -61,7 +63,7 @@ function useSetupForm(onSaved?: () => void) {
       setProbe({ state: 'fail', status: e instanceof SentinelHttpError ? e.status : 0, step: 'login' }); return;
     }
     try {
-      const c = new SentinelClient(parsed.origin, tok);
+      const c = clientFor(parsed.origin, tok, parsed.prefix ?? '');
       const st = await c.getJson<{ cameras: number }>('api/stats');
       setProbe({ state: 'ok', cameras: st.cameras });
     } catch (e) {
@@ -75,7 +77,7 @@ function useSetupForm(onSaved?: () => void) {
     try { tok = await resolveToken(); } catch (e) {
       setProbe({ state: 'fail', status: e instanceof SentinelHttpError ? e.status : 0, step: 'login' }); return;
     }
-    updateCustomization({ scryptedUrl: parsed.origin, scryptedToken: tok });
+    updateCustomization({ scryptedUrl: storedNvrUrl(parsed.origin, parsed.prefix ?? ''), scryptedToken: tok });
     setPassword('');
     useNvrStore.getState().reset();
     onSaved?.();
@@ -184,11 +186,15 @@ export function NvrSetupCard() {
 /** Edit an existing connection (gear button on the NVR page). */
 export function NvrSetupModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT();
-  const { fields, actions } = useSetupForm(onClose);
+  const { fields, actions, valid, save } = useSetupForm(onClose);
   return (
     <Modal open={open} onClose={onClose} title={t('nvr.setup.modalTitle')} icon={<Cctv size={18} strokeWidth={1.75} />} footer={actions}>
       <p className="nvr-setup__desc nvr-setup__desc--modal">{t('nvr.setup.desc')}</p>
-      {fields}
+      {/* a form: Enter in a field saves, like on the setup card */}
+      <form noValidate onSubmit={(e) => { e.preventDefault(); if (valid) void save(); }}>
+        {fields}
+        <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
+      </form>
       <p className="nvr-setup__hint">{t('nvr.setup.hint')}</p>
     </Modal>
   );
