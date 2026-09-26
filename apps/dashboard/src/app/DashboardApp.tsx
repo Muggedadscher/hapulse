@@ -14,7 +14,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { applyTheme, watchSystemMode } from '../theme/themes';
 import { syncAppIcon } from './appIcon'; // [fork]
-import { useSettingsStore } from '../stores/settingsStore';
+import { useSettingsStore, effectiveMode } from '../stores/settingsStore'; // [fork] effectiveMode
 import { useConnectionStore, hasResumableConnection } from '../stores/connectionStore';
 import { AppRouter } from './Router';
 import { UserMenuContext } from './userMenuContext';
@@ -63,13 +63,13 @@ export function DashboardApp({ basename, accountMenu, demo = false }: DashboardA
     // Apply the current theme immediately so a host without the pre-paint IIFE
     // still gets correct theming on first render.
     const s = useSettingsStore.getState();
-    applyTheme(s.theme, s.mode, s.accentHue);
+    applyTheme(s.theme, effectiveMode(s), s.accentHue); // [fork] device override
     document.title = s.appName || 'HAPulse';
     syncAppIcon(s.appIcon, s.appIconHidden); // [fork]
 
     // Keep the DOM in sync with future settings changes.
     useSettingsStore.subscribe((state) => {
-      applyTheme(state.theme, state.mode, state.accentHue);
+      applyTheme(state.theme, effectiveMode(state), state.accentHue); // [fork] device override
       document.title = state.appName || 'HAPulse';
       syncAppIcon(state.appIcon, state.appIconHidden); // [fork]
     });
@@ -77,7 +77,7 @@ export function DashboardApp({ basename, accountMenu, demo = false }: DashboardA
     // Keep the DOM in sync with OS color-scheme changes (auto mode).
     watchSystemMode(() => {
       const state = useSettingsStore.getState();
-      return { theme: state.theme, mode: state.mode, accentHue: state.accentHue };
+      return { theme: state.theme, mode: effectiveMode(state), accentHue: state.accentHue }; // [fork]
     });
 
     if (demo) {

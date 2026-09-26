@@ -35,6 +35,10 @@ import { PulseLogo, APP_ICON_IDS, type AppIconId } from '../components/ui/PulseL
 import { RoomRow } from '../components/settings/RoomRow';
 import { EntityRow } from '../components/settings/EntityRow';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
+import { ManagedHint } from '../components/settings/ManagedHint'; // [fork]
+import { DeviceModeRow } from '../components/settings/DeviceModeRow'; // [fork]
+import { GlobalSettingsAdmin } from '../components/settings/GlobalSettingsAdmin'; // [fork]
+import { useEditingEnabled, useIsManaged, useSettingsLocked } from '../ha/managedHooks'; // [fork]
 
 import './Page.css';
 import './Settings.css';
@@ -275,6 +279,8 @@ function AppearanceSection() {
   const setAppName = useSettingsStore((s) => s.setAppName);
   const setAppIcon = useSettingsStore((s) => s.setAppIcon);
   const setAppIconHidden = useSettingsStore((s) => s.setAppIconHidden);
+  const locked = useSettingsLocked(); // [fork] shared settings read-only for non-admins
+  const managed = useIsManaged(); // [fork]
 
   const activeIcon: AppIconId = (APP_ICON_IDS as readonly string[]).includes(appIcon ?? '')
     ? (appIcon as AppIconId)
@@ -340,6 +346,8 @@ function AppearanceSection() {
     <section className="settings-page__section">
       <SectionLabel>{t('settings.section.appearance')}</SectionLabel>
       <Card className="settings-card">
+        {locked && <ManagedHint />}{/* [fork] */}
+        <fieldset className="managed-fieldset" disabled={locked}>{/* [fork] */}
         {/* App name row */}
         <div className="settings-card__row">
           <div className="settings-card__row-label">
@@ -397,7 +405,10 @@ function AppearanceSection() {
           </div>
         </div>
 
+        </fieldset>{/* [fork] */}
+
         {/* Mode row */}
+        <fieldset className="managed-fieldset" disabled={locked}>{/* [fork] */}
         <div className="settings-card__row settings-card__row--inline">
           <span className="settings-card__row-label">
             <span className="settings-card__icon-chip" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
@@ -419,6 +430,9 @@ function AppearanceSection() {
             ))}
           </div>
         </div>
+
+        </fieldset>{/* [fork] */}
+        {managed && <DeviceModeRow />}{/* [fork] light/dark per device */}
 
         {/* Language row */}
         <div className="settings-card__row settings-card__row--inline">
@@ -445,6 +459,7 @@ function AppearanceSection() {
           </div>
         </div>
 
+        <fieldset className="managed-fieldset" disabled={locked}>{/* [fork] */}
         {/* Theme picker */}
         <div className="settings-card__row">
           <div className="settings-card__row-label">
@@ -499,6 +514,7 @@ function AppearanceSection() {
             />
           </div>
         </div>
+        </fieldset>{/* [fork] */}
       </Card>
     </section>
   );
@@ -736,6 +752,8 @@ function AdminSection() {
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         </div>
+
+        <GlobalSettingsAdmin />{/* [fork] settings for everyone */}
       </Card>
 
       <EditEntitiesModal open={entitiesOpen} onClose={() => setEntitiesOpen(false)} />
@@ -749,7 +767,7 @@ function AdminSection() {
 
 function RoomsSection() {
   const t = useT();
-  const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
+  const editingEnabled = useEditingEnabled(); // [fork] admins only under global management
   const rooms = useRooms();
   const { customization, updateCustomization } = useSettingsStore(
     useShallow((s) => ({ customization: s.customization, updateCustomization: s.updateCustomization }))
@@ -844,6 +862,9 @@ function BackupSection() {
   const { exportSettings, importSettings } = useSettingsStore(
     useShallow((s) => ({ exportSettings: s.exportSettings, importSettings: s.importSettings }))
   );
+  const applyUser = useSettingsStore((s) => s.applyUser); // [fork]
+  const locked = useSettingsLocked(); // [fork]
+  const managed = useIsManaged(); // [fork]
   const { connMode, connDemo, connStatus } = useConnectionStore(
     useShallow((s) => ({ connMode: s.mode, connDemo: s.demo, connStatus: s.status }))
   );
@@ -896,7 +917,22 @@ function BackupSection() {
         setImportError(error);
         return;
       }
-      importSettings(text);
+      // [fork] Under global management: a non-admin imports only their own (USER) settings;
+      // an admin's import changes the shared settings for everybody, so ask first.
+      if (locked) {
+        const d = parsed as { language?: unknown; userName?: unknown; customization?: Record<string, unknown> };
+        const c = d.customization ?? {};
+        applyUser({
+          ...(typeof d.language === 'string' ? { language: d.language as Locale | 'auto' } : {}),
+          ...(typeof d.userName === 'string' ? { userName: d.userName } : {}),
+          ...(Array.isArray(c['favorites']) ? { favorites: c['favorites'] as string[] } : {}),
+          ...(typeof c['libraryPlayerId'] === 'string' ? { libraryPlayerId: c['libraryPlayerId'] } : {}),
+          ...(typeof c['detailHistoryRange'] === 'string' ? { detailHistoryRange: c['detailHistoryRange'] } : {}),
+        });
+      } else {
+        if (managed && !window.confirm(t('globalSettings.backup.adminConfirm'))) return;
+        importSettings(text);
+      }
       setImportError(null);
       setImportSuccess(true);
     };
@@ -911,6 +947,7 @@ function BackupSection() {
         <p className="backup-hint">
           {t('settings.backup.hint')}
         </p>
+        {locked && <p className="backup-hint">{t('globalSettings.backup.userOnlyHint')}</p>}{/* [fork] */}
         <div className="backup-row">
           <button type="button" className="btn btn--secondary" onClick={handleExport}>
             <Download size={15} strokeWidth={1.75} />

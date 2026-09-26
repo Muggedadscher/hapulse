@@ -15,12 +15,15 @@ import { useNvrOverview } from './store';
 import { NvrSetupCard, NvrSetupModal } from './components/NvrSetup';
 import { Hero, EventsStrip, CameraGrid, HistogramCard, StorageCard } from '@sentinel-nvr/web/ui';
 import { NvrUi } from './ui';
+import { useSettingsLocked } from '../ha/managedHooks';
 import './nvr.css';
 
 export function NvrOverviewPage() {
   const t = useT();
   const { cfg, status, cameras, recent, stats, histogram, errorStatus, refresh } = useNvrOverview(10_000);
   const [setupOpen, setSetupOpen] = useState(false);
+  // Under global admin management only admins (re)configure Sentinel; the others use the shared access.
+  const locked = useSettingsLocked();
 
   const errorText = errorStatus === 401
     ? t('nvr.error.unauthorized')
@@ -37,9 +40,11 @@ export function NvrOverviewPage() {
                 <ExternalLink size={16} strokeWidth={1.75} />
                 <span className="nvr-actions__label">{t('nvr.open')}</span>
               </a>
-              <IconButton label={t('nvr.setup.modalTitle')} variant="ghost" size={40} onClick={() => setSetupOpen(true)}>
-                <Settings2 size={18} strokeWidth={1.75} />
-              </IconButton>
+              {!locked && (
+                <IconButton label={t('nvr.setup.modalTitle')} variant="ghost" size={40} onClick={() => setSetupOpen(true)}>
+                  <Settings2 size={18} strokeWidth={1.75} />
+                </IconButton>
+              )}
             </>
           )}
           <PageHeaderActions />
@@ -47,7 +52,9 @@ export function NvrOverviewPage() {
       </div>
 
       {!cfg ? (
-        <NvrSetupCard />
+        locked
+          ? <EmptyState icon={<Cctv size={28} strokeWidth={1.75} />} title={t('nvr.title')} description={t('globalSettings.nvr.notSetUp')} />
+          : <NvrSetupCard />
       ) : status === 'error' ? (
         <EmptyState
           icon={<WifiOff size={28} strokeWidth={1.75} />}
@@ -58,9 +65,11 @@ export function NvrOverviewPage() {
               <button type="button" className="btn btn--ghost" onClick={() => void refresh(cfg.client)}>
                 <RefreshCw size={16} strokeWidth={1.75} />{t('nvr.error.retry')}
               </button>
-              <button type="button" className="btn btn--primary" onClick={() => setSetupOpen(true)}>
-                <Settings2 size={16} strokeWidth={1.75} />{t('nvr.setup.modalTitle')}
-              </button>
+              {!locked && (
+                <button type="button" className="btn btn--primary" onClick={() => setSetupOpen(true)}>
+                  <Settings2 size={16} strokeWidth={1.75} />{t('nvr.setup.modalTitle')}
+                </button>
+              )}
             </div>
           )}
         />

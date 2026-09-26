@@ -8,6 +8,7 @@ import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { useWeatherEntity, useWeatherEntities } from '../../../ha/hooks';
 import { useSettingsStore } from '../../../stores/settingsStore';
+import { useEditingEnabled } from '../../../ha/managedHooks'; // [fork]
 import { useLocale, useT, useStateLabel } from '../../../i18n/useT';
 import type { TFunction } from '../../../i18n/useT';
 import './WeatherModal.css';
@@ -218,7 +219,7 @@ export function WeatherModal({ open, onClose }: WeatherModalProps) {
   const t = useT();
   const entity = useWeatherEntity();
   const weatherEntities = useWeatherEntities();
-  const editingEnabled = useSettingsStore((s) => s.customization.editingEnabled);
+  const editingEnabled = useEditingEnabled(); // [fork] admins only under global management
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
 
   return (

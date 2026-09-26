@@ -23,6 +23,7 @@ import { Card } from '../ui/Card';
 import { getMAQueue, transferMAQueue, callService, hasDirectMA } from '../../ha/service';
 import { FullQueueList } from './FullQueueList';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useSettingsLocked } from '../../ha/managedHooks'; // [fork]
 import { SpeakerGroupMenu } from './SpeakerGroupMenu';
 import { useMAPlayerTarget } from './useMAPlayerTarget';
 import type { MAQueueSnapshot, MAQueueItem, MusicAssistantInfo } from '@hapulse/core';
@@ -42,6 +43,7 @@ export function QueueCard({ ma }: QueueCardProps) {
   const [transferOpen, setTransferOpen] = useState(false);
   // Full-queue upgrade (direct MA connection): available?, working?, config UI
   const directConfigured = hasDirectMA();
+  const settingsLocked = useSettingsLocked(); // [fork]
   const [fullListWorks, setFullListWorks] = useState(true);
   const [configOpen, setConfigOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -218,7 +220,7 @@ export function QueueCard({ ma }: QueueCardProps) {
           </div>
 
           {/* Full-queue upgrade: connect directly to Music Assistant. */}
-          {(!directConfigured || !fullListWorks) && (
+          {(!directConfigured || !fullListWorks) && !settingsLocked && ( // [fork] admins set MA up under global management
             <MAConnectPrompt
               failed={directConfigured && !fullListWorks}
               open={configOpen}

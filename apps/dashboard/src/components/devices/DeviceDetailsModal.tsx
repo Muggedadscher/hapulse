@@ -19,6 +19,7 @@ import { DeviceEntityRow } from './DeviceEntityRow';
 import { useEntities } from '../../ha/hooks';
 import { useEntityStore } from '../../stores/entityStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useEditingEnabled } from '../../ha/managedHooks'; // [fork]
 import { DeviceIcon, integrationLabel } from './deviceMeta';
 import { useT } from '../../i18n/useT';
 import type { TKey } from '../../i18n/useT';
@@ -56,7 +57,7 @@ interface Ref {
 export function DeviceDetailsModal({ device, open, onClose }: DeviceDetailsModalProps) {
   const t = useT();
   const registries = useEntityStore((s) => s.registries);
-  const editable = useSettingsStore((s) => s.customization.editingEnabled);
+  const editable = useEditingEnabled(); // [fork] admins only under global management
   const favorites = useSettingsStore(useShallow((s) => s.customization.favorites));
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);

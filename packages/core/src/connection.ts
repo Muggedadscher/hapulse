@@ -455,6 +455,55 @@ export class HAConnection {
     };
   }
 
+  // [fork] ---- HA `frontend/system_data`: one value per key for ALL users ----
+  // Home Assistant lets every user read/subscribe but only admins write (`set_system_data` is
+  // require_admin), which is exactly the global admin management HAPulse needs.
+
+  /** [fork] Read a system_data key; a failed read THROWS (the caller must not mistake it for "unset"). */
+  async getSystemDataStrict<T = unknown>(key: string): Promise<T | null> {
+    const result = await this.#conn.sendMessagePromise<{ value: T | null }>({
+      type: 'frontend/get_system_data',
+      key,
+    });
+    return result?.value ?? null;
+  }
+
+  /** [fork] Write a system_data key (admins only — HA rejects everyone else with `unauthorized`). */
+  async setSystemData(key: string, value: unknown): Promise<void> {
+    await this.#conn.sendMessagePromise({
+      type: 'frontend/set_system_data',
+      key,
+      value,
+    });
+  }
+
+  /** [fork] Live updates of a system_data key (same pattern as subscribeUserData). */
+  subscribeSystemData<T = unknown>(key: string, cb: (value: T | null) => void): UnsubscribeFunc {
+    let unsub: (() => void) | null = null;
+    let cancelled = false;
+
+    this.#conn
+      .subscribeMessage<{ value: T | null }>(
+        (msg) => {
+          cb(msg?.value ?? null);
+        },
+        { type: 'frontend/subscribe_system_data', key }
+      )
+      .then((u) => {
+        if (cancelled) u();
+        else unsub = u;
+      })
+      .catch((err: unknown) => {
+        console.warn('[HAPulse] frontend/subscribe_system_data subscribe failed:', err);
+      });
+
+    return () => {
+      cancelled = true;
+      unsub?.();
+      unsub = null;
+    };
+  }
+
   /**
    * Revoke the OAuth refresh token and clear stored tokens.
    * Call this on sign-out when using the OAuth / getAuth flow.

@@ -14,6 +14,8 @@ import type { Locale } from '@hapulse/core';
 import { keepDeviceSecrets, migrateUrlToken, splitUrlToken } from './settingsSecrets'; // [fork]
 import { sanitizeCustomization } from './settingsSanitize'; // [fork]
 import { migrateNavOrderV2 } from './navOrderMigration'; // [fork]
+import { isGlobalCustomizationKey, USER_CUSTOMIZATION_KEYS } from './settingsScope'; // [fork]
+import type { GlobalSettingsPayload, SharedSecrets, UserSettingsPayload } from './settingsScope'; // [fork]
 
 /**
  * Migrate a pre-v0.5 theme value (dusk/dawn/midnight/sage — which encoded both
@@ -248,6 +250,11 @@ interface SettingsState {
    * hand-edited import.
    */
   lastSeenVersion: string | null;
+  /**
+   * [fork] Light/dark on THIS device only (global admin management: the admin's `mode` is the
+   * default, a device may deviate, e.g. a wall tablet). null = follow `mode`. Never synced/exported.
+   */
+  modeOverride: ThemeMode | null;
 }
 
 interface SettingsActions {
@@ -265,7 +272,22 @@ interface SettingsActions {
   setLanguage(language: Locale | 'auto'): void;
   /** Record that the user has seen the notes up to the running version. */
   markVersionSeen: () => void;
+  /** [fork] Device-only light/dark override (null = follow the shared mode). */
+  setModeOverride: (mode: ThemeMode | null) => void;
+  /** [fork] Apply the admin-managed (GLOBAL) settings; USER/DEVICE fields and tokens stay untouched. */
+  applyGlobal: (payload: GlobalSettingsPayload) => void;
+  /** [fork] Apply this user's own (USER-scope) settings from `hapulse:user-settings`. */
+  applyUser: (payload: Partial<UserSettingsPayload>) => void;
+  /** [fork] Tokens shared by the admin (null = not shared: keep this device's own only if `keepOwn`). */
+  applySharedSecrets: (secrets: SharedSecrets | null, keepOwn: boolean) => void;
 }
+
+/** [fork] The light/dark mode actually shown on this device. */
+export function effectiveMode(s: { mode: ThemeMode; modeOverride?: ThemeMode | null }): ThemeMode {
+  return s.modeOverride ?? s.mode;
+}
+
+const isThemeMode = (v: unknown): v is ThemeMode => v === 'light' || v === 'dark' || v === 'auto'; // [fork]
 
 const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   roomOrder: [],
@@ -341,6 +363,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       sidebarCollapsed: false,
       language: 'auto',
       lastSeenVersion: CURRENT_VERSION,
+      modeOverride: null, // [fork]
 
       setTheme(theme) {
         set({ theme });
@@ -356,6 +379,63 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
 
       markVersionSeen() {
         set({ lastSeenVersion: CURRENT_VERSION });
+      },
+
+      // [fork] ---- global admin management (ha/globalSettings.ts) ----
+      setModeOverride(modeOverride) {
+        set({ modeOverride });
+      },
+
+      applyGlobal(payload) {
+        const cur = get();
+        const picked: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(payload.customization ?? {})) {
+          if (isGlobalCustomizationKey(k)) picked[k] = v;
+        }
+        const incoming = sanitizeCustomization(picked, DEFAULT_CUSTOMIZATION);
+        const migrated = migrateTheme(payload.theme);
+        set({
+          theme: migrated?.theme ?? cur.theme,
+          mode: isThemeMode(payload.mode) ? payload.mode : cur.mode,
+          accentHue: typeof payload.accentHue === 'number' ? payload.accentHue : undefined,
+          appName: typeof payload.appName === 'string' ? payload.appName : undefined,
+          appIcon: typeof payload.appIcon === 'string' ? payload.appIcon : undefined,
+          appIconHidden: typeof payload.appIconHidden === 'boolean' ? payload.appIconHidden : false,
+          customization: migrateNavOrderV2(migrateNvrSection(migrateWasteSection(migratePoolChip({
+            ...cur.customization,
+            ...incoming,
+          })))),
+        });
+      },
+
+      applyUser(payload) {
+        const cur = get();
+        const picked: Record<string, unknown> = {};
+        for (const k of USER_CUSTOMIZATION_KEYS) {
+          if (payload[k] !== undefined) picked[k] = payload[k];
+        }
+        const incoming = sanitizeCustomization(picked, DEFAULT_CUSTOMIZATION);
+        const favorites = Array.isArray(incoming.favorites) && incoming.favorites.every((x) => typeof x === 'string')
+          ? incoming.favorites
+          : cur.customization.favorites;
+        const language: Locale | 'auto' =
+          payload.language === 'auto' || (LOCALES as readonly string[]).includes(payload.language as string)
+            ? (payload.language as Locale | 'auto')
+            : cur.language;
+        set({
+          language,
+          userName: typeof payload.userName === 'string' ? payload.userName : payload.userName === null ? undefined : cur.userName,
+          customization: { ...cur.customization, ...incoming, favorites },
+        });
+      },
+
+      applySharedSecrets(secrets, keepOwn) {
+        const c = get().customization;
+        const next = secrets
+          ? { scryptedToken: typeof secrets.scryptedToken === 'string' ? secrets.scryptedToken : '', maToken: typeof secrets.maToken === 'string' ? secrets.maToken : null }
+          : keepOwn ? { scryptedToken: c.scryptedToken, maToken: c.maToken } : { scryptedToken: '', maToken: null };
+        if (next.scryptedToken === c.scryptedToken && next.maToken === c.maToken) return;
+        set({ customization: { ...c, ...next } });
       },
 
       setAccentHue(accentHue) {
@@ -515,6 +595,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenVersion,
           theme: migrated?.theme ?? current.theme,
           mode,
+          modeOverride: isThemeMode(p.modeOverride) ? p.modeOverride : null, // [fork]
           customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),

@@ -1,0 +1,107 @@
+/* [fork] Global admin management — lock hint, admin rows, confirm dialog, favorite star. */
+
+.managed-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.375rem;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--line);
+}
+
+/* A fieldset only to disable a block of controls at once — no visual box. */
+.managed-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.managed-fieldset:disabled {
+  opacity: 0.55;
+}
+
+.global-admin__text {
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+  line-height: 1.45;
+}
+
+.global-admin__meta {
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.global-admin__error {
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+.global-admin__ok {
+  font-size: 0.8125rem;
+  color: var(--positive);
+}
+
+.global-admin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.global-confirm p {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 0.75rem;
+  color: var(--text);
+}
+
+.global-confirm__share {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  padding: 0.75rem;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+  cursor: pointer;
+}
+
+.global-confirm__share input {
+  margin-top: 0.2rem;
+  accent-color: var(--accent);
+}
+
+.global-confirm__share-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.entity-detail__fav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.entity-detail__fav:hover {
+  background: var(--bg-subtle);
+}
+
+.entity-detail__fav--on {
+  color: var(--warning);
+}
+
+/* The card drops the divider under its last row; a fieldset makes rows "last" too early. */
+.managed-fieldset:not(:last-child) > .settings-card__row:last-child {
+  border-bottom: 1px solid var(--line);
+}

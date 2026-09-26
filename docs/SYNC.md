@@ -101,15 +101,31 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `docs/NVR-INTEGRATION.md` | Architektur + Rausnehmen/Neu-Integrieren der NVR-Integration |
 | `apps/dashboard/src/stores/navOrderMigration.ts` | Einmalige Seitenleisten-Migration (Übersicht, Räume, NVR, Pool vorn) für gespeicherte `navOrder` |
 | `apps/dashboard/test/navOrder.test.ts` | Tests dazu |
+| `apps/dashboard/src/stores/settingsScope.ts` | Globale Verwaltung: Scope-Tabelle GLOBAL/USER/DEVICE/SECRET, Extrakt/Diff/Merge, Dokumentformat |
+| `apps/dashboard/src/stores/settingsApplyGuard.ts` | Gemeinsamer „Remote wird angewendet“-Schutz beider Sync-Module |
+| `apps/dashboard/src/stores/globalSettingsStore.ts` | UI-Zustand der globalen Verwaltung (`hapulse:global-meta` in localStorage) |
+| `apps/dashboard/src/ha/globalSettings.ts` | Lesen/Anwenden/Schreiben von `hapulse:global` (HA `system_data`), Einrichten, Teilen |
+| `apps/dashboard/src/ha/userSettingsSync.ts` | USER-Felder unter `hapulse:user-settings` (nur im verwalteten Modus) |
+| `apps/dashboard/src/ha/managedHooks.ts` | `useIsManaged`, `useSettingsLocked`, `useEditingEnabled` |
+| `apps/dashboard/src/components/settings/{GlobalSettingsAdmin,ManagedHint,DeviceModeRow}.tsx`, `GlobalSettings.css` | Admin-Zeilen + Bestätigung, Sperrhinweis, Hell/Dunkel pro Gerät |
+| `apps/dashboard/src/components/home/FavoriteToggle.tsx` | Stern im Entity-Detailfenster (eigene Favoriten) |
+| `apps/dashboard/test/globalSettings.test.ts` | Tests mit nachgebautem HA (user_data/system_data) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
 
 | Datei | Änderung |
 |---|---|
-| `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben) |
+| `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben); `getSystemDataStrict`/`setSystemData`/`subscribeSystemData` |
+| `apps/dashboard/src/stores/connectionStore.ts` | Globale Verwaltung vor dem Settings-Sync starten, beim Teardown stoppen |
+| `apps/dashboard/src/ha/settingsSync.ts` | Verwalteter Modus → nur `userSettingsSync`; gemeinsamer Anwende-Schutz |
+| `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Hell/Dunkel pro Gerät (`modeOverride`) auch im First Paint |
+| `apps/dashboard/src/pages/Settings.tsx` | Sperren (Aussehen, Räume), Hell/Dunkel pro Gerät, Admin-Zeilen, Backup-Import im verwalteten Modus |
+| `apps/dashboard/src/ha/useDevices.ts`, `pages/Devices.tsx`, `components/devices/DeviceDetailsModal.tsx`, `components/home/chipmodals/WeatherModal.tsx` | wirksamer Bearbeiten-Schalter (`useEditingEnabled`) |
+| `apps/dashboard/src/components/music/QueueCard.tsx` | MA-Verbindung nur für Admins im verwalteten Modus |
+| `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Favoriten-Stern im verwalteten Modus |
 | `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`- und `sentinel`-Moduls |
-| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`) |
+| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“ |
@@ -117,7 +133,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}` | Bereichs-**Pills** (24H/7D/30D) statt Upstreams 24h/7d-Umschalter |
 | `apps/dashboard/src/app/Router.tsx` | Routen `/nvr/*`, `/pool` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Einträge „NVR" + „Pool" (`nav.nvr`, `nav.pool`), direkt nach „Räume" |
-| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `home.section.*.{waste,nvr}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
+| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `home.section.*.{waste,nvr}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
 > Hinweis: `SensorTile.tsx` und die `.sensor-tile--clickable`-CSS-Regel sind seit
 > dem v1.2.0-Merge **wieder Upstream-Stand** — siehe „Feature: Sensor-Verlauf".
@@ -150,7 +166,8 @@ also nicht auf der Security-Seite auf. Die **NVR**-Seite rendert stattdessen
 Sentinel NVR (Scrypted-Plugin) **nativ** über dessen HTTP/WebSocket-API:
 Übersicht (`/nvr`), Kamera-Zeitleiste mit Live/Aufnahme-Video (`/nvr/:id`)
 und eine Home-Karte. Verbindung (Scrypted-URL + Token) wird auf der Seite
-gesetzt und in den (mit HA synchronisierten) Einstellungen gespeichert.
+gesetzt: die URL liegt in den (mit HA synchronisierten) Einstellungen, das Token
+bleibt **gerätelokal** (unter globaler Verwaltung kann der Admin es teilen, s. u.).
 Architektur, CORS-Details und die Anleitung zum **kompletten Rausnehmen**:
 `docs/NVR-INTEGRATION.md`. Die frühere iframe-Einbettung ist damit abgelöst.
 

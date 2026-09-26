@@ -26,6 +26,8 @@ import type { HAConnection, AuthData, UnsubscribeFunc, HAUser, HassEntityMap } f
 import { useEntityStore } from './entityStore';
 import { onboardingRedirectUrl } from '../app/basename';
 import { startHASettingsSync, stopHASettingsSync } from '../ha/settingsSync';
+import { startGlobalSettings, stopGlobalSettings } from '../ha/globalSettings'; // [fork]
+import { isDefaultPersistenceAdapter } from '../persistence'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Module-scope connection state (not in Zustand state — mutable references)
@@ -214,6 +216,7 @@ function teardown(): void {
   cancelPendingEntities();
 
   stopHASettingsSync();
+  stopGlobalSettings(); // [fork]
 
   _unsubEntities?.();
   _unsubEntities = null;
@@ -256,11 +259,22 @@ async function wireConnection(
   useEntityStore.getState().setRegistries(registries);
 
   // Fetch the signed-in user — non-fatal; leave null on failure
+  let user: HAUser | null = null; // [fork]
   try {
     const currentUser = await conn.fetchCurrentUser();
+    user = currentUser; // [fork]
     set({ currentUser });
   } catch (err) {
     console.warn('[HAPulse] fetchCurrentUser failed — user identity unavailable:', err);
+  }
+
+  // [fork] Global admin management FIRST: the user sync below must start in the right mode
+  // (see ha/globalSettings.ts). Same guards as the settings sync (no demo / hosted adapter).
+  if (isDefaultPersistenceAdapter() && !useConnectionStore.getState().demo) {
+    await startGlobalSettings(conn, user, () => {
+      stopHASettingsSync();
+      startHASettingsSync();
+    });
   }
 
   // Open-source only (no-ops under a hosted persistence adapter or in demo

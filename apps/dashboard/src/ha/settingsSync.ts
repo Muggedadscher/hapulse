@@ -46,6 +46,9 @@ import { getLiveConnection, useConnectionStore } from '../stores/connectionStore
 import { useSettingsStore } from '../stores/settingsStore';
 import { isDefaultPersistenceAdapter } from '../persistence';
 import { THEME_NAMES } from '../theme/themes';
+import { applyingRemote, isApplyingRemote } from '../stores/settingsApplyGuard'; // [fork]
+import { isGlobalManaged } from './globalSettings'; // [fork]
+import { startUserSettingsSync, stopUserSettingsSync } from './userSettingsSync'; // [fork]
 
 const SETTINGS_KEY = 'hapulse:settings';
 const DEBOUNCE_MS = 750;
@@ -123,7 +126,7 @@ function isValidSnapshot(value: unknown): value is Record<string, unknown> {
 function applyRemoteSnapshot(value: Record<string, unknown>): void {
   _applyingRemote = true;
   try {
-    useSettingsStore.getState().importSettings(JSON.stringify(value));
+    applyingRemote(() => useSettingsStore.getState().importSettings(JSON.stringify(value))); // [fork] shared guard
     _lastSnapshotJson = JSON.stringify(value);
   } finally {
     _applyingRemote = false;
@@ -223,6 +226,13 @@ export function startHASettingsSync(): void {
 
   _started = true;
 
+  // [fork] Managed by an admin (ha/globalSettings.ts): only the user's own fields are synced,
+  // under their own key — the full snapshot below would overwrite the global values.
+  if (isGlobalManaged()) {
+    startUserSettingsSync(conn);
+    return;
+  }
+
   // 1. Adopt HA's snapshot, or seed HA from local settings if it has none.
   void adoptOrSeed();
 
@@ -240,7 +250,7 @@ export function startHASettingsSync(): void {
 
   // 3. Push local changes (debounced), skipping changes caused by (2).
   _unsubStore = useSettingsStore.subscribe((state, prevState) => {
-    if (_applyingRemote) return;
+    if (_applyingRemote || isApplyingRemote()) return; // [fork] also skip global applies
     if (
       state.theme !== prevState.theme ||
       state.mode !== prevState.mode ||
@@ -266,6 +276,7 @@ export function startHASettingsSync(): void {
  * `startHASettingsSync`).
  */
 export function stopHASettingsSync(): void {
+  stopUserSettingsSync(); // [fork]
   _started = false;
   _applyingRemote = false;
   _lastSnapshotJson = null;
