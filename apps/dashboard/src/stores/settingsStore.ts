@@ -11,6 +11,7 @@ import type { ThemeName, ThemeMode } from '../theme/themes';
 import { dynamicJSONStorage } from '../persistence/zustandStorage';
 import { LOCALES, CURRENT_VERSION } from '@hapulse/core';
 import type { Locale } from '@hapulse/core';
+import { keepDeviceSecrets, migrateUrlToken, splitUrlToken } from './settingsSecrets'; // [fork]
 
 /**
  * Migrate a pre-v0.5 theme value (dusk/dawn/midnight/sage — which encoded both
@@ -387,8 +388,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
         // Never let connection secrets ride along in a shared/exported settings
         // file. scryptedToken and maToken grant full access to the NVR / Music
         // Assistant; the importer re-enters them. URLs are kept.
-        const { scryptedToken: _st, maToken: _mt, ...safeCustomization } = customization;
+        const { scryptedToken: _st, maToken: _mt, ...rest } = customization;
         void _st; void _mt;
+        // [fork] …and no token hidden in the NVR URL either (old installs kept it there)
+        const safeCustomization = { ...rest, scryptedUrl: splitUrlToken(rest.scryptedUrl ?? '').url };
         return JSON.stringify(
           { theme, mode, accentHue, customization: safeCustomization, userName, appName, appIcon, appIconHidden, sidebarCollapsed, language, lastSeenVersion },
           null,
@@ -446,22 +449,23 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           // every snapshot (manual import, HA settings sync from this or another device)
           // arrives without them. Keep what THIS device has unless the snapshot carries a
           // value — otherwise the NVR / Music Assistant token was wiped on every HA connect.
+          // [fork] …but only while the server stays the same: a snapshot pointing at another host
+          // must not inherit this device's token (see settingsSecrets.ts).
           const cur = get().customization;
-          const scryptedToken = typeof incoming.scryptedToken === 'string' && incoming.scryptedToken ? incoming.scryptedToken : cur.scryptedToken;
-          const maToken = typeof incoming.maToken === 'string' && incoming.maToken ? incoming.maToken : cur.maToken;
+          const { scryptedToken, maToken } = keepDeviceSecrets(cur, incoming);
 
           set({
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: migrateNvrSection(migrateWasteSection(migratePoolChip({
+            customization: migrateUrlToken(migrateNvrSection(migrateWasteSection(migratePoolChip({ // [fork] migrateUrlToken
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
               scryptedToken,
               maToken,
               entityOrder,
               favorites,
-            }))),
+            })))),
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -505,10 +509,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenVersion,
           theme: migrated?.theme ?? current.theme,
           mode,
-          customization: migrateNvrSection(migrateWasteSection(migratePoolChip({
+          customization: migrateUrlToken(migrateNvrSection(migrateWasteSection(migratePoolChip({ // [fork] migrateUrlToken
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),
-          }))),
+          })))),
         };
       },
     }
