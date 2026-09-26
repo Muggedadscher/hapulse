@@ -273,7 +273,8 @@ export function ScheduleEditorModal({ open, onClose, initial }: ScheduleEditorMo
           {/* Precise switch points */}
           <ul className="pool-editor__slots">
             {slots.map((s, i) => (
-              <li key={`row-${s.start}-${i}`} className="pool-editor__slot">
+              // stable per row: a key with the start time remounted the time field on every keystroke (focus lost)
+              <li key={`row-${i}`} className="pool-editor__slot">
                 {i === 0 ? (
                   <span className="pool-editor__slot-time pool-editor__slot-time--fixed data-font">00:00</span>
                 ) : (
