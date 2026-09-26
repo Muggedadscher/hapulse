@@ -185,3 +185,12 @@ Serverlog von Sentinel lesen (`[client]`-Zeilen mit `b:hapulse`). Nützliche Zei
 beim ersten Frame der neuen Position aufgehoben, `timer` = Server ohne Markierung oder Tempowechsel, `cap` = Sicherheitsnetz),
 `cadence` (Stalls/Bildrate alle 30 s), `stall-snap`/`relay-recover` (Watchdog). Tempo 1/2/4/8× darf beim Umschalten weder
 zurückspringen noch „Lädt …" zeigen.
+
+## Klick-Test gegen ein echtes Sentinel
+
+`apps/dashboard/scripts/nvr-sweep-test.cjs <hapulse-url> <sentinel-origin> <token> [mobile]` klickt die Integration mit
+echten Mausereignissen durch (HA im Demo-Modus, Kameras aus einem echten Sentinel): Home-Karte (Kamera, Ereignis),
+`/nvr` (Kachel, Ereignisleiste, Zurück), die komplette Kameraseite (Live-Sperren, ±15 s inkl. „+15 s an der Kante →
+Live“, Pause/Play, Tempo, Ton, Schnappschuss, Vollbild, Tabs, Filter, Ereignisliste, Zoom, Datumsdialog, LIVE-Chip,
+Tastatur) und die Security-Sektion; rot bei JS-/Konsolenfehlern oder HTTP ≥ 400. Chromium auf Port 9222 startet
+Sentinels `scripts/cdp-run.sh`; im Labor (CT 213) `/root/lab/hp-nvr-sweep.sh [mobile]`.
