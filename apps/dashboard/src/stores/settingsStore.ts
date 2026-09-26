@@ -12,6 +12,7 @@ import { dynamicJSONStorage } from '../persistence/zustandStorage';
 import { LOCALES, CURRENT_VERSION } from '@hapulse/core';
 import type { Locale } from '@hapulse/core';
 import { keepDeviceSecrets, migrateUrlToken, splitUrlToken } from './settingsSecrets'; // [fork]
+import { sanitizeCustomization } from './settingsSanitize'; // [fork]
 
 /**
  * Migrate a pre-v0.5 theme value (dusk/dawn/midnight/sage — which encoded both
@@ -402,7 +403,8 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       importSettings(json) {
         try {
           const data = JSON.parse(json) as Partial<SettingsState>;
-          const incoming: Partial<CustomizationSettings> = data.customization ?? {};
+          // [fork] type-checked against the defaults (a wrong type crashed the app on every synced device)
+          const incoming: Partial<CustomizationSettings> = sanitizeCustomization(data.customization ?? {}, DEFAULT_CUSTOMIZATION);
 
           // Validate entityOrder: must be an object whose values are string arrays
           let entityOrder: Record<string, string[]> = {};

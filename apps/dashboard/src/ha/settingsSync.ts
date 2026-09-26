@@ -182,7 +182,8 @@ async function adoptOrSeed(): Promise<void> {
   if (!conn || !shouldSync()) return;
 
   try {
-    const remote = await conn.getUserData<Record<string, unknown>>(SETTINGS_KEY);
+    // [fork] strict: a failed read throws (→ catch below, HA untouched) instead of looking like "HA has nothing"
+    const remote = await conn.getUserDataStrict<Record<string, unknown>>(SETTINGS_KEY);
 
     if (remote != null && isValidSnapshot(remote)) {
       // HA already has a snapshot (from this device before, or another
