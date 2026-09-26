@@ -1,0 +1,19 @@
+# [fork] Weekly dependency PRs for the fork (workspace root lockfile), minor/patch grouped; majors as single
+# PRs. @sentinel-nvr/web is bumped by hand together with its release.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: '@sentinel-nvr/web'
+    groups:
+      minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      actions:
+        patterns: ['*']
