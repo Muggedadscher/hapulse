@@ -9,6 +9,7 @@ import { useT, useStateLabel } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SecurityHeroCard.css';
+import { useCameraCount } from '../../nvr/cameraSource'; // [fork]
 
 function alarmGradientClass(state: string | undefined): string {
   if (!state || state === 'disarmed') return 'security-hero-card--disarmed';
@@ -50,6 +51,7 @@ export function SecurityHeroCard({
   const t = useT();
   const sl = useStateLabel();
   const url = useConnectionStore(useShallow((s) => s.url));
+  const cameraCount = useCameraCount(cameras.length).total; // [fork] Sentinel's cameras when it is the source
 
   const alarmState = alarm?.state;
   const alarmName =
@@ -163,10 +165,10 @@ export function SecurityHeroCard({
               </span>
             </div>
           )}
-          {cameras.length > 0 && (
+          {cameraCount > 0 && ( // [fork]
             <div className="security-hero-chip security-hero-chip--muted">
               <Camera size={13} strokeWidth={1.75} />
-              <span>{t('security.hero.cameraCount', { count: cameras.length })}</span>
+              <span>{t('security.hero.cameraCount', { count: cameraCount })}</span>
             </div>
           )}
         </div>

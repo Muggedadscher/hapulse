@@ -1225,5 +1225,16 @@
   "globalSettings.backup.userOnlyHint": "Importen tar bara med dina egna inställningar (favoriter, språk …); resten hanteras av din administratör.",
   "globalSettings.favorite.add": "Lägg till i favoriter",
   "globalSettings.favorite.remove": "Ta bort från favoriter",
-  "globalSettings.nvr.notSetUp": "Sentinel är inte konfigurerat än – en administratör kan göra det."
+  "globalSettings.nvr.notSetUp": "Sentinel är inte konfigurerat än – en administratör kan göra det.",
+  "cameraSource.room.title": "Kameror",
+  "cameraSource.detail.hint": "Kamerorna visas via Sentinel NVR.",
+  "cameraSource.detail.open": "Öppna NVR",
+  "cameraSource.rooms.title": "Koppla kameror till rum",
+  "cameraSource.rooms.desc": "En rumssida visar kamerorna som kopplats till rummet.",
+  "cameraSource.rooms.suggest": "Föreslå efter namn",
+  "cameraSource.rooms.save": "Spara",
+  "cameraSource.rooms.empty": "Inga kameror hittades.",
+  "cameraSource.rooms.none": "Inget rum",
+  "cameraSource.rooms.selectAria": "Rum för {name}",
+  "cameraSource.room.dragReorder": "Dra för att ordna om avsnittet Kameror"
 }

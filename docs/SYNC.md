@@ -110,6 +110,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/settings/{GlobalSettingsAdmin,ManagedHint,DeviceModeRow}.tsx`, `GlobalSettings.css` | Admin-Zeilen + Bestätigung, Sperrhinweis, Hell/Dunkel pro Gerät |
 | `apps/dashboard/src/components/home/FavoriteToggle.tsx` | Stern im Entity-Detailfenster (eigene Favoriten) |
 | `apps/dashboard/test/globalSettings.test.ts` | Tests mit nachgebautem HA (user_data/system_data) |
+| `apps/dashboard/test/cameraSource.test.ts` | Kameraquelle, Filter, Raumzuordnung, Namensvorschlag |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -123,7 +124,12 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Settings.tsx` | Sperren (Aussehen, Räume), Hell/Dunkel pro Gerät, Admin-Zeilen, Backup-Import im verwalteten Modus |
 | `apps/dashboard/src/ha/useDevices.ts`, `pages/Devices.tsx`, `components/devices/DeviceDetailsModal.tsx`, `components/home/chipmodals/WeatherModal.tsx` | wirksamer Bearbeiten-Schalter (`useEditingEnabled`) |
 | `apps/dashboard/src/components/music/QueueCard.tsx` | MA-Verbindung nur für Admins im verwalteten Modus |
-| `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Favoriten-Stern im verwalteten Modus |
+| `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Favoriten-Stern im verwalteten Modus; bei Kameraquelle Sentinel Hinweis statt HA-Kamerabild |
+| `apps/dashboard/src/pages/Security.tsx` | Kameraquelle Sentinel → keine HA-Kameras |
+| `apps/dashboard/src/components/security/SecurityHeroCard.tsx`, `components/home/SecurityCard.tsx` | Kamerazähler aus Sentinel |
+| `apps/dashboard/src/pages/Room.tsx` | Sektion `nvrCameras`, keine HA-Kameras bei Kameraquelle Sentinel |
+| `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
+| `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
 | `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`- und `sentinel`-Moduls |
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |

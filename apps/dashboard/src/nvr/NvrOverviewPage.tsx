@@ -6,13 +6,14 @@
  */
 
 import React, { useState } from 'react';
-import { Cctv, ExternalLink, RefreshCw, Settings2, WifiOff } from 'lucide-react';
+import { Cctv, ExternalLink, MapPin, RefreshCw, Settings2, WifiOff } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
 import { IconButton } from '../components/ui/IconButton';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { useT } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { NvrSetupCard, NvrSetupModal } from './components/NvrSetup';
+import { NvrCameraRoomsModal } from './components/NvrCameraRoomsModal';
 import { Hero, EventsStrip, CameraGrid, HistogramCard, StorageCard } from '@sentinel-nvr/web/ui';
 import { NvrUi } from './ui';
 import { useSettingsLocked } from '../ha/managedHooks';
@@ -22,6 +23,7 @@ export function NvrOverviewPage() {
   const t = useT();
   const { cfg, status, cameras, recent, stats, histogram, errorStatus, refresh } = useNvrOverview(10_000);
   const [setupOpen, setSetupOpen] = useState(false);
+  const [roomsOpen, setRoomsOpen] = useState(false);
   // Under global admin management only admins (re)configure Sentinel; the others use the shared access.
   const locked = useSettingsLocked();
 
@@ -40,6 +42,11 @@ export function NvrOverviewPage() {
                 <ExternalLink size={16} strokeWidth={1.75} />
                 <span className="nvr-actions__label">{t('nvr.open')}</span>
               </a>
+              {!locked && (
+                <IconButton label={t('cameraSource.rooms.title')} variant="ghost" size={40} onClick={() => setRoomsOpen(true)}>
+                  <MapPin size={18} strokeWidth={1.75} />
+                </IconButton>
+              )}
               {!locked && (
                 <IconButton label={t('nvr.setup.modalTitle')} variant="ghost" size={40} onClick={() => setSetupOpen(true)}>
                   <Settings2 size={18} strokeWidth={1.75} />
@@ -93,6 +100,7 @@ export function NvrOverviewPage() {
       )}
 
       <NvrSetupModal open={setupOpen} onClose={() => setSetupOpen(false)} />
+      {!locked && <NvrCameraRoomsModal open={roomsOpen} onClose={() => setRoomsOpen(false)} cameras={cameras} />}
     </div>
   );
 }

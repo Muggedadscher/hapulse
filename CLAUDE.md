@@ -99,6 +99,10 @@ sauber übernehmen können.
   `hapulse:user-settings`). Admin-Schreiben = Dreiwege-Diff gegen den zuletzt angewendeten
   Stand. **Neue Settings-Felder immer in der Scope-Tabelle einordnen** — der Test
   `test/globalSettings.test.ts` schlägt sonst fehl.
+- **Kameraquelle Sentinel**: Ist Sentinel nutzbar (URL + Token), kommen alle Kameras aus
+  Sentinel, HA-`camera.*` sind überall ausgeblendet (`nvr/cameraSource.ts`); Räume zeigen die
+  vom Admin zugeordneten Sentinel-Kameras (`customization.nvrCameraRooms`). Details:
+  `docs/NVR-INTEGRATION.md` → „Kameraquelle“.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

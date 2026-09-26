@@ -86,3 +86,53 @@
 .nvr-home__ev-cls { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8125rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nvr-home__ev-sub { font-size: 0.72rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nvr-home__ev-time { font-size: 0.75rem; color: var(--text-dim); }
+
+/* [fork] camera source = Sentinel: hint in HA's entity detail modal, room camera tiles */
+.nvr-camhint {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+  font-size: 0.875rem;
+}
+
+.nvr-camhint__text {
+  flex: 1;
+}
+
+.nvr-room-cams .nvr-camgrid,
+.nvr-room-cams {
+  width: 100%;
+}
+
+.nvr-camrooms {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nvr-camrooms__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.nvr-camrooms__name {
+  font-size: 0.9375rem;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* select in the NVR dialogs (Settings.css is page-scoped) */
+.nvr-select { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
+.nvr-select__native { appearance: none; -webkit-appearance: none; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 0.5rem 2rem 0.5rem 0.875rem; font-family: var(--font-body); font-size: 0.875rem; color: var(--text); cursor: pointer; max-width: 200px; }
+.nvr-select__native:focus { outline: none; border-color: var(--accent); }
+.nvr-select__chevron { position: absolute; right: 0.75rem; pointer-events: none; color: var(--text-faint); }

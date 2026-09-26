@@ -1225,5 +1225,16 @@
   "globalSettings.backup.userOnlyHint": "Import only brings in your own settings (favorites, language …); everything else is managed by your administrator.",
   "globalSettings.favorite.add": "Add to favorites",
   "globalSettings.favorite.remove": "Remove from favorites",
-  "globalSettings.nvr.notSetUp": "Sentinel is not set up yet — an administrator can do that."
+  "globalSettings.nvr.notSetUp": "Sentinel is not set up yet — an administrator can do that.",
+  "cameraSource.room.title": "Cameras",
+  "cameraSource.detail.hint": "Cameras are shown through Sentinel NVR.",
+  "cameraSource.detail.open": "Open NVR",
+  "cameraSource.rooms.title": "Assign cameras to rooms",
+  "cameraSource.rooms.desc": "A room page shows the cameras assigned to it.",
+  "cameraSource.rooms.suggest": "Suggest by name",
+  "cameraSource.rooms.save": "Save",
+  "cameraSource.rooms.empty": "No cameras found.",
+  "cameraSource.rooms.none": "No room",
+  "cameraSource.rooms.selectAria": "Room for {name}",
+  "cameraSource.room.dragReorder": "Drag to reorder the Cameras section"
 }

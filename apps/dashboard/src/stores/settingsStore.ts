@@ -170,6 +170,8 @@ export interface CustomizationSettings {
   nvrSectionMigrated: boolean;
   /** [fork] One-time sidebar reorder to Overview, Rooms, NVR, Pool, rest (see navOrderMigration.ts). */
   navOrderV2Migrated: boolean;
+  /** [fork] Sentinel camera id → HA area id (null = no room): room pages show these cameras (nvr/cameraSource.ts). */
+  nvrCameraRooms: Record<string, string | null>;
 }
 
 /**
@@ -344,6 +346,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   wasteSectionMigrated: false, // [fork]
   nvrSectionMigrated: false, // [fork]
   navOrderV2Migrated: false, // [fork]
+  nvrCameraRooms: {}, // [fork]
   libraryPlayerId: null,
   maServerUrl: null,
   maToken: null,

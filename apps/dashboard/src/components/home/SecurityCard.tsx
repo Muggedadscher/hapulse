@@ -15,6 +15,7 @@ import { pickAlarmPanel } from '@hapulse/core';
 import type { HassEntityMap } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './SecurityCard.css';
+import { useCameraCount } from '../../nvr/cameraSource'; // [fork]
 
 interface SecurityCardProps {
   entities: HassEntityMap;
@@ -83,6 +84,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
   // Cameras
   const cameras = all.filter((e) => e.entity_id.startsWith('camera.'));
+  const cameraCount = useCameraCount(cameras.length); // [fork] Sentinel's cameras when it is the source
 
   // Overall status: positive if alarm disarmed/absent, no unlocked locks, no active motion, no open sensors
   const anyAlert =
@@ -96,7 +98,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
     alarm ||
     locks.length > 0 ||
     motionSensors.length > 0 ||
-    cameras.length > 0 ||
+    cameraCount.total > 0 || // [fork]
     windowSensors.length > 0 ||
     doorSensors.length > 0;
   if (!hasAnySecurityEntity) return null;
@@ -231,15 +233,15 @@ export function SecurityCard({ entities }: SecurityCardProps) {
       )}
 
       {/* Cameras */}
-      {cameras.length > 0 && (
+      {cameraCount.total > 0 && ( // [fork]
         <div className="security-row">
-          <span className="security-row__dot security-row__dot--ok" aria-hidden="true" />
+          <span className={`security-row__dot security-row__dot--${cameraCount.active < cameraCount.total ? 'warn' : 'ok'}`} aria-hidden="true" />
           <span className="security-row__icon" aria-hidden="true">
             <Camera size={15} strokeWidth={1.75} />
           </span>
           <span className="security-row__label">{t('home.security.camerasLabel')}</span>
           <span className="security-row__value">
-            {t('home.security.activeCount', { count: cameras.length })}
+            {t('home.security.activeCount', { count: cameraCount.active })}
           </span>
         </div>
       )}

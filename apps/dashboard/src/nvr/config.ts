@@ -60,7 +60,16 @@ export function useNvrConfig(): NvrConfig | null {
   return useMemo(() => resolveNvrConfig(scryptedUrl, scryptedToken), [scryptedUrl, scryptedToken]);
 }
 
-/** True when the NVR is configured (URL present) — gates nav-level surfaces like the Home card. */
+/**
+ * True when the NVR is usable here: URL AND access token present. Gates the Home card, the
+ * Security section and the camera source (nvr/cameraSource.ts). A URL alone happens under
+ * global admin management when the admin does not share the token — those users would only
+ * ever see 401s, so for them HAPulse behaves as if no NVR were configured.
+ */
+export function nvrUsable(cfg: NvrConfig | null): cfg is NvrConfig {
+  return cfg != null && cfg.token !== '';
+}
+
 export function useNvrConfigured(): boolean {
-  return useNvrConfig() != null;
+  return nvrUsable(useNvrConfig());
 }

@@ -68,6 +68,30 @@ Die beiden ursprünglichen Wünsche an Sentinel (CORS auf 204-Antworten und
 auf `api/segment`/`api/livemse`) sind dort seit `567c8a0` umgesetzt; der
 Client nutzt sie wie oben beschrieben.
 
+## Kameraquelle (seit 26.09.2026)
+
+Sobald Sentinel **nutzbar** ist — URL **und** Token (`nvrUsable`, `nvr/config.ts`) —
+kommt in HAPulse **alles** Kamerabezogene aus Sentinel (`nvr/cameraSource.ts`):
+
+- **Sicherheit:** HAs Kamera-Sektion (`CameraGrid`) entfällt, die NVR-Sektion bleibt.
+  Kamerazähler in der Hero-Karte und in der Home-Karte „Sicherheit“ zählen
+  Sentinels Kameras (online = „aktiv“).
+- **Räume:** `camera.*` fehlen; stattdessen Sektion „Kameras“ (`nvrCameras`,
+  `nvr/NvrRoomCameras.tsx`) mit den Sentinel-Kameras, die ein Admin dem Bereich
+  zugeordnet hat (NVR-Seite → Kopfzeile „Kameras den Räumen zuordnen“,
+  `customization.nvrCameraRooms`, Vorschlag nach Namen). Nicht zugeordnete
+  Kameras erscheinen nur auf NVR-Seite und in der Sicherheits-Sektion.
+- **Favoriten, Geräte:** `camera.*` ausgeblendet. Detailfenster einer
+  `camera.*` (z. B. aus dem Logbuch): Hinweis + Knopf zum NVR statt HA-MJPEG.
+  Die Admin-Entity-Liste in den Einstellungen bleibt vollständig.
+- Entschieden wird nach **Konfiguration**, nicht nach Erreichbarkeit: ist
+  Sentinel offline, zeigt HAPulse Sentinels Offline-Zustand, kein Zurückkippen
+  auf HA-Kameras. URL ohne Token (Admin teilt den Zugang nicht) → Quelle HA,
+  NVR-Karte/-Sektion ausgeblendet.
+- Last: Raumseiten und Zähler pollen nur `api/cameras` (30 s, Scope `cameras`
+  des gemeinsamen Pollers, `nvr/store.ts`); alle vier Übersichts-Endpunkte nur,
+  solange eine NVR-Ansicht (`full`) offen ist.
+
 ## Abweichungen zu Sentinels eigener Web-UI
 
 Die Spielmechanik (Player, Relay-Seek/Scrub, Watchdog, Zeitleiste) ist ein
