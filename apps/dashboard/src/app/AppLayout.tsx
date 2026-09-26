@@ -98,12 +98,13 @@ interface NavConfigItem {
 const NAV_CONFIG: NavConfigItem[] = [
   { id: 'overview',    icon: <Home       size={20} strokeWidth={1.75} />, labelKey: 'nav.overview',    to: '/',            exact: true, nonHideable: true },
   { id: 'rooms',       icon: <LayoutGrid size={20} strokeWidth={1.75} />, labelKey: 'nav.rooms' },
+  // [fork] NVR + Pool right after Rooms (existing stored orders: stores/navOrderMigration.ts)
+  { id: 'nvr',         icon: <Cctv       size={20} strokeWidth={1.75} />, labelKey: 'nav.nvr',         to: '/nvr' }, // [fork]
+  { id: 'pool',        icon: <Waves      size={20} strokeWidth={1.75} />, labelKey: 'nav.pool',        to: '/pool' }, // [fork]
   { id: 'devices',     icon: <Cpu        size={20} strokeWidth={1.75} />, labelKey: 'nav.devices',     to: '/devices' },
   { id: 'automations', icon: <Workflow   size={20} strokeWidth={1.75} />, labelKey: 'nav.automations', to: '/automations' },
   { id: 'energy',      icon: <Activity   size={20} strokeWidth={1.75} />, labelKey: 'nav.energy',      to: '/energy' },
   { id: 'security',    icon: <ShieldCheck size={20} strokeWidth={1.75} />, labelKey: 'nav.security',   to: '/security' },
-  { id: 'nvr',         icon: <Cctv       size={20} strokeWidth={1.75} />, labelKey: 'nav.nvr',         to: '/nvr' }, // [fork]
-  { id: 'pool',        icon: <Waves      size={20} strokeWidth={1.75} />, labelKey: 'nav.pool',        to: '/pool' }, // [fork]
   { id: 'music',       icon: <Music      size={20} strokeWidth={1.75} />, labelKey: 'nav.music',       to: '/music' },
   { id: 'scenes',      icon: <Sparkles   size={20} strokeWidth={1.75} />, labelKey: 'nav.scenes',      to: '/scenes' },
   { id: 'system',      icon: <Monitor    size={20} strokeWidth={1.75} />, labelKey: 'nav.system',      to: '/system' },
