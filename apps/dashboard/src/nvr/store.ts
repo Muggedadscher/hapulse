@@ -44,19 +44,21 @@ export const useNvrStore = create<NvrState>()((set, get) => ({
     if (get().key !== client.key) {
       set({ key: client.key, status: 'loading', cameras: [], recent: [], stats: null, histogram: [], loadedAt: 0, errorStatus: null });
     }
+    // "today" (events today, hourly chart) in the browser's zone — the plugin may run in UTC; older plugins ignore it
+    const tz = `tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`;
     try {
       if (scope === 'cameras') {
-        const cameras = await client.getJson<SentinelCamera[]>('api/cameras');
+        const cameras = await client.getJson<SentinelCamera[]>(`api/cameras?${tz}`);
         if (get().key !== client.key) return;
         set({ status: 'ready', cameras, loadedAt: Date.now(), errorStatus: null });
         return;
       }
       const [cameras, recent, stats, hist] = await Promise.all([
-        client.getJson<SentinelCamera[]>('api/cameras'),
+        client.getJson<SentinelCamera[]>(`api/cameras?${tz}`),
         client.getJson<SentinelRecentEvent[]>('api/recent-events?limit=40'),
-        client.getJson<SentinelStats>('api/stats'),
+        client.getJson<SentinelStats>(`api/stats?${tz}`),
         // optional (older plugins have no histogram): its failure must not empty everything else
-        client.getJson<{ buckets: number[] }>('api/events-histogram').catch(() => ({ buckets: [] as number[] })),
+        client.getJson<{ buckets: number[] }>(`api/events-histogram?${tz}`).catch(() => ({ buckets: [] as number[] })),
       ]);
       if (get().key !== client.key) return; // config changed mid-flight
       set({ status: 'ready', cameras, recent, stats, histogram: hist.buckets ?? [], loadedAt: Date.now(), errorStatus: null });
