@@ -31,7 +31,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const step = (name, ok, info) => steps.push({ name, ok: !!ok, ...(info !== undefined ? { info } : {}) });
   const click = async (sel, re) => {
     let r = null;
-    for (let i = 0; i < 24 && !r; i++) { if (i) await sleep(250); r = await ev(`(()=>{const re=${re ? `new RegExp(${JSON.stringify(re)},'i')` : 'null'};const els=Array.from(document.querySelectorAll(${JSON.stringify(sel)})).filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0&&(!re||re.test((e.getAttribute('aria-label')||e.textContent||'').trim()))});const e=els[0];if(!e)return null;e.scrollIntoView({block:'center',behavior:'instant'});return new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const b=e.getBoundingClientRect();const x=b.x+b.width/2,y=b.y+b.height/2;res(y<0||y>innerHeight||x<0||x>innerWidth?null:{x,y,label:(e.getAttribute('aria-label')||e.textContent||'').trim().slice(0,40)});})));})()`); if (r && r.__err) r = null; }
+    for (let i = 0; i < 24 && !r; i++) { if (i) await sleep(250); r = await ev(`(()=>{const re=${re ? `new RegExp(${JSON.stringify(re)},'i')` : 'null'};const els=Array.from(document.querySelectorAll(${JSON.stringify(sel)})).filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0&&(!re||re.test((e.getAttribute('aria-label')||e.textContent||'').trim()))});const e=els[0];if(!e)return null;e.scrollIntoView({block:'center',behavior:'instant'});return new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const b=e.getBoundingClientRect();const x=b.x+b.width/2,y=b.y+b.height/2;const top=document.elementFromPoint(x,y);res(y<0||y>innerHeight||x<0||x>innerWidth||!top||!(top===e||e.contains(top))?null:{x,y,label:(e.getAttribute('aria-label')||e.textContent||'').trim().slice(0,40)});})));})()`); if (r && r.__err) r = null; }
     if (!r) return null;
     for (const type of ['mousePressed', 'mouseReleased']) await cmd('Input.dispatchMouseEvent', { type, x: r.x, y: r.y, button: 'left', clickCount: 1 });
     return r.label;
@@ -109,9 +109,9 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     step('event row → plays it', await until(`!__snvr.state().live&&__snvr.state().label==='playing'`, 15000));
     await click('button', '^timeline$');
     step('timeline tab', await until(`document.querySelectorAll('.vev').length>0`, 5000));
-    const z0 = await ev(`document.querySelectorAll('.vtick').length`);
+    const z0 = await ev(`Math.round((document.querySelector('.vtl-scroll')||{}).scrollHeight||0)`);
     await click('button', '^zoom in$'); await sleep(900);
-    const z1 = await ev(`document.querySelectorAll('.vtick').length`);
+    const z1 = await ev(`Math.round((document.querySelector('.vtl-scroll')||{}).scrollHeight||0)`);
     step('zoom', z1 !== z0, { z0, z1 });
     await click('button', '^zoom out$');
     await click('button.nvr-datechip__lbl');
@@ -119,6 +119,8 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     step('date dialog opens', dlg);
     if (dlg) { await key('Escape', 'Escape'); step('date dialog closes', await until(`!document.querySelector('dialog[open], [role=dialog]')`, 3000)); }
     // the "↑ Live" pill is always there while not live; the chip on the now line only while now is in the rendered window
+    await ev(`__snvr.ctl.playAt(Date.now()-120000,{})`);
+    await until(`!__snvr.state().live&&__snvr.state().label==='playing'`, 15000);
     const hasPill = await ev(`!!document.querySelector('button.livejump')`);
     step('not live: "↑ Live" pill present', hasPill);
     const chipThere = await ev(`!!document.querySelector('button.vlive-chip')`);
