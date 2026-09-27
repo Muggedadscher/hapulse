@@ -5,6 +5,9 @@ import {
 } from 'lucide-react';
 import { EditBadge } from '../ui/EditBadge';
 import { POOL_ENTITIES, POOL_REQUIRED_ENTITIES } from '../pool/poolConfig'; // [fork]
+import { garageSummary, isGarageDoor } from '@hapulse/core'; // [fork]
+import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
+import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
 import { SortableGrid } from '../ui/SortableGrid';
 import { SortableItem } from '../ui/SortableItem';
 import { applyStoredOrder } from '../../lib/order';
@@ -14,7 +17,7 @@ import type { HassEntityMap } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './home.css';
 
-type ChipId = 'people' | 'lights' | 'doors' | 'alarm' | 'media' | 'pool'; // [fork] pool chip; plain union (lint: const was type-only)
+type ChipId = 'people' | 'lights' | 'doors' | 'alarm' | 'media' | 'pool' | 'garage'; // [fork] pool + garage chips; plain union (lint: const was type-only)
 
 interface SummaryChipsProps {
   entities: HassEntityMap;
@@ -87,6 +90,10 @@ export function SummaryChips({
   const poolPresent = POOL_REQUIRED_ENTITIES.every((id) => entities[id] != null);
   const poolRunning = entities[POOL_ENTITIES.pump]?.state === 'on';
 
+  // [fork] Garage doors / gates — chip shown only when there is at least one.
+  const garages = garageSummary(allEntities.filter(isGarageDoor));
+  const garageTone = summaryTone(garages);
+
   type ChipDef = {
     id: ChipId;
     icon: React.ReactNode;
@@ -138,16 +145,26 @@ export function SummaryChips({
       label: poolRunning ? t('home.summaryChips.poolRunning') : t('home.summaryChips.poolIdle'),
       active: poolRunning,
     },
+    // [fork] Garage chip — red when a door is open, amber when one is unreachable.
+    {
+      id: 'garage',
+      icon: <GarageSummaryIcon tone={garageTone} size={16} />,
+      label: summaryText(t, garages, t('home.summaryChips.allClosed')),
+      active: garageTone !== 'closed',
+      alert: garageTone === 'unavailable',
+      danger: garageTone === 'open',
+    },
   ];
 
   // In edit mode: show all chip defs; otherwise filter to enabledChips,
   // and skip alarm chip when no alarm entity exists (matches original behavior).
   const visibleDefs = editMode
-    ? chipDefs.filter((c) => c.id !== 'pool' || poolPresent) // [fork] hide phantom pool chip without a pool
+    ? chipDefs.filter((c) => (c.id !== 'pool' || poolPresent) && (c.id !== 'garage' || garages.total > 0)) // [fork] hide phantom pool/garage chips
     : chipDefs.filter((c) => {
         if (!enabledChips.includes(c.id)) return false;
         if (c.id === 'alarm' && !alarm) return false;
         if (c.id === 'pool' && !poolPresent) return false; // [fork]
+        if (c.id === 'garage' && garages.total === 0) return false; // [fork]
         return true;
       });
 
@@ -163,6 +180,12 @@ export function SummaryChips({
     const withoutPool = orderedIds.filter((id) => id !== 'pool');
     withoutPool.splice(withoutPool.indexOf('media'), 0, 'pool');
     orderedIds.splice(0, orderedIds.length, ...withoutPool);
+  }
+  // [fork] Same for the garage chip: right after the doors chip until the user moves it.
+  if (orderedIds.includes('garage') && orderedIds.includes('doors') && !order?.includes('garage')) {
+    const withoutGarage = orderedIds.filter((id) => id !== 'garage');
+    withoutGarage.splice(withoutGarage.indexOf('doors') + 1, 0, 'garage');
+    orderedIds.splice(0, orderedIds.length, ...withoutGarage);
   }
 
   const orderedDefs = orderedIds

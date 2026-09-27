@@ -116,6 +116,21 @@
   opacity: 0.8;
 }
 
+/* [fork] Alert state — open garage door / gate (security relevant) */
+.favorite-tile--alert {
+  background: var(--danger-soft);
+  border-color: var(--danger-soft);
+}
+.favorite-tile--alert .favorite-tile__icon,
+.favorite-tile--alert .favorite-tile__name {
+  color: var(--danger);
+}
+@media (hover: hover) {
+  .favorite-tile--alert:hover {
+    background: var(--danger-soft);
+  }
+}
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .favorite-tile {

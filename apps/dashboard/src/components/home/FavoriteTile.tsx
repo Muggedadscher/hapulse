@@ -19,8 +19,10 @@ import {
   DoorOpen, AppWindow, Droplets, Battery, Gauge, Clock, Wind,
   Blinds, Warehouse, PanelTop, CircleDot, UserCheck,
   Play, Flame,
+  Fence, // [fork] gate
 } from 'lucide-react';
 import { domainOf, domainIcon, formatEntityState, isToggleable } from '@hapulse/core';
+import { isGarageDoor, garageIsOpen } from '@hapulse/core'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import type { CustomizationSettings } from '../../stores/settingsStore';
 import { callService } from '../../ha/service';
@@ -59,6 +61,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   wind:           <Wind       size={16} strokeWidth={1.75} />,
   blinds:         <Blinds     size={16} strokeWidth={1.75} />,
   warehouse:      <Warehouse  size={16} strokeWidth={1.75} />,
+  fence:          <Fence      size={16} strokeWidth={1.75} />, // [fork] gate
   'panel-top':    <PanelTop   size={16} strokeWidth={1.75} />,
   'circle-dot':   <CircleDot  size={16} strokeWidth={1.75} />,
   'user-check':   <UserCheck  size={16} strokeWidth={1.75} />,
@@ -122,7 +125,9 @@ export function FavoriteTile({ entity, customization, onOpenDetail }: FavoriteTi
     onOpenDetail(entity.entity_id);
   }, [onOpenDetail, entity.entity_id]);
 
-  const tileClass = `favorite-tile${active ? ' favorite-tile--active' : ''}`;
+  // [fork] an open garage door / gate reads as a security alert (red), not as "on"
+  const alert = isGarageDoor(entity) && garageIsOpen(entity.state);
+  const tileClass = `favorite-tile${alert ? ' favorite-tile--alert' : active ? ' favorite-tile--active' : ''}`;
 
   if (toggleable) {
     return (

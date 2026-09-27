@@ -10,6 +10,9 @@ import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import './SecurityHeroCard.css';
 import { useCameraCount } from '../../nvr/cameraSource'; // [fork]
+import { garageSummary } from '@hapulse/core'; // [fork]
+import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
+import { summaryTone } from '../garage/garageText'; // [fork]
 
 function alarmGradientClass(state: string | undefined): string {
   if (!state || state === 'disarmed') return 'security-hero-card--disarmed';
@@ -33,6 +36,8 @@ interface SecurityHeroCardProps {
   alarm: HassEntity | undefined;
   people: HassEntity[];
   locks: HassEntity[];
+  /** [fork] garage doors / gates (cover device_class garage|gate) */
+  garages?: HassEntity[] | undefined;
   doorSensors: HassEntity[];
   windowSensors: HassEntity[];
   motionSensors: HassEntity[];
@@ -43,6 +48,7 @@ export function SecurityHeroCard({
   alarm,
   people,
   locks,
+  garages = [], // [fork]
   doorSensors,
   windowSensors,
   motionSensors,
@@ -52,6 +58,8 @@ export function SecurityHeroCard({
   const sl = useStateLabel();
   const url = useConnectionStore(useShallow((s) => s.url));
   const cameraCount = useCameraCount(cameras.length).total; // [fork] Sentinel's cameras when it is the source
+  const garage = garageSummary(garages); // [fork]
+  const garageTone = summaryTone(garage); // [fork]
 
   const alarmState = alarm?.state;
   const alarmName =
@@ -132,6 +140,18 @@ export function SecurityHeroCard({
                 {unlockedLocks.length === 0
                   ? t('security.hero.allLocked')
                   : t('security.hero.unlockedCount', { count: unlockedLocks.length })}
+              </span>
+            </div>
+          )}
+          {garage.total > 0 && ( // [fork] garage doors: red when open, amber when unreachable
+            <div className={`security-hero-chip security-hero-chip--${garageTone === 'closed' ? 'ok' : garageTone === 'open' ? 'danger' : 'warn'}`}>
+              <GarageSummaryIcon tone={garageTone} size={13} />
+              <span>
+                {garageTone === 'open'
+                  ? t('security.hero.garageOpenCount', { count: garage.open })
+                  : garageTone === 'unavailable'
+                    ? t('garage.unavailableCount', { count: garage.unavailable })
+                    : t('security.hero.garageClosed')}
               </span>
             </div>
           )}

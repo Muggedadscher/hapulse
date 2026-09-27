@@ -102,7 +102,7 @@ describe('scope table', () => {
       'hiddenEnergySections', 'energySectionSpans', 'energySectionHeights', 'mobileHiddenSections', 'mobileHiddenAutomationSections',
       'mobileHiddenSceneSections', 'mobileHiddenMusicSections', 'mobileHiddenSecuritySections', 'mobileHiddenSystemSections',
       'mobileHiddenEnergySections', 'scryptedUrl', 'poolChipMigrated', 'wasteSectionMigrated', 'nvrSectionMigrated', 'navOrderV2Migrated',
-      'nvrCameraRooms',
+      'nvrCameraRooms', 'garageChipMigrated',
     ];
     const all = [...KNOWN_GLOBAL, ...scope.USER_CUSTOMIZATION_KEYS, ...scope.SECRET_CUSTOMIZATION_KEYS].sort();
     expect(Object.keys(INITIAL.customization).sort()).toEqual(all);
@@ -295,5 +295,60 @@ describe('device light/dark', () => {
     expect(useSettingsStore.getState().exportSettings()).not.toContain('modeOverride');
     useSettingsStore.getState().setModeOverride(null);
     expect(effectiveMode(useSettingsStore.getState())).toBe('light');
+  });
+});
+
+// [fork] Garage chip (garage doors / gates): a new chip must not vanish for existing installs
+describe('garage chip migration', () => {
+  const OLD_CHIPS = ['people', 'lights', 'doors', 'alarm', 'media', 'pool'];
+  function oldDoc(homeChips: string[]) {
+    const base = doc().settings;
+    const { garageChipMigrated: _g, ...cust } = base.customization;
+    void _g;
+    return doc({ settings: { ...base, customization: { ...cust, homeChips } as typeof base.customization } });
+  }
+
+  it('pure: appends once, keeps a hidden chip hidden afterwards, empty stays "all"', async () => {
+    const { migrateGarageChip } = await import('../src/stores/settingsStore');
+    const cust = INITIAL.customization;
+    const old = { ...cust, homeChips: OLD_CHIPS, garageChipMigrated: false };
+    expect(migrateGarageChip(old).homeChips).toEqual([...OLD_CHIPS, 'garage']);
+    const subset = { ...cust, homeChips: ['people', 'doors'], garageChipMigrated: false };
+    expect(migrateGarageChip(subset).homeChips).toEqual(['people', 'doors', 'garage']);
+    const empty = { ...cust, homeChips: [], garageChipMigrated: false };
+    expect(migrateGarageChip(empty).homeChips).toEqual([]);
+    const hiddenLater = { ...cust, homeChips: OLD_CHIPS, garageChipMigrated: true };
+    expect(migrateGarageChip(hiddenLater).homeChips).toEqual(OLD_CHIPS);
+  });
+
+  it('non-admin: a global document from before the chip still shows it, nothing is written', async () => {
+    ha = fakeHA(false);
+    ha.system.set(G.GLOBAL_KEY, oldDoc(OLD_CHIPS));
+    await startAs(USER);
+    expect(useSettingsStore.getState().customization.homeChips).toContain('garage');
+    expect(ha.systemWrites).toHaveLength(0);
+  });
+
+  it('non-admin: a chip the admin hid (marker set) stays hidden', async () => {
+    ha = fakeHA(false);
+    const base = doc().settings;
+    ha.system.set(G.GLOBAL_KEY, doc({ settings: { ...base, customization: { ...base.customization, homeChips: OLD_CHIPS, garageChipMigrated: true } } }));
+    await startAs(USER);
+    expect(useSettingsStore.getState().customization.homeChips).not.toContain('garage');
+  });
+
+  it('admin: the migration settles in one write at most — no ping-pong', async () => {
+    ha = fakeHA(true);
+    ha.system.set(G.GLOBAL_KEY, oldDoc(OLD_CHIPS));
+    await startAs(ADMIN);
+    await G.flushGlobalPush();
+    await G.flushGlobalPush();
+    expect(ha.systemWrites.length).toBeLessThanOrEqual(1);
+    const writes = ha.systemWrites.length;
+    useSettingsStore.getState().setAccentHue(7);
+    await G.flushGlobalPush();
+    await G.flushGlobalPush();
+    expect(ha.systemWrites.length).toBe(writes + 1);
+    expect(useSettingsStore.getState().customization.homeChips).toContain('garage');
   });
 });

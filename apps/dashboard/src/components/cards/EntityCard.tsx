@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { domainOf } from '@hapulse/core';
+import { domainOf, isGarageDoor } from '@hapulse/core'; // [fork] isGarageDoor
 import type { HassEntity } from '@hapulse/core';
 import { LightCard } from './LightCard';
 import { ClimateCard } from './ClimateCard';
@@ -11,6 +11,7 @@ import { LockCard } from './LockCard';
 import { CameraCard } from './CameraCard';
 import { ButtonCard } from './ButtonCard';
 import { VacuumCard } from './VacuumCard';
+import { GarageCard } from '../garage/GarageCard'; // [fork]
 import { useLongPress } from '../../lib/useLongPress';
 import { useUIStore } from '../../stores/uiStore';
 
@@ -53,6 +54,8 @@ function CardForDomain({ entity, name }: { entity: HassEntity; name: string }) {
     case 'media_player':
       return <MediaCard entity={entity} name={name} />;
     case 'cover':
+      // [fork] garage doors / gates are handled like locks, not like blinds
+      if (isGarageDoor(entity)) return <GarageCard entity={entity} name={name} />;
       return <CoverCard entity={entity} name={name} />;
     case 'switch':
     case 'fan':

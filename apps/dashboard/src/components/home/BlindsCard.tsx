@@ -7,6 +7,7 @@ import React, { useCallback, useState } from 'react';
 import { ChevronUp, ChevronDown, ChevronRight, Square, AlignJustify } from 'lucide-react';
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
+import { isGarageDoor } from '@hapulse/core'; // [fork]
 import { callService } from '../../ha/service';
 import { useT } from '../../i18n/useT';
 import type { TKey } from '../../i18n/useT';
@@ -146,7 +147,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
     if (coverIds.length === 0) return [];
     const roomEntities = coverIds
       .map((id) => entities[id])
-      .filter((e): e is HassEntity => !!e && e.state !== 'unavailable');
+      .filter((e): e is HassEntity => !!e && e.state !== 'unavailable' && !isGarageDoor(e)); // [fork] garage doors have their own views
     if (roomEntities.length === 0) return [];
 
     const avgPosition =

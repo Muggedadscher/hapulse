@@ -102,6 +102,17 @@ import {
   parseWasteSensor,
   wasteTypeName,
   parseWasteDate,
+  // [fork] garage doors
+  isGarageDoor,
+  garageStatus,
+  garageIsOpen,
+  garageSupports,
+  garageCanStop,
+  garageCanAct,
+  garageTargets,
+  garageNeedsDialog,
+  garageSummary,
+  garageMdiIcon,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -409,6 +420,15 @@ const openWindowEntities = {
   },
 };
 assertEqual(roomStatusIconName(bedroomRoom, openWindowEntities), 'grid-2x2', 'status: open window → grid-2x2');
+
+// [fork] Open garage door (cover device_class garage) → 'car'; closed / unreachable → no status
+const garageRoom = rooms.find(r => r.id === 'garage');
+assert(garageRoom !== undefined, 'garage room found for garage status test');
+assertEqual(roomStatusIconName(garageRoom, DEMO_ENTITIES), null, 'status: closed garage door → null');
+const withGarage = (state) => ({ ...DEMO_ENTITIES, 'cover.garage_door': { ...DEMO_ENTITIES['cover.garage_door'], state } });
+assertEqual(roomStatusIconName(garageRoom, withGarage('open')), 'car', 'status: open garage door → car');
+assertEqual(roomStatusIconName(garageRoom, withGarage('closing')), 'car', 'status: closing garage door → car (not shut yet)');
+assertEqual(roomStatusIconName(garageRoom, withGarage('unavailable')), null, 'status: unreachable garage door → null');
 
 // CANONICAL_ROOM_ICONS includes expected values
 assert(Array.isArray(CANONICAL_ROOM_ICONS), 'CANONICAL_ROOM_ICONS is array');
@@ -1588,3 +1608,64 @@ const strDaysTo = makeEntity('sensor.biotonne', 'Biotonne in 3 days',
 const strBins = detectWasteBins({ 'sensor.biotonne': strDaysTo });
 assertEqual(strBins.length, 1, 'a numeric-string daysTo sensor is a bin');
 assertEqual(strBins[0].daysTo, 3, 'numeric-string daysTo is parsed to a number');
+
+// ---------------------------------------------------------------------------
+// [fork] Garage doors / gates — handled like locks
+// ---------------------------------------------------------------------------
+console.log('\n── garage doors ──');
+{
+  const g = (state, attrs = {}) => ({
+    entity_id: 'cover.g', state, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null },
+    attributes: { device_class: 'garage', supported_features: 3, ...attrs },
+  });
+  assert(isGarageDoor(g('closed')), 'cover garage → garage door');
+  assert(isGarageDoor(g('closed', { device_class: 'gate' })), 'cover gate → garage door');
+  assert(!isGarageDoor(g('closed', { device_class: 'blind' })), 'cover blind → not a garage door');
+  assert(!isGarageDoor({ ...g('on'), entity_id: 'binary_sensor.g', attributes: { device_class: 'garage_door' } }), 'binary_sensor garage_door stays a door sensor');
+  assert(!isGarageDoor(undefined), 'undefined → false');
+
+  assertEqual(garageStatus('closed'), 'closed', 'status closed');
+  assertEqual(garageStatus('opening'), 'moving', 'status opening → moving');
+  assertEqual(garageStatus('closing'), 'moving', 'status closing → moving');
+  assertEqual(garageStatus('open'), 'open', 'status open');
+  assertEqual(garageStatus('stopped'), 'open', 'status stopped half way → open');
+  assertEqual(garageStatus('unavailable'), 'unavailable', 'status unavailable');
+  assertEqual(garageStatus('unknown'), 'unavailable', 'status unknown → unavailable');
+  assert(garageIsOpen('opening') && garageIsOpen('open') && !garageIsOpen('closed') && !garageIsOpen('unavailable'),
+    'garageIsOpen: open/moving yes, closed/unreachable no');
+
+  assert(garageSupports(g('closed'), 'open') && garageSupports(g('closed'), 'close') && !garageSupports(g('closed'), 'stop'),
+    'features 3 = open + close, no stop');
+  assert(garageSupports(g('closed', { supported_features: 11 }), 'stop'), 'features 11 includes stop');
+  assert(garageSupports(g('closed', { supported_features: undefined }), 'open') && !garageSupports(g('closed', { supported_features: undefined }), 'stop'),
+    'no supported_features → open/close assumed, no stop');
+  assert(!garageCanStop(g('opening')), 'no stop without the STOP feature');
+  assert(garageCanStop(g('opening', { supported_features: 11 })), 'stop while moving with STOP');
+  assert(!garageCanStop(g('open', { supported_features: 11 })), 'no stop while standing');
+
+  assert(garageCanAct(g('closed'), 'open') && !garageCanAct(g('closed'), 'close'), 'closed: can open, not close');
+  assert(garageCanAct(g('open'), 'close') && !garageCanAct(g('open'), 'open'), 'open: can close, not open');
+  assert(!garageCanAct(g('opening'), 'close') && !garageCanAct(g('opening'), 'open'), 'moving: no open/close');
+  assert(!garageCanAct(g('unavailable'), 'open') && !garageCanAct(g('unavailable'), 'close'), 'unreachable: no action');
+  assert(!garageCanAct(g('closed', { supported_features: 2 }), 'open'), 'no OPEN feature → cannot open');
+
+  const fleet = [g('closed'), { ...g('open'), entity_id: 'cover.h' }, { ...g('unavailable'), entity_id: 'cover.i' }, { ...g('closing'), entity_id: 'cover.j' }];
+  assertEqual(garageTargets(fleet, 'open').map((e) => e.entity_id).join(','), 'cover.g', 'open all → only the closed one');
+  assertEqual(garageTargets(fleet, 'close').map((e) => e.entity_id).join(','), 'cover.h', 'close all → only the open, standing one');
+  assert(garageNeedsDialog('open') && !garageNeedsDialog('close'), 'opening asks first, closing does not');
+
+  const sum = garageSummary(fleet);
+  assertEqual(JSON.stringify(sum), JSON.stringify({ total: 4, closed: 1, open: 2, unavailable: 1, allClosed: false }), 'summary counts');
+  assert(garageSummary([g('closed')]).allClosed, 'all closed');
+  assert(!garageSummary([g('closed'), { ...g('unavailable'), entity_id: 'cover.x' }]).allClosed, 'an unreachable door is never "all closed"');
+  assert(!garageSummary([]).allClosed, 'no doors → not "all closed"');
+
+  assertEqual(garageMdiIcon(g('closed')), 'mdi:garage', 'icon closed');
+  assertEqual(garageMdiIcon(g('opening')), 'mdi:garage-open', 'icon moving');
+  assertEqual(garageMdiIcon(g('unavailable')), 'mdi:garage-alert', 'icon unreachable');
+  assertEqual(garageMdiIcon(g('open', { device_class: 'gate' })), 'mdi:gate-open', 'gate icon open');
+
+  // demo: the garage door opens/closes through the demo service layer
+  const opened = applyDemoService(DEMO_ENTITIES, 'cover', 'open_cover', {}, { entity_id: 'cover.garage_door' });
+  assertEqual(opened?.['cover.garage_door']?.state, 'open', 'demo garage door opens');
+}

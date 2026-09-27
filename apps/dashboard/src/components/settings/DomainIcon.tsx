@@ -10,6 +10,7 @@ import {
   ToggleLeft, Play, Zap, Sparkles, DoorOpen, AppWindow,
   Activity, Flame, Droplets, UserCheck, CircleDot,
   Battery, Gauge, Wind, Clock,
+  Fence, // [fork] gate
 } from 'lucide-react';
 import { domainIcon } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
@@ -21,6 +22,7 @@ const ICON_MAP: Record<string, React.FC<{ size?: number; strokeWidth?: number }>
   thermometer: Thermometer,
   'panel-top': PanelTop,
   warehouse: Warehouse,
+  fence: Fence, // [fork] gate
   blinds: PanelTop, // lucide doesn't export Blinds in all versions — use PanelTop as fallback
   speaker: Speaker,
   camera: Camera,

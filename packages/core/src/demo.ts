@@ -110,6 +110,7 @@ export const DEMO_REGISTRIES: Registries = {
     { area_id: 'office', name: 'Office', icon: 'mdi:desk' },
     { area_id: 'bathroom', name: 'Bathroom', icon: 'mdi:shower' },
     { area_id: 'hallway', name: 'Hallway', icon: 'mdi:door' },
+    { area_id: 'garage', name: 'Garage', icon: 'mdi:garage' }, // [fork] garage door demo
   ],
   devices: ([
     // Living Room
@@ -139,6 +140,7 @@ export const DEMO_REGISTRIES: Registries = {
     { id: 'dev_ha_motion', area_id: 'hallway', name: 'Hallway Motion Sensor' },
     { id: 'dev_ha_door', area_id: 'hallway', name: 'Front Door Sensor' },
     { id: 'dev_ha_lock', area_id: 'hallway', name: 'Front Door Lock' },
+    { id: 'dev_ga_door', area_id: 'garage', name: 'Garage Door' }, // [fork]
     { id: 'dev_ha_camera', area_id: 'hallway', name: 'Hallway Camera' },
     // Other devices
     { id: 'dev_outdoor_camera', area_id: null, name: 'Outdoor Camera' },
@@ -166,6 +168,7 @@ export const DEMO_REGISTRIES: Registries = {
     { entity_id: 'light.bedroom_nightstand', area_id: null, device_id: 'dev_br_lights', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Nightstand Light', icon: null },
     { entity_id: 'climate.bedroom', area_id: null, device_id: 'dev_br_climate', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Bedroom Thermostat', icon: null },
     { entity_id: 'cover.bedroom_blinds', area_id: null, device_id: 'dev_br_cover', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Bedroom Blinds', icon: null },
+    { entity_id: 'cover.garage_door', area_id: null, device_id: 'dev_ga_door', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Garage Door', icon: null }, // [fork]
     { entity_id: 'sensor.bedroom_temperature', area_id: null, device_id: 'dev_br_sensor', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Temperature', icon: null },
     { entity_id: 'sensor.bedroom_humidity', area_id: null, device_id: 'dev_br_sensor', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Humidity', icon: null },
     { entity_id: 'media_player.bedroom_speaker', area_id: null, device_id: 'dev_br_speaker', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Bedroom Speaker', icon: null },
@@ -524,6 +527,12 @@ export const DEMO_ENTITIES: HassEntityMap = {
     friendly_name: 'Bedroom Blinds',
     device_class: 'blind',
     current_position: 0,
+  }),
+  // [fork] garage door (open/close only, no stop — like most garage openers)
+  'cover.garage_door': makeEntity('cover.garage_door', 'closed', {
+    friendly_name: 'Garage Door',
+    device_class: 'garage',
+    supported_features: 3,
   }),
 
   // --- Lock ---

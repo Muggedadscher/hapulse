@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Shield, DoorOpen, Grid2x2, Activity, Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { pickAlarmPanel } from '@hapulse/core';
+import { pickAlarmPanel, isGarageDoor } from '@hapulse/core'; // [fork] isGarageDoor
 import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
@@ -23,6 +23,8 @@ import { applyStoredOrder } from '../lib/order';
 import { NvrSecuritySection } from '../nvr/NvrSecuritySection'; // [fork]
 import { useNvrConfigured } from '../nvr/config'; // [fork]
 import { useCameraSource } from '../nvr/cameraSource'; // [fork]
+import { GarageSectionCard } from '../components/garage/GarageSectionCard'; // [fork]
+import { withDefaultSlot } from '../lib/defaultSlot'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import './Page.css';
 import './Security.css';
@@ -43,7 +45,7 @@ function isMotion(e: HassEntity)  { const dc = e.attributes['device_class'] as s
 // Section config
 // ---------------------------------------------------------------------------
 
-const SECTION_IDS = ['security_hero', 'alarm_panel', 'cameras', 'nvr', 'people', 'locks', 'doors', 'windows', 'motion'] as const; // [fork] nvr
+const SECTION_IDS = ['security_hero', 'alarm_panel', 'cameras', 'nvr', 'people', 'locks', 'garage', 'doors', 'windows', 'motion'] as const; // [fork] nvr, garage
 type SectionId = typeof SECTION_IDS[number];
 
 type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
@@ -86,6 +88,12 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     hideMobile: 'security.section.hideMobile.locks',
     showMobile: 'security.section.showMobile.locks',
   },
+  garage: { // [fork]
+    hide: 'security.section.hide.garage',
+    show: 'security.section.show.garage',
+    hideMobile: 'security.section.hideMobile.garage',
+    showMobile: 'security.section.showMobile.garage',
+  },
   doors: {
     hide: 'security.section.hide.doors',
     show: 'security.section.show.doors',
@@ -115,6 +123,7 @@ const DEFAULT_SPANS: Record<string, number> = {
   nvr:           4, // [fork]
   people:        1,
   locks:         2,
+  garage:        2, // [fork]
   doors:         1,
   windows:       1,
   motion:        1,
@@ -235,6 +244,7 @@ export function Security() {
   const allCameras  = cameraSource === 'sentinel' ? [] : allEntities.filter((e) => e.entity_id.startsWith('camera.')); // [fork]
   const allBinary   = allEntities.filter((e) => e.entity_id.startsWith('binary_sensor.'));
   const allLocks    = allEntities.filter((e) => e.entity_id.startsWith('lock.'));
+  const allGarages  = allEntities.filter(isGarageDoor); // [fork] garage doors / gates
   const allDoors    = allBinary.filter(isDoor);
   const allWindows  = allBinary.filter(isWindow);
   const allMotion   = allBinary.filter(isMotion);
@@ -257,6 +267,7 @@ export function Security() {
   const cameras = filterVisible(orderedCameras);
   const people  = filterVisible(allPeople);
   const locks   = filterVisible(allLocks);
+  const garages = filterVisible(allGarages); // [fork]
   const doors   = filterVisible(allDoors);
   const windows = filterVisible(allWindows);
   const motion  = filterVisible(allMotion);
@@ -266,6 +277,7 @@ export function Security() {
   const hasCameras = editMode ? allCameras.length > 0 : cameras.length > 0;
   const hasPeople  = editMode ? allPeople.length > 0  : people.length > 0;
   const hasLocks   = editMode ? allLocks.length > 0   : locks.length > 0;
+  const hasGarages = editMode ? allGarages.length > 0 : garages.length > 0; // [fork]
   const hasDoors   = editMode ? allDoors.length > 0   : doors.length > 0;
   const hasWindows = editMode ? allWindows.length > 0  : windows.length > 0;
   const hasMotion  = editMode ? allMotion.length > 0   : motion.length > 0;
@@ -277,16 +289,17 @@ export function Security() {
     nvr:           hasNvr, // [fork]
     people:        hasPeople,
     locks:         hasLocks,
+    garage:        hasGarages, // [fork]
     doors:         hasDoors,
     windows:       hasWindows,
     motion:        hasMotion,
   };
 
-  const totalEntities = allCameras.length + allPeople.length + allLocks.length +
+  const totalEntities = allCameras.length + allPeople.length + allLocks.length + allGarages.length + // [fork] garages
     allDoors.length + allWindows.length + allMotion.length + (alarm ? 1 : 0);
 
   const allSectionIds  = SECTION_IDS.filter((id) => sectionExists[id]) as SectionId[];
-  const orderedIds     = applyStoredOrder(allSectionIds, securitySectionOrder) as SectionId[];
+  const orderedIds     = applyStoredOrder(allSectionIds, withDefaultSlot(securitySectionOrder, 'garage', 'locks')) as SectionId[]; // [fork] garage after locks
   const visibleIds     = (editMode
     ? orderedIds
     : orderedIds.filter((id) => !hiddenSecuritySections.includes(id))) as SectionId[];
@@ -346,6 +359,7 @@ export function Security() {
             alarm={alarm}
             people={people}
             locks={locks}
+            garages={garages} // [fork]
             doorSensors={doors}
             windowSensors={windows}
             motionSensors={motion}
@@ -370,6 +384,8 @@ export function Security() {
         return <PeopleList people={people} />;
       case 'locks':
         return <LocksSectionCard locks={locks} rooms={rooms} />;
+      case 'garage': // [fork]
+        return <GarageSectionCard garages={garages} rooms={rooms} />;
       case 'doors':
         return (
           <SensorSectionCard

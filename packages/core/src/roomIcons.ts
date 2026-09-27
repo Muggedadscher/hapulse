@@ -20,6 +20,7 @@
  */
 
 import type { Room, HassEntityMap } from './types.js';
+import { isGarageDoor, garageIsOpen } from './garage.js'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Canonical icon set
@@ -405,6 +406,7 @@ export function roomIconName(area: { name: string; icon?: string | null }): stri
  * 3. binary_sensor device_class 'window'|'opening'     state 'on' → 'grid-2x2'
  * 4. binary_sensor device_class 'moisture'             state 'on' → 'droplets'
  * 5. binary_sensor device_class 'smoke'                state 'on' → 'flame'
+ * [fork] An open cover garage door/gate counts like 2. (garage_door sensor).
  *
  * All returned values are members of CANONICAL_ROOM_ICONS.
  */
@@ -416,6 +418,8 @@ export function roomStatusIconName(room: Room, entities: HassEntityMap): string 
   for (const entityId of room.entityIds) {
     const entity = entities[entityId];
     if (!entity) continue;
+    // [fork] open garage door / gate (cover) — same priority as a garage_door sensor
+    if (isGarageDoor(entity) && garageIsOpen(entity.state)) return 'car';
     if (!entityId.startsWith('binary_sensor.')) continue;
     if (entity.state !== 'on') continue;
 
