@@ -212,3 +212,20 @@ export type { WasteBin, WasteCollection, DetectWasteOptions } from './waste.js';
 export { oauthCallbackMatches } from './oauthGuard.js'; // [fork]
 export { formatNumber } from './numberFormat.js'; // [fork]
 export type { NumberFormatOptions } from './numberFormat.js'; // [fork]
+
+// [fork] Garage doors / gates — cover.* with device_class garage|gate, handled like locks
+export {
+  GARAGE_DEVICE_CLASSES,
+  isGarageDoor,
+  isGate,
+  garageStatus,
+  garageIsOpen,
+  garageSupports,
+  garageCanStop,
+  garageCanAct,
+  garageTargets,
+  garageNeedsDialog,
+  garageSummary,
+  garageMdiIcon,
+} from './garage.js';
+export type { GarageStatus, GarageService, GarageSummary } from './garage.js';

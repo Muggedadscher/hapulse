@@ -230,6 +230,15 @@
   transform: scale(0.92);
 }
 
+/* [fork] disabled (garage door already there / moving) */
+.device-icon-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+  transform: none;
+}
+
 /* Stepper (climate / number) */
 .device-stepper {
   display: flex;

@@ -16,6 +16,8 @@ import { useT } from '../../i18n/useT';
 import { lockCodeIsNumeric, lockNeedsCode, lockNeedsDialog } from './lockLogic';
 import './LockConfirm.css';
 
+const stopBubble = (e: React.SyntheticEvent) => e.stopPropagation();
+
 interface Request {
   service: 'lock' | 'unlock';
   entities: HassEntity[];
@@ -119,5 +121,15 @@ export function useLockAction(): {
     for (const e of entities) void callService('lock', service, {}, { entity_id: e.entity_id }).catch(() => {});
   }, []);
   const close = useCallback(() => setPending(null), []);
-  return { request, dialog: pending ? <LockConfirmDialog request={pending} onClose={close} /> : null };
+  // The Modal is a portal, but React events still bubble through the component tree:
+  // without this host a click in the dialog (or on its backdrop) also reached a
+  // surrounding EntityCard and opened the entity detail on top.
+  return {
+    request,
+    dialog: pending ? (
+      <div className="lock-confirm-host" onClick={stopBubble} onPointerDown={stopBubble} onContextMenu={stopBubble}>
+        <LockConfirmDialog request={pending} onClose={close} />
+      </div>
+    ) : null,
+  };
 }

@@ -190,7 +190,9 @@ export function domainIcon(entity: HassEntity): string {
         ? 'blinds'
         : deviceClass === 'garage'
           ? 'warehouse'
-          : 'panel-top';
+          : deviceClass === 'gate' // [fork]
+            ? 'fence'
+            : 'panel-top';
 
     case 'media_player':
       return 'speaker';
@@ -254,6 +256,8 @@ function binarySensorIcon(deviceClass: string | undefined): string {
       return 'user-check';
     case 'opening':
       return 'door-open';
+    case 'garage_door': // [fork]
+      return 'warehouse';
     default:
       return 'circle-dot';
   }

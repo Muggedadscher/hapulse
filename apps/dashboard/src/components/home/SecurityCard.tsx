@@ -16,6 +16,9 @@ import type { HassEntityMap } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './SecurityCard.css';
 import { useCameraCount } from '../../nvr/cameraSource'; // [fork]
+import { garageSummary, isGarageDoor } from '@hapulse/core'; // [fork]
+import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
+import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
 
 interface SecurityCardProps {
   entities: HassEntityMap;
@@ -60,6 +63,12 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   const locks = all.filter((e) => e.entity_id.startsWith('lock.'));
   const unlockedLocks = locks.filter((e) => e.state === 'unlocked');
 
+  // [fork] Garage doors / gates (cover device_class garage|gate) — like locks
+  const garages = all.filter(isGarageDoor);
+  const garage = garageSummary(garages);
+  const garageTone = summaryTone(garage);
+  const garageColor = garageTone === 'closed' ? 'ok' : garageTone === 'open' ? 'danger' : 'warn';
+
   // Motion sensors
   const motionSensors = all.filter(
     (e) => e.entity_id.startsWith('binary_sensor.') && e.attributes.device_class === 'motion'
@@ -89,6 +98,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   // Overall status: positive if alarm disarmed/absent, no unlocked locks, no active motion, no open sensors
   const anyAlert =
     unlockedLocks.length > 0 ||
+    (garage.total > 0 && garageTone !== 'closed') || // [fork]
     activeMotion.length > 0 ||
     openDoors.length > 0 ||
     openWindows.length > 0;
@@ -97,6 +107,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   const hasAnySecurityEntity =
     alarm ||
     locks.length > 0 ||
+    garages.length > 0 || // [fork]
     motionSensors.length > 0 ||
     cameraCount.total > 0 || // [fork]
     windowSensors.length > 0 ||
@@ -171,6 +182,24 @@ export function SecurityCard({ entities }: SecurityCardProps) {
             {unlockedLocks.length > 0
               ? t('home.security.unlockedCount', { count: unlockedLocks.length })
               : t('home.security.allLocked')}
+          </span>
+        </div>
+      )}
+
+      {/* [fork] Garage doors / gates */}
+      {garage.total > 0 && (
+        <div className="security-row">
+          <span className={`security-row__dot security-row__dot--${garageColor}`} aria-hidden="true" />
+          <span className="security-row__icon" aria-hidden="true">
+            <GarageSummaryIcon tone={garageTone} size={15} />
+          </span>
+          <span className="security-row__label">
+            {garages.length === 1
+              ? String(garages[0]!.attributes.friendly_name ?? t('garage.title'))
+              : t('garage.title')}
+          </span>
+          <span className={`security-row__value security-row__value--${garageColor}`}>
+            {summaryText(t, garage, t('home.security.allClosed'))}
           </span>
         </div>
       )}

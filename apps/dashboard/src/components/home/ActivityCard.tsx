@@ -9,6 +9,8 @@ import {
 import { useNavigate } from 'react-router';
 import { Card } from '../ui/Card';
 import { domainOf } from '@hapulse/core';
+import { isGarageDoor } from '@hapulse/core'; // [fork]
+import { GarageIcon, garageTone } from '../garage/GarageIcon'; // [fork]
 import type { HassEntityMap, HassEntity } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import type { TFunction, StateLabel } from '../../i18n/useT';
@@ -25,6 +27,7 @@ const NOTABLE_DOMAINS = new Set([
 ]);
 
 function activityIcon(entity: HassEntity): React.ReactNode {
+  if (isGarageDoor(entity)) return <GarageIcon entity={entity} size={15} />; // [fork]
   const domain = domainOf(entity.entity_id);
   const dc = entity.attributes.device_class as string | undefined;
   switch (domain) {
@@ -44,6 +47,11 @@ function activityIcon(entity: HassEntity): React.ReactNode {
 }
 
 function activityChipStyle(entity: HassEntity): { bg: string; color: string } {
+  if (isGarageDoor(entity)) { // [fork] like locks: green closed, red open, amber unreachable
+    const tone = garageTone(entity.state);
+    const v = tone === 'closed' ? 'positive' : tone === 'open' ? 'danger' : 'warning';
+    return { bg: `var(--${v}-soft)`, color: `var(--${v})` };
+  }
   const domain = domainOf(entity.entity_id);
   switch (domain) {
     case 'light':

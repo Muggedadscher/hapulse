@@ -25,6 +25,8 @@ import './Page.css';
 import './Room.css';
 import { useAreaCameraIds, useCameraSource } from '../nvr/cameraSource'; // [fork]
 import { NvrRoomCameras } from '../nvr/NvrRoomCameras'; // [fork]
+import { isGarageDoor } from '@hapulse/core'; // [fork]
+import { withDefaultSlot } from '../lib/defaultSlot'; // [fork]
 
 // ── Entity name helpers ───────────────────────────────────────────────────────
 
@@ -159,6 +161,7 @@ const DRAG_REORDER_KEYS: Record<SectionKey, TKey> = {
   climate: 'room.section.dragReorder.climate',
   media_player: 'room.section.dragReorder.mediaPlayer',
   cover: 'room.section.dragReorder.cover',
+  garage: 'room.section.dragReorder.garage', // [fork]
   switches: 'room.section.dragReorder.switches',
   button: 'room.section.dragReorder.button',
   vacuum: 'room.section.dragReorder.vacuum',
@@ -235,6 +238,7 @@ const SECTION_ORDER = [
   'climate',
   'media_player',
   'cover',
+  'garage', // [fork] garage doors / gates, split off the blinds
   'switches',
   'button',
   'vacuum',
@@ -252,6 +256,7 @@ const SECTION_LABEL_KEYS: Record<string, TKey> = {
   climate:      'room.section.label.climate',
   media_player: 'room.section.label.mediaPlayer',
   cover:        'room.section.label.cover',
+  garage:       'room.section.label.garage', // [fork]
   switches:     'room.section.label.switches',
   button:       'room.section.label.button',
   vacuum:       'room.section.label.vacuum',
@@ -393,7 +398,9 @@ export function Room() {
   const lightIds        = orderedIds(domainMap['light']        ?? []);
   const climateIds      = orderedIds(domainMap['climate']      ?? []);
   const mediaIds        = orderedIds(domainMap['media_player'] ?? []);
-  const coverIds        = orderedIds(domainMap['cover']        ?? []);
+  // [fork] garage doors / gates get their own section (handled like locks, not like blinds)
+  const coverIds        = orderedIds((domainMap['cover'] ?? []).filter((id) => !isGarageDoor(entities[id])));
+  const garageIds       = orderedIds((domainMap['cover'] ?? []).filter((id) => isGarageDoor(entities[id])));
   const buttonIds       = orderedIds(domainMap['button']       ?? []);
   const vacuumIds       = orderedIds(domainMap['vacuum']       ?? []);
   const orderedSwitchIds = orderedIds(switchIds);
@@ -407,6 +414,7 @@ export function Room() {
     climate:      climateIds,
     media_player: mediaIds,
     cover:        coverIds,
+    garage:       garageIds, // [fork]
     switches:     orderedSwitchIds,
     button:       buttonIds,
     vacuum:       vacuumIds,
@@ -499,6 +507,7 @@ export function Room() {
     { key: 'climate',      label: t(SECTION_LABEL_KEYS['climate']!),      ids: climateIds },
     { key: 'media_player', label: t(SECTION_LABEL_KEYS['media_player']!), ids: mediaIds },
     { key: 'cover',        label: t(SECTION_LABEL_KEYS['cover']!),        ids: coverIds },
+    { key: 'garage',       label: t(SECTION_LABEL_KEYS['garage']!),       ids: garageIds }, // [fork]
     { key: 'switches',     label: t(SECTION_LABEL_KEYS['switches']!),     ids: orderedSwitchIds },
     { key: 'button',       label: t(SECTION_LABEL_KEYS['button']!),       ids: buttonIds },
     { key: 'vacuum',       label: t(SECTION_LABEL_KEYS['vacuum']!),       ids: vacuumIds },
@@ -508,7 +517,8 @@ export function Room() {
 
   const activeSectionDefs = allSectionDefs.filter((s) => s.ids.length > 0);
 
-  const storedRoomSectionOrder = roomSectionOrder[areaId];
+  // [fork] a stored order predating the garage section: put it where the blinds were
+  const storedRoomSectionOrder = withDefaultSlot(roomSectionOrder[areaId], 'garage', 'cover');
   const orderedSectionDefs = applyStoredOrder(
     activeSectionDefs.map((s) => s.key),
     storedRoomSectionOrder

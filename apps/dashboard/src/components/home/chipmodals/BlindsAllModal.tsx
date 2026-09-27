@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Modal } from '../../ui/Modal';
 import { EmptyState } from '../../ui/EmptyState';
 import { CoverCard } from '../../cards/CoverCard';
+import { isGarageDoor } from '@hapulse/core'; // [fork]
 import { useEntityStore } from '../../../stores/entityStore';
 import { useT, useLocale } from '../../../i18n/useT';
 import './all-modal.css';
@@ -22,7 +23,8 @@ export function BlindsAllModal({ open, onClose }: BlindsAllModalProps) {
         .filter(
           (e) =>
             e.entity_id.startsWith('cover.') &&
-            e.state !== 'unavailable'
+            e.state !== 'unavailable' &&
+            !isGarageDoor(e) // [fork] garage doors have their own views
         )
         .sort((a, b) => {
           const na = (a.attributes.friendly_name as string | undefined) ?? a.entity_id;

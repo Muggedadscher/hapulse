@@ -104,6 +104,22 @@ sauber übernehmen können.
   vom Admin zugeordneten Sentinel-Kameras (`customization.nvrCameraRooms`). Details:
   `docs/NVR-INTEGRATION.md` → „Kameraquelle“.
 
+- **Garagentore wie Schlösser**: `cover.*` mit `device_class` `garage`/`gate` gelten nicht mehr als
+  Rollladen, sondern als sicherheitsrelevant. Reine Regeln in `packages/core/src/garage.ts`
+  (`isGarageDoor`, `garageStatus` closed/open/moving/unavailable, `garageCanAct`/`garageTargets` — nur
+  Tore, die gerade handeln können; `garageSummary` — „alle zu“ nur wenn JEDES Tor `closed` ist,
+  nicht erreichbar = gelb; getestet in `smoke.mjs`). UI in `components/garage/*`: `GarageCard`
+  (Entity-Karte, via `EntityCard`), `GarageList`, `GarageSectionCard` (Sicherheits-Sektion `'garage'`
+  nach `locks`), `useGarageAction` (**Öffnen fragt immer nach, Schließen sofort**; Stopp nur beim
+  Fahren und wenn unterstützt), `garageText.ts` (gemeinsame Ton-/Textregel für Chip, Home-Karte,
+  Hero). Überall eingebunden: Home-Chip `'garage'` + `GarageModal`, Home-`SecurityCard`-Zeile,
+  `SecurityHeroCard`-Chip, Raum-Sektion `'garage'` (Tore raus aus „Rollläden“, `BlindsCard`/
+  `BlindsAllModal` filtern sie), Raum-Status-Symbol `car` bei offenem Tor, Favoriten rot, Geräte-Zeile,
+  Aktivität. Neue Sektionen bekommen bei älteren gespeicherten Reihenfolgen ihren Platz über
+  `lib/defaultSlot.ts`. Chip-Marker `garageChipMigrated` (wie `poolChipMigrated`); `applyGlobal`
+  behandelt einen fehlenden Marker im Admin-Dokument als `false`. `binary_sensor` `garage_door`
+  bleibt ein Tür-Sensor (Türen-Chip/-Sektion). Labor-Probe CT 213: `/root/lab/hp-garage-test.cjs`.
+
 - **Zahlen immer sprachabhängig**: Angezeigte Zahlen nur über `formatNumber` (`@hapulse/core`,
   `numberFormat.ts`) bzw. `formatEntityState(entity, locale)` — nie `toFixed`/`${n}` in UI-Text
   (Upstream zeigte überall „5.5“ statt „5,5“). Ausnahmen: Werte an HA, SVG/CSS, Uhrzeiten, Versionsnummern.

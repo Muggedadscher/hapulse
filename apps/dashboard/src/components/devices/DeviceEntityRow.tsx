@@ -17,11 +17,13 @@ import {
   Square, House, Minus, Plus, Eye, EyeOff, Star,
 } from 'lucide-react';
 import { domainOf, formatEntityState } from '@hapulse/core';
+import { isGarageDoor, garageCanAct, garageCanStop } from '@hapulse/core'; // [fork]
 import { formatNumber } from '@hapulse/core'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import { callService } from '../../ha/service';
 import { useLockAction } from '../security/LockConfirm'; // [fork]
 import { lockBusy } from '../security/lockLogic'; // [fork]
+import { useGarageAction } from '../garage/GarageConfirm'; // [fork]
 import { DeviceIcon } from './deviceMeta';
 import { useLocale, useT, useStateLabel } from '../../i18n/useT';
 
@@ -77,9 +79,9 @@ function Transport({ children }: { children: React.ReactNode }) {
   return <div className="device-transport">{children}</div>;
 }
 
-function IconBtn({ onClick, label, children }: { onClick: () => void; label: string; children: React.ReactNode }) {
+function IconBtn({ onClick, label, children, disabled }: { onClick: () => void; label: string; children: React.ReactNode; disabled?: boolean }) { // [fork] disabled
   return (
-    <button type="button" className="device-icon-btn" aria-label={label} onClick={onClick}>
+    <button type="button" className="device-icon-btn" aria-label={label} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   );
@@ -123,6 +125,7 @@ export function DeviceEntityRow({
     [target], // [fork]
   );
   const lockAction = useLockAction(); // [fork] unlock confirmation / lock code
+  const garageAction = useGarageAction(); // [fork] garage doors: open asks first
 
   let control: React.ReactNode = null;
 
@@ -179,6 +182,17 @@ export function DeviceEntityRow({
         />
       );
     }
+  } else if (domain === 'cover' && isGarageDoor(entity)) {
+    // [fork] garage door / gate: open asks first, stop only while moving and supported
+    control = (
+      <Transport>
+        <IconBtn label={t('devices.row.openAria')} disabled={!garageCanAct(entity, 'open')} onClick={() => garageAction.request('open', [entity])}><ChevronUp size={16} strokeWidth={2} /></IconBtn>
+        {garageCanStop(entity) && (
+          <IconBtn label={t('devices.row.stopAria')} onClick={() => garageAction.stop(entity)}><Square size={13} strokeWidth={2.5} /></IconBtn>
+        )}
+        <IconBtn label={t('devices.row.closeAria')} disabled={!garageCanAct(entity, 'close')} onClick={() => garageAction.request('close', [entity])}><ChevronDown size={16} strokeWidth={2} /></IconBtn>
+      </Transport>
+    );
   } else if (domain === 'cover') {
     control = (
       <Transport>
@@ -244,6 +258,7 @@ export function DeviceEntityRow({
       <span className="device-entity-row__control">
         {control}
         {lockAction.dialog /* [fork] */}
+        {garageAction.dialog /* [fork] */}
         {editable && (
           <span className="device-entity-row__edit">
             <button
