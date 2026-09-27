@@ -12,7 +12,7 @@ import { Card } from '../components/ui/Card';
 import { useT, useLocale } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { fmtTime, fmtRelative } from './format';
-import { EventBadges, eventLabel } from '@sentinel-nvr/web/ui';
+import { EventBadges, eventLabel, rememberTileSnapshot, tileSnapshotWidth } from '@sentinel-nvr/web/ui';
 import { useNvrT } from './ui';
 import { cameraPath, NVR_ROOT } from './paths';
 import './nvr.css';
@@ -65,7 +65,7 @@ export function NvrHomeCard() {
             <div className="nvr-home__cams">
               {cameras.map((c) => (
                 <button key={c.id} type="button" className="nvr-home__cam" onClick={() => navigate(cameraPath(c.id))} aria-label={c.name}>
-                  <HomeSnapshot src={client.snapshotUrl(c.id, tick)} fallback={c.latestThumbId ? client.segmentThumbUrl(c.latestThumbId) : null} />
+                  <HomeSnapshot camId={c.id} src={client.snapshotUrl(c.id, tick, tileSnapshotWidth())} fallback={c.latestThumbId ? client.segmentThumbUrl(c.latestThumbId) : null} />
                   <span className="nvr-home__cam-name">
                     {c.name}
                     {c.recording && <i className={`nvr-camtile__dot${c.online ? '' : ' nvr-camtile__dot--off'}`} aria-hidden="true" />}
@@ -96,11 +96,20 @@ export function NvrHomeCard() {
   );
 }
 
-function HomeSnapshot({ src, fallback }: { src: string; fallback: string | null }) {
+// The loaded snapshot is also the camera page's poster (drawn at once instead of a grey stage) — crossOrigin keeps the
+// poster canvas untainted, the plugin answers with ACAO *.
+function HomeSnapshot({ camId, src, fallback }: { camId: string; src: string; fallback: string | null }) {
   const [failed, setFailed] = useState(0);
   const url = failed === 0 ? src : failed === 1 && fallback ? fallback : null;
   return url ? (
-    <img className="nvr-home__cam-img" src={url} alt="" onError={() => setFailed((f) => Math.min(2, f + 1))} />
+    <img
+      className="nvr-home__cam-img"
+      src={url}
+      alt=""
+      crossOrigin="anonymous"
+      onLoad={(e) => { if (failed === 0) rememberTileSnapshot(camId, e.currentTarget); }}
+      onError={() => setFailed((f) => Math.min(2, f + 1))}
+    />
   ) : (
     <span className="nvr-home__cam-img nvr-home__cam-ph" aria-hidden="true"><Camera size={22} strokeWidth={1.5} /></span>
   );
