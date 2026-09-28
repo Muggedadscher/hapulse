@@ -8,6 +8,8 @@ import { POOL_ENTITIES, POOL_REQUIRED_ENTITIES } from '../pool/poolConfig'; // [
 import { garageSummary, isGarageDoor } from '@hapulse/core'; // [fork]
 import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
 import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
+import { Lock, LockOpen } from 'lucide-react'; // [fork] locks chip
+import { lockSummary, lockSummaryText, lockTone } from '../security/lockLogic'; // [fork]
 import { SortableGrid } from '../ui/SortableGrid';
 import { SortableItem } from '../ui/SortableItem';
 import { applyStoredOrder } from '../../lib/order';
@@ -17,7 +19,7 @@ import type { HassEntityMap } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import './home.css';
 
-type ChipId = 'people' | 'lights' | 'doors' | 'alarm' | 'media' | 'pool' | 'garage'; // [fork] pool + garage chips; plain union (lint: const was type-only)
+type ChipId = 'people' | 'lights' | 'doors' | 'alarm' | 'media' | 'pool' | 'garage' | 'locks'; // [fork] pool + garage + locks chips; plain union (lint: const was type-only)
 
 interface SummaryChipsProps {
   entities: HassEntityMap;
@@ -94,6 +96,10 @@ export function SummaryChips({
   const garages = garageSummary(allEntities.filter(isGarageDoor));
   const garageTone = summaryTone(garages);
 
+  // [fork] Locks — chip shown only when there is at least one (hidden ones are already filtered out by the bar).
+  const locks = lockSummary(allEntities.filter((e) => e.entity_id.startsWith('lock.')));
+  const locksTone = lockTone(locks);
+
   type ChipDef = {
     id: ChipId;
     icon: React.ReactNode;
@@ -154,17 +160,27 @@ export function SummaryChips({
       alert: garageTone === 'unavailable',
       danger: garageTone === 'open',
     },
+    // [fork] Locks chip — red when a lock is open, amber when one is jammed or unreachable (same rule as the cards).
+    {
+      id: 'locks',
+      icon: locksTone === 'open' ? <LockOpen size={16} strokeWidth={1.75} /> : <Lock size={16} strokeWidth={1.75} />,
+      label: lockSummaryText(t, locks, t('home.summaryChips.locksAllLocked')),
+      active: locksTone !== 'locked',
+      alert: locksTone === 'problem',
+      danger: locksTone === 'open',
+    },
   ];
 
   // In edit mode: show all chip defs; otherwise filter to enabledChips,
   // and skip alarm chip when no alarm entity exists (matches original behavior).
   const visibleDefs = editMode
-    ? chipDefs.filter((c) => (c.id !== 'pool' || poolPresent) && (c.id !== 'garage' || garages.total > 0)) // [fork] hide phantom pool/garage chips
+    ? chipDefs.filter((c) => (c.id !== 'pool' || poolPresent) && (c.id !== 'garage' || garages.total > 0) && (c.id !== 'locks' || locks.total > 0)) // [fork] hide phantom pool/garage/locks chips
     : chipDefs.filter((c) => {
         if (!enabledChips.includes(c.id)) return false;
         if (c.id === 'alarm' && !alarm) return false;
         if (c.id === 'pool' && !poolPresent) return false; // [fork]
         if (c.id === 'garage' && garages.total === 0) return false; // [fork]
+        if (c.id === 'locks' && locks.total === 0) return false; // [fork]
         return true;
       });
 
@@ -186,6 +202,13 @@ export function SummaryChips({
     const withoutGarage = orderedIds.filter((id) => id !== 'garage');
     withoutGarage.splice(withoutGarage.indexOf('doors') + 1, 0, 'garage');
     orderedIds.splice(0, orderedIds.length, ...withoutGarage);
+  }
+  // [fork] And the locks chip: after the garage chip (else after doors) until the user moves it.
+  const locksAnchor = orderedIds.includes('garage') ? 'garage' : 'doors';
+  if (orderedIds.includes('locks') && orderedIds.includes(locksAnchor) && !order?.includes('locks')) {
+    const withoutLocks = orderedIds.filter((id) => id !== 'locks');
+    withoutLocks.splice(withoutLocks.indexOf(locksAnchor) + 1, 0, 'locks');
+    orderedIds.splice(0, orderedIds.length, ...withoutLocks);
   }
 
   const orderedDefs = orderedIds

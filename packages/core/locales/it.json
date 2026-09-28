@@ -1270,5 +1270,10 @@
   "pool.manual.leftMinutes": "min rimanenti",
   "pool.manual.leftHours": "h rimanenti",
   "globalSettings.mode.hintGlobal": "Per tutti gli utenti e i dispositivi",
-  "globalSettings.deviceMode.hint": "Solo questo dispositivo · «{follow}» = come «{mode}»"
+  "globalSettings.deviceMode.hint": "Solo questo dispositivo · «{follow}» = come «{mode}»",
+  "locks.problemCount.one": "{count} in errore",
+  "locks.problemCount.other": "{count} in errore",
+  "home.summaryChips.locksAllLocked": "tutte bloccate",
+  "locks.emptyTitle": "Nessuna serratura",
+  "locks.emptyDescription": "Qui compaiono le serrature di Home Assistant."
 }

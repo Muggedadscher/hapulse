@@ -19,6 +19,7 @@ import { useCameraCount } from '../../nvr/cameraSource'; // [fork]
 import { garageSummary, isGarageDoor } from '@hapulse/core'; // [fork]
 import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
 import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
+import { lockSummary, lockSummaryText, lockTone } from '../security/lockLogic'; // [fork]
 
 interface SecurityCardProps {
   entities: HassEntityMap;
@@ -61,7 +62,10 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
   // Locks
   const locks = all.filter((e) => e.entity_id.startsWith('lock.'));
-  const unlockedLocks = locks.filter((e) => e.state === 'unlocked');
+  // [fork] Shared rule with the chip and the hero: open → red, jammed/unreachable → amber, else calm.
+  const lockSum = lockSummary(locks);
+  const lockState = lockTone(lockSum);
+  const lockColor = lockState === 'locked' ? 'ok' : lockState === 'open' ? 'danger' : 'warn';
 
   // [fork] Garage doors / gates (cover device_class garage|gate) — like locks
   const garages = all.filter(isGarageDoor);
@@ -97,7 +101,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
   // Overall status: positive if alarm disarmed/absent, no unlocked locks, no active motion, no open sensors
   const anyAlert =
-    unlockedLocks.length > 0 ||
+    lockState !== 'locked' || // [fork] (was: only state 'unlocked')
     (garage.total > 0 && garageTone !== 'closed') || // [fork]
     activeMotion.length > 0 ||
     openDoors.length > 0 ||
@@ -162,12 +166,9 @@ export function SecurityCard({ entities }: SecurityCardProps) {
       {/* Locks */}
       {locks.length > 0 && (
         <div className="security-row">
-          <span
-            className={`security-row__dot${unlockedLocks.length === 0 ? ' security-row__dot--ok' : ' security-row__dot--danger'}`}
-            aria-hidden="true"
-          />
+          <span className={`security-row__dot security-row__dot--${lockColor}`} aria-hidden="true" />{/* [fork] */}
           <span className="security-row__icon" aria-hidden="true">
-            {unlockedLocks.length > 0
+            {lockState === 'open' /* [fork] */
               ? <Unlock size={15} strokeWidth={1.75} />
               : <Lock size={15} strokeWidth={1.75} />}
           </span>
@@ -176,12 +177,8 @@ export function SecurityCard({ entities }: SecurityCardProps) {
               ? (locks[0]!.attributes.friendly_name ?? t('home.security.doorFallback')).toString().replace(/_/g, ' ')
               : t('home.security.locksLabel')}
           </span>
-          <span
-            className={`security-row__value${unlockedLocks.length > 0 ? ' security-row__value--danger' : ' security-row__value--ok'}`}
-          >
-            {unlockedLocks.length > 0
-              ? t('home.security.unlockedCount', { count: unlockedLocks.length })
-              : t('home.security.allLocked')}
+          <span className={`security-row__value security-row__value--${lockColor}`}>{/* [fork] */}
+            {lockSummaryText(t, lockSum, t('home.security.allLocked'))}
           </span>
         </div>
       )}

@@ -1270,5 +1270,10 @@
   "pool.manual.leftMinutes": "min kvar",
   "pool.manual.leftHours": "tim kvar",
   "globalSettings.mode.hintGlobal": "För alla användare och enheter",
-  "globalSettings.deviceMode.hint": "Bara den här enheten · ”{follow}” = samma som ”{mode}”"
+  "globalSettings.deviceMode.hint": "Bara den här enheten · ”{follow}” = samma som ”{mode}”",
+  "locks.problemCount.one": "{count} med fel",
+  "locks.problemCount.other": "{count} med fel",
+  "home.summaryChips.locksAllLocked": "allt låst",
+  "locks.emptyTitle": "Inga lås",
+  "locks.emptyDescription": "Här visas låsen från Home Assistant."
 }

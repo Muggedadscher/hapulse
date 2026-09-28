@@ -161,6 +161,8 @@ export interface CustomizationSettings {
   poolChipMigrated: boolean;
   /** [fork] Same one-time marker for the garage summary chip (garage doors / gates). */
   garageChipMigrated: boolean;
+  /** [fork] Same one-time marker for the locks summary chip. */
+  locksChipMigrated: boolean;
   /**
    * [fork] One-time marker: the waste-collection card has been slotted into a
    * pre-existing `homeSectionOrder`. Gives it a sensible default position (after
@@ -198,6 +200,14 @@ export function migrateGarageChip(cust: CustomizationSettings): CustomizationSet
   const homeChips =
     cust.homeChips.length === 0 || cust.homeChips.includes('garage') ? cust.homeChips : [...cust.homeChips, 'garage'];
   return { ...cust, homeChips, garageChipMigrated: true };
+}
+
+/** [fork] Same for the locks chip. Empty = "all" stays empty. Idempotent via the marker. */
+export function migrateLocksChip(cust: CustomizationSettings): CustomizationSettings {
+  if (cust.locksChipMigrated) return cust;
+  const homeChips =
+    cust.homeChips.length === 0 || cust.homeChips.includes('locks') ? cust.homeChips : [...cust.homeChips, 'locks'];
+  return { ...cust, homeChips, locksChipMigrated: true };
 }
 
 /**
@@ -311,7 +321,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   hiddenRooms: [],
   hiddenEntities: [],
   entityOverrides: {},
-  homeChips: ['people', 'lights', 'doors', 'alarm', 'media', 'pool', 'garage'], // [fork] pool + garage chips
+  homeChips: ['people', 'lights', 'doors', 'alarm', 'media', 'pool', 'garage', 'locks'], // [fork] pool + garage + locks chips
   entityOrder: {},
   favorites: [],
   weatherEntity: '',
@@ -359,6 +369,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   detailHistoryRange: '24h', // [fork]
   poolChipMigrated: false, // [fork]
   garageChipMigrated: false, // [fork]
+  locksChipMigrated: false, // [fork]
   wasteSectionMigrated: false, // [fork]
   nvrSectionMigrated: false, // [fork]
   navOrderV2Migrated: false, // [fork]
@@ -419,6 +430,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
         if (incoming.homeChips) {
           incoming.poolChipMigrated ??= false;
           incoming.garageChipMigrated ??= false;
+          incoming.locksChipMigrated ??= false;
         }
         const migrated = migrateTheme(payload.theme);
         set({
@@ -428,10 +440,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           appName: typeof payload.appName === 'string' ? payload.appName : undefined,
           appIcon: typeof payload.appIcon === 'string' ? payload.appIcon : undefined,
           appIconHidden: typeof payload.appIconHidden === 'boolean' ? payload.appIconHidden : false,
-          customization: migrateNavOrderV2(migrateNvrSection(migrateWasteSection(migrateGarageChip(migratePoolChip({
+          customization: migrateNavOrderV2(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({
             ...cur.customization,
             ...incoming,
-          }))))),
+          })))))), // [fork] + migrateLocksChip
         });
       },
 
@@ -571,14 +583,14 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
+            customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
               scryptedToken,
               maToken,
               entityOrder,
               favorites,
-            })))))),
+            }))))))), // [fork] + migrateLocksChip
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -623,10 +635,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           theme: migrated?.theme ?? current.theme,
           mode,
           modeOverride: isThemeMode(p.modeOverride) ? p.modeOverride : null, // [fork]
-          customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
+          customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),
-          })))))),
+          }))))))), // [fork] + migrateLocksChip
         };
       },
     }

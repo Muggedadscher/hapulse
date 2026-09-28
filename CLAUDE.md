@@ -119,6 +119,11 @@ sauber übernehmen können.
   `lib/defaultSlot.ts`. Chip-Marker `garageChipMigrated` (wie `poolChipMigrated`); `applyGlobal`
   behandelt einen fehlenden Marker im Admin-Dokument als `false`. `binary_sensor` `garage_door`
   bleibt ein Tür-Sensor (Türen-Chip/-Sektion). Labor-Probe CT 213: `/root/lab/hp-garage-test.cjs`.
+- **Schloss-Chip** (wie Garage): Home-Chip `'locks'` + `LocksModal` (Zeilen aus `LocksList`: Entriegeln fragt immer,
+  Verriegeln nur bei Code-Schlössern). Gemeinsame Regel `lockSummary`/`lockTone`/`lockSummaryText` in
+  `components/security/lockLogic.ts` für Chip, Home-`SecurityCard` und `SecurityHeroCard`: offen (auch fahrend) = rot,
+  `jammed`/`unavailable`/`unknown` = gelb „Störung“, nie „alle verriegelt“. Marker `locksChipMigrated` (wie Garage),
+  Standardplatz nach dem Garagen-Chip (sonst nach Türen). Labor-Probe CT 213: `/root/lab/hp-locks-chip.cjs`.
 
 - **Zahlen immer sprachabhängig**: Angezeigte Zahlen nur über `formatNumber` (`@hapulse/core`,
   `numberFormat.ts`) bzw. `formatEntityState(entity, locale)` — nie `toFixed`/`${n}` in UI-Text

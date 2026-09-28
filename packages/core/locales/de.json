@@ -1270,5 +1270,10 @@
   "pool.manual.leftMinutes": "Min. übrig",
   "pool.manual.leftHours": "Std. übrig",
   "globalSettings.mode.hintGlobal": "Für alle Nutzer und Geräte",
-  "globalSettings.deviceMode.hint": "Nur dieses Gerät · „{follow}“ = wie „{mode}“"
+  "globalSettings.deviceMode.hint": "Nur dieses Gerät · „{follow}“ = wie „{mode}“",
+  "locks.problemCount.one": "{count} Störung",
+  "locks.problemCount.other": "{count} Störungen",
+  "home.summaryChips.locksAllLocked": "alle verriegelt",
+  "locks.emptyTitle": "Keine Schlösser",
+  "locks.emptyDescription": "Hier erscheinen die Schlösser aus Home Assistant."
 }

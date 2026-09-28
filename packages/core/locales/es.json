@@ -1270,5 +1270,10 @@
   "pool.manual.leftMinutes": "min restantes",
   "pool.manual.leftHours": "h restantes",
   "globalSettings.mode.hintGlobal": "Para todos los usuarios y dispositivos",
-  "globalSettings.deviceMode.hint": "Solo este dispositivo · «{follow}» = igual que «{mode}»"
+  "globalSettings.deviceMode.hint": "Solo este dispositivo · «{follow}» = igual que «{mode}»",
+  "locks.problemCount.one": "{count} con fallo",
+  "locks.problemCount.other": "{count} con fallo",
+  "home.summaryChips.locksAllLocked": "todas bloqueadas",
+  "locks.emptyTitle": "No hay cerraduras",
+  "locks.emptyDescription": "Aquí aparecen las cerraduras de Home Assistant."
 }

@@ -1270,5 +1270,10 @@
   "pool.manual.leftMinutes": "min left",
   "pool.manual.leftHours": "h left",
   "globalSettings.mode.hintGlobal": "For all users and devices",
-  "globalSettings.deviceMode.hint": "Only this device · “{follow}” = same as “{mode}”"
+  "globalSettings.deviceMode.hint": "Only this device · “{follow}” = same as “{mode}”",
+  "locks.problemCount.one": "{count} fault",
+  "locks.problemCount.other": "{count} faults",
+  "home.summaryChips.locksAllLocked": "all locked",
+  "locks.emptyTitle": "No locks",
+  "locks.emptyDescription": "Locks from Home Assistant appear here."
 }
