@@ -6,6 +6,20 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F12 — 2026-09-28
+
+**Bild-in-Bild in der Home-Bildschirm-App** · _Picture-in-picture in the Home Screen app_
+
+### Geändert / Changed
+
+- Bild-in-Bild sperrt Apple in Home-Bildschirm-Apps auf iPhone und iPad — der Knopf sagt das jetzt und öffnet die Kamera auf Wunsch in Safari, wo es geht  
+  _Apple blocks picture-in-picture in Home Screen apps on iPhone and iPad — the button now says so and can open the camera in Safari, where it works_
+
+### Behoben / Fixed
+
+- NVR: Die Speicherwarnung und der Hinweis „Kompatibilitätsmodus“ erschienen als interner Text statt übersetzt  
+  _NVR: the storage warning and the “compatibility mode” label showed an internal key instead of the text_
+
 ## F11 — 2026-09-28
 
 **Schloss-Chip und Feinschliff** · _Locks chip and polish_

@@ -119,6 +119,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/lib/defaultSlot.ts` | Standardplatz neuer Sektionen in älteren gespeicherten Reihenfolgen |
 | `packages/core/src/forkChangelog.ts`, `packages/core/scripts/gen-fork-changelog.mjs`, `CHANGELOG.fork.md` | Eigene Releases F1, F2, … (DE + EN) + generierte Markdown-Fassung |
 | `apps/dashboard/src/components/changelog/{ForkChangelogModal.tsx,forkEntries.ts}`, `test/forkChangelog.test.ts` | Changelog-Anzeige mit Upstream- und Fork-Releases, Kompaktansicht |
+| `apps/dashboard/test/nvrLocales.test.ts` | Jeder `nvr.*`-Schlüssel des Pakets `@sentinel-nvr/web` existiert in HAPulses Locales (sonst erscheint er roh) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
