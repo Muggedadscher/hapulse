@@ -302,6 +302,16 @@
   transition: background 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out;
 }
 
+/* [fork] Equal columns as wide as the LONGEST label. With `flex: 1` in an inline-flex every button got the
+   average width, so a longer label ("Vorgabe") overflowed its button and stuck to the left edge. */
+.mode-toggle { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; } /* [fork] */
+.mode-toggle__btn { white-space: nowrap; } /* [fork] */
+/* [fork] Phones: the row wraps (label above), the toggle takes the full row and its columns may shrink. */
+@media (max-width: 480px) {
+  .settings-card__row--inline > .mode-toggle { width: 100%; grid-auto-columns: minmax(0, 1fr); }
+  .settings-card__row--inline > .mode-toggle .mode-toggle__btn { min-width: 0; padding: 0.375rem 0.25rem; }
+}
+
 .mode-toggle__btn:hover:not(.mode-toggle__btn--active) {
   color: var(--text);
 }

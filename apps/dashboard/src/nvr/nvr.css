@@ -4,7 +4,11 @@
 
 /* ---- Page scaffolding ---------------------------------------------------- */
 .nvr-actions { display: flex; align-items: center; gap: 0.5rem; }
-.nvr-actions__btn { padding: 0.5rem 0.875rem; min-height: 40px; font-size: 0.875rem; }
+/* The global `.btn` rule (padding 1.25rem, min-height 44px) may load AFTER this file — it does since the shared nvr
+   chunk became eager (49ea232) — and then won at equal specificity: on phones the 40-px box kept 2×20 px padding and
+   squeezed the icon to 0 px. The overrides therefore carry the `.btn` class too instead of relying on file order. */
+.btn.nvr-actions__btn { padding: 0.5rem 0.875rem; min-height: 40px; font-size: 0.875rem; }
+.btn.nvr-actions__btn svg { flex-shrink: 0; }
 .nvr-layout { display: flex; flex-direction: column; gap: 1rem; }
 .nvr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; align-items: start; }
 .nvr-section { display: flex; flex-direction: column; gap: 0.625rem; }
@@ -20,7 +24,10 @@
 
 @media (max-width: 900px) {
   .nvr-actions__label { display: none; }
-  .nvr-actions__btn { padding: 0.5rem; width: 40px; }
+  /* icon only — looks like its neighbours (IconButton ghost, 40×40, no frame, 18-px glyph) */
+  .btn.nvr-actions__btn { padding: 0; width: 40px; height: 40px; min-height: 40px; border-color: transparent; color: var(--text-faint); }
+  .btn.nvr-actions__btn:hover { background: var(--accent-soft); color: var(--accent); }
+  .btn.nvr-actions__btn svg { width: 18px; height: 18px; }
 }
 
 /* ---- Setup card / modal --------------------------------------------------- */
@@ -44,8 +51,9 @@
 .nvr-setup__hint { font-size: 0.8125rem; line-height: 1.5; color: var(--text-faint); max-width: 48ch; margin-top: 0.5rem; }
 .modal-body .nvr-setup__hint { max-width: none; }
 /* token / Scrypted-account switch (segmented control like Settings' mode toggle — Settings.css is page-scoped) */
-.nvr-setup__mode { display: inline-flex; align-self: flex-start; gap: 0.1875rem; padding: 0.1875rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-control); }
-.nvr-setup__mode .mode-toggle__btn { flex: 1; min-width: 68px; min-height: 34px; padding: 0.375rem 0.875rem; border: none; background: transparent; color: var(--text-dim); font-family: var(--font-body); font-size: 0.875rem; font-weight: 500; border-radius: calc(var(--radius-control) - 4px); cursor: pointer; transition: background 160ms ease-out, color 160ms ease-out; }
+/* equal columns as wide as the longest label — same model as Settings' .mode-toggle, so file order never matters */
+.nvr-setup__mode { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; align-self: flex-start; gap: 0.1875rem; padding: 0.1875rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-control); }
+.nvr-setup__mode .mode-toggle__btn { white-space: nowrap; min-width: 68px; min-height: 34px; padding: 0.375rem 0.875rem; border: none; background: transparent; color: var(--text-dim); font-family: var(--font-body); font-size: 0.875rem; font-weight: 500; border-radius: calc(var(--radius-control) - 4px); cursor: pointer; transition: background 160ms ease-out, color 160ms ease-out; }
 .nvr-setup__mode .mode-toggle__btn--active { background: var(--bg-card); color: var(--text); box-shadow: 0 1px 3px rgba(16,24,40,0.10), 0 1px 2px rgba(16,24,40,0.06); }
 .nvr-setup__hint--inline { margin-top: 0; max-width: none; }
 

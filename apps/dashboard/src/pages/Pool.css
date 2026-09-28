@@ -348,7 +348,8 @@
   line-height: 1.05;
 }
 
-/* Keep the value inside the ring's hole (it used to touch/overrun the stroke). */
+/* Keep the texts inside the ring's hole (~100 px wide at the value's height): the value stays one short line (the
+   manual ring puts its unit into the secondary line — "18:30 min" overran the stroke), the secondary line may wrap. */
 .pool-gauge__center { padding: 0 16px; }
 .pool-gauge__primary { white-space: nowrap; }
 

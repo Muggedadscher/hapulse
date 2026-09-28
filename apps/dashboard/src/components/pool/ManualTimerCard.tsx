@@ -79,8 +79,9 @@ export function ManualTimerCard() {
             <PoolGauge
               value={info.fraction}
               color="var(--info)"
-              primary={<span className="data-font">{ring.value}<span className="pool-gauge__unit"> {ring.unit}</span></span>}
-              secondary={t('pool.manual.remaining')}
+              // The unit sits in the line below: "18:30 min" in one line was wider than the ring's hole.
+              primary={<span className="data-font">{ring.value}</span>}
+              secondary={t(ring.unit === 'h' ? 'pool.manual.leftHours' : 'pool.manual.leftMinutes')}
             />
             {endLabel && (
               <p className="pool-manual__until">{endLabel}</p>

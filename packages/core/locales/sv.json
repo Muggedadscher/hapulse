@@ -1266,5 +1266,9 @@
   "security.section.hideMobile.garage": "dölj Garageportar på mobil",
   "security.section.showMobile.garage": "visa Garageportar på mobil",
   "room.section.label.garage": "Garageportar",
-  "room.section.dragReorder.garage": "Dra för att ändra ordning på sektionen Garageportar"
+  "room.section.dragReorder.garage": "Dra för att ändra ordning på sektionen Garageportar",
+  "pool.manual.leftMinutes": "min kvar",
+  "pool.manual.leftHours": "tim kvar",
+  "globalSettings.mode.hintGlobal": "För alla användare och enheter",
+  "globalSettings.deviceMode.hint": "Bara den här enheten · ”{follow}” = samma som ”{mode}”"
 }

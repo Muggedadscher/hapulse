@@ -1266,5 +1266,9 @@
   "security.section.hideMobile.garage": "hide Garage doors on mobile",
   "security.section.showMobile.garage": "show Garage doors on mobile",
   "room.section.label.garage": "Garage doors",
-  "room.section.dragReorder.garage": "Drag to reorder Garage doors section"
+  "room.section.dragReorder.garage": "Drag to reorder Garage doors section",
+  "pool.manual.leftMinutes": "min left",
+  "pool.manual.leftHours": "h left",
+  "globalSettings.mode.hintGlobal": "For all users and devices",
+  "globalSettings.deviceMode.hint": "Only this device · “{follow}” = same as “{mode}”"
 }
