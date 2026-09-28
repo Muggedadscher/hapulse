@@ -1220,7 +1220,7 @@
   "globalSettings.admin.exists": "Un autre administrateur l'a déjà configuré — ses réglages s'appliquent désormais.",
   "globalSettings.admin.failed": "Échec — Home Assistant est injoignable.",
   "globalSettings.deviceMode.label": "Clair/sombre sur cet appareil",
-  "globalSettings.deviceMode.follow": "Par défaut",
+  "globalSettings.deviceMode.follow": "Global",
   "globalSettings.backup.adminConfirm": "Les réglages importés s'appliqueront à tous les utilisateurs. Continuer ?",
   "globalSettings.backup.userOnlyHint": "L'import ne reprend que vos propres réglages (favoris, langue…) ; le reste est géré par votre administrateur.",
   "globalSettings.favorite.add": "Ajouter aux favoris",
@@ -1266,5 +1266,9 @@
   "security.section.hideMobile.garage": "masquer Portes de garage sur mobile",
   "security.section.showMobile.garage": "afficher Portes de garage sur mobile",
   "room.section.label.garage": "Portes de garage",
-  "room.section.dragReorder.garage": "Faites glisser pour réorganiser la section Portes de garage"
+  "room.section.dragReorder.garage": "Faites glisser pour réorganiser la section Portes de garage",
+  "pool.manual.leftMinutes": "min restantes",
+  "pool.manual.leftHours": "h restantes",
+  "globalSettings.mode.hintGlobal": "Pour tous les utilisateurs et appareils",
+  "globalSettings.deviceMode.hint": "Uniquement cet appareil · « {follow} » = comme « {mode} »"
 }

@@ -4,7 +4,7 @@ import { keepDeviceSecrets, migrateUrlToken, originOf, splitUrlToken } from '../
 const cur = {
   scryptedUrl: 'https://nvr.example.de/endpoint/@local/sentinel-nvr/public/',
   scryptedToken: 'LOCALTOKEN',
-  maServerUrl: 'http://192.168.2.50:8095',
+  maServerUrl: 'http://192.0.2.50:8095',
   maToken: 'MATOKEN',
 };
 

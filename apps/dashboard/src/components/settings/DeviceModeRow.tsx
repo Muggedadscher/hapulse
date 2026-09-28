@@ -8,6 +8,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import type { ThemeMode } from '../../theme/themes';
 import { useT } from '../../i18n/useT';
 import type { TKey } from '../../i18n/useT';
+import './GlobalSettings.css';
 
 const OPTIONS: { id: ThemeMode | null; labelKey: TKey }[] = [
   { id: null, labelKey: 'globalSettings.deviceMode.follow' },
@@ -41,6 +42,12 @@ export function DeviceModeRow() {
           </button>
         ))}
       </div>
+      <p className="managed-row-hint">
+        {t('globalSettings.deviceMode.hint', {
+          follow: t('globalSettings.deviceMode.follow'),
+          mode: t('settings.appearance.mode.label'),
+        })}
+      </p>
     </div>
   );
 }

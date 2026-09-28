@@ -1220,7 +1220,7 @@
   "globalSettings.admin.exists": "Outro administrador já configurou isto — agora valem as definições dele.",
   "globalSettings.admin.failed": "Não funcionou — o Home Assistant não está acessível.",
   "globalSettings.deviceMode.label": "Claro/escuro neste dispositivo",
-  "globalSettings.deviceMode.follow": "Predefinido",
+  "globalSettings.deviceMode.follow": "Global",
   "globalSettings.backup.adminConfirm": "As definições importadas passam a valer para todos os utilizadores. Continuar?",
   "globalSettings.backup.userOnlyHint": "A importação só traz as suas próprias definições (favoritos, idioma…); o resto é gerido pelo administrador.",
   "globalSettings.favorite.add": "Adicionar aos favoritos",
@@ -1266,5 +1266,9 @@
   "security.section.hideMobile.garage": "ocultar Portões de garagem no celular",
   "security.section.showMobile.garage": "mostrar Portões de garagem no celular",
   "room.section.label.garage": "Portões de garagem",
-  "room.section.dragReorder.garage": "Arraste para reordenar a seção Portões de garagem"
+  "room.section.dragReorder.garage": "Arraste para reordenar a seção Portões de garagem",
+  "pool.manual.leftMinutes": "min restantes",
+  "pool.manual.leftHours": "h restantes",
+  "globalSettings.mode.hintGlobal": "Para todos os utilizadores e dispositivos",
+  "globalSettings.deviceMode.hint": "Só este dispositivo · «{follow}» = igual a «{mode}»"
 }

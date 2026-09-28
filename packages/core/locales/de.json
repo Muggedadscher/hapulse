@@ -1266,5 +1266,9 @@
   "security.section.hideMobile.garage": "Garagentore mobil ausblenden",
   "security.section.showMobile.garage": "Garagentore mobil einblenden",
   "room.section.label.garage": "Garagentore",
-  "room.section.dragReorder.garage": "Ziehen, um den Bereich Garagentore neu anzuordnen"
+  "room.section.dragReorder.garage": "Ziehen, um den Bereich Garagentore neu anzuordnen",
+  "pool.manual.leftMinutes": "Min. übrig",
+  "pool.manual.leftHours": "Std. übrig",
+  "globalSettings.mode.hintGlobal": "Für alle Nutzer und Geräte",
+  "globalSettings.deviceMode.hint": "Nur dieses Gerät · „{follow}“ = wie „{mode}“"
 }

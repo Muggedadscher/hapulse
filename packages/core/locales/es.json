@@ -1220,7 +1220,7 @@
   "globalSettings.admin.exists": "Otro administrador ya lo ha configurado; ahora se aplican sus ajustes.",
   "globalSettings.admin.failed": "No ha funcionado: no se pudo contactar con Home Assistant.",
   "globalSettings.deviceMode.label": "Claro/oscuro en este dispositivo",
-  "globalSettings.deviceMode.follow": "Por defecto",
+  "globalSettings.deviceMode.follow": "Global",
   "globalSettings.backup.adminConfirm": "Los ajustes importados se aplicarán a todos los usuarios. ¿Continuar?",
   "globalSettings.backup.userOnlyHint": "La importación solo trae tus propios ajustes (favoritos, idioma…); el resto lo gestiona tu administrador.",
   "globalSettings.favorite.add": "Añadir a favoritos",
@@ -1266,5 +1266,9 @@
   "security.section.hideMobile.garage": "ocultar Puertas de garaje en móvil",
   "security.section.showMobile.garage": "mostrar Puertas de garaje en móvil",
   "room.section.label.garage": "Puertas de garaje",
-  "room.section.dragReorder.garage": "Arrastra para reordenar la sección Puertas de garaje"
+  "room.section.dragReorder.garage": "Arrastra para reordenar la sección Puertas de garaje",
+  "pool.manual.leftMinutes": "min restantes",
+  "pool.manual.leftHours": "h restantes",
+  "globalSettings.mode.hintGlobal": "Para todos los usuarios y dispositivos",
+  "globalSettings.deviceMode.hint": "Solo este dispositivo · «{follow}» = igual que «{mode}»"
 }

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import { useSettingsStore } from '../stores/settingsStore';
+import { effectiveMode } from '../stores/settingsStore'; // [fork]
 import { useConnectionStore } from '../stores/connectionStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
@@ -281,12 +282,13 @@ function AppearanceSection() {
   const setAppIconHidden = useSettingsStore((s) => s.setAppIconHidden);
   const locked = useSettingsLocked(); // [fork] shared settings read-only for non-admins
   const managed = useIsManaged(); // [fork]
+  const modeOverride = useSettingsStore((s) => s.modeOverride); // [fork] light/dark of THIS device
 
   const activeIcon: AppIconId = (APP_ICON_IDS as readonly string[]).includes(appIcon ?? '')
     ? (appIcon as AppIconId)
     : 'pulse';
 
-  const resolved = resolveMode(mode);
+  const resolved = resolveMode(effectiveMode({ mode, modeOverride })); // [fork] previews follow what this device shows
 
   function getDefaultHue(t: ThemeName): number {
     const accent = THEMES[t][resolved].accent;
@@ -429,10 +431,12 @@ function AppearanceSection() {
               </button>
             ))}
           </div>
+          {managed && <p className="managed-row-hint">{t('globalSettings.mode.hintGlobal')}</p>}{/* [fork] */}
         </div>
 
         </fieldset>{/* [fork] */}
-        {managed && <DeviceModeRow />}{/* [fork] light/dark per device */}
+        {/* [fork] light/dark per device — also while a leftover override exists after management ended (to reset it) */}
+        {(managed || modeOverride != null) && <DeviceModeRow />}
 
         {/* Language row */}
         <div className="settings-card__row settings-card__row--inline">

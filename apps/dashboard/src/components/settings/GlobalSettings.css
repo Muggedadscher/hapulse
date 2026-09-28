@@ -10,6 +10,21 @@
   border-bottom: 1px solid var(--line);
 }
 
+/* One-line explanation under an inline settings row (label + control): takes its own line, aligned with the label
+   text after the 28-px icon chip. On phones the control wraps under the label, so the hint starts at the edge. */
+.managed-row-hint {
+  flex-basis: 100%;
+  margin: -0.375rem 0 0;
+  padding-left: calc(28px + 0.625rem);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
+@media (max-width: 480px) {
+  .managed-row-hint { padding-left: 0; }
+}
+
 /* A fieldset only to disable a block of controls at once — no visual box. */
 .managed-fieldset {
   border: 0;
