@@ -1275,5 +1275,8 @@
   "locks.problemCount.other": "{count} con fallo",
   "home.summaryChips.locksAllLocked": "todas bloqueadas",
   "locks.emptyTitle": "No hay cerraduras",
-  "locks.emptyDescription": "Aquí aparecen las cerraduras de Home Assistant."
+  "locks.emptyDescription": "Aquí aparecen las cerraduras de Home Assistant.",
+  "changelog.fork.badge": "Fork",
+  "changelog.fork.alsoNew": "También nuevo",
+  "changelog.fork.allDetails": "Todos los detalles"
 }

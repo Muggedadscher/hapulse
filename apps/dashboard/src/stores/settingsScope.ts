@@ -23,7 +23,7 @@ export const USER_CUSTOMIZATION_KEYS = ['favorites', 'libraryPlayerId', 'detailH
 export const SECRET_CUSTOMIZATION_KEYS = ['scryptedToken', 'maToken'] as const;
 export const GLOBAL_TOP_KEYS = ['theme', 'mode', 'accentHue', 'appName', 'appIcon', 'appIconHidden'] as const;
 export const USER_TOP_KEYS = ['language', 'userName'] as const;
-export const DEVICE_TOP_KEYS = ['sidebarCollapsed', 'lastSeenVersion', 'modeOverride'] as const;
+export const DEVICE_TOP_KEYS = ['sidebarCollapsed', 'lastSeenVersion', 'modeOverride', 'lastSeenFork'] as const;
 
 type UserCustomizationKey = (typeof USER_CUSTOMIZATION_KEYS)[number];
 type SecretCustomizationKey = (typeof SECRET_CUSTOMIZATION_KEYS)[number];

@@ -21,13 +21,14 @@ import { useRooms, useCurrentUserAvatar, useCanEdit } from '../ha/hooks';
 import { THEMES, THEME_NAMES, resolveMode } from '../theme/themes';
 import type { ThemeName, ThemeMode } from '../theme/themes';
 import { LOCALES, LOCALE_LABELS, CURRENT_VERSION } from '@hapulse/core';
+import { CURRENT_FORK_VERSION, forkLabel } from '@hapulse/core'; // [fork]
 import type { Room, HassEntity, Locale } from '@hapulse/core';
 import { isDefaultPersistenceAdapter } from '../persistence';
 
 import { useT } from '../i18n/useT';
 import type { TKey, TFunction } from '../i18n/useT';
 import { Card } from '../components/ui/Card';
-import { ChangelogModal } from '../components/changelog/ChangelogModal';
+import { ForkChangelogModal } from '../components/changelog/ForkChangelogModal'; // [fork] upstream + fork releases
 import { Modal } from '../components/ui/Modal';
 import { SectionLabel } from '../components/ui/SectionLabel';
 import { UserAvatar } from '../components/ui/UserAvatar';
@@ -1010,7 +1011,7 @@ function AboutSection() {
           </span>
           <div className="about-card__title">HAPulse</div>
         </div>
-        <div className="about-card__sub">{t('settings.about.version', { version: CURRENT_VERSION })}</div>
+        <div className="about-card__sub">{t('settings.about.version', { version: `${CURRENT_VERSION} · ${forkLabel(CURRENT_FORK_VERSION)}` })}{/* [fork] */}</div>
         <div className="about-card__sub">{t('settings.about.tagline')}</div>
         <button
           type="button"
@@ -1032,11 +1033,11 @@ function AboutSection() {
         </a>
       </Card>
 
-      <ChangelogModal
+      <ForkChangelogModal
         open={changelogOpen}
         onClose={() => setChangelogOpen(false)}
         mode="history"
-      />
+      />{/* [fork] */}
     </section>
   );
 }

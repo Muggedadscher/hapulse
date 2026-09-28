@@ -28,7 +28,8 @@ const KIND_META: Record<ChangeKind, { icon: typeof Plus; labelKey: TKey; tone: s
   fixed:   { icon: Wrench,    labelKey: 'changelog.kind.fixed',   tone: 'accent' },
 };
 
-function ReleaseEntry({ release, locale }: { release: Release; locale: string }) {
+// [fork] exported (+ optional badge) so ForkChangelogModal renders fork and upstream releases alike
+export function ReleaseEntry({ release, locale, badge }: { release: Release; locale: string; badge?: string | undefined }) {
   const t = useT();
   // Parsed as UTC so the date never slips a day for users behind UTC.
   const formattedDate = useMemo(() => {
@@ -43,6 +44,7 @@ function ReleaseEntry({ release, locale }: { release: Release; locale: string })
       <header className="changelog-release__header">
         <span className="changelog-release__version">{release.version}</span>
         <span className="changelog-release__date">{formattedDate}</span>
+        {badge && <span className="changelog-release__badge">{badge}</span>}{/* [fork] */}
       </header>
       <h3 className="changelog-release__title">{release.title}</h3>
 

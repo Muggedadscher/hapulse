@@ -229,3 +229,7 @@ export {
   garageMdiIcon,
 } from './garage.js';
 export type { GarageStatus, GarageService, GarageSummary } from './garage.js';
+
+// [fork] Release notes of the fork's own extensions (F1, F2, …) — shown next to upstream's
+export { FORK_RELEASES, CURRENT_FORK_VERSION, forkLabel, forkReleasesSince, pickText, renderForkChangelogMarkdown } from './forkChangelog.js';
+export type { ForkRelease, ForkReleaseSection, ForkText } from './forkChangelog.js';

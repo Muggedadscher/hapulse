@@ -1275,5 +1275,8 @@
   "locks.problemCount.other": "{count} en défaut",
   "home.summaryChips.locksAllLocked": "tout verrouillé",
   "locks.emptyTitle": "Aucune serrure",
-  "locks.emptyDescription": "Les serrures de Home Assistant apparaissent ici."
+  "locks.emptyDescription": "Les serrures de Home Assistant apparaissent ici.",
+  "changelog.fork.badge": "Fork",
+  "changelog.fork.alsoNew": "Également nouveau",
+  "changelog.fork.allDetails": "Tous les détails"
 }

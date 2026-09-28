@@ -1275,5 +1275,8 @@
   "locks.problemCount.other": "{count} in errore",
   "home.summaryChips.locksAllLocked": "tutte bloccate",
   "locks.emptyTitle": "Nessuna serratura",
-  "locks.emptyDescription": "Qui compaiono le serrature di Home Assistant."
+  "locks.emptyDescription": "Qui compaiono le serrature di Home Assistant.",
+  "changelog.fork.badge": "Fork",
+  "changelog.fork.alsoNew": "Anche nuovo",
+  "changelog.fork.allDetails": "Tutti i dettagli"
 }

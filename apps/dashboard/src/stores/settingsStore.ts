@@ -10,6 +10,7 @@ import { THEME_NAMES } from '../theme/themes';
 import type { ThemeName, ThemeMode } from '../theme/themes';
 import { dynamicJSONStorage } from '../persistence/zustandStorage';
 import { LOCALES, CURRENT_VERSION } from '@hapulse/core';
+import { CURRENT_FORK_VERSION } from '@hapulse/core'; // [fork]
 import type { Locale } from '@hapulse/core';
 import { keepDeviceSecrets, migrateUrlToken, splitUrlToken } from './settingsSecrets'; // [fork]
 import { sanitizeCustomization } from './settingsSanitize'; // [fork]
@@ -282,6 +283,12 @@ interface SettingsState {
    * default, a device may deviate, e.g. a wall tablet). null = follow `mode`. Never synced/exported.
    */
   modeOverride: ThemeMode | null;
+  /**
+   * [fork] Newest FORK release (F<n>, forkChangelog.ts) this device has seen — the What's New modal shows upstream
+   * releases newer than `lastSeenVersion` AND fork releases newer than this. Device-only (never exported/synced);
+   * a fresh install starts at CURRENT_FORK_VERSION, an install from before this field at 0 (sees all once).
+   */
+  lastSeenFork: number;
 }
 
 interface SettingsActions {
@@ -394,6 +401,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       language: 'auto',
       lastSeenVersion: CURRENT_VERSION,
       modeOverride: null, // [fork]
+      lastSeenFork: CURRENT_FORK_VERSION, // [fork]
 
       setTheme(theme) {
         set({ theme });
@@ -408,7 +416,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       },
 
       markVersionSeen() {
-        set({ lastSeenVersion: CURRENT_VERSION });
+        set({ lastSeenVersion: CURRENT_VERSION, lastSeenFork: CURRENT_FORK_VERSION }); // [fork] + lastSeenFork
       },
 
       // [fork] ---- global admin management (ha/globalSettings.ts) ----
@@ -626,8 +634,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
         // changelog so the What's New modal has something to show. A fresh
         // install never reaches `merge` (there is nothing persisted) and keeps
         // the CURRENT_VERSION default instead.
-        const lastSeenVersion =
-          typeof p.lastSeenVersion === 'string' ? p.lastSeenVersion : '1.0.0';
+        // [fork] …except zustand's persist DOES call `merge` with `undefined` when nothing is stored, so a fresh
+        // install got 1.1.0–1.3.2 as "new" on its first start (lab probe hp-changelog-test.cjs); keep the default there.
+        const lastSeenVersion = persisted == null ? current.lastSeenVersion // [fork]
+          : typeof p.lastSeenVersion === 'string' ? p.lastSeenVersion : '1.0.0';
         return {
           ...current,
           ...p,
@@ -635,6 +645,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           theme: migrated?.theme ?? current.theme,
           mode,
           modeOverride: isThemeMode(p.modeOverride) ? p.modeOverride : null, // [fork]
+          // [fork] Nothing persisted = fresh install → nothing to catch up on; a persisted state without the field
+          // predates the fork changelog → 0 (its notes show once).
+          lastSeenFork: persisted == null
+            ? current.lastSeenFork
+            : Number.isInteger(p.lastSeenFork) && (p.lastSeenFork as number) >= 0 ? (p.lastSeenFork as number) : 0,
           customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),

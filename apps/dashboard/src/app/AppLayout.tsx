@@ -47,7 +47,7 @@ import { EditBadge } from '../components/ui/EditBadge';
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { WeatherModal } from '../components/home/chipmodals';
 import { NotificationsPanel } from '../components/notifications/NotificationsPanel';
-import { ChangelogModal } from '../components/changelog/ChangelogModal';
+import { ForkChangelogModal } from '../components/changelog/ForkChangelogModal'; // [fork] upstream + fork releases
 import { EntityDetailModal } from '../components/home/EntityDetailModal';
 import { Toaster } from '../components/ui/Toaster'; // [fork]
 import { useConnectionStatus, useWeatherEntity, useCurrentUserAvatar } from '../ha/hooks';
@@ -56,6 +56,7 @@ import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
 import { releasesSince, indexSystemMonitor, pickSystemMetrics, formatNumber } from '@hapulse/core'; // [fork] formatNumber
+import { forkReleasesSince } from '@hapulse/core'; // [fork]
 import { useT, useStateLabel, useLocale } from '../i18n/useT'; // [fork] useLocale
 import type { TKey } from '../i18n/useT';
 import './AppLayout.css';
@@ -330,12 +331,13 @@ export function AppLayout({ children }: AppLayoutProps) {
      while an upgrading user always is. Reading it before the first paint would
      race persist hydration, hence the effect. */
   const lastSeenVersion = useSettingsStore((s) => s.lastSeenVersion);
+  const lastSeenFork = useSettingsStore((s) => s.lastSeenFork); // [fork]
   const markVersionSeen = useSettingsStore((s) => s.markVersionSeen);
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
 
   useEffect(() => {
-    if (releasesSince(lastSeenVersion).length > 0) setWhatsNewOpen(true);
-  }, [lastSeenVersion]);
+    if (releasesSince(lastSeenVersion).length > 0 || forkReleasesSince(lastSeenFork).length > 0) setWhatsNewOpen(true); // [fork] + fork releases
+  }, [lastSeenVersion, lastSeenFork]);
 
   const closeWhatsNew = useCallback(() => {
     setWhatsNewOpen(false);
@@ -766,12 +768,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </nav>
 
-      <ChangelogModal
+      <ForkChangelogModal
         open={whatsNewOpen}
         onClose={closeWhatsNew}
         mode="whats-new"
         since={lastSeenVersion}
-      />
+        sinceFork={lastSeenFork}
+      />{/* [fork] */}
 
       {/* Global entity detail (more-info) modal — opened from any card. */}
       <EntityDetailModal entityId={detailEntityId} onClose={closeEntityDetail} />
