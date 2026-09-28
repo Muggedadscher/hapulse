@@ -60,6 +60,7 @@ export function NvrCameraPage() {
             </CameraTitle>
           }
           renderDatePicker={(req) => <DatePickerModal open dayStart={req.dayStart} timeTs={req.timeTs} oldestAllowed={req.oldestAllowed} onGo={req.onGo} onClose={req.onClose} />}
+          externalUrl={openLink}          // PiP refused in an iPhone Home-Screen app → "open in Safari" (Sentinel, no token)
         />
       </div>
     </NvrUi>

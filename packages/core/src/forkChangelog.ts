@@ -38,6 +38,31 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 12,
+    date: '2026-09-28',
+    title: { de: 'Bild-in-Bild in der Home-Bildschirm-App', en: 'Picture-in-picture in the Home Screen app' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Bild-in-Bild sperrt Apple in Home-Bildschirm-Apps auf iPhone und iPad — der Knopf sagt das jetzt und öffnet die Kamera auf Wunsch in Safari, wo es geht',
+            en: 'Apple blocks picture-in-picture in Home Screen apps on iPhone and iPad — the button now says so and can open the camera in Safari, where it works',
+          },
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: Die Speicherwarnung und der Hinweis „Kompatibilitätsmodus“ erschienen als interner Text statt übersetzt',
+            en: 'NVR: the storage warning and the “compatibility mode” label showed an internal key instead of the text',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 11,
     date: '2026-09-28',
     title: { de: 'Schloss-Chip und Feinschliff', en: 'Locks chip and polish' },

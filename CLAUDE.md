@@ -46,7 +46,9 @@ sauber übernehmen können.
   gemeinsamen npm-Paket **`@sentinel-nvr/web`** (`/api`, `/player`, `/ui`; Repo
   `Muggedadscher/sentinel-nvr-web`, dort getestet) — `nvr/api.ts`/`nvr/format.ts` re-exportieren nur,
   `NvrCameraPage.tsx` ist ein Wrapper. UI-Fixes an der Kameraseite gehören ins Paket (beide Konsumenten
-  sehen dann dasselbe). `scryptedToken`/`maToken` sind GERÄTELOKAL: `exportSettings()` strippt sie,
+  sehen dann dasselbe). **Texte:** HAPulse übersetzt die `nvr.*`-Schlüssel des Pakets mit seinen EIGENEN Locales (`nvr/ui.tsx`) —
+  neue Paket-Schlüssel bei jedem Paket-Update in alle 7 `packages/core/locales/*.json` übernehmen (`test/nvrLocales.test.ts`
+  schlägt sonst fehl). `scryptedToken`/`maToken` sind GERÄTELOKAL: `exportSettings()` strippt sie,
   `importSettings()` (auch HA-Settings-Sync) behält den lokalen Wert, wenn der Snapshot keinen trägt. Settings `customization.scryptedUrl` +
   `scryptedToken` (Browser spricht den `/public/`-Endpoint direkt — HAPulse hat
   kein Backend). **Sentinel selbst nur lesend nutzen; Änderungen dort erst mit
