@@ -5,6 +5,7 @@ export { AlarmModal } from './AlarmModal';
 export { MediaModal } from './MediaModal';
 export { PoolModal } from './PoolModal'; // [fork]
 export { GarageModal } from './GarageModal'; // [fork]
+export { LocksModal } from './LocksModal'; // [fork]
 export { WeatherModal } from './WeatherModal';
 export { ClimateAllModal } from './ClimateAllModal';
 export { BlindsAllModal } from './BlindsAllModal';

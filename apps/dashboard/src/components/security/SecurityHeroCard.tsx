@@ -13,6 +13,7 @@ import { useCameraCount } from '../../nvr/cameraSource'; // [fork]
 import { garageSummary } from '@hapulse/core'; // [fork]
 import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
 import { summaryTone } from '../garage/garageText'; // [fork]
+import { lockSummary, lockTone } from './lockLogic'; // [fork]
 
 function alarmGradientClass(state: string | undefined): string {
   if (!state || state === 'disarmed') return 'security-hero-card--disarmed';
@@ -67,7 +68,8 @@ export function SecurityHeroCard({
   const gradientClass = alarmGradientClass(alarmState);
 
   const homePeople = people.filter((p) => p.state === 'home');
-  const unlockedLocks = locks.filter((l) => l.state === 'unlocked');
+  const lockSum = lockSummary(locks); // [fork] same rule as the chip: open → red, jammed/unreachable → amber
+  const lockState = lockTone(lockSum); // [fork]
   const openDoors = doorSensors.filter((s) => s.state === 'on');
   const openWindows = windowSensors.filter((s) => s.state === 'on');
   const activeMotion = motionSensors.filter((s) => s.state === 'on');
@@ -132,14 +134,16 @@ export function SecurityHeroCard({
         {/* Status chips */}
         <div className="security-hero-card__chips">
           {locks.length > 0 && (
-            <div className={`security-hero-chip${unlockedLocks.length === 0 ? ' security-hero-chip--ok' : ' security-hero-chip--danger'}`}>
-              {unlockedLocks.length === 0
+            <div className={`security-hero-chip security-hero-chip--${lockState === 'locked' ? 'ok' : lockState === 'open' ? 'danger' : 'warn'}`}>{/* [fork] */}
+              {lockState !== 'open'
                 ? <Lock size={13} strokeWidth={1.75} />
                 : <LockOpen size={13} strokeWidth={1.75} />}
               <span>
-                {unlockedLocks.length === 0
-                  ? t('security.hero.allLocked')
-                  : t('security.hero.unlockedCount', { count: unlockedLocks.length })}
+                {lockState === 'open' /* [fork] */
+                  ? t('security.hero.unlockedCount', { count: lockSum.open })
+                  : lockState === 'problem'
+                    ? t('locks.problemCount', { count: lockSum.problem })
+                    : t('security.hero.allLocked')}
               </span>
             </div>
           )}

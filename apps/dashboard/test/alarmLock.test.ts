@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { HassEntity } from '@hapulse/core';
 import { isAlarmActionDisabled, isAlarmActionSupported } from '../src/components/security/alarmLogic';
-import { lockBusy, lockCodeIsNumeric, lockNeedsCode, lockNeedsDialog } from '../src/components/security/lockLogic';
+import { lockBusy, lockCodeIsNumeric, lockNeedsCode, lockNeedsDialog, lockSummary, lockSummaryText, lockTone } from '../src/components/security/lockLogic';
 import { useToastStore } from '../src/stores/toastStore';
 
 const lock = (state: string, attributes: Record<string, unknown> = {}): HassEntity =>
@@ -61,5 +61,27 @@ describe('toast store', () => {
     vi.advanceTimersByTime(6001);
     expect(useToastStore.getState().toasts).toHaveLength(0);
     vi.useRealTimers();
+  });
+});
+
+describe('lock summary (chip, home card, hero)', () => {
+  const t = ((k: string, p?: Record<string, unknown>) => (p ? `${k}:${String(p['count'])}` : k)) as never;
+  it('open beats problem beats locked; moving states count as open', () => {
+    const s = lockSummary([lock('locked'), lock('unlocking'), lock('jammed')]);
+    expect(s).toEqual({ total: 3, locked: 1, open: 1, problem: 1 });
+    expect(lockTone(s)).toBe('open');
+    expect(lockSummaryText(t, s, 'ALL')).toBe('home.security.unlockedCount:1');
+  });
+  it('a jammed or unreachable lock is never "all locked"', () => {
+    for (const st of ['jammed', 'unavailable', 'unknown']) {
+      const s = lockSummary([lock('locked'), lock(st)]);
+      expect(lockTone(s)).toBe('problem');
+      expect(lockSummaryText(t, s, 'ALL')).toBe('locks.problemCount:1');
+    }
+  });
+  it('all locked is calm; open/unlocked/opening/locking count as open', () => {
+    expect(lockTone(lockSummary([lock('locked'), lock('locked')]))).toBe('locked');
+    expect(lockSummaryText(t, lockSummary([lock('locked')]), 'ALL')).toBe('ALL');
+    expect(lockSummary(['open', 'unlocked', 'opening', 'locking'].map((st) => lock(st))).open).toBe(4);
   });
 });

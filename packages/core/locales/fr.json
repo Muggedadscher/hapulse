@@ -1270,5 +1270,10 @@
   "pool.manual.leftMinutes": "min restantes",
   "pool.manual.leftHours": "h restantes",
   "globalSettings.mode.hintGlobal": "Pour tous les utilisateurs et appareils",
-  "globalSettings.deviceMode.hint": "Uniquement cet appareil · « {follow} » = comme « {mode} »"
+  "globalSettings.deviceMode.hint": "Uniquement cet appareil · « {follow} » = comme « {mode} »",
+  "locks.problemCount.one": "{count} en défaut",
+  "locks.problemCount.other": "{count} en défaut",
+  "home.summaryChips.locksAllLocked": "tout verrouillé",
+  "locks.emptyTitle": "Aucune serrure",
+  "locks.emptyDescription": "Les serrures de Home Assistant apparaissent ici."
 }

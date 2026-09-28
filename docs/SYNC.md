@@ -113,6 +113,10 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/test/cameraSource.test.ts` | Kameraquelle, Filter, Raumzuordnung, Namensvorschlag |
 | `apps/dashboard/src/components/pool/poolFormat.ts`, `test/poolFormat.test.ts` | Pool: Ring-Restzeit (h:mm ab 1 h), „bis morgen/Wochentag“ |
 | `packages/core/src/numberFormat.ts` | `formatNumber` — sprachabhängige Zahlen (Dezimalkomma, Tausendergruppierung), Standard `'en'` |
+| `packages/core/src/garage.ts`, `apps/dashboard/test/garage.test.ts` | Garagentore/Tore (`cover` garage/gate): Erkennung, Status, Aktionen, Zusammenfassung |
+| `apps/dashboard/src/components/garage/*` | Garagen-Karte, -Liste, Sicherheits-Sektion, Bestätigung, Symbole, gemeinsame Ton-/Textregel (`garageText.ts`) |
+| `apps/dashboard/src/components/home/chipmodals/{GarageModal,LocksModal}.tsx` | Fenster der Home-Chips „Garage“ und „Schlösser“ |
+| `apps/dashboard/src/lib/defaultSlot.ts` | Standardplatz neuer Sektionen in älteren gespeicherten Reihenfolgen |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -133,7 +137,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
 | `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`- und `sentinel`-Moduls |
-| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Pool-Chip-Setting (`poolChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
+| `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Chip-Marker (`poolChipMigrated`, `garageChipMigrated`, `locksChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/src/domain.ts` | `formatEntityState`: Zahl über `formatNumber` (Sprache), numerische Zustände ohne Einheit (sensor/number/input_number/counter) formatiert statt `humanizeState` (Minus ging verloren) |
@@ -142,11 +146,15 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/{cards,home}/ClimateCard.tsx`, `components/home/RoomCard.tsx`, `components/home/{WeatherHero,chipmodals/WeatherModal}.tsx`, `app/AppLayout.tsx`, `components/home/EntityDetailModal.tsx`, `components/system/SystemMonitorCard.tsx`, `components/devices/DeviceEntityRow.tsx` | Anzeige-Zahlen über `formatNumber` (Sprache) |
 | `packages/core/src/demo.ts` | Demo-Pool-Entities (`demoPoolEntities`, IDs wie `poolConfig.ts`) — Pool-Seite in Demo/Labor |
 | `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“ |
-| `apps/dashboard/src/components/home/SummaryChips.tsx` | Pool-Chip in der Home-Leiste |
+| `apps/dashboard/src/components/home/SummaryChips.tsx`, `SummaryChipsBar.tsx`, `chipmodals/index.ts` | Chips Pool, Garage, Schlösser in der Home-Leiste (+ Fenster, Standardplatz) |
+| `apps/dashboard/src/components/home/SecurityCard.tsx`, `components/security/SecurityHeroCard.tsx` | Garagen-Zeile/-Chip; Schlösser nach gemeinsamer Regel (`lockSummary`: offen rot, blockiert/nicht erreichbar gelb) |
+| `apps/dashboard/src/components/security/{LockConfirm,lockLogic}.*` | Bestätigung beim Entriegeln, Code-Feld, Klick-Stopp im Portal; `lockSummary`/`lockTone`/`lockSummaryText` |
+| `apps/dashboard/src/pages/{Security,Room}.tsx`, `components/home/{BlindsCard,chipmodals/BlindsAllModal,ActivityCard,FavoriteTile}.tsx`, `components/cards/EntityCard.tsx`, `components/devices/DeviceEntityRow.tsx`, `components/settings/DomainIcon.tsx` | Garagentore als eigene Sektion, raus aus Rollläden, Symbole/Farben |
+| `packages/core/src/{domain,roomIcons,demo}.ts` | Garagentore: Zustandsanzeige, Raum-Symbol `car`, Demo-Tore |
 | `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}` | Bereichs-**Pills** (24H/7D/30D) statt Upstreams 24h/7d-Umschalter |
 | `apps/dashboard/src/app/Router.tsx` | Routen `/nvr/*`, `/pool` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Einträge „NVR" + „Pool" (`nav.nvr`, `nav.pool`), direkt nach „Räume" |
-| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `home.section.*.{waste,nvr}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
+| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `garage.*`, `locks.*`, `home.summaryChips.locksAllLocked`, `home.section.*.{waste,nvr}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
 > Hinweis: `SensorTile.tsx` und die `.sensor-tile--clickable`-CSS-Regel sind seit
 > dem v1.2.0-Merge **wieder Upstream-Stand** — siehe „Feature: Sensor-Verlauf".

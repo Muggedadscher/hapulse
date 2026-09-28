@@ -102,7 +102,7 @@ describe('scope table', () => {
       'hiddenEnergySections', 'energySectionSpans', 'energySectionHeights', 'mobileHiddenSections', 'mobileHiddenAutomationSections',
       'mobileHiddenSceneSections', 'mobileHiddenMusicSections', 'mobileHiddenSecuritySections', 'mobileHiddenSystemSections',
       'mobileHiddenEnergySections', 'scryptedUrl', 'poolChipMigrated', 'wasteSectionMigrated', 'nvrSectionMigrated', 'navOrderV2Migrated',
-      'nvrCameraRooms', 'garageChipMigrated',
+      'nvrCameraRooms', 'garageChipMigrated', 'locksChipMigrated',
     ];
     const all = [...KNOWN_GLOBAL, ...scope.USER_CUSTOMIZATION_KEYS, ...scope.SECRET_CUSTOMIZATION_KEYS].sort();
     expect(Object.keys(INITIAL.customization).sort()).toEqual(all);
@@ -350,5 +350,51 @@ describe('garage chip migration', () => {
     await G.flushGlobalPush();
     expect(ha.systemWrites.length).toBe(writes + 1);
     expect(useSettingsStore.getState().customization.homeChips).toContain('garage');
+  });
+});
+
+// [fork] Locks chip: same guarantees as the garage chip
+describe('locks chip migration', () => {
+  const OLD_CHIPS = ['people', 'lights', 'doors', 'alarm', 'media', 'pool', 'garage'];
+  function oldDoc(homeChips: string[]) {
+    const base = doc().settings;
+    const { locksChipMigrated: _l, ...cust } = base.customization;
+    void _l;
+    return doc({ settings: { ...base, customization: { ...cust, homeChips } as typeof base.customization } });
+  }
+
+  it('pure: appends once, keeps a hidden chip hidden afterwards, empty stays "all"', async () => {
+    const { migrateLocksChip } = await import('../src/stores/settingsStore');
+    const cust = INITIAL.customization;
+    expect(migrateLocksChip({ ...cust, homeChips: OLD_CHIPS, locksChipMigrated: false }).homeChips).toEqual([...OLD_CHIPS, 'locks']);
+    expect(migrateLocksChip({ ...cust, homeChips: ['people'], locksChipMigrated: false }).homeChips).toEqual(['people', 'locks']);
+    expect(migrateLocksChip({ ...cust, homeChips: [], locksChipMigrated: false }).homeChips).toEqual([]);
+    expect(migrateLocksChip({ ...cust, homeChips: OLD_CHIPS, locksChipMigrated: true }).homeChips).toEqual(OLD_CHIPS);
+  });
+
+  it('non-admin: a global document from before the chip still shows it, nothing is written', async () => {
+    ha = fakeHA(false);
+    ha.system.set(G.GLOBAL_KEY, oldDoc(OLD_CHIPS));
+    await startAs(USER);
+    expect(useSettingsStore.getState().customization.homeChips).toContain('locks');
+    expect(ha.systemWrites).toHaveLength(0);
+  });
+
+  it('non-admin: a chip the admin hid (marker set) stays hidden', async () => {
+    ha = fakeHA(false);
+    const base = doc().settings;
+    ha.system.set(G.GLOBAL_KEY, doc({ settings: { ...base, customization: { ...base.customization, homeChips: OLD_CHIPS, locksChipMigrated: true } } }));
+    await startAs(USER);
+    expect(useSettingsStore.getState().customization.homeChips).not.toContain('locks');
+  });
+
+  it('admin: the migration settles in one write at most — no ping-pong', async () => {
+    ha = fakeHA(true);
+    ha.system.set(G.GLOBAL_KEY, oldDoc(OLD_CHIPS));
+    await startAs(ADMIN);
+    await G.flushGlobalPush();
+    await G.flushGlobalPush();
+    expect(ha.systemWrites.length).toBeLessThanOrEqual(1);
+    expect(useSettingsStore.getState().customization.homeChips).toContain('locks');
   });
 });
