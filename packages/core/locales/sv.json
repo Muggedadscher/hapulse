@@ -1275,5 +1275,8 @@
   "locks.problemCount.other": "{count} med fel",
   "home.summaryChips.locksAllLocked": "allt låst",
   "locks.emptyTitle": "Inga lås",
-  "locks.emptyDescription": "Här visas låsen från Home Assistant."
+  "locks.emptyDescription": "Här visas låsen från Home Assistant.",
+  "changelog.fork.badge": "Fork",
+  "changelog.fork.alsoNew": "Också nytt",
+  "changelog.fork.allDetails": "Alla detaljer"
 }

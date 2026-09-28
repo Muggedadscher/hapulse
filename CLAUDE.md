@@ -14,6 +14,11 @@ sauber übernehmen können.
   vorhandene Bausteine wiederverwenden (`Modal`, `Card`, `EmptyState`, `.btn …`).
 - `@hapulse/core` bleibt React-/DOM-frei (HA-Logik dort, Components sind dünn).
 - Vor jedem Push: `npm run typecheck && npm run build && npm test -w @hapulse/core`.
+- **Changelog:** Jede für Nutzer sichtbare Fork-Änderung bekommt im selben PR einen Eintrag in
+  `packages/core/src/forkChangelog.ts` (DE + EN, neuer Release `F<n+1>` mit Merge-Datum oder der neueste, solange er
+  noch nicht ausgerollt ist), danach `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`
+  (`CHANGELOG.fork.md`; der Test `forkChangelog.test.ts` prüft, dass die Datei aktuell ist). Upstreams
+  `changelog.ts`/`CHANGELOG.md` und die `version` in den `package.json` bleiben unberührt.
   (Stand nach Upstream-Merge: alle Tests grün. Die früher roten
   `air-vent`/`roomIcons`-Tests hat der Upstream selbst gefixt.)
 
@@ -128,6 +133,14 @@ sauber übernehmen können.
 - **Zahlen immer sprachabhängig**: Angezeigte Zahlen nur über `formatNumber` (`@hapulse/core`,
   `numberFormat.ts`) bzw. `formatEntityState(entity, locale)` — nie `toFixed`/`${n}` in UI-Text
   (Upstream zeigte überall „5.5“ statt „5,5“). Ausnahmen: Werte an HA, SVG/CSS, Uhrzeiten, Versionsnummern.
+
+- **Fork-Changelog („Was ist neu“)**: Eigene Releases F1, F2, … in `packages/core/src/forkChangelog.ts` (DE + EN,
+  `pickText` wählt nach UI-Sprache, sonst Englisch) — getrennt von Upstreams semver-`RELEASES`, damit Upstream-Merges nie
+  kollidieren. `components/changelog/ForkChangelogModal.tsx` + `forkEntries.ts` mischen beide Listen nach Datum
+  (Abzeichen „Fork“); „Was ist neu“ zeigt ab 3 ungesehenen Einträgen den neuesten voll und die übrigen als Titelliste
+  („Alle Details“ klappt auf). Upstreams `ChangelogModal` exportiert dafür nur `ReleaseEntry` (+ `badge`).
+  Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
+  ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

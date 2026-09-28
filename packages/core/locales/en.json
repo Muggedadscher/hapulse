@@ -1275,5 +1275,8 @@
   "locks.problemCount.other": "{count} faults",
   "home.summaryChips.locksAllLocked": "all locked",
   "locks.emptyTitle": "No locks",
-  "locks.emptyDescription": "Locks from Home Assistant appear here."
+  "locks.emptyDescription": "Locks from Home Assistant appear here.",
+  "changelog.fork.badge": "Fork",
+  "changelog.fork.alsoNew": "Also new",
+  "changelog.fork.allDetails": "All details"
 }

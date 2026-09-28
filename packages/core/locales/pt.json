@@ -1275,5 +1275,8 @@
   "locks.problemCount.other": "{count} com falha",
   "home.summaryChips.locksAllLocked": "todas trancadas",
   "locks.emptyTitle": "Nenhuma fechadura",
-  "locks.emptyDescription": "Aqui aparecem as fechaduras do Home Assistant."
+  "locks.emptyDescription": "Aqui aparecem as fechaduras do Home Assistant.",
+  "changelog.fork.badge": "Fork",
+  "changelog.fork.alsoNew": "Também novo",
+  "changelog.fork.allDetails": "Todos os detalhes"
 }

@@ -49,6 +49,24 @@
   color: var(--text-faint);
 }
 
+/* [fork] "Fork" badge on this fork's own releases + the compact "also new" list (ForkChangelogModal) */
+.changelog-release__badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.0625rem 0.4375rem;
+} /* [fork] */
+.changelog-more { display: flex; flex-direction: column; gap: 0.625rem; padding-top: 1.5rem; border-top: 1px solid var(--border); } /* [fork] */
+.changelog-more__title { margin: 0; font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); } /* [fork] */
+.changelog-more__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.5rem; } /* [fork] */
+.changelog-more__item { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.875rem; line-height: 1.4; color: var(--text-dim); } /* [fork] */
+.changelog-more__item .changelog-release__version { flex-shrink: 0; } /* [fork] */
+.changelog-more__all { align-self: flex-start; } /* [fork] */
+
 .changelog-release__title {
   margin: 0 0 0.25rem;
   font-size: 1rem;

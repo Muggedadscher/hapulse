@@ -117,6 +117,8 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/garage/*` | Garagen-Karte, -Liste, Sicherheits-Sektion, Bestätigung, Symbole, gemeinsame Ton-/Textregel (`garageText.ts`) |
 | `apps/dashboard/src/components/home/chipmodals/{GarageModal,LocksModal}.tsx` | Fenster der Home-Chips „Garage“ und „Schlösser“ |
 | `apps/dashboard/src/lib/defaultSlot.ts` | Standardplatz neuer Sektionen in älteren gespeicherten Reihenfolgen |
+| `packages/core/src/forkChangelog.ts`, `packages/core/scripts/gen-fork-changelog.mjs`, `CHANGELOG.fork.md` | Eigene Releases F1, F2, … (DE + EN) + generierte Markdown-Fassung |
+| `apps/dashboard/src/components/changelog/{ForkChangelogModal.tsx,forkEntries.ts}`, `test/forkChangelog.test.ts` | Changelog-Anzeige mit Upstream- und Fork-Releases, Kompaktansicht |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -136,7 +138,10 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Room.tsx` | Sektion `nvrCameras`, keine HA-Kameras bei Kameraquelle Sentinel |
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
-| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`- und `sentinel`-Moduls |
+| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`- und `forkChangelog`-Moduls |
+| `apps/dashboard/src/components/changelog/ChangelogModal.{tsx,css}` | `ReleaseEntry` exportiert (+ optionales `badge`), Stile für Abzeichen und Kompaktliste |
+| `apps/dashboard/src/app/AppLayout.tsx`, `pages/Settings.tsx` | `ForkChangelogModal` statt `ChangelogModal`; Auslöser auch bei neuen Fork-Releases; Über: „Version 1.3.2 · F11“ |
+| `apps/dashboard/src/stores/{settingsStore,settingsScope}.ts` | `lastSeenFork` (DEVICE, `markVersionSeen` setzt beide Stände) |
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Chip-Marker (`poolChipMigrated`, `garageChipMigrated`, `locksChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
@@ -176,7 +181,20 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 
 ---
 
-## 6. Vor jedem Push kurz prüfen
+## 6. Changelog pflegen
+
+Upstreams Release-Notes (`packages/core/src/changelog.ts`, `CHANGELOG.md`, `version` in den `package.json`) **nie**
+für Fork-Änderungen anfassen — sie kommen per Upstream-Merge. Eigene, für Nutzer sichtbare Änderungen kommen im
+selben PR nach `packages/core/src/forkChangelog.ts` (neuer Release `F<n+1>`, Datum = Merge-Tag, DE + EN, kurz,
+ohne Schlusspunkt), dann:
+
+```bash
+npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs   # → CHANGELOG.fork.md
+```
+
+Bei einem Upstream-Merge mit neuem Release zeigt „Was ist neu“ beides (nach Datum gemischt); nichts weiter zu tun.
+
+## 7. Vor jedem Push kurz prüfen
 
 ```bash
 npm run typecheck
