@@ -46,7 +46,9 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
   // Focus the panel when it opens
   useEffect(() => {
     if (open && panelRef.current) {
-      panelRef.current.focus();
+      // [fork] a dialog can name its default action (`data-autofocus`, e.g. What's New → "Got it"); otherwise the panel
+      const initial = panelRef.current.querySelector<HTMLElement>('[data-autofocus]');
+      (initial ?? panelRef.current).focus();
     }
     if (!open && triggerRef.current instanceof HTMLElement) {
       triggerRef.current.focus();

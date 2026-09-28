@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 13,
+    date: '2026-09-28',
+    title: { de: 'Fokus auf „Alles klar“', en: 'Focus on “Got it”' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: '„Was ist neu“ öffnet mit dem Fokus auf „Alles klar“ statt mit einem orangen Rahmen um das ganze Fenster',
+            en: 'What’s New opens with the focus on “Got it” instead of an orange frame around the whole window',
+          },
+          {
+            de: 'Fenster, die sich ohne Klick öffnen, zeigen keinen Fokusrahmen mehr um das ganze Fenster',
+            en: 'Windows that open without a click no longer show a focus frame around the whole window',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 12,
     date: '2026-09-28',
     title: { de: 'Bild-in-Bild in der Home-Bildschirm-App', en: 'Picture-in-picture in the Home Screen app' },
