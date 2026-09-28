@@ -140,6 +140,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
 | `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`- und `forkChangelog`-Moduls |
+| `apps/dashboard/src/components/ui/Modal.{tsx,css}` | Anfangsfokus auf ein Element mit `data-autofocus` (sonst das Panel); kein Fokusrahmen um das Panel selbst |
 | `apps/dashboard/src/components/changelog/ChangelogModal.{tsx,css}` | `ReleaseEntry` exportiert (+ optionales `badge`), Stile für Abzeichen und Kompaktliste |
 | `apps/dashboard/src/app/AppLayout.tsx`, `pages/Settings.tsx` | `ForkChangelogModal` statt `ChangelogModal`; Auslöser auch bei neuen Fork-Releases; Über: „Version 1.3.2 · F11“ |
 | `apps/dashboard/src/stores/{settingsStore,settingsScope}.ts` | `lastSeenFork` (DEVICE, `markVersionSeen` setzt beide Stände) |

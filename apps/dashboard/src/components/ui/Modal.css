@@ -23,6 +23,10 @@
 }
 
 /* Panel */
+/* [fork] The panel is only the focus anchor of the dialog: a dialog opened without a click (What's New at start)
+   showed the keyboard focus ring as an orange frame around the whole window. */
+.modal-panel:focus-visible { outline: none; } /* [fork] */
+
 .modal-panel {
   position: relative;
   background: var(--bg-raised);

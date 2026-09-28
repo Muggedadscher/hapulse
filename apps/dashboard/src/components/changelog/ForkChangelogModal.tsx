@@ -53,7 +53,7 @@ export function ForkChangelogModal({ open, onClose, mode, since = null, sinceFor
       icon={<Sparkles size={18} strokeWidth={1.75} />}
       className="changelog-modal"
       footer={
-        <button type="button" className="changelog-modal__done" onClick={onClose}>
+        <button type="button" className="changelog-modal__done" onClick={onClose} data-autofocus>
           {t(mode === 'whats-new' ? 'changelog.whatsNew.dismiss' : 'common.close')}
         </button>
       }

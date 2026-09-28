@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F13 — 2026-09-28
+
+**Fokus auf „Alles klar“** · _Focus on “Got it”_
+
+### Behoben / Fixed
+
+- „Was ist neu“ öffnet mit dem Fokus auf „Alles klar“ statt mit einem orangen Rahmen um das ganze Fenster  
+  _What’s New opens with the focus on “Got it” instead of an orange frame around the whole window_
+- Fenster, die sich ohne Klick öffnen, zeigen keinen Fokusrahmen mehr um das ganze Fenster  
+  _Windows that open without a click no longer show a focus frame around the whole window_
+
 ## F12 — 2026-09-28
 
 **Bild-in-Bild in der Home-Bildschirm-App** · _Picture-in-picture in the Home Screen app_
