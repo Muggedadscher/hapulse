@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 15,
+    date: '2026-09-29',
+    title: { de: 'Ereignisse mit Dauer', en: 'Events with a duration' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'NVR: ein Ereignis zeigt, wie lange es ging — in der Zeitleiste als Balken bis zur letzten Bewegung, in der Liste als Dauer; ein laufendes Ereignis pulsiert und heißt „läuft“',
+            en: 'NVR: an event shows how long it lasted — a bar up to the last movement on the timeline, the duration in the list; a running event pulses and reads “running”',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 14,
     date: '2026-09-29',
     title: { de: 'Radfahrer zählen als Person', en: 'Cyclists count as persons' },

@@ -1297,5 +1297,6 @@
   "nvr.settings.accent": "Accentfärg",
   "nvr.settings.accent.reset": "Återställ",
   "nvr.settings.accent.hueAria": "Accentfärgens nyans",
-  "nvr.settings.title": "Inställningar"
+  "nvr.settings.title": "Inställningar",
+  "nvr.events.running": "pågår"
 }
