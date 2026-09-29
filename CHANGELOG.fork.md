@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F14 — 2026-09-29
+
+**Radfahrer zählen als Person** · _Cyclists count as persons_
+
+### Geändert / Changed
+
+- NVR: Ereignisse mit mehreren Klassen zeigen die wichtigste zuerst (Person vor Tier, Fahrrad und Fahrzeug) — ein Radfahrer ist eine Person  
+  _NVR: events with several classes show the most important one first (person before animal, bike and vehicle) — a cyclist is a person_
+- NVR: ein Klassenfilter blendet ein Ereignis nur aus, wenn alle seine Klassen aus sind; die Chips zählen jede enthaltene Klasse  
+  _NVR: a class filter hides an event only when all of its classes are off; the chips count every class an event contains_
+
 ## F13 — 2026-09-28
 
 **Fokus auf „Alles klar“** · _Focus on “Got it”_
