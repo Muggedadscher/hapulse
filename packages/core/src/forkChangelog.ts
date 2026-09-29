@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 14,
+    date: '2026-09-29',
+    title: { de: 'Radfahrer zählen als Person', en: 'Cyclists count as persons' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'NVR: Ereignisse mit mehreren Klassen zeigen die wichtigste zuerst (Person vor Tier, Fahrrad und Fahrzeug) — ein Radfahrer ist eine Person',
+            en: 'NVR: events with several classes show the most important one first (person before animal, bike and vehicle) — a cyclist is a person',
+          },
+          {
+            de: 'NVR: ein Klassenfilter blendet ein Ereignis nur aus, wenn alle seine Klassen aus sind; die Chips zählen jede enthaltene Klasse',
+            en: 'NVR: a class filter hides an event only when all of its classes are off; the chips count every class an event contains',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 13,
     date: '2026-09-28',
     title: { de: 'Fokus auf „Alles klar“', en: 'Focus on “Got it”' },
