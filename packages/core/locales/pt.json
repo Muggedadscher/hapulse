@@ -1297,5 +1297,6 @@
   "nvr.settings.accent": "Cor de destaque",
   "nvr.settings.accent.reset": "Repor",
   "nvr.settings.accent.hueAria": "Tom da cor de destaque",
-  "nvr.settings.title": "Definições"
+  "nvr.settings.title": "Definições",
+  "nvr.events.running": "a decorrer"
 }

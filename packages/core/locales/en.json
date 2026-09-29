@@ -1297,5 +1297,6 @@
   "nvr.settings.accent": "Accent colour",
   "nvr.settings.accent.reset": "Reset",
   "nvr.settings.accent.hueAria": "Accent colour hue",
-  "nvr.settings.title": "Settings"
+  "nvr.settings.title": "Settings",
+  "nvr.events.running": "running"
 }
