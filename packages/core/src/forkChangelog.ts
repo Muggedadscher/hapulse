@@ -38,6 +38,30 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 16,
+    date: '2026-09-30',
+    title: { de: 'Ruhige Zeitleiste beim Spulen', en: 'A calm timeline while scrubbing' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: Beim Hinspulen bleibt der Zeiger der Zeitleiste an der gewählten Stelle, bis das Video dort normal läuft — er springt nicht mehr hin und her',
+            en: 'NVR: while the video fast-forwards to where you scrolled, the timeline pointer stays there until the video plays normally — no more jumping around',
+          },
+          {
+            de: 'NVR: Das Video kommt genau dort an, wo man hingescrollt hat — vorher landete es manchmal 30 s daneben oder hielt bei weiten Strecken zu früh an',
+            en: 'NVR: the video arrives exactly where you scrolled — before, it sometimes landed 30 s off or stopped short on long distances',
+          },
+          {
+            de: 'NVR: Das Datum beim Tageswechsel steht neben dem Aufnahmebalken statt darunter',
+            en: 'NVR: the date at midnight sits beside the recording bar instead of beneath it',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 15,
     date: '2026-09-29',
     title: { de: 'Ereignisse mit Dauer', en: 'Events with a duration' },

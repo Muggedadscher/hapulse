@@ -6,6 +6,19 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F16 — 2026-09-30
+
+**Ruhige Zeitleiste beim Spulen** · _A calm timeline while scrubbing_
+
+### Behoben / Fixed
+
+- NVR: Beim Hinspulen bleibt der Zeiger der Zeitleiste an der gewählten Stelle, bis das Video dort normal läuft — er springt nicht mehr hin und her  
+  _NVR: while the video fast-forwards to where you scrolled, the timeline pointer stays there until the video plays normally — no more jumping around_
+- NVR: Das Video kommt genau dort an, wo man hingescrollt hat — vorher landete es manchmal 30 s daneben oder hielt bei weiten Strecken zu früh an  
+  _NVR: the video arrives exactly where you scrolled — before, it sometimes landed 30 s off or stopped short on long distances_
+- NVR: Das Datum beim Tageswechsel steht neben dem Aufnahmebalken statt darunter  
+  _NVR: the date at midnight sits beside the recording bar instead of beneath it_
+
 ## F15 — 2026-09-29
 
 **Ereignisse mit Dauer** · _Events with a duration_
