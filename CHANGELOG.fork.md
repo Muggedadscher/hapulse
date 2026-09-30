@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F17 — 2026-10-01
+
+**Ruhiges Zoomen der Zeitleiste** · _Calm timeline zoom_
+
+### Behoben / Fixed
+
+- NVR: Beim Zoomen der Zeitleiste springt der Inhalt nicht mehr kurz weg  
+  _NVR: zooming the timeline no longer makes its content jump for a moment_
+- NVR: Wer während des Spulens oder in der Pause zoomt, bleibt an der gewählten Stelle, statt zum Video zurückzuspringen  
+  _NVR: zooming while scrubbing or paused keeps the spot you picked instead of jumping back to the video_
+
 ## F16 — 2026-09-30
 
 **Ruhige Zeitleiste beim Spulen** · _A calm timeline while scrubbing_

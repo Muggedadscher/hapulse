@@ -22,6 +22,12 @@ import { NvrUi } from './ui';
 import { NVR_ROOT } from './paths';
 import './nvr.css';
 
+/** Build id from vite.config.ts (`define`); undefined outside a vite build (vitest). */
+declare const __HAPULSE_BUILD__: string | undefined;
+// telemetry lines stay distinguishable from Sentinel's own UI and carry the build, so a report from a phone can be
+// matched to the deployed commit (Sentinel's own UI sends its deploy stamp the same way)
+const TELEMETRY_BRAND = `hapulse-${typeof __HAPULSE_BUILD__ !== 'undefined' ? __HAPULSE_BUILD__ : 'dev'}`;
+
 export function NvrCameraPage() {
   const t = useT();
   const navigate = useNavigate();
@@ -48,7 +54,7 @@ export function NvrCameraPage() {
         <CameraPage
           camId={camId} name={name} earliest={stats?.earliest} startAt={startAt} posterTs={posterTs}
           storagePrefix="hapulse-nvr-ar-" // keep the aspect cache key this install already uses
-          brand="hapulse"                 // telemetry lines stay distinguishable from Sentinel's own UI
+          brand={TELEMETRY_BRAND}
           crossOrigin
           header={
             <CameraTitle name={name} onBack={() => navigate(NVR_ROOT)}>

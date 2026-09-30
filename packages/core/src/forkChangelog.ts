@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 17,
+    date: '2026-10-01',
+    title: { de: 'Ruhiges Zoomen der Zeitleiste', en: 'Calm timeline zoom' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: Beim Zoomen der Zeitleiste springt der Inhalt nicht mehr kurz weg',
+            en: 'NVR: zooming the timeline no longer makes its content jump for a moment',
+          },
+          {
+            de: 'NVR: Wer während des Spulens oder in der Pause zoomt, bleibt an der gewählten Stelle, statt zum Video zurückzuspringen',
+            en: 'NVR: zooming while scrubbing or paused keeps the spot you picked instead of jumping back to the video',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 16,
     date: '2026-09-30',
     title: { de: 'Ruhige Zeitleiste beim Spulen', en: 'A calm timeline while scrubbing' },
