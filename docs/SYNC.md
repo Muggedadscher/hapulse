@@ -126,6 +126,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 
 | Datei | Änderung |
 |---|---|
+| `apps/dashboard/vite.config.ts` | `define` `__HAPULSE_BUILD__` (Build-Kennung `hapulse-<sha7>` in der Sentinel-Telemetrie, `NvrCameraPage.tsx`) |
 | `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben); `getSystemDataStrict`/`setSystemData`/`subscribeSystemData` |
 | `apps/dashboard/src/stores/connectionStore.ts` | Globale Verwaltung vor dem Settings-Sync starten, beim Teardown stoppen |
 | `apps/dashboard/src/ha/settingsSync.ts` | Verwalteter Modus → nur `userSettingsSync`; gemeinsamer Anwende-Schutz |
