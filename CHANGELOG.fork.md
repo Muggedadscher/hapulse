@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F18 — 2026-10-02
+
+**LIVE-Marke gut lesbar** · _Readable LIVE label_
+
+### Behoben / Fixed
+
+- NVR: Die orange Abspiel-Linie verdeckt die LIVE-Marke in der Zeitleiste nicht mehr  
+  _NVR: the orange playhead line no longer covers the LIVE label on the timeline_
+
 ## F17 — 2026-10-01
 
 **Ruhiges Zoomen der Zeitleiste** · _Calm timeline zoom_
