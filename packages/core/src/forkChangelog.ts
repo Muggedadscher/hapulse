@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 18,
+    date: '2026-10-02',
+    title: { de: 'LIVE-Marke gut lesbar', en: 'Readable LIVE label' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: Die orange Abspiel-Linie verdeckt die LIVE-Marke in der Zeitleiste nicht mehr',
+            en: 'NVR: the orange playhead line no longer covers the LIVE label on the timeline',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 17,
     date: '2026-10-01',
     title: { de: 'Ruhiges Zoomen der Zeitleiste', en: 'Calm timeline zoom' },
