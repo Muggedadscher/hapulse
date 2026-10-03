@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 19,
+    date: '2026-10-02',
+    title: { de: 'Kamerabild mit Abstand zum Titel', en: 'Camera picture clear of the title' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: Auf kleinen Handy-Bildschirmen rutscht das Kamerabild nicht mehr unter den Titel, die Zeitleiste nimmt den restlichen Platz',
+            en: 'NVR: on small phone screens the camera picture no longer slides under the title; the timeline takes the remaining space',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 18,
     date: '2026-10-02',
     title: { de: 'LIVE-Marke gut lesbar', en: 'Readable LIVE label' },

@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F19 — 2026-10-02
+
+**Kamerabild mit Abstand zum Titel** · _Camera picture clear of the title_
+
+### Behoben / Fixed
+
+- NVR: Auf kleinen Handy-Bildschirmen rutscht das Kamerabild nicht mehr unter den Titel, die Zeitleiste nimmt den restlichen Platz  
+  _NVR: on small phone screens the camera picture no longer slides under the title; the timeline takes the remaining space_
+
 ## F18 — 2026-10-02
 
 **LIVE-Marke gut lesbar** · _Readable LIVE label_
