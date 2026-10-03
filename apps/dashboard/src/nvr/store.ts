@@ -10,9 +10,11 @@ import { create } from 'zustand';
 import type { SentinelCamera, SentinelRecentEvent, SentinelStats } from '@sentinel-nvr/web/api';
 import type { SentinelClient } from './api';
 import { useNvrConfig } from './config';
+import { NvrPoller } from './poller';
+import type { NvrPollScope } from './poller';
 
 export type NvrStatus = 'idle' | 'loading' | 'ready' | 'error';
-export type NvrPollScope = 'cameras' | 'full';
+export type { NvrPollScope } from './poller';
 
 interface NvrState {
   /** Client key the data belongs to — a config change resets everything. */
@@ -77,31 +79,22 @@ export const useNvrStore = create<NvrState>()((set, get) => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Shared poller
+// Shared poller (core in ./poller.ts: one timer, one visibility listener, in-flight requests joined)
 // ---------------------------------------------------------------------------
 
-const subscribers = new Map<symbol, { ms: number; scope: NvrPollScope }>();
-let timer: ReturnType<typeof setInterval> | null = null;
-let timerMs = 0;
-
-/** The widest scope anybody currently needs: all four endpoints only while a `full` subscriber is mounted. */
-function currentScope(): NvrPollScope {
-  for (const s of subscribers.values()) if (s.scope === 'full') return 'full';
-  return 'cameras';
-}
-
-function restartTimer(): void {
-  if (timer) { clearInterval(timer); timer = null; }
-  if (subscribers.size === 0) return;
-  timerMs = Math.min(...[...subscribers.values()].map((s) => s.ms));
-  timer = setInterval(() => {
-    if (document.visibilityState === 'hidden') return;
-    const cfg = currentClient();
-    if (cfg) void useNvrStore.getState().refresh(cfg, currentScope());
-  }, timerMs);
-}
-
-let currentClient: () => SentinelClient | null = () => null;
+const poller = new NvrPoller<SentinelClient>({
+  refresh: (client, scope) => useNvrStore.getState().refresh(client, scope),
+  isHidden: () => document.visibilityState === 'hidden',
+  onVisible: (cb) => {
+    const vis = () => { if (document.visibilityState === 'visible') cb(); };
+    document.addEventListener('visibilitychange', vis);
+    return () => document.removeEventListener('visibilitychange', vis);
+  },
+  setInterval: (cb, ms) => setInterval(cb, ms),
+  clearInterval: (h) => clearInterval(h as ReturnType<typeof setInterval>),
+  // subscribers mounted in the same commit (Home card + security counter) share one initial refresh
+  defer: (cb) => queueMicrotask(cb),
+});
 
 /**
  * Keep the overview data fresh while mounted. Refreshes immediately on mount
@@ -110,18 +103,7 @@ let currentClient: () => SentinelClient | null = () => null;
 export function useNvrPolling(client: SentinelClient | null, intervalMs = 10_000, scope: NvrPollScope = 'full'): void {
   useEffect(() => {
     if (!client) return;
-    currentClient = () => client;
-    const id = Symbol('nvr-poll');
-    subscribers.set(id, { ms: intervalMs, scope });
-    restartTimer();
-    void useNvrStore.getState().refresh(client, scope);
-    const vis = () => { if (document.visibilityState === 'visible') void useNvrStore.getState().refresh(client, currentScope()); };
-    document.addEventListener('visibilitychange', vis);
-    return () => {
-      subscribers.delete(id);
-      document.removeEventListener('visibilitychange', vis);
-      restartTimer();
-    };
+    return poller.subscribe(client, intervalMs, scope);
   }, [client, intervalMs, scope]);
 }
 

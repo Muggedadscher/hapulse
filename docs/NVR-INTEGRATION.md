@@ -90,7 +90,11 @@ kommt in HAPulse **alles** Kamerabezogene aus Sentinel (`nvr/cameraSource.ts`):
   NVR-Karte/-Sektion ausgeblendet.
 - Last: Raumseiten und Zähler pollen nur `api/cameras` (30 s, Scope `cameras`
   des gemeinsamen Pollers, `nvr/store.ts`); alle vier Übersichts-Endpunkte nur,
-  solange eine NVR-Ansicht (`full`) offen ist.
+  solange eine NVR-Ansicht (`full`) offen ist. Der Poller (`nvr/poller.ts`) hat
+  EINEN Takt und EINEN Sichtbarkeits-Listener für alle Abonnenten; Abonnenten
+  aus demselben Render teilen sich die erste Abfrage, und eine laufende Abfrage
+  wird mitbenutzt (`full` deckt `cameras`). Startseite/Sicherheitsseite: 4 statt
+  8 Anfragen bei der Rückkehr in den Tab.
 
 ## Abweichungen zu Sentinels eigener Web-UI
 
@@ -124,7 +128,8 @@ Sentinels UI eine eigenständige App ist:
 | npm `@sentinel-nvr/web/api` | DOM-freies Datenmodell (Typen aus `API.md`), `parseSentinelSetup`, URL-Helfer, Ereignisklassen, `sentinelEventPlayTs`, `sentinelStorageForecast`, `sentinelClipRuns`, `sentinelMergeDays`, Intl-Formatierer und der `SentinelClient` — gemeinsames Paket (Repo `Muggedadscher/sentinel-nvr-web`, dort getestet). `nvr/api.ts`/`nvr/format.ts` re-exportieren nur. |
 | `apps/dashboard/src/nvr/api.ts` | re-exportiert `SentinelClient`, `SentinelHttpError` usw. aus dem Paket. |
 | `apps/dashboard/src/nvr/config.ts` | Verbindung aus den Settings ableiten (`useNvrConfig`, `getNvrConfig`), Client inkl. Proxy-Präfix (`clientFor`, `storedNvrUrl`). |
-| `apps/dashboard/src/nvr/store.ts` | Übersichts-Store + gemeinsamer Poller (`useNvrOverview`); 401/403 schaltet auf Fehler (keine alten Daten als aktuell), das Histogramm ist optional. |
+| `apps/dashboard/src/nvr/store.ts` | Übersichts-Store + React-Hülle des gemeinsamen Pollers (`useNvrPolling`, `useNvrOverview`); 401/403 schaltet auf Fehler (keine alten Daten als aktuell), das Histogramm ist optional. Tests `test/nvrStore.test.ts`. |
+| `apps/dashboard/src/nvr/poller.ts` | Kern des Pollers ohne React/DOM (Takt, Sichtbarkeit, laufende Abfragen mitbenutzen), Tests `test/nvrPoller.test.ts`. `config.ts`: `test/nvrConfig.test.ts`. |
 | `apps/dashboard/src/nvr/format.ts` | Intl-Formatierung (Zeit, Tag, relativ, Tage). |
 | `apps/dashboard/src/nvr/paths.ts` | Routen-Helfer. |
 | npm `@sentinel-nvr/web/ui` | React-Komponenten (die komplette **Kameraseite** `CameraPage` + Kopfzeile `CameraTitle`, Hero/Stats, Ereignisleiste, Kamerakacheln, Ereignisliste, vertikale Zeitleiste, Datumswahl, `AppearanceSection`), `SentinelUiProvider` (Client, `t`, Locale, Navigation), Themes und die `nvr.*`-Wörterbücher; Styles `@sentinel-nvr/web/ui/ui.css`. Host-Wrapper: `nvr/ui.tsx`. |
