@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F21 — 2026-10-04
+
+**NVR: Ereignis-Markierungen gruppiert** · _NVR: event markers grouped_
+
+### Geändert / Changed
+
+- NVR: Ereignisse, die auf der Zeitleiste der Kameraseite übereinander lägen, erscheinen als eine Markierung mit Zahl; ein Tippen zoomt in die Gruppe hinein und spielt von dort ab  
+  _NVR: events that would overlap on the camera page timeline show as one marker with a count; a tap zooms into the group and plays from there_
+
 ## F20 — 2026-10-04
 
 **NVR: Dezimalkomma und neue Ereignisse beim Zurückschauen** · _NVR: decimal comma and new events while playing back_
