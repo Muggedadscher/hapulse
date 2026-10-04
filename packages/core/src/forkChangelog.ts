@@ -39,7 +39,7 @@ export interface ForkRelease {
 export const FORK_RELEASES: ForkRelease[] = [
   {
     version: 20,
-    date: '2026-10-03',
+    date: '2026-10-04',
     title: { de: 'NVR: Dezimalkomma und neue Ereignisse beim Zurückschauen', en: 'NVR: decimal comma and new events while playing back' },
     sections: [
       {
