@@ -6,6 +6,20 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F20 — 2026-10-04
+
+**NVR: Dezimalkomma und neue Ereignisse beim Zurückschauen** · _NVR: decimal comma and new events while playing back_
+
+### Geändert / Changed
+
+- NVR: Die Kameraseite zeigt neue Ereignisse auch beim Zurückschauen, laufende Ereignisse wachsen weiter und das Aufnahmeband wird länger  
+  _NVR: the camera page shows new events while you play back a recording too; running events keep growing and the recording band extends_
+
+### Behoben / Fixed
+
+- NVR: Speicherwerte erscheinen mit dem Dezimaltrennzeichen der eingestellten Sprache (Deutsch „7,7 GB“, Englisch „7.7 GB“)  
+  _NVR: storage values use the decimal separator of the selected language (German "7,7 GB", English "7.7 GB")_
+
 ## F19 — 2026-10-02
 
 **Kamerabild mit Abstand zum Titel** · _Camera picture clear of the title_

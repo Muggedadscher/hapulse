@@ -38,6 +38,31 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 20,
+    date: '2026-10-04',
+    title: { de: 'NVR: Dezimalkomma und neue Ereignisse beim Zurückschauen', en: 'NVR: decimal comma and new events while playing back' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'NVR: Die Kameraseite zeigt neue Ereignisse auch beim Zurückschauen, laufende Ereignisse wachsen weiter und das Aufnahmeband wird länger',
+            en: 'NVR: the camera page shows new events while you play back a recording too; running events keep growing and the recording band extends',
+          },
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: Speicherwerte erscheinen mit dem Dezimaltrennzeichen der eingestellten Sprache (Deutsch „7,7 GB“, Englisch „7.7 GB“)',
+            en: 'NVR: storage values use the decimal separator of the selected language (German "7,7 GB", English "7.7 GB")',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 19,
     date: '2026-10-02',
     title: { de: 'Kamerabild mit Abstand zum Titel', en: 'Camera picture clear of the title' },
