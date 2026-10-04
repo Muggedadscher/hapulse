@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F21 — 2026-10-04
+
+**NVR: Ereignisse der letzten 24 Stunden** · _NVR: events of the last 24 hours_
+
+### Geändert / Changed
+
+- NVR: Die Ereignisleiste auf der NVR-Seite zeigt jetzt die Ereignisse der letzten 24 Stunden statt nur der letzten 40  
+  _NVR: the events strip on the NVR page now shows the events of the last 24 hours instead of only the last 40_
+
 ## F20 — 2026-10-04
 
 **NVR: Dezimalkomma und neue Ereignisse beim Zurückschauen** · _NVR: decimal comma and new events while playing back_
