@@ -38,7 +38,7 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
-    version: 21,
+    version: 22,
     date: '2026-10-04',
     title: { de: 'NVR: Ereignis-Markierungen gruppiert', en: 'NVR: event markers grouped' },
     sections: [
@@ -48,6 +48,22 @@ export const FORK_RELEASES: ForkRelease[] = [
           {
             de: 'NVR: Ereignisse, die auf der Zeitleiste der Kameraseite übereinander lägen, erscheinen als eine Markierung mit Zahl; ein Tippen zoomt in die Gruppe hinein und spielt von dort ab',
             en: 'NVR: events that would overlap on the camera page timeline show as one marker with a count; a tap zooms into the group and plays from there',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 21,
+    date: '2026-10-04',
+    title: { de: 'NVR: Ereignisse der letzten 24 Stunden', en: 'NVR: events of the last 24 hours' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'NVR: Die Ereignisleiste auf der NVR-Seite zeigt jetzt die Ereignisse der letzten 24 Stunden statt nur der letzten 40',
+            en: 'NVR: the events strip on the NVR page now shows the events of the last 24 hours instead of only the last 40',
           },
         ],
       },
