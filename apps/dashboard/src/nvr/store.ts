@@ -57,7 +57,8 @@ export const useNvrStore = create<NvrState>()((set, get) => ({
       }
       const [cameras, recent, stats, hist] = await Promise.all([
         client.getJson<SentinelCamera[]>(`api/cameras?${tz}`),
-        client.getJson<SentinelRecentEvent[]>('api/recent-events?limit=40'),
+        // the whole 24 h window (the plugin caps at 200, older plugins at 40; 40 reached back only ~12 h)
+        client.getJson<SentinelRecentEvent[]>('api/recent-events?limit=200'),
         client.getJson<SentinelStats>(`api/stats?${tz}`),
         // optional (older plugins have no histogram): its failure must not empty everything else
         client.getJson<{ buckets: number[] }>(`api/events-histogram?${tz}`).catch(() => ({ buckets: [] as number[] })),
