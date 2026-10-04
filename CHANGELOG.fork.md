@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F23 — 2026-10-04
+
+**NVR: Ereigniszahl für den sichtbaren Tag** · _NVR: event count for the visible day_
+
+### Geändert / Changed
+
+- NVR: Die Zahl im Reiter „Ereignisse“ der Kameraseite zählt nur den Tag in der Mitte der Zeitleiste; auf heute passt sie zur Zahl auf der Kamerakachel, die Liste zeigt weiter alle geladenen Tage  
+  _NVR: the number in the camera page’s Events tab counts only the day in the middle of the timeline; on today it matches the camera tile, the list still shows every loaded day_
+
 ## F22 — 2026-10-04
 
 **NVR: Ereignis-Markierungen gruppiert** · _NVR: event markers grouped_

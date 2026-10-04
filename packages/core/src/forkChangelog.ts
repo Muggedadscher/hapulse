@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 23,
+    date: '2026-10-04',
+    title: { de: 'NVR: Ereigniszahl für den sichtbaren Tag', en: 'NVR: event count for the visible day' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'NVR: Die Zahl im Reiter „Ereignisse“ der Kameraseite zählt nur den Tag in der Mitte der Zeitleiste; auf heute passt sie zur Zahl auf der Kamerakachel, die Liste zeigt weiter alle geladenen Tage',
+            en: 'NVR: the number in the camera page’s Events tab counts only the day in the middle of the timeline; on today it matches the camera tile, the list still shows every loaded day',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 22,
     date: '2026-10-04',
     title: { de: 'NVR: Ereignis-Markierungen gruppiert', en: 'NVR: event markers grouped' },
