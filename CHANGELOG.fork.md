@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F28 — 2026-10-06
+
+**NVR: Clips herunterladen** · _NVR: download clips_
+
+### Neu / Added
+
+- NVR: „Clip herunterladen“ auf der Kameraseite speichert ein Ereignis (mit 5 s davor und danach) oder einen frei gewählten Zeitraum „von bis“ als Video in Originalauflösung mit Ton, bis 30 Minuten; die Kanten setzt man, indem man die Zeitleiste unter der Abspiel-Linie verschiebt  
+  _NVR: “Download clip” on the camera page saves an event (with 5 s before and after) or a freely chosen “from–to” range as a video in original resolution with sound, up to 30 minutes; you set the edges by moving the timeline under the playback line_
+- NVR: Der fertige Clip lässt sich speichern und auf dem iPhone bis 100 MB direkt teilen, z. B. „Video sichern“ in Fotos; jedes Ereignis der Ereignisliste hat dafür einen eigenen Download-Knopf  
+  _NVR: The finished clip can be saved and, on the iPhone up to 100 MB, shared directly, e.g. “Save Video” to Photos; every event in the event list has its own download button for this_
+
 ## F27 — 2026-10-05
 
 **Fette Zahlen in echter Schriftstärke** · _Bold numbers in their real weight_

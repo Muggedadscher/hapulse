@@ -2,8 +2,12 @@
 // integration with REAL mouse events, HA in demo mode, the camera data from a real Sentinel: home card (camera + event),
 // /nvr overview (tile, event strip), camera page controls (same checks as Sentinel's scripts/ui-sweep-test.js), security
 // section. Run with Chromium on :9222 (Sentinel's scripts/cdp-run.sh). Fails on JS exceptions, console errors, HTTP ≥ 400.
-const WS = require('ws'), http = require('http');
+// Clip download (package ≥ 0.17.0): clip mode from the info bar and from the event list, an edge set by scrolling, the
+// edge holds while the video plays, create → save → the MP4 lands in a temp folder (CDP download events, ffprobe if
+// installed), close. `noexport` as an extra argument = Sentinel without features:["export"] → the button must be absent.
+const WS = require('ws'), http = require('http'), fs = require('fs'), os = require('os'), pth = require('path'), { spawnSync } = require('child_process');
 const BASE = process.argv[2], NVR = process.argv[3], TOKEN = process.argv[4] || '', MOBILE = process.argv.includes('mobile');
+const NOEXPORT = process.argv.includes('noexport');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = ''; r.on('data', (c) => (d += c)); r.on('end', () => { try { res(JSON.parse(d)); } catch (e) { rej(e); } }); }).on('error', rej); });
 (async () => {
@@ -22,11 +26,27 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const ev = async (e) => { const r = await cmd('Runtime.evaluate', { expression: e, returnByValue: true, awaitPromise: true }); if (r.result && r.result.exceptionDetails) return { __err: r.result.exceptionDetails.text }; return r.result && r.result.result && r.result.result.value; };
   const until = async (e, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await ev(e)) return true; await sleep(250); } return false; };
   await cmd('Page.enable'); await cmd('Runtime.enable'); await cmd('Network.enable');
+  // downloads (clip export) into a temp folder via the browser target; every download must finish (no hanging ones)
+  const DL_DIR = fs.mkdtempSync(pth.join(os.tmpdir(), 'hp-clip-'));
+  const dls = {};
+  let bws = null, bid = 0; const bp = {};
+  try {
+    const ver = await getJSON('http://127.0.0.1:9222/json/version');
+    bws = new WS(ver.webSocketDebuggerUrl, { perMessageDeflate: false });
+    bws.on('message', (raw) => {
+      const m = JSON.parse(raw); if (m.id && bp[m.id]) { bp[m.id](m); delete bp[m.id]; }
+      if (m.method === 'Browser.downloadWillBegin') dls[m.params.guid] = { name: m.params.suggestedFilename, state: 'begin', bytes: 0, t0: Date.now() };
+      if (m.method === 'Browser.downloadProgress') { const d = dls[m.params.guid] || (dls[m.params.guid] = { t0: Date.now() }); d.state = m.params.state; d.bytes = m.params.receivedBytes; }
+    });
+    await new Promise((r) => bws.on('open', r));
+    const bcmd = (m, pa) => { bid++; const _i = bid; return new Promise((res) => { bp[_i] = res; bws.send(JSON.stringify({ id: _i, method: m, params: pa || {} })); }); };
+    await bcmd('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: DL_DIR, eventsEnabled: true });
+  } catch (e) { errs.push('download setup: ' + String(e).slice(0, 120)); }
   const W = MOBILE ? 390 : 1280, H = MOBILE ? 844 : 900;
   await cmd('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: MOBILE ? 3 : 1, mobile: MOBILE, screenWidth: W, screenHeight: H });
   if (MOBILE) await cmd('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   const settings = { state: { theme: 'aurora', mode: 'light', lastSeenVersion: '99.0.0', customization: { scryptedUrl: NVR, scryptedToken: TOKEN } }, version: 0 };
-  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',${JSON.stringify(JSON.stringify(settings))});sessionStorage.setItem('__seeded','1');}window.__dl=[];const _c=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download){window.__dl.push(this.download);return;}return _c.call(this);};` });
+  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',${JSON.stringify(JSON.stringify(settings))});sessionStorage.setItem('__seeded','1');}window.__dl=[];const _c=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download){window.__dl.push(this.download);if(/\\.jpe?g$/i.test(this.download))return;}return _c.call(this);};` });
   const steps = [];
   const step = (name, ok, info) => steps.push({ name, ok: !!ok, ...(info !== undefined ? { info } : {}) });
   const click = async (sel, re) => {
@@ -136,6 +156,63 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     await key('l', 'KeyL');
     step('l → live', await until(`__snvr.state().live`, 20000));
 
+    // ---------- clip download ----------
+    const clipInfo = () => ev(`JSON.stringify((()=>{const vis=e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0};const lbl=e=>(e.getAttribute('aria-label')||e.textContent||'').trim();const find=(re,root)=>Array.from((root||document).querySelectorAll('button,a')).filter(vis).find(e=>re.test(lbl(e)));const from=find(/^from\\b/i),to=find(/^to\\b/i);const bar=from&&from.closest('[class*=clip]');const create=find(/^create clip$/i,bar),save=find(/^save$/i,bar);const band=document.querySelector('.vclip');return {band:!!band&&vis(band),from:from?from.textContent.trim():null,to:to?to.textContent.trim():null,create:create?!create.disabled:null,save:save?!(save.disabled||save.getAttribute('aria-disabled')==='true'):null,text:bar?bar.textContent.replace(/\\s+/g,' ').trim().slice(0,160):''}})())`).then((x) => (typeof x === 'string' ? JSON.parse(x) : {}));
+    const clipOpen = () => ev(`!!document.querySelector('.vclip')`);
+    const scrollTimeline = async (dy) => {
+      const r = await ev(`(()=>{const e=document.querySelector('.vtl-scroll');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height*0.6}})()`);
+      if (!r || r.__err) return false;
+      await cmd('Input.synthesizeScrollGesture', { x: Math.round(r.x), y: Math.round(r.y), yDistance: dy, speed: 600, gestureSourceType: MOBILE ? 'touch' : 'mouse' });
+      return true;
+    };
+    await ev(`__snvr.ctl.playAt(Date.now()-3600000,{})`);
+    await until(`!__snvr.state().live&&__snvr.state().label==='playing'`, 15000);
+    const clipBtn = await click('button.nvr-iconbtn', '^download clip$');
+    if (NOEXPORT) step('clip: no button without features:["export"] (old Sentinel)', !clipBtn);
+    else {
+      step('clip: info-bar button opens clip mode on the timeline tab', clipBtn && await until(`!!document.querySelector('.vclip')`, 4000), await clipInfo());
+      const c0 = await clipInfo();
+      step('clip: band, From/To chips, "Create clip" enabled', c0.band && c0.from && c0.to && c0.create === true, c0);
+      await click('[class*=clip] button', '^to\\b');
+      await scrollTimeline(-160); await sleep(2500);
+      const c1 = await clipInfo();
+      step('clip: scrolling moves the active edge', c1.to && c1.to !== c0.to, { before: c0.to, after: c1.to });
+      await sleep(3000);
+      const c2 = await clipInfo();
+      step('clip: edge holds while the video plays', c2.to === c1.to && c2.from === c1.from, { to: [c1.to, c2.to], from: [c1.from, c2.from] });
+      await click('[class*=clip] button', '^to\\b'); // done with that edge
+      const c3 = await clipInfo();
+      if (c3.create) {
+        await click('[class*=clip] button', '^create clip$');
+        const sawProgress = await until(`/preparing|loading|ready/i.test((document.querySelector('.vclip')&&document.body.innerText)||'')`, 8000);
+        const ready = await until(`(()=>{const b=Array.from(document.querySelectorAll('[class*=clip] button,[class*=clip] a')).find(e=>/^save$/i.test((e.getAttribute('aria-label')||e.textContent||'').trim()));return !!b&&!b.disabled&&b.getAttribute('aria-disabled')!=='true'})()`, 90000);
+        step('clip: create → progress → "Save" ready', ready, { sawProgress, info: await clipInfo() });
+        if (ready) {
+          const n0 = Object.keys(dls).length;
+          await click('[class*=clip] button, [class*=clip] a', '^save$');
+          const t1 = Date.now(); let d = null;
+          while (Date.now() - t1 < 90000) { d = Object.values(dls).slice(n0).find((x) => x.state === 'completed' || x.state === 'canceled') || null; if (d) break; await sleep(500); }
+          const begun = Object.values(dls).slice(n0);
+          const file = d && d.name ? pth.join(DL_DIR, d.name) : null;
+          const size = file && fs.existsSync(file) ? fs.statSync(file).size : 0;
+          let probe = null;
+          if (size) { const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type', '-of', 'json', file], { encoding: 'utf8' }); if (!r.error) { try { const j = JSON.parse(r.stdout); probe = { dur: Math.round(Number(j.format.duration)), streams: j.streams.map((x) => x.codec_type).join('+') }; } catch { probe = { err: (r.stderr || '').slice(0, 120) }; } } }
+          step('clip: "Save" downloads an MP4 (finished, not hanging)', d && d.state === 'completed' && /\.mp4$/i.test(d.name || '') && size > 0 && (!probe || (probe.dur > 0 && /video/.test(probe.streams || ''))), { begun, size, probe });
+        }
+      } else step('clip: "Create clip" enabled after setting the edge', false, c3);
+      await click('[class*=clip] button', '^close$');
+      step('clip: "Close" leaves clip mode', await until(`!document.querySelector('.vclip')`, 4000));
+      // per-event button in the event list → clip mode with that event's range, on the timeline tab
+      await click('button', '^events');
+      await until(`document.querySelectorAll('.nvr-evrow').length>0`, 5000);
+      const evBtn = await click('.nvr-evlist button:not(.nvr-evrow)', '^(event as clip|download clip)$');
+      step('clip: event-list button → clip mode on the timeline tab', evBtn && await until(`!!document.querySelector('.vclip')&&!document.querySelector('.nvr-evrow')`, 4000), await clipInfo());
+      if (await clipOpen()) { await click('[class*=clip] button', '^close$'); await until(`!document.querySelector('.vclip')`, 3000); }
+      const hanging = Object.values(dls).filter((x) => x.state !== 'completed' && x.state !== 'canceled');
+      step('clip: no hanging download', hanging.length === 0, { downloads: Object.values(dls).map((x) => ({ name: x.name, state: x.state, bytes: x.bytes })) });
+    }
+    await click('button', '^timeline$');
+
     // ---------- security section ----------
     await go('/security'); await sleep(5000);
     const sec = await ev(`JSON.stringify({sec:!!document.querySelector('.nvr-sec'),tiles:document.querySelectorAll('.nvr-sec .nvr-camtile, .nvr-sec button').length})`).then(JSON.parse);
@@ -144,5 +221,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   } catch (e) { crash = String(e.stack || e).slice(0, 400); }
   const failed = steps.filter((s) => !s.ok).map((s) => s.name);
   console.log(JSON.stringify({ mobile: MOBILE, ok: !crash && failed.length === 0 && errs.length === 0 && httpBad.length === 0, crash, failed, errs, http: httpBad, steps }, null, 1));
+  try { fs.rmSync(DL_DIR, { recursive: true, force: true }); } catch {}
+  if (bws) bws.close();
   ws.close(); process.exit(0);
 })().catch((e) => { console.log('ERR ' + e.stack); process.exit(1); });
