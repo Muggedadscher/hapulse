@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 24,
+    date: '2026-10-05',
+    title: { de: 'NVR: Hängende Aufnahme wird angezeigt', en: 'NVR: a stalled recording is shown' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'NVR: Schreibt eine Kamera keine Aufnahmen mehr, obwohl sie verbunden ist, zeigen Kachel, Statuspille, Startseiten-Karte und Sicherheitsseite „Aufnahme hängt“; Sentinel startet die Aufnahme selbst neu, die Anzeige verschwindet mit der nächsten Aufnahme',
+            en: 'NVR: when a camera stops writing recordings while still connected, its tile, the status pill, the home card and the security page show “Recording stalled”; Sentinel restarts the recording itself and the notice goes away with the next recording',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 23,
     date: '2026-10-04',
     title: { de: 'NVR: Ereigniszahl für den sichtbaren Tag', en: 'NVR: event count for the visible day' },

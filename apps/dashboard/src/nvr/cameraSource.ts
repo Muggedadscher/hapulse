@@ -83,11 +83,11 @@ export function suggestArea(cameraName: string, areas: { id: string; name: strin
 }
 
 /**
- * Camera numbers for the security counters: Sentinel's cameras (online = "active") while it
- * is the source, otherwise Home Assistant's camera entities as before.
+ * Camera numbers for the security counters: Sentinel's cameras (recording = "active": online and
+ * the recording does not hang) while it is the source, otherwise Home Assistant's camera entities as before.
  */
 export function useCameraCount(haCameraCount: number): { total: number; active: number; source: CameraSource } {
   const sentinel = useSentinelCameras();
   if (!sentinel) return { total: haCameraCount, active: haCameraCount, source: 'ha' };
-  return { total: sentinel.cameras.length, active: sentinel.cameras.filter((c) => c.online).length, source: 'sentinel' };
+  return { total: sentinel.cameras.length, active: sentinel.cameras.filter((c) => c.online && !c.stalled).length, source: 'sentinel' };
 }
