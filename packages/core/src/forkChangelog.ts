@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 26,
+    date: '2026-10-05',
+    title: { de: 'NVR: „Sentinel öffnen“ an der Abspielposition', en: 'NVR: “Open in Sentinel” at the playback position' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: „Sentinel öffnen“ auf der Kameraseite öffnet Sentinel wieder an der Stelle, die gerade läuft oder pausiert ist, statt live; ebenso „In Safari öffnen“ beim Bild-in-Bild-Hinweis der Home-Bildschirm-App',
+            en: 'NVR: “Open in Sentinel” on the camera page opens Sentinel at the moment that is playing or paused again instead of live; so does “Open in Safari” in the picture-in-picture note of the Home Screen app',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 25,
     date: '2026-10-05',
     title: { de: 'NVR: Hängende Aufnahme wird angezeigt', en: 'NVR: a stalled recording is shown' },
