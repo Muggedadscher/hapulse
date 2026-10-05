@@ -63,25 +63,30 @@ export function NvrOverviewPage() {
           ? <EmptyState icon={<Cctv size={28} strokeWidth={1.75} />} title={t('nvr.title')} description={t('globalSettings.nvr.notSetUp')} />
           : <NvrSetupCard />
       ) : status === 'error' ? (
-        <EmptyState
-          icon={<WifiOff size={28} strokeWidth={1.75} />}
-          title={t('nvr.error.title')}
-          description={errorText}
-          action={(
-            <div className="nvr-setup__actions">
-              <button type="button" className="btn btn--ghost" onClick={() => void refresh(cfg.client)}>
-                <RefreshCw size={16} strokeWidth={1.75} />{t('nvr.error.retry')}
-              </button>
-              {!locked && (
-                <button type="button" className="btn btn--primary" onClick={() => setSetupOpen(true)}>
-                  <Settings2 size={16} strokeWidth={1.75} />{t('nvr.setup.modalTitle')}
+        // role="alert": screen readers announce the failed load (EmptyState itself is a plain upstream div)
+        <div role="alert">
+          <EmptyState
+            icon={<WifiOff size={28} strokeWidth={1.75} />}
+            title={t('nvr.error.title')}
+            description={errorText}
+            action={(
+              <div className="nvr-setup__actions">
+                <button type="button" className="btn btn--ghost" onClick={() => void refresh(cfg.client)}>
+                  <RefreshCw size={16} strokeWidth={1.75} />{t('nvr.error.retry')}
                 </button>
-              )}
-            </div>
-          )}
-        />
+                {!locked && (
+                  <button type="button" className="btn btn--primary" onClick={() => setSetupOpen(true)}>
+                    <Settings2 size={16} strokeWidth={1.75} />{t('nvr.setup.modalTitle')}
+                  </button>
+                )}
+              </div>
+            )}
+          />
+        </div>
       ) : !stats ? (
-        <EmptyState icon={<Cctv size={28} strokeWidth={1.75} />} title={t('nvr.loading')} />
+        <div role="status" aria-live="polite">
+          <EmptyState icon={<Cctv size={28} strokeWidth={1.75} />} title={t('nvr.loading')} />
+        </div>
       ) : (
         <NvrUi client={cfg.client}>
           <div className="nvr-layout">
