@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 24,
+    date: '2026-10-05',
+    title: { de: 'NVR: „gestern“ in der Ereignisleiste', en: 'NVR: “yesterday” in the events strip' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'NVR: In der Ereignisleiste steht bei Ereignissen von vor Mitternacht „gestern“ vor der Uhrzeit, bei älteren ein kurzes Datum; heutige zeigen weiter nur die Uhrzeit',
+            en: 'NVR: in the events strip, events from before midnight show “yesterday” in front of the time, older ones a short date; today’s still show the time only',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 23,
     date: '2026-10-04',
     title: { de: 'NVR: Ereigniszahl für den sichtbaren Tag', en: 'NVR: event count for the visible day' },
