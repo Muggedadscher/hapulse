@@ -146,8 +146,9 @@ HAPulse und Sentinel gleich aus. HAPulse liefert nur die Texte `nvr.clip.*` (27 
   `Content-Disposition: attachment; filename="…"; filename*=UTF-8''…` der Antwort aus; den Dateinamen
   (`<Kamera>_<JJJJ-MM-TT>_<HH-MM-SS>.mp4`) liest der Client aus dem JSON, nicht aus dem Header (Sentinel nennt
   `Content-Disposition` trotzdem in `Access-Control-Expose-Headers`). Das Paket weiß über die schon vorhandene
-  `crossOrigin`-Prop (`NvrCameraPage.tsx`), dass es diesen Weg nehmen muss. HAPulses nginx setzt nur `frame-ancestors`
-  als CSP, blockt also weder Blob- noch Cross-Origin-Downloads.
+  `crossOrigin`-Prop (`NvrCameraPage.tsx`), dass es diesen Weg nehmen muss. HAPulses nginx-Vorlage `docker/nginx.conf` setzt
+  nur `frame-ancestors` als CSP, blockt also weder Blob- noch Cross-Origin-Downloads (CT 210 läuft mit System-nginx;
+  wer dort eine strengere CSP setzt, muss `blob:` und den Sentinel-Ursprung erlauben).
 - **iPhone/iPad:** In der Home-Bildschirm-App (`navigator.standalone`) und wenn `navigator.canShare({files})` geht, lädt
   die Clip-Leiste die Datei bis **100 MB** vorab als Blob („Wird geladen …“). „Teilen“ ruft `navigator.share({files})`
   dann synchron im Tipp auf (WebKit verlangt eine frische Nutzergeste; nach einem `await fetch` wäre sie verfallen) —
