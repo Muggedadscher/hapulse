@@ -38,7 +38,7 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
-    version: 24,
+    version: 25,
     date: '2026-10-05',
     title: { de: 'NVR: Hängende Aufnahme wird angezeigt', en: 'NVR: a stalled recording is shown' },
     sections: [
@@ -48,6 +48,22 @@ export const FORK_RELEASES: ForkRelease[] = [
           {
             de: 'NVR: Schreibt eine Kamera keine Aufnahmen mehr, obwohl sie verbunden ist, zeigen Kachel, Statuspille, Startseiten-Karte und Sicherheitsseite „Aufnahme hängt“; Sentinel startet die Aufnahme selbst neu, die Anzeige verschwindet mit der nächsten Aufnahme',
             en: 'NVR: when a camera stops writing recordings while still connected, its tile, the status pill, the home card and the security page show “Recording stalled”; Sentinel restarts the recording itself and the notice goes away with the next recording',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 24,
+    date: '2026-10-05',
+    title: { de: 'NVR: „gestern“ in der Ereignisleiste', en: 'NVR: “yesterday” in the events strip' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'NVR: In der Ereignisleiste steht bei Ereignissen von vor Mitternacht „gestern“ vor der Uhrzeit, bei älteren ein kurzes Datum; heutige zeigen weiter nur die Uhrzeit',
+            en: 'NVR: in the events strip, events from before midnight show “yesterday” in front of the time, older ones a short date; today’s still show the time only',
           },
         ],
       },

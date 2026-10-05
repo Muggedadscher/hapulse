@@ -6,7 +6,7 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
-## F24 — 2026-10-05
+## F25 — 2026-10-05
 
 **NVR: Hängende Aufnahme wird angezeigt** · _NVR: a stalled recording is shown_
 
@@ -14,6 +14,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 - NVR: Schreibt eine Kamera keine Aufnahmen mehr, obwohl sie verbunden ist, zeigen Kachel, Statuspille, Startseiten-Karte und Sicherheitsseite „Aufnahme hängt“; Sentinel startet die Aufnahme selbst neu, die Anzeige verschwindet mit der nächsten Aufnahme  
   _NVR: when a camera stops writing recordings while still connected, its tile, the status pill, the home card and the security page show “Recording stalled”; Sentinel restarts the recording itself and the notice goes away with the next recording_
+
+## F24 — 2026-10-05
+
+**NVR: „gestern“ in der Ereignisleiste** · _NVR: “yesterday” in the events strip_
+
+### Geändert / Changed
+
+- NVR: In der Ereignisleiste steht bei Ereignissen von vor Mitternacht „gestern“ vor der Uhrzeit, bei älteren ein kurzes Datum; heutige zeigen weiter nur die Uhrzeit  
+  _NVR: in the events strip, events from before midnight show “yesterday” in front of the time, older ones a short date; today’s still show the time only_
 
 ## F23 — 2026-10-04
 
