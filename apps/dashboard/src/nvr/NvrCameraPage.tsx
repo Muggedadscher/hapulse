@@ -28,6 +28,10 @@ declare const __HAPULSE_BUILD__: string | undefined;
 // matched to the deployed commit (Sentinel's own UI sends its deploy stamp the same way)
 const TELEMETRY_BRAND = `hapulse-${typeof __HAPULSE_BUILD__ !== 'undefined' ? __HAPULSE_BUILD__ : 'dev'}`;
 
+// one element for every render: the header below re-renders with the playback position (~4×/s while playing) — the
+// same element reference lets React skip the bell/avatar cluster then
+const HEADER_ACTIONS = <PageHeaderActions />;
+
 export function NvrCameraPage() {
   const t = useT();
   const navigate = useNavigate();
@@ -47,7 +51,8 @@ export function NvrCameraPage() {
     );
   }
 
-  const openLink = sentinelTimelineLink(cfg.origin, camId);
+  // "open in Sentinel" continues at the moment on screen (the page passes the playback position; live = none)
+  const openLink = (at: number | undefined) => sentinelTimelineLink(cfg.origin, camId, at);
   return (
     <NvrUi client={cfg.client}>
       <div className="page nvr-page">
@@ -56,17 +61,17 @@ export function NvrCameraPage() {
           storagePrefix="hapulse-nvr-ar-" // keep the aspect cache key this install already uses
           brand={TELEMETRY_BRAND}
           crossOrigin
-          header={
+          header={(at) => (
             <CameraTitle name={name} onBack={() => navigate(NVR_ROOT)}>
-              <a className="btn btn--ghost nvr-actions__btn" href={openLink} target="_blank" rel="noreferrer noopener" aria-label={t('nvr.open')} title={t('nvr.open')}>
+              <a className="btn btn--ghost nvr-actions__btn" href={openLink(at)} target="_blank" rel="noreferrer noopener" aria-label={t('nvr.open')} title={t('nvr.open')}>
                 <ExternalLink size={16} strokeWidth={1.75} />
                 <span className="nvr-actions__label">{t('nvr.open')}</span>
               </a>
-              <PageHeaderActions />
+              {HEADER_ACTIONS}
             </CameraTitle>
-          }
+          )}
           renderDatePicker={(req) => <DatePickerModal open dayStart={req.dayStart} timeTs={req.timeTs} oldestAllowed={req.oldestAllowed} onGo={req.onGo} onClose={req.onClose} />}
-          externalUrl={openLink}          // PiP refused in an iPhone Home-Screen app → "open in Safari" (Sentinel, no token)
+          externalUrl={openLink}          // PiP refused in an iPhone Home-Screen app → "open in Safari" (Sentinel, no token, same moment)
         />
       </div>
     </NvrUi>
