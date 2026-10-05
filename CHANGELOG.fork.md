@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F27 — 2026-10-05
+
+**Fette Zahlen in echter Schriftstärke** · _Bold numbers in their real weight_
+
+### Behoben / Fixed
+
+- Zahlen in der Datenschrift (z. B. Pool-Ring, Wetter, Klima, Systemwerte, NVR-Kennzahlen) erscheinen in ihrer echten Stärke statt künstlich verdickt; halbfette Zahlen sehen nicht mehr aus wie normale  
+  _Numbers in the data font (e.g. pool ring, weather, climate, system values, NVR figures) show in their real weight instead of artificially thickened; medium-weight numbers no longer look like regular ones_
+
 ## F26 — 2026-10-05
 
 **NVR: „Sentinel öffnen“ an der Abspielposition** · _NVR: “Open in Sentinel” at the playback position_

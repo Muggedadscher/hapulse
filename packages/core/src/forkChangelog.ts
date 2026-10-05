@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 27,
+    date: '2026-10-05',
+    title: { de: 'Fette Zahlen in echter Schriftstärke', en: 'Bold numbers in their real weight' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Zahlen in der Datenschrift (z. B. Pool-Ring, Wetter, Klima, Systemwerte, NVR-Kennzahlen) erscheinen in ihrer echten Stärke statt künstlich verdickt; halbfette Zahlen sehen nicht mehr aus wie normale',
+            en: 'Numbers in the data font (e.g. pool ring, weather, climate, system values, NVR figures) show in their real weight instead of artificially thickened; medium-weight numbers no longer look like regular ones',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 26,
     date: '2026-10-05',
     title: { de: 'NVR: „Sentinel öffnen“ an der Abspielposition', en: 'NVR: “Open in Sentinel” at the playback position' },

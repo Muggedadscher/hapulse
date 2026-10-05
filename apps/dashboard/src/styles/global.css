@@ -7,7 +7,9 @@
 @import '@fontsource/schibsted-grotesk/400.css';
 @import '@fontsource/schibsted-grotesk/500.css';
 @import '@fontsource/schibsted-grotesk/700.css';
-@import '@fontsource/spline-sans-mono/400.css';
+/* [fork] Spline Sans Mono als variable Schrift (300–700): vorher nur 400 geladen, 500/600/700 wurden
+   künstlich verdickt bzw. sahen aus wie 400. */
+@import '@fontsource-variable/spline-sans-mono';
 
 /* =========================================================
    CSS Reset
@@ -98,7 +100,7 @@ h6 {
 
   --font-display: 'Bricolage Grotesque Variable', sans-serif;
   --font-body: 'Schibsted Grotesk', sans-serif;
-  --font-data: 'Spline Sans Mono', monospace;
+  --font-data: 'Spline Sans Mono Variable', monospace; /* [fork] variable Schrift */
 
   --radius-card: 20px;
   --radius-control: 12px;
