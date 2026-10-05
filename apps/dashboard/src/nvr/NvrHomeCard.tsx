@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Cctv, ChevronRight, Camera, WifiOff } from 'lucide-react';
-import { sentinelEventPlayTs } from '@sentinel-nvr/web/api';
+import { sentinelEventPlayTs, sentinelRecordingState } from '@sentinel-nvr/web/api';
 import { Card } from '../components/ui/Card';
 import { useT, useLocale } from '../i18n/useT';
 import { useNvrOverview } from './store';
@@ -33,14 +33,20 @@ export function NvrHomeCard() {
   }, []);
   if (!cfg) return null;
   const client = cfg.client;
-  const offline = cameras.filter((c) => c.recording && !c.online).length;
+  // recording hangs (Sentinel's watchdog restarts it) outranks offline — see sentinelRecordingState
+  const offline = cameras.filter((c) => sentinelRecordingState(c) === 'offline').length;
+  const stalled = cameras.filter((c) => sentinelRecordingState(c) === 'stalled').length;
+  const problem = [
+    offline ? t('nvr.hero.offline', { count: offline }) : null,
+    stalled ? t('nvr.hero.stalled', { count: stalled }) : null,
+  ].filter(Boolean).join(' · ');
   const events = recent.slice(0, MAX_EVENTS);
 
   return (
     <Card className="nvr-home">
       <div className="nvr-home__header">
         <div className="nvr-home__title-row">
-          <span className={`nvr-home__chip${offline ? ' nvr-home__chip--danger' : ''}`} aria-hidden="true">
+          <span className={`nvr-home__chip${problem ? ' nvr-home__chip--danger' : ''}`} aria-hidden="true">
             <Cctv size={16} strokeWidth={1.75} />
           </span>
           <span className="nvr-home__title">{t('nvr.home.title')}</span>
@@ -57,8 +63,8 @@ export function NvrHomeCard() {
         <>
           <div className="nvr-home__meta">
             <span>{t('nvr.hero.eventsToday')}: <b className="data-font">{stats?.eventsToday ?? '–'}</b></span>
-            <span className={offline ? 'nvr-home__meta--danger' : ''}>
-              {offline ? t('nvr.hero.offline', { count: offline }) : t('nvr.cameras.count', { count: cameras.length })}
+            <span className={problem ? 'nvr-home__meta--danger' : ''}>
+              {problem || t('nvr.cameras.count', { count: cameras.length })}
             </span>
           </div>
           {cameras.length > 0 && (
@@ -68,7 +74,7 @@ export function NvrHomeCard() {
                   <HomeSnapshot camId={c.id} src={client.snapshotUrl(c.id, tick, tileSnapshotWidth())} fallback={c.latestThumbId ? client.segmentThumbUrl(c.latestThumbId) : null} />
                   <span className="nvr-home__cam-name">
                     {c.name}
-                    {c.recording && <i className={`nvr-camtile__dot${c.online ? '' : ' nvr-camtile__dot--off'}`} aria-hidden="true" />}
+                    {c.recording && <i className={`nvr-camtile__dot${sentinelRecordingState(c) === 'ok' ? '' : ' nvr-camtile__dot--off'}`} aria-hidden="true" />}
                   </span>
                 </button>
               ))}

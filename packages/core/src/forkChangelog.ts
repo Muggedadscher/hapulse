@@ -38,7 +38,7 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
-    version: 25,
+    version: 26,
     date: '2026-10-05',
     title: { de: 'NVR: „Sentinel öffnen“ an der Abspielposition', en: 'NVR: “Open in Sentinel” at the playback position' },
     sections: [
@@ -48,6 +48,22 @@ export const FORK_RELEASES: ForkRelease[] = [
           {
             de: 'NVR: „Sentinel öffnen“ auf der Kameraseite öffnet Sentinel wieder an der Stelle, die gerade läuft oder pausiert ist, statt live; ebenso „In Safari öffnen“ beim Bild-in-Bild-Hinweis der Home-Bildschirm-App',
             en: 'NVR: “Open in Sentinel” on the camera page opens Sentinel at the moment that is playing or paused again instead of live; so does “Open in Safari” in the picture-in-picture note of the Home Screen app',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 25,
+    date: '2026-10-05',
+    title: { de: 'NVR: Hängende Aufnahme wird angezeigt', en: 'NVR: a stalled recording is shown' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'NVR: Schreibt eine Kamera keine Aufnahmen mehr, obwohl sie verbunden ist, zeigen Kachel, Statuspille, Startseiten-Karte und Sicherheitsseite „Aufnahme hängt“; Sentinel startet die Aufnahme selbst neu, die Anzeige verschwindet mit der nächsten Aufnahme',
+            en: 'NVR: when a camera stops writing recordings while still connected, its tile, the status pill, the home card and the security page show “Recording stalled”; Sentinel restarts the recording itself and the notice goes away with the next recording',
           },
         ],
       },

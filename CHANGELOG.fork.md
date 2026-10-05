@@ -6,7 +6,7 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
-## F25 — 2026-10-05
+## F26 — 2026-10-05
 
 **NVR: „Sentinel öffnen“ an der Abspielposition** · _NVR: “Open in Sentinel” at the playback position_
 
@@ -14,6 +14,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 - NVR: „Sentinel öffnen“ auf der Kameraseite öffnet Sentinel wieder an der Stelle, die gerade läuft oder pausiert ist, statt live; ebenso „In Safari öffnen“ beim Bild-in-Bild-Hinweis der Home-Bildschirm-App  
   _NVR: “Open in Sentinel” on the camera page opens Sentinel at the moment that is playing or paused again instead of live; so does “Open in Safari” in the picture-in-picture note of the Home Screen app_
+
+## F25 — 2026-10-05
+
+**NVR: Hängende Aufnahme wird angezeigt** · _NVR: a stalled recording is shown_
+
+### Neu / Added
+
+- NVR: Schreibt eine Kamera keine Aufnahmen mehr, obwohl sie verbunden ist, zeigen Kachel, Statuspille, Startseiten-Karte und Sicherheitsseite „Aufnahme hängt“; Sentinel startet die Aufnahme selbst neu, die Anzeige verschwindet mit der nächsten Aufnahme  
+  _NVR: when a camera stops writing recordings while still connected, its tile, the status pill, the home card and the security page show “Recording stalled”; Sentinel restarts the recording itself and the notice goes away with the next recording_
 
 ## F24 — 2026-10-05
 

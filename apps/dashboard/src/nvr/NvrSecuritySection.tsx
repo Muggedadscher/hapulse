@@ -12,6 +12,7 @@ import { Cctv, ChevronRight, WifiOff } from 'lucide-react';
 import { useT } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { CameraTiles, EventsStrip } from '@sentinel-nvr/web/ui';
+import { sentinelRecordingState } from '@sentinel-nvr/web/api';
 import { NvrUi } from './ui';
 import { NVR_ROOT } from './paths';
 import './nvr.css';
@@ -21,20 +22,26 @@ export function NvrSecuritySection() {
   const navigate = useNavigate();
   const { cfg, status, cameras, recent, stats, errorStatus } = useNvrOverview(10_000);
   if (!cfg) return null;
-  const offline = cameras.filter((c) => c.recording && !c.online).length;
+  // recording hangs (Sentinel's watchdog restarts it) outranks offline — see sentinelRecordingState
+  const offline = cameras.filter((c) => sentinelRecordingState(c) === 'offline').length;
+  const stalled = cameras.filter((c) => sentinelRecordingState(c) === 'stalled').length;
+  const problem = [
+    offline ? t('nvr.hero.offline', { count: offline }) : null,
+    stalled ? t('nvr.hero.stalled', { count: stalled }) : null,
+  ].filter(Boolean).join(' · ');
 
   return (
     <div className="nvr-sec nvr-page">
       <div className="nvr-sec__head">
         <div className="nvr-home__title-row">
-          <span className={`nvr-home__chip${offline ? ' nvr-home__chip--danger' : ''}`} aria-hidden="true">
+          <span className={`nvr-home__chip${problem ? ' nvr-home__chip--danger' : ''}`} aria-hidden="true">
             <Cctv size={16} strokeWidth={1.75} />
           </span>
           <span className="nvr-home__title">{t('nvr.home.title')}</span>
           {stats && (
             <span className="nvr-sec__meta">
               {t('nvr.hero.eventsToday')}: <b className="data-font">{stats.eventsToday}</b>
-              {offline > 0 && <> · <span className="nvr-home__meta--danger">{t('nvr.hero.offline', { count: offline })}</span></>}
+              {problem && <> · <span className="nvr-home__meta--danger">{problem}</span></>}
             </span>
           )}
         </div>
