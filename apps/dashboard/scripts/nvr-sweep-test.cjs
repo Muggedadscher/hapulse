@@ -5,7 +5,7 @@
 // Clip download (package ≥ 0.17.0): clip mode from the info bar and from the event list, an edge set by scrolling, the
 // edge holds while the video plays, create → save → the MP4 lands in a temp folder (CDP download events, ffprobe if
 // installed), close. `noexport` as an extra argument = Sentinel without features:["export"] → the button must be absent.
-const WS = require('ws'), http = require('http'), fs = require('fs'), os = require('os'), pth = require('path'), { spawnSync } = require('child_process');
+const WS = require('ws'), http = require('http'), nodeFs = require('fs'), os = require('os'), pth = require('path'), { spawnSync } = require('child_process');
 const BASE = process.argv[2], NVR = process.argv[3], TOKEN = process.argv[4] || '', MOBILE = process.argv.includes('mobile');
 const NOEXPORT = process.argv.includes('noexport');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -27,7 +27,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const until = async (e, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await ev(e)) return true; await sleep(250); } return false; };
   await cmd('Page.enable'); await cmd('Runtime.enable'); await cmd('Network.enable');
   // downloads (clip export) into a temp folder via the browser target; every download must finish (no hanging ones)
-  const DL_DIR = fs.mkdtempSync(pth.join(os.tmpdir(), 'hp-clip-'));
+  const DL_DIR = nodeFs.mkdtempSync(pth.join(os.tmpdir(), 'hp-clip-'));
   const dls = {};
   let bws = null, bid = 0; const bp = {};
   try {
@@ -194,7 +194,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
           while (Date.now() - t1 < 90000) { d = Object.values(dls).slice(n0).find((x) => x.state === 'completed' || x.state === 'canceled') || null; if (d) break; await sleep(500); }
           const begun = Object.values(dls).slice(n0);
           const file = d && d.name ? pth.join(DL_DIR, d.name) : null;
-          const size = file && fs.existsSync(file) ? fs.statSync(file).size : 0;
+          const size = file && nodeFs.existsSync(file) ? nodeFs.statSync(file).size : 0;
           let probe = null;
           if (size) { const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type', '-of', 'json', file], { encoding: 'utf8' }); if (!r.error) { try { const j = JSON.parse(r.stdout); probe = { dur: Math.round(Number(j.format.duration)), streams: j.streams.map((x) => x.codec_type).join('+') }; } catch { probe = { err: (r.stderr || '').slice(0, 120) }; } } }
           step('clip: "Save" downloads an MP4 (finished, not hanging)', d && d.state === 'completed' && /\.mp4$/i.test(d.name || '') && size > 0 && (!probe || (probe.dur > 0 && /video/.test(probe.streams || ''))), { begun, size, probe });
@@ -221,7 +221,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   } catch (e) { crash = String(e.stack || e).slice(0, 400); }
   const failed = steps.filter((s) => !s.ok).map((s) => s.name);
   console.log(JSON.stringify({ mobile: MOBILE, ok: !crash && failed.length === 0 && errs.length === 0 && httpBad.length === 0, crash, failed, errs, http: httpBad, steps }, null, 1));
-  try { fs.rmSync(DL_DIR, { recursive: true, force: true }); } catch {}
+  try { nodeFs.rmSync(DL_DIR, { recursive: true, force: true }); } catch {}
   if (bws) bws.close();
   ws.close(); process.exit(0);
 })().catch((e) => { console.log('ERR ' + e.stack); process.exit(1); });
