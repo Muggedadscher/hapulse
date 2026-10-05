@@ -1,6 +1,6 @@
 # Sentinel NVR — native Integration in HAPulse
 
-Stand: 2026-09-26 (Paket `@sentinel-nvr/web` 0.11). Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
+Stand: 2026-10-06 (Paket `@sentinel-nvr/web` 0.17, Clip-Export); Grundgerüst 2026-09-26 (Paket 0.11). Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
 auf der NVR-Seite. Die Integration ist **bewusst als abgegrenztes Modul**
 gebaut, damit sie sich (Sentinel ist in starker Entwicklung) jederzeit
 **komplett entfernen und neu aufsetzen** lässt — siehe „Rausnehmen" unten.
@@ -119,6 +119,48 @@ Sentinels UI eine eigenständige App ist:
 | Telemetrie | `b:<build-id>` | `b:hapulse` (so sind Zeilen der Integration im Sentinel-Serverlog unterscheidbar), Nutzlast unter `d:` wie bei Sentinel |
 | Nicht übernommen | Anmeldeseite, iOS-Homescreen-Meta, `/status`-Route, Theme-Schalter, Uhr, Embed-Modus | (HAPulse liefert das selbst; Menschen öffnen Sentinels UI über „Sentinel öffnen“) |
 
+## Clip-Export (seit Paket 0.17.0, Oktober 2026)
+
+„Clip herunterladen“ ist komplett Paket-Code (`CameraPage`, Clip-Leiste, Band `.vclip` auf der Zeitleiste) und sieht in
+HAPulse und Sentinel gleich aus. HAPulse liefert nur die Texte `nvr.clip.*` (27 Schlüssel, alle 7 Locales;
+`test/nvrLocales.test.ts` meldet fehlende) und die Paketversion. Verbindlich ist Sentinels `docs/API.md` (Abschnitt
+„Clips exportieren“).
+
+- **Einstieg:** Knopf „Clip herunterladen“ in der Info-Leiste (Bereich = laufendes Ereignis, sonst Position ±30 s, live
+  die letzten 60 s) und ein Download-Knopf je Zeile der Ereignisliste (Ereignis ±5 s). Beides schaltet auf den Reiter
+  „Zeitleiste“ in den **Clip-Modus**: Chips „Von“/„Bis“ unten in der Zeitleisten-Karte; Chip tippen, dann die Zeitleiste
+  verschieben — die Abspiel-Linie setzt die Kante (nur Nutzer-Scrollen, nie das Mitlaufen der Wiedergabe). Höchstens
+  30 min.
+- **Fähigkeit:** Der Knopf erscheint nur, wenn `api/clips` `features: ["export"]` meldet. Mit einem älteren Sentinel
+  fehlt er einfach — kein Klick, der erst mit einer Fehlermeldung endet.
+- **Routen** (alle hinter dem Token, Antworten JSON, auch Fehler): `POST api/export?camera=&from=&to=&tz=` startet einen
+  Auftrag (`202 {id, …, filename, gaps, clipped}`), `GET api/export-status?id=` liefert `state`/`progress`,
+  `GET api/export-file?id=` die fertige MP4 (`+faststart`, Originalauflösung mit Ton, 15 min abholbar),
+  `POST api/export-cancel?id=` bricht ab. Fehlercodes: 400 Bereich, 404 Kamera/keine Aufnahme/abgelaufen, 405 GET auf
+  eine POST-Route, 409 Kamerawechsel im Bereich bzw. noch nicht fertig, 413 zu lang, 429 zwei Exporte laufen schon,
+  503 Speicher, 507 kein Platz. Parameter und Token (`?token=`) stehen in der URL; CORS kommt wie überall von
+  Sentinel (`Access-Control-Allow-Origin: *`), einen etwaigen Preflight (`OPTIONS`, z. B. bei `Content-Type:
+  application/json`) beantwortet Sentinel vor der Auth.
+- **Download cross-origin:** HAPulse läuft auf einer anderen Origin als Sentinel, deshalb wirkt das `download`-Attribut
+  eines Links auf `api/export-file` nicht (Browser ignorieren es cross-origin). Den Download löst dort
+  `Content-Disposition: attachment; filename="…"; filename*=UTF-8''…` der Antwort aus; den Dateinamen
+  (`<Kamera>_<JJJJ-MM-TT>_<HH-MM-SS>.mp4`) liest der Client aus dem JSON, nicht aus dem Header (Sentinel nennt
+  `Content-Disposition` trotzdem in `Access-Control-Expose-Headers`). Das Paket weiß über die schon vorhandene
+  `crossOrigin`-Prop (`NvrCameraPage.tsx`), dass es diesen Weg nehmen muss. HAPulses nginx-Vorlage `docker/nginx.conf` setzt
+  nur `frame-ancestors` als CSP, blockt also weder Blob- noch Cross-Origin-Downloads (CT 210 läuft mit System-nginx;
+  wer dort eine strengere CSP setzt, muss `blob:` und den Sentinel-Ursprung erlauben).
+- **iPhone/iPad:** In der Home-Bildschirm-App (`navigator.standalone`) und wenn `navigator.canShare({files})` geht, lädt
+  die Clip-Leiste die Datei bis **100 MB** vorab als Blob („Wird geladen …“). „Teilen“ ruft `navigator.share({files})`
+  dann synchron im Tipp auf (WebKit verlangt eine frische Nutzergeste; nach einem `await fetch` wäre sie verfallen) —
+  z. B. „Video sichern“ in Fotos. „Speichern“ in der Home-Bildschirm-App geht über denselben Blob und `<a download>`
+  (wie der Schnappschuss). Größer als 100 MB: Hinweis „Zu groß zum Teilen“ + „In Safari öffnen“ (`x-safari-https://`).
+  Blob-URLs werden beim Schließen des Clip-Modus freigegeben. Ob Downloads in Home-Bildschirm-Apps auf echten Geräten
+  gehen, ist erst mit dem iPhone-Test belegt.
+- **Abbruch und Ablauf:** Clip-Modus schließen oder Kamera verlassen, während ein Auftrag läuft → `export-cancel`.
+  Abgelaufene Datei (404) → Knopf „Neu erstellen“. Die Fortschrittsabfrage (700 ms) ruht im verborgenen Tab.
+- Telemetrie: `[client]`-Zeile `clip` (`ms`, `bytes`, `w` = download|blob|share|safari, `standalone`, `ok`, `err`) mit
+  `b:hapulse` im Sentinel-Serverlog.
+
 ## Dateien
 
 ### Neu (konfliktfrei beim Upstream-Merge)
@@ -197,7 +239,10 @@ zurückspringen noch „Lädt …" zeigen.
 echten Mausereignissen durch (HA im Demo-Modus, Kameras aus einem echten Sentinel): Home-Karte (Kamera, Ereignis),
 `/nvr` (Kachel, Ereignisleiste, Zurück), die komplette Kameraseite (Live-Sperren, ±15 s inkl. „+15 s an der Kante →
 Live“, Pause/Play, Tempo, Ton, Schnappschuss, Vollbild, Tabs, Filter, Ereignisliste, Zoom, Datumsdialog, LIVE-Chip,
-Tastatur) und die Security-Sektion; rot bei JS-/Konsolenfehlern oder HTTP ≥ 400. Chromium auf Port 9222 startet
+Tastatur, Clip herunterladen: Clip-Modus aus Info-Leiste und Ereignisliste, Kante per Scroll-Geste, Kante bleibt bei
+laufender Wiedergabe stehen, „Clip erstellen“ → „Speichern“ → MP4 per CDP-Download in einen Temp-Ordner, `ffprobe` falls
+vorhanden, kein hängender Download) und die Security-Sektion; rot bei JS-/Konsolenfehlern oder HTTP ≥ 400. Mit dem
+Zusatz `noexport` prüft er gegen ein Sentinel ohne `features: ["export"]`, dass der Clip-Knopf fehlt. Chromium auf Port 9222 startet
 Sentinels `scripts/cdp-run.sh`; im Labor (CT 213) `/root/lab/hp-nvr-sweep.sh [mobile]`.
 
 Allgemein (ohne NVR): `apps/dashboard/scripts/click-fuzz-test.cjs <hapulse-url> [mobile]` öffnet im HA-Demo-Modus jede Seite
