@@ -157,39 +157,57 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     step('l → live', await until(`__snvr.state().live`, 20000));
 
     // ---------- clip download ----------
-    const clipInfo = () => ev(`JSON.stringify((()=>{const vis=e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0};const lbl=e=>(e.getAttribute('aria-label')||e.textContent||'').trim();const find=(re,root)=>Array.from((root||document).querySelectorAll('button,a')).filter(vis).find(e=>re.test(lbl(e)));const from=find(/^from\\b/i),to=find(/^to\\b/i);const bar=from&&from.closest('[class*=clip]');const create=find(/^create clip$/i,bar),save=find(/^save$/i,bar);const band=document.querySelector('.vclip');return {band:!!band&&vis(band),from:from?from.textContent.trim():null,to:to?to.textContent.trim():null,create:create?!create.disabled:null,save:save?!(save.disabled||save.getAttribute('aria-disabled')==='true'):null,text:bar?bar.textContent.replace(/\\s+/g,' ').trim().slice(0,160):''}})())`).then((x) => (typeof x === 'string' ? JSON.parse(x) : {}));
-    const clipOpen = () => ev(`!!document.querySelector('.vclip')`);
+    // clip bar = .nvr-clipbar (present while clip mode is on); chips read "From14:03:12" (label + time, no space); the band
+    // .vclip is only rendered while the range is inside the timeline's window
+    const clipInfo = () => ev(`JSON.stringify((()=>{const vis=e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0};const lbl=e=>(e.getAttribute('aria-label')||e.textContent||'').replace(/\\s+/g,' ').trim();const bar=document.querySelector('.nvr-clipbar');const find=(re)=>bar?Array.from(bar.querySelectorAll('button,a')).filter(vis).find(e=>re.test(lbl(e))):null;const from=find(/^from(?![a-z])/i),to=find(/^to(?![a-z])/i),create=find(/^create clip$/i),save=find(/^save$/i);const band=document.querySelector('.vclip');return {open:!!bar,band:!!band&&vis(band),from:from?lbl(from):null,to:to?lbl(to):null,create:create?!create.disabled:null,save:save?!(save.disabled||save.getAttribute('aria-disabled')==='true'):null,text:bar?(bar.textContent||'').replace(/\\s+/g,' ').trim().slice(0,160):''}})())`).then((x) => (typeof x === 'string' ? JSON.parse(x) : {}));
+    const clipOpen = () => ev(`!!document.querySelector('.nvr-clipbar')`);
+    // real input (touch drag on mobile, mouse wheel otherwise; headless ignores Input.synthesizeScrollGesture);
+    // dy < 0 = scrollTop shrinks = the line moves to a later time. Falls back to in-page wheel + scrollTop.
     const scrollTimeline = async (dy) => {
-      const r = await ev(`(()=>{const e=document.querySelector('.vtl-scroll');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height*0.6}})()`);
-      if (!r || r.__err) return false;
-      await cmd('Input.synthesizeScrollGesture', { x: Math.round(r.x), y: Math.round(r.y), yDistance: dy, speed: 600, gestureSourceType: MOBILE ? 'touch' : 'mouse' });
-      return true;
+      const r = await ev(`(()=>{const e=document.querySelector('.vtl-scroll');if(!e)return null;const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height*0.6,top:e.scrollTop}})()`);
+      if (!r || r.__err) return 0;
+      const x = Math.round(r.x), y = Math.round(r.y), n = Math.max(4, Math.ceil(Math.abs(dy) / 30));
+      if (MOBILE) {
+        await cmd('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+        for (let i = 1; i <= n; i++) { await sleep(25); await cmd('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: Math.round(y - (dy * i) / n) }] }); }
+        await sleep(60);
+        await cmd('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      } else for (let i = 0; i < n; i++) { await cmd('Input.dispatchMouseEvent', { type: 'mouseWheel', x, y, deltaX: 0, deltaY: dy / n }); await sleep(30); }
+      await sleep(150);
+      let moved = (await ev(`document.querySelector('.vtl-scroll').scrollTop`)) - r.top;
+      if (Math.abs(moved) < 2) {
+        await ev(`new Promise(res=>{const el=document.querySelector('.vtl-scroll');let i=0;const st=${dy / n};const t=setInterval(()=>{el.dispatchEvent(new WheelEvent('wheel',{deltaY:st,bubbles:true,cancelable:true}));el.scrollTop+=st;if(++i>=${n}){clearInterval(t);res(1)}},30)})`);
+        await sleep(150);
+        moved = (await ev(`document.querySelector('.vtl-scroll').scrollTop`)) - r.top;
+      }
+      return moved;
     };
     await ev(`__snvr.ctl.playAt(Date.now()-3600000,{})`);
     await until(`!__snvr.state().live&&__snvr.state().label==='playing'`, 15000);
     const clipBtn = await click('button.nvr-iconbtn', '^download clip$');
     if (NOEXPORT) step('clip: no button without features:["export"] (old Sentinel)', !clipBtn);
     else {
-      step('clip: info-bar button opens clip mode on the timeline tab', clipBtn && await until(`!!document.querySelector('.vclip')`, 4000), await clipInfo());
+      step('clip: info-bar button opens clip mode on the timeline tab', clipBtn && await until(`!!document.querySelector('.nvr-clipbar')`, 4000), await clipInfo());
+      await until(`!!document.querySelector('.vclip')`, 3000); // the band renders with the next timeline frame
       const c0 = await clipInfo();
       step('clip: band, From/To chips, "Create clip" enabled', c0.band && c0.from && c0.to && c0.create === true, c0);
-      await click('[class*=clip] button', '^to\\b');
-      await scrollTimeline(-160); await sleep(2500);
+      await click('.nvr-clipbar button', '^to(?![a-z])');
+      await scrollTimeline(-60); await sleep(2500);
       const c1 = await clipInfo();
       step('clip: scrolling moves the active edge', c1.to && c1.to !== c0.to, { before: c0.to, after: c1.to });
       await sleep(3000);
       const c2 = await clipInfo();
       step('clip: edge holds while the video plays', c2.to === c1.to && c2.from === c1.from, { to: [c1.to, c2.to], from: [c1.from, c2.from] });
-      await click('[class*=clip] button', '^to\\b'); // done with that edge
+      await click('.nvr-clipbar button', '^to(?![a-z])'); // done with that edge
       const c3 = await clipInfo();
       if (c3.create) {
-        await click('[class*=clip] button', '^create clip$');
-        const sawProgress = await until(`/preparing|loading|ready/i.test((document.querySelector('.vclip')&&document.body.innerText)||'')`, 8000);
-        const ready = await until(`(()=>{const b=Array.from(document.querySelectorAll('[class*=clip] button,[class*=clip] a')).find(e=>/^save$/i.test((e.getAttribute('aria-label')||e.textContent||'').trim()));return !!b&&!b.disabled&&b.getAttribute('aria-disabled')!=='true'})()`, 90000);
+        await click('.nvr-clipbar button', '^create clip$');
+        const sawProgress = await until(`/preparing|loading|ready/i.test((document.querySelector('.nvr-clipbar')||{}).textContent||'')`, 8000);
+        const ready = await until(`(()=>{const b=Array.from(document.querySelectorAll('.nvr-clipbar button,.nvr-clipbar a')).find(e=>/^save$/i.test((e.getAttribute('aria-label')||e.textContent||'').trim()));return !!b&&!b.disabled&&b.getAttribute('aria-disabled')!=='true'})()`, 90000);
         step('clip: create → progress → "Save" ready', ready, { sawProgress, info: await clipInfo() });
         if (ready) {
           const n0 = Object.keys(dls).length;
-          await click('[class*=clip] button, [class*=clip] a', '^save$');
+          await click('.nvr-clipbar button, .nvr-clipbar a', '^save$');
           const t1 = Date.now(); let d = null;
           while (Date.now() - t1 < 90000) { d = Object.values(dls).slice(n0).find((x) => x.state === 'completed' || x.state === 'canceled') || null; if (d) break; await sleep(500); }
           const begun = Object.values(dls).slice(n0);
@@ -200,14 +218,14 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
           step('clip: "Save" downloads an MP4 (finished, not hanging)', d && d.state === 'completed' && /\.mp4$/i.test(d.name || '') && size > 0 && (!probe || (probe.dur > 0 && /video/.test(probe.streams || ''))), { begun, size, probe });
         }
       } else step('clip: "Create clip" enabled after setting the edge', false, c3);
-      await click('[class*=clip] button', '^close$');
-      step('clip: "Close" leaves clip mode', await until(`!document.querySelector('.vclip')`, 4000));
+      await click('.nvr-clipbar button', '^close$');
+      step('clip: "Close" leaves clip mode', await until(`!document.querySelector('.nvr-clipbar')`, 4000));
       // per-event button in the event list → clip mode with that event's range, on the timeline tab
       await click('button', '^events');
       await until(`document.querySelectorAll('.nvr-evrow').length>0`, 5000);
-      const evBtn = await click('.nvr-evlist button:not(.nvr-evrow)', '^(event as clip|download clip)$');
-      step('clip: event-list button → clip mode on the timeline tab', evBtn && await until(`!!document.querySelector('.vclip')&&!document.querySelector('.nvr-evrow')`, 4000), await clipInfo());
-      if (await clipOpen()) { await click('[class*=clip] button', '^close$'); await until(`!document.querySelector('.vclip')`, 3000); }
+      const evBtn = await click('button.nvr-evrow__clip', '^event as clip');
+      step('clip: event-list button → clip mode on the timeline tab', evBtn && await until(`!!document.querySelector('.nvr-clipbar')&&!document.querySelector('.nvr-evrow')`, 4000), await clipInfo());
+      if (await clipOpen()) { await click('.nvr-clipbar button', '^close$'); await until(`!document.querySelector('.nvr-clipbar')`, 3000); }
       const hanging = Object.values(dls).filter((x) => x.state !== 'completed' && x.state !== 'canceled');
       step('clip: no hanging download', hanging.length === 0, { downloads: Object.values(dls).map((x) => ({ name: x.name, state: x.state, bytes: x.bytes })) });
     }
