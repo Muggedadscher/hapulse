@@ -38,7 +38,7 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
-    version: 24,
+    version: 25,
     date: '2026-10-05',
     title: { de: 'NVR: „Sentinel öffnen“ an der Abspielposition', en: 'NVR: “Open in Sentinel” at the playback position' },
     sections: [
@@ -48,6 +48,22 @@ export const FORK_RELEASES: ForkRelease[] = [
           {
             de: 'NVR: „Sentinel öffnen“ auf der Kameraseite öffnet Sentinel wieder an der Stelle, die gerade läuft oder pausiert ist, statt live; ebenso „In Safari öffnen“ beim Bild-in-Bild-Hinweis der Home-Bildschirm-App',
             en: 'NVR: “Open in Sentinel” on the camera page opens Sentinel at the moment that is playing or paused again instead of live; so does “Open in Safari” in the picture-in-picture note of the Home Screen app',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 24,
+    date: '2026-10-05',
+    title: { de: 'NVR: „gestern“ in der Ereignisleiste', en: 'NVR: “yesterday” in the events strip' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'NVR: In der Ereignisleiste steht bei Ereignissen von vor Mitternacht „gestern“ vor der Uhrzeit, bei älteren ein kurzes Datum; heutige zeigen weiter nur die Uhrzeit',
+            en: 'NVR: in the events strip, events from before midnight show “yesterday” in front of the time, older ones a short date; today’s still show the time only',
           },
         ],
       },

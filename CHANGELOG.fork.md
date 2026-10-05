@@ -6,7 +6,7 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
-## F24 — 2026-10-05
+## F25 — 2026-10-05
 
 **NVR: „Sentinel öffnen“ an der Abspielposition** · _NVR: “Open in Sentinel” at the playback position_
 
@@ -14,6 +14,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 - NVR: „Sentinel öffnen“ auf der Kameraseite öffnet Sentinel wieder an der Stelle, die gerade läuft oder pausiert ist, statt live; ebenso „In Safari öffnen“ beim Bild-in-Bild-Hinweis der Home-Bildschirm-App  
   _NVR: “Open in Sentinel” on the camera page opens Sentinel at the moment that is playing or paused again instead of live; so does “Open in Safari” in the picture-in-picture note of the Home Screen app_
+
+## F24 — 2026-10-05
+
+**NVR: „gestern“ in der Ereignisleiste** · _NVR: “yesterday” in the events strip_
+
+### Geändert / Changed
+
+- NVR: In der Ereignisleiste steht bei Ereignissen von vor Mitternacht „gestern“ vor der Uhrzeit, bei älteren ein kurzes Datum; heutige zeigen weiter nur die Uhrzeit  
+  _NVR: in the events strip, events from before midnight show “yesterday” in front of the time, older ones a short date; today’s still show the time only_
 
 ## F23 — 2026-10-04
 
