@@ -233,3 +233,27 @@ export type { GarageStatus, GarageService, GarageSummary } from './garage.js';
 // [fork] Release notes of the fork's own extensions (F1, F2, …) — shown next to upstream's
 export { FORK_RELEASES, CURRENT_FORK_VERSION, forkLabel, forkReleasesSince, pickText, renderForkChangelogMarkdown } from './forkChangelog.js';
 export type { ForkRelease, ForkReleaseSection, ForkText } from './forkChangelog.js';
+
+// [fork] Second style "Glas" — design tokens, accent/contrast math (DOM-free; applied by the dashboard's glasAppearance)
+export {
+  UI_STYLES,
+  GLAS_STRENGTHS,
+  GLAS_COLORS,
+  GLAS_TINT,
+  GLAS_SURFACE_TINT,
+  GLAS_SPRINGS,
+  parseColor,
+  toHex,
+  compositeOver,
+  relativeLuminance,
+  contrastRatio,
+  hslToHex,
+  glassOver,
+  glasAccent,
+  glasThemeTokens,
+  classicTokenVar,
+  glasColorVar,
+  glasCssVars,
+  glasContrastPairs,
+} from './glasTokens.js';
+export type { GlasMode, GlasStrength, UiStyle, GlasColorKey, Rgba, GlasAccent, GlasInput, ContrastPair } from './glasTokens.js';

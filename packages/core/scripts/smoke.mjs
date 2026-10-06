@@ -113,6 +113,19 @@ import {
   garageNeedsDialog,
   garageSummary,
   garageMdiIcon,
+  // [fork] Glas
+  GLAS_COLORS,
+  GLAS_STRENGTHS,
+  GLAS_SPRINGS,
+  compositeOver,
+  contrastRatio,
+  glassOver,
+  glasAccent,
+  glasThemeTokens,
+  classicTokenVar,
+  glasColorVar,
+  glasCssVars,
+  glasContrastPairs,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1668,4 +1681,100 @@ console.log('\n── garage doors ──');
   // demo: the garage door opens/closes through the demo service layer
   const opened = applyDemoService(DEMO_ENTITIES, 'cover', 'open_cover', {}, { entity_id: 'cover.garage_door' });
   assertEqual(opened?.['cover.garage_door']?.state, 'open', 'demo garage door opens');
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Glas tokens — second style (docs/GLAS-DESIGN.md, docs/glas/PLAN-ETAPPE-0-1.md §3.8)
+// ---------------------------------------------------------------------------
+console.log('\n── glas tokens ──');
+{
+  const json = JSON.parse(readFileSync(new URL('../../../docs/glas/glas-tokens.json', import.meta.url), 'utf8'));
+  const modes = ['light', 'dark'];
+
+  // colours: same keys in both modes, values verbatim from glas-tokens.json
+  assert(Object.keys(GLAS_COLORS.light).join() === Object.keys(GLAS_COLORS.dark).join(), 'glas colours: same keys light/dark');
+  for (const m of modes) {
+    const want = json.color[m];
+    const diff = Object.keys({ ...want, ...GLAS_COLORS[m] }).filter((k) => want[k] !== GLAS_COLORS[m][k]);
+    assertEqual(diff.join(), '', `glas colours ${m} = glas-tokens.json (verbatim)`);
+  }
+
+  // default accent verbatim; the classic names: 24 tokens, the rest --g-*
+  for (const m of modes) {
+    const a = glasAccent(undefined, m);
+    const want = json.accent.default[m];
+    const diff = Object.keys(want).filter((k) => want[k] !== a[k]);
+    assertEqual(diff.join(), '', `default accent ${m} = glas-tokens.json`);
+  }
+  const vars = glasCssVars({ mode: 'light', strength: 'clear' });
+  const classicNames = Object.keys(glasThemeTokens({ mode: 'light', strength: 'clear' })).map(classicTokenVar);
+  assertEqual(classicNames.length, 24, 'glas maps all 24 classic tokens');
+  assert(Object.keys(vars).every((k) => classicNames.includes(k) || k.startsWith('--g-')), 'every glas variable is a classic token or --g-*');
+  assert(Object.keys(GLAS_COLORS.light).every((k) => glasColorVar(k) in vars), 'every glas colour is written as --g-<kebab>');
+  assertEqual(glasColorVar('glassLabel2'), '--g-glass-label-2', 'kebab: glassLabel2');
+  assertEqual(glasColorVar('ct1'), '--g-ct-1', 'kebab: ct1');
+  assertEqual(classicTokenVar('bgCardHover'), '--bg-card-hover', 'kebab: classic name');
+  assertEqual(vars['--bg'], '#F2F2F7', 'glas light --bg');
+  assertEqual(glasCssVars({ mode: 'dark', strength: 'clear' })['--bg'], '#000000', 'glas dark --bg is pure black');
+  assertEqual(vars['--accent'], '#A64B00', 'plan K6: --accent is the accessible ink');
+  assertEqual(vars['--g-accent'], '#FF9500', 'bright accent stays as --g-accent');
+  assertEqual(vars['--border'], '#E5E5EA', 'plan K14: --border = fillSolid (controls and tracks stay visible)');
+  assertEqual(glasCssVars({ mode: 'light', strength: 'opaque' })['--g-glass-tint'], '1', 'opaque: tint 1');
+  assertEqual(glasCssVars({ mode: 'light', strength: 'tinted' })['--g-glass-tint'], '0.75', 'tinted: tint .75');
+  // the design doc's table of the classic names (glas-tokens.json → classicMapping) = what the code writes
+  for (const m of modes) {
+    const written = glasCssVars({ mode: m, strength: 'clear' });
+    const diff = classicNames.filter((k) => json.classicMapping[k]?.[m] !== written[k]);
+    assertEqual(diff.join(), '', `classicMapping ${m} = glasCssVars (defaults)`);
+  }
+
+  // springs: 41 points, end at 1, the cubic-bezier fallback when linear() is missing
+  for (const [name, sp] of Object.entries(GLAS_SPRINGS)) {
+    const pts = sp.linear.slice('linear('.length, -1).split(',').map(Number);
+    assert(pts.length === 41 && pts[0] === 0 && pts[40] === 1 && pts.every(Number.isFinite), `spring ${name}: linear() with 41 points 0…1`);
+    assert(sp.linear === json.motion.springs[name].linear, `spring ${name} = glas-tokens.json`);
+    assertEqual(sp.fallback, json.motion.springs[name].bezierFallback, `spring ${name} fallback = glas-tokens.json`);
+  }
+  assertEqual(glasCssVars({ mode: 'light', strength: 'clear', supportsLinear: false })['--g-spring-snappy'], GLAS_SPRINGS.snappy.fallback, 'no linear() → fallback curve');
+
+  // GLAS-DESIGN §2.5 recomputed (samples, ±0.05)
+  const near = (got, want, label) => assert(Math.abs(got - want) <= 0.05, `${label}: ${got.toFixed(2)} ≈ ${want}`);
+  assertEqual(compositeOver('rgba(120,120,128,.12)', '#FFFFFF'), '#EFEFF0', 'fill over card');
+  assertEqual(compositeOver('rgba(120,120,128,.12)', '#F2F2F7'), '#E3E3E9', 'fill over bg');
+  near(contrastRatio('#5F5F64', '#F2F2F7'), 5.69, 'label2 on bg');
+  near(contrastRatio('#5F5F64', '#E3E3E9'), 4.98, 'label2 on fill over bg');
+  near(contrastRatio('#A64B00', '#F2F2F7'), 5.19, 'accentInk on bg');
+  near(contrastRatio('#A64B00', '#E6E6E9'), 4.65, 'accentInk on tab lens');
+  near(contrastRatio('#1C1C1E', '#FF9500'), 7.74, 'onProminent on orange');
+  near(contrastRatio('#A1A1A6', '#2C2C2E'), 5.42, 'dark textFaint on #2C2C2E');
+  near(contrastRatio('#000000', glassOver('#808080', 'light', 0.6)), 10.24, 'tab bar light t.6: label over grey');
+  near(contrastRatio('#000000', glassOver('#333333', 'light', 0.6)), 5.5, 'tab bar light t.6: label over #333');
+  near(contrastRatio('#3A3A3C', glassOver('#808080', 'light', 0.5)), 5.25, 'sidebar light t.5: glassLabel2 over grey');
+  near(contrastRatio('#FFFFFF', glassOver('#808080', 'dark', 0.6)), 7.78, 'glass dark t.6: label over grey');
+
+  // every text/glyph pair ≥ its minimum — modes × strengths × more contrast × accent hues (none + 0…345)
+  const hues = [undefined];
+  for (let h = 0; h < 360; h += 15) hues.push(h);
+  const fails = [];
+  let n = 0;
+  for (const mode of modes) for (const strength of GLAS_STRENGTHS) for (const contrastMore of [false, true]) for (const accentHue of hues) {
+    const input = { mode, strength, contrastMore, accentHue };
+    for (const p of glasContrastPairs(input)) {
+      n++;
+      const r = contrastRatio(p.fg, p.bg);
+      if (r < p.min) fails.push(`${mode}/${strength}/${contrastMore ? 'more' : 'normal'}/hue ${accentHue}: ${p.name} ${r.toFixed(2)}`);
+    }
+  }
+  assert(fails.length === 0, `glas contrast: ${n} pairs ≥ minimum${fails.length ? ' — ' + fails.slice(0, 5).join('; ') : ''}`);
+
+  // "more contrast" never lowers a pair
+  const worse = [];
+  for (const mode of modes) for (const strength of GLAS_STRENGTHS) {
+    const normal = new Map(glasContrastPairs({ mode, strength }).map((p) => [p.name, contrastRatio(p.fg, p.bg)]));
+    for (const p of glasContrastPairs({ mode, strength, contrastMore: true })) {
+      const before = normal.get(p.name);
+      if (before !== undefined && contrastRatio(p.fg, p.bg) < before - 1e-9) worse.push(`${mode}/${strength}: ${p.name}`);
+    }
+  }
+  assert(worse.length === 0, `more contrast is never lower${worse.length ? ' — ' + worse.slice(0, 5).join('; ') : ''}`);
 }

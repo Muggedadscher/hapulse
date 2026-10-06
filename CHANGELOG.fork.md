@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F31 — 2026-10-06
+
+**Vorschau: Stil „Glas“** · _Preview: “Glass” style_
+
+### Neu / Added
+
+- Für Admins: unter Einstellungen → Darstellung den Stil „Klassisch“ oder „Glas“ wählen; Glas ändert nur Aussehen und Bewegung (iOS-Farben, Systemschrift, reines Schwarz im Dunkelmodus), alle Funktionen bleiben, und bei der Verwaltung für alle gilt der Stil für jeden Nutzer  
+  _For admins: choose the style “Classic” or “Glass” under Settings → Appearance; Glass only changes the look and the motion (iOS colours, system font, pure black in dark mode), every function stays, and with the shared administration the style applies to every user_
+- Im Stil Glas: Glas-Stärke klar, getönt oder deckend und „Transparenz reduzieren“; Hell/Dunkel lässt sich weiterhin pro Gerät wählen  
+  _In the Glass style: glass strength clear, tinted or opaque, and “Reduce transparency”; light/dark can still be chosen per device_
+
 ## F30 — 2026-10-06
 
 **NVR: Clip speichern bleibt auf der Seite** · _NVR: saving a clip stays on the page_

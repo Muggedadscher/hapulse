@@ -1,0 +1,33 @@
+/* [fork] Glas — motion (docs/GLAS-DESIGN.md §6). Springs and durations come inline as --g-spring-* / --g-d-*
+   (cubic-bezier fallback chosen in theme/glasAppearance.ts, plan K13). prefers-reduced-motion: the global switch-off
+   in global.css applies, and the entry animation below is also switched off explicitly. */
+
+@keyframes g-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Screen entry: sections rise 8 px and fade in, 420 ms smooth spring, 25 ms apart, at most 6 steps (§6.3).
+   Fill mode backwards like the classic rule (no lasting stacking context). */
+:root[data-style='glas'] .stagger-rise > * {
+  animation: g-rise 420ms var(--g-spring-smooth) backwards;
+}
+
+:root[data-style='glas'] .stagger-rise > *:nth-child(1) { animation-delay: 0ms; }
+:root[data-style='glas'] .stagger-rise > *:nth-child(2) { animation-delay: 25ms; }
+:root[data-style='glas'] .stagger-rise > *:nth-child(3) { animation-delay: 50ms; }
+:root[data-style='glas'] .stagger-rise > *:nth-child(4) { animation-delay: 75ms; }
+:root[data-style='glas'] .stagger-rise > *:nth-child(5) { animation-delay: 100ms; }
+:root[data-style='glas'] .stagger-rise > *:nth-child(n + 6) { animation-delay: 125ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .stagger-rise > * {
+    animation: none;
+  }
+}

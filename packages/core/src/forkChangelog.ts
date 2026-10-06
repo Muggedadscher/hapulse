@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 31,
+    date: '2026-10-06',
+    title: { de: 'Vorschau: Stil „Glas“', en: 'Preview: “Glass” style' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Für Admins: unter Einstellungen → Darstellung den Stil „Klassisch“ oder „Glas“ wählen; Glas ändert nur Aussehen und Bewegung (iOS-Farben, Systemschrift, reines Schwarz im Dunkelmodus), alle Funktionen bleiben, und bei der Verwaltung für alle gilt der Stil für jeden Nutzer',
+            en: 'For admins: choose the style “Classic” or “Glass” under Settings → Appearance; Glass only changes the look and the motion (iOS colours, system font, pure black in dark mode), every function stays, and with the shared administration the style applies to every user',
+          },
+          {
+            de: 'Im Stil Glas: Glas-Stärke klar, getönt oder deckend und „Transparenz reduzieren“; Hell/Dunkel lässt sich weiterhin pro Gerät wählen',
+            en: 'In the Glass style: glass strength clear, tinted or opaque, and “Reduce transparency”; light/dark can still be chosen per device',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 30,
     date: '2026-10-06',
     title: { de: 'NVR: Clip speichern bleibt auf der Seite', en: 'NVR: saving a clip stays on the page' },

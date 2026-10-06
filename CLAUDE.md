@@ -15,6 +15,9 @@ sauber übernehmen können.
 - Keine Umformatierungen von Upstream-Dateien. Nur Design-Tokens (kein Hex),
   vorhandene Bausteine wiederverwenden (`Modal`, `Card`, `EmptyState`, `.btn …`).
 - `@hapulse/core` bleibt React-/DOM-frei (HA-Logik dort, Components sind dünn).
+- **Zwei Stile (Klassisch und Glas):** Jede neue Fork-Funktion in beiden Stilen prüfen (`apps/dashboard/scripts/glas-shots.cjs`,
+  Klick-Fuzz auch mit `glas`); neue Settings-Felder auch für Glas durchdenken (Scope-Tabelle, Darstellung). Glas-CSS nur in
+  `apps/dashboard/src/styles/glas/` und nur unter `:root[data-style='glas']` — Klassisch bleibt pixelgleich.
 - Vor jedem Push: `npm run typecheck && npm run build && npm test -w @hapulse/core`.
 - **Changelog:** Jede für Nutzer sichtbare Fork-Änderung bekommt im selben PR einen Eintrag in
   `packages/core/src/forkChangelog.ts` (DE + EN, neuer Release `F<n+1>` mit Merge-Datum oder der neueste, solange er
@@ -146,12 +149,21 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-## Geplant — Stil „Glas“ (freigegeben, noch nicht umgesetzt)
-
-Zweiter Stil neben Klassisch: Apple-/iOS-26-artiges „Glas“ — **nur Aussehen und Bewegung, gleiche Komponenten und
-Funktionen**. Designsystem: **`docs/GLAS-DESIGN.md`** (+ `docs/glas/glas-tokens.json`), Umsetzungsplan mit Etappen und
-verbindlichen User-Entscheidungen (§7.3) und Start-Prompt (§8): **`docs/GLAS-PLAN.md`**, freigegebene Skizze,
-Screenshots und Funktions-Checkliste: **`docs/glas/`**.
+- **Stil „Glas“ (Etappe 0 und 1 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+  **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
+  (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
+  für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
+  (`components/settings/StyleSettings.tsx`). `applyAppearance` (`theme/glasAppearance.ts`, umhüllt `applyTheme`, auch im
+  First Paint in `main.tsx`) schreibt in Glas die 24 HAPulse-Tokens mit Glas-Werten und alle `--g-*`-Variablen inline auf
+  `:root` und setzt `data-style="glas"`; die Werte kommen DOM-frei aus `packages/core/src/glasTokens.ts` (Farben,
+  `glasAccent`, Federn; Kontrast aller Text-Paare in `smoke.mjs`). `--accent` ist in Glas die lesbare Akzent-Ink,
+  Akzent-Flächen holen sich das helle Orange in `styles/glas/accent.css`. Der Selektor-Wächter
+  `test/glasSelectors.test.ts` hält die Glas-CSS auf `:root[data-style='glas']` und meldet Klassen, die Upstream
+  umbenannt hat (siehe `docs/SYNC.md` → „Feature: Stil Glas“). Screenshots beider Stile + Laufzeitprüfungen:
+  `apps/dashboard/scripts/glas-shots.cjs` (deterministisch, `compare` verlangt 0 Pixel). Design **`docs/GLAS-DESIGN.md`**
+  (+ `docs/glas/glas-tokens.json`), Etappen und verbindliche User-Entscheidungen (§7.3) **`docs/GLAS-PLAN.md`**, Stand,
+  Abweichungen und Laborliste **`docs/glas/PLAN-ETAPPE-0-1.md`**, Skizze und Funktions-Checkliste **`docs/glas/`**.
+  Nächste Etappen 2–7 (Rahmen, Sheets und Gesten, Übersicht, übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

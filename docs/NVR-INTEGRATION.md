@@ -119,6 +119,17 @@ Sentinels UI eine eigenständige App ist:
 | Telemetrie | `b:<build-id>` | `b:hapulse` (so sind Zeilen der Integration im Sentinel-Serverlog unterscheidbar), Nutzlast unter `d:` wie bei Sentinel |
 | Nicht übernommen | Anmeldeseite, iOS-Homescreen-Meta, `/status`-Route, Theme-Schalter, Uhr, Embed-Modus | (HAPulse liefert das selbst; Menschen öffnen Sentinels UI über „Sentinel öffnen“) |
 
+## Glas-Stil (seit Etappe 1, Oktober 2026)
+
+Im zweiten HAPulse-Stil „Glas“ (`docs/GLAS-DESIGN.md`) bleiben Übersicht und Kameraseite Paket-Code mit unverändertem
+Layout und Verhalten, 1:1 wie Sentinels eigene UI. Sie lesen die HAPulse-Tokens und bekommen so in Glas Farben, Schrift
+und Kartenradius des Stils. HAPulses Glas-CSS (`apps/dashboard/src/styles/glas/`) berührt Paket-Klassen nur in der
+Farbe: `.nvr-card` randlos wie `.card`, neun Akzentflächen in `styles/glas/accent.css` im hellen Orange. Das Paket
+selbst ändert sich dafür nicht, und Sentinels eigene UI bekommt kein Glas. Der Selektor-Wächter
+(`test/glasSelectors.test.ts`) prüft die Paket-Klassen gegen die `ui.css` des installierten Pakets: benennt ein
+Paket-Update eine davon um, wird `npm test -w @hapulse/dashboard` rot. Die immersive Kameraseite (dunkles Vollbild,
+Glas-Kapsel über dem Video) kommt später als Paket-Option mit unverändertem Standard (`docs/GLAS-PLAN.md` §4).
+
 ## Clip-Export (seit Paket 0.17.0, Oktober 2026)
 
 „Clip herunterladen“ ist komplett Paket-Code (`CameraPage`, Clip-Leiste, Band `.vclip` auf der Zeitleiste) und sieht in

@@ -1329,5 +1329,18 @@
   "nvr.clip.failed": "Não foi possível criar o clip",
   "nvr.clip.oldServer": "Este servidor Sentinel ainda não consegue criar clips",
   "nvr.clip.eventRunning": "Evento ainda a decorrer – o clip termina agora",
-  "nvr.clip.tooLarge": "Demasiado grande para partilhar aqui – guarda-o no Safari"
+  "nvr.clip.tooLarge": "Demasiado grande para partilhar aqui – guarda-o no Safari",
+  "glas.style.label": "Estilo",
+  "glas.style.groupAria": "Estilo da interface",
+  "glas.style.classic": "Clássico",
+  "glas.style.glas": "Vidro (pré-visualização)",
+  "glas.style.hint": "Vidro muda apenas a aparência e o movimento; todas as funções se mantêm.",
+  "glas.strength.label": "Intensidade do vidro",
+  "glas.strength.groupAria": "Quanto o vidro é tingido",
+  "glas.strength.clear": "Claro",
+  "glas.strength.tinted": "Tingido",
+  "glas.strength.opaque": "Opaco",
+  "glas.reduceTransparency.label": "Reduzir transparência",
+  "glas.reduceTransparency.hint": "Superfícies opacas em vez de vidro, em todos os dispositivos (p. ex. para tablets mais antigos)",
+  "glas.themeHint": "O estilo Vidro usa uma paleta neutra. O seu tema fica guardado para Clássico."
 }

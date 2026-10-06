@@ -1,0 +1,620 @@
+/**
+ * [fork] Design tokens of the second style "Glas" — pure data + pure functions, DOM-free.
+ *
+ * Source of every value: docs/GLAS-DESIGN.md and docs/glas/glas-tokens.json (the colour table below is a verbatim
+ * copy of `color`). The dashboard's `theme/glasAppearance.ts` writes `glasCssVars(…)` inline on :root after
+ * `applyTheme` — the classic token names (so every existing component looks "Glas" without its own CSS) plus the
+ * Glas-own `--g-*` variables. Plan and deviations: docs/glas/PLAN-ETAPPE-0-1.md.
+ */
+
+import type { ThemeTokens } from './themes.js';
+
+export type GlasMode = 'light' | 'dark';
+export type GlasStrength = 'clear' | 'tinted' | 'opaque';
+export type UiStyle = 'classic' | 'glas';
+
+export const UI_STYLES: readonly UiStyle[] = ['classic', 'glas'];
+export const GLAS_STRENGTHS: readonly GlasStrength[] = ['clear', 'tinted', 'opaque'];
+
+// ---------------------------------------------------------------------------
+// Colours (glas-tokens.json → color, verbatim)
+// ---------------------------------------------------------------------------
+
+const LIGHT = {
+  bg: '#F2F2F7',
+  card: '#FFFFFF',
+  card2: '#F2F2F7',
+  cardSolid: '#FFFFFF',
+  cardHover: '#F7F7FA',
+  group: '#FFFFFF',
+  sheetSolid: '#F2F2F7',
+  fill: 'rgba(120,120,128,.12)',
+  fill2: 'rgba(120,120,128,.20)',
+  fillSolid: '#E5E5EA',
+  sep: 'rgba(60,60,67,.18)',
+  sepStrong: 'rgba(60,60,67,.36)',
+  label: '#000000',
+  label2: '#5F5F64',
+  label3: '#7C7C80',
+  glassLabel2: '#3A3A3C',
+  textFaint: '#636366',
+  glyphDark: '#1C1C1E',
+  onMedia: '#FFFFFF',
+  mediaBg: '#000000',
+  grabber: 'rgba(60,60,67,.30)',
+  yellow: '#FFCC00',
+  yellowInk: '#7D5E00',
+  yellowSoft: 'rgba(255,204,0,.24)',
+  orange: '#FF9500',
+  orangeInk: '#B25000',
+  orangeSoft: 'rgba(255,149,0,.16)',
+  teal: '#30B0C7',
+  tealInk: '#0A7389',
+  tealSoft: 'rgba(48,176,199,.16)',
+  green: '#34C759',
+  greenInk: '#1F7A35',
+  greenSoft: 'rgba(52,199,89,.16)',
+  red: '#FF3B30',
+  redInk: '#D70015',
+  redSoft: 'rgba(255,59,48,.12)',
+  blue: '#007AFF',
+  blueInk: '#0060DF',
+  blueSoft: 'rgba(0,122,255,.12)',
+  purple: '#AF52DE',
+  purpleInk: '#8944AB',
+  indigo: '#5856D6',
+  indigoInk: '#3634A3',
+  gray: '#8E8E93',
+  warnInk: '#7D5E00',
+  warnSoft: 'rgba(255,204,0,.24)',
+  switchOn: '#34C759',
+  switchOff: 'rgba(120,120,128,.24)',
+  knob: '#FFFFFF',
+  badge: '#D70015',
+  onBadge: '#FFFFFF',
+  live: '#D70015',
+  liveDot: '#FF3B30',
+  actDel: '#D70015',
+  actOk: '#1F7A35',
+  actNeutral: '#636366',
+  binRest: '#8E8E93',
+  binPaper: '#007AFF',
+  binYellow: '#FFCC00',
+  binBio: '#34C759',
+  binBrown: '#A2845E',
+  ct1: '#FFB25B',
+  ct2: '#FFD39C',
+  ct3: '#FFF3E3',
+  ct4: '#DCE8FF',
+  tileOn: '#FFFFFF',
+  tileOff: 'color-mix(in srgb, #FFFFFF 45%, #F2F2F7)',
+  tileOffLabel: '#5F5F64',
+  chartNetz: '#8E8E93',
+  chartSolar: '#FFCC00',
+  chartSolarEdge: '#A67C00',
+  chartBar: 'rgba(120,120,128,.32)',
+  chartLine: '#3A3A3C',
+  chartArea: 'rgba(120,120,128,.14)',
+  chartGrid: 'rgba(60,60,67,.36)',
+  chartAvg: '#000000',
+  seg: '#FFFFFF',
+  segShadow: '0 3px 8px rgba(0,0,0,.12), 0 .5px 0 rgba(0,0,0,.04)',
+  lens: 'rgba(120,120,128,.16)',
+  hover: 'rgba(120,120,128,.08)',
+  scrim: 'rgba(0,0,0,.25)',
+  scrimDesktop: 'rgba(0,0,0,.22)',
+  ctxDim: 'rgba(0,0,0,.18)',
+  ctxScrimDesktop: 'rgba(242,242,247,.35)',
+  avDim: 'rgba(0,0,0,.10)',
+  glow: 'rgba(255,255,255,.45)',
+  toastBg: 'rgba(28,28,30,.92)',
+  toastText: '#FFFFFF',
+  bannerReconnecting: 'color-mix(in srgb, #FFCC00 26%, #FFFFFF)',
+  bannerLost: 'color-mix(in srgb, #FF3B30 16%, #FFFFFF)',
+  edgeTint: '#F2F2F7',
+  wallTint: 'rgba(242,242,247,.38)',
+};
+
+export type GlasColorKey = keyof typeof LIGHT;
+
+const DARK: Record<GlasColorKey, string> = {
+  bg: '#000000',
+  card: '#1C1C1E',
+  card2: '#2C2C2E',
+  cardSolid: '#1C1C1E',
+  cardHover: '#2C2C2E',
+  group: '#2C2C2E',
+  sheetSolid: '#1C1C1E',
+  fill: 'rgba(120,120,128,.24)',
+  fill2: 'rgba(120,120,128,.36)',
+  fillSolid: '#3A3A3C',
+  sep: 'rgba(84,84,88,.55)',
+  sepStrong: 'rgba(84,84,88,.95)',
+  label: '#FFFFFF',
+  label2: '#AEAEB2',
+  label3: '#8E8E93',
+  glassLabel2: '#D1D1D6',
+  textFaint: '#A1A1A6',
+  glyphDark: '#1C1C1E',
+  onMedia: '#FFFFFF',
+  mediaBg: '#000000',
+  grabber: 'rgba(235,235,245,.30)',
+  yellow: '#FFD60A',
+  yellowInk: '#FFD60A',
+  yellowSoft: 'rgba(255,214,10,.20)',
+  orange: '#FF9F0A',
+  orangeInk: '#FFB340',
+  orangeSoft: 'rgba(255,159,10,.22)',
+  teal: '#40C8E0',
+  tealInk: '#40C8E0',
+  tealSoft: 'rgba(64,200,224,.20)',
+  green: '#30D158',
+  greenInk: '#30D158',
+  greenSoft: 'rgba(48,209,88,.20)',
+  red: '#FF453A',
+  redInk: '#FF6961',
+  redSoft: 'rgba(255,69,58,.22)',
+  blue: '#0A84FF',
+  blueInk: '#409CFF',
+  blueSoft: 'rgba(10,132,255,.22)',
+  purple: '#BF5AF2',
+  purpleInk: '#DA8FFF',
+  indigo: '#5E5CE6',
+  indigoInk: '#9D9BFF',
+  gray: '#8E8E93',
+  warnInk: '#FFD60A',
+  warnSoft: 'rgba(255,214,10,.20)',
+  switchOn: '#30D158',
+  switchOff: 'rgba(120,120,128,.32)',
+  knob: '#FFFFFF',
+  badge: '#D70015',
+  onBadge: '#FFFFFF',
+  live: '#D70015',
+  liveDot: '#FF3B30',
+  actDel: '#D70015',
+  actOk: '#1F7A35',
+  actNeutral: '#636366',
+  binRest: '#8E8E93',
+  binPaper: '#0A84FF',
+  binYellow: '#FFD60A',
+  binBio: '#30D158',
+  binBrown: '#AC8E68',
+  ct1: '#FFB25B',
+  ct2: '#FFD39C',
+  ct3: '#FFF3E3',
+  ct4: '#DCE8FF',
+  tileOn: '#2C2C2E',
+  tileOff: '#1C1C1E',
+  tileOffLabel: '#AEAEB2',
+  chartNetz: '#8E8E93',
+  chartSolar: '#FFD60A',
+  chartSolarEdge: 'rgba(0,0,0,0)',
+  chartBar: 'rgba(120,120,128,.48)',
+  chartLine: '#D1D1D6',
+  chartArea: 'rgba(120,120,128,.24)',
+  chartGrid: 'rgba(84,84,88,.95)',
+  chartAvg: '#FFFFFF',
+  seg: '#636366',
+  segShadow: '0 3px 8px rgba(0,0,0,.30)',
+  lens: 'rgba(255,255,255,.14)',
+  hover: 'rgba(255,255,255,.06)',
+  scrim: 'rgba(0,0,0,.45)',
+  scrimDesktop: 'rgba(0,0,0,.45)',
+  ctxDim: 'rgba(0,0,0,.40)',
+  ctxScrimDesktop: 'rgba(0,0,0,.35)',
+  avDim: 'rgba(0,0,0,.36)',
+  glow: 'rgba(255,255,255,.22)',
+  toastBg: 'rgba(58,58,60,.94)',
+  toastText: '#FFFFFF',
+  bannerReconnecting: 'color-mix(in srgb, #FFD60A 26%, #1C1C1E)',
+  bannerLost: 'color-mix(in srgb, #FF453A 16%, #1C1C1E)',
+  edgeTint: '#000000',
+  wallTint: 'rgba(0,0,0,.42)',
+};
+
+export const GLAS_COLORS: Readonly<Record<GlasMode, Readonly<Record<GlasColorKey, string>>>> = { light: LIGHT, dark: DARK };
+
+// ---------------------------------------------------------------------------
+// Material (GLAS-DESIGN §3) — given as building blocks; the CSS composes them per element (plan K10)
+// ---------------------------------------------------------------------------
+
+/** `--g-glass-tint` per strength; "opaque" has no tint (solid fill, no blur). */
+export const GLAS_TINT: Readonly<Record<'clear' | 'tinted', number>> = { clear: 0.25, tinted: 0.75 };
+
+/** Minimum tint per surface; effective tint = max(surface, strength) (GLAS-DESIGN §3.4). For stage 2+. */
+export const GLAS_SURFACE_TINT = {
+  default: { clear: 0.25, tinted: 0.75 },
+  tabBar: { clear: 0.6, tinted: 0.75 },
+  avatarButton: { clear: 0.6, tinted: 0.75 },
+  backButton: { clear: 0.5, tinted: 0.75 },
+  dateChip: { clear: 0.55, tinted: 0.75 },
+  headerCapsule: { clear: 0.25, tinted: 0.75 },
+  sidebar: { clear: 0.5, tinted: 0.8 },
+  sheetMedium: { clear: 0.7, tinted: 0.75 },
+  dialogDesktop: { clear: 0.68, tinted: 0.85 },
+  inspector: { clear: 0.68, tinted: 0.85 },
+  toastDesktop: { clear: 0.68, tinted: 0.85 },
+  menu: { clear: 0.88, tinted: 0.94 },
+} as const;
+
+interface MaterialSet {
+  /** fill = linear-gradient(180deg, rgb(rgb / a0 + .40·t), rgb(rgb / a1 + .40·t)) */
+  rgb: string; a0: number; a1: number;
+  /** filter = blur(6px + 10px·t) saturate(sat) brightness(bright) */
+  sat: string; bright: number;
+  rim: string; shadow: string;
+}
+
+const MATERIAL: Record<GlasMode, MaterialSet> = {
+  light: {
+    rgb: '255 255 255', a0: 0.3, a1: 0.14, sat: '210%', bright: 1.06,
+    rim: 'linear-gradient(135deg, rgba(255,255,255,.95) 0%, rgba(255,255,255,.35) 22%, rgba(255,255,255,.06) 50%, rgba(255,255,255,.30) 78%, rgba(255,255,255,.85) 100%)',
+    shadow: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.6), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.4), inset 0 1px 1.5px rgba(255,255,255,.75), inset 0 -1.5px 3px rgba(255,255,255,.22), inset 0 0 16px rgba(255,255,255,.18), inset 0 -12px 20px -14px rgba(0,0,0,.10), 0 0 0 .5px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14)',
+  },
+  dark: {
+    rgb: '40 40 44', a0: 0.3, a1: 0.2, sat: '180%', bright: 0.9,
+    rim: 'linear-gradient(135deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.2) 22%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.17) 78%, rgba(255,255,255,.5) 100%)',
+    shadow: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.32), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.2), inset 0 1px 1.5px rgba(255,255,255,.24), inset 0 0 16px rgba(255,255,255,.05), 0 0 0 .5px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.5)',
+  },
+};
+
+const CLEAR = {
+  fill: 'rgba(0,0,0,.20)',
+  filter: 'blur(4px) saturate(160%)',
+  rim: 'linear-gradient(135deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.2) 24%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.18) 76%, rgba(255,255,255,.52) 100%)',
+  shadow: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.35), inset 0 1px 1px rgba(255,255,255,.28), inset 0 0 12px rgba(255,255,255,.08), 0 0 0 .5px rgba(0,0,0,.25), 0 6px 20px rgba(0,0,0,.25)',
+  textShadow: '0 1px 2px rgba(0,0,0,.45)',
+};
+
+// ---------------------------------------------------------------------------
+// Motion (GLAS-DESIGN §6.1) — the 41-point phone curves are binding
+// ---------------------------------------------------------------------------
+
+export const GLAS_SPRINGS = {
+  smooth: {
+    linear: 'linear(0, 0.0263, 0.0895, 0.1722, 0.2626, 0.3534, 0.4399, 0.5197, 0.5916, 0.6551, 0.7104, 0.7581, 0.7988, 0.8334, 0.8624, 0.8868, 0.9071, 0.9239, 0.9379, 0.9494, 0.9588, 0.9665, 0.9729, 0.978, 0.9822, 0.9857, 0.9884, 0.9907, 0.9925, 0.994, 0.9952, 0.9961, 0.9969, 0.9975, 0.998, 0.9984, 0.9987, 0.999, 0.9992, 0.9993, 1)',
+    fallback: 'cubic-bezier(.3,.6,.04,1)',
+    duration: '.5s',
+  },
+  snappy: {
+    linear: 'linear(0, 0.0217, 0.0778, 0.1568, 0.2492, 0.3477, 0.4464, 0.5414, 0.6296, 0.7093, 0.7795, 0.8398, 0.8905, 0.932, 0.9651, 0.9908, 1.0099, 1.0234, 1.0323, 1.0375, 1.0398, 1.0398, 1.0381, 1.0354, 1.0319, 1.028, 1.0241, 1.0202, 1.0165, 1.0131, 1.0101, 1.0075, 1.0053, 1.0035, 1.002, 1.0008, 0.9999, 0.9993, 0.9989, 0.9986, 1)',
+    fallback: 'cubic-bezier(.34,.65,0,1.2)',
+    duration: '.35s',
+  },
+  bouncy: {
+    linear: 'linear(0, 0.0371, 0.131, 0.2588, 0.4016, 0.5451, 0.679, 0.7967, 0.8947, 0.9716, 1.0283, 1.0667, 1.0892, 1.099, 1.099, 1.092, 1.0806, 1.0669, 1.0524, 1.0384, 1.0258, 1.015, 1.0063, 0.9997, 0.995, 0.992, 0.9904, 0.99, 0.9904, 0.9913, 0.9926, 0.9941, 0.9955, 0.9968, 0.998, 0.999, 0.9997, 1.0003, 1.0007, 1.0009, 1)',
+    fallback: 'cubic-bezier(.34,1.2,0,1.12)',
+    duration: '.6s',
+  },
+} as const;
+
+// ---------------------------------------------------------------------------
+// Colour math (sRGB, WCAG 2.x)
+// ---------------------------------------------------------------------------
+
+export interface Rgba { r: number; g: number; b: number; a: number }
+
+/** #rgb, #rrggbb, rgb()/rgba() with commas or spaces; `transparent`. Anything else (color-mix, gradients) → null. */
+export function parseColor(input: string): Rgba | null {
+  const s = input.trim().toLowerCase();
+  if (s === 'transparent') return { r: 0, g: 0, b: 0, a: 0 };
+  let m = /^#([0-9a-f]{3})$/.exec(s);
+  if (m) {
+    const h = m[1]!;
+    return { r: parseInt(h[0]! + h[0]!, 16), g: parseInt(h[1]! + h[1]!, 16), b: parseInt(h[2]! + h[2]!, 16), a: 1 };
+  }
+  m = /^#([0-9a-f]{6})$/.exec(s);
+  if (m) {
+    const h = m[1]!;
+    return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: 1 };
+  }
+  m = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/.exec(s);
+  if (m) {
+    const alpha = m[4] === undefined ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : parseFloat(m[4]);
+    return { r: parseFloat(m[1]!), g: parseFloat(m[2]!), b: parseFloat(m[3]!), a: alpha };
+  }
+  return null;
+}
+
+function mustParse(c: string): Rgba {
+  const p = parseColor(c);
+  if (!p) throw new Error(`glasTokens: not a plain colour: ${c}`);
+  return p;
+}
+
+const clamp255 = (v: number) => Math.max(0, Math.min(255, v));
+
+export function toHex(c: Pick<Rgba, 'r' | 'g' | 'b'>): string {
+  const h = (v: number) => Math.round(clamp255(v)).toString(16).padStart(2, '0');
+  return `#${h(c.r)}${h(c.g)}${h(c.b)}`.toUpperCase();
+}
+
+/** Alpha-composite `fg` over an opaque `bg` → opaque hex. */
+export function compositeOver(fg: string, bg: string): string {
+  const f = mustParse(fg), b = mustParse(bg);
+  return toHex({ r: f.r * f.a + b.r * (1 - f.a), g: f.g * f.a + b.g * (1 - f.a), b: f.b * f.a + b.b * (1 - f.a) });
+}
+
+export function relativeLuminance(color: string): number {
+  const c = mustParse(color);
+  const lin = (v: number) => { const x = v / 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+  return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+}
+
+/** WCAG contrast ratio of two opaque colours (1…21). */
+export function contrastRatio(a: string, b: string): number {
+  const la = relativeLuminance(a), lb = relativeLuminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+export function hslToHex(h: number, s: number, l: number): string {
+  const hh = ((h % 360) + 360) % 360, ss = s / 100, ll = l / 100;
+  const k = (n: number) => (n + hh / 30) % 12;
+  const a = ss * Math.min(ll, 1 - ll);
+  const f = (n: number) => ll - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return toHex({ r: f(0) * 255, g: f(8) * 255, b: f(4) * 255 });
+}
+
+/**
+ * The backdrop of a regular glass surface after its backdrop-filter (brightness only — saturate and blur do not
+ * change a uniform grey/white/black backdrop), then the gradient's weakest stop on top. For the contrast tests.
+ */
+export function glassOver(backdrop: string, mode: GlasMode, tint: number): string {
+  const m = MATERIAL[mode];
+  const b = mustParse(backdrop);
+  const lit = toHex({ r: b.r * m.bright, g: b.g * m.bright, b: b.b * m.bright });
+  const [r, g, bb] = m.rgb.split(' ').map(Number) as [number, number, number];
+  const alpha = Math.min(1, m.a1 + 0.4 * tint);
+  return compositeOver(`rgba(${r},${g},${bb},${alpha})`, lit);
+}
+
+// ---------------------------------------------------------------------------
+// Accent (GLAS-DESIGN §2.3)
+// ---------------------------------------------------------------------------
+
+export interface GlasAccent {
+  /** Bright accent — surfaces only (`--g-accent`) */
+  accent: string;
+  /** Accessible text/glyph variant (`--g-accent-ink`; also the classic `--accent` in Glas, plan K6) */
+  accentInk: string;
+  /** Active tab on the lens */
+  tabInk: string;
+  accentSoft: string;
+  /** The one prominent primary action per view */
+  prominent: string;
+  onProminent: string;
+  /** Best text colour on `accentInk` (classic `--on-accent` in Glas) */
+  onAccentInk: string;
+  focus: string;
+}
+
+const NEUTRAL_DARK = '#1C1C1E';
+const LENS: Record<GlasMode, string> = { light: '#E6E6E9', dark: '#3C3C3D' };
+
+/** Default accents from the sketch, verbatim (glas-tokens.json → accent.default). */
+const DEFAULT_ACCENT: Record<GlasMode, Omit<GlasAccent, 'onAccentInk'>> = {
+  light: { accent: '#FF9500', accentInk: '#A64B00', tabInk: '#A64B00', accentSoft: 'rgba(255,149,0,.16)', prominent: '#FF9500', onProminent: '#1C1C1E', focus: '#A64B00' },
+  dark: { accent: '#FF9F0A', accentInk: '#FFB340', tabInk: '#FFB340', accentSoft: 'rgba(255,159,10,.26)', prominent: '#FF9F0A', onProminent: '#1C1C1E', focus: '#FFB340' },
+};
+
+function bestOn(bg: string): string {
+  return contrastRatio('#FFFFFF', bg) >= contrastRatio(NEUTRAL_DARK, bg) ? '#FFFFFF' : NEUTRAL_DARK;
+}
+
+/** Darken (light) or lighten (dark) until ≥ 4.5:1 against every colour in `against`, at most 40 steps. */
+function inkFor(start: string, mode: GlasMode, against: readonly string[], darken: number, lighten: number): string {
+  let c = mustParse(start);
+  const worst = () => Math.min(...against.map((b) => contrastRatio(toHex(c), b)));
+  for (let i = 0; i < 40 && worst() < 4.5; i++) {
+    c = mode === 'light'
+      ? { r: c.r * darken, g: c.g * darken, b: c.b * darken, a: 1 }
+      : { r: c.r + (255 - c.r) * lighten, g: c.g + (255 - c.g) * lighten, b: c.b + (255 - c.b) * lighten, a: 1 };
+  }
+  return toHex(c);
+}
+
+/**
+ * Opaque surfaces the accent ink sits on: GLAS-DESIGN §2.3 step 2 names only `bg` (light) / `card` (dark); the ink
+ * is also checked against the other surfaces it is used on (grouped rows, fills, the selected pill = accentSoft),
+ * because user hues otherwise fall below 4.5:1 there (measured: down to 3.3:1). The default orange is unaffected.
+ */
+function inkSurfaces(mode: GlasMode, accentSoft: string): string[] {
+  const c = GLAS_COLORS[mode];
+  return mode === 'light'
+    ? [c.bg, compositeOver(c.fill, c.card), compositeOver(c.fill, c.bg), compositeOver(accentSoft, c.card)]
+    : [c.card, c.card2, compositeOver(c.fill, c.card), compositeOver(accentSoft, c.card)];
+}
+
+/** Accent family for the user's hue (HAPulse accent slider); without a hue the iOS orange of the sketch. */
+export function glasAccent(hue: number | undefined, mode: GlasMode): GlasAccent {
+  if (hue === undefined || !Number.isFinite(hue)) {
+    const d = DEFAULT_ACCENT[mode];
+    return { ...d, onAccentInk: bestOn(d.accentInk) };
+  }
+  const accent = hslToHex(hue, 78, mode === 'light' ? 50 : 60);
+  const a = mustParse(accent);
+  const accentSoft = `rgba(${a.r},${a.g},${a.b},${mode === 'light' ? '.16' : '.26'})`;
+  const accentInk = inkFor(accent, mode, inkSurfaces(mode, accentSoft), 0.9, 0.12);
+  const tabInk = inkFor(accentInk, mode, [LENS[mode]], 0.93, 0.1);
+  let prominent = accent, onProminent = NEUTRAL_DARK;
+  if (contrastRatio(NEUTRAL_DARK, accent) < 4.5) {
+    if (contrastRatio('#FFFFFF', accent) >= 4.5) onProminent = '#FFFFFF';
+    else { prominent = accentInk; onProminent = bestOn(accentInk); }
+  }
+  return { accent, accentInk, tabInk, accentSoft, prominent, onProminent, onAccentInk: bestOn(accentInk), focus: accentInk };
+}
+
+// ---------------------------------------------------------------------------
+// Mapping onto HAPulse token names + Glas variables
+// ---------------------------------------------------------------------------
+
+export interface GlasInput {
+  mode: GlasMode;
+  accentHue?: number | undefined;
+  /** Effective strength — "opaque" when the admin's "reduce transparency" or the device's system setting asks for it */
+  strength: GlasStrength;
+  /** `prefers-contrast: more` on this device */
+  contrastMore?: boolean | undefined;
+  /** `CSS.supports('transition-timing-function', 'linear(0, 1)')` — else the cubic-bezier fallbacks */
+  supportsLinear?: boolean | undefined;
+}
+
+/** Colour table after the strength / contrast adjustments (GLAS-DESIGN §3.4 "deckend", §3.7). */
+function adjustedColors(input: GlasInput): Record<GlasColorKey, string> {
+  const c = { ...GLAS_COLORS[input.mode] };
+  const light = input.mode === 'light';
+  if (input.contrastMore) {
+    c.label2 = c.glassLabel2;
+    c.sep = light ? 'rgba(60,60,67,.5)' : 'rgba(84,84,88,.95)';
+    c.sepStrong = light ? 'rgba(60,60,67,.7)' : 'rgba(160,160,168,.9)';
+  } else if (input.strength === 'opaque') {
+    c.label2 = c.glassLabel2;
+    c.sep = light ? 'rgba(60,60,67,.36)' : 'rgba(84,84,88,.9)';
+  }
+  return c;
+}
+
+/** The 24 classic HAPulse tokens in Glas (GLAS-DESIGN §2.6; `--accent` = ink, plan K6; `--border`, plan K14). */
+export function glasThemeTokens(input: GlasInput): ThemeTokens {
+  const c = adjustedColors(input);
+  const a = glasAccent(input.accentHue, input.mode);
+  const light = input.mode === 'light';
+  return {
+    bg: c.bg,
+    bgRaised: c.card,
+    bgCard: c.card,
+    bgCardHover: c.cardHover,
+    bgSubtle: c.fill,
+    text: c.label,
+    textDim: c.label2,
+    textFaint: input.contrastMore ? c.glassLabel2 : c.textFaint,
+    accent: a.accentInk,
+    accentSoft: a.accentSoft,
+    onAccent: a.onAccentInk,
+    line: c.sep,
+    // Plan K14: not `transparent` (GLAS-DESIGN §2.6) — HAPulse also uses --border for control outlines, switch-off
+    // tracks and gauge/progress tracks, which would vanish. Cards are made borderless in styles/glas/base.css.
+    border: c.fillSolid,
+    positive: c.greenInk,
+    positiveSoft: c.greenSoft,
+    warning: c.warnInk,
+    warningSoft: c.warnSoft,
+    danger: c.redInk,
+    dangerSoft: c.redSoft,
+    info: c.blueInk,
+    infoSoft: c.blueSoft,
+    shadowCard: light ? '0 .5px 1px rgba(0,0,0,.04)' : 'none',
+    shadowElevated: light ? '0 1px 2px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14)' : '0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.5)',
+    shadowActive: light ? '0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.06)' : 'none',
+  };
+}
+
+const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/([a-zA-Z])(\d)/g, '$1-$2').toLowerCase();
+
+/** CSS variable of a classic token key: `bgCardHover` → `--bg-card-hover` (same names as the dashboard's applyTheme). */
+export const classicTokenVar = (key: keyof ThemeTokens): string => `--${kebab(key)}`;
+
+/** CSS variable of a Glas colour: `glassLabel2` → `--g-glass-label-2`, `ct1` → `--g-ct-1`. */
+export const glasColorVar = (key: GlasColorKey): string => `--g-${kebab(key)}`;
+
+/**
+ * Everything `applyAppearance` writes inline on :root in Glas: the 24 classic names + `--g-*`. Every key is either a
+ * classic token name (so `applyTheme` resets it when switching back to Klassisch) or starts with `--g-` (removed).
+ */
+export function glasCssVars(input: GlasInput): Record<string, string> {
+  const out: Record<string, string> = {};
+  const tokens = glasThemeTokens(input);
+  for (const k of Object.keys(tokens) as (keyof ThemeTokens)[]) out[classicTokenVar(k)] = tokens[k];
+
+  const c = adjustedColors(input);
+  for (const k of Object.keys(c) as GlasColorKey[]) out[glasColorVar(k)] = c[k];
+
+  const a = glasAccent(input.accentHue, input.mode);
+  out['--g-accent'] = a.accent;
+  out['--g-accent-ink'] = a.accentInk;
+  out['--g-tab-ink'] = a.tabInk;
+  out['--g-accent-soft'] = a.accentSoft;
+  out['--g-prominent'] = a.prominent;
+  out['--g-on-prominent'] = a.onProminent;
+  out['--g-focus'] = a.focus;
+
+  const m = MATERIAL[input.mode];
+  const light = input.mode === 'light';
+  out['--g-glass-tint'] = String(input.strength === 'opaque' ? 1 : GLAS_TINT[input.strength]);
+  out['--g-glass-rgb'] = m.rgb;
+  out['--g-glass-a0'] = String(m.a0);
+  out['--g-glass-a1'] = String(m.a1);
+  out['--g-glass-sat'] = m.sat;
+  out['--g-glass-bright'] = String(m.bright);
+  out['--g-glass-rim'] = m.rim;
+  out['--g-glass-shadow'] = m.shadow;
+  out['--g-glass-clear-fill'] = CLEAR.fill;
+  out['--g-glass-clear-filter'] = CLEAR.filter;
+  out['--g-glass-clear-rim'] = CLEAR.rim;
+  out['--g-glass-clear-shadow'] = CLEAR.shadow;
+  out['--g-glass-clear-text-shadow'] = CLEAR.textShadow;
+  // deckend / "Transparenz reduzieren" / prefers-contrast: more (GLAS-DESIGN §3.4, §3.7)
+  out['--g-glass-opaque-shadow'] = input.contrastMore
+    ? (light ? '0 0 0 1px #000000, 0 10px 30px rgba(0,0,0,.12)' : '0 0 0 1px #FFFFFF')
+    : `0 0 0 1px ${c.sepStrong}, 0 10px 30px rgba(0,0,0,.12)`;
+  out['--g-glass-opaque-clear-fill'] = 'rgba(0,0,0,.72)';
+  out['--g-glass-opaque-clear-shadow'] = input.contrastMore ? '0 0 0 1px rgba(255,255,255,.7)' : '0 0 0 1px rgba(255,255,255,.35)';
+
+  for (const name of ['smooth', 'snappy', 'bouncy'] as const) {
+    const s = GLAS_SPRINGS[name];
+    out[`--g-spring-${name}`] = input.supportsLinear === false ? s.fallback : s.linear;
+    out[`--g-d-${name}`] = s.duration;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Contrast pairs the tests check (GLAS-DESIGN §2.5)
+// ---------------------------------------------------------------------------
+
+export interface ContrastPair { name: string; fg: string; bg: string; min: number }
+
+/** Text/glyph pairs that must hold in Glas for a mode/strength; colours composited onto opaque backgrounds. */
+export function glasContrastPairs(input: GlasInput): ContrastPair[] {
+  const c = adjustedColors(input);
+  const t = glasThemeTokens(input);
+  const a = glasAccent(input.accentHue, input.mode);
+  const light = input.mode === 'light';
+  const surfaces: Record<string, string> = { bg: c.bg, card: c.card, card2: c.card2, fillOnCard: compositeOver(c.fill, c.card) };
+  const pairs: ContrastPair[] = [];
+  for (const [sName, s] of Object.entries(surfaces)) {
+    pairs.push({ name: `text on ${sName}`, fg: t.text, bg: s, min: 4.5 });
+    pairs.push({ name: `textDim on ${sName}`, fg: t.textDim, bg: s, min: 4.5 });
+    pairs.push({ name: `textFaint on ${sName}`, fg: t.textFaint, bg: s, min: 4.5 });
+    pairs.push({ name: `accent (ink) on ${sName}`, fg: t.accent, bg: s, min: 4.5 });
+  }
+  if (light) {
+    pairs.push({ name: 'textDim on fill over bg', fg: t.textDim, bg: compositeOver(c.fill, c.bg), min: 4.5 });
+    pairs.push({ name: 'accent (ink) on fill over bg', fg: t.accent, bg: compositeOver(c.fill, c.bg), min: 4.5 });
+  } else {
+    // GLAS-DESIGN §2.5 marks this one a limit case (4.13:1, "vermeiden") — guarded so it never gets worse.
+    pairs.push({ name: 'textFaint on fill over card2', fg: t.textFaint, bg: compositeOver(c.fill, c.card2), min: 4.0 });
+  }
+  for (const ink of ['yellowInk', 'orangeInk', 'tealInk', 'greenInk', 'redInk', 'blueInk', 'purpleInk', 'indigoInk'] as const) {
+    pairs.push({ name: `${ink} on card`, fg: c[ink], bg: c.card, min: 4.5 });
+    pairs.push({ name: `${ink} on bg`, fg: c[ink], bg: c.bg, min: 4.5 });
+  }
+  for (const [ink, soft] of [['yellowInk', 'yellowSoft'], ['orangeInk', 'orangeSoft'], ['tealInk', 'tealSoft'], ['greenInk', 'greenSoft'], ['redInk', 'redSoft'], ['blueInk', 'blueSoft']] as const) {
+    pairs.push({ name: `${ink} on ${soft} over card`, fg: c[ink], bg: compositeOver(c[soft], c.card), min: 4.5 });
+  }
+  pairs.push({ name: 'onAccent on accent (classic names)', fg: t.onAccent, bg: t.accent, min: 4.5 });
+  pairs.push({ name: 'onProminent on prominent', fg: a.onProminent, bg: a.prominent, min: 4.5 });
+  pairs.push({ name: 'tabInk on lens', fg: a.tabInk, bg: LENS[input.mode], min: 4.5 });
+  pairs.push({ name: 'accent ink on accentSoft over card', fg: a.accentInk, bg: compositeOver(a.accentSoft, c.card), min: 4.5 });
+  // Glas in rest (GLAS-DESIGN §2.5 rules 2 and 4), weakest tint of the strength: light over white, #F2F2F7 and
+  // #808080; dark over what lies behind it in rest (page background, cards).
+  if (input.strength !== 'opaque') {
+    const tint = GLAS_TINT[input.strength];
+    for (const back of light ? ['#FFFFFF', '#F2F2F7', '#808080'] : ['#000000', '#1C1C1E', '#2C2C2E']) {
+      const g = glassOver(back, input.mode, tint);
+      pairs.push({ name: `label on glass over ${back}`, fg: c.label, bg: g, min: 4.5 });
+      pairs.push({ name: `glassLabel2 on glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
+    }
+  }
+  return pairs;
+}

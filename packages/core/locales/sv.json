@@ -1329,5 +1329,18 @@
   "nvr.clip.failed": "Klippet kunde inte skapas",
   "nvr.clip.oldServer": "Den här Sentinel-servern kan inte skapa klipp än",
   "nvr.clip.eventRunning": "Händelsen pågår fortfarande – klippet slutar nu",
-  "nvr.clip.tooLarge": "För stort för att dela här – spara det i Safari"
+  "nvr.clip.tooLarge": "För stort för att dela här – spara det i Safari",
+  "glas.style.label": "Stil",
+  "glas.style.groupAria": "Gränssnittets stil",
+  "glas.style.classic": "Klassisk",
+  "glas.style.glas": "Glas (förhandsvisning)",
+  "glas.style.hint": "Glas ändrar bara utseende och rörelse; alla funktioner finns kvar.",
+  "glas.strength.label": "Glasets styrka",
+  "glas.strength.groupAria": "Hur starkt glaset är tonat",
+  "glas.strength.clear": "Klar",
+  "glas.strength.tinted": "Tonat",
+  "glas.strength.opaque": "Täckande",
+  "glas.reduceTransparency.label": "Minska genomskinlighet",
+  "glas.reduceTransparency.hint": "Täckande ytor i stället för glas, på alla enheter (t.ex. för äldre surfplattor)",
+  "glas.themeHint": "Stilen Glas använder en neutral palett. Ditt tema sparas för Klassisk."
 }
