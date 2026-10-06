@@ -1763,7 +1763,7 @@ console.log('\n── glas tokens ──');
     assertEqual(w['--g-sheet-filter'], json.glass.sheet[m].filter, `sheet filter ${m} = glas-tokens.json`);
     assertEqual(w['--g-sheet-solid'], json.glass.sheet[m].solid, `sheet solid ${m} = glas-tokens.json`);
   }
-  const elevation = { menu: 'menuDesktop', popover: 'popoverDesktop', banner: 'banner', toast: 'toastPhone', prominent: 'prominent' };
+  const elevation = { menu: 'menuDesktop', popover: 'popoverDesktop', banner: 'banner', toast: 'toastPhone', prominent: 'prominent', chip: 'chipDesktop' };
   for (const [name, key] of Object.entries(elevation)) {
     assertEqual(GLAS_SHADOWS[name], json.elevation.light[key], `--g-shadow-${name} = elevation.${key}`);
     assertEqual(glasCssVars({ mode: 'dark', strength: 'clear' })[`--g-shadow-${name}`], GLAS_SHADOWS[name], `--g-shadow-${name} written`);

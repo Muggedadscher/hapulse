@@ -1,8 +1,8 @@
 # Glas — konkreter Umsetzungsplan Etappe 2 (Rahmen)
 
-Stand 2026-10-06, nach dem unabhängigen Review (Befunde und Umgang damit in §10). Basis ist der Stand von Etappe 1
-(Draft-PR #103, Branch `claude/glas-etappe-1-8cc3sm`); Etappe 2 bekommt einen eigenen Branch und PR, sobald Etappe 1
-gemergt ist (bis dahin auf Etappe 1 aufgesetzt). Dieser Plan macht [`../GLAS-PLAN.md`](../GLAS-PLAN.md) §2.6–2.10,
+Stand 2026-10-06, nach dem unabhängigen Review (Befunde und Umgang damit in §10). Basis ist Etappe 1, gemergt mit
+PR #103 (2026-10-06); Etappe 2 ist umgesetzt und hat einen eigenen PR. Was dabei vom Plan abweicht, was geprüft ist und
+was offen bleibt, steht in §11. Dieser Plan macht [`../GLAS-PLAN.md`](../GLAS-PLAN.md) §2.6–2.10,
 §2.18 und §3 „Etappe 2“ am echten Code fest. Maßgeblich bleiben GLAS-PLAN §7.3 (Entscheidungen des Users),
 [`../GLAS-DESIGN.md`](../GLAS-DESIGN.md) für alle Werte und [`PLAN-ETAPPE-0-1.md`](PLAN-ETAPPE-0-1.md) K1–K19; wo
 dieser Plan abweicht, steht es in §1 mit Grund.
@@ -391,7 +391,7 @@ Klassisch: jede Stelle rendert dort exakt das Heutige (`null`, gleiche Props, gl
 | `glasSelectors.test.ts` | neue CSS-Dateien in der Liste; neue Klassen `g-*` oder Upstream; Lucide-Klassen der gefüllten Symbole in `RUNTIME_CLASSES`; `!important` nur in `@media (prefers-reduced-motion: reduce)` und nur für `transition-*`/`animation-*` (K38); die `:where()`-Listen in `material.css` sind in allen Blöcken gleich (K30) |
 | `glas-shots.cjs shoot` | neue Szenen in beiden Stilen: gescrollt (Handy 700, Desktop 400), Avatar-Menü, Benachrichtigungen (Handy/Desktop), Mehr, Räume, Bearbeiten an, Seitenleiste eingeklappt, Banner und Toast (eingefügtes Markup wie von den Komponenten), minimierte Leiste bei 375, 390 und 430 |
 | Klassisch | volle Matrix + neue Szenen gegen den Etappe-1-Build: **0 Pixel**; solange Etappe 1 nicht in `main` ist, zusätzlich gegen `main` mit `--expect settings` |
-| `glas-shots.cjs checks` | Uhr: `requestAnimationFrame` läuft nur mit der Playwright-Uhr, jede Scroll-Prüfung rückt sie mit `run()` vor, höchstens 1900 ms je Dokument (`BUDGET`), sonst ein neues Dokument. Klassisch ohne Glas-Reste (keine `--g-*`/`data-tabs-min`/`data-g-scrolled`, keine `.g-*`-Elemente, gleiche Kinderzahl in `.app-tabs`); Minimieren/Ausklappen beim Scrollen, Seitenende, kein Minimieren bei Fokus in der Leiste; minimiert Kreis 52 ± 1 und Symbol mittig ± 1 bei 375/390/430; Linse liegt auf dem aktiven Eintrag (±1 px), „Mehr“ auf einer Mehr-Route; minimiert nur der Einblenden-Knopf fokussierbar, danach Fokus auf dem aktiven Eintrag; Avatar-Menü per Tastatur (Enter, Pfeile, Pos1/Ende, Esc, Fokus zurück) und Außenklick; Benachrichtigungen am Handy: Fokus ins Panel und zurück; Pfeile in Räume- und Mehr-Menü, Mehr fokussiert den ersten Eintrag; „Bearbeiten“ nur auf Seiten mit `EditToggle`, „Fertig“ auf jeder Route bei Modus an (auch Raum nicht gefunden); fixierte Elemente auf jeder Route an ihrer Soll-Lage (findet transformierte Vorfahren); Ebenen: die Mitte von Avatar, Zurück und „Fertig“ trifft den Knopf (`elementFromPoint`), die Kante fängt keine Taps; Trefferflächen des Rahmens ≥ 44 × 44; höchstens drei Glasflächen in Ruhe je Route und Breite, kein Glas in Glas, keine Backdrop-Root-Vorfahren; mit `data-glass=opaque` hat keine Rahmenfläche `backdrop-filter`; Gruppenköpfe, flache Liste im Bearbeiten-Modus, Einklappen mit Tooltips, Räume-Popover neben der Seitenleiste; Chips auf jeder Route; reduzierte Bewegung: Menüs und Toasts 200 ms nur Deckkraft, Tab-Leiste und Linse ohne Animation |
+| `glas-shots.cjs checks` | Uhr: `requestAnimationFrame` läuft nur mit der Playwright-Uhr, jede Scroll-Prüfung rückt sie mit `run()` vor, höchstens 1900 ms je Dokument (`BUDGET`), sonst ein neues Dokument. Klassisch ohne Glas-Reste (keine `--g-*`/`data-tabs-min`/`data-g-scrolled`, keine `.g-*`-Elemente, gleiche Kinderzahl in `.app-tabs`); Minimieren/Ausklappen beim Scrollen, Seitenende, kein Minimieren bei Fokus in der Leiste; minimiert Kreis 52 ± 1 und Symbol mittig ± 1 bei 375/390/430; Linse liegt auf dem aktiven Eintrag (±1 px), „Mehr“ auf einer Mehr-Route; minimiert nur der Einblenden-Knopf fokussierbar, danach Fokus auf dem aktiven Eintrag; Avatar-Menü per Tastatur (Enter, Pfeile, Pos1/Ende, Esc, Fokus zurück) und Außenklick; Benachrichtigungen am Handy: Fokus ins Panel und zurück; Pfeile in Räume- und Mehr-Menü, Mehr fokussiert den ersten Eintrag; „Bearbeiten“ nur auf Seiten mit `EditToggle`, „Fertig“ auf jeder Route bei Modus an (auch Raum nicht gefunden); fixierte Elemente auf jeder Route an ihrer Soll-Lage (findet transformierte Vorfahren); Ebenen: die Mitte von Avatar, Zurück und „Fertig“ trifft den Knopf (`elementFromPoint`), die Kante fängt keine Taps; Trefferflächen des Rahmens ≥ 44 × 44; höchstens drei Glasflächen in Ruhe je Route und Breite, kein Glas in Glas, keine Backdrop-Root-Vorfahren; mit `data-glass=opaque` hat keine Rahmenfläche `backdrop-filter`; Gruppenköpfe, flache Liste im Bearbeiten-Modus, Einklappen mit Tooltips, Räume-Popover neben der Seitenleiste; Chips auf jeder Route; reduzierte Bewegung: Menüs und Toasts 200 ms nur Deckkraft, Tab-Leiste und Linse ohne Animation; Tastatur-Durchlauf (Handy und Desktop, vorwärts von oben, rückwärts vom Ende): jeder Tab-Halt sichtbar (die in Glas ausgeblendeten `EditToggle` nie), Halte im Rahmen mit 2-px-Ring in `--g-focus`, „Fertig“ als erster Halt im Bearbeiten-Modus |
 | Gefüllte Tab-Symbole | Screenshot aller Nav-Symbole aktiv in hell/dunkel; nur geprüfte kommen in die Liste |
 | Klick-Fuzz | `click-fuzz-test.cjs … glas` Handy + Desktop ohne Fehler |
 | Pflichtbefehle | `npm run typecheck && npm run build && npm test -w @hapulse/core && npm test -w @hapulse/dashboard && npm run lint` |
@@ -416,10 +416,10 @@ Klassisch: jede Stelle rendert dort exakt das Heutige (`null`, gleiche Props, gl
 
 ### 6.5 Changelog und Doku
 
-Fork-Changelog: F31 erweitern, solange Etappe 1 nicht ausgerollt ist, sonst F32 („Glas (Vorschau): Rahmen im neuen
-Stil“ — schwebende Tab-Leiste, Avatar-Menü, großer Titel, Glas-Seitenleiste mit Gruppen, Kopf-Kapseln). Nachziehen:
-`docs/SYNC.md` (neue Dateien, `[fork]`-Stellen, Klassen, die Glas voraussetzt), `CLAUDE.md` (Stand der Etappen),
-GLAS-PLAN-Haken, GLAS-DESIGN §10.3 (Verweis auf diesen Plan).
+Fork-Changelog: F32 („Glas (Vorschau): Rahmen im neuen Stil“ — schwebende Tab-Leiste, Avatar-Menü, großer Titel,
+Glas-Seitenleiste mit Gruppen, Kopf-Kapseln; Etappe 1 ist mit F31 gemergt). Nachgezogen: `docs/SYNC.md` (neue
+Dateien, `[fork]`-Stellen, Prüfschritt nach Upstream-Merges), `CLAUDE.md` (Stand der Etappen), GLAS-PLAN (Stand und
+Haken), GLAS-DESIGN §10.3 (Verweis auf diesen Plan).
 
 ---
 
@@ -443,7 +443,8 @@ GLAS-PLAN-Haken, GLAS-DESIGN §10.3 (Verweis auf diesen Plan).
 7. **Statusleiste (K39):** in Chromium sind die Insets immer 0; ob die Home-Bildschirm-App oben etwas verdeckt, zeigt erst
    das echte iPhone. Fällt das Labor rot aus, kommt `viewport-fit=cover` mit allen Insets als eigener Schritt.
 8. **`!important` in Bewegungsregeln (K38):** eng begrenzt; der Wächter lehnt jede andere Verwendung ab.
-9. **Etappe 1 noch offen:** ändert sie sich im Review, wird Etappe 2 neu aufgesetzt.
+9. ~~**Etappe 1 noch offen:** ändert sie sich im Review, wird Etappe 2 neu aufgesetzt.~~ Erledigt: Etappe 1 ist
+   unverändert gemergt (#103), Etappe 2 setzt auf diesem `main` auf.
 
 ## 8. Bewusst offen nach Etappe 2
 
@@ -496,3 +497,39 @@ Raumseite ohne `h1`, Chips außerhalb von `main`); die Zustände mit und ohne `E
 (K24); keine Rahmenklasse nutzt in Klassisch `::before`/`::after` (K30); die Wortmarke hat Inline-Stile (K34); die
 Begründung von K35; `.page` ist eine Flex-Spalte und `ScrollToTop` setzt `scrollTop = 0`; alle genannten `--g-*`-Farben
 und Tönungs-Schlüssel gibt es; die `[fork]`-Stellen rendern in Klassisch unverändert.
+
+---
+
+## 11. Umsetzung (Stand 2026-10-06)
+
+Etappe 2 ist nach diesem Plan gebaut. Was abweicht, steht in §11.1, was der Plan offen ließ, in §11.2, die Prüfungen
+in §11.3, Grenzen und offene Punkte in §11.4.
+
+### 11.1 Abweichungen vom Plan
+
+| # | Stelle | Umgesetzt | Grund |
+|---|---|---|---|
+| U1 | §5.1, K30 „Sheet-Material als zweite `:where()`-Liste“ | eine Liste für alle Flächen; eine Fläche wählt ein anderes Material über Variablen (`--g-surface-fill/-filter/-solid/-shadow/-rim`), `--g-surface-bg` ist, was sie zeigt. Sheet-Material tragen Avatar-Menü, Mehr- und Räume-Menü am Handy und das Benachrichtigungs-Panel am Handy (U8) | Jeder Block von `material.css` hätte sonst zwei Listen, die der Wächter abgleichen müsste. Eine Upstream-Regel, die beim Hover den Hintergrund setzt, stellt das Material über `--g-surface-bg` wieder her |
+| U2 | §2.1 „Glanz auf Glasflächen“ | nur auf Bedienelementen (Tab-Leiste, Avatar, Zurück, Glocken- und Bearbeiten-Kapsel, `.g-flex`); Panels, Menüs und Toasts leuchten nicht | Gedrückt wird dort eine Zeile, nicht die Fläche; der Glanz lag sonst über dem ganzen Menü |
+| U3 | §3.1 gefüllte Symbole („Haus, Kamera, Wellen …“) | gefüllt: Haus, Raster, Schild, Prozessor, Ablauf, Musik, Funkeln, Bildschirm, Zahnrad, Mehr; das Haus als Silhouette ohne ausgesparte Tür. Kamera (NVR), Wellen (Pool) und Puls (Energie) bleiben Strich | Lucide zeichnet die Tür vor dem Umriss, die Füllung deckt sie zu. Wellen und Puls sind offene Linien ohne Fläche; die Kamera verlöre gefüllt ihr Objektiv (ein Punkt in derselben Farbe) |
+| U4 | K31 Status-Pille „unbekannt: `label3`“ (GLAS-DESIGN §7.2) | Kreis in `--g-gray` | `glyphDark` auf `label3` hat hell nur 4,09 : 1, auf `gray` 5,22 : 1 (Kontrastpaar in `glasTokens.ts`, mindestens 4,5) |
+| U5 | §5.3 Chips „an = Ink des Zustands“, je Art (GLAS-DESIGN §7.5: Licht `yellowInk`, Pool `tealInk`, Medien `blueInk`, Alarm scharf `greenInk`, Glühbirne gefüllt) | nach Zustand: an `accent-ink`, Warnung `warn-ink`, Gefahr `red-ink`, aus `label2`; die Glühbirne bleibt Strich | `SummaryChips.tsx` kennzeichnet nur den Zustand (`--active`, `--alert`, `--danger`), nicht die Art. Die Farbe je Art braucht ein Merkmal im Markup und kommt mit Etappe 4 |
+| U6 | §5.6 Gruppe „Bereiche“ | Englisch „Categories“ | Home Assistant nennt Räume „Areas“ (HAPulse selbst: „set areas in home assistant“); „Areas“ läse sich als Räume |
+| U7 | §3.2 Avatar-Menü „250 breit“ | mindestens 250, breiter, wenn ein Eintrag es braucht (höchstens Bildschirmbreite − 32) | „Benachrichtigungen (12)“ mit Symbol passt nicht in jeder Sprache in 250 |
+| U8 | K25, §3.3 Benachrichtigungen am Handy „Aussehen wie das Desktop-Popover“ | Sheet-Material statt Menü-Glas | Das Panel liegt über dem großen Titel, der durch das Menü-Glas durchschien. Das Sheet ist auch, was Etappe 3 daraus macht |
+| U9 | K23 „Bearbeiten nur, wo ein `EditToggle` gezeigt würde“ | am Desktop zusätzlich auf jeder Raum-Route, auch „Raum nicht gefunden“ | Klassisch zeigt dort im Kopf immer ein `EditToggle` (`AppLayout.tsx`, `isRoom`); `checks` vergleicht das Angebot je Route mit Klassisch |
+| U10 | §3.4, §4.3 Kante | der Blur liegt auf `.g-edge::before`, das auch die Deckkraft trägt; `.g-edge` bleibt deckend | Ein Element mit Deckkraft unter 1 ist Backdrop-Root, der Blur sähe die Seite dahinter nicht |
+| U11 | §3.2 Abdunklung hinter dem Avatar-Menü „+ `blur(10px)`“ | bei `data-glass="opaque"` (Deckend, „Transparenz reduzieren“, mehr Kontrast) ohne Blur | GLAS-DESIGN §3.7: deckend heißt nirgends `backdrop-filter`; `checks` prüft es mit offenem Menü |
+| U12 | K29 Schatten `--g-shadow-{menu,popover,banner,toast,prominent}` | zusätzlich `--g-shadow-chip` (Chips am Desktop) | Wert aus `glas-tokens.json` `elevation.chip` statt im CSS |
+
+### 11.2 Was der Plan offen ließ
+
+- **Linse:** Zustand am Container: `data-g-lens` = „0“ (ohne Animation gesetzt: erstes Layout, Größenänderung) oder
+  „a“/„b“ (bewegt; der Wert wechselt, damit die Dehnung bei jedem Sprung neu startet). In der Tab-Leiste trägt der
+  markierte Eintrag `data-g-tab-pick`: Upstream markiert „Räume“ auch aktiv, solange das Räume-Menü offen ist, Linse und
+  Ink folgen nur der Route. Die Linse der Seitenleiste nimmt die volle Breite der Liste und misst nur Lage und Höhe.
+- **„Räume“ in der Seitenleiste:** der Chevron hängt an `[aria-haspopup='menu']` (Upstream setzt es an Einträgen ohne
+  Route, die ein Menü öffnen; heute nur „Räume“), nicht an der Nav-ID.
+- **„Fertig“:** `DoneCapsule` nur unter 900 px; am Desktop zeigt die Kopf-Kapsel „Fertig“ auf jeder Route (K24).
+- **Tastatur:** `GlasRuntime` rendert vor `.app-content`; im Bearbeiten-Modus ist „Fertig“ am Handy deshalb der erste
+  Tab-Halt.

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, Sparkles, Zap, Star, Heart, Flame, Leaf, type LucideIcon } from 'lucide-react';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas wordmark (docs/glas/PLAN-ETAPPE-2.md K34)
 
 /** Alternate icons a user can pick for the sidebar logo, keyed by id.
  *  'pulse' is the default heartbeat glyph and is drawn separately below
@@ -37,6 +38,7 @@ interface PulseLogoProps {
  */
 export function PulseLogo({ size = 36, wordmark = false, name = 'HAPulse', icon = 'pulse', hideIcon = false }: PulseLogoProps) {
   const Alternate = APP_ICON_ALTERNATES[icon];
+  const glas = useIsGlas(); // [fork]
 
   return (
     <span
@@ -92,11 +94,11 @@ export function PulseLogo({ size = 36, wordmark = false, name = 'HAPulse', icon 
         <span
           style={{
             fontFamily: 'var(--font-display)',
-            fontWeight: 600,
+            fontWeight: glas ? 700 : 600, // [fork] Glas: 20/25 700 (.2 px)
             fontSize: '1.25rem',
-            letterSpacing: '-0.02em',
+            letterSpacing: glas ? '0.2px' : '-0.02em', // [fork]
             color: 'var(--text)',
-            lineHeight: 1,
+            lineHeight: glas ? '25px' : 1, // [fork]
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',

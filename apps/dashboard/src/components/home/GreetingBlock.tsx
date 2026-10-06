@@ -1,6 +1,8 @@
 import React from 'react';
 import { useT } from '../../i18n/useT';
 import type { TKey } from '../../i18n/useT';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: weather line (docs/glas/PLAN-ETAPPE-2.md §3.4)
+import { WeatherLine } from '../glas/WeatherLine'; // [fork]
 import './home.css';
 
 interface GreetingBlockProps {
@@ -22,6 +24,7 @@ export function GreetingBlock({ userName }: GreetingBlockProps) {
   const t = useT();
   const greeting = t(greetingKey());
   const name = userName?.trim();
+  const glas = useIsGlas(); // [fork]
 
   return (
     <div className="greeting">
@@ -29,6 +32,7 @@ export function GreetingBlock({ userName }: GreetingBlockProps) {
         {name ? t('home.greeting.withName', { greeting, name }) : greeting} <span aria-hidden="true">👋</span>
       </h1>
       <p className="greeting__subtitle">{t('home.greeting.subtitle')}</p>
+      {glas && <WeatherLine />}{/* [fork] */}
     </div>
   );
 }

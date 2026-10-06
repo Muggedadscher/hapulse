@@ -1,0 +1,308 @@
+/* [fork] Glas — the floating tab bar on the phone (docs/GLAS-DESIGN.md §7.1, §6.3; plan docs/glas/PLAN-ETAPPE-2.md
+   §3.1, K20, K33). Upstream's <nav class="app-tabs"> keeps its entries; app/glas/GlasTabBar.tsx adds three layers as
+   its first children: the glass (.g-tabs__glass), the lens (.g-tabs__lens) and, while minimised, the button
+   "Tab-Leiste einblenden" (.g-tabs__expand). The nav itself carries no glass (glass on glass) and nothing that would make
+   it a backdrop root for the glass inside (no opacity, filter or backdrop-filter on it).
+
+   State on the nav, from GlasTabBar / useLens: data-g-lens ("0" shown in place, "a"/"b" moved), --g-lens-x/-y/-w/-h,
+   the minimised circle's geometry --g-tab-sx/-sy/-rx/-dx, data-g-tab-empty (no entry to show). On the entries:
+   data-g-tab-pick (the shown one), data-g-pop (just picked). On the root: data-tabs-min (GlasRuntime). */
+
+@keyframes g-lens-stretch-a {
+  40% {
+    scale: 1.12 0.94;
+  }
+}
+
+/* same steps under a second name: flipping a ↔ b restarts the stretch on every move */
+@keyframes g-lens-stretch-b {
+  40% {
+    scale: 1.12 0.94;
+  }
+}
+
+@keyframes g-tab-pop {
+  0% {
+    scale: 0.9;
+  }
+  45% {
+    scale: 1.15;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+@media (max-width: 899px) {
+  :root[data-style='glas'] .app-tabs {
+    left: 16px;
+    right: 16px;
+    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    height: 62px;
+    padding: 4px;
+    align-items: center;
+    background: none;
+    border-top: 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transform-origin: 50% 100%;
+    transition:
+      scale var(--g-d-bouncy) var(--g-spring-bouncy),
+      translate var(--g-d-snappy) var(--g-spring-snappy);
+  }
+
+  /* Glas flex on press: the whole bar (GLAS-DESIGN §3.3, --flex 1.02; in snappy, back bouncy) */
+  :root[data-style='glas'] .app-tabs:active {
+    scale: 1.02;
+    transition-timing-function: var(--g-spring-snappy);
+    transition-duration: var(--g-d-snappy);
+  }
+
+  :root[data-style='glas'] .g-tabs__glass {
+    --g-surface-tint: var(--g-tint-tab-bar);
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    border-radius: 31px;
+    transform-origin: 0 100%;
+    transition:
+      transform var(--g-d-bouncy) var(--g-spring-bouncy),
+      border-radius var(--g-d-bouncy) var(--g-spring-bouncy),
+      opacity 200ms ease;
+  }
+
+  /* ---- Lens: glides to the shown entry (useLens), stretches while it moves ---- */
+  :root[data-style='glas'] .g-tabs__lens {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    width: var(--g-lens-w, 0px);
+    height: var(--g-lens-h, 0px);
+    translate: var(--g-lens-x, 0px) var(--g-lens-y, 0px);
+    border-radius: 27px;
+    background: var(--g-lens);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  :root[data-style='glas'] .app-tabs[data-g-lens] .g-tabs__lens {
+    opacity: 1;
+  }
+
+  :root[data-style='glas'] .app-tabs:is([data-g-lens='a'], [data-g-lens='b']) .g-tabs__lens {
+    transition:
+      translate var(--g-d-snappy) var(--g-spring-snappy),
+      width var(--g-d-snappy) var(--g-spring-snappy),
+      opacity 200ms ease;
+  }
+
+  :root[data-style='glas'] .app-tabs[data-g-lens='a'] .g-tabs__lens {
+    animation: g-lens-stretch-a 420ms ease-in-out;
+  }
+
+  :root[data-style='glas'] .app-tabs[data-g-lens='b'] .g-tabs__lens {
+    animation: g-lens-stretch-b 420ms ease-in-out;
+  }
+
+  /* ---- Entries: 54 high, symbol 24 (stroke 1.75), caption 2 ---- */
+  :root[data-style='glas'] .app-tabs__item {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 54px;
+    min-height: 0;
+    gap: 2px;
+    border-radius: 27px;
+    color: var(--g-label);
+    transition:
+      color 160ms ease-out,
+      visibility 0s,
+      opacity 200ms ease;
+  }
+
+  /* the bar flexes instead of the entry */
+  :root[data-style='glas'] .app-tabs__item:active {
+    transform: none;
+  }
+
+  :root[data-style='glas'] .app-tabs__item:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: -2px;
+    border-radius: 27px;
+  }
+
+  :root[data-style='glas'] .app-tabs__item > svg {
+    width: 24px;
+    height: 24px;
+    transition:
+      opacity 300ms ease,
+      scale var(--g-d-bouncy) var(--g-spring-bouncy),
+      translate var(--g-d-bouncy) var(--g-spring-bouncy);
+  }
+
+  :root[data-style='glas'] .app-tabs__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 13px;
+    font-weight: 600;
+    letter-spacing: 0;
+    transition: opacity 200ms ease;
+  }
+
+  /* the shown entry (an open rooms menu also marks "Räume" active upstream — only the route's entry is inked) */
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] {
+    color: var(--g-tab-ink);
+  }
+
+  :root[data-style='glas'] .app-tabs__item[data-g-pop] > svg {
+    animation: g-tab-pop 440ms cubic-bezier(0.3, 0, 0.2, 1);
+  }
+
+  /* Filled symbol for the shown entry — only for Lucide symbols checked on a screenshot (plan §3.1, risk 4); inner
+     details are cut out with the page colour. All other symbols stay outlined. The house is filled as a silhouette:
+     its door is drawn before the outline and cannot be lifted above the fill. */
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-house > path:last-child,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-layout-grid > rect,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-shield-check > path:first-child,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-cpu > rect:first-of-type,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-workflow > rect,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-music > circle,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-sparkles > path:first-child,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-sparkles > circle,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-monitor > rect,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-settings > path,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-ellipsis > circle {
+    fill: currentColor;
+  }
+
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-shield-check > path:last-child,
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-cpu > rect:last-of-type {
+    stroke: var(--g-bg);
+  }
+
+  :root[data-style='glas'] .app-tabs__item[data-g-tab-pick] > .lucide-settings > circle {
+    fill: var(--g-bg);
+  }
+
+  /* ---- Minimised (scrolling down): the glass shrinks to a 52-px circle at the bottom left, the shown symbol moves
+     into it, everything else fades out; only "Tab-Leiste einblenden" stays focusable ---- */
+  :root[data-style='glas'][data-tabs-min] .app-tabs {
+    pointer-events: none;
+    transform-origin: 26px 36px;
+  }
+
+  :root[data-style='glas'][data-tabs-min] .app-tabs:active {
+    scale: 1.1;
+  }
+
+  :root[data-style='glas'][data-tabs-min] .g-tabs__glass {
+    transform: scale(var(--g-tab-sx, 1), var(--g-tab-sy, 1));
+    border-radius: var(--g-tab-rx, 31px) / 31px;
+    transition-duration: var(--g-d-smooth);
+    transition-timing-function: var(--g-spring-smooth);
+  }
+
+  :root[data-style='glas'][data-tabs-min] .app-tabs .g-tabs__lens {
+    opacity: 0;
+  }
+
+  :root[data-style='glas'][data-tabs-min] .app-tabs__item {
+    visibility: hidden;
+    transition:
+      color 160ms ease-out,
+      visibility 0s linear var(--g-d-smooth),
+      opacity 200ms ease;
+  }
+
+  :root[data-style='glas'][data-tabs-min] .app-tabs__item > svg {
+    opacity: 0;
+    scale: 0.5;
+    transition:
+      opacity 300ms ease,
+      scale var(--g-d-smooth) var(--g-spring-smooth),
+      translate var(--g-d-smooth) var(--g-spring-smooth);
+  }
+
+  :root[data-style='glas'][data-tabs-min] .app-tabs__label {
+    opacity: 0;
+    transition-duration: 120ms;
+  }
+
+  :root[data-style='glas'][data-tabs-min] .app-tabs__item[data-g-tab-pick] > svg {
+    visibility: visible;
+    opacity: 1;
+    scale: 1;
+    translate: var(--g-tab-dx, 0px) 12.5px;
+  }
+
+  :root[data-style='glas'] .g-tabs__expand {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--g-label);
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  :root[data-style='glas'] .g-tabs__expand:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
+  /* the chevron only when no entry belongs to the route (nothing else to show in the circle) */
+  :root[data-style='glas'] .g-tabs__expand-icon {
+    opacity: 0;
+  }
+
+  :root[data-style='glas'] .app-tabs[data-g-tab-empty] .g-tabs__expand-icon {
+    opacity: 1;
+  }
+
+  /* ---- Hidden while the More or rooms sheet is open (GLAS-DESIGN §7.1 "Versteckt") — the children fade, not the
+     nav (its opacity would cut the glass off from the page behind it) ---- */
+  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open) .app-tabs {
+    translate: 0 14px;
+    scale: 0.94;
+    pointer-events: none;
+  }
+
+  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open) .app-tabs > * {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion (GLAS-DESIGN §6.4, plan K38): the bar and the lens switch at once (upstream's global rule already
+   shortens every duration), no flex on press, no pop, no stretch; a pressed entry dims instead. */
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .app-tabs:active,
+  :root[data-style='glas'][data-tabs-min] .app-tabs:active {
+    scale: none;
+  }
+
+  :root[data-style='glas'] .app-tabs__item:active {
+    opacity: 0.6;
+  }
+
+  :root[data-style='glas'][data-tabs-min] .app-tabs__item {
+    transition-delay: 0s;
+  }
+
+  :root[data-style='glas'] .app-tabs .g-tabs__lens,
+  :root[data-style='glas'] .app-tabs__item[data-g-pop] > svg {
+    animation: none;
+  }
+}

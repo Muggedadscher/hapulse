@@ -1199,6 +1199,7 @@ Tab-Leiste (`tb`, `tabs`), Energie (`en`), Kontext (`ctx`), Avatar (`av`).
 | Hinweise, aktive Szene, Kartentitel, Energie, Licht, S/M/L | GLAS-PLAN §2.11–2.16 |
 | Tests (Kontrast, Selektor-Wächter, Screenshots, Leistung, Safari) | GLAS-PLAN §5 |
 | Umsetzung Etappe 0 und 1, Abweichungen K1–K19, Laborliste | `glas/PLAN-ETAPPE-0-1.md` |
+| Umsetzung Etappe 2 (Rahmen), Festlegungen K20–K44, Abweichungen U1–U12, Laborpunkte | `glas/PLAN-ETAPPE-2.md` |
 | NVR-Paket-Hooks, immersive Kameraseite | GLAS-PLAN §4 |
 | Checkliste „nicht verlieren“ | `glas/HAPULSE-INVENTORY.md` |
 | Glas-Rezept / Bewegung / Grundsatz / Glas-5-Änderungen | `glas/spec/SPEC3.md` §1–2, `SPEC4.md`, `SPEC5.md`; Beispieldaten `SPEC.md` §3 |

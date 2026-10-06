@@ -1342,5 +1342,22 @@
   "glas.strength.opaque": "Deckend",
   "glas.reduceTransparency.label": "Transparenz reduzieren",
   "glas.reduceTransparency.hint": "Deckende Flächen statt Glas, auf allen Geräten (z. B. für ältere Tablets)",
-  "glas.themeHint": "Im Stil Glas gilt eine neutrale Farbpalette. Das Design bleibt für Klassisch gespeichert."
+  "glas.themeHint": "Im Stil Glas gilt eine neutrale Farbpalette. Das Design bleibt für Klassisch gespeichert.",
+  "glas.nav.group.home": "Zuhause",
+  "glas.nav.group.areas": "Bereiche",
+  "glas.nav.group.system": "System",
+  "glas.tabs.expand": "Tab-Leiste einblenden",
+  "glas.avatar.account": "Konto {name}",
+  "glas.avatar.accountNoName": "Konto",
+  "glas.avatar.label": "{account}. Menü öffnen",
+  "glas.avatar.labelUnread.one": "{account}, {count} neue Benachrichtigung. Menü öffnen",
+  "glas.avatar.labelUnread.other": "{account}, {count} neue Benachrichtigungen. Menü öffnen",
+  "glas.avatar.notifications": "Benachrichtigungen",
+  "glas.avatar.notificationsCount.one": "Benachrichtigungen ({count})",
+  "glas.avatar.notificationsCount.other": "Benachrichtigungen ({count})",
+  "glas.avatar.edit": "Bearbeiten",
+  "glas.avatar.editDone": "Bearbeiten beenden",
+  "glas.avatar.menuLabel": "Kontomenü",
+  "glas.edit.label": "Bearbeiten",
+  "glas.edit.done": "Fertig"
 }

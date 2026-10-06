@@ -10,6 +10,7 @@
 | `docs/GLAS-DESIGN.md` | Designsystem Glas (Farben, Typo, Material, Bewegung, Komponenten-Anatomie) — separat geschrieben, **maßgeblich für das Aussehen** |
 | `docs/GLAS-PLAN.md` | dieses Dokument: Architektur, Etappen, Abnahme, Tests, Risiken |
 | `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K19 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
+| `docs/glas/PLAN-ETAPPE-2.md` | Umsetzung von Etappe 2 (Rahmen): Festlegungen K20–K44, Review des Plans, Abweichungen der Umsetzung U1–U12, Prüfungen, Laborpunkte (Stand 2026-10-06) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
@@ -540,7 +541,7 @@ Details: [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §2.
 
 ### Etappe 1 — Fundament: Einstellung, Tokens, Schrift
 
-**Stand 2026-10-06: umgesetzt, PR offen (Merge erst mit OK des Users).** Abweichungen von diesem Abschnitt — kein
+**Stand 2026-10-06: umgesetzt, gemergt (PR #103).** Abweichungen von diesem Abschnitt — kein
 Geräte-Schalter für Stil und Transparenz (E1/E2), kein `GlasRuntime`, `--accent` als Ink mit Akzent-Flächen in
 `styles/glas/accent.css` u. a. — mit Gründen in [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §1 (K1–K19); was
 bewusst offen bleibt: dort §3.12, Laborprüfungen §6, Randnotiz Energie-Karte §5 (Entscheidung des Users offen).
@@ -570,6 +571,10 @@ Nicht verlieren (2026-10-06, alles noch da, in beiden Stilen):
       · Export/Import (S14) · „Was ist neu“ (U) · Zahlen sprachabhängig (V7).
 
 ### Etappe 2 — Rahmen (Shell) Handy + Desktop
+
+**Stand 2026-10-06: umgesetzt, PR offen.** Gemergt wird erst mit OK des Users und nach dem Labor-Pflichtpunkt K39
+(Statusleiste der Home-Bildschirm-App). Plan, Festlegungen K20–K44, Abweichungen der Umsetzung U1–U12, Prüfungen und
+Laborpunkte: [`glas/PLAN-ETAPPE-2.md`](glas/PLAN-ETAPPE-2.md) (§1, §11, §9).
 
 Umfang: 2.6–2.10, 2.18; Seitenleiste als Glas-Panel mit Gruppen, Status-Pille, Einklappen mit Feder; Kopf-Kapseln
 Desktop; schwebende Tab-Leiste mit Minimieren; Mehr- und Räume-Menü als Glas-Sheet-Look (sie sind keine `Modal`s →

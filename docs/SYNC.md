@@ -123,11 +123,14 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/glasTokens.ts` | Stil Glas: Farben, Akzent (`glasAccent`), Federn, Kontrast-Hilfen, Abbildung auf die 24 HAPulse-Tokens + `--g-*` (DOM-frei) |
 | `apps/dashboard/src/theme/glasAppearance.ts` | Stil Glas: `applyAppearance` (umhüllt `applyTheme`, schreibt Tokens + `--g-*` + Attribute auf `:root`), `resolveAppearance`, `readPersistedStyle` (Pre-Paint), `watchAppearance` |
 | `apps/dashboard/src/app/glas/useUiStyle.ts` | `useUiStyle`/`useIsGlas` für Komponenten |
-| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`); jeder Selektor beginnt mit `:root[data-style='glas']` |
+| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`); jeder Selektor beginnt mit `:root[data-style='glas']` |
+| `apps/dashboard/src/app/glas/{GlasRuntime,GlasTabBar,GlasNavGroups}.tsx`, `{glasScroll,menuKeys,navGroups,shellStore,useLens}.ts` | Glas-Rahmen (Etappe 2): Scroll-Kante und kleiner Titel, Tab-Leiste minimieren, Linse, Pfeiltasten in Räume-/Mehr-Menü, Gruppen der Seitenleiste, Bearbeiten-Angebot je Seite |
+| `apps/dashboard/src/components/glas/{AvatarMenu,DoneCapsule,WeatherLine}.tsx`, `weatherIcon.ts` | Glas am Handy: Avatar-Menü (Benachrichtigungen, Bearbeiten, Einstellungen), „Fertig“, Wetterzeile; Wettersymbol je Zustand |
+| `apps/dashboard/test/{glasScroll,menuKeys,navGroups}.test.ts` | Tests des Glas-Rahmens |
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
-| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungsplan Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`) |
+| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`) und 2 (`docs/glas/PLAN-ETAPPE-2.md`) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -157,6 +160,9 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/stores/{settingsStore,settingsScope}.ts` | `lastSeenFork` (DEVICE, `markVersionSeen` setzt beide Stände) |
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Chip-Marker (`poolChipMigrated`, `garageChipMigrated`, `locksChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
 | `apps/dashboard/src/stores/settingsStore.ts` | Stil Glas: `uiStyle`, `glassStrength`, `reduceTransparency` (GLOBAL); `applyGlobal` setzt sie auf den Standard, wenn das Admin-Dokument sie nicht trägt |
+| `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 2): `GlasRuntime` vor dem Inhalt, `GlasTabBar` als erste Kinder der Tab-Leiste, Gruppen der Seitenleiste außerhalb des Bearbeiten-Modus (`GlasNavGroups`), Kopf: Zurück 48, Kapsel „Bearbeiten“/„Fertig“ statt des Stift-Knopfs, Wettersymbol je Zustand und „14 °C“ |
+| `apps/dashboard/src/components/ui/{PageHeaderActions,EditToggle,PulseLogo}.tsx`, `components/home/GreetingBlock.tsx`, `pages/Room.tsx` | Stil Glas (Etappe 2): Avatar-Menü statt Glocke + Avatar am Handy; `EditToggle` meldet Seiten mit Bearbeiten-Modus und hat die Variante `label` (Kopf-Kapsel); Wortmarke 20/25 700; Wetterzeile unter der Begrüßung; Zurück als Glaskreis 44 |
+| `apps/dashboard/src/components/notifications/NotificationsPanel.tsx` | Stil Glas (Etappe 2): `useNotifications`, `Panel` und `HANotification` exportiert (Avatar-Menü), Glocke 44 |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/src/domain.ts` | `formatEntityState`: Zahl über `formatNumber` (Sprache), numerische Zustände ohne Einheit (sensor/number/input_number/counter) formatiert statt `humanizeState` (Minus ging verloren) |
@@ -261,7 +267,7 @@ State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.
 ## Feature: Stil Glas
 
 Zweiter Stil neben Klassisch, nur Aussehen und Bewegung (Plan `docs/GLAS-PLAN.md`, Design `docs/GLAS-DESIGN.md`, Stand
-und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
+und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md` und `docs/glas/PLAN-ETAPPE-2.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
 `<html data-style="glas">` gesetzt ist, und jede Regel in `styles/glas/` beginnt mit `:root[data-style='glas']`.
 
 Nach jedem Upstream-Merge:
@@ -275,6 +281,11 @@ Nach jedem Upstream-Merge:
    eingeschalteten Zustand in die Knopf-Regel dort aufnehmen (in Glas weiß).
 4. Neue Ränder an Karten, die einen Zustand zeigen (`border-color` an einem Element mit `.card`), → in die
    `:not(…)`-Liste in `styles/glas/base.css`; sonst blendet Glas sie mit den übrigen Kartenrändern aus.
-5. Screenshot-Matrix beider Stile ansehen und die Laufzeitprüfungen laufen lassen:
+5. Seit Etappe 2 (Rahmen) zusätzlich: eine neue Seite in `NAV_CONFIG` landet in der Seitenleisten-Gruppe „Bereiche“,
+   bis `app/glas/navGroups.ts` sie einordnet; Lucide-Symbole, die die Tab-Leiste gefüllt zeigt, prüft der
+   Selektor-Wächter (Klasse und Teile, `FILLED_ICONS`) — ein Lucide-Update, das sie ändert, fällt dort auf; neue
+   Elemente in `.app-content`, `.app-tabs` oder der Seitenleiste vor dem Merge in beiden Stilen ansehen (Glas fixiert
+   den Kopf, die Tab-Leiste und die Seitenleiste).
+6. Screenshot-Matrix beider Stile ansehen und die Laufzeitprüfungen laufen lassen:
    `node apps/dashboard/scripts/glas-shots.cjs shoot --serve apps/dashboard/dist <ordner> --style classic|glas`,
    `… checks --serve apps/dashboard/dist` (Kopf des Skripts beschreibt `compare` und `checks`).

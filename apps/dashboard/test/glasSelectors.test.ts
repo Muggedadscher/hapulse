@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { createElement, type ComponentType } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { Cpu, Home, LayoutGrid, MoreHorizontal, Monitor, Music, Settings, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
 
 // [fork] Guard for the Glas stylesheets (docs/GLAS-PLAN.md §1.4, §5.2): Glas must never touch Klassisch, and an
 // upstream rename must not leave a Glas rule silently pointing at nothing.
@@ -52,15 +55,73 @@ function styleRules(css: string): { selectors: string[]; at: string[] }[] {
   return out;
 }
 
+/** Every declaration with the at-rules around it. */
+function declarations(css: string): { prop: string; value: string; at: string[] }[] {
+  const out: { prop: string; value: string; at: string[] }[] = [];
+  const stack: string[] = [];
+  let buf = '';
+  const flush = () => {
+    const d = buf.trim();
+    buf = '';
+    const i = d.indexOf(':');
+    if (i > 0 && !d.startsWith('@')) out.push({ prop: d.slice(0, i).trim(), value: d.slice(i + 1).trim(), at: stack.filter(Boolean) });
+  };
+  for (const ch of stripComments(css)) {
+    if (ch === '{') {
+      const head = buf.trim();
+      buf = '';
+      stack.push(head.startsWith('@') ? head : '');
+    } else if (ch === '}') { flush(); stack.pop(); }
+    else if (ch === ';') flush();
+    else buf += ch;
+  }
+  return out;
+}
+
+/** The contents of every `:where(...)` in a stylesheet, whitespace normalised. */
+function whereLists(css: string): string[] {
+  const out: string[] = [];
+  const text = stripComments(css);
+  for (let i = text.indexOf(':where('); i >= 0; i = text.indexOf(':where(', i + 1)) {
+    let depth = 0, j = i + ':where'.length;
+    for (; j < text.length; j++) {
+      if (text[j] === '(') depth++;
+      if (text[j] === ')' && --depth === 0) break;
+    }
+    out.push(text.slice(i + ':where('.length, j).replace(/\s+/g, ' ').trim());
+  }
+  return out;
+}
+
 const glasCss = files(GLAS, /\.css$/).map((p) => ({ name: relative(SRC, p), css: readFileSync(p, 'utf8') }));
 
+/**
+ * Lucide symbols that tabbar.css fills for the shown tab (plan docs/glas/PLAN-ETAPPE-2.md §3.1, risk 4): the class it
+ * targets and the child elements its :first-child/:last-child/:first-of-type selectors rely on. A Lucide update that
+ * renames a symbol or reorders its parts fails here instead of filling the wrong part.
+ */
+const FILLED_ICONS: [ComponentType<{ size?: number }>, string, string][] = [
+  [Home, 'lucide-house', 'path path'],
+  [LayoutGrid, 'lucide-layout-grid', 'rect rect rect rect'],
+  [ShieldCheck, 'lucide-shield-check', 'path path'],
+  [Cpu, 'lucide-cpu', `${'path '.repeat(12)}rect rect`],
+  [Workflow, 'lucide-workflow', 'rect path rect'],
+  [Music, 'lucide-music', 'path circle circle'],
+  [Sparkles, 'lucide-sparkles', 'path path path circle'],
+  [Monitor, 'lucide-monitor', 'rect line line'],
+  [Settings, 'lucide-settings', 'path circle'],
+  [MoreHorizontal, 'lucide-ellipsis', 'circle circle circle'],
+];
+
 /** Classes that only exist at runtime (set from code, never in a stylesheet) and may still be targeted. */
-const RUNTIME_CLASSES = new Set<string>([]);
+const RUNTIME_CLASSES = new Set<string>(FILLED_ICONS.map(([, cls]) => cls));
 
 describe('Glas stylesheets', () => {
   it('exist', () => {
     expect(glasCss.map((f) => f.name).sort()).toEqual([
-      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/index.css', 'styles/glas/material.css', 'styles/glas/motion.css',
+      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/feedback.css', 'styles/glas/index.css',
+      'styles/glas/material.css', 'styles/glas/menus.css', 'styles/glas/motion.css', 'styles/glas/shell.css',
+      'styles/glas/tabbar.css', 'styles/glas/titles.css',
     ]);
   });
 
@@ -71,16 +132,45 @@ describe('Glas stylesheets', () => {
     expect(bad).toEqual([]);
   });
 
-  it('use no hex colours, no !important, no @layer, no global at-rules', () => {
+  it('use no hex colours, no @layer, no global at-rules', () => {
     for (const f of glasCss) {
       const css = stripComments(f.css);
       expect(css.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [], f.name).toEqual([]);
-      expect(css.includes('!important'), f.name).toBe(false);
       expect(css.includes('@layer'), f.name).toBe(false);
       // a registered property, a font face or a foreign stylesheet would act in Klassisch too
       expect(css.match(/@(property|font-face)\b/g) ?? [], f.name).toEqual([]);
       const imports = [...css.matchAll(/@import\s+([^;]+);/g)].map((m) => m[1]!.trim());
       expect(imports.filter((i) => !/^'\.\/[\w-]+\.css'$/.test(i)), f.name).toEqual([]);
+    }
+  });
+
+  // Upstream switches every duration off under reduced motion with !important (global.css); Glas answers that only
+  // to keep the 200-ms fades GLAS-DESIGN §6.4 asks for (plan K38) — nothing else may be forced.
+  it('use !important only for transition-*/animation-* under prefers-reduced-motion: reduce', () => {
+    for (const f of glasCss) {
+      const important = declarations(f.css).filter((d) => /!important$/.test(d.value));
+      expect(important.length, f.name).toBe((stripComments(f.css).match(/!important/g) ?? []).length);
+      const bad = important.filter(
+        (d) =>
+          !/^(transition|animation)(-|$)/.test(d.prop) ||
+          !d.at.some((a) => /^@media\b.*prefers-reduced-motion:\s*reduce/.test(a)),
+      );
+      expect(bad.map((d) => `${d.prop}: ${d.value}`), f.name).toEqual([]);
+    }
+  });
+
+  it('list the same surfaces in every :where() of material.css (plan K30)', () => {
+    const lists = whereLists(readFileSync(join(GLAS, 'material.css'), 'utf8'));
+    expect(lists.length).toBeGreaterThanOrEqual(6);
+    expect(new Set(lists).size).toBe(1);
+  });
+
+  it('fill only Lucide symbols whose class and parts are as checked', () => {
+    for (const [Icon, cls, parts] of FILLED_ICONS) {
+      const svg = renderToStaticMarkup(createElement(Icon, { size: 24 }));
+      expect(svg.match(/class="([^"]*)"/)?.[1]?.split(' '), cls).toContain(cls);
+      const kids = [...svg.matchAll(/<(path|rect|circle|line|polyline|polygon|ellipse)\b/g)].map((m) => m[1]).join(' ');
+      expect(kids, cls).toBe(parts.trim());
     }
   });
 

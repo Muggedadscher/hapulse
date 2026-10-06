@@ -1,7 +1,14 @@
 /* [fork] Second style "Glas" — entry of its stylesheets (imported last in app/DashboardApp.tsx).
    Rules (docs/GLAS-PLAN.md §1.4, checked by test/glasSelectors.test.ts): every selector starts with
-   :root[data-style='glas'], values only through variables (no hex), no @layer, no !important. */
+   :root[data-style='glas'], values only through variables (no hex), no @layer. No !important — except inside
+   @media (prefers-reduced-motion: reduce) for transition-* and animation-* (plan docs/glas/PLAN-ETAPPE-2.md K38): upstream
+   switches every duration off there with !important, Glas keeps its 200-ms fades. */
 @import './base.css';
 @import './accent.css';
 @import './material.css';
 @import './motion.css';
+@import './shell.css';
+@import './tabbar.css';
+@import './menus.css';
+@import './titles.css';
+@import './feedback.css';

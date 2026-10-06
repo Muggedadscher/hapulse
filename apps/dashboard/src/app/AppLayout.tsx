@@ -59,6 +59,13 @@ import { releasesSince, indexSystemMonitor, pickSystemMetrics, formatNumber } fr
 import { forkReleasesSince } from '@hapulse/core'; // [fork]
 import { useT, useStateLabel, useLocale } from '../i18n/useT'; // [fork] useLocale
 import type { TKey } from '../i18n/useT';
+import { GlasRuntime } from './glas/GlasRuntime'; // [fork] Glas frame (docs/glas/PLAN-ETAPPE-2.md)
+import { GlasTabBar } from './glas/GlasTabBar'; // [fork]
+import { GlasNavGroups } from './glas/GlasNavGroups'; // [fork]
+import { useCanEditHere } from './glas/shellStore'; // [fork]
+import { useIsGlas } from './glas/useUiStyle'; // [fork]
+import { weatherIcon } from '../components/glas/weatherIcon'; // [fork]
+import { weatherTemp } from '../components/glas/WeatherLine'; // [fork]
 import './AppLayout.css';
 
 /* =========================================================
@@ -216,12 +223,14 @@ function WeatherGlance({ onClick }: WeatherGlanceProps) {
   const locale = useLocale(); // [fork] number formatting
   const sl = useStateLabel();
   const weather = useWeatherEntity();
+  const glas = useIsGlas(); // [fork]
   if (!weather) return null;
 
   const temp = weather.attributes.temperature as number | undefined;
   const condition = sl('weather', weather.state);
   const unit = (weather.attributes.temperature_unit as string | undefined) ?? '°';
   const tempPart = temp != null ? `, ${formatNumber(temp, locale)}${unit}` : ''; // [fork] locale
+  const Icon = glas ? weatherIcon(weather.state) : Cloud; // [fork] Glas: symbol by condition (K44)
 
   return (
     <button
@@ -230,10 +239,10 @@ function WeatherGlance({ onClick }: WeatherGlanceProps) {
       aria-label={t('nav.weatherGlance.ariaLabel', { condition, tempPart })}
       onClick={onClick}
     >
-      <Cloud size={16} strokeWidth={1.75} aria-hidden="true" />
+      <Icon size={16} strokeWidth={1.75} aria-hidden="true" />{/* [fork] Icon */}
       {temp != null && (
         <span className="header-cluster__weather-temp">
-          {Math.round(temp)}{unit}
+          {glas ? weatherTemp(temp, unit, locale) : <>{Math.round(temp)}{unit}</>}{/* [fork] Glas: "14 °C" */}
         </span>
       )}
       <span className="header-cluster__weather-condition">{condition}</span>
@@ -250,6 +259,8 @@ function HeaderCluster() {
   const navigate = useNavigate();
   const avatarInfo = useCurrentUserAvatar();
   const editMode = useUIStore((s) => s.editMode);
+  const glas = useIsGlas(); // [fork] Glas: back 48, capsule "Bearbeiten"/"Fertig" (docs/glas/PLAN-ETAPPE-2.md §4.2)
+  const canEditHere = useCanEditHere(); // [fork]
   // [fork] unused detailEntityId/closeEntityDetail selectors removed (lint; the modal lives below)
   const isHome = location.pathname === '/';
   const isRoom = location.pathname.startsWith('/room/');
@@ -262,8 +273,9 @@ function HeaderCluster() {
       {isRoom && (
         <IconButton
           label={t('common.back')}
-          size={40}
+          size={glas ? 48 : 40} // [fork] Glas: 48
           variant="ghost"
+          className={glas ? 'g-head-back' : ''} // [fork]
           onClick={() => void navigate(-1)}
         >
           <ChevronLeft size={20} strokeWidth={1.75} />
@@ -279,8 +291,9 @@ function HeaderCluster() {
       {/* Right-pinned weather + edit toggle (rooms) + bell + avatar */}
       <div className="header-cluster">
         <WeatherGlance onClick={() => setWeatherOpen(true)} />
-        {isRoom && <EditToggle />}
+        {isRoom && !glas && <EditToggle />}{/* [fork] Glas: the capsule below */}
         <NotificationsPanel />
+        {glas && (canEditHere || editMode || isRoom) && <EditToggle variant="label" />}{/* [fork] K23, K24; rooms as above */}
         {avatarInfo && (
           <UserAvatar
             name={avatarInfo.name}
@@ -321,6 +334,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const appIconHidden = useSettingsStore((s) => s.appIconHidden);
 
   const editMode = useUIStore((s) => s.editMode);
+  const glas = useIsGlas(); // [fork] Glas frame
   const detailEntityId = useUIStore((s) => s.detailEntityId);
   const closeEntityDetail = useUIStore((s) => s.closeEntityDetail);
 
@@ -541,6 +555,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const showMore      = allVisibleIds.length > 5;
   const primaryTabIds = showMore ? allVisibleIds.slice(0, 4) : allVisibleIds;
   const moreTabIds    = showMore ? allVisibleIds.slice(4)    : [];
+  // [fork] Glas: routes behind "Mehr" (the tab bar marks "Mehr" there); rooms = every /room/…
+  const morePaths = moreTabIds.flatMap((id) => (id === 'rooms' ? ['/room/'] : NAV_MAP.get(id)?.to ?? []));
 
   function renderMobileTab(id: string) {
     const item = NAV_MAP.get(id);
@@ -670,11 +686,15 @@ export function AppLayout({ children }: AppLayoutProps) {
           className="sidebar-nav"
           editMode={editMode}
         >
+          {glas && !editMode ? ( // [fork] Glas: groups "Zuhause", "Bereiche", "System" (E10); edit mode = flat list
+            <GlasNavGroups ids={orderedIds} hidden={hiddenNav} renderItem={(id) => renderSidebarItem(id, false, false)} />
+          ) : (
           <ul className="sidebar-nav__list" role="list">
             {orderedIds.map((id, idx) =>
               renderSidebarItem(id, idx === 0, idx === orderedIds.length - 1)
             )}
           </ul>
+          )}{/* [fork] */}
         </SortableGrid>
 
         {/* Bottom status area */}
@@ -718,6 +738,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </div>
 
+      <GlasRuntime nav={NAV_CONFIG} />{/* [fork] Glas: scroll edge, tab bar state, "Fertig" on the phone */}
+
       {/* ---- Content area ---- */}
       <div className="app-content">
         {/* Connection status banner */}
@@ -751,6 +773,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* ---- Mobile bottom tab bar ---- */}
       <nav className="app-tabs" aria-label={t('nav.mainNavigation')}>
+        <GlasTabBar morePaths={morePaths} moreOpen={moreOpen} moreRef={tabMoreRef} />{/* [fork] Glas layers (K20) */}
         {primaryTabIds.map(renderMobileTab)}
         {showMore && (
           <button

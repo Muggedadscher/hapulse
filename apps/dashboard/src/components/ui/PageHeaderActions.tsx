@@ -11,6 +11,8 @@ import React from 'react';
 import { NotificationsPanel } from '../notifications/NotificationsPanel';
 import { UserAvatar } from './UserAvatar';
 import { useCurrentUserAvatar } from '../../ha/hooks';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (docs/glas/PLAN-ETAPPE-2.md §3.2)
+import { AvatarMenu } from '../glas/AvatarMenu'; // [fork]
 import './PageHeaderActions.css';
 
 interface PageHeaderActionsProps {
@@ -20,6 +22,17 @@ interface PageHeaderActionsProps {
 
 export function PageHeaderActions({ children }: PageHeaderActionsProps) {
   const avatarInfo = useCurrentUserAvatar();
+  const glas = useIsGlas(); // [fork]
+
+  // [fork] Glas: the avatar with its menu (notifications, edit, settings) instead of bell + avatar
+  if (glas) {
+    return (
+      <div className="page-header-actions">
+        <div className="page-header-actions__mobile"><AvatarMenu /></div>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="page-header-actions">

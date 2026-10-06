@@ -290,7 +290,8 @@ const SHEET: Record<GlasMode, { fill: string; filter: string; bottom: string; br
 
 /**
  * Shadows of the frame (glas-tokens.json → elevation: menuDesktop, popoverDesktop, banner, toastPhone, prominent;
- * "übrige Schatten wie hell" — the same in both modes, the mode lives in `--g-glass-inner`).
+ * "übrige Schatten wie hell" — the same in both modes, the mode lives in `--g-glass-inner`). `chip`: the desktop
+ * header's chips and weather pill (GLAS-DESIGN §7.3).
  */
 export const GLAS_SHADOWS = {
   menu: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.25)',
@@ -298,6 +299,7 @@ export const GLAS_SHADOWS = {
   banner: '0 4px 16px rgba(0,0,0,.08)',
   toast: '0 10px 30px rgba(0,0,0,.25)',
   prominent: '0 1px 2px rgba(0,0,0,.08), 0 6px 18px rgba(0,0,0,.12)',
+  chip: '0 1px 3px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08)',
 } as const;
 
 const CLEAR = {
