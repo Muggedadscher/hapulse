@@ -265,7 +265,8 @@ Datum = Merge-Datum (im PR auf den Tag des Schreibens gesetzt; vor dem Merge anp
   Richtungen umgeschaltet (Aurora hell 34, Glas hell 35).
 - **Schalter-Knöpfe** (`checks`): jeder eingeschaltete Schalter auf Start (mit Favoriten), Raum, Automationen, Pool und
   Einstellungen hat in Glas hell und dunkel einen weißen Knopf (gefunden: Karten-, Automations-, Pool-, Geräte- und
-  Admin-Schalter). Gegenprobe ohne die Regel: dunkle Knöpfe (`#1C1C1E`) in beiden Modi.
+  Admin-Schalter). Gegenprobe ohne die Regel: fast schwarze Knöpfe (`#1C1C1E`) an Karten- und Automations-Schaltern in
+  beiden Modi, an Geräte- und Pool-Schaltern im Dunkelmodus; der Admin-Schalter ist schon in Klassisch weiß.
 - **Kartenränder** (`checks`): in Glas hat keine Karte der Sicherheitsseite einen Rand; eine ausgelöste Alarm-Karte
   behält den Rand, den Klassisch ihr gibt.
 - **Klick-Fuzz** (`click-fuzz-test.cjs … glas`) Handy + Desktop: keine Fehler.
@@ -311,13 +312,18 @@ Bis dahin ist Glas eine **Vorschau für Admins**: neue Farben, Schrift und Karte
 
 | # | Befund | Behoben |
 |---|---|---|
-| 1 | Soll: eingeschaltete Schalter bekamen in Glas einen fast schwarzen Knopf (`--on-accent` auf der Akzentfläche = `#1C1C1E`) | eine Knopf-Regel für alle sieben Schalter-Arten in `accent.css` (`--g-knob`, weiß, beide Modi); Prüfung in `checks` |
+| 1 | Soll: eingeschaltete Schalter bekamen in Glas einen fast schwarzen Knopf (`#1C1C1E`): Karten- und Automations-Schalter in beiden Modi (`--on-accent` auf der Akzentfläche), Geräte- und Pool-Schalter im Dunkelmodus (Flächenfarbe) | eine Knopf-Regel für alle sieben Schalter-Arten in `accent.css` (`--g-knob`, weiß, beide Modi); Prüfung in `checks` |
 | 2 | Fokusring-Liste ohne die Medien-Regler (`.now-playing-card__progress`, `__volume-slider`, `.player-tile__volume`) | aufgenommen; die Regler unterdrücken ihren Ring heute selbst (`.slider { outline: none }`), so bleibt ein künftiger Ring Ink |
 | 3 | Akzent-Regler zeigte nach einem Stilwechsel den Standard des alten Stils | Regler springt beim Stilwechsel auf den neuen Standard, solange kein eigener Farbton gewählt ist; die Zeile `value={localHue}` ist wieder Upstream; Prüfung in `checks` |
 | 4 | `base.css` blendete auch Ränder aus, die einen Zustand zeigen (`.alarm-panel-card--triggered`) | `:not(…)` für die Zustandsränder; Hinweis in `docs/SYNC.md` für künftige Upstream-Ränder; Prüfung in `checks` |
 | 5 | `main.tsx`: geänderte Import-Zeile ohne `[fork]` | markiert |
 | 6 | Glas-CSS nur in `main.tsx` — ein Host mit `<DashboardApp />` hätte es nicht | Import nach `DashboardApp.tsx` (K11); gebauter CSS-Code byteweise gleich |
 | 7 | Test des Merkens (K18) prüfte nur die Stärke | prüft auch Farbton und Farbwelt; Gegenprobe ohne die beiden im Schlüssel schlägt fehl |
+
+Nach den Korrekturen (Screenshots wie §3.10): Klassisch 124 von 124 Bildern gleich wie vor dem Review, gegen `main`
+weiter nur `/settings` anders; Glas in zwei Läufen 124 von 124 gleich; gegenüber Glas vor dem Review ändern sich nur
+die Bilder mit eingeschalteten Schaltern (Raum und Automationen hell und dunkel, Pool dunkel, je Handy, iPad und
+Desktop).
 
 Nebenbefund in Klassisch (nicht Teil von Glas, nicht geändert): Im Produktions-Build zeigt eine ausgelöste Alarm-Karte
 weder den roten Rand noch den roten Schein aus `AlarmPanelCard.css`. Die Regel liegt in einem gemeinsamen CSS-Teil, den
