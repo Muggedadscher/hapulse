@@ -1,0 +1,71 @@
+#!/bin/bash
+# HAPulse Auto-Update (Host-Cron, stündlich, /etc/cron.d/hapulse-autoupdate).
+# Baut origin/main in CT 210 nur, wenn
+#   1. der Commit noch nicht deployt ist (Vergleich mit $STATE/deployed-sha, NICHT mit dem Git-HEAD im CT), und
+#   2. der Workflow "CI" auf genau diesem Commit erfolgreich war.
+# Fehlgeschlagene Builds werden jede Stunde wiederholt; Gotify meldet den 1. und 3. Fehlschlag.
+# Gotify-Zugang in /etc/hapulse-autoupdate.env (600): GOTIFY_URL, GOTIFY_TOKEN.
+set -euo pipefail
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin   # Cron-PATH kennt pct nicht
+
+CTID=210
+BUILD_MEM=3072
+IDLE_MEM=2048
+REPO=Muggedadscher/hapulse
+LOG=/var/log/hapulse-autoupdate.log
+STATE=/var/lib/hapulse-autoupdate
+
+exec >>"$LOG" 2>&1
+exec 9>/run/lock/hapulse-autoupdate.lock
+flock -n 9 || { echo "=== $(date -Is) läuft bereits, übersprungen"; exit 0; }
+# shellcheck source=/dev/null
+source /etc/hapulse-autoupdate.env
+mkdir -p "$STATE"
+
+notify() {  # title message priority
+  curl -fsS --max-time 10 "$GOTIFY_URL/message" -H "X-Gotify-Key: $GOTIFY_TOKEN" \
+    -F "title=$1" -F "message=$2" -F "priority=$3" >/dev/null && echo "push sent" || echo "push failed"
+}
+
+echo "=== $(date -Is) check ==="
+pct exec "$CTID" -- git -C /opt/hapulse fetch -q origin main || { echo "fetch failed"; exit 1; }
+TARGET=$(pct exec "$CTID" -- git -C /opt/hapulse rev-parse origin/main)
+DEPLOYED=$(cat "$STATE/deployed-sha" 2>/dev/null || echo none)
+if [ "$TARGET" = "$DEPLOYED" ]; then echo "up to date (${TARGET:0:7})"; exit 0; fi
+
+# CI gate: a successful run of the CI workflow on exactly this commit (public repo → no token needed)
+CI=$(curl -fsS --max-time 20 "https://api.github.com/repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$TARGET&per_page=20" \
+  | python3 -c 'import sys,json
+runs=json.load(sys.stdin)["workflow_runs"]
+if any(r["conclusion"]=="success" for r in runs): print("success")
+elif runs and all(r["status"]=="completed" for r in runs): print("failure")
+else: print("pending")') || { echo "CI-Abfrage fehlgeschlagen"; exit 1; }
+case "$CI" in
+  success) ;;
+  failure)
+    echo "CI rot für ${TARGET:0:7} — kein Deploy"
+    [ -e "$STATE/ci-red-$TARGET" ] || { touch "$STATE/ci-red-$TARGET"; notify "HAPulse: CI rot" "main ${TARGET:0:7} wird nicht ausgerollt" 6; }
+    exit 0;;
+  *) echo "warte auf grüne CI für ${TARGET:0:7}"; exit 0;;
+esac
+
+FAILS=$(cat "$STATE/fail-$TARGET" 2>/dev/null || echo 0)
+echo "deploy ${TARGET:0:7} (bisher $FAILS Fehlversuche)"
+pct set "$CTID" --memory "$BUILD_MEM" >/dev/null
+trap 'pct set "$CTID" --memory "$IDLE_MEM" >/dev/null 2>&1' EXIT   # RAM wieder senken, egal wie der Build ausgeht
+
+if RES=$(pct exec "$CTID" -- /usr/local/bin/hapulse-build-deploy "$TARGET" 2>"$STATE/last-error.txt"); then
+  echo "$TARGET" > "$STATE/deployed-sha.tmp" && mv "$STATE/deployed-sha.tmp" "$STATE/deployed-sha"
+  rm -f "$STATE"/fail-* "$STATE"/ci-red-*
+  OLD=${RES%%|*}; REST=${RES#*|}; NEW=${REST%%|*}; SUBJ=${REST#*|}
+  echo "deployed: $OLD -> $NEW ($SUBJ)"
+  printf -v MSG '%s -> %s\n%s' "$OLD" "$NEW" "$SUBJ"
+  notify "HAPulse aktualisiert" "$MSG" 4
+else
+  FAILS=$((FAILS + 1)); echo "$FAILS" > "$STATE/fail-$TARGET"
+  echo "BUILD/DEPLOY FAILED (Versuch $FAILS)"; cat "$STATE/last-error.txt"
+  if [ "$FAILS" = 1 ] || [ "$FAILS" = 3 ]; then
+    notify "HAPulse Update FEHLGESCHLAGEN" "${TARGET:0:7}, Versuch $FAILS — live bleibt der alte Stand. Siehe $LOG" 8
+  fi
+  exit 1
+fi

@@ -1,0 +1,67 @@
+#!/bin/bash
+# Baut einen HAPulse-Commit und schaltet ihn atomar live. Aufruf (vom Host-Orchestrator): hapulse-build-deploy <sha>
+# Layout: /var/www/hapulse-releases/<sha7>  (je Build ein Ordner, die 3 neuesten bleiben)
+#         /var/www/hapulse-current          (Symlink auf das aktive Release = nginx-root)
+#         /var/www/hapulse-assets/assets    (Pool aller gehashten Assets, Hardlinks — offene Tabs finden alte Chunks weiter)
+# Ausgabe bei Erfolg: "<alt>|<neu>|<Commit-Betreff>"; bei Fehler Exit != 0 und die letzten Log-Zeilen auf stderr.
+set -euo pipefail
+SHA=${1:?usage: hapulse-build-deploy <sha>}
+exec 9>/run/lock/hapulse-build.lock
+flock -n 9 || { echo "Build läuft bereits" >&2; exit 1; }
+
+REPO=/opt/hapulse
+RELS=/var/www/hapulse-releases
+POOL=/var/www/hapulse-assets
+CUR=/var/www/hapulse-current
+LOGD=/var/log/hapulse-build
+KEEP=3
+POOL_MAX_AGE_DAYS=14
+mkdir -p "$RELS" "$POOL/assets" "$LOGD"
+
+cd "$REPO"
+git fetch -q origin
+git checkout -q --detach "$SHA"
+SHORT=$(git rev-parse --short=7 HEAD)
+LOGF=$LOGD/$SHORT.log
+OLDREL=$(readlink -f "$CUR" 2>/dev/null || true)
+OLD=$(basename "${OLDREL:-none}")
+
+if ! { npm ci --no-audit --no-fund && NODE_OPTIONS=--max-old-space-size=2560 npm run build; } >"$LOGF" 2>&1; then
+  echo "Build fehlgeschlagen ($SHORT), Log: $LOGF" >&2; tail -30 "$LOGF" >&2; exit 1
+fi
+
+REL=$RELS/$SHORT
+# never replace the directory that is live right now (manual rebuild of the deployed commit)
+[ "$REL" = "$OLDREL" ] && REL=$RELS/$SHORT-$(date +%H%M%S)
+rm -rf "$REL.tmp"; cp -a apps/dashboard/dist "$REL.tmp"; rm -rf "$REL"; mv "$REL.tmp" "$REL"
+cp -aln "$REL/assets/." "$POOL/assets/"          # hashed names: nothing gets overwritten
+
+switch_to() { ln -sfn "$1" "$CUR.new" && mv -Tf "$CUR.new" "$CUR"; }
+switch_to "$REL"
+
+# Smoke test through nginx: index.html + every asset it references
+smoke() {
+  [ "${HAPULSE_FORCE_SMOKE_FAIL:-0}" = 1 ] && { echo "Smoke-Test absichtlich fehlgeschlagen (Testmodus)" >&2; return 1; }
+  local html; html=$(curl -fsS --max-time 10 http://127.0.0.1/) || return 1
+  grep -q 'id="root"' <<<"$html" || return 1
+  local a
+  for a in $(grep -oE '/assets/[^"]+' <<<"$html" | sort -u); do
+    curl -fsS --max-time 10 -o /dev/null "http://127.0.0.1$a" || { echo "fehlt: $a" >&2; return 1; }
+  done
+}
+if ! smoke; then
+  if [ -n "$OLDREL" ] && [ -d "$OLDREL" ]; then switch_to "$OLDREL"; echo "Smoke-Test fehlgeschlagen → zurück auf $OLD" >&2
+  else echo "Smoke-Test fehlgeschlagen, kein vorheriges Release" >&2; fi
+  exit 1
+fi
+
+# Keep the newest releases; pool files no kept release references go after POOL_MAX_AGE_DAYS
+ls -1dt "$RELS"/*/ | tail -n +$((KEEP + 1)) | xargs -r rm -rf
+declare -A keep=()
+for f in "$RELS"/*/assets/*; do keep[$(basename "$f")]=1; done
+find "$POOL/assets" -type f -mtime +$POOL_MAX_AGE_DAYS -print0 | while IFS= read -r -d '' f; do
+  [ -n "${keep[$(basename "$f")]:-}" ] || rm -f "$f"
+done
+ls -1t "$LOGD"/*.log | tail -n +11 | xargs -r rm -f
+
+echo "$OLD|$SHORT|$(git log -1 --pretty=%s)"

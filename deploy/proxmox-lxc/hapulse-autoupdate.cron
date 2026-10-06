@@ -1,0 +1,2 @@
+# HAPulse: stündlicher Update-Check (nur Build bei neuem Commit)
+17 * * * * root /usr/local/bin/hapulse-autoupdate
