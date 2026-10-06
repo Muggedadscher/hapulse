@@ -7,6 +7,8 @@ sauber übernehmen können.
 ## Fork-Konventionen (immer einhalten)
 
 - Upstream-Updates & Merge-Workflow: siehe **`docs/SYNC.md`**.
+- Betrieb/Neuaufbau (CT 210, nginx, Autoupdate vom Proxmox-Host): **`deploy/proxmox-lxc/README.md`**. Die Dateien dort
+  sind Kopien der laufenden Konfiguration; wer sie auf Host oder CT ändert, zieht sie im selben PR nach.
 - **Neue Funktionen möglichst als neue Dateien** — minimiert Merge-Konflikte.
 - Jede Änderung an einer **bestehenden Upstream-Datei** mit `// [fork]`
   (bzw. `/* [fork] */` in CSS) markieren. Finden: `git grep "\[fork\]"`.

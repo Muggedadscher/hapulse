@@ -1,0 +1,13 @@
+# Vorlage für /etc/pve/lxc/<id>.conf — Stand CT 210 (HAPulse, statische SPA hinter nginx), 2026-10-05.
+# Netz an die eigene Umgebung anpassen. hapulse-autoupdate hebt den RAM nur für den Build auf 3072 MB an.
+arch: amd64
+cores: 1
+features: nesting=1
+hostname: hapulse
+memory: 2048
+net0: name=eth0,bridge=vmbr0,gw=192.168.2.1,ip=192.168.2.210/24,type=veth
+onboot: 1
+ostype: debian
+rootfs: local-lvm:vm-210-disk-0,size=4G
+swap: 0
+unprivileged: 1
