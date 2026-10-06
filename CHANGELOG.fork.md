@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F30 — 2026-10-06
+
+**NVR: Clip speichern bleibt auf der Seite** · _NVR: saving a clip stays on the page_
+
+### Behoben / Fixed
+
+- NVR: „Speichern“ eines fertigen Clips lädt das Video jetzt herunter, statt es anstelle von HAPulse zu öffnen; sehr große Clips öffnen sich zum Speichern in einem neuen Tab  
+  _NVR: “Save” on a finished clip now downloads the video instead of opening it in place of HAPulse; very large clips open in a new tab for saving_
+
 ## F29 — 2026-10-06
 
 **NVR: Kameraseite passt aufs Handy** · _NVR: camera page fits the phone_

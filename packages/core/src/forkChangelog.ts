@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 30,
+    date: '2026-10-06',
+    title: { de: 'NVR: Clip speichern bleibt auf der Seite', en: 'NVR: saving a clip stays on the page' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: „Speichern“ eines fertigen Clips lädt das Video jetzt herunter, statt es anstelle von HAPulse zu öffnen; sehr große Clips öffnen sich zum Speichern in einem neuen Tab',
+            en: 'NVR: “Save” on a finished clip now downloads the video instead of opening it in place of HAPulse; very large clips open in a new tab for saving',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 29,
     date: '2026-10-06',
     title: { de: 'NVR: Kameraseite passt aufs Handy', en: 'NVR: camera page fits the phone' },
