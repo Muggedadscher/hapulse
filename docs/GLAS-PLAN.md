@@ -9,7 +9,7 @@
 |---|---|
 | `docs/GLAS-DESIGN.md` | Designsystem Glas (Farben, Typo, Material, Bewegung, Komponenten-Anatomie) — separat geschrieben, **maßgeblich für das Aussehen** |
 | `docs/GLAS-PLAN.md` | dieses Dokument: Architektur, Etappen, Abnahme, Tests, Risiken |
-| `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards, `support.js`), Screenshots `g5h-*.png` / `g5d-*.png`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
+| `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
 Beispieldaten). Gebaut wird in den echten HAPulse-Komponenten nach den Fork-Regeln aus `CLAUDE.md`/`docs/SYNC.md`.
@@ -17,6 +17,14 @@ Beispieldaten). Gebaut wird in den echten HAPulse-Komponenten nach den Fork-Rege
 Stand der Recherche: Fork `main` @ `f007a73` (Upstream 1.3.2 + F30), `@sentinel-nvr/web` ^0.17.1.
 
 ---
+
+
+> **Vorrang (Stand 2026-10-06):** Die Entscheidungen des Users in **§7.3** und die Festlegungen in
+> **`docs/GLAS-DESIGN.md`** gehen allen älteren Aussagen in diesem Plan vor. Insbesondere:
+> - **Kein Geräte-Override für den Stil** (`uiStyleOverride` entfällt) und **„Transparenz reduzieren“ ist GLOBAL**
+>   (Admin), nicht DEVICE — §1.1, §1.2 und die Tests in §5.2 entsprechend anpassen. Pro Gerät bleibt nur Hell/Dunkel.
+> - Farbwerte (`--text-faint`, Ink-Farben, Text auf Orange/Rot), Sheet-Höhen und Federkurven: verbindlich ist
+>   GLAS-DESIGN.md bzw. `docs/glas/glas-tokens.json`.
 
 ## Inhalt
 
@@ -126,7 +134,7 @@ Mapping auf bestehende Namen (Auszug, Details in `GLAS-DESIGN.md`):
 | `--bg-subtle` | `rgba(120,120,128,.12)` | `rgba(120,120,128,.24)` | iOS `fill` |
 | `--text` | `#000000` | `#FFFFFF` | |
 | `--text-dim` | `#5F5F64` (6,35:1 auf Weiß, 5,69:1 auf `#F2F2F7`) | `#AEAEB2` (7,7:1 auf `#1C1C1E`) | sekundär ≥ 4,5:1 überall |
-| `--text-faint` | **nicht** `#7C7C80` (nur 3,7:1 auf `#F2F2F7`) — dunkler wählen, Test entscheidet | `#8E8E93` | HAPulse nutzt `--text-faint` für kleine Texte; klassisch hat es nur 2,6:1 |
+| `--text-faint` | `#636366` hell / `#A1A1A6` dunkel (festgelegt in GLAS-DESIGN.md §2; `#7C7C80` nur für Chevrons/Symbole) | `#8E8E93` | HAPulse nutzt `--text-faint` für kleine Texte; klassisch hat es nur 2,6:1 |
 | `--accent` / `--accent-soft` / `--on-accent` | aus `glasAccent` | aus `glasAccent` | Flächen; für Text-Links in Glas-CSS `--g-accent-ink` |
 | `--positive` / `--danger` / `--warning` / `--info` (+ `-soft`) | iOS grün/rot/gelb/blau, Text-Stellen über `--g-*-ink` | iOS dunkel-Varianten | |
 | `--border` / `--line` | `transparent` / `rgba(60,60,67,.18)` | `transparent` / `rgba(84,84,88,.55)` | Karten ohne Rand |
@@ -265,7 +273,7 @@ Neue Dateien `apps/dashboard/src/components/glas/sheet/`:
 6. Prop `swipeToClose?: boolean` (Standard `true`; z. B. Alarm-Ziffernblock `false`, damit Eingaben nicht verloren gehen).
 
 Details:
-- **Detents:** mittel = `min(62dvh, Inhalt)`, groß = oben `max(env(safe-area-inset-top), 10px)` Abstand. Start:
+- **Detents:** mittel = Inhaltshöhe, höchstens `100dvh − 144px` (wie Skizze, siehe GLAS-DESIGN.md Sheet), groß = oben `max(env(safe-area-inset-top), 10px)` Abstand. Start:
   passt der Inhalt in „mittel“ → mittel, sonst groß. Ziehen nur am Grabber/Kopf; der Inhalt scrollt normal (kein
   Konflikt mit Listen). Detent-Wechsel animiert Höhe/Einzug/Radius (einzige erlaubte Höhen-Animation).
 - **Morph:** Ursprung = Rechteck des zuletzt gedrückten Elements (`GlasRuntime` merkt sich `closest('button, a,
@@ -606,7 +614,7 @@ Geräte-Zeilen, Licht-Detail, Inspector fertig, Bearbeiten-Modus S/M/L, Handy-Re
 Hinweise.
 
 Abnahme:
-- [ ] Vergleich mit `docs/glas/g5h-*.png` / `g5d-*.png` (hell/dunkel, oben/gescrollt, Bearbeiten, Inspector, Licht-Sheet,
+- [ ] Vergleich mit `docs/glas/screens/g5h-*.webp` / `g5d-*.webp` (hell/dunkel, oben/gescrollt, Bearbeiten, Inspector, Licht-Sheet,
       Avatar-Menü, Wetter, Kontextmenü) — gleiche Hierarchie, Abstände, Farben (Abweichung nur durch echte Daten/Schrift).
 - [ ] Hinweise erscheinen/verschwinden live mit den Entitäten; keine Karte, wenn nichts abweicht; ausgeblendete
       Entitäten zählen nicht.
@@ -678,7 +686,7 @@ Nicht verlieren (Inventar G, H, K, M–T):
 Ausgangslage: Das Paket liest schon die HAPulse-Tokens (`--text`, `--bg-card`, `--accent`, `--font-display`,
 `--font-data`, `--radius-*`, …) — Farben und Schrift folgen Glas also **automatisch**, sobald Etappe 1 die Tokens
 setzt. Was fehlt, ist das Glas-**Material** und das **immersive Layout** der Kameraseite (SPEC4 Punkt 9: immer dunkel,
-randlos, klare Glas-Steuerkapsel über dem Video; Skizze `g5h-kamera-d.png`).
+randlos, klare Glas-Steuerkapsel über dem Video; Skizze `screens/g5h-kamera-d.webp`).
 
 Achtung: Der lokale Klon `/home/user/sentinel-nvr-web` stand bei der Recherche auf **0.16.6**, HAPulse nutzt **^0.17.1**
 (z. B. `header` ist dort eine Funktion `(at) => …`). Vor der Arbeit `git pull`.
@@ -919,16 +927,17 @@ Komponenten, gleiche Funktionen, gleiche Informationsarchitektur; die Einstellun
 nur Aussehen und Bewegung. In keinem Stil darf etwas verloren gehen; Klassisch muss pixelgleich bleiben.
 
 Lies vollständig:
-1. docs/GLAS-PLAN.md — Architektur, Etappen, Abnahme, Tests, Risiken, offene Entscheidungen (§7.2).
+1. docs/GLAS-PLAN.md — Architektur, Etappen, Abnahme, Tests, Risiken, Entscheidungen des Users (§7.3, verbindlich).
 2. docs/GLAS-DESIGN.md — das Designsystem (Farben, Typo, Material, Bewegung, Komponenten).
 3. docs/glas/ — freigegebene Skizzen Glas5Handy.dc.html / Glas5Desktop.dc.html (Referenz für Look und Bewegung,
-   kein Code zum Kopieren), Screenshots g5h-*.png / g5d-*.png (schau dir mindestens die hellen und dunklen
+   kein Code zum Kopieren), Screenshots docs/glas/screens/g5h-*.webp / g5d-*.webp / g5e-*.webp (schau dir mindestens die hellen und dunklen
    Übersichten, Inspector, Licht-Sheet, Avatar-Menü, Bearbeiten und Kamera an) und HAPULSE-INVENTORY.md
    (Checkliste, was nicht verloren gehen darf).
 
 Vorgehen:
-- Kläre vor dem ersten Code die offenen Entscheidungen E1, E2, E11 und E14 aus GLAS-PLAN.md §7.2 mit mir
-  (kurze Liste mit deiner Empfehlung); die übrigen frage ich, wenn die jeweilige Etappe dran ist.
+- Die Entscheidungen sind bereits getroffen: GLAS-PLAN.md §7.3 und der Vorrang-Hinweis oben im Plan sind
+  verbindlich (u. a. Stil nur vom Admin für alle, pro Gerät nur Hell/Dunkel; neue Inhalte in beiden Stilen;
+  Vorschau nur für Admins; Leistungsmaßstab iPad). Frag nur nach, wenn im Detail etwas unklar ist.
 - Beginne mit Etappe 0 (Referenz-Screenshots Klassisch, Probe-Skript-Gerüst) und dann Etappe 1 (Fundament:
   Settings-Felder + Scope, packages/core/src/glasTokens.ts mit Kontrast-Tests, theme/glasAppearance.ts mit
   Pre-Paint, styles/glas/ Basis, Einstellungen „Stil“, i18n in allen 7 Locales, Changelog F<n+1>).

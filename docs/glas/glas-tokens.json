@@ -1,0 +1,1087 @@
+{
+  "meta": {
+    "name": "HAPulse Glas – Design-Tokens",
+    "version": "1.0.0",
+    "date": "2026-10-06",
+    "description": "Maschinenlesbare Tokens des freigegebenen Stils Glas (Skizze Glas 5). Erklärung, Regeln und Kontrastmessungen: docs/GLAS-DESIGN.md. Architektur: docs/GLAS-PLAN.md.",
+    "sources": [
+      "docs/glas/skizze/Glas5Handy.dc.html (Helmet-CSS .g5-root, Skript)",
+      "docs/glas/skizze/Glas5Desktop.dc.html (Helmet-CSS .gd5-root, Skript)",
+      "docs/glas/spec/SPEC3.md §1/§2, SPEC4.md, SPEC5.md",
+      "docs/GLAS-PLAN.md §1.3, §7.3"
+    ],
+    "conventions": {
+      "cssPrefix": "Glas-eigene Variablen heißen --g-<name> (kebab-case des JSON-Schlüssels, z. B. yellowInk → --g-yellow-ink). Bestehende HAPulse-Namen siehe classicMapping.",
+      "modes": "Jeder Farbwert hat light und dark. Dunkelmodus = reines Schwarz (#000000) mit #1C1C1E/#2C2C2E-Flächen.",
+      "units": "px, s, ms wie angegeben; Alphawerte als rgba().",
+      "canonical": "Wo Handy- und Desktop-Skizze leicht abweichen, ist der hier eingetragene Wert verbindlich; die Abweichung steht jeweils in 'note'."
+    }
+  },
+  "color": {
+    "light": {
+      "bg": "#F2F2F7",
+      "card": "#FFFFFF",
+      "card2": "#F2F2F7",
+      "cardSolid": "#FFFFFF",
+      "cardHover": "#F7F7FA",
+      "group": "#FFFFFF",
+      "sheetSolid": "#F2F2F7",
+      "fill": "rgba(120,120,128,.12)",
+      "fill2": "rgba(120,120,128,.20)",
+      "fillSolid": "#E5E5EA",
+      "sep": "rgba(60,60,67,.18)",
+      "sepStrong": "rgba(60,60,67,.36)",
+      "label": "#000000",
+      "label2": "#5F5F64",
+      "label3": "#7C7C80",
+      "glassLabel2": "#3A3A3C",
+      "textFaint": "#636366",
+      "glyphDark": "#1C1C1E",
+      "onMedia": "#FFFFFF",
+      "mediaBg": "#000000",
+      "grabber": "rgba(60,60,67,.30)",
+      "yellow": "#FFCC00",
+      "yellowInk": "#7D5E00",
+      "yellowSoft": "rgba(255,204,0,.24)",
+      "orange": "#FF9500",
+      "orangeInk": "#B25000",
+      "orangeSoft": "rgba(255,149,0,.16)",
+      "teal": "#30B0C7",
+      "tealInk": "#0A7389",
+      "tealSoft": "rgba(48,176,199,.16)",
+      "green": "#34C759",
+      "greenInk": "#1F7A35",
+      "greenSoft": "rgba(52,199,89,.16)",
+      "red": "#FF3B30",
+      "redInk": "#D70015",
+      "redSoft": "rgba(255,59,48,.12)",
+      "blue": "#007AFF",
+      "blueInk": "#0060DF",
+      "blueSoft": "rgba(0,122,255,.12)",
+      "purple": "#AF52DE",
+      "purpleInk": "#8944AB",
+      "indigo": "#5856D6",
+      "indigoInk": "#3634A3",
+      "gray": "#8E8E93",
+      "warnInk": "#7D5E00",
+      "warnSoft": "rgba(255,204,0,.24)",
+      "switchOn": "#34C759",
+      "switchOff": "rgba(120,120,128,.24)",
+      "knob": "#FFFFFF",
+      "badge": "#D70015",
+      "onBadge": "#FFFFFF",
+      "live": "#D70015",
+      "liveDot": "#FF3B30",
+      "actDel": "#D70015",
+      "actOk": "#1F7A35",
+      "actNeutral": "#636366",
+      "binRest": "#8E8E93",
+      "binPaper": "#007AFF",
+      "binYellow": "#FFCC00",
+      "binBio": "#34C759",
+      "binBrown": "#A2845E",
+      "ct1": "#FFB25B",
+      "ct2": "#FFD39C",
+      "ct3": "#FFF3E3",
+      "ct4": "#DCE8FF",
+      "tileOn": "#FFFFFF",
+      "tileOff": "color-mix(in srgb, #FFFFFF 45%, #F2F2F7)",
+      "tileOffLabel": "#5F5F64",
+      "chartNetz": "#8E8E93",
+      "chartSolar": "#FFCC00",
+      "chartSolarEdge": "#A67C00",
+      "chartBar": "rgba(120,120,128,.32)",
+      "chartLine": "#3A3A3C",
+      "chartArea": "rgba(120,120,128,.14)",
+      "chartGrid": "rgba(60,60,67,.36)",
+      "chartAvg": "#000000",
+      "seg": "#FFFFFF",
+      "segShadow": "0 3px 8px rgba(0,0,0,.12), 0 .5px 0 rgba(0,0,0,.04)",
+      "lens": "rgba(120,120,128,.16)",
+      "hover": "rgba(120,120,128,.08)",
+      "scrim": "rgba(0,0,0,.25)",
+      "scrimDesktop": "rgba(0,0,0,.22)",
+      "ctxDim": "rgba(0,0,0,.18)",
+      "ctxScrimDesktop": "rgba(242,242,247,.35)",
+      "avDim": "rgba(0,0,0,.10)",
+      "glow": "rgba(255,255,255,.45)",
+      "toastBg": "rgba(28,28,30,.92)",
+      "toastText": "#FFFFFF",
+      "bannerReconnecting": "color-mix(in srgb, #FFCC00 26%, #FFFFFF)",
+      "bannerLost": "color-mix(in srgb, #FF3B30 16%, #FFFFFF)",
+      "edgeTint": "#F2F2F7",
+      "wallTint": "rgba(242,242,247,.38)"
+    },
+    "dark": {
+      "bg": "#000000",
+      "card": "#1C1C1E",
+      "card2": "#2C2C2E",
+      "cardSolid": "#1C1C1E",
+      "cardHover": "#2C2C2E",
+      "group": "#2C2C2E",
+      "sheetSolid": "#1C1C1E",
+      "fill": "rgba(120,120,128,.24)",
+      "fill2": "rgba(120,120,128,.36)",
+      "fillSolid": "#3A3A3C",
+      "sep": "rgba(84,84,88,.55)",
+      "sepStrong": "rgba(84,84,88,.95)",
+      "label": "#FFFFFF",
+      "label2": "#AEAEB2",
+      "label3": "#8E8E93",
+      "glassLabel2": "#D1D1D6",
+      "textFaint": "#A1A1A6",
+      "glyphDark": "#1C1C1E",
+      "onMedia": "#FFFFFF",
+      "mediaBg": "#000000",
+      "grabber": "rgba(235,235,245,.30)",
+      "yellow": "#FFD60A",
+      "yellowInk": "#FFD60A",
+      "yellowSoft": "rgba(255,214,10,.20)",
+      "orange": "#FF9F0A",
+      "orangeInk": "#FFB340",
+      "orangeSoft": "rgba(255,159,10,.22)",
+      "teal": "#40C8E0",
+      "tealInk": "#40C8E0",
+      "tealSoft": "rgba(64,200,224,.20)",
+      "green": "#30D158",
+      "greenInk": "#30D158",
+      "greenSoft": "rgba(48,209,88,.20)",
+      "red": "#FF453A",
+      "redInk": "#FF6961",
+      "redSoft": "rgba(255,69,58,.22)",
+      "blue": "#0A84FF",
+      "blueInk": "#409CFF",
+      "blueSoft": "rgba(10,132,255,.22)",
+      "purple": "#BF5AF2",
+      "purpleInk": "#DA8FFF",
+      "indigo": "#5E5CE6",
+      "indigoInk": "#9D9BFF",
+      "gray": "#8E8E93",
+      "warnInk": "#FFD60A",
+      "warnSoft": "rgba(255,214,10,.20)",
+      "switchOn": "#30D158",
+      "switchOff": "rgba(120,120,128,.32)",
+      "knob": "#FFFFFF",
+      "badge": "#D70015",
+      "onBadge": "#FFFFFF",
+      "live": "#D70015",
+      "liveDot": "#FF3B30",
+      "actDel": "#D70015",
+      "actOk": "#1F7A35",
+      "actNeutral": "#636366",
+      "binRest": "#8E8E93",
+      "binPaper": "#0A84FF",
+      "binYellow": "#FFD60A",
+      "binBio": "#30D158",
+      "binBrown": "#AC8E68",
+      "ct1": "#FFB25B",
+      "ct2": "#FFD39C",
+      "ct3": "#FFF3E3",
+      "ct4": "#DCE8FF",
+      "tileOn": "#2C2C2E",
+      "tileOff": "#1C1C1E",
+      "tileOffLabel": "#AEAEB2",
+      "chartNetz": "#8E8E93",
+      "chartSolar": "#FFD60A",
+      "chartSolarEdge": "rgba(0,0,0,0)",
+      "chartBar": "rgba(120,120,128,.48)",
+      "chartLine": "#D1D1D6",
+      "chartArea": "rgba(120,120,128,.24)",
+      "chartGrid": "rgba(84,84,88,.95)",
+      "chartAvg": "#FFFFFF",
+      "seg": "#636366",
+      "segShadow": "0 3px 8px rgba(0,0,0,.30)",
+      "lens": "rgba(255,255,255,.14)",
+      "hover": "rgba(255,255,255,.06)",
+      "scrim": "rgba(0,0,0,.45)",
+      "scrimDesktop": "rgba(0,0,0,.45)",
+      "ctxDim": "rgba(0,0,0,.40)",
+      "ctxScrimDesktop": "rgba(0,0,0,.35)",
+      "avDim": "rgba(0,0,0,.36)",
+      "glow": "rgba(255,255,255,.22)",
+      "toastBg": "rgba(58,58,60,.94)",
+      "toastText": "#FFFFFF",
+      "bannerReconnecting": "color-mix(in srgb, #FFD60A 26%, #1C1C1E)",
+      "bannerLost": "color-mix(in srgb, #FF453A 16%, #1C1C1E)",
+      "edgeTint": "#000000",
+      "wallTint": "rgba(0,0,0,.42)"
+    },
+    "notes": {
+      "label2": "Handy-Skizze #5F5F64, Desktop #5E5E63 → verbindlich #5F5F64 (Plan §1.3). Auf Glasflächen mit Text gilt --g-glass-label-2 (#3A3A3C / #D1D1D6) statt label2.",
+      "label3": "#7C7C80 erreicht nur 3,73:1 auf #F2F2F7: nur für Chevrons/dekorative Glyphen (Grafik ≥ 3:1), nie für Text.",
+      "textFaint": "Neuer Wert für HAPulse --text-faint (kleine Texte): hell #636366 (5,37:1 auf #F2F2F7), dunkel #A1A1A6 (5,42:1 auf #2C2C2E).",
+      "yellowInk": "Handy #8F6C00 fällt auf #F2F2F7 (4,36:1) und auf yellowSoft (4,36:1) durch → verbindlich Desktop-Wert #7D5E00 (≥ 5,4:1).",
+      "redInk": "Desktop #C70014, Handy #D70015 → verbindlich #D70015 (≥ 4,58:1 auf allen Flächen, Plan §1.3).",
+      "tileOff": "Handy: color-mix(card 45 %, bg) = #F8F8FB; Desktop: #F2F2F7. Verbindlich Handy-Formel (ruhiger Unterschied zu tileOn).",
+      "bannerLost": "Desktop-Skizze nutzte Vollton-Rot mit weißem Text (3,55:1, durchgefallen) → verbindlich die Handy-Mischung mit --g-label.",
+      "switchOff": "Desktop-Skizze; Handy nutzte fill2. Verbindlich switchOff.",
+      "semanticRule": "Farbe nur für echte Zustände. Glyphen/Text in Zustandsfarbe immer mit *Ink; Flächen (Kreise, Balken, Schalter) mit der Vollfarbe; Flächen-Tönung mit *Soft nur auf Karte/Gruppe (#FFFFFF bzw. #1C1C1E/#2C2C2E), nicht direkt auf dem Seitenhintergrund."
+    }
+  },
+  "stateColors": {
+    "description": "Feste Zustandsfarben (SPEC4 Punkt 12), unabhängig vom Akzent. fill = Vollfläche (Kreis, Balken), ink = Text/Glyphe, soft = getönte Fläche, on = Glyphe auf fill.",
+    "light": {
+      "fill": "yellow",
+      "ink": "yellowInk",
+      "soft": "yellowSoft",
+      "on": "glyphDark",
+      "meaning": "Licht an, Solar, Szene 'Morgen hell'"
+    },
+    "heat": {
+      "fill": "orange",
+      "ink": "orangeInk",
+      "soft": "orangeSoft",
+      "on": "glyphDark",
+      "meaning": "Heizen, Temperatur-Sensor"
+    },
+    "cool": {
+      "fill": "blue",
+      "ink": "blueInk",
+      "soft": "blueSoft",
+      "on": "onMedia",
+      "meaning": "Kühlen, Luftfeuchte, Medien spielen, Bewegung (info)"
+    },
+    "pool": {
+      "fill": "teal",
+      "ink": "tealInk",
+      "soft": "tealSoft",
+      "on": "glyphDark",
+      "meaning": "Poolpumpe läuft"
+    },
+    "ok": {
+      "fill": "green",
+      "ink": "greenInk",
+      "soft": "greenSoft",
+      "on": "glyphDark",
+      "meaning": "Alles normal, scharf, verriegelt, zu Hause, Auto-Modus"
+    },
+    "alarm": {
+      "fill": "red",
+      "ink": "redInk",
+      "soft": "redSoft",
+      "on": "onMedia",
+      "meaning": "Alarm, offen (Tor/Schloss), Fehler, destruktiv"
+    },
+    "warn": {
+      "fill": "yellow",
+      "ink": "warnInk",
+      "soft": "warnSoft",
+      "on": "glyphDark",
+      "meaning": "Fenster offen, Störung, wird scharf, Müll morgen"
+    },
+    "switch": {
+      "on": "switchOn",
+      "off": "switchOff",
+      "knob": "knob",
+      "meaning": "Schalter immer iOS-Grün, nie Akzent"
+    },
+    "sceneIcons": {
+      "morgen": [
+        "yellow",
+        "yellowInk",
+        "glyphDark"
+      ],
+      "kino": [
+        "purple",
+        "purpleInk",
+        "onMedia"
+      ],
+      "essen": [
+        "orange",
+        "orangeInk",
+        "glyphDark"
+      ],
+      "nacht": [
+        "indigo",
+        "indigoInk",
+        "onMedia"
+      ],
+      "rule": "[aktive Vollfarbe, inaktive Glyphe auf fill, Glyphe auf Vollfarbe]"
+    }
+  },
+  "accent": {
+    "description": "Akzent nur für Auswahl, Fokus, die eine Primäraktion und Links (Desktop). Nie für Zustände, nie als Textfarbe (Orange auf Weiß = 2,2:1) → Text über accentInk.",
+    "default": {
+      "light": {
+        "accent": "#FF9500",
+        "accentInk": "#A64B00",
+        "tabInk": "#A64B00",
+        "accentSoft": "rgba(255,149,0,.16)",
+        "prominent": "#FF9500",
+        "onProminent": "#1C1C1E",
+        "focus": "#A64B00"
+      },
+      "dark": {
+        "accent": "#FF9F0A",
+        "accentInk": "#FFB340",
+        "tabInk": "#FFB340",
+        "accentSoft": "rgba(255,159,10,.26)",
+        "prominent": "#FF9F0A",
+        "onProminent": "#1C1C1E",
+        "focus": "#FFB340"
+      }
+    },
+    "presets": {
+      "#FF9500": {
+        "lightInk": "#A64B00",
+        "darkAccent": "#FF9F0A",
+        "darkInk": "#FFB340",
+        "lightTabInk": "#A64B00",
+        "darkTabInk": "#FFB340",
+        "onProminent": "#1C1C1E"
+      },
+      "#007AFF": {
+        "lightInk": "#0060DF",
+        "darkAccent": "#0A84FF",
+        "darkInk": "#409CFF",
+        "lightTabInk": "#0060DF",
+        "darkTabInk": "#64AFFF",
+        "prominentLight": "#0060DF",
+        "onProminent": "#FFFFFF"
+      },
+      "#34C759": {
+        "lightInk": "#1F7A35",
+        "darkAccent": "#30D158",
+        "darkInk": "#30D158",
+        "lightTabInk": "#1D7131",
+        "darkTabInk": "#30D158",
+        "onProminent": "#1C1C1E"
+      },
+      "#AF52DE": {
+        "lightInk": "#8944AB",
+        "darkAccent": "#BF5AF2",
+        "darkInk": "#DA8FFF",
+        "lightTabInk": "#8944AB",
+        "darkTabInk": "#DA8FFF",
+        "onProminent": "#FFFFFF"
+      }
+    },
+    "algorithm": {
+      "input": "accentHue (HAPulse-Regler) → accent = hsl(h, 78 %, 50 %) hell / hsl(h, 78 %, 60 %) dunkel; ohne Hue: #FF9500 / #FF9F0A",
+      "accentInk": "hell: RGB je Schritt × 0,9 bis Kontrast ≥ 4,5:1 auf #F2F2F7; dunkel: je Schritt 12 % Richtung Weiß bis ≥ 4,5:1 auf #1C1C1E (max. 40 Schritte)",
+      "tabInk": "accentInk weiter abdunkeln (× 0,93) bzw. aufhellen (10 %) bis ≥ 4,5:1 auf der Linse (hell #E6E6E9, dunkel #3C3C3D)",
+      "onProminent": "#1C1C1E, wenn Kontrast zum Akzent ≥ 4,5:1; sonst #FFFFFF, wenn ≥ 4,5:1; sonst prominent = accentInk mit #FFFFFF",
+      "accentSoft": "Akzent mit Alpha .16 (hell) / .26 (dunkel)",
+      "note": "Handy-Skizze: Orange-Ink #B25000 + separat berechnete Tab-Ink; Desktop-Skizze: #A64B00. #B25000 hat auf der Tab-Linse nur 4,17:1 → verbindlich #A64B00 als accentInk. #B25000 bleibt orangeInk (Heizen)."
+    }
+  },
+  "glass": {
+    "description": "Liquid-Glass-Nachbau ohne SVG-Refraktion (Safari-tauglich). Nur Funktionsebene. Rezept = Füllung (padding-box) + backdrop-filter + Rand (::before, 1 px, Maske xor/exclude) + Dicke/Linse (box-shadow) + Glanz bei Druck (::after).",
+    "tintVar": "--g-glass-tint",
+    "strength": {
+      "klar": {
+        "tint": 0.25,
+        "attr": "data-glass=\"clear\"",
+        "note": "Standard (Plan §1.1: 'clear')"
+      },
+      "getoent": {
+        "tint": 0.75,
+        "attr": "data-glass=\"tinted\""
+      },
+      "deckend": {
+        "attr": "data-glass=\"opaque\"",
+        "fill": "var(--g-card-solid)",
+        "filter": "none",
+        "rim": "none",
+        "shadow": "0 0 0 1px var(--g-sep-strong), 0 10px 30px rgba(0,0,0,.12)",
+        "clearFill": "rgba(0,0,0,.72)",
+        "clearShadow": "0 0 0 1px rgba(255,255,255,.35)",
+        "sheetFill": "var(--g-sheet-solid)",
+        "label2Light": "#3A3A3C",
+        "label2Dark": "#D1D1D6",
+        "sepLight": "rgba(60,60,67,.36)",
+        "sepDark": "rgba(84,84,88,.9)",
+        "note": "Wird auch bei 'Transparenz reduzieren' (GLOBAL, Admin, E2) erzwungen."
+      }
+    },
+    "surfaceTint": {
+      "description": "Mindest-Tönung je Fläche; wirksam = max(Fläche, Stärke). Deckend ignoriert diese Werte.",
+      "default": {
+        "klar": 0.25,
+        "getoent": 0.75
+      },
+      "tabBar": {
+        "klar": 0.6,
+        "getoent": 0.75
+      },
+      "avatarButton": {
+        "klar": 0.6,
+        "getoent": 0.75
+      },
+      "backButton": {
+        "klar": 0.5,
+        "getoent": 0.75
+      },
+      "dateChip": {
+        "klar": 0.55,
+        "getoent": 0.75
+      },
+      "headerCapsule": {
+        "klar": 0.25,
+        "getoent": 0.75
+      },
+      "sidebar": {
+        "klar": 0.5,
+        "getoent": 0.8
+      },
+      "sheetMedium": {
+        "klar": 0.7,
+        "getoent": 0.75,
+        "note": "Fläche selbst nutzt glass.sheet.fill"
+      },
+      "dialogDesktop": {
+        "klar": 0.68,
+        "getoent": 0.85
+      },
+      "inspector": {
+        "klar": 0.68,
+        "getoent": 0.85
+      },
+      "toastDesktop": {
+        "klar": 0.68,
+        "getoent": 0.85
+      },
+      "menu": {
+        "klar": 0.88,
+        "getoent": 0.94,
+        "note": "Kontextmenü, Avatar-Menü, Räume-Popover, Mitteilungs-Popover"
+      }
+    },
+    "regular": {
+      "light": {
+        "fill": "linear-gradient(180deg, rgba(255,255,255,calc(.30 + .40*var(--g-glass-tint))), rgba(255,255,255,calc(.14 + .40*var(--g-glass-tint))))",
+        "filter": "blur(calc(6px + 10px*var(--g-glass-tint))) saturate(210%) brightness(1.06)",
+        "rim": "linear-gradient(135deg, rgba(255,255,255,.95) 0%, rgba(255,255,255,.35) 22%, rgba(255,255,255,.06) 50%, rgba(255,255,255,.30) 78%, rgba(255,255,255,.85) 100%)",
+        "shadow": "inset 1.5px 1.5px 1px -1px rgba(255,255,255,.6), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.4), inset 0 1px 1.5px rgba(255,255,255,.75), inset 0 -1.5px 3px rgba(255,255,255,.22), inset 0 0 16px rgba(255,255,255,.18), inset 0 -12px 20px -14px rgba(0,0,0,.10), 0 0 0 .5px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14)",
+        "glow": "radial-gradient(120px circle at var(--gx,50%) var(--gy,50%), rgba(255,255,255,.45), transparent 60%)",
+        "label": "#000000",
+        "label2": "#3A3A3C"
+      },
+      "dark": {
+        "fill": "linear-gradient(180deg, rgba(40,40,44,calc(.30 + .40*var(--g-glass-tint))), rgba(40,40,44,calc(.20 + .40*var(--g-glass-tint))))",
+        "filter": "blur(calc(6px + 10px*var(--g-glass-tint))) saturate(180%) brightness(.9)",
+        "rim": "linear-gradient(135deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.2) 22%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.17) 78%, rgba(255,255,255,.5) 100%)",
+        "shadow": "inset 1.5px 1.5px 1px -1px rgba(255,255,255,.32), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.2), inset 0 1px 1.5px rgba(255,255,255,.24), inset 0 0 16px rgba(255,255,255,.05), 0 0 0 .5px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.5)",
+        "glow": "radial-gradient(120px circle at var(--gx,50%) var(--gy,50%), rgba(255,255,255,.22), transparent 60%)",
+        "label": "#FFFFFF",
+        "label2": "#D1D1D6"
+      }
+    },
+    "clear": {
+      "description": "Nur über Kamerabild/Video. Weiße Glyphen. Hinter hellem Bild lokale Abdunklung 35 % (Verlauf oder Fläche).",
+      "fill": "rgba(0,0,0,.20)",
+      "filter": "blur(4px) saturate(160%)",
+      "rim": "linear-gradient(135deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.2) 24%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.18) 76%, rgba(255,255,255,.52) 100%)",
+      "shadow": "inset 1.5px 1.5px 1px -1px rgba(255,255,255,.35), inset 0 1px 1px rgba(255,255,255,.28), inset 0 0 12px rgba(255,255,255,.08), 0 0 0 .5px rgba(0,0,0,.25), 0 6px 20px rgba(0,0,0,.25)",
+      "dimming": "rgba(0,0,0,.35)",
+      "imageTop": "linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0))",
+      "imageTopStrong": "linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,0))",
+      "imageBottom": "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.6))",
+      "videoDim": "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.35) 50%)",
+      "mediaScrimDesktop": "linear-gradient(transparent, rgba(0,0,0,.5))",
+      "textShadow": "0 1px 2px rgba(0,0,0,.45)",
+      "glyph": "#FFFFFF"
+    },
+    "sheet": {
+      "light": {
+        "fill": "linear-gradient(180deg, rgba(246,246,250,.86), rgba(242,242,247,.80))",
+        "filter": "blur(28px) saturate(190%) brightness(1.04)",
+        "solid": "#F2F2F7",
+        "largeShadow": "0 -10px 40px rgba(0,0,0,.14)"
+      },
+      "dark": {
+        "fill": "linear-gradient(180deg, rgba(36,36,40,.86), rgba(28,28,30,.80))",
+        "filter": "blur(28px) saturate(170%) brightness(.9)",
+        "solid": "#1C1C1E",
+        "largeShadow": "0 -10px 40px rgba(0,0,0,.6)"
+      },
+      "note": "Mittleres Sheet und Handy-Menüs (Kontext, Avatar). Großer Detent = solid, ohne backdrop-filter. 28 px Blur liegt über dem Budget aus Plan §5.5 (≤ 16 px); erlaubt, weil vorübergehend und eine einzelne Fläche – reißt das iPad-Budget, auf blur(16px) senken."
+    },
+    "scrollEdge": {
+      "phone": {
+        "height": "96px",
+        "background": "linear-gradient(var(--g-bg) 0%, transparent)",
+        "filter": "blur(10px)",
+        "mask": "linear-gradient(#000 45%, transparent)",
+        "opacity": "clamp(0, scrollY/40, 1)"
+      },
+      "desktop": {
+        "height": "104px",
+        "left": "rechte Kante der Seitenleiste (12 + Breite)",
+        "background": "linear-gradient(var(--g-edge-tint) 45%, transparent)",
+        "filter": "blur(12px)",
+        "mask": "linear-gradient(#000 55%, transparent)",
+        "opacity": "0 → 1 ab scrollY > 8 (.25s ease)"
+      },
+      "prefersContrast": "kein Blur (--g-edge-blur: none)"
+    },
+    "structure": {
+      "rimPseudo": "::before { inset:0; border-radius:inherit; padding:1px; background:var(--g-glass-rim); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events:none }",
+      "glowPseudo": "::after { inset:0; border-radius:inherit; background:var(--g-glass-glow); opacity:0; transition:opacity 400ms ease-out } :active::after { opacity:1; transition-duration:120ms }",
+      "pointer": "--gx/--gy in px aus pointerdown (offsetX/offsetY) setzen",
+      "flex": "Druck: scale(var(--flex)) mit spring-snappy .35s, Loslassen spring-bouncy .6s; --flex: 1.02 Tab-Leiste, 1.04 Kapsel mit mehreren Knöpfen, 1.06 Standard, 1.08 Avatar/Datum/LIVE, 1.10 kleine Rundknöpfe",
+      "desktopVariant": "Desktop-Skizze: Rand über border:1px transparent + background (padding-box/border-box) und Linsenglanz als ::before mit zwei radial-gradients (1.5 px). Gleichwertig; verbindlich ist die Handy-Struktur oben (ein ::before für den Rand, ::after für den Glanz)."
+    },
+    "prefersContrastMore": {
+      "fill": "var(--g-card-solid)",
+      "clearFill": "rgba(0,0,0,.72)",
+      "filter": "none",
+      "rim": "none",
+      "shadowLight": "0 0 0 1px #000000, 0 10px 30px rgba(0,0,0,.12)",
+      "shadowDark": "0 0 0 1px #FFFFFF",
+      "clearShadow": "0 0 0 1px rgba(255,255,255,.7)",
+      "label2Light": "#3A3A3C",
+      "label2Dark": "#D1D1D6",
+      "sepLight": "rgba(60,60,67,.5)",
+      "sepStrongLight": "rgba(60,60,67,.7)",
+      "sepDark": "rgba(84,84,88,.95)",
+      "sepStrongDark": "rgba(160,160,168,.9)"
+    },
+    "budget": {
+      "maxSurfacesAtRest": 3,
+      "noGlassOnGlass": true,
+      "maxPersistentBlurPx": 16,
+      "animate": "nie backdrop-filter animieren; nur transform/opacity/filter am Element/clip-path/border-radius"
+    }
+  },
+  "typography": {
+    "fontFamily": "-apple-system, BlinkMacSystemFont, \"SF Pro Text\", system-ui, \"Segoe UI\", Roboto, sans-serif",
+    "fontVariantNumeric": "tabular-nums",
+    "smoothing": "-webkit-font-smoothing: antialiased",
+    "noWebfonts": "Keine Bricolage/Schibsted/Spline Mono, kein ui-rounded, kein @font-face für SF",
+    "styles": {
+      "largeTitle": {
+        "size": 34,
+        "lineHeight": 41,
+        "weight": 700,
+        "tracking": "0.37px",
+        "use": "Seitentitel, Begrüßung Desktop"
+      },
+      "greetingPhone": {
+        "size": 30,
+        "lineHeight": 36,
+        "weight": 700,
+        "tracking": "0.2px",
+        "use": "Begrüßung Handy (eine Zeile bei 390 px)"
+      },
+      "title1": {
+        "size": 28,
+        "lineHeight": 34,
+        "weight": 700,
+        "tracking": "0.2px",
+        "use": "Hauptraum-Name, Inspector-Zustand, Tonnen-Countdown, Pool-Dauer"
+      },
+      "title2": {
+        "size": 22,
+        "lineHeight": 28,
+        "weight": 700,
+        "use": "Zustand im Detail, Alarm-/Pool-Status; Klima-Sollwert 22/28 600"
+      },
+      "title3": {
+        "size": 20,
+        "lineHeight": 25,
+        "weight": 600,
+        "use": "Kartentitel über der Karte, Wortmarke 20/700"
+      },
+      "headline": {
+        "size": 17,
+        "lineHeight": 22,
+        "weight": 600,
+        "use": "Sheet-/Dialogtitel, Zeilentitel betont, kleiner Scroll-Titel"
+      },
+      "body": {
+        "size": 17,
+        "lineHeight": 22,
+        "weight": 400,
+        "use": "Listenzeilen, Menüeinträge, Seitenleiste"
+      },
+      "callout": {
+        "size": 16,
+        "lineHeight": 21,
+        "weight": 400,
+        "use": "selten"
+      },
+      "subhead": {
+        "size": 15,
+        "lineHeight": 20,
+        "weight": 400,
+        "emphasized": 600,
+        "use": "Chips, Untertitel, Werte, Knopftext, Links"
+      },
+      "footnote": {
+        "size": 13,
+        "lineHeight": 18,
+        "weight": 400,
+        "emphasized": 600,
+        "use": "Zustandszeile, Legende, Segment-Labels 13/600"
+      },
+      "caption1": {
+        "size": 12,
+        "lineHeight": 16,
+        "weight": 400,
+        "use": "Achsen, Raumzeile in Kacheln, Wetterkennzahl-Label"
+      },
+      "caption2": {
+        "size": 11,
+        "lineHeight": 13,
+        "weight": 600,
+        "use": "Tab-Beschriftung; LIVE-Badge 11/13 700 tracking .6px"
+      },
+      "figure": {
+        "size": 34,
+        "lineHeight": 41,
+        "weight": 600,
+        "use": "Energie-Kennzahl, Klima-Sollwert Desktop, Licht-Prozent (700)"
+      },
+      "weatherHero": {
+        "size": 48,
+        "lineHeight": 54,
+        "weight": 700,
+        "use": "Wetter-Sheet Temperatur (Desktop 48/52)"
+      },
+      "keypad": {
+        "size": 30,
+        "lineHeight": 36,
+        "weight": 400,
+        "use": "Alarm-Ziffern Handy; Desktop 26/30 500"
+      }
+    },
+    "minimumSize": 11,
+    "sectionHeaders": "Satzschreibung, keine Versalien, kein Tracking"
+  },
+  "spacing": {
+    "base": 8,
+    "scale": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24,
+      26,
+      28,
+      32,
+      40
+    ],
+    "pageMargin": {
+      "compact": 16,
+      "regularLeftFromSidebar": 28,
+      "regularRight": 32,
+      "regularRightWithInspector": 452
+    },
+    "pageTop": {
+      "compact": 60,
+      "compactWithBanner": 120,
+      "regular": 92,
+      "regularWithBanner": 136
+    },
+    "pageBottom": {
+      "compact": 132,
+      "regular": 72
+    },
+    "sectionGap": {
+      "compactTitleTop": 20,
+      "compactHintsTitleTop": 16,
+      "compactHeroTop": 24,
+      "titleToCardCompact": 6,
+      "titleToCardRegular": 8
+    },
+    "grid": {
+      "compactTileGap": 10,
+      "regularColumnGap": 20,
+      "regularRowGap": 26,
+      "chipGap": 8
+    },
+    "cardPadding": {
+      "default": 16,
+      "hero": "18px 16px 16px 20px (Handy) / 18px 22px (Desktop)",
+      "energy": "6px 16px 16px (Handy) / 6px 20px 16px (Desktop)",
+      "list": "Zeilen randlos, Einzug innen 16–20 px"
+    },
+    "touchTarget": 44,
+    "touchTargetMin": 28,
+    "spacingAroundBezel": 12,
+    "spacingAroundNoBezel": 24
+  },
+  "radii": {
+    "card": 26,
+    "tile": 22,
+    "sheet": 40,
+    "dialog": 34,
+    "inspector": 30,
+    "sidebar": 28,
+    "menu": 22,
+    "menuItemDesktop": 14,
+    "sheetGroup": 22,
+    "dialogGroup": 18,
+    "thumbnailLarge": 16,
+    "thumbnail": 12,
+    "nvrTileDesktop": 18,
+    "callout": 10,
+    "toastPhone": 20,
+    "capsule": "50% der Höhe (999px)",
+    "tabBar": 31,
+    "tabLens": 27,
+    "segmentTrack": "Höhe/2",
+    "segmentLens": "Track-Radius − Innenabstand",
+    "lightSliderPhone": 32,
+    "lightSliderDesktop": 28,
+    "radiusControlClassicVar": "999px",
+    "concentricRule": "innen = außen − Innenabstand (±2 px Toleranz), sonst Kapsel"
+  },
+  "elevation": {
+    "light": {
+      "card": "0 .5px 1px rgba(0,0,0,.04)",
+      "cardPhone": "none",
+      "cardHover": "0 1px 2px rgba(0,0,0,.05), 0 10px 24px rgba(0,0,0,.08)",
+      "tileLift": "0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.06)",
+      "tileOnDesktop": "0 1px 2px rgba(0,0,0,.06), 0 6px 16px rgba(0,0,0,.08)",
+      "liftContext": "0 18px 50px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.08)",
+      "liftContextDesktop": "0 18px 50px rgba(0,0,0,.28)",
+      "menuDesktop": "var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.25)",
+      "popoverDesktop": "var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.22)",
+      "dialog": "var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 30px 80px rgba(0,0,0,.28)",
+      "inspector": "var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.06), 0 24px 70px rgba(0,0,0,.20)",
+      "sheetLarge": "0 -10px 40px rgba(0,0,0,.14)",
+      "toastPhone": "0 10px 30px rgba(0,0,0,.25)",
+      "banner": "0 4px 16px rgba(0,0,0,.08)",
+      "prominent": "0 1px 2px rgba(0,0,0,.08), 0 6px 18px rgba(0,0,0,.12)",
+      "seg": "0 3px 8px rgba(0,0,0,.12), 0 .5px 0 rgba(0,0,0,.04)",
+      "knob": "0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16)",
+      "lightGlow": "0 4px 14px rgba(255,204,0,.35)",
+      "live": "0 2px 8px rgba(0,0,0,.25)",
+      "pushedScreen": "-12px 0 32px rgba(0,0,0,.14)"
+    },
+    "dark": {
+      "card": "none",
+      "cardPhone": "none",
+      "cardHover": "0 10px 24px rgba(0,0,0,.5)",
+      "tileLift": "none",
+      "tileOnDesktop": "0 6px 16px rgba(0,0,0,.4)",
+      "liftContext": "0 18px 50px rgba(0,0,0,.6)",
+      "liftContextDesktop": "0 18px 50px rgba(0,0,0,.6)",
+      "sheetLarge": "0 -10px 40px rgba(0,0,0,.6)",
+      "seg": "0 3px 8px rgba(0,0,0,.30)",
+      "note": "übrige Schatten wie hell; Glas-Schatten siehe glass.regular.dark.shadow"
+    }
+  },
+  "motion": {
+    "springs": {
+      "smooth": {
+        "linear": "linear(0, 0.0263, 0.0895, 0.1722, 0.2626, 0.3534, 0.4399, 0.5197, 0.5916, 0.6551, 0.7104, 0.7581, 0.7988, 0.8334, 0.8624, 0.8868, 0.9071, 0.9239, 0.9379, 0.9494, 0.9588, 0.9665, 0.9729, 0.978, 0.9822, 0.9857, 0.9884, 0.9907, 0.9925, 0.994, 0.9952, 0.9961, 0.9969, 0.9975, 0.998, 0.9984, 0.9987, 0.999, 0.9992, 0.9993, 1)",
+        "duration": "0.5s",
+        "bounce": 0,
+        "damping": 0.995,
+        "bezierFallback": "cubic-bezier(.3,.6,.04,1)",
+        "use": "Sheets, Morph, Seiten-Push, Druck-Rückfederung, Inspector, Bildschirm-Eintritt"
+      },
+      "snappy": {
+        "linear": "linear(0, 0.0217, 0.0778, 0.1568, 0.2492, 0.3477, 0.4464, 0.5414, 0.6296, 0.7093, 0.7795, 0.8398, 0.8905, 0.932, 0.9651, 0.9908, 1.0099, 1.0234, 1.0323, 1.0375, 1.0398, 1.0398, 1.0381, 1.0354, 1.0319, 1.028, 1.0241, 1.0202, 1.0165, 1.0131, 1.0101, 1.0075, 1.0053, 1.0035, 1.002, 1.0008, 0.9999, 0.9993, 0.9989, 0.9986, 1)",
+        "duration": "0.35s",
+        "overshoot": "4 %",
+        "damping": 0.715,
+        "bezierFallback": "cubic-bezier(.34,.65,0,1.2)",
+        "use": "Linsen, Segmente, Schalter, Detents, Menüs, Toasts, Wisch-Rückstellung, Ziffernrolle"
+      },
+      "bouncy": {
+        "linear": "linear(0, 0.0371, 0.131, 0.2588, 0.4016, 0.5451, 0.679, 0.7967, 0.8947, 0.9716, 1.0283, 1.0667, 1.0892, 1.099, 1.099, 1.092, 1.0806, 1.0669, 1.0524, 1.0384, 1.0258, 1.015, 1.0063, 0.9997, 0.995, 0.992, 0.9904, 0.99, 0.9904, 0.9913, 0.9926, 0.9941, 0.9955, 0.9968, 0.998, 0.999, 0.9997, 1.0003, 1.0007, 1.0009, 1)",
+        "duration": "0.6s",
+        "overshoot": "10 %",
+        "damping": 0.595,
+        "bezierFallback": "cubic-bezier(.34,1.2,0,1.12)",
+        "use": "Toggle-Puls, Glas-Rückfederung, Tab-Leiste ausfahren, Kontext-Anheben, Balken wachsen, Badges"
+      },
+      "note": "Handy-Kurven (41 Stützpunkte) verbindlich. Desktop-Skizze nutzt leicht andere Stützpunkte (max. Abweichung smooth 0,04, snappy 0,13, bouncy 0,07). Fallback für Browser ohne linear(): @supports not (transition-timing-function: linear(0, 1))."
+    },
+    "durations": {
+      "snappy": "0.35s",
+      "smooth": "0.5s",
+      "bouncy": "0.6s",
+      "pressIn": "90–120ms ease-out",
+      "crossfade": "160–220ms",
+      "reducedMotion": "200ms ease",
+      "glowIn": "120ms",
+      "glowOut": "400ms ease-out",
+      "colour": "250–350ms ease"
+    },
+    "interactions": {
+      "pressContent": "scale(.97) in 90–120ms, zurück spring-smooth .5s",
+      "pressRow": "Hintergrund --g-fill; Hover (Desktop) --g-hover",
+      "pressTextLink": "opacity .55, 150ms",
+      "pressGlass": "scale(var(--flex)) snappy .35s, Loslassen bouncy .6s, Glanz ab Fingerpunkt",
+      "hoverTileDesktop": "translateY(-1px) + elevation.cardHover, smooth .35s",
+      "tabLens": "translateX snappy .35s + Dehnung 420ms ease-in-out (40 %: scaleX 1.12 scaleY .94)",
+      "tabIconPop": "scale .9 → 1.15 → 1, 440ms cubic-bezier(.3,0,.2,1), Symbol gefüllt",
+      "tabMinimize": "Schrumpfen smooth .5s, Ausfahren bouncy .6s; Labels blenden zuerst (120ms); Schwellen siehe components.tabBar",
+      "titleCollapse": "scroll-gekoppelt: Titel opacity 1−y/40, scale 1−.05·min(y/48,1); Untertitel opacity 1−y/28; Kante opacity y/40; kleiner Titel opacity (y−24)/28 + translateY((1−o)·6px); y in 4-px-Schritten (max 64), 120–160ms linear",
+      "sheetOpenMorph": "aus Rechteck des Auslösers: translate+scale, Radius 22/scale → 40, smooth .5s; Inhalt fade 240ms ab 120ms; Scrim fade 300ms",
+      "sheetOpenSlide": "translateY(100% + 16px) → 0, smooth .5s (ohne Ursprung)",
+      "sheetCloseMorph": "zurück ins Rechteck 420ms smooth, Deckkraft bis 70 % voll, dann 0; Inhalt fade 140ms",
+      "sheetCloseSlide": "360ms cubic-bezier(.4,0,1,1); nach Ziehen 320ms gleiche Kurve; Scrim 320ms ease-in",
+      "sheetDetent": "height/left/right/bottom/border-radius snappy .35s (einzige Höhen-Animation)",
+      "sheetDrag": "folgt dem Finger 1:1 ohne Transition; nach oben im großen Detent Gummiband ×0,2; Scrim-Deckkraft 1 − dy/500",
+      "sheetSwap": "Inhaltstausch 300ms smooth (translateY 10px → 0 + fade)",
+      "stackedPage": "von rechts hinein (translateX 100% → 0) smooth .5s, Untere −25 % + brightness .86",
+      "dialogDesktop": "Fläche morpht aus dem Auslöser .52s smooth (Radius 22/scale → 34, opacity 0 → 1 bis 18 %); Inhalt opacity 0 bis 40 %, dann ein; schließen .44s cubic-bezier(.32,.72,0,1)",
+      "inspector": "translateX(460px) → 0 .55s smooth; schließen .38s auf 460px + opacity .6",
+      "sidebarCollapse": "Breite 260 ↔ 72 snappy .55s; Labels opacity .2s; Linse translate .45s snappy + Dehnung (scale .97 1.16)",
+      "contextMenu": "Langdruck 550ms; Vorschau anheben scale 1 → 1.04 bouncy 420ms; Menü scale .6 + blur 6px → 1, snappy 420ms, 40ms verzögert, Ursprung an der Kachelmitte; schließen fade 180–260ms",
+      "avatarMenu": "scale(.16,.3) + blur 4px → 1, snappy 460ms, Ursprung 230px −28px (Avatar); Inhalt fade 200ms ab 110ms; schließen 280ms cubic-bezier(.4,0,1,1)",
+      "materialize": "opacity 0, scale .92, blur 8px → 1 (Glas erscheint nie per reinem Fade); Desktop-Popover .45s snappy, aus: scale .94 blur 6px",
+      "swipe": "folgt dem Finger; Richtungsentscheid nach 8 px; Loslassen snappy .35s",
+      "toggle": "Kreis-Füllung 300ms + Puls scale 1 → 1.12 (35 %) → 1, .6–.7s bouncy",
+      "sceneActivate": "Ring-Sweep stroke-dashoffset 126 → 0 in 760ms cubic-bezier(.3,0,.2,1), am Ende ausblenden; Kachel-Fläche 350ms",
+      "numberRoll": "neu von unten (70 %) mit fade 380ms snappy, alt nach oben weg 260ms ease-in; Richtung nach Wertänderung",
+      "slider": "Klick: Füllung snappy .35s; Ziehen ohne Transition; Kapsel scale 1.04 während Ziehen",
+      "segmented": "Linse translate snappy .35s (Desktop .4s)",
+      "switch": "Knopf translateX 20px snappy .35s; Spur-Farbe 250ms",
+      "climateArc": "stroke-dashoffset bouncy .6s (Handy) bzw. dasharray smooth .6s (Desktop); Farbe 350ms",
+      "blindsArc": "1.4s cubic-bezier(.4,0,.2,1) (zeigt die echte Fahrt)",
+      "energyBars": "scaleY 0 → 1, .6s bouncy, Verzögerung i × 14/40/9 ms (Tag/Woche/Monat); Kennzahl-Wechsel translateY 6px + fade .45s smooth; Blase scale .88 → 1 .3s snappy, Position left .35s snappy",
+      "screenEnter": "Abschnitte rise 8px + fade 420ms smooth, je 25ms versetzt, max. 6 Stufen (Desktop .5s, Start 50ms)",
+      "tabSwitch": "Überblendung 160ms + 6px Anstieg",
+      "cameraZoom": "Bild aus der Kachel zur Bühne 540ms smooth (clip-path inset round), zurück 480ms",
+      "editBadges": "scale .2 → 1 .5s bouncy, versetzt; kein Wackeln",
+      "editToggleDesktop": "Glas-Kapsel 'Bearbeiten' → scale .7 1 + blur 6px + fade; Prominent 'Fertig' scale 1.4 1 → 1 .55s snappy",
+      "pinError": "Schütteln 420ms ease-out (−10/9/−6/4 px)",
+      "liveDot": "opacity 1 → .35 → 1, 2s ease-in-out unendlich"
+    },
+    "reducedMotion": {
+      "all": "alle Bewegungen → 200ms Überblendung (ease)",
+      "press": "kein Skalieren, stattdessen opacity .6",
+      "glassFlex": "aus",
+      "decorative": "kein Puls, Sweep, Dehnung, Pop, Anheben, Schütteln, Wackeln, Live-Punkt-Pulsieren",
+      "exits": "Exit-Animationen → fade-out 200ms",
+      "energyBars": "fade 200ms statt Wachsen",
+      "tabMinimize": "ohne Animation",
+      "allowed": "Farbübergänge (background-color, color, box-shadow, stroke) 200ms"
+    }
+  },
+  "zIndex": {
+    "description": "Schichten in Glas, eingepasst in HAPulse (Seitenleiste 100, Tab-Leiste 200, Menüs 300, Modal/Toast/Popover 1000, Körnung 9999 – in Glas aus).",
+    "content": 0,
+    "contentRaised": 10,
+    "scrollEdge": 90,
+    "scrollEdgeTitle": 95,
+    "sidebar": 100,
+    "header": 120,
+    "tabBar": 200,
+    "banner": 210,
+    "navMenu": 300,
+    "inspector": 400,
+    "contextScrim": 900,
+    "contextPreview": 905,
+    "contextMenu": 910,
+    "avatarMenu": 910,
+    "modalScrim": 1000,
+    "modal": 1000,
+    "stackedSheetPage": 1010,
+    "toast": 1100,
+    "sketchPhone": "Bildschirm 0–3, Kante 5, Kantentitel 6, Kopfknöpfe 7, Tab-Leiste 8, Sheet-Scrim 20, Sheet 21, Toasts 30, Kontext 40–42, Avatar-Menü 42",
+    "sketchDesktop": "Kante 10, Banner 19, Kopf 20, Seitenleiste 30, Inspector 36, Kontext 40/41, Popover 44/45, Dialog 50/51, Toasts 60"
+  },
+  "breakpoints": {
+    "compactMax": 899,
+    "regularMin": 900,
+    "inspectorMin": 1100,
+    "homeColumnsByContentWidth": {
+      "4": ">= 1180",
+      "3": ">= 900",
+      "2": "< 900",
+      "1": "< 560 (HAPulse)"
+    },
+    "phoneSketch": "390 × 844",
+    "desktopSketch": "1440 × 1000",
+    "ipadLandscape": "1180 × 820",
+    "rules": {
+      "compact": "Tab-Leiste, Sheets, Avatar-Menü, Wetterzeile, Hinweise als Liste",
+      "regular": "Seitenleiste, Kopf-Kapseln, zentrierter Glas-Dialog, Hinweise als Kapselreihe",
+      "inspector": "Detail als Inspector rechts (≥ 1100), 900–1099 Glas-Dialog, < 900 Sheet"
+    }
+  },
+  "classicMapping": {
+    "description": "Werte, die applyAppearance in Glas über die bestehenden HAPulse-Namen schreibt (inline auf :root). Jede Seite sieht damit ohne Komponenten-CSS nach Glas aus.",
+    "--bg": {
+      "light": "#F2F2F7",
+      "dark": "#000000"
+    },
+    "--bg-raised": {
+      "light": "#FFFFFF",
+      "dark": "#1C1C1E",
+      "note": "Glas-CSS ersetzt Seitenleiste/Tab-Leiste/Sheets durch Glas; übrige Nutzer bekommen die deckende iOS-Fläche"
+    },
+    "--bg-card": {
+      "light": "#FFFFFF",
+      "dark": "#1C1C1E"
+    },
+    "--bg-card-hover": {
+      "light": "#F7F7FA",
+      "dark": "#2C2C2E"
+    },
+    "--bg-subtle": {
+      "light": "rgba(120,120,128,.12)",
+      "dark": "rgba(120,120,128,.24)",
+      "note": "= iOS fill"
+    },
+    "--text": {
+      "light": "#000000",
+      "dark": "#FFFFFF"
+    },
+    "--text-dim": {
+      "light": "#5F5F64",
+      "dark": "#AEAEB2"
+    },
+    "--text-faint": {
+      "light": "#636366",
+      "dark": "#A1A1A6",
+      "note": "≥ 4,5:1 auf bg/card; label3 (#7C7C80) ist kein Text-Token"
+    },
+    "--accent": {
+      "light": "#FF9500",
+      "dark": "#FF9F0A",
+      "note": "Standard ohne Hue; sonst glasAccent(hue).accent. Fläche. Textstellen mit color: var(--accent) bekommen in Glas-CSS --g-accent-ink (Kontrast-Audit findet Lücken)"
+    },
+    "--accent-soft": {
+      "light": "rgba(255,149,0,.16)",
+      "dark": "rgba(255,159,10,.26)"
+    },
+    "--on-accent": {
+      "light": "#1C1C1E",
+      "dark": "#1C1C1E",
+      "note": "glasAccent(hue).onProminent (für Orange #1C1C1E, 7,74:1)"
+    },
+    "--line": {
+      "light": "rgba(60,60,67,.18)",
+      "dark": "rgba(84,84,88,.55)"
+    },
+    "--border": {
+      "light": "transparent",
+      "dark": "transparent",
+      "note": "Karten randlos"
+    },
+    "--positive": {
+      "light": "#1F7A35",
+      "dark": "#30D158",
+      "note": "Ink-Wert, weil HAPulse --positive überwiegend als Textfarbe nutzt (54× color, 9× background); Vollfarbe über --g-green"
+    },
+    "--positive-soft": {
+      "light": "rgba(52,199,89,.16)",
+      "dark": "rgba(48,209,88,.20)"
+    },
+    "--warning": {
+      "light": "#7D5E00",
+      "dark": "#FFD60A",
+      "note": "Ink-Wert (41× color); Vollfarbe --g-yellow"
+    },
+    "--warning-soft": {
+      "light": "rgba(255,204,0,.24)",
+      "dark": "rgba(255,214,10,.20)"
+    },
+    "--danger": {
+      "light": "#D70015",
+      "dark": "#FF6961",
+      "note": "Ink-Wert (45× color); Vollfarbe --g-red"
+    },
+    "--danger-soft": {
+      "light": "rgba(255,59,48,.12)",
+      "dark": "rgba(255,69,58,.22)"
+    },
+    "--info": {
+      "light": "#0060DF",
+      "dark": "#409CFF",
+      "note": "Ink-Wert (43× color); Vollfarbe --g-blue"
+    },
+    "--info-soft": {
+      "light": "rgba(0,122,255,.12)",
+      "dark": "rgba(10,132,255,.22)"
+    },
+    "--shadow-card": {
+      "light": "0 .5px 1px rgba(0,0,0,.04)",
+      "dark": "none"
+    },
+    "--shadow-elevated": {
+      "light": "0 1px 2px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14)",
+      "dark": "0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.5)"
+    },
+    "--shadow-active": {
+      "light": "0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.06)",
+      "dark": "none"
+    },
+    "cssOnly": {
+      "--font-display": "typography.fontFamily",
+      "--font-body": "typography.fontFamily",
+      "--font-data": "typography.fontFamily + font-variant-numeric: tabular-nums",
+      "--radius-card": "26px",
+      "--radius-control": "999px",
+      "--radius-pill": "999px",
+      "grain": "body::after in Glas aus"
+    }
+  },
+  "glasVariables": {
+    "description": "Neue --g-*-Variablen (Auszug der Namensbildung). Alle color.*-Schlüssel → --g-<kebab> (z. B. --g-yellow-ink, --g-glass-label-2, --g-tile-off). Dazu:",
+    "material": [
+      "--g-glass-tint",
+      "--g-glass-fill",
+      "--g-glass-filter",
+      "--g-glass-rim",
+      "--g-glass-shadow",
+      "--g-glass-glow",
+      "--g-glass-clear-fill",
+      "--g-glass-clear-filter",
+      "--g-glass-clear-rim",
+      "--g-glass-clear-shadow",
+      "--g-sheet-fill",
+      "--g-sheet-filter",
+      "--g-sheet-solid",
+      "--g-sheet-large-shadow",
+      "--g-edge-blur",
+      "--g-scrim"
+    ],
+    "states": [
+      "--g-state-light",
+      "--g-state-light-ink",
+      "--g-state-light-soft",
+      "--g-state-heat(-ink/-soft)",
+      "--g-state-cool(-ink/-soft)",
+      "--g-state-pool(-ink/-soft)",
+      "--g-state-ok(-ink/-soft)",
+      "--g-state-alarm(-ink/-soft)",
+      "--g-state-warn(-ink/-soft)",
+      "--g-switch-on",
+      "--g-switch-off"
+    ],
+    "accent": [
+      "--g-accent-ink",
+      "--g-tab-ink",
+      "--g-prominent",
+      "--g-on-prominent",
+      "--g-focus"
+    ],
+    "motion": [
+      "--g-spring-smooth",
+      "--g-spring-snappy",
+      "--g-spring-bouncy",
+      "--g-d-snappy",
+      "--g-d-smooth",
+      "--g-d-bouncy"
+    ],
+    "layout": [
+      "--g-card-head (44px, Kartentitel über der Fläche)",
+      "--g-scroll (0…1)",
+      "--g-gx/--g-gy (Glanzpunkt)"
+    ],
+    "chart": [
+      "--g-chart-netz",
+      "--g-chart-solar",
+      "--g-chart-solar-edge",
+      "--g-chart-grid",
+      "--g-chart-avg"
+    ]
+  }
+}
