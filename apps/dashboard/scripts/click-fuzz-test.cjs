@@ -28,7 +28,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   await cmd('Page.enable'); await cmd('Runtime.enable'); await cmd('Network.enable');
   const W = MOBILE ? 390 : 1280, H = MOBILE ? 844 : 900;
   await cmd('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: MOBILE ? 3 : 1, mobile: MOBILE, screenWidth: W, screenHeight: H });
-  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',JSON.stringify({state:{theme:'aurora',mode:'light',lastSeenVersion:'99.0.0'},version:0}));sessionStorage.setItem('__seeded','1');}window.confirm=()=>false;window.prompt=()=>null;HTMLAnchorElement.prototype.click=function(){};` });
+  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',JSON.stringify({state:{theme:'aurora',mode:'light',lastSeenVersion:'99.0.0',lastSeenFork:99},version:0}));sessionStorage.setItem('__seeded','1');}window.confirm=()=>false;window.prompt=()=>null;HTMLAnchorElement.prototype.click=function(){};` });
   const go = async (pth) => { await cmd('Page.navigate', { url: BASE + pth }); await sleep(3000); };
   const errorCard = () => ev(`document.body.innerText.includes('Something went wrong')`);
   const dialogOpen = () => ev(`!!document.querySelector('[role=dialog], dialog[open], .modal, [class*=modal-overlay], [class*=Modal]')`);

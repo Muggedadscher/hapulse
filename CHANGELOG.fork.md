@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F29 — 2026-10-06
+
+**NVR: Kameraseite passt aufs Handy** · _NVR: camera page fits the phone_
+
+### Behoben / Fixed
+
+- NVR: Auf dem Handy endet die Kameraseite jetzt über der Tab-Leiste; „Clip erstellen“ und die Datumsauswahl lagen vorher teils dahinter, bei kleinem Bildschirm wird dafür das Bild etwas kleiner  
+  _NVR: On the phone the camera page now ends above the tab bar; “Create clip” and the date picker were partly behind it before, on a small screen the picture gets a little smaller for this_
+
 ## F28 — 2026-10-06
 
 **NVR: Clips herunterladen** · _NVR: download clips_
