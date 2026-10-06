@@ -1,10 +1,11 @@
-// [fork] click-fuzz-test.cjs <hapulse-base> [mobile] — HA demo mode: opens every page of the navigation and clicks every
-// control in the page content once (re-queried after each click), closes dialogs again (Escape / close button) and
-// returns to the page when a click navigated away. Destructive controls (reset/delete/log out/import/…) are skipped.
+// [fork] click-fuzz-test.cjs <hapulse-base> [mobile] [glas] — HA demo mode (glas: in the style "Glas"): opens every
+// page of the navigation and clicks every control in the page content once (re-queried after each click), closes
+// dialogs again (Escape / close button) and returns to the page when a click navigated away. Destructive controls
+// (reset/delete/log out/import/…) are skipped.
 // Red on JS exceptions, console errors, the page error card ("Something went wrong") or HTTP ≥ 400.
 // Output: {pages:[{path,clicked,dialogs,navs,errs}], errs, http, crashes}
 const WS = require('ws'), http = require('http');
-const BASE = process.argv[2], MOBILE = process.argv.includes('mobile');
+const BASE = process.argv[2], MOBILE = process.argv.includes('mobile'), GLAS = process.argv.includes('glas');
 const MAX_PER_PAGE = 80;
 const SKIP = /reset|delete|remove|log ?out|sign ?out|disconnect|import|clear|entfernen|löschen|abmelden|zurücksetzen|apply to everyone|für alle/i;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -28,7 +29,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   await cmd('Page.enable'); await cmd('Runtime.enable'); await cmd('Network.enable');
   const W = MOBILE ? 390 : 1280, H = MOBILE ? 844 : 900;
   await cmd('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: MOBILE ? 3 : 1, mobile: MOBILE, screenWidth: W, screenHeight: H });
-  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',JSON.stringify({state:{theme:'aurora',mode:'light',lastSeenVersion:'99.0.0',lastSeenFork:99},version:0}));sessionStorage.setItem('__seeded','1');}window.confirm=()=>false;window.prompt=()=>null;HTMLAnchorElement.prototype.click=function(){};` });
+  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',JSON.stringify({state:{theme:'aurora',mode:'light',lastSeenVersion:'99.0.0',lastSeenFork:99${GLAS ? ",customization:{uiStyle:'glas'}" : ''}},version:0}));sessionStorage.setItem('__seeded','1');}window.confirm=()=>false;window.prompt=()=>null;HTMLAnchorElement.prototype.click=function(){};` });
   const go = async (pth) => { await cmd('Page.navigate', { url: BASE + pth }); await sleep(3000); };
   const errorCard = () => ev(`document.body.innerText.includes('Something went wrong')`);
   const dialogOpen = () => ev(`!!document.querySelector('[role=dialog], dialog[open], .modal, [class*=modal-overlay], [class*=Modal]')`);
@@ -66,6 +67,6 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     pages.push(res);
   }
   const bad = pages.filter((x) => x.errorCard || x.errs.length);
-  console.log(JSON.stringify({ mobile: MOBILE, ok: bad.length === 0 && httpBad.length === 0, badPages: bad.map((x) => x.path), http: httpBad.slice(0, 20), totalClicks: pages.reduce((a, x) => a + x.clicked, 0), pages }, null, 1));
+  console.log(JSON.stringify({ mobile: MOBILE, glas: GLAS, ok: bad.length === 0 && httpBad.length === 0, badPages: bad.map((x) => x.path), http: httpBad.slice(0, 20), totalClicks: pages.reduce((a, x) => a + x.clicked, 0), pages }, null, 1));
   ws.close(); process.exit(0);
 })().catch((e) => { console.log('ERR ' + e.stack); process.exit(1); });
