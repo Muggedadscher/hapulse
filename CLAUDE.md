@@ -146,6 +146,13 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
+## Geplant — Stil „Glas“ (freigegeben, noch nicht umgesetzt)
+
+Zweiter Stil neben Klassisch: Apple-/iOS-26-artiges „Glas“ — **nur Aussehen und Bewegung, gleiche Komponenten und
+Funktionen**. Designsystem: **`docs/GLAS-DESIGN.md`** (+ `docs/glas/glas-tokens.json`), Umsetzungsplan mit Etappen und
+verbindlichen User-Entscheidungen (§7.3) und Start-Prompt (§8): **`docs/GLAS-PLAN.md`**, freigegebene Skizze,
+Screenshots und Funktions-Checkliste: **`docs/glas/`**.
+
 ## Optionales Folge-Feature — HA-Kameras live
 
 `docs/NVR-NATIVE-PLAN.md` beschreibt einen **anderen**, noch nicht gebauten
