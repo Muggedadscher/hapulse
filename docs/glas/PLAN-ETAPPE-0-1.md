@@ -38,6 +38,7 @@ der User zustimmt (Merge = Live-Deploy über den stündlichen Autoupdate).
 | K16 | §3.6 alt: sichtbar „für Admins oder wenn Glas aktiv ist“ | die Zeilen sehen **nur HA-Admins** (E11). Einzige Ausnahme: ein Nicht-Admin **ohne** Admin-Verwaltung, bei dem Glas trotzdem aktiv ist (z. B. aus einem importierten Export), sieht sie als Rückweg. Unter der Verwaltung entscheidet das Dokument des Admins; fehlt darin der Stil (Dokument von vor Glas), gilt Klassisch: `applyGlobal` setzt die drei Felder dann auf den Standard. Beim Admin selbst bleibt eine noch nicht hochgeladene Wahl erhalten (der Abgleich mischt seine lokale Änderung vor `applyGlobal` ein) und wird hochgeladen. | E11 wörtlich. Ohne den Standard in `applyGlobal` hätte ein Gerät mit lokal gesetztem Glas unter einem alten Admin-Dokument Glas behalten, ohne die Zeile zum Abschalten zu sehen. |
 | K17 | §3.7 Schlüssel unter `settings.appearance.*` | eigener Namensraum **`glas.*`** | `settings.appearance.*` gehört Upstream; eigene Schlüssel dort kollidieren bei Upstream-Merges und sind schwer vom Upstream-Bestand zu trennen (wie `nvr.*`, `waste.*`) |
 | K18 | — | `applyAppearance` merkt sich den zuletzt angewendeten Zustand und schreibt nur bei einer Änderung | der Store ruft es bei **jeder** Einstellungsänderung auf; Glas schreibt 145 Eigenschaften (121 `--g-*`, 24 klassische) |
+| K19 | GLAS-PLAN §1.4 `base.css`: Typo-Skala (Large Title 34 … Caption 12), Abstände im 8-pt-Raster, konzentrische Radien, Fokusring | `base.css` hat in Etappe 1 nur Systemschrift, `tabular-nums` und `--radius-card` 26 px. Die Textstile aus GLAS-DESIGN §4.2 kommen mit den Bausteinen, die sie tragen: großer Titel, Seitenleiste und Tab-Leiste in Etappe 2, Sheet-Titel und Listenzeilen in Etappe 3, Kartentitel über der Karte und die Übersicht in Etappe 4, die übrigen Seiten in Etappe 5. Abstände und Innenradien ebenso (K7), Fokusring siehe §3.12 | GLAS-DESIGN §4.2 ordnet jeden Stil einem Einsatzort zu, und die meisten Orte entstehen erst mit den neuen Bausteinen. Auf die heutigen Klassen gelegt hätte z. B. Body 17 px die Kacheln und Zeilen von Klassisch-Layouts gesprengt; nur als Variablen angelegt hätte die Skala nichts sichtbar geändert. Nachgetragen am 2026-10-06 nach dem Vergleich mit der Skizze, vorher stand die Lücke hier nicht |
 
 ---
 
@@ -300,6 +301,8 @@ V3) · Verwaltet-Hinweis/gesperrte Felder (S9) · Export/Import (S14) · „Was 
   kräftiger. Voll wirksam ab Etappe 2.
 - Akzent: Hero-Verläufe und der Bogen der Rollladen-Karte noch in Ink (K6).
 - Konzentrische Innenradien (GLAS-DESIGN §5.2) für Kacheln und Listen in Karten (K7).
+- Textstile der iOS-Skala (GLAS-DESIGN §4.2) und Abstände im 8-pt-Raster: je Baustein ab Etappe 2 (K19). Bis dahin
+  haben alle Texte die Größen von Klassisch, nur in Systemschrift.
 - Kontrast-Audit über alle Seiten (GLAS-PLAN §5.4) mit Etappe 2. Bekannt: fünf Stellen mit fest weißer Schrift auf
   `--danger`/`--info` (Fehler-Banner, Mitteilungs-Zähler, Bewegungs-Abzeichen der Kamera, Gefahr-Knopf,
   Abspielknopf der Medienkarte) haben in Glas dunkel 2,8:1 — in Klassisch dunkel heute 2,2–3,0:1, in Glas hell 5,4–5,6:1.

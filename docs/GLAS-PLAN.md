@@ -9,7 +9,7 @@
 |---|---|
 | `docs/GLAS-DESIGN.md` | Designsystem Glas (Farben, Typo, Material, Bewegung, Komponenten-Anatomie) — separat geschrieben, **maßgeblich für das Aussehen** |
 | `docs/GLAS-PLAN.md` | dieses Dokument: Architektur, Etappen, Abnahme, Tests, Risiken |
-| `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K18 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
+| `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K19 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
@@ -542,7 +542,7 @@ Details: [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §2.
 
 **Stand 2026-10-06: umgesetzt, PR offen (Merge erst mit OK des Users).** Abweichungen von diesem Abschnitt — kein
 Geräte-Schalter für Stil und Transparenz (E1/E2), kein `GlasRuntime`, `--accent` als Ink mit Akzent-Flächen in
-`styles/glas/accent.css` u. a. — mit Gründen in [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §1 (K1–K18); was
+`styles/glas/accent.css` u. a. — mit Gründen in [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §1 (K1–K19); was
 bewusst offen bleibt: dort §3.12, Laborprüfungen §6, Randnotiz Energie-Karte §5 (Entscheidung des Users offen).
 
 Umfang: §1 komplett. `glasTokens.ts` (+ Tests), `glasAppearance.ts` (+ Tests), Store-Felder + Scope + Migration,
