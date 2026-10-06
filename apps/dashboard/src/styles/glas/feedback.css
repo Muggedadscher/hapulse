@@ -190,6 +190,14 @@
   }
 }
 
+/* from 600 px as wide as the tab bar below and centred like it (K33) */
+@media (min-width: 600px) and (max-width: 899px) {
+  :root[data-style='glas'] .toaster {
+    max-width: 560px;
+    margin-inline: auto;
+  }
+}
+
 /* ======================================================================= Desktop and iPad landscape */
 @media (min-width: 900px) {
   /* centred over the content beside the panel */

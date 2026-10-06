@@ -341,7 +341,8 @@
     color: var(--g-label);
   }
 
-  /* active: the lens (GlasNavGroups) instead of a fill; symbol in ink */
+  /* active: the lens (GlasNavGroups) instead of a fill; symbol in the ink made for the lens, as in the tab bar
+     (plan U13: for orange the same as accentInk, with other accents accentInk can drop to 3.7:1 on the lens) */
   :root[data-style='glas'] .sidebar-nav__item--active,
   :root[data-style='glas'] .sidebar-nav__item--active:hover {
     background: transparent;
@@ -350,7 +351,7 @@
   }
 
   :root[data-style='glas'] .sidebar-nav__item--active .sidebar-nav__icon {
-    color: var(--g-accent-ink);
+    color: var(--g-tab-ink);
   }
 
   :root[data-style='glas'] .sidebar-nav__item:focus-visible {
@@ -823,8 +824,10 @@
     scale: none;
   }
 
-  :root[data-style='glas'] :is(.g-avatar__btn, .g-back, .g-done, .g-edit-capsule):active,
-  :root[data-style='glas'] .header-cluster .notifications-wrap:active {
+  /* the avatar dims its children: opacity on the button would cut its glass off from the page */
+  :root[data-style='glas'] :is(.g-back, .g-done, .g-edit-capsule):active,
+  :root[data-style='glas'] .header-cluster .notifications-wrap:active,
+  :root[data-style='glas'] .g-avatar__btn:active > * {
     opacity: 0.6;
   }
 

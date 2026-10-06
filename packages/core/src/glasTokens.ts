@@ -738,8 +738,9 @@ function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a
       const side = glassOver(back, mode, t('sidebar'));
       const menu = glassOver(back, mode, t('menu'));
       pairs.push({ name: `tabInk on lens over tab bar over ${back}`, fg: a.tabInk, bg: compositeOver(c.lens, tab), min: 4.5 });
-      pairs.push({ name: `tabInk on lens over sidebar over ${back}`, fg: a.tabInk, bg: compositeOver(c.lens, side), min: 4.5 });
+      pairs.push({ name: `tabInk (active symbol) on lens over sidebar over ${back}`, fg: a.tabInk, bg: compositeOver(c.lens, side), min: 4.5 });
       pairs.push({ name: `accent ink ("dismiss all") on menu glass over ${back}`, fg: a.accentInk, bg: menu, min: 4.5 });
+      pairs.push({ name: `accent ink (current row, "on" symbol) on sheet over ${back}`, fg: a.accentInk, bg: sheetOver(back, mode), min: 4.5 });
       pairs.push({ name: `redInk on desktop toast over ${back}`, fg: c.redInk, bg: glassOver(back, mode, t('toastDesktop')), min: 4.5 });
       pairs.push({ name: `focus ring on glass over ${back}`, fg: a.focus, bg: glassOver(back, mode, GLAS_TINT[strength]), min: 3 });
     }

@@ -285,6 +285,15 @@
   }
 }
 
+/* From 600 px (iPad upright, large windows) the bar stays at most 560 wide, centred (K33); the minimised circle sits at
+   its left end. A fixed box with left, right and max-width centres itself with auto margins. */
+@media (min-width: 600px) and (max-width: 899px) {
+  :root[data-style='glas'] .app-tabs {
+    max-width: 560px;
+    margin-inline: auto;
+  }
+}
+
 /* Reduced motion (GLAS-DESIGN §6.4, plan K38): the bar and the lens switch at once (upstream's global rule already
    shortens every duration), no flex on press, no pop, no stretch; a pressed entry dims instead. */
 @media (max-width: 899px) and (prefers-reduced-motion: reduce) {

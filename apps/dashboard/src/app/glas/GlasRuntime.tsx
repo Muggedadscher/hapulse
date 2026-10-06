@@ -24,6 +24,7 @@ import {
   hasEdge,
   navEntryFor,
   nextTabsMin,
+  roomIdOf,
   titleY,
   type TabsMinState,
 } from './glasScroll';
@@ -236,6 +237,8 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
       const r = el.getBoundingClientRect();
       el.style.setProperty('--gx', `${Math.round(e.clientX - r.left)}px`);
       el.style.setProperty('--gy', `${Math.round(e.clientY - r.top)}px`);
+      // surfaces that come and go with the route (avatar, back, edit capsule) are not kept after they left the page
+      for (const old of touched) if (!old.isConnected) touched.delete(old);
       touched.add(el);
     };
     document.addEventListener('pointerdown', onDown, { capture: true, passive: true });
@@ -250,7 +253,7 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
 
   const showEdge = hasEdge(pathname);
   const entry = navEntryFor(pathname, nav);
-  const roomId = pathname.startsWith('/room/') ? decodeURIComponent(pathname.slice('/room/'.length).split('/')[0] ?? '') : null;
+  const roomId = roomIdOf(pathname);
   const title = edgeTitle({
     pathname,
     navLabel: entry ? t(entry.labelKey) : null,

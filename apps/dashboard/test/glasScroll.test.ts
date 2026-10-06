@@ -8,6 +8,7 @@ import {
   navEntryFor,
   nextTabsMin,
   pathIn,
+  roomIdOf,
   tabMinGeometry,
   titleY,
   type TabsMinState,
@@ -197,6 +198,16 @@ describe('route helpers', () => {
     expect(hasEdge('/nvr/')).toBe(true);
     expect(hasEdge('/nvr/front')).toBe(false);
     expect(hasEdge('/room/kitchen')).toBe(true);
+  });
+
+  it('roomIdOf: decoded id on room pages, a malformed escape as typed, null elsewhere', () => {
+    expect(roomIdOf('/room/kitchen')).toBe('kitchen');
+    expect(roomIdOf('/room/k%C3%BCche/x')).toBe('küche');
+    expect(roomIdOf('/room/50%')).toBe('50%');
+    expect(roomIdOf('/room/%E0%A4')).toBe('%E0%A4');
+    expect(roomIdOf('/room/')).toBe('');
+    expect(roomIdOf('/rooms')).toBeNull();
+    expect(roomIdOf('/')).toBeNull();
   });
 
   it('edgeTitle: room name on a room page, nav label elsewhere, else the h1', () => {

@@ -106,6 +106,18 @@ export function hasEdge(pathname: string): boolean {
   return !/^\/nvr\/[^/]+/.test(pathname);
 }
 
+/** The room id of a `/room/<id>` path, decoded like the router does: a malformed escape (`/room/50%`, a hand-edited
+ * link) stays as typed instead of throwing while the frame renders. `null` off room pages. */
+export function roomIdOf(pathname: string): string | null {
+  if (!pathname.startsWith('/room/')) return null;
+  const raw = pathname.slice('/room/'.length).split('/')[0] ?? '';
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 export interface EdgeTitleInput {
   pathname: string;
   /** label of the nav entry of the route (`navEntryFor`), if any */
