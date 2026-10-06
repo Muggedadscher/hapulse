@@ -572,9 +572,10 @@ Nicht verlieren (2026-10-06, alles noch da, in beiden Stilen):
 
 ### Etappe 2 — Rahmen (Shell) Handy + Desktop
 
-**Stand 2026-10-06: umgesetzt, PR offen.** Gemergt wird erst mit OK des Users und nach dem Labor-Pflichtpunkt K39
-(Statusleiste der Home-Bildschirm-App). Plan, Festlegungen K20–K44, Abweichungen der Umsetzung U1–U13, Prüfungen und
-Laborpunkte: [`glas/PLAN-ETAPPE-2.md`](glas/PLAN-ETAPPE-2.md) (§1, §11, §9).
+**Stand 2026-10-06: umgesetzt, gemergt (PR #104).** Der User hat den Merge vor dem Labor-Pflichtpunkt K39
+(Statusleiste der Home-Bildschirm-App) freigegeben; der Punkt ist offen und betrifft nur die Glas-Vorschau für Admins.
+Plan, Festlegungen K20–K44, Abweichungen der Umsetzung U1–U13, Prüfungen, Review und Laborpunkte:
+[`glas/PLAN-ETAPPE-2.md`](glas/PLAN-ETAPPE-2.md) (§1, §11, §9).
 
 Umfang: 2.6–2.10, 2.18; Seitenleiste als Glas-Panel mit Gruppen, Status-Pille, Einklappen mit Feder; Kopf-Kapseln
 Desktop; schwebende Tab-Leiste mit Minimieren; Mehr- und Räume-Menü als Glas-Sheet-Look (sie sind keine `Modal`s →
@@ -582,22 +583,26 @@ CSS + Linse); großer Titel/Scroll-Kante; Avatar-Menü + Wetterzeile am Handy; B
 Fehlerkarte, Seiten-Platzhalter in Glas.
 
 Abnahme:
-- [ ] Handy: Tab-Leiste minimiert beim Runterscrollen, erweitert beim Hochscrollen, kein Zittern beim Gummiband.
-- [ ] Desktop: Gruppen-Überschriften, Einklappen zur 72-px-Leiste mit Tooltips, Bearbeiten-Kapsel auf allen
+- [x] Handy: Tab-Leiste minimiert beim Runterscrollen, erweitert beim Hochscrollen, kein Zittern beim Gummiband
+      (Gummiband nur im Unit-Test; am Gerät im Labor).
+- [x] Desktop: Gruppen-Überschriften, Einklappen zur 72-px-Leiste mit Tooltips, Bearbeiten-Kapsel auf allen
       bearbeitbaren Seiten.
-- [ ] ≤ 3 Glasflächen in Ruhe (Seitenleiste/Tab-Leiste, Kopf-Kapseln, ggf. Sheet), kein Glas auf Glas.
-- [ ] Tastatur: Tab-Reihenfolge, Fokusring, Esc schließt Räume-/Mehr-Menü und Avatar-Menü, Fokus kehrt zurück.
+- [x] ≤ 3 Glasflächen in Ruhe (Seitenleiste/Tab-Leiste, Kopf-Kapseln, ggf. Sheet), kein Glas auf Glas.
+- [x] Tastatur: Tab-Reihenfolge, Fokusring, Esc schließt Räume-/Mehr-Menü und Avatar-Menü, Fokus kehrt zurück.
 
 Nicht verlieren (Inventar A, B17, D8):
-- [ ] Logo + Wortmarke (A2) · Einklappen gespeichert pro Gerät (A3) · Nav-Reihenfolge inkl. NVR/Pool-Migration (A4)
-- [ ] **Räume = Popover/Sheet, keine Seite** (A5, A6) · Nav-Bearbeiten: Ziehen + Auge, Übersicht/Einstellungen nicht
+- [x] Logo + Wortmarke (A2) · Einklappen gespeichert pro Gerät (A3) · Nav-Reihenfolge inkl. NVR/Pool-Migration (A4)
+- [x] **Räume = Popover/Sheet, keine Seite** (A5, A6) · Nav-Bearbeiten: Ziehen + Auge, Übersicht/Einstellungen nicht
       ausblendbar (A7) · Status-Pille mit allen Zuständen + Schwellen, versteckt wenn System ausgeblendet (A8)
-- [ ] Tab-Leiste: erste vier sichtbare + Mehr; ≤ 5 → alle (A9) · Mehr-Sheet schließt bei Außenklick/Esc/Routenwechsel (A10)
-- [ ] Kopf: Zurück auf Raumseiten (A12), Chips auf **jeder** Route (A11, A17), Wetter-Pille → Wetter-Modal (A13)
-- [ ] Mitteilungen: Live-Abo, Zähler „9+“, Verwerfen, „Alle verwerfen“, Leerzustand (A14)
-- [ ] Avatar: Bild/Initiale; Tipp → Einstellungen bzw. SaaS-Kontomenü (A15) · Handy-Kopfaktionen auf allen Seiten (A16)
-- [ ] Verbindungsbanner beide Zustände (A18) · Boot-Laden (A19) · Fehlerkarte (A20) · Chunk-Reload (A21)
-- [ ] Toasts: über der Tab-Leiste, max. 3, keine Dubletten, 6 s, × (A24) · „Was ist neu“-Host (A26)
+- [x] Tab-Leiste: erste vier sichtbare + Mehr; ≤ 5 → alle (A9) · Mehr-Sheet schließt bei Außenklick/Esc/Routenwechsel (A10)
+- [x] Kopf: Zurück auf Raumseiten (A12), Chips auf **jeder** Route (A11, A17), Wetter-Pille → Wetter-Modal (A13)
+- [x] Mitteilungen: Live-Abo, Zähler „9+“, Verwerfen, „Alle verwerfen“, Leerzustand (A14)
+- [x] Avatar: Bild/Initiale; Tipp → Einstellungen bzw. SaaS-Kontomenü (A15) · Handy-Kopfaktionen auf allen Seiten (A16)
+- [x] Verbindungsbanner beide Zustände (A18) · Boot-Laden (A19) · Fehlerkarte (A20) · Chunk-Reload (A21)
+- [x] Toasts: über der Tab-Leiste, max. 3, keine Dubletten, 6 s, × (A24) · „Was ist neu“-Host (A26)
+
+Nicht eigens im Bild geprüft: Status-Pille (der Demo-Modus zeigt einen Zustand), Boot, Fehlerkarte, Chunk-Reload (nur
+Tokens) und das Host-Menü im Avatar-Menü (PLAN-ETAPPE-2 §11.4).
 
 ### Etappe 3 — Sheets, Dialoge, Gesten
 

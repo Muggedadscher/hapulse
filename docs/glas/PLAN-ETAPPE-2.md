@@ -1,7 +1,7 @@
 # Glas — konkreter Umsetzungsplan Etappe 2 (Rahmen)
 
 Stand 2026-10-06, nach dem unabhängigen Review (Befunde und Umgang damit in §10). Basis ist Etappe 1, gemergt mit
-PR #103 (2026-10-06); Etappe 2 ist umgesetzt und hat einen eigenen PR. Was dabei vom Plan abweicht, was geprüft ist und
+PR #103 (2026-10-06); Etappe 2 ist umgesetzt und mit PR #104 gemergt. Was dabei vom Plan abweicht, was geprüft ist und
 was offen bleibt, steht in §11. Dieser Plan macht [`../GLAS-PLAN.md`](../GLAS-PLAN.md) §2.6–2.10,
 §2.18 und §3 „Etappe 2“ am echten Code fest. Maßgeblich bleiben GLAS-PLAN §7.3 (Entscheidungen des Users),
 [`../GLAS-DESIGN.md`](../GLAS-DESIGN.md) für alle Werte und [`PLAN-ETAPPE-0-1.md`](PLAN-ETAPPE-0-1.md) K1–K19; wo
@@ -12,7 +12,7 @@ Entscheidung des Users (2026-10-06): Reihenfolge **wie geplant** — Etappe 2 br
 
 Etappe 2 ändert nur Aussehen und Bewegung des Rahmens (Seitenleiste, Kopf, Tab-Leiste, Menüs, Seitentitel, Banner,
 Toasts). **Klassisch bleibt pixelgleich**, alle Funktionen bleiben (Inventar A, B17, D8). Der PR wird nicht ohne
-Zustimmung des Users gemergt (Merge = Live-Deploy).
+Zustimmung des Users gemergt (Merge = Live-Deploy); der User hat ihn vor dem Labor-Pflichtpunkt K39 freigegeben (§11.4).
 
 ---
 
@@ -398,21 +398,22 @@ Klassisch: jede Stelle rendert dort exakt das Heutige (`null`, gleiche Props, gl
 
 ### 6.4 Abnahme (GLAS-PLAN §3 Etappe 2, ergänzt)
 
-- [ ] Handy: Tab-Leiste minimiert beim Runterscrollen, klappt beim Hochscrollen und am Seitenende aus, kein Zittern beim
+- [x] Handy: Tab-Leiste minimiert beim Runterscrollen, klappt beim Hochscrollen und am Seitenende aus, kein Zittern beim
       Gummiband; minimiert ein runder Kreis bei jeder Breite; Linse gleitet; „Mehr“ markiert auf Mehr-Seiten.
-- [ ] Handy: großer Titel klappt in die Kante ein, kleiner Titel erscheint; Wetterzeile öffnet das Wetter-Fenster.
-- [ ] Handy: Avatar-Menü mit Benachrichtigungen, Bearbeiten (nur wo es geht) und Einstellungen bzw. Host-Menü; roter
-      Punkt; „Fertig“ beendet den Modus auf jeder Seite.
-- [ ] Desktop: Gruppen, Einklappen zur 72-px-Leiste mit Tooltips, Bearbeiten-Kapsel auf allen bearbeitbaren Seiten,
+      (Gummiband nur im Unit-Test, am Gerät im Labor, §11.4)
+- [x] Handy: großer Titel klappt in die Kante ein, kleiner Titel erscheint; Wetterzeile öffnet das Wetter-Fenster.
+- [x] Handy: Avatar-Menü mit Benachrichtigungen, Bearbeiten (nur wo es geht) und Einstellungen bzw. Host-Menü; roter
+      Punkt; „Fertig“ beendet den Modus auf jeder Seite. (Host-Menü nur im Code, §11.4)
+- [x] Desktop: Gruppen, Einklappen zur 72-px-Leiste mit Tooltips, Bearbeiten-Kapsel auf allen bearbeitbaren Seiten,
       „Fertig“ immer bei Modus an; Kopf bündig mit dem Inhalt; Kante ab 8 px.
-- [ ] ≤ 3 Glasflächen in Ruhe, kein Glas auf Glas, Trefferflächen ≥ 44, Klassisch 0 Pixel Unterschied.
-- [ ] Tastatur: Tab-Reihenfolge, Fokusring `--g-focus`, Pfeiltasten in allen Menüs, Esc schließt Räume-, Mehr-,
+- [x] ≤ 3 Glasflächen in Ruhe, kein Glas auf Glas, Trefferflächen ≥ 44, Klassisch 0 Pixel Unterschied.
+- [x] Tastatur: Tab-Reihenfolge, Fokusring `--g-focus`, Pfeiltasten in allen Menüs, Esc schließt Räume-, Mehr-,
       Avatar-Menü und Popover, Fokus kehrt zurück.
-- [ ] Labor (§9): Statusleiste der Home-Bildschirm-App verdeckt nichts (K39).
-- [ ] Nicht verlieren: A1–A26 (u. a. Logo/Wortmarke, Einklappen pro Gerät, Nav-Reihenfolge, Räume als Popover/Sheet,
+- [ ] Labor (§9): Statusleiste der Home-Bildschirm-App verdeckt nichts (K39). Offen, Merge vorher freigegeben (§11.4).
+- [x] Nicht verlieren: A1–A26 (u. a. Logo/Wortmarke, Einklappen pro Gerät, Nav-Reihenfolge, Räume als Popover/Sheet,
       Nav-Bearbeiten, Status-Pille, Tab-Leiste 4 + Mehr, Kopf mit Zurück/Chips/Wetter, Benachrichtigungen, Avatar,
       Kopfaktionen auf allen Seiten, Banner, Boot, Fehlerkarte, Chunk-Reload, Toasts, „Was ist neu“), B17 (Chips
-      bearbeiten auf der Übersicht), D8 (Nav-Bearbeiten).
+      bearbeiten auf der Übersicht), D8 (Nav-Bearbeiten). (Status-Pille, Boot und Fehlerkarte nicht eigens im Bild, §11.4)
 
 ### 6.5 Changelog und Doku
 
@@ -455,11 +456,11 @@ Detail, Schalter, Segmente: Etappe 5. Kameraseite: Etappe 6. `viewport-fit=cover
 
 ## 9. Labor (zusätzlich zu PLAN-ETAPPE-0-1 §6)
 
-Echtes iPhone/iPad (WebKit): **Pflicht vor dem Merge:** Home-Bildschirm-App oben (Statusleiste über Avatar, Zurück,
-„Fertig“, Banner und Kante? K39) und unten (schwebende Leiste mit Safe Area). Außerdem: Gummiband oben/unten ohne
-Flattern, dynamische Safari-Leisten mit fixierten Elementen, `-webkit-backdrop-filter` an Seitenleiste und Kapseln,
-`:has()`-Scrim, minimierte Leiste als Kreis, Seitenleiste mit dem Finger (Trefferflächen), Leistung beim Scrollen und
-Einklappen.
+Echtes iPhone/iPad (WebKit): **Pflicht vor dem Merge** (der User hat den Merge vorher freigegeben, offen, §11.4):
+Home-Bildschirm-App oben (Statusleiste über Avatar, Zurück, „Fertig“, Banner und Kante? K39) und unten (schwebende
+Leiste mit Safe Area). Außerdem: Gummiband oben/unten ohne Flattern, dynamische Safari-Leisten mit fixierten
+Elementen, `-webkit-backdrop-filter` an Seitenleiste und Kapseln, `:has()`-Scrim, minimierte Leiste als Kreis,
+Seitenleiste mit dem Finger (Trefferflächen), Leistung beim Scrollen und Einklappen.
 
 ---
 
@@ -503,7 +504,7 @@ und Tönungs-Schlüssel gibt es; die `[fork]`-Stellen rendern in Klassisch unver
 ## 11. Umsetzung (Stand 2026-10-06)
 
 Etappe 2 ist nach diesem Plan gebaut. Was abweicht, steht in §11.1, was der Plan offen ließ, in §11.2, die Prüfungen
-in §11.3, Grenzen und offene Punkte in §11.4.
+in §11.3, Grenzen und offene Punkte in §11.4, das Review des PR in §11.5.
 
 ### 11.1 Abweichungen vom Plan
 
@@ -521,7 +522,7 @@ in §11.3, Grenzen und offene Punkte in §11.4.
 | U10 | §3.4, §4.3 Kante | der Blur liegt auf `.g-edge::before`, das auch die Deckkraft trägt; `.g-edge` bleibt deckend | Ein Element mit Deckkraft unter 1 ist Backdrop-Root, der Blur sähe die Seite dahinter nicht |
 | U11 | §3.2 Abdunklung hinter dem Avatar-Menü „+ `blur(10px)`“ | bei `data-glass="opaque"` (Deckend, „Transparenz reduzieren“, mehr Kontrast) ohne Blur | GLAS-DESIGN §3.7: deckend heißt nirgends `backdrop-filter`; `checks` prüft es mit offenem Menü |
 | U12 | K29 Schatten `--g-shadow-{menu,popover,banner,toast,prominent}` | zusätzlich `--g-shadow-chip` (Chips am Desktop) | Wert aus `glas-tokens.json` `elevation.light.chipDesktop` statt im CSS |
-| U13 | §4.1 Seitenleiste „aktiv = Linse + Symbol `accentInk`“ (GLAS-DESIGN §7.2) | aktives Symbol in `tab-ink`, der Ink für die Linse (wie die Tab-Leiste) | Für Orange sind beide gleich. Bei anderen Akzenten hat `accentInk` auf der Linse über dem Seitenleisten-Glas bis hinunter zu 3,66 : 1 (dunkel, getönt, Farbton 267); `tab-ink` hat dort überall ≥ 4,5 : 1, und das Kontrastpaar prüft jetzt, was gezeichnet wird (Befund 3 des Reviews, §11.3) |
+| U13 | §4.1 Seitenleiste „aktiv = Linse + Symbol `accentInk`“ (GLAS-DESIGN §7.2) | aktives Symbol in `tab-ink`, der Ink für die Linse (wie die Tab-Leiste) | Für Orange sind beide gleich. Bei anderen Akzenten hat `accentInk` auf der Linse über dem Seitenleisten-Glas bis hinunter zu 3,66 : 1 (dunkel, getönt, Farbton 267); `tab-ink` hat dort überall ≥ 4,5 : 1, und das Kontrastpaar prüft jetzt, was gezeichnet wird (Befund 3 des Reviews, §11.5) |
 
 ### 11.2 Was der Plan offen ließ
 
@@ -536,3 +537,57 @@ in §11.3, Grenzen und offene Punkte in §11.4.
   (bei 820 px also 130 px vom Rand). Die Toasts darüber haben dieselbe Breite, damit sie bündig bleiben.
 - **Tastatur:** `GlasRuntime` rendert vor `.app-content`; im Bearbeiten-Modus ist „Fertig“ am Handy deshalb der erste
   Tab-Halt.
+
+### 11.3 Prüfungen
+
+Alles in Chromium (Playwright) im HA-Demo-Modus, am Stand des PR.
+
+- **Pflichtbefehle:** `typecheck`, `build` und `lint` ohne Fehler; `@hapulse/core` 549 Prüfungen und
+  `@hapulse/dashboard` 165 Tests in 21 Dateien grün.
+- **`glas-shots.cjs checks`:** die Prüfungen aus Etappe 1 (`--part stage1`) und alle 13 Rahmen-Prüfungen
+  (`--part frame`) grün; die Lage-, Ebenen- und Glasflächen-Prüfung läuft über 39 Kombinationen aus Route und Breite.
+- **Klassisch:** die volle Matrix (136 Bilder) gegen `main`: 130 pixelgleich, 6 Bilder der Einstellungen mit dem
+  erwarteten Unterschied (Fuß „F32“ statt „F31“). Zwei Läufe desselben Builds sind pixelgleich, seit vor jedem Bild
+  frisch gerastert wird (`repaint`); vorher wichen einzelne Klassisch-Bilder auch auf `main` von Lauf zu Lauf ab.
+- **Nicht verlieren, im Browser durchgeklickt (beide Stile):** Einklappen bleibt nach dem Neuladen (A3), Mehr schließt
+  bei Außenklick, Esc und Routenwechsel (A10), Wetterzeile bzw. Wetter-Pille öffnen „Wetter“ (A13), Benachrichtigungen
+  mit Zähler, einzeln und alle verwerfen, Leerzustand, Punkt weg (A14); keine Seitenfehler.
+- **Klick-Fuzz** in Glas: Handy 298 und Desktop 265 Klicks auf 13 Seiten, ohne Fehler. In Glas verlässt der Fuzz
+  den Bearbeiten-Modus früher als in Klassisch (am Desktop folgt auf die Kapsel der Avatar-Link zu den Einstellungen,
+  am Handy liegt „Bearbeiten“ im Avatar-Menü). Deshalb lief er auf den acht Seiten mit Bearbeiten-Modus ein zweites Mal
+  mit eingeschaltetem Modus: Handy 339 und Desktop 358 Klicks, ohne Fehler.
+- **Kontrast:** alle Paare aus `frameContrastPairs` erreichen ihren Mindestwert (`smoke.mjs`); für Befund 3 einmalig
+  alle Farbtöne 0–359 in hell und dunkel, klar und getönt.
+
+### 11.4 Grenzen und offen
+
+- **K39 ist offen.** Der User hat den Merge vor dem Labor freigegeben (2026-10-06). Ob die Statusleiste der
+  Home-Bildschirm-App Avatar, Zurück, „Fertig“, Banner oder Kante verdeckt, zeigt erst ein echtes iPhone. Betroffen wäre
+  nur die Glas-Vorschau, die nur Admins einschalten. Fällt das Labor rot aus, kommt `viewport-fit=cover` als eigener
+  Schritt (§7, Punkt 7).
+- **Übrige Laborpunkte (§9):** Material in WebKit (`-webkit-backdrop-filter`), Gummiband am echten Gerät (Chromium hat
+  keins; geprüft nur in `glasScroll.test.ts`), dynamische Safari-Leisten, Leistung auf dem iPad (E17), Kameraseite mit
+  echten Kameras (§7, Punkt 2).
+- **Status-Pille:** der Demo-Modus zeigt nur einen Zustand; die anderen sind über das CSS und das Kontrastpaar
+  `glyphDark` geprüft, nicht im Bild.
+- **Host-Menü (SaaS) im Avatar-Menü:** nur im Code geprüft, der Demo-Modus hat keinen Host.
+- **Boot-Anzeige, Fehlerkarte, Chunk-Reload:** lesen nur die Tokens, Markup unverändert (§5.5); nicht eigens im Bild.
+- **`EditToggle` mit Text** trägt `aria-pressed` und wechselt die Beschriftung („Bearbeiten“/„Fertig“) wie Upstreams
+  Symbol-Variante; ein Screenreader sagt dann „Fertig, gedrückt“. Bleibt wie Upstream (Befund 8).
+- Was Etappe 3 und später übernehmen, steht in §8.
+
+### 11.5 Review des PR (2026-10-06)
+
+Ein unabhängiger Prüfer hat den Stand `ed0c980` gegen Plan und Code gelesen: keine Blocker, zwei Befunde zum Beheben,
+sechs kleinere. Alle am Code nachgeprüft; behoben in `a4d8747`, außer Befund 8.
+
+| # | Befund | Erledigt |
+|---|---|---|
+| 1 | K33 fehlte: ab 600 px war die Tab-Leiste so breit wie der Bildschirm (iPad hochkant 788 px) | höchstens 560 und mittig, die Toasts darüber gleich breit; `checks` misst auch 820 px (§11.2) |
+| 2 | Eine kaputte Adresse (`/room/50%`) warf in Glas beim Rendern, die App blieb leer | `roomIdOf` mit try/catch, Test |
+| 3 | Das Kontrastpaar prüfte `tab-ink`, gezeichnet wurde `accentInk` (bis 3,66 : 1) | Symbol in `tab-ink` (U13), Paar umbenannt; neues Paar `accentInk` auf Sheet-Material |
+| 4 | Reduzierte Bewegung: Deckkraft auf dem gedrückten Avatar-Knopf machte ihn zum Backdrop-Root seines Glases | der Knopf dimmt seine Kinder |
+| 5 | Der Glanz hielt entfernte Flächen fest | bei jedem Druck aufgeräumt |
+| 6 | Doku: §11.3 und §11.4 fehlten, F32-Titel, U12-Schlüssel, K33 | nachgezogen |
+| 7 | Lücken in `checks`: Prüfung 12 bewegte die Linse nicht, Prüfung 5 prüfte nicht, wo der Tipp landet, die Reste-Suche kannte `--gx`/`--gy` nicht, Prüfung 10 ließ Benachrichtigungen und Räume am Handy aus | geschlossen; Prüfung 12 mit Gegenprobe ohne reduzierte Bewegung |
+| 8 | `EditToggle` mit Text: `aria-pressed` zusammen mit wechselnder Beschriftung | bleibt wie Upstream (§11.4) |
