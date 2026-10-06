@@ -45,7 +45,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const W = MOBILE ? 390 : 1280, H = MOBILE ? 844 : 900;
   await cmd('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: MOBILE ? 3 : 1, mobile: MOBILE, screenWidth: W, screenHeight: H });
   if (MOBILE) await cmd('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
-  const settings = { state: { theme: 'aurora', mode: 'light', lastSeenVersion: '99.0.0', customization: { scryptedUrl: NVR, scryptedToken: TOKEN } }, version: 0 };
+  const settings = { state: { theme: 'aurora', mode: 'light', lastSeenVersion: '99.0.0', lastSeenFork: 99, customization: { scryptedUrl: NVR, scryptedToken: TOKEN } }, version: 0 };
   await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',${JSON.stringify(JSON.stringify(settings))});sessionStorage.setItem('__seeded','1');}window.__dl=[];const _c=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download){window.__dl.push(this.download);if(/\\.jpe?g$/i.test(this.download))return;}return _c.call(this);};` });
   const steps = [];
   const step = (name, ok, info) => steps.push({ name, ok: !!ok, ...(info !== undefined ? { info } : {}) });
