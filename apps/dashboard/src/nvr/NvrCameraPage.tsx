@@ -20,6 +20,7 @@ import { useNvrOverview } from './store';
 import { DatePickerModal } from './components/DatePickerModal';
 import { NvrUi } from './ui';
 import { NVR_ROOT } from './paths';
+import { useFitAboveTabs } from './useFitAboveTabs';
 import './nvr.css';
 
 /** Build id from vite.config.ts (`define`); undefined outside a vite build (vitest). */
@@ -42,6 +43,9 @@ export function NvrCameraPage() {
   const name = cam?.name || camId;
   const startAt = q.get('at') ? Number(q.get('at')) : 0;
   const posterTs = q.get('ev') ? Number(q.get('ev')) : 0;
+  // phones: the body ends above the tab bar (HAPulse's summary chips sit above the page, see useFitAboveTabs)
+  const [pageEl, setPageEl] = React.useState<HTMLDivElement | null>(null);
+  useFitAboveTabs(pageEl);
 
   if (!cfg) {
     return (
@@ -55,7 +59,7 @@ export function NvrCameraPage() {
   const openLink = (at: number | undefined) => sentinelTimelineLink(cfg.origin, camId, at);
   return (
     <NvrUi client={cfg.client}>
-      <div className="page nvr-page">
+      <div className="page nvr-page" ref={setPageEl}>
         <CameraPage
           camId={camId} name={name} earliest={stats?.earliest} startAt={startAt} posterTs={posterTs}
           storagePrefix="hapulse-nvr-ar-" // keep the aspect cache key this install already uses

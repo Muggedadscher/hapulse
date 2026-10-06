@@ -144,3 +144,20 @@
 .nvr-select__native { appearance: none; -webkit-appearance: none; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 0.5rem 2rem 0.5rem 0.875rem; font-family: var(--font-body); font-size: 0.875rem; color: var(--text); cursor: pointer; max-width: 200px; }
 .nvr-select__native:focus { outline: none; border-color: var(--accent); }
 .nvr-select__chevron { position: absolute; right: 0.75rem; pointer-events: none; color: var(--text-faint); }
+
+/* ---- Camera page on phones: end above the tab bar ------------------------------------------------------------
+   The package sizes `.nvr-cam__body` for Sentinel's own page; here the summary chips sit above it as well, so the
+   body ran under the tab bar. useFitAboveTabs measures the room down to the bar (safe area included) into
+   `--nvr-cam-h`. The floor keeps a minimal picture plus its controls and a usable timeline; below it the page
+   scrolls (phone in landscape) instead of crushing the timeline. */
+@media (max-width: 899px) {
+  .nvr-page--fit .nvr-cam__body {
+    height: var(--nvr-cam-h);
+    min-height: 27rem;
+  }
+  /* a short screen (in-app Safari) would leave the timeline a sliver beside a full-width picture: the picture yields
+     first, down to 12rem, so ~15rem stay for its bar, tabs, filters and the timeline (clip mode keeps its own size) */
+  .nvr-page--fit .nvr-cam__body:not(.nvr-cam__body--clip) {
+    --stage-maxh: max(12rem, min(46vh, var(--nvr-cam-h) - 15rem));
+  }
+}

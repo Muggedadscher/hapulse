@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 29,
+    date: '2026-10-06',
+    title: { de: 'NVR: Kameraseite passt aufs Handy', en: 'NVR: camera page fits the phone' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'NVR: Auf dem Handy endet die Kameraseite jetzt über der Tab-Leiste; „Clip erstellen“ und die Datumsauswahl lagen vorher teils dahinter, bei kleinem Bildschirm wird dafür das Bild etwas kleiner',
+            en: 'NVR: On the phone the camera page now ends above the tab bar; “Create clip” and the date picker were partly behind it before, on a small screen the picture gets a little smaller for this',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 28,
     date: '2026-10-06',
     title: { de: 'NVR: Clips herunterladen', en: 'NVR: download clips' },
