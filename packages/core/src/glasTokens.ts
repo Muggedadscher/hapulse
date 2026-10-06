@@ -4,7 +4,8 @@
  * Source of every value: docs/GLAS-DESIGN.md and docs/glas/glas-tokens.json (the colour table below is a verbatim
  * copy of `color`). The dashboard's `theme/glasAppearance.ts` writes `glasCssVars(…)` inline on :root after
  * `applyTheme` — the classic token names (so every existing component looks "Glas" without its own CSS) plus the
- * Glas-own `--g-*` variables. Plan and deviations: docs/glas/PLAN-ETAPPE-0-1.md.
+ * Glas-own `--g-*` variables. Plan and deviations: docs/glas/PLAN-ETAPPE-0-1.md, docs/glas/PLAN-ETAPPE-2.md (frame:
+ * surface tints, sheet material, shadows).
  */
 
 import type { ThemeTokens } from './themes.js';
@@ -221,7 +222,11 @@ export const GLAS_COLORS: Readonly<Record<GlasMode, Readonly<Record<GlasColorKey
 /** `--g-glass-tint` per strength; "opaque" has no tint (solid fill, no blur). */
 export const GLAS_TINT: Readonly<Record<'clear' | 'tinted', number>> = { clear: 0.25, tinted: 0.75 };
 
-/** Minimum tint per surface; effective tint = max(surface, strength) (GLAS-DESIGN §3.4). For stage 2+. */
+/**
+ * Minimum tint per surface; effective tint = max(surface, strength) (GLAS-DESIGN §3.4). `glasCssVars` writes the value
+ * of the current strength as `--g-tint-<surface>` (plan Etappe 2, K28); a surface sets
+ * `--g-surface-tint: var(--g-tint-<surface>)` and the material recipe takes the maximum.
+ */
 export const GLAS_SURFACE_TINT = {
   default: { clear: 0.25, tinted: 0.75 },
   tabBar: { clear: 0.6, tinted: 0.75 },
@@ -242,21 +247,58 @@ interface MaterialSet {
   rgb: string; a0: number; a1: number;
   /** filter = blur(6px + 10px·t) saturate(sat) brightness(bright) */
   sat: string; bright: number;
-  rim: string; shadow: string;
+  rim: string;
+  /**
+   * shadow = `inner, outer` (glas-tokens.json → glass.regular.shadow). The inner part (insets + .5 px hairline) is also
+   * `--g-glass-inner`, which the menu and popover shadows of the elevation table start with.
+   */
+  inner: string; outer: string;
 }
 
 const MATERIAL: Record<GlasMode, MaterialSet> = {
   light: {
     rgb: '255 255 255', a0: 0.3, a1: 0.14, sat: '210%', bright: 1.06,
     rim: 'linear-gradient(135deg, rgba(255,255,255,.95) 0%, rgba(255,255,255,.35) 22%, rgba(255,255,255,.06) 50%, rgba(255,255,255,.30) 78%, rgba(255,255,255,.85) 100%)',
-    shadow: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.6), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.4), inset 0 1px 1.5px rgba(255,255,255,.75), inset 0 -1.5px 3px rgba(255,255,255,.22), inset 0 0 16px rgba(255,255,255,.18), inset 0 -12px 20px -14px rgba(0,0,0,.10), 0 0 0 .5px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14)',
+    inner: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.6), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.4), inset 0 1px 1.5px rgba(255,255,255,.75), inset 0 -1.5px 3px rgba(255,255,255,.22), inset 0 0 16px rgba(255,255,255,.18), inset 0 -12px 20px -14px rgba(0,0,0,.10), 0 0 0 .5px rgba(0,0,0,.10)',
+    outer: '0 1px 2px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14)',
   },
   dark: {
     rgb: '40 40 44', a0: 0.3, a1: 0.2, sat: '180%', bright: 0.9,
     rim: 'linear-gradient(135deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.2) 22%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.17) 78%, rgba(255,255,255,.5) 100%)',
-    shadow: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.32), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.2), inset 0 1px 1.5px rgba(255,255,255,.24), inset 0 0 16px rgba(255,255,255,.05), 0 0 0 .5px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.5)',
+    inner: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.32), inset -1.5px -1.5px 1px -1px rgba(255,255,255,.2), inset 0 1px 1.5px rgba(255,255,255,.24), inset 0 0 16px rgba(255,255,255,.05), 0 0 0 .5px rgba(0,0,0,.55)',
+    outer: '0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.5)',
   },
 };
+
+/**
+ * Sheet material (GLAS-DESIGN §3.4, glas-tokens.json → glass.sheet, verbatim): medium sheets and the phone menus
+ * (avatar menu, More and Rooms). `bottom`/`bright` = the gradient's weaker stop and the filter's brightness, for the
+ * contrast tests. Opaque uses the colour `sheetSolid` without a filter.
+ */
+const SHEET: Record<GlasMode, { fill: string; filter: string; bottom: string; bright: number }> = {
+  light: {
+    fill: 'linear-gradient(180deg, rgba(246,246,250,.86), rgba(242,242,247,.80))',
+    filter: 'blur(28px) saturate(190%) brightness(1.04)',
+    bottom: 'rgba(242,242,247,.80)', bright: 1.04,
+  },
+  dark: {
+    fill: 'linear-gradient(180deg, rgba(36,36,40,.86), rgba(28,28,30,.80))',
+    filter: 'blur(28px) saturate(170%) brightness(.9)',
+    bottom: 'rgba(28,28,30,.80)', bright: 0.9,
+  },
+};
+
+/**
+ * Shadows of the frame (glas-tokens.json → elevation: menuDesktop, popoverDesktop, banner, toastPhone, prominent;
+ * "übrige Schatten wie hell" — the same in both modes, the mode lives in `--g-glass-inner`).
+ */
+export const GLAS_SHADOWS = {
+  menu: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.25)',
+  popover: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.22)',
+  banner: '0 4px 16px rgba(0,0,0,.08)',
+  toast: '0 10px 30px rgba(0,0,0,.25)',
+  prominent: '0 1px 2px rgba(0,0,0,.08), 0 6px 18px rgba(0,0,0,.12)',
+} as const;
 
 const CLEAR = {
   fill: 'rgba(0,0,0,.20)',
@@ -368,6 +410,21 @@ export function glassOver(backdrop: string, mode: GlasMode, tint: number): strin
   return compositeOver(`rgba(${r},${g},${bb},${alpha})`, lit);
 }
 
+/** Like `glassOver` for the sheet material: brightness of its filter, then its weaker gradient stop. */
+export function sheetOver(backdrop: string, mode: GlasMode): string {
+  const s = SHEET[mode];
+  const b = mustParse(backdrop);
+  return compositeOver(s.bottom, toHex({ r: b.r * s.bright, g: b.g * s.bright, b: b.b * s.bright }));
+}
+
+/** `color-mix(in srgb, A p%, B)` of two opaque colours → hex (the banner surfaces); a plain colour is returned as is. */
+export function resolveMix(input: string): string {
+  const m = /^color-mix\(in srgb,\s*([^,]+?)\s+([\d.]+)%,\s*([^,]+?)\s*\)$/.exec(input.trim());
+  if (!m) return toHex(mustParse(input));
+  const a = mustParse(m[1]!), b = mustParse(m[3]!), p = parseFloat(m[2]!) / 100;
+  return toHex({ r: a.r * p + b.r * (1 - p), g: a.g * p + b.g * (1 - p), b: a.b * p + b.b * (1 - p) });
+}
+
 // ---------------------------------------------------------------------------
 // Accent (GLAS-DESIGN §2.3)
 // ---------------------------------------------------------------------------
@@ -390,6 +447,24 @@ export interface GlasAccent {
 
 const NEUTRAL_DARK = '#1C1C1E';
 const LENS: Record<GlasMode, string> = { light: '#E6E6E9', dark: '#3C3C3D' };
+
+/**
+ * Where the lens (active tab / sidebar entry, `lens` over glass) ends up, as opaque colours: the sketch's lens colour
+ * plus, in dark mode, the lens over the tab bar and the sidebar over a card at both strengths — lighter than the
+ * sketch value, so a user hue's tab ink fell to 4.3:1 there (plan Etappe 2 §6.3). In light mode the glass brightens
+ * its backdrop, the lens gets lighter, the dark ink only gains.
+ */
+function lensBacks(mode: GlasMode): string[] {
+  if (mode === 'light') return [LENS.light];
+  const c = GLAS_COLORS.dark;
+  const out = [LENS.dark];
+  for (const surface of ['tabBar', 'sidebar'] as const) {
+    for (const strength of ['clear', 'tinted'] as const) {
+      out.push(compositeOver(c.lens, glassOver(c.card, mode, GLAS_SURFACE_TINT[surface][strength])));
+    }
+  }
+  return out;
+}
 
 /** Default accents from the sketch, verbatim (glas-tokens.json → accent.default). */
 const DEFAULT_ACCENT: Record<GlasMode, Omit<GlasAccent, 'onAccentInk'>> = {
@@ -435,7 +510,7 @@ export function glasAccent(hue: number | undefined, mode: GlasMode): GlasAccent 
   const a = mustParse(accent);
   const accentSoft = `rgba(${a.r},${a.g},${a.b},${mode === 'light' ? '.16' : '.26'})`;
   const accentInk = inkFor(accent, mode, inkSurfaces(mode, accentSoft), 0.9, 0.12);
-  const tabInk = inkFor(accentInk, mode, [LENS[mode]], 0.93, 0.1);
+  const tabInk = inkFor(accentInk, mode, lensBacks(mode), 0.93, 0.1);
   let prominent = accent, onProminent = NEUTRAL_DARK;
   if (contrastRatio(NEUTRAL_DARK, accent) < 4.5) {
     if (contrastRatio('#FFFFFF', accent) >= 4.5) onProminent = '#FFFFFF';
@@ -547,7 +622,8 @@ export function glasCssVars(input: GlasInput): Record<string, string> {
   out['--g-glass-sat'] = m.sat;
   out['--g-glass-bright'] = String(m.bright);
   out['--g-glass-rim'] = m.rim;
-  out['--g-glass-shadow'] = m.shadow;
+  out['--g-glass-inner'] = m.inner;
+  out['--g-glass-shadow'] = `${m.inner}, ${m.outer}`;
   out['--g-glass-clear-fill'] = CLEAR.fill;
   out['--g-glass-clear-filter'] = CLEAR.filter;
   out['--g-glass-clear-rim'] = CLEAR.rim;
@@ -559,6 +635,14 @@ export function glasCssVars(input: GlasInput): Record<string, string> {
     : `0 0 0 1px ${c.sepStrong}, 0 10px 30px rgba(0,0,0,.12)`;
   out['--g-glass-opaque-clear-fill'] = 'rgba(0,0,0,.72)';
   out['--g-glass-opaque-clear-shadow'] = input.contrastMore ? '0 0 0 1px rgba(255,255,255,.7)' : '0 0 0 1px rgba(255,255,255,.35)';
+  // Frame (plan Etappe 2): minimum tint per surface for the current strength (K28), sheet material and shadows (K29).
+  for (const surface of Object.keys(GLAS_SURFACE_TINT) as (keyof typeof GLAS_SURFACE_TINT)[]) {
+    if (surface === 'default') continue; // = --g-glass-tint
+    out[`--g-tint-${kebab(surface)}`] = String(input.strength === 'opaque' ? 1 : GLAS_SURFACE_TINT[surface][input.strength]);
+  }
+  out['--g-sheet-fill'] = SHEET[input.mode].fill;
+  out['--g-sheet-filter'] = SHEET[input.mode].filter;
+  for (const name of Object.keys(GLAS_SHADOWS) as (keyof typeof GLAS_SHADOWS)[]) out[`--g-shadow-${name}`] = GLAS_SHADOWS[name];
 
   for (const name of ['smooth', 'snappy', 'bouncy'] as const) {
     const s = GLAS_SPRINGS[name];
@@ -615,6 +699,65 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
       pairs.push({ name: `label on glass over ${back}`, fg: c.label, bg: g, min: 4.5 });
       pairs.push({ name: `glassLabel2 on glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
     }
+  }
+  return [...pairs, ...frameContrastPairs(input, c, a)];
+}
+
+/**
+ * The frame's pairs (plan Etappe 2 §6.3): each surface with its own minimum tint. Black/white text against the
+ * realistic worst backdrops in rest (GLAS-DESIGN §2.5 rule 4); coloured text and glyphs only against what lies
+ * behind the surface in rest (rule 3). "Deckend" has no glass: its surfaces are `cardSolid`/`sheetSolid` = card/bg,
+ * covered above, plus the lens on `cardSolid`.
+ */
+function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
+  const light = input.mode === 'light';
+  const mode = input.mode;
+  const pairs: ContrastPair[] = [];
+  const backs = light ? ['#FFFFFF', '#F2F2F7', '#808080'] : ['#000000', '#1C1C1E', '#2C2C2E'];
+  const rest = light ? ['#FFFFFF', '#F2F2F7'] : ['#000000', '#1C1C1E'];
+  if (input.strength !== 'opaque') {
+    const strength = input.strength;
+    const t = (surface: keyof typeof GLAS_SURFACE_TINT) => GLAS_SURFACE_TINT[surface][strength];
+    for (const back of backs) {
+      const tab = glassOver(back, mode, t('tabBar'));
+      const side = glassOver(back, mode, t('sidebar'));
+      const menu = glassOver(back, mode, t('menu'));
+      const toast = glassOver(back, mode, t('toastDesktop'));
+      pairs.push({ name: `tab label on tab bar over ${back}`, fg: c.label, bg: tab, min: 4.5 });
+      pairs.push({ name: `glassLabel2 on sidebar over ${back}`, fg: c.glassLabel2, bg: side, min: 4.5 });
+      pairs.push({ name: `glassLabel2 on fill over sidebar over ${back}`, fg: c.glassLabel2, bg: compositeOver(c.fill, side), min: 4.5 });
+      pairs.push({ name: `label on fill over sidebar over ${back}`, fg: c.label, bg: compositeOver(c.fill, side), min: 4.5 });
+      pairs.push({ name: `menu text on menu glass over ${back}`, fg: c.label, bg: menu, min: 4.5 });
+      pairs.push({ name: `glassLabel2 on menu glass over ${back}`, fg: c.glassLabel2, bg: menu, min: 4.5 });
+      pairs.push({ name: `label on desktop toast over ${back}`, fg: c.label, bg: toast, min: 4.5 });
+    }
+    for (const back of rest) {
+      const tab = glassOver(back, mode, t('tabBar'));
+      const side = glassOver(back, mode, t('sidebar'));
+      const menu = glassOver(back, mode, t('menu'));
+      pairs.push({ name: `tabInk on lens over tab bar over ${back}`, fg: a.tabInk, bg: compositeOver(c.lens, tab), min: 4.5 });
+      pairs.push({ name: `tabInk on lens over sidebar over ${back}`, fg: a.tabInk, bg: compositeOver(c.lens, side), min: 4.5 });
+      pairs.push({ name: `accent ink ("dismiss all") on menu glass over ${back}`, fg: a.accentInk, bg: menu, min: 4.5 });
+      pairs.push({ name: `redInk on desktop toast over ${back}`, fg: c.redInk, bg: glassOver(back, mode, t('toastDesktop')), min: 4.5 });
+      pairs.push({ name: `focus ring on glass over ${back}`, fg: a.focus, bg: glassOver(back, mode, GLAS_TINT[strength]), min: 3 });
+    }
+    // Sheet material (dark mode also over a bright camera image, GLAS-DESIGN §2.5 table)
+    for (const back of light ? ['#FFFFFF', '#F2F2F7', '#808080'] : ['#000000', '#1C1C1E', '#FFFFFF']) {
+      pairs.push({ name: `menu text on sheet over ${back}`, fg: c.label, bg: sheetOver(back, mode), min: 4.5 });
+      pairs.push({ name: `glassLabel2 on sheet over ${back}`, fg: c.glassLabel2, bg: sheetOver(back, mode), min: 4.5 });
+    }
+  } else {
+    pairs.push({ name: 'tabInk on lens over cardSolid', fg: a.tabInk, bg: compositeOver(c.lens, c.cardSolid), min: 4.5 });
+  }
+  // Phone toast: dark tinted surface over anything
+  for (const back of ['#FFFFFF', '#808080', '#000000']) {
+    pairs.push({ name: `toast text on toast over ${back}`, fg: c.toastText, bg: compositeOver(c.toastBg, back), min: 4.5 });
+  }
+  pairs.push({ name: 'banner text on reconnecting', fg: c.label, bg: resolveMix(c.bannerReconnecting), min: 4.5 });
+  pairs.push({ name: 'banner text on lost', fg: c.label, bg: resolveMix(c.bannerLost), min: 4.5 });
+  pairs.push({ name: 'onBadge on badge', fg: c.onBadge, bg: c.badge, min: 4.5 });
+  for (const s of ['green', 'yellow', 'red', 'gray'] as const) {
+    pairs.push({ name: `glyphDark on ${s} (status pill)`, fg: c.glyphDark, bg: c[s], min: 4.5 });
   }
   return pairs;
 }

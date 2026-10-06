@@ -117,9 +117,13 @@ import {
   GLAS_COLORS,
   GLAS_STRENGTHS,
   GLAS_SPRINGS,
+  GLAS_SURFACE_TINT,
+  GLAS_SHADOWS,
   compositeOver,
   contrastRatio,
   glassOver,
+  sheetOver,
+  resolveMix,
   glasAccent,
   glasThemeTokens,
   classicTokenVar,
@@ -1737,6 +1741,36 @@ console.log('\n── glas tokens ──');
   }
   assertEqual(glasCssVars({ mode: 'light', strength: 'clear', supportsLinear: false })['--g-spring-snappy'], GLAS_SPRINGS.snappy.fallback, 'no linear() → fallback curve');
 
+  // frame (docs/glas/PLAN-ETAPPE-2.md K28, K29): surface tints per strength, sheet material, shadows — from the json
+  const surfaceKeys = Object.keys(GLAS_SURFACE_TINT).filter((k) => k !== 'default');
+  for (const strength of GLAS_STRENGTHS) {
+    const w = glasCssVars({ mode: 'light', strength });
+    const jsonKey = { clear: 'klar', tinted: 'getoent' }[strength];
+    const bad = surfaceKeys.filter((k) => {
+      const name = '--g-tint-' + k.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+      const want = strength === 'opaque' ? '1' : String(GLAS_SURFACE_TINT[k][strength]);
+      return w[name] !== want || (jsonKey && json.glass.surfaceTint[k][jsonKey] !== GLAS_SURFACE_TINT[k][strength]);
+    });
+    assertEqual(bad.join(), '', `--g-tint-<surface> (${strength}) = GLAS_SURFACE_TINT = glas-tokens.json`);
+  }
+  assertEqual(glasCssVars({ mode: 'light', strength: 'clear' })['--g-tint-sidebar'], '0.5', 'K28: sidebar .5 when clear');
+  assertEqual(glasCssVars({ mode: 'dark', strength: 'tinted' })['--g-tint-menu'], '0.94', 'K28: menu .94 when tinted');
+  for (const m of modes) {
+    const w = glasCssVars({ mode: m, strength: 'clear' });
+    assertEqual(w['--g-glass-shadow'], json.glass.regular[m].shadow, `glass shadow ${m} = glas-tokens.json (inner + outer)`);
+    assert(w['--g-glass-shadow'].startsWith(w['--g-glass-inner'] + ', '), `--g-glass-inner ${m} is the start of the glass shadow`);
+    assertEqual(w['--g-sheet-fill'], json.glass.sheet[m].fill, `sheet fill ${m} = glas-tokens.json`);
+    assertEqual(w['--g-sheet-filter'], json.glass.sheet[m].filter, `sheet filter ${m} = glas-tokens.json`);
+    assertEqual(w['--g-sheet-solid'], json.glass.sheet[m].solid, `sheet solid ${m} = glas-tokens.json`);
+  }
+  const elevation = { menu: 'menuDesktop', popover: 'popoverDesktop', banner: 'banner', toast: 'toastPhone', prominent: 'prominent' };
+  for (const [name, key] of Object.entries(elevation)) {
+    assertEqual(GLAS_SHADOWS[name], json.elevation.light[key], `--g-shadow-${name} = elevation.${key}`);
+    assertEqual(glasCssVars({ mode: 'dark', strength: 'clear' })[`--g-shadow-${name}`], GLAS_SHADOWS[name], `--g-shadow-${name} written`);
+  }
+  assertEqual(resolveMix('color-mix(in srgb, #FFCC00 26%, #FFFFFF)'), '#FFF2BD', 'color-mix of the reconnecting banner');
+  assertEqual(resolveMix('#1C1C1E'), '#1C1C1E', 'resolveMix: plain colour unchanged');
+
   // GLAS-DESIGN §2.5 recomputed (samples, ±0.05)
   const near = (got, want, label) => assert(Math.abs(got - want) <= 0.05, `${label}: ${got.toFixed(2)} ≈ ${want}`);
   assertEqual(compositeOver('rgba(120,120,128,.12)', '#FFFFFF'), '#EFEFF0', 'fill over card');
@@ -1751,6 +1785,11 @@ console.log('\n── glas tokens ──');
   near(contrastRatio('#000000', glassOver('#333333', 'light', 0.6)), 5.5, 'tab bar light t.6: label over #333');
   near(contrastRatio('#3A3A3C', glassOver('#808080', 'light', 0.5)), 5.25, 'sidebar light t.5: glassLabel2 over grey');
   near(contrastRatio('#FFFFFF', glassOver('#808080', 'dark', 0.6)), 7.78, 'glass dark t.6: label over grey');
+  // (the §2.5 table has 15.24 / 8.24 over grey: computed without the filter's brightness(1.04))
+  near(contrastRatio('#000000', sheetOver('#808080', 'light')), 15.36, 'sheet light: label over grey');
+  near(contrastRatio('#3A3A3C', sheetOver('#808080', 'light')), 8.3, 'sheet light: glassLabel2 over grey');
+  near(contrastRatio('#5F5F64', sheetOver('#000000', 'light')), 3.56, 'sheet light: label2 over black (why glassLabel2)');
+  near(contrastRatio('#D1D1D6', sheetOver('#FFFFFF', 'dark')), 6.35, 'sheet dark: glassLabel2 over white');
 
   // every text/glyph pair ≥ its minimum — modes × strengths × more contrast × accent hues (none + 0…345)
   const hues = [undefined];
