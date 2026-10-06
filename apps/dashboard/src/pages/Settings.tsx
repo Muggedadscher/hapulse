@@ -39,6 +39,9 @@ import { EntityRow } from '../components/settings/EntityRow';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { ManagedHint } from '../components/settings/ManagedHint'; // [fork]
 import { DeviceModeRow } from '../components/settings/DeviceModeRow'; // [fork]
+import { StyleSettings, GlasThemeHint } from '../components/settings/StyleSettings'; // [fork] Glas
+import { useIsGlas } from '../app/glas/useUiStyle'; // [fork] Glas
+import { glasAccent } from '@hapulse/core'; // [fork] Glas
 import { GlobalSettingsAdmin } from '../components/settings/GlobalSettingsAdmin'; // [fork]
 import { useEditingEnabled, useIsManaged, useSettingsLocked } from '../ha/managedHooks'; // [fork]
 
@@ -284,6 +287,7 @@ function AppearanceSection() {
   const locked = useSettingsLocked(); // [fork] shared settings read-only for non-admins
   const managed = useIsManaged(); // [fork]
   const modeOverride = useSettingsStore((s) => s.modeOverride); // [fork] light/dark of THIS device
+  const isGlas = useIsGlas(); // [fork] Glas: one neutral palette, iOS orange as default accent
 
   const activeIcon: AppIconId = (APP_ICON_IDS as readonly string[]).includes(appIcon ?? '')
     ? (appIcon as AppIconId)
@@ -292,7 +296,7 @@ function AppearanceSection() {
   const resolved = resolveMode(effectiveMode({ mode, modeOverride })); // [fork] previews follow what this device shows
 
   function getDefaultHue(t: ThemeName): number {
-    const accent = THEMES[t][resolved].accent;
+    const accent = isGlas ? glasAccent(undefined, resolved).accent : THEMES[t][resolved].accent; // [fork] Glas
     const r = parseInt(accent.slice(1, 3), 16) / 255;
     const g = parseInt(accent.slice(3, 5), 16) / 255;
     const b = parseInt(accent.slice(5, 7), 16) / 255;
@@ -325,7 +329,7 @@ function AppearanceSection() {
 
   const accentPreviewColor = accentHue !== undefined
     ? `hsl(${accentHue}, 78%, ${resolved === 'dark' ? 60 : 50}%)`
-    : THEMES[theme][resolved].accent;
+    : isGlas ? glasAccent(undefined, resolved).accent : THEMES[theme][resolved].accent; // [fork] Glas
 
   const MODE_OPTIONS: { id: ThemeMode; labelKey: TKey }[] = [
     { id: 'light', labelKey: 'settings.appearance.mode.light' },
@@ -410,6 +414,8 @@ function AppearanceSection() {
 
         </fieldset>{/* [fork] */}
 
+        <StyleSettings locked={locked} managed={managed} />{/* [fork] Glas: style, strength, reduce transparency */}
+
         {/* Mode row */}
         <fieldset className="managed-fieldset" disabled={locked}>{/* [fork] */}
         <div className="settings-card__row settings-card__row--inline">
@@ -466,6 +472,7 @@ function AppearanceSection() {
 
         <fieldset className="managed-fieldset" disabled={locked}>{/* [fork] */}
         {/* Theme picker */}
+        {isGlas ? <GlasThemeHint /> : ( // [fork] Glas: no colour worlds; the theme stays saved for Klassisch
         <div className="settings-card__row">
           <div className="settings-card__row-label">
             <span className="settings-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
@@ -485,6 +492,7 @@ function AppearanceSection() {
             ))}
           </div>
         </div>
+        )}{/* [fork] */}
 
         {/* Accent hue */}
         <div className="settings-card__row">
@@ -513,7 +521,7 @@ function AppearanceSection() {
               className="accent-slider"
               min={0}
               max={360}
-              value={localHue}
+              value={isGlas && accentHue === undefined ? getDefaultHue(theme) : localHue /* [fork] Glas: default = iOS orange */}
               onChange={(e) => handleHueChange(Number(e.target.value))}
               aria-label={t('settings.appearance.accent.hueAria')}
             />

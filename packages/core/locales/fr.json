@@ -1329,5 +1329,18 @@
   "nvr.clip.failed": "Impossible de créer le clip",
   "nvr.clip.oldServer": "Ce serveur Sentinel ne peut pas encore créer de clips",
   "nvr.clip.eventRunning": "Événement en cours – le clip se termine maintenant",
-  "nvr.clip.tooLarge": "Trop volumineux pour être partagé ici – enregistrez-le dans Safari"
+  "nvr.clip.tooLarge": "Trop volumineux pour être partagé ici – enregistrez-le dans Safari",
+  "glas.style.label": "Style",
+  "glas.style.groupAria": "Style de l’interface",
+  "glas.style.classic": "Classique",
+  "glas.style.glas": "Verre (aperçu)",
+  "glas.style.hint": "Verre ne change que l’apparence et les animations ; toutes les fonctions restent.",
+  "glas.strength.label": "Intensité du verre",
+  "glas.strength.groupAria": "Intensité de la teinte du verre",
+  "glas.strength.clear": "Clair",
+  "glas.strength.tinted": "Teinté",
+  "glas.strength.opaque": "Opaque",
+  "glas.reduceTransparency.label": "Réduire la transparence",
+  "glas.reduceTransparency.hint": "Surfaces opaques au lieu du verre, sur tous les appareils (p. ex. pour les tablettes anciennes)",
+  "glas.themeHint": "Le style Verre utilise une palette neutre. Votre thème reste enregistré pour Classique."
 }

@@ -120,6 +120,14 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/forkChangelog.ts`, `packages/core/scripts/gen-fork-changelog.mjs`, `CHANGELOG.fork.md` | Eigene Releases F1, F2, … (DE + EN) + generierte Markdown-Fassung |
 | `apps/dashboard/src/components/changelog/{ForkChangelogModal.tsx,forkEntries.ts}`, `test/forkChangelog.test.ts` | Changelog-Anzeige mit Upstream- und Fork-Releases, Kompaktansicht |
 | `apps/dashboard/test/nvrLocales.test.ts` | Jeder `nvr.*`-Schlüssel des Pakets `@sentinel-nvr/web` existiert in HAPulses Locales (sonst erscheint er roh) |
+| `packages/core/src/glasTokens.ts` | Stil Glas: Farben, Akzent (`glasAccent`), Federn, Kontrast-Hilfen, Abbildung auf die 24 HAPulse-Tokens + `--g-*` (DOM-frei) |
+| `apps/dashboard/src/theme/glasAppearance.ts` | Stil Glas: `applyAppearance` (umhüllt `applyTheme`, schreibt Tokens + `--g-*` + Attribute auf `:root`), `resolveAppearance`, `readPersistedStyle` (Pre-Paint), `watchAppearance` |
+| `apps/dashboard/src/app/glas/useUiStyle.ts` | `useUiStyle`/`useIsGlas` für Komponenten |
+| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`); jeder Selektor beginnt mit `:root[data-style='glas']` |
+| `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
+| `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
+| `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
+| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungsplan Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -131,7 +139,9 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/stores/connectionStore.ts` | Globale Verwaltung vor dem Settings-Sync starten, beim Teardown stoppen |
 | `apps/dashboard/src/ha/settingsSync.ts` | Verwalteter Modus → nur `userSettingsSync`; gemeinsamer Anwende-Schutz |
 | `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Hell/Dunkel pro Gerät (`modeOverride`) auch im First Paint |
+| `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Stil Glas: `applyAppearance` statt `applyTheme` (auch im First Paint aus `hapulse:settings`), `watchAppearance` statt `watchSystemMode`; `main.tsx` importiert `styles/glas/index.css` als letztes Stylesheet |
 | `apps/dashboard/src/pages/Settings.tsx` | Sperren (Aussehen, Räume), Hell/Dunkel pro Gerät, Admin-Zeilen, Backup-Import im verwalteten Modus |
+| `apps/dashboard/src/pages/Settings.tsx` | Stil Glas: `<StyleSettings />` in „Darstellung“; in Glas `GlasThemeHint` statt der Farbwelt-Karten, Akzent-Vorschau aus `glasAccent` |
 | `apps/dashboard/src/ha/useDevices.ts`, `pages/Devices.tsx`, `components/devices/DeviceDetailsModal.tsx`, `components/home/chipmodals/WeatherModal.tsx` | wirksamer Bearbeiten-Schalter (`useEditingEnabled`) |
 | `apps/dashboard/src/components/music/QueueCard.tsx` | MA-Verbindung nur für Admins im verwalteten Modus |
 | `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Favoriten-Stern im verwalteten Modus; bei Kameraquelle Sentinel Hinweis statt HA-Kamerabild |
@@ -140,12 +150,13 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Room.tsx` | Sektion `nvrCameras`, keine HA-Kameras bei Kameraquelle Sentinel |
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
-| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`- und `forkChangelog`-Moduls |
+| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls |
 | `apps/dashboard/src/components/ui/Modal.{tsx,css}` | Anfangsfokus auf ein Element mit `data-autofocus` (sonst das Panel); kein Fokusrahmen um das Panel selbst |
 | `apps/dashboard/src/components/changelog/ChangelogModal.{tsx,css}` | `ReleaseEntry` exportiert (+ optionales `badge`), Stile für Abzeichen und Kompaktliste |
 | `apps/dashboard/src/app/AppLayout.tsx`, `pages/Settings.tsx` | `ForkChangelogModal` statt `ChangelogModal`; Auslöser auch bei neuen Fork-Releases; Über: „Version 1.3.2 · F11“ |
 | `apps/dashboard/src/stores/{settingsStore,settingsScope}.ts` | `lastSeenFork` (DEVICE, `markVersionSeen` setzt beide Stände) |
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedUrl`/`scryptedToken`-, `detailHistoryRange`- + Chip-Marker (`poolChipMigrated`, `garageChipMigrated`, `locksChipMigrated`), `wasteSectionMigrated`, `nvrSectionMigrated`, `navOrderV2Migrated` (+ Aufruf `migrateNavOrderV2`); `modeOverride`, `applyGlobal`/`applyUser`/`applySharedSecrets`, `effectiveMode` |
+| `apps/dashboard/src/stores/settingsStore.ts` | Stil Glas: `uiStyle`, `glassStrength`, `reduceTransparency` (GLOBAL); `applyGlobal` setzt sie auf den Standard, wenn das Admin-Dokument sie nicht trägt |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/src/domain.ts` | `formatEntityState`: Zahl über `formatNumber` (Sprache), numerische Zustände ohne Einheit (sensor/number/input_number/counter) formatiert statt `humanizeState` (Minus ging verloren) |
@@ -153,16 +164,17 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/energy/EnergyCards.tsx`, `components/home/EnergyWidget.tsx` | `fmtEnergy`/`fmtCost` mit Sprache (Währung per `Intl`) |
 | `apps/dashboard/src/components/{cards,home}/ClimateCard.tsx`, `components/home/RoomCard.tsx`, `components/home/{WeatherHero,chipmodals/WeatherModal}.tsx`, `app/AppLayout.tsx`, `components/home/EntityDetailModal.tsx`, `components/system/SystemMonitorCard.tsx`, `components/devices/DeviceEntityRow.tsx` | Anzeige-Zahlen über `formatNumber` (Sprache) |
 | `packages/core/src/demo.ts` | Demo-Pool-Entities (`demoPoolEntities`, IDs wie `poolConfig.ts`) — Pool-Seite in Demo/Labor |
-| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“ |
+| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“, „glas tokens“ |
 | `apps/dashboard/src/components/home/SummaryChips.tsx`, `SummaryChipsBar.tsx`, `chipmodals/index.ts` | Chips Pool, Garage, Schlösser in der Home-Leiste (+ Fenster, Standardplatz) |
 | `apps/dashboard/src/components/home/SecurityCard.tsx`, `components/security/SecurityHeroCard.tsx` | Garagen-Zeile/-Chip; Schlösser nach gemeinsamer Regel (`lockSummary`: offen rot, blockiert/nicht erreichbar gelb) |
 | `apps/dashboard/src/components/security/{LockConfirm,lockLogic}.*` | Bestätigung beim Entriegeln, Code-Feld, Klick-Stopp im Portal; `lockSummary`/`lockTone`/`lockSummaryText` |
 | `apps/dashboard/src/pages/{Security,Room}.tsx`, `components/home/{BlindsCard,chipmodals/BlindsAllModal,ActivityCard,FavoriteTile}.tsx`, `components/cards/EntityCard.tsx`, `components/devices/DeviceEntityRow.tsx`, `components/settings/DomainIcon.tsx` | Garagentore als eigene Sektion, raus aus Rollläden, Symbole/Farben |
 | `packages/core/src/{domain,roomIcons,demo}.ts` | Garagentore: Zustandsanzeige, Raum-Symbol `car`, Demo-Tore |
 | `apps/dashboard/src/components/home/EntityDetailModal.{tsx,css}` | Bereichs-**Pills** (24H/7D/30D) statt Upstreams 24h/7d-Umschalter |
+| `docs/DESIGN.md` | Verweis auf den zweiten Stil „Glas“ (`docs/GLAS-DESIGN.md`) |
 | `apps/dashboard/src/app/Router.tsx` | Routen `/nvr/*`, `/pool` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Einträge „NVR" + „Pool" (`nav.nvr`, `nav.pool`), direkt nach „Räume" |
-| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `garage.*`, `locks.*`, `home.summaryChips.locksAllLocked`, `home.section.*.{waste,nvr}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
+| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `garage.*`, `locks.*`, `glas.*`, `home.summaryChips.locksAllLocked`, `home.section.*.{waste,nvr}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
 > Hinweis: `SensorTile.tsx` und die `.sensor-tile--clickable`-CSS-Regel sind seit
 > dem v1.2.0-Merge **wieder Upstream-Stand** — siehe „Feature: Sensor-Verlauf".
@@ -245,3 +257,21 @@ umbenannt von `history.ts`, um mit Upstreams `history.ts` zu koexistieren) und
 `HAConnection.fetchSensorHistory` — Upstreams `fetchHistory`/`history.ts`/
 `HistoryPoint` existieren unverändert daneben. `PoolChartCard` bucketet die
 State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.
+
+## Feature: Stil Glas
+
+Zweiter Stil neben Klassisch, nur Aussehen und Bewegung (Plan `docs/GLAS-PLAN.md`, Design `docs/GLAS-DESIGN.md`, Stand
+und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
+`<html data-style="glas">` gesetzt ist, und jede Regel in `styles/glas/` beginnt mit `:root[data-style='glas']`.
+
+Nach jedem Upstream-Merge:
+
+1. `npm test -w @hapulse/dashboard` — der Selektor-Wächter (`test/glasSelectors.test.ts`) meldet jede Klasse, auf die
+   Glas-CSS zielt und die Upstream umbenannt oder entfernt hat.
+2. Neue HAPulse-Tokens in `ThemeTokens` → `glasThemeTokens` (`packages/core/src/glasTokens.ts`) muss sie abbilden
+   (`npm run typecheck` schlägt sonst fehl), dazu `docs/glas/glas-tokens.json → classicMapping` (`smoke.mjs` vergleicht).
+3. Neue Flächen in Akzentfarbe (`background: var(--accent)`) → in `styles/glas/accent.css` aufnehmen; sonst erscheinen
+   sie in Glas in der dunkleren Akzent-Ink (lesbar, aber nicht wie die Skizze).
+4. Screenshot-Matrix beider Stile ansehen:
+   `node apps/dashboard/scripts/glas-shots.cjs shoot --serve apps/dashboard/dist <ordner> --style classic|glas`
+   (Kopf des Skripts beschreibt `compare` und `checks`).

@@ -1329,5 +1329,18 @@
   "nvr.clip.failed": "Clip konnte nicht erstellt werden",
   "nvr.clip.oldServer": "Dieser Sentinel-Server kann noch keine Clips erstellen",
   "nvr.clip.eventRunning": "Ereignis läuft noch – der Clip endet jetzt",
-  "nvr.clip.tooLarge": "Zu groß zum Teilen – in Safari speichern"
+  "nvr.clip.tooLarge": "Zu groß zum Teilen – in Safari speichern",
+  "glas.style.label": "Stil",
+  "glas.style.groupAria": "Stil der Oberfläche",
+  "glas.style.classic": "Klassisch",
+  "glas.style.glas": "Glas (Vorschau)",
+  "glas.style.hint": "Glas ändert nur Aussehen und Bewegung, alle Funktionen bleiben.",
+  "glas.strength.label": "Glas-Stärke",
+  "glas.strength.groupAria": "Wie stark das Glas getönt ist",
+  "glas.strength.clear": "Klar",
+  "glas.strength.tinted": "Getönt",
+  "glas.strength.opaque": "Deckend",
+  "glas.reduceTransparency.label": "Transparenz reduzieren",
+  "glas.reduceTransparency.hint": "Deckende Flächen statt Glas, auf allen Geräten (z. B. für ältere Tablets)",
+  "glas.themeHint": "Im Stil Glas gilt eine neutrale Farbpalette. Das Design bleibt für Klassisch gespeichert."
 }

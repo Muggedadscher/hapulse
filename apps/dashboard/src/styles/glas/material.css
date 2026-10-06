@@ -1,0 +1,119 @@
+/* [fork] Glas — the material (docs/GLAS-DESIGN.md §3.3 recipe, §3.4 strengths). No component uses it yet; the Glas
+   shell (tab bar, sidebar, sheets) adopts it from stage 2. The material probe of scripts/glas-shots.cjs checks it.
+
+   The fill and filter are composed here, per element, from the building blocks theme/glasAppearance.ts writes on
+   :root (--g-glass-tint/-rgb/-a0/-a1/-sat/-bright, plan K10): a custom property is resolved where it is declared,
+   so a ready-made fill on :root could not take the per-surface minimum tint (--g-surface-tint, set by a surface
+   from stage 2; effective tint = max(surface, strength)). */
+
+:root[data-style='glas'] .g-glass {
+  --g-surface-tint: 0;
+  --g-t: max(var(--g-surface-tint), var(--g-glass-tint));
+  --g-glass-fill: linear-gradient(
+    180deg,
+    rgb(var(--g-glass-rgb) / calc(var(--g-glass-a0) + 0.4 * var(--g-t))),
+    rgb(var(--g-glass-rgb) / calc(var(--g-glass-a1) + 0.4 * var(--g-t)))
+  );
+  --g-glass-filter: blur(calc(6px + 10px * var(--g-t))) saturate(var(--g-glass-sat)) brightness(var(--g-glass-bright));
+  position: relative;
+  isolation: isolate;
+  background: var(--g-glass-fill);
+  -webkit-backdrop-filter: var(--g-glass-filter);
+  backdrop-filter: var(--g-glass-filter);
+  box-shadow: var(--g-glass-shadow);
+}
+
+/* Specular rim, 1 px, masked to the edge. */
+:root[data-style='glas'] .g-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: var(--g-glass-rim);
+  -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Sheen from the touch point while pressed (--gx/--gy in px from pointerdown, stage 2). */
+:root[data-style='glas'] .g-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(120px circle at var(--gx, 50%) var(--gy, 50%), var(--g-glow), transparent 60%);
+  transition: opacity 400ms ease-out;
+}
+
+:root[data-style='glas'] .g-flex:active .g-glass::after,
+:root[data-style='glas'] .g-glass.g-flex:active::after {
+  opacity: 1;
+  transition-duration: 120ms;
+}
+
+/* clear: only over a camera image or video — white glyphs (§3.2). */
+:root[data-style='glas'] .g-glass--clear {
+  --g-glass-fill: var(--g-glass-clear-fill);
+  --g-glass-filter: var(--g-glass-clear-filter);
+  box-shadow: var(--g-glass-clear-shadow);
+  color: var(--g-on-media);
+  text-shadow: var(--g-glass-clear-text-shadow);
+}
+
+:root[data-style='glas'] .g-glass--clear::before {
+  background: var(--g-glass-clear-rim);
+}
+
+/* opaque ("Deckend", "Transparenz reduzieren", more contrast): solid fill, no filter, no rim (§3.4). */
+:root[data-style='glas'][data-glass='opaque'] .g-glass {
+  background: var(--g-card-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--g-glass-opaque-shadow);
+}
+
+:root[data-style='glas'][data-glass='opaque'] .g-glass--clear {
+  background: var(--g-glass-opaque-clear-fill);
+  box-shadow: var(--g-glass-opaque-clear-shadow);
+}
+
+:root[data-style='glas'][data-glass='opaque'] .g-glass::before {
+  display: none;
+}
+
+/* A browser without backdrop-filter gets the opaque material (no unreadable see-through surface). */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  :root[data-style='glas'] .g-glass {
+    background: var(--g-card-solid);
+    box-shadow: var(--g-glass-opaque-shadow);
+  }
+
+  :root[data-style='glas'] .g-glass--clear {
+    background: var(--g-glass-opaque-clear-fill);
+    box-shadow: var(--g-glass-opaque-clear-shadow);
+  }
+
+  :root[data-style='glas'] .g-glass::before {
+    display: none;
+  }
+}
+
+/* Windows high contrast & co.: system colours, no glass. */
+@media (forced-colors: active) {
+  :root[data-style='glas'] .g-glass {
+    background: Canvas;
+    color: CanvasText;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .g-glass::before,
+  :root[data-style='glas'] .g-glass::after {
+    display: none;
+  }
+}

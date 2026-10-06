@@ -177,6 +177,16 @@ export interface CustomizationSettings {
   navOrderV2Migrated: boolean;
   /** [fork] Sentinel camera id → HA area id (null = no room): room pages show these cameras (nvr/cameraSource.ts). */
   nvrCameraRooms: Record<string, string | null>;
+  /**
+   * [fork] Second style "Glas" (docs/GLAS-PLAN.md): `'classic'` | `'glas'`. Only look and motion change.
+   * GLOBAL like every customization field: under admin management the admin sets it for everybody (E1).
+   * Read through `resolveAppearance` (theme/glasAppearance.ts), which maps unknown values to `'classic'`.
+   */
+  uiStyle: string;
+  /** [fork] Glas: `'clear'` | `'tinted'` | `'opaque'` (unknown → `'clear'`). GLOBAL (E2). */
+  glassStrength: string;
+  /** [fork] Glas: solid surfaces instead of glass, e.g. for older tablets. GLOBAL (E2). */
+  reduceTransparency: boolean;
 }
 
 /**
@@ -381,6 +391,9 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   nvrSectionMigrated: false, // [fork]
   navOrderV2Migrated: false, // [fork]
   nvrCameraRooms: {}, // [fork]
+  uiStyle: 'classic', // [fork] Glas
+  glassStrength: 'clear', // [fork] Glas
+  reduceTransparency: false, // [fork] Glas
   libraryPlayerId: null,
   maServerUrl: null,
   maToken: null,
@@ -440,6 +453,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           incoming.garageChipMigrated ??= false;
           incoming.locksChipMigrated ??= false;
         }
+        // [fork] Glas: a document written before the style existed carries none — the admin's choice is then
+        // Klassisch, not a style this device happened to keep (e.g. from an imported export).
+        incoming.uiStyle ??= DEFAULT_CUSTOMIZATION.uiStyle;
+        incoming.glassStrength ??= DEFAULT_CUSTOMIZATION.glassStrength;
+        incoming.reduceTransparency ??= DEFAULT_CUSTOMIZATION.reduceTransparency;
         const migrated = migrateTheme(payload.theme);
         set({
           theme: migrated?.theme ?? cur.theme,

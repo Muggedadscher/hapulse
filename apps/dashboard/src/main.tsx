@@ -13,10 +13,13 @@ import { createRoot } from 'react-dom/client';
 // Global styles (fonts, reset, theme tokens, grain overlay)
 import './styles/global.css';
 
-import { applyTheme, THEME_NAMES } from './theme/themes';
+import { THEME_NAMES } from './theme/themes';
+import { applyAppearance, readPersistedStyle } from './theme/glasAppearance'; // [fork] Glas
 import type { ThemeName, ThemeMode } from './theme/themes';
 import { DashboardApp } from './app/DashboardApp';
 import { installChunkReload } from './app/chunkReload'; // [fork]
+// [fork] Glas stylesheets — last, after every statically imported stylesheet; they act only under data-style="glas"
+import './styles/glas/index.css';
 
 // Map any legacy persisted theme value to the current { theme, mode } model.
 function legacyTheme(value: string | undefined): { theme: ThemeName; mode: ThemeMode } {
@@ -41,8 +44,9 @@ function legacyTheme(value: string | undefined): { theme: ThemeName; mode: Theme
   let mode: ThemeMode = 'light';
   let accentHue: number | undefined;
   let appName: string | undefined;
+  let raw: string | null = null; // [fork] Glas: the style is applied before the first paint, too
   try {
-    const raw = localStorage.getItem('hapulse:settings');
+    raw = localStorage.getItem('hapulse:settings'); // [fork]
     if (raw) {
       const settings = JSON.parse(raw) as {
         state?: { theme?: string; mode?: ThemeMode; modeOverride?: ThemeMode | null; accentHue?: number; appName?: string }; // [fork] modeOverride
@@ -63,7 +67,7 @@ function legacyTheme(value: string | undefined): { theme: ThemeName; mode: Theme
     // fall through to defaults
   }
   // Always apply — sets data-theme/data-mode and tokens even on first run.
-  applyTheme(theme, mode, accentHue);
+  applyAppearance({ theme, mode, accentHue, ...readPersistedStyle(raw) }); // [fork] Glas (calls applyTheme first)
   document.title = appName || 'HAPulse';
 })();
 

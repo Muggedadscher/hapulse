@@ -9,6 +9,7 @@
 |---|---|
 | `docs/GLAS-DESIGN.md` | Designsystem Glas (Farben, Typo, Material, Bewegung, Komponenten-Anatomie) — separat geschrieben, **maßgeblich für das Aussehen** |
 | `docs/GLAS-PLAN.md` | dieses Dokument: Architektur, Etappen, Abnahme, Tests, Risiken |
+| `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K18 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
@@ -528,12 +529,21 @@ Bis zur letzten Etappe heißt die Option **„Glas (Vorschau)“** (siehe E11).
 
 ### Etappe 0 — Vorbereitung (kein Nutzer-Effekt)
 
+**Stand 2026-10-06: umgesetzt.** Probe-Skript `apps/dashboard/scripts/glas-shots.cjs` (Handy 390×844, iPad 1180×820,
+Desktop 1440×1000, hell/dunkel, Klassisch und Glas, Pixelvergleich, Laufzeitprüfungen); Referenzbilder nicht eingecheckt.
+Details: [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §2.
+
 - Skizzen/Screenshots/Inventar liegen in `docs/glas/` (vom Auftraggeber kopiert); `docs/GLAS-DESIGN.md` lesen.
 - **Referenz-Screenshots Klassisch** aller Seiten (Handy 390×844, Desktop 1440×1000, hell+dunkel, Demo-Modus) mit dem
   Probe-Skript aus §5.3 erzeugen und **nicht** einchecken (lokal/Artefakt) — Basis für „Klassisch unverändert“.
 - Probe-Skript-Gerüst `apps/dashboard/scripts/glas-shots.cjs` anlegen.
 
 ### Etappe 1 — Fundament: Einstellung, Tokens, Schrift
+
+**Stand 2026-10-06: umgesetzt, PR offen (Merge erst mit OK des Users).** Abweichungen von diesem Abschnitt — kein
+Geräte-Schalter für Stil und Transparenz (E1/E2), kein `GlasRuntime`, `--accent` als Ink mit Akzent-Flächen in
+`styles/glas/accent.css` u. a. — mit Gründen in [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §1 (K1–K18); was
+bewusst offen bleibt: dort §3.12, Laborprüfungen §6, Randnotiz Energie-Karte §5 (Entscheidung des Users offen).
 
 Umfang: §1 komplett. `glasTokens.ts` (+ Tests), `glasAppearance.ts` (+ Tests), Store-Felder + Scope + Migration,
 Einstellungen „Stil“ (`components/settings/StyleSettings.tsx`, in `Settings.tsx` per `// [fork]` unter „Darstellung“:
@@ -543,16 +553,19 @@ in Glas ausgeblendet mit Hinweis), `styles/glas/base.css`, `material.css`, `moti
 CSS-Import + Attribute), i18n in 7 Locales.
 
 Abnahme:
-- [ ] Klassisch: Screenshot-Vergleich mit Etappe 0 ohne Abweichung (alle Seiten, hell/dunkel, Handy/Desktop).
-- [ ] Glas: jede Seite rendert mit iOS-Palette, Systemschrift, reinem Schwarz im Dunkelmodus; kein Blitz beim Neuladen
-      (Pre-Paint); OS-Hell/Dunkel-Wechsel in „auto“ behält Glas.
-- [ ] Umschalten Glas ↔ Klassisch ohne Reload, ohne Reste (`--g-*` entfernt, Tokens zurück).
-- [ ] Verwalteter Modus: Admin stellt Glas ein → zweiter User bekommt Glas; Gerät mit Override bleibt Klassisch;
-      `reduceTransparency`/`uiStyleOverride` erscheinen nicht im Export.
-- [ ] Kontrast-Test (§5.2) grün; `globalSettings.test.ts` grün.
+- [x] Klassisch: Screenshot-Vergleich mit Etappe 0 ohne Abweichung (alle Seiten, hell/dunkel, Handy/Desktop).
+      (2026-10-06, auch iPad; einzige Abweichung: die neue Zeile „Stil“ und F31 in `/settings`)
+- [x] Glas: jede Seite rendert mit iOS-Palette, Systemschrift, reinem Schwarz im Dunkelmodus; kein Blitz beim Neuladen
+      (Pre-Paint); OS-Hell/Dunkel-Wechsel in „auto“ behält Glas. (2026-10-06; Glas steht vor dem ersten React-Knoten,
+      das Bild vor dem App-Skript prüft das Labor)
+- [x] Umschalten Glas ↔ Klassisch ohne Reload, ohne Reste (`--g-*` entfernt, Tokens zurück). (2026-10-06)
+- [x] Verwalteter Modus: Admin stellt Glas ein → zweiter User bekommt Glas. Nach E1/E2 gibt es keinen Geräte-Override
+      für Stil und Transparenz; alle drei Felder sind GLOBAL und gehören in den Export, pro Gerät bleibt nur Hell/Dunkel.
+      (2026-10-06)
+- [x] Kontrast-Test (§5.2) grün; `globalSettings.test.ts` grün. (2026-10-06)
 
-Nicht verlieren:
-- [ ] Hell/Dunkel/Auto + Hell/Dunkel pro Gerät (S4, S5) · Sprache (S6) · Akzent-Regler (S8) · Farbwelten bleiben für
+Nicht verlieren (2026-10-06, alles noch da, in beiden Stilen):
+- [x] Hell/Dunkel/Auto + Hell/Dunkel pro Gerät (S4, S5) · Sprache (S6) · Akzent-Regler (S8) · Farbwelten bleiben für
       Klassisch gespeichert (S7) · App-Name/-Symbol/PWA-Icons (S2, S3, V3) · Verwaltet-Hinweis/gesperrte Felder (S9)
       · Export/Import (S14) · „Was ist neu“ (U) · Zahlen sprachabhängig (V7).
 

@@ -255,6 +255,9 @@ bzw. ≥ 19 px fett 3:1; Glyphen/Grafik 3:1. **Hell zählt am meisten** (iPad be
 ### 2.6 Abbildung auf die bestehenden HAPulse-Namen
 
 `applyAppearance` schreibt diese Werte in Glas inline auf `:root` (Plan §1.2); Klassisch setzt `applyTheme` sie zurück.
+Stand der Umsetzung (Etappe 1, 2026-10-06): `--accent`, `--on-accent`, `--border` und `--radius-control` weichen von der
+ersten Fassung ab, Gründe in [`glas/PLAN-ETAPPE-0-1.md`](glas/PLAN-ETAPPE-0-1.md) §1 (K6, K7, K14). Dieselben Werte stehen
+in `glas-tokens.json → classicMapping`; `smoke.mjs` prüft sie gegen den Code.
 
 | HAPulse-Token | Glas hell | Glas dunkel | Hinweis |
 |---|---|---|---|
@@ -266,11 +269,11 @@ bzw. ≥ 19 px fett 3:1; Glyphen/Grafik 3:1. **Hell zählt am meisten** (iPad be
 | `--text` | `#000000` | `#FFFFFF` | |
 | `--text-dim` | `#5F5F64` | `#AEAEB2` | auf Glas über Glas-CSS → `--g-glass-label-2` |
 | `--text-faint` | `#636366` | `#A1A1A6` | **nicht** `#7C7C80` |
-| `--accent` | `#FF9500` (bzw. `glasAccent(hue)`) | `#FF9F0A` | Fläche; Text über `--g-accent-ink` |
+| `--accent` | `#A64B00` (bzw. `glasAccent(hue).accentInk`) | `#FFB340` | **Ink** (K6): Text, Symbole, Ränder, Fokus. Die Akzent-Flächen (Primärknöpfe, Schalter an, Balken, Regler, Logo) setzen lokal `--accent: var(--g-prominent)` (`styles/glas/accent.css`) |
 | `--accent-soft` | `rgba(255,149,0,.16)` | `rgba(255,159,10,.26)` | |
-| `--on-accent` | `#1C1C1E` | `#1C1C1E` | = `onProminent` |
+| `--on-accent` | `#FFFFFF` (5,79:1) | `#1C1C1E` | beste Schrift auf der Ink; auf den Akzent-Flächen `--g-on-prominent` (`#1C1C1E`) |
 | `--line` | `rgba(60,60,67,.18)` | `rgba(84,84,88,.55)` | = `sep` |
-| `--border` | `transparent` | `transparent` | |
+| `--border` | `#E5E5EA` | `#3A3A3C` | = `fillSolid` (K14): Eingabefelder, Segmente, Spuren bleiben sichtbar; Karten randlos über `styles/glas/base.css` |
 | `--positive` (+`-soft`) | `#1F7A35` (`rgba(52,199,89,.16)`) | `#30D158` (`rgba(48,209,88,.20)`) | **Ink**, weil HAPulse es zu 54/63 als Textfarbe nutzt; Vollfarbe `--g-green` |
 | `--warning` (+`-soft`) | `#7D5E00` (`rgba(255,204,0,.24)`) | `#FFD60A` (`rgba(255,214,10,.20)`) | Ink; Vollfarbe `--g-yellow` |
 | `--danger` (+`-soft`) | `#D70015` (`rgba(255,59,48,.12)`) | `#FF6961` (`rgba(255,69,58,.22)`) | Ink; Vollfarbe `--g-red` |
@@ -279,7 +282,7 @@ bzw. ≥ 19 px fett 3:1; Glyphen/Grafik 3:1. **Hell zählt am meisten** (iPad be
 | `--shadow-elevated` | `0 1px 2px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.14)` | `0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.5)` | |
 | `--shadow-active` | `0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.06)` | `none` | = `tileLift` |
 | `--font-display/-body/-data` (CSS) | Systemschrift-Stack | | `--font-data` + `tabular-nums` |
-| `--radius-card` / `--radius-control` / `--radius-pill` (CSS) | `26px` / `999px` / `999px` | | Steuerelemente sind Kapseln |
+| `--radius-card` / `--radius-control` / `--radius-pill` (CSS) | `26px` / `12px` / `999px` | | `--radius-control` trägt auch Kacheln und Panels; Kapseln je Baustein ab Etappe 2 (K7) |
 
 **Neue `--g-*`-Variablen:** jeder Schlüssel aus `glas-tokens.json → color` als `--g-<kebab>` (z. B. `--g-yellow-ink`,
 `--g-glass-label-2`, `--g-tile-off`, `--g-chart-solar-edge`), dazu `--g-glass-tint/-fill/-filter/-rim/-shadow/-glow`,
@@ -1195,6 +1198,7 @@ Tab-Leiste (`tb`, `tabs`), Energie (`en`), Kontext (`ctx`), Avatar (`av`).
 | Titel-Kollaps, Tab-Leiste, Seitenleiste, Kopf | GLAS-PLAN §2.7–2.10 |
 | Hinweise, aktive Szene, Kartentitel, Energie, Licht, S/M/L | GLAS-PLAN §2.11–2.16 |
 | Tests (Kontrast, Selektor-Wächter, Screenshots, Leistung, Safari) | GLAS-PLAN §5 |
+| Umsetzung Etappe 0 und 1, Abweichungen K1–K18, Laborliste | `glas/PLAN-ETAPPE-0-1.md` |
 | NVR-Paket-Hooks, immersive Kameraseite | GLAS-PLAN §4 |
 | Checkliste „nicht verlieren“ | `glas/HAPULSE-INVENTORY.md` |
 | Glas-Rezept / Bewegung / Grundsatz / Glas-5-Änderungen | `glas/spec/SPEC3.md` §1–2, `SPEC4.md`, `SPEC5.md`; Beispieldaten `SPEC.md` §3 |

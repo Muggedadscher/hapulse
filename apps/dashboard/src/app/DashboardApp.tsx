@@ -12,9 +12,9 @@
  */
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { applyTheme, watchSystemMode } from '../theme/themes';
+import { applyAppearance, resolveAppearance, watchAppearance } from '../theme/glasAppearance'; // [fork] Glas (wraps applyTheme)
 import { syncAppIcon } from './appIcon'; // [fork]
-import { useSettingsStore, effectiveMode } from '../stores/settingsStore'; // [fork] effectiveMode
+import { useSettingsStore } from '../stores/settingsStore';
 import { useConnectionStore, hasResumableConnection } from '../stores/connectionStore';
 import { AppRouter } from './Router';
 import { UserMenuContext } from './userMenuContext';
@@ -63,22 +63,19 @@ export function DashboardApp({ basename, accountMenu, demo = false }: DashboardA
     // Apply the current theme immediately so a host without the pre-paint IIFE
     // still gets correct theming on first render.
     const s = useSettingsStore.getState();
-    applyTheme(s.theme, effectiveMode(s), s.accentHue); // [fork] device override
+    applyAppearance(resolveAppearance(s)); // [fork] device override + Glas
     document.title = s.appName || 'HAPulse';
     syncAppIcon(s.appIcon, s.appIconHidden); // [fork]
 
     // Keep the DOM in sync with future settings changes.
     useSettingsStore.subscribe((state) => {
-      applyTheme(state.theme, effectiveMode(state), state.accentHue); // [fork] device override
+      applyAppearance(resolveAppearance(state)); // [fork] device override + Glas
       document.title = state.appName || 'HAPulse';
       syncAppIcon(state.appIcon, state.appIconHidden); // [fork]
     });
 
     // Keep the DOM in sync with OS color-scheme changes (auto mode).
-    watchSystemMode(() => {
-      const state = useSettingsStore.getState();
-      return { theme: state.theme, mode: effectiveMode(state), accentHue: state.accentHue }; // [fork]
-    });
+    watchAppearance(() => resolveAppearance(useSettingsStore.getState())); // [fork] + contrast/transparency in Glas
 
     if (demo) {
       // Public demo: enter demo mode ephemerally (no persisted connection).

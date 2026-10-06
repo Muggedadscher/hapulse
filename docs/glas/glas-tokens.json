@@ -943,27 +943,27 @@
       "note": "≥ 4,5:1 auf bg/card; label3 (#7C7C80) ist kein Text-Token"
     },
     "--accent": {
-      "light": "#FF9500",
-      "dark": "#FF9F0A",
-      "note": "Standard ohne Hue; sonst glasAccent(hue).accent. Fläche. Textstellen mit color: var(--accent) bekommen in Glas-CSS --g-accent-ink (Kontrast-Audit findet Lücken)"
+      "light": "#A64B00",
+      "dark": "#FFB340",
+      "note": "Ink (accent.default.accentInk; mit Hue glasAccent(hue).accentInk), weil HAPulse --accent überwiegend als Text-, Symbol- und Randfarbe nutzt. Die Akzent-Flächen (Primärknöpfe, Schalter an, Balken, Regler, App-Logo) bekommen das helle Orange lokal: styles/glas/accent.css setzt dort --accent: var(--g-prominent) (Plan PLAN-ETAPPE-0-1 K6)"
     },
     "--accent-soft": {
       "light": "rgba(255,149,0,.16)",
       "dark": "rgba(255,159,10,.26)"
     },
     "--on-accent": {
-      "light": "#1C1C1E",
+      "light": "#FFFFFF",
       "dark": "#1C1C1E",
-      "note": "glasAccent(hue).onProminent (für Orange #1C1C1E, 7,74:1)"
+      "note": "beste Schrift auf der Ink (glasAccent(hue).onAccentInk; Weiß auf #A64B00 5,79:1). Auf den Akzent-Flächen setzt styles/glas/accent.css --on-accent: var(--g-on-prominent) (für Orange #1C1C1E, 7,74:1; K6)"
     },
     "--line": {
       "light": "rgba(60,60,67,.18)",
       "dark": "rgba(84,84,88,.55)"
     },
     "--border": {
-      "light": "transparent",
-      "dark": "transparent",
-      "note": "Karten randlos"
+      "light": "#E5E5EA",
+      "dark": "#3A3A3C",
+      "note": "= fillSolid, weil HAPulse --border auch für Eingabefelder, Segmente und Spuren von Reglern und Anzeigen nutzt. Randlos werden nur die Karten: styles/glas/base.css setzt bei .card und .nvr-card border-color: transparent (K14)"
     },
     "--positive": {
       "light": "#1F7A35",
@@ -1018,7 +1018,7 @@
       "--font-body": "typography.fontFamily",
       "--font-data": "typography.fontFamily + font-variant-numeric: tabular-nums",
       "--radius-card": "26px",
-      "--radius-control": "999px",
+      "--radius-control": "12px (wie Klassisch) in Etappe 1; die Kapselform (999px) kommt je Baustein ab Etappe 2, weil --radius-control auch Kacheln, Panels und mehrzeilige Kästen trägt (K7)",
       "--radius-pill": "999px",
       "grain": "body::after in Glas aus"
     }

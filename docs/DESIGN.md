@@ -1,5 +1,7 @@
 # HAPulse — Design System (v2 "Daylight")
 
+<!-- [fork] --> Zweiter Stil „Glas“ (nur Aussehen und Bewegung, gleiche Komponenten): siehe [`GLAS-DESIGN.md`](GLAS-DESIGN.md).
+
 A clean, light-first smart-home dashboard. Calm, spacious, card-based — closer to a premium consumer app than a power-user panel. Reference: the attached Overview + mobile mockups.
 
 ## Theme architecture (IMPORTANT — read before any color work)

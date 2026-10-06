@@ -103,6 +103,7 @@ describe('scope table', () => {
       'mobileHiddenSceneSections', 'mobileHiddenMusicSections', 'mobileHiddenSecuritySections', 'mobileHiddenSystemSections',
       'mobileHiddenEnergySections', 'scryptedUrl', 'poolChipMigrated', 'wasteSectionMigrated', 'nvrSectionMigrated', 'navOrderV2Migrated',
       'nvrCameraRooms', 'garageChipMigrated', 'locksChipMigrated',
+      'uiStyle', 'glassStrength', 'reduceTransparency', // Glas: the admin sets the style for everybody (E1/E2)
     ];
     const all = [...KNOWN_GLOBAL, ...scope.USER_CUSTOMIZATION_KEYS, ...scope.SECRET_CUSTOMIZATION_KEYS].sort();
     expect(Object.keys(INITIAL.customization).sort()).toEqual(all);
@@ -283,6 +284,89 @@ describe('managed, admin', () => {
     useSettingsStore.getState().updateCustomization({ scryptedUrl: 'https://nvr.example:10443', scryptedToken: 'OWN' });
     await startAs(ADMIN);
     expect(useSettingsStore.getState().customization.scryptedToken).toBe('OWN');
+  });
+});
+
+// Glas (docs/GLAS-PLAN.md §7.3 E1/E2): the style, its strength and "reduce transparency" are the admin's, for all
+describe('Glas style', () => {
+  it('an admin switching to Glas reaches a managed non-admin; light/dark stays per device', async () => {
+    ha = fakeHA(true);
+    ha.system.set(G.GLOBAL_KEY, doc());
+    await startAs(ADMIN);
+    useSettingsStore.getState().updateCustomization({ uiStyle: 'glas', glassStrength: 'tinted', reduceTransparency: true });
+    await G.flushGlobalPush();
+    const pushed = ha.system.get(G.GLOBAL_KEY) as import('../src/stores/settingsScope').GlobalSettingsDoc;
+    expect(pushed.settings.customization).toMatchObject({ uiStyle: 'glas', glassStrength: 'tinted', reduceTransparency: true });
+
+    // the same document on Georg's device, which keeps its own light/dark
+    stopHASettingsSync();
+    G.stopGlobalSettings();
+    useSettingsStore.setState(INITIAL, true);
+    useSettingsStore.getState().setModeOverride('light');
+    const system = ha.system;
+    ha = fakeHA(false);
+    ha.system.set(G.GLOBAL_KEY, system.get(G.GLOBAL_KEY));
+    await startAs(USER);
+    const s = useSettingsStore.getState();
+    expect(s.customization).toMatchObject({ uiStyle: 'glas', glassStrength: 'tinted', reduceTransparency: true });
+    expect(s.mode).toBe('dark'); // the admin's shared mode …
+    expect(s.modeOverride).toBe('light'); // … and this device's own choice, untouched
+    const { resolveAppearance } = await import('../src/theme/glasAppearance');
+    expect(resolveAppearance(s)).toMatchObject({ mode: 'light', uiStyle: 'glas', glassStrength: 'tinted', reduceTransparency: true });
+    await flushUserSettingsPush();
+    expect(ha.systemWrites).toHaveLength(0);
+    expect(JSON.stringify(ha.userWrites)).not.toContain('uiStyle'); // never part of the user snapshot
+  });
+
+  /** A global document written before the style existed. */
+  function preGlasDoc(rev = 1) {
+    const base = doc().settings;
+    const { uiStyle: _u, glassStrength: _g, reduceTransparency: _r, ...cust } = base.customization;
+    void _u; void _g; void _r;
+    return doc({ rev, settings: { ...base, customization: cust as typeof base.customization } });
+  }
+
+  it('a document from before Glas means Klassisch: a managed non-admin is never stuck in a style nobody chose', async () => {
+    ha = fakeHA(false);
+    ha.system.set(G.GLOBAL_KEY, preGlasDoc());
+    // e.g. left over from importing an admin's export before the management started
+    useSettingsStore.getState().updateCustomization({ uiStyle: 'glas', glassStrength: 'opaque', reduceTransparency: true });
+    await startAs(USER);
+    expect(useSettingsStore.getState().customization).toMatchObject({ uiStyle: 'classic', glassStrength: 'clear', reduceTransparency: false });
+  });
+
+  it("an admin's Glas that is not pushed yet survives another admin's document without the style", async () => {
+    ha = fakeHA(true);
+    ha.system.set(G.GLOBAL_KEY, preGlasDoc(1));
+    await startAs(ADMIN);
+    useSettingsStore.getState().updateCustomization({ uiStyle: 'glas' });
+    ha.remoteSystem(G.GLOBAL_KEY, { ...preGlasDoc(2), updatedBy: { id: 'a2', name: 'Admin 2' } });
+    await tick(); await tick();
+    expect(useSettingsStore.getState().customization.uiStyle).toBe('glas');
+    await G.flushGlobalPush();
+    const pushed = ha.system.get(G.GLOBAL_KEY) as import('../src/stores/settingsScope').GlobalSettingsDoc;
+    expect(pushed.settings.customization).toMatchObject({ uiStyle: 'glas' });
+  });
+
+  it('rides along in export/import; wrong types fall back, unknown words read as Klassisch, an older file means Klassisch', async () => {
+    const { resolveAppearance } = await import('../src/theme/glasAppearance');
+    const s = () => useSettingsStore.getState();
+    s().updateCustomization({ uiStyle: 'glas', glassStrength: 'tinted', reduceTransparency: true });
+    const exported = JSON.parse(s().exportSettings()) as { customization: Record<string, unknown> };
+    expect(exported.customization).toMatchObject({ uiStyle: 'glas', glassStrength: 'tinted', reduceTransparency: true });
+
+    const withStyle = (c: Record<string, unknown>) => JSON.stringify({ ...exported, customization: { ...exported.customization, ...c } });
+    s().importSettings(withStyle({ uiStyle: 42, glassStrength: null, reduceTransparency: 'yes' }));
+    expect(s().customization).toMatchObject({ uiStyle: 'classic', glassStrength: 'clear', reduceTransparency: false });
+
+    s().importSettings(withStyle({ uiStyle: 'Glass', glassStrength: 'milky' }));
+    expect(resolveAppearance(s())).toMatchObject({ uiStyle: 'classic', glassStrength: 'clear' });
+
+    s().importSettings(withStyle({ uiStyle: 'glas' }));
+    const { uiStyle: _u, glassStrength: _g, reduceTransparency: _r, ...older } = exported.customization;
+    void _u; void _g; void _r;
+    s().importSettings(JSON.stringify({ ...exported, customization: older }));
+    expect(resolveAppearance(s())).toMatchObject({ uiStyle: 'classic', glassStrength: 'clear', reduceTransparency: false });
   });
 });
 

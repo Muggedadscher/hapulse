@@ -1,0 +1,26 @@
+/* [fork] Glas — base (docs/GLAS-DESIGN.md §4.1, glas-tokens.json → classicMapping.cssOnly).
+   Colours come inline from theme/glasAppearance.ts; this file only holds what is not a colour. */
+
+:root[data-style='glas'] {
+  /* System font only — SF Pro on iPhone/iPad; no web font file is loaded in Glas. */
+  --g-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--g-font);
+  --font-body: var(--g-font);
+  /* No monospace in Glas: data uses the system font with tabular figures (set on the root below). */
+  --font-data: var(--g-font);
+  --radius-card: 26px;
+  /* --radius-control stays 12px until stage 2 gives each control its capsule (plan K7). */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cards are borderless in Glas; --border itself stays visible for controls and tracks (plan K14). The Sentinel
+   package's cards (.nvr-card, same role) follow, colour only. */
+:root[data-style='glas'] .card,
+:root[data-style='glas'] .nvr-card {
+  border-color: transparent;
+}
+
+/* No grain texture in Glas. */
+:root[data-style='glas'] body::after {
+  display: none;
+}
