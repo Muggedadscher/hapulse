@@ -7,7 +7,8 @@ steht es in §1 mit Grund.
 
 Ein unabhängiger Prüfer hat den Plan vor der Umsetzung gelesen (2026-10-06). Seine Befunde sind eingearbeitet: K6 und
 K11 neu gefasst, K7 mit echten Zahlen, K14–K18 neu, dazu §2.1 (Determinismus), §3.6 (Sichtbarkeit), §3.10 (Prüfungen)
-und §3.12 (bewusst offen). Umsetzungsstand: §2.4 und §3.11.
+und §3.12 (bewusst offen). Umsetzungsstand: §2.4 und §3.11. Den PR hat ein zweiter unabhängiger Prüfer gelesen
+(2026-10-06): kein Blocker, ein Soll-Befund, sechs Kleinigkeiten, alle behoben (§3.13).
 
 Etappe 0 und 1 kommen in **einen** PR (vorgegebener Branch), als getrennte Commits: Etappe 0 hat keinen
 Nutzer-Effekt (nur Probe-Skripte), die Referenzbilder werden nicht eingecheckt. Der PR wird **nicht** gemergt, bevor
@@ -24,15 +25,15 @@ der User zustimmt (Merge = Live-Deploy über den stündlichen Autoupdate).
 | K3 | §1.3 Mapping-Tabelle und Ink-Werte | gelten nicht; Werte nur aus GLAS-DESIGN §2 / `glas-tokens.json` | Vorrang-Hinweis |
 | K4 | §1.2 „die drei `applyTheme`-Zeilen“ in `DashboardApp` | real: zwei Aufrufe (`DashboardApp.tsx:66`, `:72`) + `watchSystemMode` (`:78`) + einer in `main.tsx:66` | Code-Stand |
 | K5 | §6.1 Changelog „… pro Gerät“ | Text siehe §3.9 | K2 |
-| K6 | GLAS-DESIGN §2.6 / `glas-tokens.json → classicMapping`: `--accent` = helles Orange `#FF9500`, `--on-accent` `#1C1C1E`, Textstellen per Glas-CSS auf `--g-accent-ink` | **Umgekehrt verdrahtet, gleiches Bild.** `--accent` auf `:root` = `accentInk` (`#A64B00` / `#FFB340` bzw. aus `glasAccent(hue)`), `--on-accent` = beste Schrift darauf (hell Weiß 5,79:1, dunkel `#1C1C1E`). Die Flächen holen sich das helle Orange lokal: `styles/glas/accent.css` setzt an 60 Flächen-Selektoren (51 HAPulse, 9 Sentinel-Paket, nur Farbe) `--accent: var(--g-prominent)` und `--on-accent: var(--g-on-prominent)` — Primärknöpfe, Schalter „an“, Balken, Regler, Fortschritt, gewählte Tage, App-Logo. Fokusringe auf diesen Flächen nehmen `--g-focus` (Ink). Ergebnis wie Skizze und E14: orange Flächen mit dunkler Schrift, Text und Symbole in Ink. | `var(--accent)` steht 211× im Dashboard-CSS (98× in `color`, 49× in Hintergründen, 31× `outline`, 21× `border`, 6× `box-shadow`, 4× Hero-Verläufe, je 1× `accent-color`/`stroke`) und 20× inline (19× `color`). Mit Orange auf `:root` hätte jede Textstelle 2,2:1, bis sie einzeln umgestellt ist; die Flächen sind die kleinere, abzählbare Menge. GLAS-DESIGN macht es bei `--positive`/`--danger`/… genauso (Ink auf dem Token, Vollfarbe als `--g-*`). Bis Etappe 2 bleiben in Ink: die Hero-Verläufe (`--hero-grad` der Energie- und Wiedergabe-Karte, 15 % Akzent) und der Bogen der Rollladen-Karte (Inline-`stroke` ohne Klasse). |
+| K6 | GLAS-DESIGN §2.6 / `glas-tokens.json → classicMapping`: `--accent` = helles Orange `#FF9500`, `--on-accent` `#1C1C1E`, Textstellen per Glas-CSS auf `--g-accent-ink` | **Umgekehrt verdrahtet, gleiches Bild.** `--accent` auf `:root` = `accentInk` (`#A64B00` / `#FFB340` bzw. aus `glasAccent(hue)`), `--on-accent` = beste Schrift darauf (hell Weiß 5,79:1, dunkel `#1C1C1E`). Die Flächen holen sich das helle Orange lokal: `styles/glas/accent.css` setzt an 60 Flächen-Selektoren (51 HAPulse, 9 Sentinel-Paket, nur Farbe) `--accent: var(--g-prominent)` und `--on-accent: var(--g-on-prominent)` — Primärknöpfe, Schalter „an“, Balken, Regler, Fortschritt, gewählte Tage, App-Logo. Fokusringe auf diesen Flächen nehmen `--g-focus` (Ink). Ergebnis wie Skizze und E14: orange Flächen mit dunkler Schrift, Text und Symbole in Ink. Schalter-Knöpfe auf der orangen Spur sind weiß (`--g-knob`, GLAS-DESIGN §7.28); mit `--on-accent` wären sie dunkel. Die Spur wird mit den Schaltern in Etappe 5 iOS-Grün (D25). | `var(--accent)` steht 211× im Dashboard-CSS (98× in `color`, 49× in Hintergründen, 31× `outline`, 21× `border`, 6× `box-shadow`, 4× Hero-Verläufe, je 1× `accent-color`/`stroke`) und 20× inline (19× `color`). Mit Orange auf `:root` hätte jede Textstelle 2,2:1, bis sie einzeln umgestellt ist; die Flächen sind die kleinere, abzählbare Menge. GLAS-DESIGN macht es bei `--positive`/`--danger`/… genauso (Ink auf dem Token, Vollfarbe als `--g-*`). Bis Etappe 2 bleiben in Ink: die Hero-Verläufe (`--hero-grad` der Energie- und Wiedergabe-Karte, 15 % Akzent) und der Bogen der Rollladen-Karte (Inline-`stroke` ohne Klasse). |
 | K7 | GLAS-DESIGN §2.6: `--radius-control` = `999px` | bleibt in Etappe 1 **12 px**; Kapseln je Baustein ab Etappe 2. `--radius-card` = 26 px schon in Etappe 1 | `--radius-control` steht 71× im Dashboard-CSS (+ 9× im Paket), darunter Kacheln (`.pool-tile`), Panels (`.pool-hero__glance`) und mehrzeilige Kästen (`.onboarding__error`, `.onboarding__advanced`) — `999px` würde sie zu Ovalen verformen. `--radius-card` (22× CSS, 3× inline, 1× Paket) tragen Karten und ihre deckungsgleichen Ebenen (`__bg`, `__wash`, Bearbeiten-Rahmen), dazu zwei Panels (`.numpad-modal`, `.notifications-panel`) und Kacheln in Karten (`.sys-metric-tile`, `.rooms-quick-tile`, `.now-playing-card__artwork-wrap`, die Listen von Garage, Türen, Schlössern). Alle werden in Etappe 1 26 px; die konzentrischen Innenradien (GLAS-DESIGN §5.2) kommen mit den Bausteinen ab Etappe 2. |
 | K8 | GLAS-PLAN §1.2 Punkt 5 (`<style id="glas-dark-scope">`) | erst Etappe 6 | nur die Kameraseite braucht einen dauerhaft dunklen Teilbaum |
 | K9 | `prefers-contrast: more`, `prefers-reduced-transparency` (§1.6, GLAS-DESIGN §3.7) | wirken über **JS** (`applyAppearance` liest `matchMedia`, schreibt die angepassten Werte inline, setzt `data-contrast="more"`), nicht über CSS-Media-Queries | Inline-Werte auf `:root` schlagen jede Stylesheet-Regel; so bleibt `glasTokens.ts` die einzige Wertequelle und die Kontrast-Tests decken die Variante mit ab |
 | K10 | GLAS-PLAN §1.3 `glass-fill`/`glass-filter` als fertige Werte auf `:root` | Material wird in **Bausteinen** gesetzt (`--g-glass-tint`, `--g-glass-rgb`, `--g-glass-a0`, `--g-glass-a1`, `--g-glass-sat`, `--g-glass-bright`) und erst am Element zusammengesetzt (`--g-surface-tint` je Fläche, wirksam `max(Fläche, Stärke)`); die Namen `--g-glass-fill`/`--g-glass-filter` aus `glas-tokens.json → glasVariables` bleiben, werden aber in `material.css` am Glas-Element deklariert | `var()` in einer Custom Property wird dort aufgelöst, wo sie deklariert ist (`:root`) — eine fertige Füllung könnte die Tönung je Fläche (GLAS-DESIGN §3.4) nicht mehr ändern |
-| K11 | GLAS-PLAN §1.5 `GlasRuntime` (rendert `null`, importiert das CSS) | **entfällt in Etappe 1.** `main.tsx` importiert `styles/glas/index.css` als **letzten** Import, nach allen statisch geladenen Stylesheets; die Attribute setzt `applyAppearance` | Das CSS muss mit dem Einstieg geladen sein — sonst zeigen Boot-Anzeige, Onboarding und Anmeldung (ohne `AppLayout`) Klassisch-Schrift — und nach den Upstream-Stylesheets stehen, damit gleich spezifische Upstream-Regeln Glas nicht überschreiben. Scroll-/Druck-Beobachter kommen mit der Shell (Etappe 2). |
+| K11 | GLAS-PLAN §1.5 `GlasRuntime` (rendert `null`, importiert das CSS) | **entfällt in Etappe 1.** `app/DashboardApp.tsx` importiert `styles/glas/index.css` als **letzten** Import, nach allen statisch geladenen Stylesheets; die Attribute setzt `applyAppearance` | Das CSS muss mit dem Einstieg geladen sein — sonst zeigen Boot-Anzeige, Onboarding und Anmeldung (ohne `AppLayout`) Klassisch-Schrift — und nach den Upstream-Stylesheets stehen, damit gleich spezifische Upstream-Regeln Glas nicht überschreiben. In `DashboardApp.tsx` (nicht `main.tsx`), damit auch ein Host, der `<DashboardApp />` rendert, das Glas-CSS bekommt; `main.tsx` importiert `DashboardApp` direkt nach `global.css`, der gebaute CSS-Code ist byteweise gleich. Die Stylesheets nachgeladener Seiten stehen danach im Dokument; gegen sie gewinnt jede Glas-Regel über das Präfix (zwei Klassen-Stufen mehr Spezifität als die klassische Regel, die sie kopiert). Scroll-/Druck-Beobachter kommen mit der Shell (Etappe 2). |
 | K12 | Selektor-Wächter (GLAS-PLAN §5.2) | schon in Etappe 1 | billig, schützt vom ersten Upstream-Merge an |
 | K13 | Spring-Rückfall `@supports not (… linear(0, 1))` per CSS | `applyAppearance` prüft `CSS.supports(…)` und setzt die `cubic-bezier`-Werte direkt | gleiche Inline-Regel wie K9 |
-| K14 | GLAS-DESIGN §2.6: `--border` = `transparent` („Karten randlos“) | `--border` = `fillSolid` (`#E5E5EA` / `#3A3A3C`); randlos werden nur die Karten: `base.css` setzt bei `.card` und `.nvr-card` `border-color: transparent` | `var(--border)` steht 73× im Dashboard (70× CSS, 3× inline) und 19× im Paket, überwiegend an Eingabefeldern, Segmenten, Spuren von Reglern und Anzeigen (z. B. die Spur des Rollladen-Bogens) und Trennlinien. `transparent` hätte sie unsichtbar gemacht. |
+| K14 | GLAS-DESIGN §2.6: `--border` = `transparent` („Karten randlos“) | `--border` = `fillSolid` (`#E5E5EA` / `#3A3A3C`); randlos werden nur die Karten: `base.css` setzt bei `.card` und `.nvr-card` `border-color: transparent`, außer bei Rändern, die einen Zustand zeigen (Alarm ausgelöst, Bewegung, gewählte Farbwelt) | `var(--border)` steht 73× im Dashboard (70× CSS, 3× inline) und 19× im Paket, überwiegend an Eingabefeldern, Segmenten, Spuren von Reglern und Anzeigen (z. B. die Spur des Rollladen-Bogens) und Trennlinien. `transparent` hätte sie unsichtbar gemacht. |
 | K15 | GLAS-DESIGN §2.3 Schritt 2: `accentInk` nur gegen `bg` (hell) bzw. `card` (dunkel) prüfen | zusätzlich gegen die Flächen, auf denen Ink tatsächlich steht (Füllung über Karte und `bg`, `card2`, `accentSoft` über der Karte) | mit eigenen Farbtönen des Akzent-Reglers fiel Ink dort sonst auf bis zu 3,3:1; das Standard-Orange ist unverändert (Werte = `glas-tokens.json`) |
 | K16 | §3.6 alt: sichtbar „für Admins oder wenn Glas aktiv ist“ | die Zeilen sehen **nur HA-Admins** (E11). Einzige Ausnahme: ein Nicht-Admin **ohne** Admin-Verwaltung, bei dem Glas trotzdem aktiv ist (z. B. aus einem importierten Export), sieht sie als Rückweg. Unter der Verwaltung entscheidet das Dokument des Admins; fehlt darin der Stil (Dokument von vor Glas), gilt Klassisch: `applyGlobal` setzt die drei Felder dann auf den Standard. Beim Admin selbst bleibt eine noch nicht hochgeladene Wahl erhalten (der Abgleich mischt seine lokale Änderung vor `applyGlobal` ein) und wird hochgeladen. | E11 wörtlich. Ohne den Standard in `applyGlobal` hätte ein Gerät mit lokal gesetztem Glas unter einem alten Admin-Dokument Glas behalten, ohne die Zeile zum Abschalten zu sehen. |
 | K17 | §3.7 Schlüssel unter `settings.appearance.*` | eigener Namensraum **`glas.*`** | `settings.appearance.*` gehört Upstream; eigene Schlüssel dort kollidieren bei Upstream-Merges und sind schwer vom Upstream-Bestand zu trennen (wie `nvr.*`, `waste.*`) |
@@ -52,7 +53,7 @@ CommonJS wie `click-fuzz-test.cjs`, keine neuen Abhängigkeiten.
 | `--serve <dist>` (statt einer URL) | eingebauter statischer Server mit SPA-Rückfall auf `index.html`, freier Port |
 | `shoot <url> <out> [--style classic\|glas] [--strength …] [--reduce] [--contrast] [--forced-colors] [--devices …] [--modes …] [--scenes …] [--elements <css>] [--suffix …] [--engine chromium\|webkit]` | Screenshots der Matrix (§2.3). `--elements .settings-page__section` legt zusätzlich ein Bild je Einstellungs-Abschnitt an (`…-settings__2-darstellung.png`) |
 | `compare <dirA> <dirB> [<diffDir>] [--expect <regex>]` | Pixelvergleich im Browser (Canvas, keine Bibliothek): je Bild abweichende Pixel und Zeilen, rote Differenzbilder; Exit-Code ≠ 0 bei Abweichung. Bilder, deren Name auf `--expect` passt, dürfen abweichen (werden gelistet) |
-| `checks <url>` | Laufzeitprüfungen Etappe 1 (§3.10): Pre-Paint, keine Webfonts in Glas, Rückweg Glas → Klassisch ohne Reste, OS-Wechsel in „auto“, reduzierte Bewegung |
+| `checks <url>` | Laufzeitprüfungen Etappe 1 (§3.10): Pre-Paint, keine Webfonts in Glas, Rückweg Glas → Klassisch ohne Reste, Akzent-Regler folgt dem Stil, OS-Wechsel in „auto“, reduzierte Bewegung, weiße Schalter-Knöpfe, Kartenränder |
 
 **Determinismus** (sonst ist „pixelgleich“ nicht prüfbar): Demo-Modus über `addInitScript` wie in `click-fuzz-test.cjs`
 (`hapulse:connection`, `hapulse:settings` mit `lastSeenVersion`/`lastSeenFork` hoch, damit „Was ist neu“ nicht aufgeht),
@@ -162,9 +163,9 @@ Aufruf ersetzt den ersten.
 | Datei | Inhalt |
 |---|---|
 | `app/glas/useUiStyle.ts` | `useUiStyle()`, `useIsGlas()` (aus dem Store, normalisiert wie `applyAppearance`) |
-| `styles/glas/index.css` | importiert `base.css`, `accent.css`, `material.css`, `motion.css`; selbst importiert als letzter Import in `main.tsx` (K11) |
-| `styles/glas/base.css` | `--font-display/-body/-data` = Systemschrift-Stack (GLAS-DESIGN §4.1), `--radius-card: 26px` (K7), `tabular-nums`; Karten randlos (`.card`, `.nvr-card`, K14); Körnung `body::after` aus |
-| `styles/glas/accent.css` | Akzent als Fläche (K6): 60 Flächen-Selektoren bekommen `--accent: var(--g-prominent)` und `--on-accent: var(--g-on-prominent)`, Fokusringe darauf `--g-focus` |
+| `styles/glas/index.css` | importiert `base.css`, `accent.css`, `material.css`, `motion.css`; selbst importiert als letzter Import in `app/DashboardApp.tsx` (K11) |
+| `styles/glas/base.css` | `--font-display/-body/-data` = Systemschrift-Stack (GLAS-DESIGN §4.1), `--radius-card: 26px` (K7), `tabular-nums`; Karten randlos (`.card`, `.nvr-card`, K14), Zustandsränder ausgenommen; Körnung `body::after` aus |
+| `styles/glas/accent.css` | Akzent als Fläche (K6): 60 Flächen-Selektoren bekommen `--accent: var(--g-prominent)` und `--on-accent: var(--g-on-prominent)`, Fokusringe darauf `--g-focus`; Schalter-Knöpfe im eingeschalteten Zustand weiß (`--g-knob`, alle sieben Schalter-Arten) |
 | `styles/glas/material.css` | Rezept GLAS-DESIGN §3.3 als `.g-glass` / `.g-glass--clear` aus den Bausteinen (K10), `-webkit-` + Standard-`backdrop-filter`, Rand-Maske mit `-webkit-mask-composite: xor` + `mask-composite: exclude`, `isolation: isolate`; `[data-glass='opaque']` und `@supports not (backdrop-filter …)` → deckend; `forced-colors: active` → Systemfarben, kein Glas. Noch von keiner Komponente benutzt (ab Etappe 2), geprüft über die Material-Probe |
 | `styles/glas/motion.css` | `.stagger-rise` in Glas: 8 px + Überblendung 420 ms `--g-spring-smooth`, 25 ms versetzt, max. 6 Stufen (GLAS-DESIGN §6.3), Keyframes `g-rise`; bei `prefers-reduced-motion` aus (zusätzlich zum globalen Aus) |
 | `components/settings/StyleSettings.tsx` | Zeilen „Stil“, „Glas-Stärke“, „Transparenz reduzieren“ (§3.6) und der Hinweis statt der Farbwelt-Karten (`GlasThemeHint`) |
@@ -180,9 +181,9 @@ Hex-Werte im CSS, kein `@layer`, kein `!important`, kein `@property`/`@font-face
 | Datei | Änderung |
 |---|---|
 | `packages/core/src/index.ts` | Export `glasTokens` |
-| `apps/dashboard/src/main.tsx` | `initTheme()`: `applyTheme(theme, mode, accentHue)` → `applyAppearance({ theme, mode, accentHue, ...readPersistedStyle(raw) })` (Pre-Paint); `import './styles/glas/index.css'` als letzter Import (K11) |
-| `apps/dashboard/src/app/DashboardApp.tsx` | `:66`/`:72` → `applyAppearance(resolveAppearance(s))`; `:78` `watchSystemMode` → `watchAppearance`; Import |
-| `apps/dashboard/src/pages/Settings.tsx` | `<StyleSettings />` vor der Hell/Dunkel-Zeile; in Glas statt der Farbwelt-Karten `GlasThemeHint`; Akzent-Vorschaupunkt, Standard-Farbton und Reglerstellung ohne eigenen Farbton in Glas aus `glasAccent` (Klassisch unverändert) |
+| `apps/dashboard/src/main.tsx` | `initTheme()`: `applyTheme(theme, mode, accentHue)` → `applyAppearance({ theme, mode, accentHue, ...readPersistedStyle(raw) })` (Pre-Paint); Import von `applyTheme` entfällt |
+| `apps/dashboard/src/app/DashboardApp.tsx` | `:66`/`:72` → `applyAppearance(resolveAppearance(s))`; `:78` `watchSystemMode` → `watchAppearance`; Import; `import '../styles/glas/index.css'` als letzter Import (K11) |
+| `apps/dashboard/src/pages/Settings.tsx` | `<StyleSettings />` vor der Hell/Dunkel-Zeile; in Glas statt der Farbwelt-Karten `GlasThemeHint`; Akzent-Vorschaupunkt und Standard-Farbton in Glas aus `glasAccent`; ohne eigenen Farbton springt der Regler bei einem Stilwechsel auf den Standard des neuen Stils (Klassisch ohne Wechsel unverändert) |
 | `apps/dashboard/src/stores/settingsStore.ts` | drei Felder in `CustomizationSettings` + `DEFAULT_CUSTOMIZATION`; `applyGlobal`: fehlende Felder = Standard (K16) |
 | `packages/core/scripts/smoke.mjs` | Block „glas tokens“ (§3.8) |
 | `packages/core/locales/*.json` (7) | 13 neue Schlüssel `glas.*` am Ende (§3.7) |
@@ -220,7 +221,7 @@ Akzent-Regler bleibt (E14); ohne eigenen Farbton zeigen Vorschaupunkt und Regler
 | Test | Ort | Prüft |
 |---|---|---|
 | Glas-Tokens | `smoke.mjs` Block „glas tokens“ | gleiche Schlüssel hell/dunkel; Farben, Standard-Akzent und Federn = `glas-tokens.json` (wörtlich); jeder Schlüssel von `glasCssVars` ist einer der 24 klassischen Namen oder `--g-*`, jede Glas-Farbe als `--g-<kebab>`; `--accent` = Ink und `--g-accent` = Orange (K6), `--border` = `fillSolid` (K14); die 24 klassischen Werte = `glas-tokens.json → classicMapping` (Doku und Code laufen nicht auseinander); Tönung je Stärke; Federn = `linear(…)` mit 41 Stützpunkten 0…1, Rückfall ohne `linear()`; Nachrechnung von GLAS-DESIGN §2.5 (Stichproben ± 0,05); **jedes Text-/Symbolpaar ≥ seinem Minimum** über Modus × Stärke × Kontrast × Farbton (ohne + 0…345 in 15er-Schritten); „mehr Kontrast“ senkt nie ein Paar |
-| Erscheinung | `apps/dashboard/test/glasAppearance.test.ts` | `resolveAppearance` (Normalisierung, `modeOverride` gewinnt); `readPersistedStyle` (kaputtes JSON, alter Stand, Müllwerte); `applyAppearance` gegen ein nachgebautes `document`: Glas setzt Tokens + `--g-*` + Attribute + `theme-color`; **Glas → Klassisch ergibt exakt den Zustand eines frischen Klassisch** (Inline-Stil, Attribute, `theme-color`); Transparenz/Kontrast → `opaque`; `linear()`-Rückfall; unveränderter Zustand wird nicht neu geschrieben (K18); `watchAppearance` (System-Hell/Dunkel nur in „auto“, Kontrast/Transparenz nur in Glas, kein doppelter Listener) |
+| Erscheinung | `apps/dashboard/test/glasAppearance.test.ts` | `resolveAppearance` (Normalisierung, `modeOverride` gewinnt); `readPersistedStyle` (kaputtes JSON, alter Stand, Müllwerte); `applyAppearance` gegen ein nachgebautes `document`: Glas setzt Tokens + `--g-*` + Attribute + `theme-color`; **Glas → Klassisch ergibt exakt den Zustand eines frischen Klassisch** (Inline-Stil, Attribute, `theme-color`); Transparenz/Kontrast → `opaque`; `linear()`-Rückfall; unveränderter Zustand wird nicht neu geschrieben, Stärke, Farbton und Farbwelt schreiben neu (K18); `watchAppearance` (System-Hell/Dunkel nur in „auto“, Kontrast/Transparenz nur in Glas, kein doppelter Listener) |
 | Scope | `globalSettings.test.ts` | drei Felder in `KNOWN_GLOBAL`; Admin stellt Glas ein → Nicht-Admin bekommt Stil, Stärke, Transparenz; `modeOverride` bleibt Gerätewert; Nicht-Admin mit lokalem Glas unter einem Dokument von vor Glas → Klassisch; ungespeicherte Glas-Wahl des Admins übersteht ein solches Dokument und wird hochgeladen (K16); Export enthält die Felder, Import mit falschen Typen bzw. einer Datei ohne die Felder → Klassisch |
 | Selektor-Wächter | `apps/dashboard/test/glasSelectors.test.ts` | Dateiliste; jeder Selektor beginnt mit `:root[data-style='glas']`; keine Hex-Werte, kein `!important`/`@layer`/`@property`/`@font-face`/fremdes `@import`; Keyframes `g-*`; jede Klasse außer `g-*` ist in einem Klassisch-Stylesheet oder im Paket-CSS definiert |
 | Changelog | `forkChangelog.test.ts` (besteht) | `CHANGELOG.fork.md` aktuell |
@@ -260,6 +261,13 @@ Datum = Merge-Datum (im PR auf den Tag des Schreibens gesetzt; vor dem Merge anp
   (Schibsted 400) für die Zeilenmaße — wie in Klassisch; das Skript listet sie getrennt.
 - **Modus „auto“** (`checks`): Farbschema per Emulation wechseln → Glas bleibt, `--bg` wechselt hin und zurück.
 - **Reduzierte Bewegung** (`checks`): `g-rise` startet normal, mit `prefers-reduced-motion: reduce` nie.
+- **Akzent-Regler** (`checks`): ohne eigenen Farbton zeigt er den Standard des Stils, auf dem Bildschirm, in beide
+  Richtungen umgeschaltet (Aurora hell 34, Glas hell 35).
+- **Schalter-Knöpfe** (`checks`): jeder eingeschaltete Schalter auf Start (mit Favoriten), Raum, Automationen, Pool und
+  Einstellungen hat in Glas hell und dunkel einen weißen Knopf (gefunden: Karten-, Automations-, Pool-, Geräte- und
+  Admin-Schalter). Gegenprobe ohne die Regel: dunkle Knöpfe (`#1C1C1E`) in beiden Modi.
+- **Kartenränder** (`checks`): in Glas hat keine Karte der Sicherheitsseite einen Rand; eine ausgelöste Alarm-Karte
+  behält den Rand, den Klassisch ihr gibt.
 - **Klick-Fuzz** (`click-fuzz-test.cjs … glas`) Handy + Desktop: keine Fehler.
 - **NVR:** `/nvr` im Demo-Modus (Einrichtungskarte) in beiden Stilen; die Paket-Ansichten (Übersicht, Kameraseite)
   brauchen einen Sentinel-Server → Labor (§6, Punkt 7).
@@ -283,7 +291,9 @@ V3) · Verwaltet-Hinweis/gesperrte Felder (S9) · Export/Import (S14) · „Was 
 ### 3.12 Bekannt und bewusst offen nach Etappe 1 (kommt in Etappe 2–5)
 
 - Glas-Material an Seitenleiste/Tab-Leiste/Sheets, Kapselformen der Steuerelemente (K7), Titel über den Karten,
-  Satzschreibung der Abschnittsköpfe, iOS-Schalter in Grün.
+  Satzschreibung der Abschnittsköpfe.
+- Schalter im Glas-Look (Etappe 5, GLAS-DESIGN §7.28): Spur iOS-Grün, Größe 51 × 31, Aus-Zustand. In Etappe 1 ist die
+  Spur orange mit weißem Knopf; ausgeschaltet sehen die Schalter aus wie in Klassisch.
 - Glas-Stärke: „Klar“ und „Getönt“ sehen in Etappe 1 gleich aus (Startseite gemessen: 0 Pixel Unterschied), weil noch
   keine Fläche aus Glas-Material ist. „Deckend“ und „Transparenz reduzieren“ machen schon Zweittext und Trennlinien
   kräftiger. Voll wirksam ab Etappe 2.
@@ -296,6 +306,23 @@ V3) · Verwaltet-Hinweis/gesperrte Felder (S9) · Export/Import (S14) · „Was 
 - Fokusdarstellung im Detail (Ringe auf Glas, Tastaturwege durch Shell und Sheets).
 
 Bis dahin ist Glas eine **Vorschau für Admins**: neue Farben, Schrift und Kartenform auf dem bestehenden Layout.
+
+### 3.13 Review des PR (2026-10-06)
+
+| # | Befund | Behoben |
+|---|---|---|
+| 1 | Soll: eingeschaltete Schalter bekamen in Glas einen fast schwarzen Knopf (`--on-accent` auf der Akzentfläche = `#1C1C1E`) | eine Knopf-Regel für alle sieben Schalter-Arten in `accent.css` (`--g-knob`, weiß, beide Modi); Prüfung in `checks` |
+| 2 | Fokusring-Liste ohne die Medien-Regler (`.now-playing-card__progress`, `__volume-slider`, `.player-tile__volume`) | aufgenommen; die Regler unterdrücken ihren Ring heute selbst (`.slider { outline: none }`), so bleibt ein künftiger Ring Ink |
+| 3 | Akzent-Regler zeigte nach einem Stilwechsel den Standard des alten Stils | Regler springt beim Stilwechsel auf den neuen Standard, solange kein eigener Farbton gewählt ist; die Zeile `value={localHue}` ist wieder Upstream; Prüfung in `checks` |
+| 4 | `base.css` blendete auch Ränder aus, die einen Zustand zeigen (`.alarm-panel-card--triggered`) | `:not(…)` für die Zustandsränder; Hinweis in `docs/SYNC.md` für künftige Upstream-Ränder; Prüfung in `checks` |
+| 5 | `main.tsx`: geänderte Import-Zeile ohne `[fork]` | markiert |
+| 6 | Glas-CSS nur in `main.tsx` — ein Host mit `<DashboardApp />` hätte es nicht | Import nach `DashboardApp.tsx` (K11); gebauter CSS-Code byteweise gleich |
+| 7 | Test des Merkens (K18) prüfte nur die Stärke | prüft auch Farbton und Farbwelt; Gegenprobe ohne die beiden im Schlüssel schlägt fehl |
+
+Nebenbefund in Klassisch (nicht Teil von Glas, nicht geändert): Im Produktions-Build zeigt eine ausgelöste Alarm-Karte
+weder den roten Rand noch den roten Schein aus `AlarmPanelCard.css`. Die Regel liegt in einem gemeinsamen CSS-Teil, den
+`index.html` vor dem Haupt-Stylesheet einbindet; im Haupt-Stylesheet setzt `.card` (gleiche Spezifität, später) Rand
+und Schatten zurück (gemessen am gebauten Stand in Chromium). Glas blendet an dieser Karte nichts aus, was Klassisch zeigt.
 
 ---
 

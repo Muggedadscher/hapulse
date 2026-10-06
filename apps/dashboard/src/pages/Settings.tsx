@@ -311,6 +311,12 @@ function AppearanceSection() {
   }
 
   const [localHue, setLocalHue] = useState<number>(accentHue ?? getDefaultHue(theme));
+  // [fork] Glas: the default hue depends on the style; follow a style switch while no hue is chosen
+  const [hueForGlas, setHueForGlas] = useState(isGlas);
+  if (hueForGlas !== isGlas) {
+    setHueForGlas(isGlas);
+    if (accentHue === undefined) setLocalHue(getDefaultHue(theme));
+  }
 
   function handleThemeSelect(t: ThemeName) {
     setTheme(t);
@@ -521,7 +527,7 @@ function AppearanceSection() {
               className="accent-slider"
               min={0}
               max={360}
-              value={isGlas && accentHue === undefined ? getDefaultHue(theme) : localHue /* [fork] Glas: default = iOS orange */}
+              value={localHue}
               onChange={(e) => handleHueChange(Number(e.target.value))}
               aria-label={t('settings.appearance.accent.hueAria')}
             />

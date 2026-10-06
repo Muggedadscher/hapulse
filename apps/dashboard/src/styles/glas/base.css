@@ -13,10 +13,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Cards are borderless in Glas; --border itself stays visible for controls and tracks (plan K14). The Sentinel
+/* Cards are borderless in Glas; --border itself stays visible for controls and tracks (plan K14). Borders that
+   show a state (alarm triggered, motion detected, the chosen colour world) stay as in Klassisch. The Sentinel
    package's cards (.nvr-card, same role) follow, colour only. */
-:root[data-style='glas'] .card,
-:root[data-style='glas'] .nvr-card {
+:root[data-style='glas'] :is(.card, .nvr-card):not(.alarm-panel-card--triggered, .motion-tile--active, .theme-swatch--active) {
   border-color: transparent;
 }
 

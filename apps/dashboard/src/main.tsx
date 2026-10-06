@@ -13,13 +13,11 @@ import { createRoot } from 'react-dom/client';
 // Global styles (fonts, reset, theme tokens, grain overlay)
 import './styles/global.css';
 
-import { THEME_NAMES } from './theme/themes';
+import { THEME_NAMES } from './theme/themes'; // [fork] Glas: applyTheme runs inside applyAppearance
 import { applyAppearance, readPersistedStyle } from './theme/glasAppearance'; // [fork] Glas
 import type { ThemeName, ThemeMode } from './theme/themes';
 import { DashboardApp } from './app/DashboardApp';
 import { installChunkReload } from './app/chunkReload'; // [fork]
-// [fork] Glas stylesheets — last, after every statically imported stylesheet; they act only under data-style="glas"
-import './styles/glas/index.css';
 
 // Map any legacy persisted theme value to the current { theme, mode } model.
 function legacyTheme(value: string | undefined): { theme: ThemeName; mode: ThemeMode } {

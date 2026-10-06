@@ -170,6 +170,18 @@ describe('applyAppearance', () => {
     G.applyAppearance(glas({ glassStrength: 'tinted' }), ENV);
     expect(set).toHaveBeenCalled();
     expect(root.getAttribute('data-glass')).toBe('tinted');
+
+    // the accent hue and the colour world (hidden in Glas, kept for Klassisch) are part of the key, too
+    set.mockClear();
+    const prominent = root.style.getPropertyValue('--g-prominent');
+    G.applyAppearance(glas({ glassStrength: 'tinted', accentHue: 200 }), ENV);
+    expect(set).toHaveBeenCalled();
+    expect(root.style.getPropertyValue('--g-prominent')).not.toBe(prominent);
+    set.mockClear();
+    G.applyAppearance(glas({ glassStrength: 'tinted', accentHue: 200, theme: 'ocean' }), ENV);
+    expect(set).toHaveBeenCalled();
+    expect(root.getAttribute('data-theme')).toBe('ocean');
+    expect(root.style.getPropertyValue('--bg')).toBe(GLAS_COLORS.light.bg); // Glas still wins over the classic tokens
   });
 
   it('"auto" follows the system colour scheme in both styles', () => {

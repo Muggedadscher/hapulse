@@ -21,6 +21,9 @@ import { UserMenuContext } from './userMenuContext';
 import { setAppBasename } from './basename';
 import { DashboardBootLoading } from '../components/ui/DashboardBootLoading';
 import { I18nProvider } from '../i18n/I18nProvider';
+// [fork] Glas stylesheets: here, not in main.tsx, so a host that renders <DashboardApp /> gets them too. Last import,
+// so they follow every statically imported stylesheet; they act only under data-style="glas".
+import '../styles/glas/index.css';
 
 // Guard against React 19 StrictMode's double-invocation running init twice.
 let _initialised = false;

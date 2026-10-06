@@ -93,8 +93,8 @@ async function baseUrl(pos) {
 }
 
 /** Init script: demo connection + settings, seeded Math.random, no dialogs/confirm. */
-function seedScript({ demo, mode, style, strength, reduce }) {
-  const customization = style === 'glas' ? { uiStyle: 'glas', glassStrength: strength, reduceTransparency: reduce } : {};
+function seedScript({ demo, mode, style, strength, reduce, customization: extra }) {
+  const customization = { ...(style === 'glas' ? { uiStyle: 'glas', glassStrength: strength, reduceTransparency: reduce } : {}), ...extra };
   const settings = { state: { theme: 'aurora', mode, lastSeenVersion: '99.0.0', lastSeenFork: 99, customization }, version: 0 };
   return `(() => {
     try {
@@ -305,7 +305,9 @@ async function compare() {
   process.exit(result.differ.length || result.missing.length ? 1 : 0);
 }
 
-/** Runtime checks of stage 1: pre-paint, switching without remnants, OS mode in "auto", no web fonts, reduced motion. */
+/** Runtime checks of stage 1: pre-paint, switching without remnants (and the accent slider following the style), OS
+ * mode in "auto", no web fonts, reduced motion, white switch knobs on the orange track, borderless cards that keep
+ * their state borders. */
 async function checks() {
   const { srv, url } = await baseUrl(3);
   const pw = loadPlaywright();
@@ -361,15 +363,23 @@ async function checks() {
   }
 
   // 2. Glas → Klassisch at runtime (settings UI) leaves exactly the state of a fresh Klassisch load of the same build:
-  //    inline variables, attributes, theme-color — and the pixels of the start page after navigating there
+  //    inline variables, attributes, theme-color — and the pixels of the start page after navigating there. Without a
+  //    chosen hue the accent slider shows the default of the style on screen, in both directions.
   {
+    const hue = (page) => page.locator('.accent-slider').inputValue();
     const ref = await newContext(browser, 'desktop', { demo: true, mode: 'light', style: 'classic' });
-    const fresh = await rootState((await openPage(ref, url + '/settings')).page);
+    const refSettings = (await openPage(ref, url + '/settings')).page;
+    const fresh = await rootState(refSettings);
+    const freshHue = await hue(refSettings);
     const freshHome = await shot((await openPage(ref, url + '/')).page);
+    await refSettings.locator('[data-glas-style-option="glas"]').click();
+    await run(refSettings, 200);
+    const toGlasHue = await hue(refSettings);
     await ref.close();
     const ctx = await newContext(browser, 'desktop', { demo: true, mode: 'light', style: 'glas', strength: 'tinted' });
     const { page } = await openPage(ctx, url + '/settings');
     const before = await rootState(page);
+    const glasHue = await hue(page);
     const btn = page.locator('[data-glas-style-option="classic"]');
     out.switchButtonFound = (await btn.count()) === 1;
     if (out.switchButtonFound) {
@@ -377,6 +387,7 @@ async function checks() {
       await run(page, 200);
     }
     const after = await rootState(page);
+    const afterHue = await hue(page);
     const keys = new Set([...Object.keys(fresh.vars), ...Object.keys(after.vars)]);
     const diffs = [...keys].filter((k) => fresh.vars[k] !== after.vars[k]).map((k) => ({ k, fresh: fresh.vars[k], after: after.vars[k] }));
     // in-app navigation (no reload) to the start page, then the same picture as a fresh Klassisch start
@@ -394,10 +405,13 @@ async function checks() {
       themeColor: { before: before.themeColor, fresh: fresh.themeColor, after: after.themeColor },
       diffs,
       homePixels: home.pixels,
+      accentSlider: { classicFresh: freshHue, classicToGlas: toGlasHue, glasFresh: glasHue, glasToClassic: afterHue },
     };
     out.switchBackOk = out.switchButtonFound && out.switchBack.glasVarsBefore > 0 && out.switchBack.glasVarsAfter === 0
       && diffs.length === 0 && JSON.stringify(fresh.attrs) === JSON.stringify(after.attrs)
       && fresh.themeColor === after.themeColor && before.themeColor !== after.themeColor && home.pixels === 0;
+    // the two defaults differ (34 vs 35 for aurora light), so a stale slider shows up
+    out.accentSliderOk = freshHue !== glasHue && afterHue === freshHue && toGlasHue === glasHue;
     await ctx.close();
   }
 
@@ -440,9 +454,74 @@ async function checks() {
     out.reducedMotionOk = out.reducedMotion.normal > 0 && out.reducedMotion.reduce === 0;
   }
 
+  // 5. switch knobs on the orange track are white in Glas, in both modes (Klassisch paints some with --on-accent, which
+  //    the accent areas turn dark). Every page of the demo that shows a switched-on switch.
+  {
+    const KNOBS = {
+      pill: '.pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob',
+      autoRow: '.auto-row-toggle input:checked + .auto-row-toggle__track .auto-row-toggle__knob',
+      legacy: '.toggle-switch input:checked ~ .toggle-switch__knob',
+      pool: '.pool-switch input:checked + .pool-switch__track .pool-switch__thumb',
+      deviceCard: '.device-toggle--on .device-toggle__thumb',
+      deviceRow: '.device-toggle--on .device-toggle__knob',
+      admin: '.admin-toggle--on .admin-toggle__thumb',
+    };
+    const found = {};
+    const bad = [];
+    // favourites, so that the start page's device card lists the switched-on ones; dark with "Transparenz reduzieren"
+    // on, so that the settings show one switched-on admin switch, too
+    const customization = { favorites: ['light.living_room_ceiling', 'light.living_room_floor_lamp', 'light.kitchen_counter',
+      'light.office_desk', 'switch.coffee_machine', 'switch.office_desk'] };
+    for (const [mode, reduce] of [['light', false], ['dark', true]]) {
+      const ctx = await newContext(browser, 'desktop', { demo: true, mode, style: 'glas', strength: 'clear', reduce, customization });
+      for (const p of ['/', '/room/living_room', '/automations', '/pool', '/settings']) {
+        const { page } = await openPage(ctx, url + p);
+        await settleAnimations(page); // the knob's background transition runs on real time
+        const r = await page.evaluate((sels) => Object.fromEntries(Object.entries(sels).map(([k, s]) =>
+          [k, [...document.querySelectorAll(s)].map((el) => getComputedStyle(el).backgroundColor)])), KNOBS);
+        for (const [k, colors] of Object.entries(r)) {
+          found[k] = (found[k] || 0) + colors.length;
+          colors.filter((c) => c !== 'rgb(255, 255, 255)').forEach((c) => bad.push({ mode, page: p, knob: k, color: c }));
+        }
+        await page.close();
+      }
+      await ctx.close();
+    }
+    out.knobs = { found, bad };
+    // the demo shows these kinds switched on; the others (legacy, device rows in a dialog) are checked where they appear
+    out.knobsOk = bad.length === 0 && ['pill', 'autoRow', 'pool', 'deviceCard', 'admin'].every((k) => found[k] > 0);
+  }
+
+  // 6. cards are borderless in Glas, except borders that show a state: a triggered alarm card (added to the security
+  //    page, whose stylesheets define it) keeps the border Klassisch gives it. Note: in the production build the
+  //    shared chunk with .alarm-panel-card--triggered is linked before the one with .card, so Klassisch shows the
+  //    plain card border there, not the red one — `triggeredIsDanger` reports it, Glas only must not hide it.
+  {
+    const ctx = await newContext(browser, 'desktop', { demo: true, mode: 'light', style: 'glas', strength: 'clear' });
+    const { page } = await openPage(ctx, url + '/security');
+    out.cardBorders = await page.evaluate(() => {
+      const border = (el) => getComputedStyle(el).borderTopColor;
+      const plain = [...document.querySelectorAll('.card')].map(border);
+      const triggered = document.createElement('div');
+      triggered.className = 'card alarm-panel-card alarm-panel-card--triggered';
+      document.body.appendChild(triggered);
+      const danger = document.createElement('div');
+      danger.style.color = 'var(--danger)';
+      document.body.appendChild(danger);
+      const r = { plain: plain.length, plainWithBorder: plain.filter((c) => c !== 'rgba(0, 0, 0, 0)').length,
+        triggered: border(triggered), triggeredIsDanger: border(triggered) === getComputedStyle(danger).color };
+      triggered.remove(); danger.remove();
+      return r;
+    });
+    const cb = out.cardBorders;
+    out.cardBordersOk = cb.plain > 0 && cb.plainWithBorder === 0 && cb.triggered !== 'rgba(0, 0, 0, 0)';
+    await ctx.close();
+  }
+
   await browser.close();
   if (srv) srv.close();
-  const ok = out.prePaintOk && out.noWebfontsOk && out.switchBackOk && out.autoModeOk && out.reducedMotionOk;
+  const ok = out.prePaintOk && out.noWebfontsOk && out.switchBackOk && out.accentSliderOk && out.autoModeOk && out.reducedMotionOk
+    && out.knobsOk && out.cardBordersOk;
   console.log(JSON.stringify({ ok, ...out }, null, 1));
   process.exit(ok ? 0 : 1);
 }

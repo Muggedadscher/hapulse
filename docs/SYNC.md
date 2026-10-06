@@ -139,9 +139,9 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/stores/connectionStore.ts` | Globale Verwaltung vor dem Settings-Sync starten, beim Teardown stoppen |
 | `apps/dashboard/src/ha/settingsSync.ts` | Verwalteter Modus → nur `userSettingsSync`; gemeinsamer Anwende-Schutz |
 | `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Hell/Dunkel pro Gerät (`modeOverride`) auch im First Paint |
-| `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Stil Glas: `applyAppearance` statt `applyTheme` (auch im First Paint aus `hapulse:settings`), `watchAppearance` statt `watchSystemMode`; `main.tsx` importiert `styles/glas/index.css` als letztes Stylesheet |
+| `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Stil Glas: `applyAppearance` statt `applyTheme` (auch im First Paint aus `hapulse:settings`), `watchAppearance` statt `watchSystemMode`; `DashboardApp.tsx` importiert `styles/glas/index.css` als letztes Stylesheet (so hat auch ein Host, der `<DashboardApp />` rendert, das Glas-CSS) |
 | `apps/dashboard/src/pages/Settings.tsx` | Sperren (Aussehen, Räume), Hell/Dunkel pro Gerät, Admin-Zeilen, Backup-Import im verwalteten Modus |
-| `apps/dashboard/src/pages/Settings.tsx` | Stil Glas: `<StyleSettings />` in „Darstellung“; in Glas `GlasThemeHint` statt der Farbwelt-Karten, Akzent-Vorschau aus `glasAccent` |
+| `apps/dashboard/src/pages/Settings.tsx` | Stil Glas: `<StyleSettings />` in „Darstellung“; in Glas `GlasThemeHint` statt der Farbwelt-Karten, Akzent-Vorschau aus `glasAccent`; ohne eigenen Farbton folgt der Akzent-Regler einem Stilwechsel |
 | `apps/dashboard/src/ha/useDevices.ts`, `pages/Devices.tsx`, `components/devices/DeviceDetailsModal.tsx`, `components/home/chipmodals/WeatherModal.tsx` | wirksamer Bearbeiten-Schalter (`useEditingEnabled`) |
 | `apps/dashboard/src/components/music/QueueCard.tsx` | MA-Verbindung nur für Admins im verwalteten Modus |
 | `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Favoriten-Stern im verwalteten Modus; bei Kameraquelle Sentinel Hinweis statt HA-Kamerabild |
@@ -271,7 +271,10 @@ Nach jedem Upstream-Merge:
 2. Neue HAPulse-Tokens in `ThemeTokens` → `glasThemeTokens` (`packages/core/src/glasTokens.ts`) muss sie abbilden
    (`npm run typecheck` schlägt sonst fehl), dazu `docs/glas/glas-tokens.json → classicMapping` (`smoke.mjs` vergleicht).
 3. Neue Flächen in Akzentfarbe (`background: var(--accent)`) → in `styles/glas/accent.css` aufnehmen; sonst erscheinen
-   sie in Glas in der dunkleren Akzent-Ink (lesbar, aber nicht wie die Skizze).
-4. Screenshot-Matrix beider Stile ansehen:
-   `node apps/dashboard/scripts/glas-shots.cjs shoot --serve apps/dashboard/dist <ordner> --style classic|glas`
-   (Kopf des Skripts beschreibt `compare` und `checks`).
+   sie in Glas in der dunkleren Akzent-Ink (lesbar, aber nicht wie die Skizze). Neue Schalter: den Knopf im
+   eingeschalteten Zustand in die Knopf-Regel dort aufnehmen (in Glas weiß).
+4. Neue Ränder an Karten, die einen Zustand zeigen (`border-color` an einem Element mit `.card`), → in die
+   `:not(…)`-Liste in `styles/glas/base.css`; sonst blendet Glas sie mit den übrigen Kartenrändern aus.
+5. Screenshot-Matrix beider Stile ansehen und die Laufzeitprüfungen laufen lassen:
+   `node apps/dashboard/scripts/glas-shots.cjs shoot --serve apps/dashboard/dist <ordner> --style classic|glas`,
+   `… checks --serve apps/dashboard/dist` (Kopf des Skripts beschreibt `compare` und `checks`).

@@ -269,11 +269,11 @@ in `glas-tokens.json → classicMapping`; `smoke.mjs` prüft sie gegen den Code.
 | `--text` | `#000000` | `#FFFFFF` | |
 | `--text-dim` | `#5F5F64` | `#AEAEB2` | auf Glas über Glas-CSS → `--g-glass-label-2` |
 | `--text-faint` | `#636366` | `#A1A1A6` | **nicht** `#7C7C80` |
-| `--accent` | `#A64B00` (bzw. `glasAccent(hue).accentInk`) | `#FFB340` | **Ink** (K6): Text, Symbole, Ränder, Fokus. Die Akzent-Flächen (Primärknöpfe, Schalter an, Balken, Regler, Logo) setzen lokal `--accent: var(--g-prominent)` (`styles/glas/accent.css`) |
+| `--accent` | `#A64B00` (bzw. `glasAccent(hue).accentInk`) | `#FFB340` | **Ink** (K6): Text, Symbole, Ränder, Fokus. Die Akzent-Flächen (Primärknöpfe, Schalter an — bis Etappe 5, dann iOS-Grün §7.28 —, Balken, Regler, Logo) setzen lokal `--accent: var(--g-prominent)` (`styles/glas/accent.css`) |
 | `--accent-soft` | `rgba(255,149,0,.16)` | `rgba(255,159,10,.26)` | |
-| `--on-accent` | `#FFFFFF` (5,79:1) | `#1C1C1E` | beste Schrift auf der Ink; auf den Akzent-Flächen `--g-on-prominent` (`#1C1C1E`) |
+| `--on-accent` | `#FFFFFF` (5,79:1) | `#1C1C1E` | beste Schrift auf der Ink; auf den Akzent-Flächen `--g-on-prominent` (`#1C1C1E`); Schalter-Knöpfe nehmen in Glas immer `--g-knob` (Weiß) |
 | `--line` | `rgba(60,60,67,.18)` | `rgba(84,84,88,.55)` | = `sep` |
-| `--border` | `#E5E5EA` | `#3A3A3C` | = `fillSolid` (K14): Eingabefelder, Segmente, Spuren bleiben sichtbar; Karten randlos über `styles/glas/base.css` |
+| `--border` | `#E5E5EA` | `#3A3A3C` | = `fillSolid` (K14): Eingabefelder, Segmente, Spuren bleiben sichtbar; Karten randlos über `styles/glas/base.css` (Ränder, die einen Zustand zeigen, bleiben) |
 | `--positive` (+`-soft`) | `#1F7A35` (`rgba(52,199,89,.16)`) | `#30D158` (`rgba(48,209,88,.20)`) | **Ink**, weil HAPulse es zu 54/63 als Textfarbe nutzt; Vollfarbe `--g-green` |
 | `--warning` (+`-soft`) | `#7D5E00` (`rgba(255,204,0,.24)`) | `#FFD60A` (`rgba(255,214,10,.20)`) | Ink; Vollfarbe `--g-yellow` |
 | `--danger` (+`-soft`) | `#D70015` (`rgba(255,59,48,.12)`) | `#FF6961` (`rgba(255,69,58,.22)`) | Ink; Vollfarbe `--g-red` |
