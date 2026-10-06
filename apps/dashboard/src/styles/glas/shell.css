@@ -1,0 +1,854 @@
+/* [fork] Glas — the frame around the pages (docs/GLAS-DESIGN.md §3.5, §5.1, §7.2–7.4; plan docs/glas/PLAN-ETAPPE-2.md
+   §3.2, §3.4, §3.5, §4.1–4.3, §5.7, K22, K24, K27, K31, K32, K39–K41).
+
+   Phone: content under a 60-px band (avatar, back, "Fertig" float in it), the scroll edge with the small title.
+   Desktop: the sidebar as a floating glass panel with groups and a lens, the fixed header row with glass capsules for
+   notifications and edit, the scroll edge. All top positions add the safe area (K39).
+   Layers (§5.7): edge 90 · sidebar 100 · header and the phone's top buttons 120 · tab bar 200 · banner 210 ·
+   menus 300 · avatar menu 910 · popovers and modals 1000 · toasts 1100. */
+
+@keyframes g-capsule-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7, 1);
+    filter: blur(6px);
+  }
+}
+
+@keyframes g-done-in {
+  from {
+    opacity: 0;
+    transform: scale(1.4, 1);
+  }
+}
+
+@keyframes g-nav-stretch-a {
+  40% {
+    scale: 0.97 1.16;
+  }
+}
+
+@keyframes g-nav-stretch-b {
+  40% {
+    scale: 0.97 1.16;
+  }
+}
+
+/* The icon toggles of the pages (pencil/check) give way to the header capsule (desktop) and the avatar menu (phone);
+   they stay mounted, they register the page as editable (K23). */
+:root[data-style='glas'] .edit-toggle {
+  display: none;
+}
+
+/* ---- Scroll edge (not glass, GLAS-DESIGN §3.5): the blur lives on ::before, which carries its own opacity — an
+   opacity on .g-edge would cut the blur off from the page ---- */
+:root[data-style='glas'] .g-edge {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+:root[data-style='glas'] .g-edge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ======================================================================= Phone */
+@media (max-width: 899px) {
+  :root[data-style='glas'] .app-content {
+    padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  }
+
+  :root[data-style='glas'] .app-content:has(> .app-banner) {
+    padding-top: calc(120px + env(safe-area-inset-top, 0px));
+  }
+
+  /* content runs under the floating tab bar */
+  :root[data-style='glas'] .app-main {
+    padding: 0 16px calc(132px + env(safe-area-inset-bottom, 0px));
+  }
+
+  :root[data-style='glas'] .app-chips-mobile + .app-main {
+    padding-top: 12px;
+  }
+
+  /* the room page's header row only holds fixed buttons: take its gap away */
+  :root[data-style='glas'] .room-page__header {
+    margin-bottom: -1.5rem;
+  }
+
+  /* ---- Avatar (components/glas/AvatarMenu.tsx): 44 button, 40 glass circle ---- */
+  :root[data-style='glas'] .g-avatar__btn {
+    position: fixed;
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    right: 14px;
+    z-index: 120;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--g-label);
+    cursor: pointer;
+    transition: scale var(--g-d-bouncy) var(--g-spring-bouncy);
+  }
+
+  :root[data-style='glas'] .g-avatar__btn:active {
+    scale: 1.08;
+    transition-duration: var(--g-d-snappy);
+    transition-timing-function: var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .g-avatar__btn:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 0;
+  }
+
+  :root[data-style='glas'] .g-avatar__glass {
+    --g-surface-tint: var(--g-tint-avatar-button);
+    position: absolute;
+    inset: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  :root[data-style='glas'] .g-avatar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :root[data-style='glas'] .g-avatar__initial {
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 600;
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .g-avatar__dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--g-badge);
+    box-shadow: 0 0 0 2px var(--g-bg);
+    pointer-events: none;
+  }
+
+  /* ---- Back on the room page: glass circle 44 (size from Room.tsx, K41) ---- */
+  :root[data-style='glas'] .g-back {
+    --g-surface-tint: var(--g-tint-back-button);
+    position: fixed;
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    z-index: 120;
+    border-radius: 50%;
+    color: var(--g-label);
+    transition: scale var(--g-d-bouncy) var(--g-spring-bouncy);
+  }
+
+  :root[data-style='glas'] .g-back:hover {
+    background: var(--g-surface-bg);
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .g-back:active {
+    transform: none;
+    scale: 1.1;
+    transition-duration: var(--g-d-snappy);
+    transition-timing-function: var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .g-back:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
+  /* ---- "Fertig" while editing (K24): hit area 44, capsule 40, next to the avatar or alone ---- */
+  :root[data-style='glas'] .g-done {
+    position: fixed;
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    right: 16px;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  :root[data-style='glas'] .app-layout:has(.g-avatar) .g-done {
+    right: 66px;
+  }
+
+  :root[data-style='glas'] .g-done__capsule {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 20px;
+    background: var(--g-prominent);
+    color: var(--g-on-prominent);
+    font-family: var(--g-font);
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 600;
+    box-shadow: var(--g-shadow-prominent);
+    animation: g-materialize var(--g-d-snappy) var(--g-spring-snappy) backwards;
+    transition: scale var(--g-d-smooth) var(--g-spring-smooth);
+  }
+
+  :root[data-style='glas'] .g-done:active .g-done__capsule {
+    scale: 0.97;
+    transition-duration: 100ms;
+    transition-timing-function: ease-out;
+  }
+
+  :root[data-style='glas'] .g-done:focus-visible {
+    outline: none;
+  }
+
+  :root[data-style='glas'] .g-done:focus-visible .g-done__capsule {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
+  /* ---- Scroll edge: 96 high, page colour to transparent + blur, small title (K21, K22) ---- */
+  :root[data-style='glas'] .g-edge {
+    height: calc(96px + env(safe-area-inset-top, 0px));
+  }
+
+  :root[data-style='glas'] .g-edge::before {
+    background: linear-gradient(var(--g-bg), transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    -webkit-mask: linear-gradient(black 45%, transparent);
+    mask: linear-gradient(black 45%, transparent);
+    opacity: var(--g-edge, 0);
+    transition: opacity 140ms linear;
+  }
+
+  :root[data-style='glas'] .g-edge__title {
+    --g-o: clamp(0, (var(--g-y, 0) - 24) / 28, 1);
+    position: absolute;
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: 72px;
+    right: 72px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--g-label);
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 600;
+    opacity: var(--g-o);
+    translate: 0 calc((1 - var(--g-o)) * 6px);
+    transition:
+      opacity 140ms linear,
+      translate 140ms linear;
+  }
+}
+
+/* ======================================================================= Desktop and iPad landscape */
+@media (min-width: 900px) {
+  :root[data-style='glas'] .app-layout {
+    --g-sidebar-w: 260px;
+  }
+
+  :root[data-style='glas'] .app-layout:has(> .app-sidebar--collapsed) {
+    --g-sidebar-w: 72px;
+  }
+
+  /* ---- Sidebar: floating glass panel ---- */
+  :root[data-style='glas'] .app-sidebar {
+    --g-surface-tint: var(--g-tint-sidebar);
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    width: var(--g-sidebar-w);
+    height: auto;
+    min-height: 0;
+    padding: 12px;
+    border: 0;
+    border-radius: 28px;
+    color: var(--g-label);
+    transition: width 0.55s var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .app-sidebar__header {
+    min-height: 48px;
+    height: 48px;
+    padding: 0 8px;
+  }
+
+  :root[data-style='glas'] .app-sidebar--collapsed .app-sidebar__header {
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .sidebar-nav {
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+
+  :root[data-style='glas'] .sidebar-nav__list,
+  :root[data-style='glas'] .app-sidebar--collapsed .sidebar-nav__list {
+    gap: 0;
+    padding: 0;
+    align-items: stretch;
+  }
+
+  /* entries: hit area 44, a 40-high capsule (transparent 2-px border, background in the padding box; K40) */
+  :root[data-style='glas'] .sidebar-nav__item {
+    gap: 12px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 12px 0 13px;
+    border-block: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 20px / 22px;
+    color: var(--g-label);
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 400;
+    transition:
+      background-color 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  :root[data-style='glas'] .sidebar-nav__icon {
+    color: var(--g-glass-label-2);
+  }
+
+  :root[data-style='glas'] .sidebar-nav__item:not(.sidebar-nav__item--active):hover {
+    background-color: var(--g-hover);
+    color: var(--g-label);
+  }
+
+  /* active: the lens (GlasNavGroups) instead of a fill; symbol in the ink made for the lens, as in the tab bar
+     (plan U13: for orange the same as accentInk, with other accents accentInk can drop to 3.7:1 on the lens) */
+  :root[data-style='glas'] .sidebar-nav__item--active,
+  :root[data-style='glas'] .sidebar-nav__item--active:hover {
+    background: transparent;
+    color: var(--g-label);
+    font-weight: 600;
+  }
+
+  :root[data-style='glas'] .sidebar-nav__item--active .sidebar-nav__icon {
+    color: var(--g-tab-ink);
+  }
+
+  :root[data-style='glas'] .sidebar-nav__item:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: -2px;
+  }
+
+  /* "Räume" opens a popover: chevron */
+  :root[data-style='glas'] .sidebar-nav__item[aria-haspopup='menu']::after {
+    content: '';
+    flex: none;
+    width: 7px;
+    height: 7px;
+    margin-right: 4px;
+    border-right: 2px solid var(--g-label-3);
+    border-bottom: 2px solid var(--g-label-3);
+    transform: rotate(-45deg);
+  }
+
+  :root[data-style='glas'] .app-sidebar--collapsed .sidebar-nav__item[aria-haspopup='menu']::after {
+    display: none;
+  }
+
+  /* collapsed to 72: the labels fade instead of popping (the 48-wide entry clips them) */
+  :root[data-style='glas'] .app-sidebar--collapsed .sidebar-nav__item {
+    width: 100%;
+    padding: 0 0 0 14px;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  :root[data-style='glas'] .sidebar-nav__label {
+    transition: opacity 0.2s ease;
+  }
+
+  :root[data-style='glas'] .app-sidebar--collapsed .sidebar-nav__label {
+    display: block;
+    opacity: 0;
+  }
+
+  /* ---- Groups (app/glas/GlasNavGroups.tsx) and the lens ---- */
+  :root[data-style='glas'] .g-navgroups {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+  }
+
+  :root[data-style='glas'] .g-navgroups__lens {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    height: var(--g-lens-h, 0px);
+    translate: 0 var(--g-lens-y, 0px);
+    border-radius: 20px;
+    background: var(--g-lens);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :root[data-style='glas'] .g-navgroups[data-g-lens] .g-navgroups__lens {
+    opacity: 1;
+  }
+
+  :root[data-style='glas'] .g-navgroups:is([data-g-lens='a'], [data-g-lens='b']) .g-navgroups__lens {
+    transition: translate 0.45s var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .g-navgroups[data-g-lens='a'] .g-navgroups__lens {
+    animation: g-nav-stretch-a 0.45s ease-in-out;
+  }
+
+  :root[data-style='glas'] .g-navgroups[data-g-lens='b'] .g-navgroups__lens {
+    animation: g-nav-stretch-b 0.45s ease-in-out;
+  }
+
+  :root[data-style='glas'] .g-navgroup__title {
+    display: flex;
+    align-items: flex-end;
+    height: 34px;
+    padding: 0 12px 2px;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--g-glass-label-2);
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 600;
+  }
+
+  :root[data-style='glas'] .g-navgroups__lens + .g-navgroup .g-navgroup__title {
+    height: 26px;
+  }
+
+  /* collapsed: the group heads become hairlines (the text stays for screen readers) */
+  :root[data-style='glas'] .app-sidebar--collapsed .g-navgroup__title {
+    height: 17px;
+    padding: 0;
+    font-size: 0;
+    background: linear-gradient(var(--g-sep), var(--g-sep)) center / 24px 0.5px no-repeat;
+  }
+
+  :root[data-style='glas'] .app-sidebar--collapsed .g-navgroups__lens + .g-navgroup .g-navgroup__title {
+    height: 0;
+    background: none;
+  }
+
+  /* ---- Footer: status pill (K31) and the collapse button (K40) ---- */
+  :root[data-style='glas'] .app-sidebar__footer,
+  :root[data-style='glas'] .app-sidebar--collapsed .app-sidebar__footer {
+    gap: 4px;
+    padding: 8px 0 0;
+  }
+
+  :root[data-style='glas'] .home-status-pill {
+    gap: 10px;
+    min-height: 52px;
+    padding: 8px 12px 8px 10px;
+    border-radius: 18px;
+    background: var(--g-fill);
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .home-status-pill:hover {
+    background: var(--g-fill-2);
+  }
+
+  :root[data-style='glas'] .home-status-pill:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
+  :root[data-style='glas'] .app-sidebar--collapsed .home-status-pill {
+    width: 48px;
+    padding: 0;
+  }
+
+  /* the state as a filled 26 circle with a dark glyph; the symbol's own circle outline is hidden */
+  :root[data-style='glas'] .home-status-pill__icon {
+    box-sizing: content-box;
+    width: 16px;
+    height: 16px;
+    padding: 5px;
+    border-radius: 50%;
+  }
+
+  :root[data-style='glas'] .home-status-pill__icon circle {
+    display: none;
+  }
+
+  :root[data-style='glas'] .home-status-pill--healthy .home-status-pill__icon {
+    background: var(--g-green);
+    color: var(--g-glyph-dark);
+  }
+
+  :root[data-style='glas'] .home-status-pill--warning .home-status-pill__icon {
+    background: var(--g-yellow);
+    color: var(--g-glyph-dark);
+  }
+
+  :root[data-style='glas'] .home-status-pill--critical .home-status-pill__icon {
+    background: var(--g-red);
+    color: var(--g-glyph-dark);
+  }
+
+  :root[data-style='glas'] .home-status-pill--unknown .home-status-pill__icon {
+    background: var(--g-gray);
+    color: var(--g-glyph-dark);
+  }
+
+  :root[data-style='glas'] .home-status-pill__text {
+    gap: 0;
+  }
+
+  :root[data-style='glas'] .home-status-pill__title {
+    font-size: 15px;
+    line-height: 19px;
+    font-weight: 600;
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .home-status-pill__sub {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--g-glass-label-2);
+  }
+
+  :root[data-style='glas'] .app-sidebar__collapse {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    border-block: 4px solid transparent;
+    background-clip: padding-box;
+    border-radius: 18px / 22px;
+    color: var(--g-glass-label-2);
+  }
+
+  :root[data-style='glas'] .app-sidebar__collapse:hover {
+    background-color: var(--g-hover);
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .app-sidebar__collapse:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: -2px;
+    color: var(--g-label);
+  }
+
+  /* ---- Content beside the panel ---- */
+  :root[data-style='glas'] .app-content {
+    margin-left: calc(12px + var(--g-sidebar-w));
+    transition: margin-left 0.55s var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .app-main {
+    padding: calc(92px + env(safe-area-inset-top, 0px)) 32px 72px 28px;
+  }
+
+  :root[data-style='glas'] .app-content:has(> .app-banner) .app-main {
+    padding-top: calc(136px + env(safe-area-inset-top, 0px));
+  }
+
+  /* ---- Header row: fixed, flush with the content (same width rule as .app-main) ---- */
+  :root[data-style='glas'] .app-header-cluster-wrapper {
+    position: fixed;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    left: calc(12px + var(--g-sidebar-w));
+    right: 0;
+    z-index: 120;
+    width: auto;
+    height: 56px;
+    padding: 0;
+    transition: left 0.55s var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .header-cluster-wrapper {
+    max-width: 1400px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 32px 0 28px;
+    gap: 10px;
+  }
+
+  :root[data-style='glas'] .header-cluster {
+    gap: 10px;
+  }
+
+  /* back on room pages: round, filled, no glass (K32) */
+  :root[data-style='glas'] .g-head-back,
+  :root[data-style='glas'] .g-head-back:hover {
+    border-radius: 50%;
+    background: var(--g-fill);
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .g-head-back:hover {
+    background: var(--g-fill-2);
+  }
+
+  /* chips: scroll with a soft mask at the edges (K37); room above and below for their shadow */
+  :root[data-style='glas'] .header-cluster__chips {
+    align-self: stretch;
+    margin: 0 -12px;
+    padding: 0 12px;
+    -webkit-mask: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+    mask: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+  }
+
+  :root[data-style='glas'] .header-cluster__chips .summary-chips {
+    flex-wrap: nowrap;
+  }
+
+  :root[data-style='glas'] .header-cluster__chips .summary-chip-wrap {
+    flex-shrink: 0;
+  }
+
+  :root[data-style='glas'] .header-cluster__chips :is(.summary-chip, .summary-chip__count) {
+    white-space: nowrap;
+  }
+
+  /* weather pill: content (card), not glass */
+  :root[data-style='glas'] .header-cluster__weather {
+    gap: 6px;
+    height: 44px;
+    margin-right: 0;
+    padding: 0 16px 0 12px;
+    border-radius: 22px;
+    background: var(--g-card);
+    box-shadow: var(--shadow-card);
+    color: var(--g-label-2);
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  :root[data-style='glas'] .header-cluster__weather--btn:hover {
+    background: var(--g-card);
+    color: var(--g-label-2);
+  }
+
+  :root[data-style='glas'] .header-cluster__weather > svg {
+    width: 20px;
+    height: 20px;
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .header-cluster__weather-temp {
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .header-cluster__weather-condition {
+    color: var(--g-label-2);
+  }
+
+  /* notifications: glass capsule 48 around the 44 bell (K41) */
+  :root[data-style='glas'] .header-cluster .notifications-wrap {
+    --g-surface-tint: var(--g-tint-header-capsule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 2px;
+    border-radius: 24px;
+    transition: scale var(--g-d-bouncy) var(--g-spring-bouncy);
+  }
+
+  :root[data-style='glas'] .header-cluster .notifications-wrap:active {
+    scale: 1.04;
+    transition-duration: var(--g-d-snappy);
+    transition-timing-function: var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .header-cluster .notifications-trigger {
+    border-radius: 50%;
+    background: transparent;
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .header-cluster .notifications-trigger:hover {
+    background: var(--g-hover);
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .header-cluster .notifications-trigger:active {
+    transform: none;
+  }
+
+  :root[data-style='glas'] .header-cluster .notifications-trigger > svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  :root[data-style='glas'] .header-cluster .notifications-badge {
+    top: -2px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--g-badge);
+    color: var(--g-on-badge);
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 18px;
+    font-weight: 700;
+    box-shadow: none;
+  }
+
+  /* "Bearbeiten" (glass capsule) ↔ "Fertig" (prominent), EditToggle variant="label" */
+  :root[data-style='glas'] .g-edit-capsule {
+    --g-surface-tint: var(--g-tint-header-capsule);
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 124px;
+    height: 48px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 24px;
+    color: var(--g-label);
+    font-family: var(--g-font);
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    animation: g-capsule-in 0.55s var(--g-spring-snappy) backwards;
+    transition: scale var(--g-d-bouncy) var(--g-spring-bouncy);
+  }
+
+  :root[data-style='glas'] .g-edit-capsule:active {
+    scale: 1.04;
+    transition-duration: var(--g-d-snappy);
+    transition-timing-function: var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .g-edit-capsule[aria-pressed='true'] {
+    min-width: 92px;
+    background: var(--g-prominent);
+    color: var(--g-on-prominent);
+    font-weight: 600;
+    box-shadow: var(--g-shadow-prominent);
+    animation-name: g-done-in;
+  }
+
+  :root[data-style='glas'] .g-edit-capsule:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
+  /* avatar 44: circle 40 in accent-soft, no glass */
+  :root[data-style='glas'] .header-cluster .user-avatar {
+    border: 2px solid transparent;
+    background: var(--g-accent-soft);
+    background-clip: padding-box;
+  }
+
+  :root[data-style='glas'] .header-cluster .user-avatar__initial {
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 600;
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .header-cluster .user-avatar--interactive:focus-visible {
+    outline-color: var(--g-focus);
+  }
+
+  /* ---- Scroll edge: 104 from the sidebar's edge, fades in once scrolled (no small title on the desktop) ---- */
+  :root[data-style='glas'] .g-edge {
+    left: calc(12px + var(--g-sidebar-w));
+    height: calc(104px + env(safe-area-inset-top, 0px));
+    transition: left 0.55s var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .g-edge::before {
+    background: linear-gradient(var(--g-edge-tint) 45%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    -webkit-mask: linear-gradient(black 55%, transparent);
+    mask: linear-gradient(black 55%, transparent);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  :root[data-style='glas'][data-g-scrolled] .g-edge::before {
+    opacity: 1;
+  }
+}
+
+/* More contrast and "Transparenz reduzieren": the edge without blur */
+:root[data-style='glas'][data-contrast='more'] .g-edge::before,
+:root[data-style='glas'][data-glass='opaque'] .g-edge::before {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Reduced motion (GLAS-DESIGN §6.4, plan K38): no flex, no stretch; the capsule switch, the edge and the small title
+   cross-fade 200 ms (upstream shortens every duration with !important, these need it too). */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] :is(.g-avatar__btn, .g-back, .g-done .g-done__capsule, .g-edit-capsule):active,
+  :root[data-style='glas'] .header-cluster .notifications-wrap:active,
+  :root[data-style='glas'] .g-done:active .g-done__capsule {
+    scale: none;
+  }
+
+  /* the avatar dims its children: opacity on the button would cut its glass off from the page */
+  :root[data-style='glas'] :is(.g-back, .g-done, .g-edit-capsule):active,
+  :root[data-style='glas'] .header-cluster .notifications-wrap:active,
+  :root[data-style='glas'] .g-avatar__btn:active > * {
+    opacity: 0.6;
+  }
+
+  :root[data-style='glas'] .g-navgroups__lens {
+    animation: none;
+  }
+
+  :root[data-style='glas'] :is(.g-edit-capsule, .g-done__capsule) {
+    animation-name: g-fade-in !important;
+    animation-duration: 200ms !important;
+    animation-timing-function: ease !important;
+  }
+
+  :root[data-style='glas'] .g-edge::before {
+    transition-property: opacity !important;
+    transition-duration: 200ms !important;
+  }
+
+  :root[data-style='glas'] .g-edge__title {
+    translate: none;
+    transition-property: opacity !important;
+    transition-duration: 200ms !important;
+  }
+}

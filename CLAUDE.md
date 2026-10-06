@@ -149,7 +149,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0 und 1 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (Etappe 0–2 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -162,8 +162,17 @@ sauber übernehmen können.
   umbenannt hat (siehe `docs/SYNC.md` → „Feature: Stil Glas“). Screenshots beider Stile + Laufzeitprüfungen:
   `apps/dashboard/scripts/glas-shots.cjs` (deterministisch, `compare` verlangt 0 Pixel). Design **`docs/GLAS-DESIGN.md`**
   (+ `docs/glas/glas-tokens.json`), Etappen und verbindliche User-Entscheidungen (§7.3) **`docs/GLAS-PLAN.md`**, Stand,
-  Abweichungen und Laborliste **`docs/glas/PLAN-ETAPPE-0-1.md`**, Skizze und Funktions-Checkliste **`docs/glas/`**.
-  Nächste Etappen 2–7 (Rahmen, Sheets und Gesten, Übersicht, übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  Abweichungen und Laborliste **`docs/glas/PLAN-ETAPPE-0-1.md`** und **`docs/glas/PLAN-ETAPPE-2.md`**, Skizze und
+  Funktions-Checkliste **`docs/glas/`**. **Rahmen (Etappe 2):** Glas-Laufzeit in `app/glas/` (`GlasRuntime` schreibt
+  Scroll-Lage `--g-y`/`--g-edge`, `data-tabs-min`, `data-g-scrolled`; `GlasTabBar` legt Glas, Linse und „Tab-Leiste
+  einblenden“ in Upstreams `.app-tabs`; `GlasNavGroups` gruppiert die Seitenleiste; `menuKeys` gibt Räume- und
+  Mehr-Menü Pfeiltasten), Handy-Teile in `components/glas/` (Avatar-Menü, „Fertig“, Wetterzeile), CSS in
+  `styles/glas/{shell,tabbar,menus,titles,feedback}.css`. Glas-Flächen stehen in EINER `:where()`-Liste in
+  `styles/glas/material.css` (der Wächter prüft, dass alle Blöcke dieselbe Liste tragen); eine Fläche setzt nur Lage,
+  Größe, Radius und `--g-surface-*`. Nie `opacity`, `filter`, `mask`, `clip-path` oder `backdrop-filter` auf Vorfahren
+  einer Glasfläche (sonst sieht das Glas die Seite nicht mehr); `!important` nur für die 200-ms-Überblendungen bei
+  reduzierter Bewegung (K38). Nächste Etappen 3–7 (Sheets und Gesten, Übersicht, übrige Seiten, NVR, Feinschliff) nach
+  `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

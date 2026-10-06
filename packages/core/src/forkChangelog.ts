@@ -38,6 +38,30 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 32,
+    date: '2026-10-06',
+    title: { de: 'Vorschau Glas: neuer Rahmen', en: 'Glass preview: new frame' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas am Handy: die Tab-Leiste schwebt mit einer gleitenden Linse und schrumpft beim Scrollen nach unten zu einem Kreis; oben rechts öffnet der Avatar Benachrichtigungen, Bearbeiten und Einstellungen, auf Raumseiten führt oben links ein Knopf zurück',
+            en: 'Glass on the phone: the tab bar floats with a gliding lens and shrinks to a circle when you scroll down; at the top right the avatar opens notifications, edit and settings, on room pages a button at the top left goes back',
+          },
+          {
+            de: 'Glas am Desktop und iPad: schwebende Seitenleiste mit den Gruppen Zuhause, Bereiche und System, oben Glas-Knöpfe für Benachrichtigungen und Bearbeiten',
+            en: 'Glass on desktop and iPad: a floating sidebar with the groups Home, Categories and System, glass buttons for notifications and edit at the top',
+          },
+          {
+            de: 'Glas überall: große Seitentitel, am Handy werden sie beim Scrollen an einer weichen Kante zu einem kleinen Titel; Menüs, Verbindungsbanner und Fehlermeldungen im Glas-Look',
+            en: 'Glass everywhere: large page titles, which on the phone become a small title at a soft edge when you scroll; menus, the connection banner and error messages in the Glass look',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 31,
     date: '2026-10-06',
     title: { de: 'Vorschau: Stil „Glas“', en: 'Preview: “Glass” style' },

@@ -1,0 +1,520 @@
+/* [fork] Glas — menus and popovers of the frame (docs/GLAS-DESIGN.md §7.2–7.4, §7.18, §6.3; plan
+   docs/glas/PLAN-ETAPPE-2.md §3.2, §3.3, §3.6, §4.1, §4.4, K25, K36, K38, K40, K43).
+
+   - phone: avatar menu (components/glas/AvatarMenu.tsx) with its dim layer; More and rooms menu as a sheet look with
+     a scrim (no real sheets yet — they come in stage 3);
+   - both: the notifications panel as a glass popover, the host's account menu;
+   - desktop: the rooms popover next to the sidebar.
+   The material comes from material.css (these surfaces are in its list); the rules here set position, size, radius
+   and the surface variables. Menus that switch `display` appear with keyframes, a transition would not start. */
+
+@keyframes g-avatar-in {
+  from {
+    opacity: 0;
+    transform: scale(0.16, 0.3);
+    filter: blur(4px);
+  }
+}
+
+@keyframes g-avatar-out {
+  to {
+    opacity: 0;
+    transform: scale(0.16, 0.3);
+    filter: blur(4px);
+  }
+}
+
+@keyframes g-sheet-in {
+  from {
+    transform: translateY(calc(100% + 16px));
+  }
+}
+
+/* ---- Avatar menu (phone) ---- */
+:root[data-style='glas'] .g-avatar-dim {
+  position: fixed;
+  inset: 0;
+  z-index: 910;
+  background: var(--g-av-dim);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+  animation: g-fade-in 300ms ease backwards;
+}
+
+:root[data-style='glas'] .g-avatar-dim--closing {
+  animation: g-fade-out 280ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* opaque, "Transparenz reduzieren", more contrast: scrims without blur (GLAS-DESIGN §3.7) */
+:root[data-style='glas'][data-glass='opaque'] .g-avatar-dim {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:root[data-style='glas'] .g-avatar-menu {
+  --g-surface-tint: var(--g-tint-menu);
+  --g-surface-fill: var(--g-sheet-fill);
+  --g-surface-filter: var(--g-sheet-filter);
+  --g-surface-solid: var(--g-sheet-solid);
+  --g-surface-shadow: var(--g-shadow-menu);
+  position: fixed;
+  top: calc(58px + env(safe-area-inset-top, 0px));
+  right: 16px;
+  z-index: 910;
+  /* 250 wide, wider when a text needs it ("Benachrichtigungen (12)") */
+  width: max-content;
+  min-width: 250px;
+  max-width: calc(100vw - 32px);
+  border-radius: 22px;
+  overflow: hidden;
+  color: var(--g-label);
+  /* grows out of the avatar: its centre is 22 px left of the menu's right edge, 28 px above the menu */
+  transform-origin: calc(100% - 22px) -28px;
+  animation: g-avatar-in 460ms var(--g-spring-snappy) backwards;
+}
+
+:root[data-style='glas'] .g-avatar-menu--closing {
+  pointer-events: none;
+  animation: g-avatar-out 280ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+:root[data-style='glas'] .g-avatar-menu__content {
+  max-height: calc(100dvh - 74px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: g-fade-in 200ms ease 110ms backwards;
+}
+
+:root[data-style='glas'] .g-avatar-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 16px;
+  border: 0;
+  background-color: transparent;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+/* separators from the text start (16) to the edge */
+:root[data-style='glas'] .g-avatar-menu__item + .g-avatar-menu__item {
+  background-image: linear-gradient(var(--g-sep), var(--g-sep));
+  background-repeat: no-repeat;
+  background-position: 16px 0;
+  background-size: calc(100% - 16px) 0.5px;
+}
+
+:root[data-style='glas'] .g-avatar-menu__item:hover {
+  background-color: var(--g-hover);
+}
+
+:root[data-style='glas'] .g-avatar-menu__item:active {
+  background-color: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-avatar-menu__item:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .g-avatar-menu__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-avatar-menu__icon {
+  flex: none;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .g-avatar-menu__icon--on {
+  color: var(--g-accent-ink);
+}
+
+/* group gap before the host's account menu (SaaS) */
+:root[data-style='glas'] .g-avatar-menu__sep {
+  height: 8px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-avatar-menu__host {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+}
+
+/* ---- Notifications panel → glass popover (desktop under the bell, phone under the avatar; K25) ---- */
+:root[data-style='glas'] .notifications-panel {
+  --g-surface-tint: var(--g-tint-menu);
+  --g-surface-shadow: var(--g-shadow-popover);
+  width: 392px;
+  max-width: calc(100vw - 32px);
+  padding: 8px;
+  border: 0;
+  border-radius: 26px;
+  color: var(--g-label);
+  transform-origin: calc(100% - 24px) 0;
+  animation: g-materialize var(--g-d-snappy) var(--g-spring-snappy) backwards;
+}
+
+/* Phone: in the avatar menu's place, with its sheet material — the panel lies over the large title, and the menu
+   glass let the title show through; the sheet is also what stage 3 turns the panel into (K25). */
+@media (max-width: 899px) {
+  :root[data-style='glas'] .notifications-panel {
+    --g-surface-fill: var(--g-sheet-fill);
+    --g-surface-filter: var(--g-sheet-filter);
+    --g-surface-solid: var(--g-sheet-solid);
+    --g-surface-shadow: var(--g-shadow-menu);
+    width: auto;
+    max-width: none;
+    transform-origin: calc(100% - 22px) -28px;
+  }
+}
+
+:root[data-style='glas'] .notifications-panel__header {
+  min-height: 44px;
+  padding: 0 0 0 12px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .notifications-panel__title {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .notifications-panel__dismiss-all {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 22px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .notifications-panel__dismiss-all:hover {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .notifications-panel__body {
+  max-height: min(420px, calc(100dvh - 180px));
+  scrollbar-color: var(--g-sep-strong) transparent;
+}
+
+:root[data-style='glas'] .notifications-panel__list {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .notif-row {
+  align-items: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 8px 0 8px 12px;
+  border-bottom: 0;
+  border-radius: 18px;
+}
+
+:root[data-style='glas'] .notif-row:hover {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .notif-row__body {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .notif-row__title {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .notif-row__message {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--g-label-2);
+}
+
+/* × : hit area 44, visible circle 26 (K40) */
+:root[data-style='glas'] .notif-row__dismiss {
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--g-fill) 12.5px, transparent 13px);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .notif-row__dismiss:hover {
+  background: radial-gradient(circle, var(--g-red-soft) 12.5px, transparent 13px);
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .notif-row__dismiss:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -6px;
+}
+
+/* empty state in the glass look (GLAS-DESIGN §7.31): symbol in a 54 circle, text 15/600 */
+:root[data-style='glas'] .notifications-empty {
+  gap: 12px;
+  padding: 24px 16px 28px;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .notifications-empty > svg {
+  box-sizing: content-box;
+  width: 28px;
+  height: 28px;
+  padding: 13px;
+  border-radius: 50%;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .notifications-empty p {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--g-label);
+}
+
+/* ---- The host's account menu (SaaS) under the desktop avatar ---- */
+:root[data-style='glas'] .user-avatar-menu__panel {
+  --g-surface-tint: var(--g-tint-menu);
+  --g-surface-shadow: var(--g-shadow-menu);
+  padding: 6px;
+  border: 0;
+  border-radius: 22px;
+  color: var(--g-label);
+  transform-origin: calc(100% - 22px) 0;
+  animation: g-materialize var(--g-d-snappy) var(--g-spring-snappy) backwards;
+}
+
+/* ---- Rooms and More: shared rows ---- */
+:root[data-style='glas'] :is(.rooms-menu__inner, .app-more-menu__inner) {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+  transform: none;
+  transition: none;
+  scrollbar-color: var(--g-sep-strong) transparent;
+}
+
+:root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row) {
+  position: relative;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 400;
+  transition: background-color 150ms ease;
+}
+
+:root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row) + :is(.rooms-menu__row, .app-more-menu__row) {
+  border-top: 0;
+}
+
+:root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):hover {
+  background: var(--g-hover);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):active {
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] :is(.rooms-menu__row-chevron, .app-more-menu__row-chevron) {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):hover :is(.rooms-menu__row-chevron, .app-more-menu__row-chevron) {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .rooms-menu__row-icon,
+:root[data-style='glas'] .rooms-menu__row:hover .rooms-menu__row-icon {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .rooms-menu__empty {
+  padding: 16px 20px;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--g-label-2);
+}
+
+/* the current route's row in the More menu: ink instead of a background (the check colour, §7.18) */
+:root[data-style='glas'] .app-more-menu__row--active,
+:root[data-style='glas'] .app-more-menu__row--active:hover {
+  background: none;
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .app-more-menu__row--active :is(.app-more-menu__row-icon, .app-more-menu__row-chevron),
+:root[data-style='glas'] .app-more-menu__row--active:hover .app-more-menu__row-chevron {
+  color: var(--g-accent-ink);
+}
+
+/* ---- Phone: More and rooms as a sheet look (K43), with a scrim; the tab bar hides meanwhile (tabbar.css) ---- */
+@media (max-width: 899px) {
+  :root[data-style='glas'] :is(.rooms-menu, .app-more-menu) {
+    --g-surface-tint: var(--g-tint-sheet-medium);
+    --g-surface-fill: var(--g-sheet-fill);
+    --g-surface-filter: var(--g-sheet-filter);
+    --g-surface-solid: var(--g-sheet-solid);
+    --g-surface-shadow: var(--g-shadow-menu);
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 300;
+    padding: 10px 0;
+    border-radius: 40px;
+    overflow: hidden;
+  }
+
+  :root[data-style='glas'] :is(.rooms-menu--open, .app-more-menu--open) {
+    animation: g-sheet-in var(--g-d-smooth) var(--g-spring-smooth) backwards;
+  }
+
+  :root[data-style='glas'] :is(.rooms-menu__inner, .app-more-menu__inner) {
+    max-height: min(560px, calc(100dvh - 144px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open)::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: var(--g-scrim);
+    animation: g-fade-in 300ms ease backwards;
+  }
+
+  :root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row) {
+    gap: 14px;
+    padding: 0 20px;
+  }
+
+  :root[data-style='glas'] .app-more-menu__row {
+    min-height: 52px;
+  }
+
+  :root[data-style='glas'] .rooms-menu__row {
+    min-height: 54px;
+  }
+
+  /* hairline from the text start: 20 + symbol column + 14 */
+  :root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row) + :is(.rooms-menu__row, .app-more-menu__row)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 62px;
+    height: 0.5px;
+    background: var(--g-sep);
+  }
+
+  :root[data-style='glas'] .rooms-menu__row + .rooms-menu__row::before {
+    left: 66px;
+  }
+
+  /* More: symbol 22, one colour, in its own column */
+  :root[data-style='glas'] .app-more-menu__row-icon {
+    justify-content: center;
+    width: 28px;
+    color: var(--g-label-2);
+  }
+
+  :root[data-style='glas'] .app-more-menu__row-icon > svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Rooms: the room's symbol in a 32 circle */
+  :root[data-style='glas'] .rooms-menu__row-icon {
+    box-sizing: content-box;
+    width: 18px;
+    height: 18px;
+    padding: 7px;
+    border-radius: 50%;
+    background: var(--g-fill);
+  }
+}
+
+/* ---- Desktop: rooms popover next to the sidebar (upstream places it with --sidebar-width, read here) ---- */
+@media (min-width: 900px) {
+  :root[data-style='glas'] .rooms-menu {
+    --sidebar-width: calc(var(--g-sidebar-w, 260px) + 12px);
+    --g-surface-tint: var(--g-tint-menu);
+    --g-surface-shadow: var(--g-shadow-menu);
+    position: fixed;
+    width: 280px;
+    padding: 6px;
+    border-radius: 22px;
+    transform-origin: 0 22px;
+  }
+
+  :root[data-style='glas'] .rooms-menu--open {
+    animation: g-materialize var(--g-d-snappy) var(--g-spring-snappy) backwards;
+  }
+
+  :root[data-style='glas'] .rooms-menu__row {
+    gap: 12px;
+    min-height: 44px;
+    padding: 0 10px 0 12px;
+    border-radius: 14px;
+  }
+
+  :root[data-style='glas'] .rooms-menu__row-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Reduced motion (plan K38): menus and popovers cross-fade 200 ms instead of growing or sliding. Upstream shortens
+   every duration with !important, so these need it too — only here and only for animation-* (selector guard). */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] :is(
+      .g-avatar-dim,
+      .g-avatar-menu,
+      .notifications-panel,
+      .user-avatar-menu__panel,
+      .rooms-menu--open,
+      .app-more-menu--open
+    ),
+  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open)::before {
+    animation-name: g-fade-in !important;
+    animation-duration: 200ms !important;
+    animation-timing-function: ease !important;
+    animation-delay: 0s !important;
+  }
+
+  :root[data-style='glas'] :is(.g-avatar-dim--closing, .g-avatar-menu--closing) {
+    animation-name: g-fade-out !important;
+  }
+}

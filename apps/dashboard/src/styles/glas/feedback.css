@@ -1,0 +1,271 @@
+/* [fork] Glas — connection banner and toasts (docs/GLAS-DESIGN.md §7.25, §7.26, §6.3; plan docs/glas/PLAN-ETAPPE-2.md
+   §3.7, §4.5, §5.5, K38, K40). Upstream markup stays: the banner is .app-banner--warning ("wird wiederhergestellt") or
+   --error ("verloren") as the first child of .app-content; the toasts come from components/ui/Toaster.tsx (a fork file:
+   in Glas each toast is role="alert").
+
+   The toast's glass rim and sheen live on .toaster__item::before/::after (material.css), so the toast's symbol is
+   .toaster__text::before. Boot screen and error card need no rule: they only read the classic tokens, which Glas
+   rewrites (§5.5). */
+
+@keyframes g-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* the banner drops in under the top buttons */
+@keyframes g-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+}
+
+@keyframes g-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
+/* desktop: the glass toast materializes (glass never appears by a bare fade, §6.2) */
+@keyframes g-toast-in-blur {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    filter: blur(6px);
+  }
+}
+
+/* ---- Connection banner: a capsule on a mixed, opaque surface (white text on red failed contrast, §7.26) ---- */
+:root[data-style='glas'] .app-banner {
+  position: fixed;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border-radius: 20px;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-weight: 600;
+  letter-spacing: 0;
+  box-shadow: var(--g-shadow-banner);
+  animation: g-drop-in 420ms var(--g-spring-snappy) backwards;
+}
+
+:root[data-style='glas'] .app-banner--warning {
+  background: var(--g-banner-reconnecting);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .app-banner--error {
+  background: var(--g-banner-lost);
+  color: var(--g-label);
+}
+
+/* symbol on the left: a turning ring while reconnecting, "!" in a circle when the connection is lost */
+:root[data-style='glas'] .app-banner::before {
+  content: '';
+  flex: none;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .app-banner--warning::before {
+  border: 2px solid var(--g-warn-ink);
+  border-right-color: transparent;
+  animation: g-spin 1s linear infinite;
+}
+
+:root[data-style='glas'] .app-banner--error::before {
+  content: '!';
+  content: '!' / '';
+  background: var(--g-badge);
+  color: var(--g-on-badge);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ---- Toasts: shared ---- */
+:root[data-style='glas'] .toaster {
+  z-index: 1100;
+  gap: 8px;
+  transform: none;
+}
+
+:root[data-style='glas'] .toaster__item {
+  min-height: 52px;
+  gap: 6px;
+  border: 0;
+  font-family: var(--g-font);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .toaster__text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+:root[data-style='glas'] .toaster__text::before {
+  content: '!';
+  content: '!' / '';
+  flex: none;
+  border-radius: 50%;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* × : hit area 44 (K40), the visible part per width below */
+:root[data-style='glas'] .toaster__close {
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .toaster__close:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+/* ======================================================================= Phone */
+@media (max-width: 899px) {
+  :root[data-style='glas'] .app-banner {
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    right: 16px;
+    width: auto;
+    padding: 8px 14px 8px 12px;
+    font-size: 13px;
+    line-height: 18px;
+    text-align: left;
+  }
+
+  /* above the floating tab bar, edge to edge with it */
+  :root[data-style='glas'] .toaster {
+    left: 16px;
+    right: 16px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+  }
+
+  /* dark toast material, the same in light and dark mode (§7.25) */
+  :root[data-style='glas'] .toaster__item {
+    --g-surface-fill: var(--g-toast-bg);
+    --g-surface-filter: blur(20px) saturate(180%);
+    --g-surface-rim: none;
+    --g-surface-solid: var(--g-toast-bg);
+    --g-surface-shadow: var(--g-shadow-toast);
+    padding: 4px 4px 4px 13px;
+    border-radius: 20px;
+    color: var(--g-toast-text);
+    font-weight: 400;
+    animation: g-toast-in 420ms var(--g-spring-snappy) backwards;
+  }
+
+  :root[data-style='glas'] .toaster__text::before {
+    width: 26px;
+    height: 26px;
+    background: var(--g-red);
+    color: var(--g-on-badge);
+    font-size: 15px;
+    line-height: 26px;
+  }
+
+  /* visible circle 40 */
+  :root[data-style='glas'] .toaster__close,
+  :root[data-style='glas'] .toaster__close:hover {
+    background: radial-gradient(circle, color-mix(in srgb, var(--g-toast-text) 14%, transparent) 19.5px, transparent 20px);
+    color: var(--g-toast-text);
+  }
+}
+
+/* from 600 px as wide as the tab bar below and centred like it (K33) */
+@media (min-width: 600px) and (max-width: 899px) {
+  :root[data-style='glas'] .toaster {
+    max-width: 560px;
+    margin-inline: auto;
+  }
+}
+
+/* ======================================================================= Desktop and iPad landscape */
+@media (min-width: 900px) {
+  /* centred over the content beside the panel */
+  :root[data-style='glas'] .app-banner {
+    top: calc(80px + env(safe-area-inset-top, 0px));
+    left: calc(12px + var(--g-sidebar-w, 260px));
+    right: 0;
+    width: fit-content;
+    max-width: calc(100vw - 12px - var(--g-sidebar-w, 260px) - 64px);
+    margin: 0 auto;
+    padding: 10px 18px 10px 14px;
+    font-size: 15px;
+    line-height: 20px;
+    transition: left 0.55s var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .toaster {
+    left: auto;
+    right: 32px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    width: min(460px, calc(100vw - 64px));
+    align-items: flex-end;
+  }
+
+  /* a glass capsule; hugs its text up to 460 */
+  :root[data-style='glas'] .toaster__item {
+    --g-surface-tint: var(--g-tint-toast-desktop);
+    max-width: 100%;
+    padding: 4px 4px 4px 14px;
+    border-radius: 26px;
+    color: var(--g-label);
+    font-weight: 500;
+    animation: g-toast-in-blur 500ms var(--g-spring-snappy) backwards;
+  }
+
+  /* the symbol in redInk, its "!" cut out in the page colour */
+  :root[data-style='glas'] .toaster__text::before {
+    width: 24px;
+    height: 24px;
+    background: var(--g-red-ink);
+    color: var(--g-bg);
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  /* visible circle 28 in fill */
+  :root[data-style='glas'] .toaster__close {
+    background: radial-gradient(circle, var(--g-fill) 13.5px, transparent 14px);
+    color: var(--g-label-2);
+  }
+
+  :root[data-style='glas'] .toaster__close:hover {
+    background: radial-gradient(circle, var(--g-fill-2) 13.5px, transparent 14px);
+    color: var(--g-label);
+  }
+}
+
+/* Reduced motion (GLAS-DESIGN §6.4, plan K38): banner and toasts fade in for 200 ms, the ring stands still. The
+   !important answers upstream's global switch-off (global.css), which sets every duration to 0.01 ms. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] :is(.app-banner, .toaster__item) {
+    animation-name: g-fade-in !important;
+    animation-duration: 200ms !important;
+    animation-timing-function: ease !important;
+    animation-delay: 0s !important;
+  }
+
+  :root[data-style='glas'] .app-banner--warning::before {
+    animation: none;
+  }
+}

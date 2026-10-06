@@ -27,6 +27,7 @@ import { useAreaCameraIds, useCameraSource } from '../nvr/cameraSource'; // [for
 import { NvrRoomCameras } from '../nvr/NvrRoomCameras'; // [fork]
 import { isGarageDoor } from '@hapulse/core'; // [fork]
 import { withDefaultSlot } from '../lib/defaultSlot'; // [fork]
+import { useIsGlas } from '../app/glas/useUiStyle'; // [fork] Glas: back as a glass circle 44 (docs/glas/PLAN-ETAPPE-2.md K41)
 
 // ── Entity name helpers ───────────────────────────────────────────────────────
 
@@ -289,6 +290,7 @@ export function Room() {
   // [fork] hooks before the early return (rules-of-hooks, React #310)
   const cameraSource = useCameraSource(); // [fork] Sentinel replaces HA's camera entities
   const areaCameraIds = useAreaCameraIds(areaId ?? ''); // [fork]
+  const glas = useIsGlas(); // [fork]
   const handleReorderSections = useCallback(
     (newKeys: string[]) => {
       if (!areaId) return;
@@ -559,8 +561,9 @@ export function Room() {
       <div className="room-page__header">
         <IconButton
           label={t('common.back')}
-          size={40}
+          size={glas ? 44 : 40} // [fork] Glas: 44
           variant="ghost"
+          className={glas ? 'g-back' : ''} // [fork] Glas: fixed glass circle
           onClick={() => void navigate(-1)}
         >
           <ChevronLeft size={20} strokeWidth={1.75} />

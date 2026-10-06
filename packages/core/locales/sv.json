@@ -1342,5 +1342,22 @@
   "glas.strength.opaque": "Täckande",
   "glas.reduceTransparency.label": "Minska genomskinlighet",
   "glas.reduceTransparency.hint": "Täckande ytor i stället för glas, på alla enheter (t.ex. för äldre surfplattor)",
-  "glas.themeHint": "Stilen Glas använder en neutral palett. Ditt tema sparas för Klassisk."
+  "glas.themeHint": "Stilen Glas använder en neutral palett. Ditt tema sparas för Klassisk.",
+  "glas.nav.group.home": "Hem",
+  "glas.nav.group.areas": "Kategorier",
+  "glas.nav.group.system": "System",
+  "glas.tabs.expand": "Visa flikfältet",
+  "glas.avatar.account": "Konto {name}",
+  "glas.avatar.accountNoName": "Konto",
+  "glas.avatar.label": "{account}. Öppna menyn",
+  "glas.avatar.labelUnread.one": "{account}, {count} ny avisering. Öppna menyn",
+  "glas.avatar.labelUnread.other": "{account}, {count} nya aviseringar. Öppna menyn",
+  "glas.avatar.notifications": "Aviseringar",
+  "glas.avatar.notificationsCount.one": "Aviseringar ({count})",
+  "glas.avatar.notificationsCount.other": "Aviseringar ({count})",
+  "glas.avatar.edit": "Redigera",
+  "glas.avatar.editDone": "Avsluta redigering",
+  "glas.avatar.menuLabel": "Kontomeny",
+  "glas.edit.label": "Redigera",
+  "glas.edit.done": "Klar"
 }

@@ -1342,5 +1342,22 @@
   "glas.strength.opaque": "Opaco",
   "glas.reduceTransparency.label": "Reducir transparencia",
   "glas.reduceTransparency.hint": "Superficies opacas en lugar de cristal, en todos los dispositivos (p. ej. para tabletas antiguas)",
-  "glas.themeHint": "El estilo Cristal usa una paleta neutra. Tu tema se guarda para Clásico."
+  "glas.themeHint": "El estilo Cristal usa una paleta neutra. Tu tema se guarda para Clásico.",
+  "glas.nav.group.home": "Casa",
+  "glas.nav.group.areas": "Categorías",
+  "glas.nav.group.system": "Sistema",
+  "glas.tabs.expand": "Mostrar barra de pestañas",
+  "glas.avatar.account": "Cuenta {name}",
+  "glas.avatar.accountNoName": "Cuenta",
+  "glas.avatar.label": "{account}. Abrir menú",
+  "glas.avatar.labelUnread.one": "{account}, {count} notificación nueva. Abrir menú",
+  "glas.avatar.labelUnread.other": "{account}, {count} notificaciones nuevas. Abrir menú",
+  "glas.avatar.notifications": "Notificaciones",
+  "glas.avatar.notificationsCount.one": "Notificaciones ({count})",
+  "glas.avatar.notificationsCount.other": "Notificaciones ({count})",
+  "glas.avatar.edit": "Editar",
+  "glas.avatar.editDone": "Terminar edición",
+  "glas.avatar.menuLabel": "Menú de la cuenta",
+  "glas.edit.label": "Editar",
+  "glas.edit.done": "Listo"
 }

@@ -1342,5 +1342,22 @@
   "glas.strength.opaque": "Opaque",
   "glas.reduceTransparency.label": "Reduce transparency",
   "glas.reduceTransparency.hint": "Solid surfaces instead of glass, on every device (e.g. for older tablets)",
-  "glas.themeHint": "The Glass style uses one neutral palette. Your theme stays saved for Classic."
+  "glas.themeHint": "The Glass style uses one neutral palette. Your theme stays saved for Classic.",
+  "glas.nav.group.home": "Home",
+  "glas.nav.group.areas": "Categories",
+  "glas.nav.group.system": "System",
+  "glas.tabs.expand": "Show tab bar",
+  "glas.avatar.account": "Account {name}",
+  "glas.avatar.accountNoName": "Account",
+  "glas.avatar.label": "{account}. Open menu",
+  "glas.avatar.labelUnread.one": "{account}, {count} new notification. Open menu",
+  "glas.avatar.labelUnread.other": "{account}, {count} new notifications. Open menu",
+  "glas.avatar.notifications": "Notifications",
+  "glas.avatar.notificationsCount.one": "Notifications ({count})",
+  "glas.avatar.notificationsCount.other": "Notifications ({count})",
+  "glas.avatar.edit": "Edit",
+  "glas.avatar.editDone": "Stop editing",
+  "glas.avatar.menuLabel": "Account menu",
+  "glas.edit.label": "Edit",
+  "glas.edit.done": "Done"
 }

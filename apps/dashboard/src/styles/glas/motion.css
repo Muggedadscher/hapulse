@@ -1,6 +1,7 @@
 /* [fork] Glas — motion (docs/GLAS-DESIGN.md §6). Springs and durations come inline as --g-spring-* / --g-d-*
    (cubic-bezier fallback chosen in theme/glasAppearance.ts, plan K13). prefers-reduced-motion: the global switch-off
-   in global.css applies, and the entry animation below is also switched off explicitly. */
+   in global.css applies, and the entry animation below is also switched off explicitly. The 200-ms fades that
+   GLAS-DESIGN §6.4 keeps for reduced motion live next to their components (plan docs/glas/PLAN-ETAPPE-2.md K38). */
 
 @keyframes g-rise {
   from {
@@ -10,6 +11,28 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Shared by the frame (stage 2): plain fades and "materialize" — glass appears from blur, never by a bare fade
+   (§6.2). Only the start (or end) is given, so the element ends in its own state and keeps no filter. */
+@keyframes g-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes g-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes g-materialize {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+    filter: blur(8px);
   }
 }
 
@@ -26,8 +49,30 @@
 :root[data-style='glas'] .stagger-rise > *:nth-child(5) { animation-delay: 100ms; }
 :root[data-style='glas'] .stagger-rise > *:nth-child(n + 6) { animation-delay: 125ms; }
 
+/* Header rows hold fixed elements (avatar, back): a transform on an ancestor would move them along and its opacity
+   would cut the glass off from the page (backdrop root, §3.7). So the row itself does not rise, only its children —
+   without the header actions, whatever holds them (NVR overview: .nvr-actions) and the back button (plan K35). */
+:root[data-style='glas'] .stagger-rise > :is(.page__header-row, .home-page__header, .room-page__header) {
+  animation-name: none;
+}
+
+:root[data-style='glas']
+  .stagger-rise
+  > :is(.page__header-row, .home-page__header, .room-page__header)
+  > :not(.page-header-actions, :has(.page-header-actions), .g-back) {
+  animation: g-rise 420ms var(--g-spring-smooth) backwards;
+  animation-delay: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root[data-style='glas'] .stagger-rise > * {
+    animation: none;
+  }
+
+  :root[data-style='glas']
+    .stagger-rise
+    > :is(.page__header-row, .home-page__header, .room-page__header)
+    > :not(.page-header-actions, :has(.page-header-actions), .g-back) {
     animation: none;
   }
 }

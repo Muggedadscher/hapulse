@@ -1,12 +1,34 @@
-/* [fork] Glas — the material (docs/GLAS-DESIGN.md §3.3 recipe, §3.4 strengths). No component uses it yet; the Glas
-   shell (tab bar, sidebar, sheets) adopts it from stage 2. The material probe of scripts/glas-shots.cjs checks it.
+/* [fork] Glas — the material (docs/GLAS-DESIGN.md §3.3 recipe, §3.4 strengths).
 
    The fill and filter are composed here, per element, from the building blocks theme/glasAppearance.ts writes on
    :root (--g-glass-tint/-rgb/-a0/-a1/-sat/-bright, plan K10): a custom property is resolved where it is declared,
-   so a ready-made fill on :root could not take the per-surface minimum tint (--g-surface-tint, set by a surface
-   from stage 2; effective tint = max(surface, strength)). */
+   so a ready-made fill on :root could not take the per-surface minimum tint (effective tint = max(surface,
+   strength)).
 
-:root[data-style='glas'] .g-glass {
+   Since stage 2 the recipe also holds for the frame's surfaces (plan docs/glas/PLAN-ETAPPE-2.md K30). Upstream
+   markup gets no class for that: the same list stands in :where() — specificity 0 — in every block of this file
+   (recipe, rim, sheen, opaque, no backdrop-filter, forced colours; test/glasSelectors.test.ts checks they match).
+   A surface's own rule sets its position, size and radius and, as variables only:
+   --g-surface-tint (minimum tint, K28) and, for another material, --g-surface-fill/-filter/-solid/-shadow/-rim
+   (sheet material, phone toast). It never sets background, filter or shadow itself. "Fertig" (prominent, no glass)
+   is not in the list. */
+
+:root[data-style='glas']
+  :where(
+    .g-glass,
+    .g-tabs__glass,
+    .app-sidebar,
+    .g-avatar__glass,
+    .g-back,
+    .header-cluster .notifications-wrap,
+    .g-edit-capsule:not([aria-pressed='true']),
+    .notifications-panel,
+    .user-avatar-menu__panel,
+    .rooms-menu,
+    .app-more-menu,
+    .g-avatar-menu,
+    .toaster__item
+  ) {
   --g-surface-tint: 0;
   --g-t: max(var(--g-surface-tint), var(--g-glass-tint));
   --g-glass-fill: linear-gradient(
@@ -15,30 +37,68 @@
     rgb(var(--g-glass-rgb) / calc(var(--g-glass-a1) + 0.4 * var(--g-t)))
   );
   --g-glass-filter: blur(calc(6px + 10px * var(--g-t))) saturate(var(--g-glass-sat)) brightness(var(--g-glass-bright));
+  --g-surface-fill: var(--g-glass-fill);
+  --g-surface-filter: var(--g-glass-filter);
+  --g-surface-shadow: var(--g-glass-shadow);
+  --g-surface-rim: var(--g-glass-rim);
+  --g-surface-solid: var(--g-card-solid);
+  /* what the surface shows — a state rule that has to restore it (hover of an upstream button) uses this */
+  --g-surface-bg: var(--g-surface-fill);
   position: relative;
   isolation: isolate;
-  background: var(--g-glass-fill);
-  -webkit-backdrop-filter: var(--g-glass-filter);
-  backdrop-filter: var(--g-glass-filter);
-  box-shadow: var(--g-glass-shadow);
+  background: var(--g-surface-bg);
+  -webkit-backdrop-filter: var(--g-surface-filter);
+  backdrop-filter: var(--g-surface-filter);
+  box-shadow: var(--g-surface-shadow);
 }
 
 /* Specular rim, 1 px, masked to the edge. */
-:root[data-style='glas'] .g-glass::before {
+:root[data-style='glas']
+  :where(
+    .g-glass,
+    .g-tabs__glass,
+    .app-sidebar,
+    .g-avatar__glass,
+    .g-back,
+    .header-cluster .notifications-wrap,
+    .g-edit-capsule:not([aria-pressed='true']),
+    .notifications-panel,
+    .user-avatar-menu__panel,
+    .rooms-menu,
+    .app-more-menu,
+    .g-avatar-menu,
+    .toaster__item
+  )::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
   pointer-events: none;
-  background: var(--g-glass-rim);
+  background: var(--g-surface-rim);
   -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
 
-/* Sheen from the touch point while pressed (--gx/--gy in px from pointerdown, stage 2). */
-:root[data-style='glas'] .g-glass::after {
+/* Sheen from the touch point while pressed (--gx/--gy in px, written by GlasRuntime on pointerdown). Only controls
+   light up (below); panels, menus and toasts keep it at 0. */
+:root[data-style='glas']
+  :where(
+    .g-glass,
+    .g-tabs__glass,
+    .app-sidebar,
+    .g-avatar__glass,
+    .g-back,
+    .header-cluster .notifications-wrap,
+    .g-edit-capsule:not([aria-pressed='true']),
+    .notifications-panel,
+    .user-avatar-menu__panel,
+    .rooms-menu,
+    .app-more-menu,
+    .g-avatar-menu,
+    .toaster__item
+  )::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -50,7 +110,12 @@
 }
 
 :root[data-style='glas'] .g-flex:active .g-glass::after,
-:root[data-style='glas'] .g-glass.g-flex:active::after {
+:root[data-style='glas'] .g-glass.g-flex:active::after,
+:root[data-style='glas'] .app-tabs:active > .g-tabs__glass::after,
+:root[data-style='glas'] .g-avatar__btn:active .g-avatar__glass::after,
+:root[data-style='glas'] .g-back:active::after,
+:root[data-style='glas'] .header-cluster .notifications-wrap:active::after,
+:root[data-style='glas'] .g-edit-capsule:not([aria-pressed='true']):active::after {
   opacity: 1;
   transition-duration: 120ms;
 }
@@ -59,61 +124,163 @@
 :root[data-style='glas'] .g-glass--clear {
   --g-glass-fill: var(--g-glass-clear-fill);
   --g-glass-filter: var(--g-glass-clear-filter);
+  --g-surface-rim: var(--g-glass-clear-rim);
   box-shadow: var(--g-glass-clear-shadow);
   color: var(--g-on-media);
   text-shadow: var(--g-glass-clear-text-shadow);
 }
 
-:root[data-style='glas'] .g-glass--clear::before {
-  background: var(--g-glass-clear-rim);
-}
-
 /* opaque ("Deckend", "Transparenz reduzieren", more contrast): solid fill, no filter, no rim (§3.4). */
-:root[data-style='glas'][data-glass='opaque'] .g-glass {
-  background: var(--g-card-solid);
+:root[data-style='glas'][data-glass='opaque']
+  :where(
+    .g-glass,
+    .g-tabs__glass,
+    .app-sidebar,
+    .g-avatar__glass,
+    .g-back,
+    .header-cluster .notifications-wrap,
+    .g-edit-capsule:not([aria-pressed='true']),
+    .notifications-panel,
+    .user-avatar-menu__panel,
+    .rooms-menu,
+    .app-more-menu,
+    .g-avatar-menu,
+    .toaster__item
+  ) {
+  --g-surface-bg: var(--g-surface-solid);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   box-shadow: var(--g-glass-opaque-shadow);
 }
 
 :root[data-style='glas'][data-glass='opaque'] .g-glass--clear {
-  background: var(--g-glass-opaque-clear-fill);
+  --g-surface-bg: var(--g-glass-opaque-clear-fill);
   box-shadow: var(--g-glass-opaque-clear-shadow);
 }
 
-:root[data-style='glas'][data-glass='opaque'] .g-glass::before {
+:root[data-style='glas'][data-glass='opaque']
+  :where(
+    .g-glass,
+    .g-tabs__glass,
+    .app-sidebar,
+    .g-avatar__glass,
+    .g-back,
+    .header-cluster .notifications-wrap,
+    .g-edit-capsule:not([aria-pressed='true']),
+    .notifications-panel,
+    .user-avatar-menu__panel,
+    .rooms-menu,
+    .app-more-menu,
+    .g-avatar-menu,
+    .toaster__item
+  )::before {
   display: none;
 }
 
 /* A browser without backdrop-filter gets the opaque material (no unreadable see-through surface). */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  :root[data-style='glas'] .g-glass {
-    background: var(--g-card-solid);
+  :root[data-style='glas']
+    :where(
+      .g-glass,
+      .g-tabs__glass,
+      .app-sidebar,
+      .g-avatar__glass,
+      .g-back,
+      .header-cluster .notifications-wrap,
+      .g-edit-capsule:not([aria-pressed='true']),
+      .notifications-panel,
+      .user-avatar-menu__panel,
+      .rooms-menu,
+      .app-more-menu,
+      .g-avatar-menu,
+      .toaster__item
+    ) {
+    --g-surface-bg: var(--g-surface-solid);
     box-shadow: var(--g-glass-opaque-shadow);
   }
 
   :root[data-style='glas'] .g-glass--clear {
-    background: var(--g-glass-opaque-clear-fill);
+    --g-surface-bg: var(--g-glass-opaque-clear-fill);
     box-shadow: var(--g-glass-opaque-clear-shadow);
   }
 
-  :root[data-style='glas'] .g-glass::before {
+  :root[data-style='glas']
+    :where(
+      .g-glass,
+      .g-tabs__glass,
+      .app-sidebar,
+      .g-avatar__glass,
+      .g-back,
+      .header-cluster .notifications-wrap,
+      .g-edit-capsule:not([aria-pressed='true']),
+      .notifications-panel,
+      .user-avatar-menu__panel,
+      .rooms-menu,
+      .app-more-menu,
+      .g-avatar-menu,
+      .toaster__item
+    )::before {
     display: none;
   }
 }
 
 /* Windows high contrast & co.: system colours, no glass. */
 @media (forced-colors: active) {
-  :root[data-style='glas'] .g-glass {
-    background: Canvas;
+  :root[data-style='glas']
+    :where(
+      .g-glass,
+      .g-tabs__glass,
+      .app-sidebar,
+      .g-avatar__glass,
+      .g-back,
+      .header-cluster .notifications-wrap,
+      .g-edit-capsule:not([aria-pressed='true']),
+      .notifications-panel,
+      .user-avatar-menu__panel,
+      .rooms-menu,
+      .app-more-menu,
+      .g-avatar-menu,
+      .toaster__item
+    ) {
+    --g-surface-bg: Canvas;
     color: CanvasText;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     border: 1px solid CanvasText;
   }
 
-  :root[data-style='glas'] .g-glass::before,
-  :root[data-style='glas'] .g-glass::after {
+  :root[data-style='glas']
+    :where(
+      .g-glass,
+      .g-tabs__glass,
+      .app-sidebar,
+      .g-avatar__glass,
+      .g-back,
+      .header-cluster .notifications-wrap,
+      .g-edit-capsule:not([aria-pressed='true']),
+      .notifications-panel,
+      .user-avatar-menu__panel,
+      .rooms-menu,
+      .app-more-menu,
+      .g-avatar-menu,
+      .toaster__item
+    )::before,
+  :root[data-style='glas']
+    :where(
+      .g-glass,
+      .g-tabs__glass,
+      .app-sidebar,
+      .g-avatar__glass,
+      .g-back,
+      .header-cluster .notifications-wrap,
+      .g-edit-capsule:not([aria-pressed='true']),
+      .notifications-panel,
+      .user-avatar-menu__panel,
+      .rooms-menu,
+      .app-more-menu,
+      .g-avatar-menu,
+      .toaster__item
+    )::after {
     display: none;
   }
 }

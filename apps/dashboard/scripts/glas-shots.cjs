@@ -2,22 +2,27 @@
 //
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
-//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>>
+//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
 //   --devices phone,ipad,desktop  --scenes home,room,…  --contrast  --forced-colors  --engine chromium|webkit
 //   --suffix <text> (appended to every file name)
+//   Frame scenes of stage 2 (docs/glas/PLAN-ETAPPE-2.md §6.3) open a menu, scroll or insert a banner/toast and are taken
+//   at viewport size (fixed layers); a scene that does not exist in a style or at a width is listed as skipped.
 //   --elements <css> (also one picture per matching element, named after its first line of text, e.g.
 //     "--scenes settings --elements .settings-page__section" → …-settings__2-darstellung.png)
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
+// checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2) and the frame of stage 2 (PLAN-ETAPPE-2.md §6.3); --part runs one.
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
 // BUDGET ms per document, so the demo ticker's first step after 2 s never fires), seeded Math.random, only local
-// requests, animations finished and scrolling settled, pointer parked at 0,0. `compare` then demands 0 differing
-// pixels.
+// requests, animations finished and scrolling settled, pointer parked at 0,0, every layer rastered afresh right before
+// the shot (`repaint`). `compare` then demands 0 differing pixels.
 // Playwright: the global install ($(npm root -g)/playwright) or HP_PW=<folder that contains node_modules/playwright>.
 // Never run `playwright install` for this — the browsers are provided by the environment.
+
+/* global __g -- the frame checks' helpers in the page (pageHelpers), used inside page.evaluate callbacks */
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
@@ -29,7 +34,10 @@ const FIXED = Date.parse('2026-10-06T10:30:00Z');
 const BUDGET = 1900;
 const DEVICES = {
   phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  phone375: { viewport: { width: 375, height: 812 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  phone430: { viewport: { width: 430, height: 932 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
   ipad: { viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  ipadUpright: { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
   desktop: { viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false },
 };
 const SCENES = {
@@ -49,8 +57,40 @@ const SCENES = {
   chip: { path: '/', click: '.summary-chip' },
   weather: { path: '/', click: '.header-cluster__weather--btn' },
   material: { path: '/', material: true },
+  // stage 2: the frame (viewport-sized, see header)
+  scrolled: { path: '/', viewport: true, act: (page) => scrollPage(page, isPhone(page) ? 700 : 400) },
+  minimized: { path: '/', viewport: true, act: (page) => (isPhone(page) ? scrollPage(page, 400) : 'phone only') },
+  avatar: { path: '/', viewport: true, act: (page) => tap(page, '.g-avatar__btn') },
+  notifications: { path: '/', viewport: true, act: async (page) => (isPhone(page)
+    ? (await tap(page, '.g-avatar__btn')) || tap(page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.notifications']}")`)
+    : tap(page, '.header-cluster .notifications-trigger')) },
+  more: { path: '/', viewport: true, act: (page) => tap(page, `.app-tabs__item[aria-label="${DE['nav.moreNavigation']}"]`) },
+  rooms: { path: '/', viewport: true, act: (page) => tap(page, isPhone(page)
+    ? `.app-tabs__item[aria-label="${DE['nav.rooms']}"]` : ".sidebar-nav__item[aria-haspopup='menu']") },
+  edit: { path: '/', viewport: true, act: async (page) => {
+    const note = isPhone(page) && (await isGlas(page))
+      ? (await tap(page, '.g-avatar__btn')) || (await tap(page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.edit']}")`))
+      : await tap(page, '.g-edit-capsule, .edit-toggle');
+    // the edit mode adds rows above the toggle; the page sometimes ends up scrolled (also on main): back to the top
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await run(page, 50);
+    await settleAnimations(page);
+    return note;
+  } },
+  collapsed: { path: '/', viewport: true, act: (page) => (isPhone(page) ? 'desktop only' : tap(page, '.app-sidebar__collapse')) },
+  banner: { path: '/', viewport: true, act: (page) => insert(page, BANNER, ['warning', DE['banner.reconnecting']]) },
+  'banner-lost': { path: '/', viewport: true, act: (page) => insert(page, BANNER, ['error', DE['banner.disconnected']]) },
+  toast: { path: '/', viewport: true, act: async (page) => {
+    await insert(page, TOAST, [DE['toast.serviceFailed'].replace('{domain}', 'light').replace('{service}', 'turn_on')
+      .replace('{message}', 'Zeitüberschreitung'), DE['toast.dismiss']]);
+    return insert(page, TOAST, [DE['toast.notConnected'], DE['toast.dismiss']]);
+  } },
 };
-const DEFAULT_SCENES = Object.keys(SCENES).filter((s) => s !== 'material');
+const FRAME_SCENES = ['scrolled', 'minimized', 'avatar', 'notifications', 'more', 'rooms', 'edit', 'collapsed', 'banner',
+  'banner-lost', 'toast'];
+const DEFAULT_SCENES = Object.keys(SCENES).filter((s) => s !== 'material' && !FRAME_SCENES.includes(s));
+// German texts of the injected banner/toast markup and of the controls the scenes click (locale de-DE)
+const DE = require(path.join(__dirname, '../../../packages/core/locales/de.json'));
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
@@ -194,6 +234,69 @@ const MATERIAL_PROBE = `(() => {
   document.body.appendChild(host);
 })();`;
 
+const isPhone = (page) => page.viewportSize().width < 900;
+const isGlas = (page) => page.evaluate(() => document.documentElement.getAttribute('data-style') === 'glas');
+
+/** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
+async function tap(page, sel) {
+  const el = page.locator(sel).filter({ visible: true }).first();
+  if (!(await el.count())) return 'not visible: ' + sel;
+  await el.click();
+  await run(page, 150);
+  await settleAnimations(page);
+  await run(page, 100);
+  return '';
+}
+
+/** Scroll the window; the Glas runtime reads the position in requestAnimationFrame (paused clock: `run`). */
+async function scrollPage(page, y) {
+  await page.evaluate((top) => window.scrollTo(0, top), y);
+  await run(page, 100);
+  await settleAnimations(page);
+  await run(page, 100);
+  return '';
+}
+
+/** Markup as AppLayout renders it while the connection is lost (the demo connection never is). */
+const BANNER = ([kind, text]) => {
+  const b = document.createElement('div');
+  b.className = 'app-banner app-banner--' + kind;
+  b.setAttribute('role', 'status');
+  b.setAttribute('aria-live', 'polite');
+  b.textContent = text;
+  document.querySelector('.app-content').prepend(b);
+};
+
+/** Markup as components/ui/Toaster.tsx renders a toast (role="alert" in Glas). */
+const TOAST = ([text, close]) => {
+  const item = document.createElement('div');
+  item.className = 'toaster__item';
+  if (document.documentElement.getAttribute('data-style') === 'glas') item.setAttribute('role', 'alert');
+  item.innerHTML = '<span class="toaster__text"></span><button type="button" class="toaster__close">'
+    + '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+    + ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true">'
+    + '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>';
+  item.querySelector('.toaster__text').textContent = text;
+  item.querySelector('button').setAttribute('aria-label', close);
+  document.querySelector('.toaster').appendChild(item);
+};
+
+/** Chromium keeps the raster of a layer drawn while the page was still changing (a popover opening, a banner pushing
+ * the content down), so text could land a subpixel off in some runs (also on main). One frame with the page hidden
+ * drops every layer's tiles; the shot after it rasters everything afresh. */
+async function repaint(page) {
+  await page.evaluate(() => { document.documentElement.style.visibility = 'hidden'; });
+  await page.screenshot({ animations: 'disabled' });
+  await page.evaluate(() => { document.documentElement.style.visibility = ''; });
+}
+
+async function insert(page, fn, args) {
+  await page.evaluate(fn, args);
+  await run(page, 100);
+  await settleAnimations(page);
+  return '';
+}
+
 const slug = (s) => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
   .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'x';
 
@@ -228,13 +331,15 @@ async function shoot() {
             await run(page, 300);
           } else note = 'not visible: ' + sc.click;
         }
+        if (sc.act) note = (await sc.act(page)) || '';
         if (sc.material) { await page.evaluate(MATERIAL_PROBE); await page.waitForTimeout(100); }
         const name = [style, mode, device, scene].join('-') + (style === 'glas' && strength !== 'clear' ? '-' + strength : '')
           + (reduce ? '-reduce' : '') + (contrast ? '-contrast' : '') + (forcedColors ? '-forced' : '') + (suffix ? '-' + suffix : '');
         if (note) { report.push({ name, skipped: note }); await ctx.close(); continue; }
         await settleAnimations(page);
         await page.mouse.move(0, 0);
-        await page.screenshot({ path: path.join(out, name + '.png'), fullPage: true, animations: 'disabled', caret: 'hide' });
+        await repaint(page);
+        await page.screenshot({ path: path.join(out, name + '.png'), fullPage: !sc.viewport, animations: 'disabled', caret: 'hide' });
         if (elements) {
           const els = await page.locator(elements).filter({ visible: true }).all();
           for (let i = 0; i < els.length; i++) {
@@ -308,12 +413,8 @@ async function compare() {
 /** Runtime checks of stage 1: pre-paint, switching without remnants (and the accent slider following the style), OS
  * mode in "auto", no web fonts, reduced motion, white switch knobs on the orange track, borderless cards that keep
  * their state borders. */
-async function checks() {
-  const { srv, url } = await baseUrl(3);
-  const pw = loadPlaywright();
-  const browser = await pw[arg('engine', 'chromium')].launch();
+async function stage1Checks(browser, url, out) {
   const cmp = await browser.newPage();
-  const out = {};
   const rootState = (page) => page.evaluate(() => {
     const s = document.documentElement.style, vars = {};
     for (let i = 0; i < s.length; i++) vars[s.item(i)] = s.getPropertyValue(s.item(i)).trim();
@@ -324,7 +425,11 @@ async function checks() {
       themeColor: meta ? meta.getAttribute('content') : null,
     };
   });
-  const shot = async (page) => { await page.mouse.move(0, 0); return page.screenshot({ fullPage: true, animations: 'disabled', caret: 'hide' }); };
+  const shot = async (page) => {
+    await page.mouse.move(0, 0);
+    await repaint(page);
+    return page.screenshot({ fullPage: true, animations: 'disabled', caret: 'hide' });
+  };
 
   // 1. pre-paint: when React mounts its first node, Glas must already be applied (the frame before any script runs is
   //    the lab's job, plan §6.2). Web fonts: none may be requested once Glas is applied. The browser's first layout
@@ -518,10 +623,759 @@ async function checks() {
     await ctx.close();
   }
 
+  await cmp.close();
+  return out.prePaintOk && out.noWebfontsOk && out.switchBackOk && out.accentSliderOk && out.autoModeOk && out.reducedMotionOk
+    && out.knobsOk && out.cardBordersOk;
+}
+
+// ---------------------------------------------------------------------------------------------------- stage 2: frame
+
+/** Every page of the demo, and a room that does not exist (no header actions there). */
+const FRAME_ROUTES = ['/', '/room/living_room', '/room/nope', '/security', '/pool', '/energy', '/music', '/devices',
+  '/automations', '/scenes', '/system', '/settings', '/nvr'];
+
+/** Helpers in every document of the frame checks (`window.__g`). Runs in the page. */
+function pageHelpers() {
+  const r = (el) => {
+    const b = el.getBoundingClientRect();
+    return { x: b.left, y: b.top, w: b.width, h: b.height, right: b.right, bottom: b.bottom };
+  };
+  const visible = (el) => !!el && el.checkVisibility({ opacityProperty: true, visibilityProperty: true })
+    && el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0;
+  const desc = (el) => {
+    if (!el) return null;
+    const cls = typeof el.className === 'string' && el.className.trim()
+      ? '.' + el.className.trim().split(/\s+/).join('.') : el.tagName.toLowerCase();
+    const label = (el.getAttribute('aria-label') || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30);
+    return (label ? `${cls} "${label}"` : cls).slice(0, 80);
+  };
+  const glassy = (cs) => [cs.backdropFilter, cs.webkitBackdropFilter].some((v) => v && v !== 'none');
+  const MOVES = ['transform', 'translate', 'scale', 'rotate', 'filter', 'opacity'];
+  /** Ancestors that would move a fixed element (containing block) or cut a glass surface off from the page behind it
+   * (backdrop root, GLAS-DESIGN §3.7) — also while an animation runs on them. */
+  const badAncestors = (el) => {
+    const bad = [];
+    for (let a = el.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      const why = [];
+      if ([cs.transform, cs.translate, cs.scale, cs.rotate].some((v) => v !== 'none')) why.push('transform');
+      if (cs.perspective !== 'none') why.push('perspective');
+      if (cs.filter !== 'none') why.push('filter');
+      if (glassy(cs)) why.push('backdrop-filter');
+      if (/paint|layout|strict|content/.test(cs.contain)) why.push('contain');
+      if (/transform|perspective|filter|opacity|mask|clip-path|mix-blend-mode/.test(cs.willChange)) why.push('will-change');
+      if (parseFloat(cs.opacity) < 1) why.push('opacity');
+      if ([cs.maskImage, cs.webkitMaskImage].some((v) => v && v !== 'none')) why.push('mask');
+      if (cs.clipPath !== 'none') why.push('clip-path');
+      if (cs.mixBlendMode !== 'normal') why.push('mix-blend-mode');
+      const anims = a.getAnimations().filter((x) => x.playState === 'running' && x.effect
+        && x.effect.getKeyframes().some((k) => MOVES.some((p) => p in k)));
+      if (anims.length) why.push('animation ' + anims.map((x) => x.animationName || x.transitionProperty).join('/'));
+      if (why.length) bad.push(desc(a) + ': ' + why.join(','));
+    }
+    return bad;
+  };
+  window.__g = {
+    r, visible, desc, badAncestors,
+    /** Visible glass surfaces (backdrop-filter on the element; the scroll edge blurs on ::before and is no glass). */
+    glass() {
+      const all = [...document.querySelectorAll('body *')].filter((el) => glassy(getComputedStyle(el)) && visible(el));
+      return all.map((el) => ({ el: desc(el), inGlass: all.some((o) => o !== el && o.contains(el)), roots: badAncestors(el) }));
+    },
+    /** Elements and pseudo-elements with a backdrop-filter. */
+    anyBlur() {
+      const hits = [];
+      for (const el of document.querySelectorAll('body, body *')) {
+        for (const pseudo of [null, '::before', '::after']) {
+          const cs = getComputedStyle(el, pseudo);
+          if (pseudo && cs.content === 'none') continue;
+          if (glassy(cs) && (pseudo ? visible(el) || el === document.body : visible(el))) hits.push(desc(el) + (pseudo || ''));
+        }
+      }
+      return hits;
+    },
+    /** Visible matches with a hit area below 44 × 44: [element, width, height]. */
+    small(sel) {
+      return [...document.querySelectorAll(sel)].filter(visible)
+        .map((el) => [desc(el), Math.round(r(el).w * 10) / 10, Math.round(r(el).h * 10) / 10])
+        .filter(([, w, h]) => w < 43.9 || h < 43.9);
+    },
+    /** What a tap on the centre of `el` reaches is `el` itself (or inside it). */
+    onTop(el) {
+      const b = r(el);
+      const top = document.elementFromPoint(b.x + b.w / 2, b.y + b.h / 2);
+      return !!top && (top === el || el.contains(top));
+    },
+    /** Anything the Glas frame writes: data-g-* / data-tabs-min attributes, --g-* and sheen (--gx/--gy) inline
+     * variables, g-* classes. */
+    remnants() {
+      const bad = [];
+      for (const el of [document.documentElement, ...document.querySelectorAll('*')]) {
+        for (const a of el.getAttributeNames()) if (/^data-(g-|tabs-min)/.test(a)) bad.push(desc(el) + ' @' + a);
+        if (/--g-|--g[xy]\b/.test(el.getAttribute('style') || '')) bad.push(desc(el) + ' style');
+        if ([...el.classList].some((c) => c.startsWith('g-'))) bad.push(desc(el));
+      }
+      const tabs = document.querySelector('.app-tabs');
+      return { count: bad.length, bad: bad.slice(0, 8),
+        nonItems: tabs ? [...tabs.children].filter((c) => !c.classList.contains('app-tabs__item')).length : -1 };
+    },
+    /** Running animations of the matches: name, duration, animated properties. */
+    anims(sel) {
+      return [...document.querySelectorAll(sel)].flatMap((el) => el.getAnimations().map((a) => ({
+        el: desc(el).slice(0, 30), name: a.animationName || a.transitionProperty,
+        ms: Math.round(Number(a.effect.getComputedTiming().duration) || 0),
+        props: [...new Set(a.effect.getKeyframes().flatMap((k) => Object.keys(k)))]
+          .filter((p) => !['offset', 'computedOffset', 'easing', 'composite'].includes(p)),
+      })));
+    },
+  };
+}
+
+/** Real-time wait for a condition in the page (Playwright polls in its own world, the paused clock does not stop it). */
+const until = (page, fn, a, timeout = 4000) => page.waitForFunction(fn, a, { timeout }).then(() => true, () => false);
+
+/** Scroll at once (the page scrolls smoothly otherwise) and let the Glas runtime evaluate it: its
+ * requestAnimationFrame runs on the paused clock. */
+async function scrollTick(page, y) {
+  await page.evaluate((top) => {
+    window.scrollTo({ top, behavior: 'instant' });
+    window.dispatchEvent(new Event('scroll'));
+  }, y);
+  await run(page, 20);
+}
+
+/** In-app navigation: same document (clock budget goes on). Returns 'new' once the next page is in the DOM, 'kept'
+ * when React kept the page element (same component, e.g. room → room), '' when no page appeared. */
+async function navigate(page, to) {
+  await page.evaluate((p) => {
+    document.querySelectorAll('.app-main .page').forEach((el) => el.setAttribute('data-check-old', ''));
+    history.pushState({}, '', p);
+    dispatchEvent(new PopStateEvent('popstate'));
+  }, to);
+  if (await until(page, () => !!document.querySelector('.app-main .page:not([data-check-old])'), null, 1500)) return 'new';
+  await page.waitForLoadState('networkidle');
+  return (await page.evaluate(() => !!document.querySelector('.app-main .page'))) ? 'kept' : '';
+}
+
+const near = (v, want, tol = 1) => typeof v === 'number' && Math.abs(v - want) <= tol;
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+/** Runtime checks of stage 2 (docs/glas/PLAN-ETAPPE-2.md §6.3). */
+async function frameChecks(browser, url, out) {
+  const pageErrors = [];
+  /** One check: an exception marks it failed (with the message) instead of ending the run. */
+  const block = async (name, fn) => {
+    try {
+      await fn();
+    } catch (e) {
+      out[name + 'Error'] = String(e && e.message).split('\n')[0].slice(0, 300);
+      out[name + 'Ok'] = false;
+    }
+  };
+  const open = async (device, style, p, extra = {}) => {
+    const ctx = await newContext(browser, device, { demo: true, mode: 'light', style, strength: 'clear', ...extra });
+    await ctx.addInitScript(pageHelpers);
+    const { page, errors } = await openPage(ctx, url + p);
+    const close = async () => {
+      if (errors.length) pageErrors.push({ device, style, path: p, errors: errors.slice(0, 3) });
+      await ctx.close();
+    };
+    return { ctx, page, close };
+  };
+  const ev = (page, fn, a) => page.evaluate(fn, a);
+  const avatarItems = (page) => ev(page, () => {
+    const items = [...document.querySelectorAll('.g-avatar-menu [role="menuitem"]')];
+    const btn = document.querySelector('.g-avatar__btn');
+    return { open: !!document.querySelector('.g-avatar-menu:not(.g-avatar-menu--closing)'), n: items.length,
+      i: items.indexOf(document.activeElement), onAvatar: document.activeElement === btn,
+      expanded: btn && btn.getAttribute('aria-expanded'), texts: items.map((x) => x.textContent.trim()) };
+  });
+
+  // 1. Klassisch: nothing of the frame — on a fresh load, and after switching back from Glas with the frame in use
+  //    (tab bar minimised and its lens placed, desktop scrolled, a sheen surface pressed)
+  await block('frameClassic', async () => {
+    const res = {};
+    for (const device of ['phone', 'desktop']) {
+      const fresh = await open(device, 'classic', '/');
+      res[device] = await ev(fresh.page, () => __g.remnants());
+      await fresh.close();
+      const used = await open(device, 'glas', '/settings');
+      await scrollTick(used.page, 600);
+      res[device + 'Before'] = await ev(used.page, () => document.documentElement.hasAttribute(innerWidth < 900 ? 'data-tabs-min' : 'data-g-scrolled'));
+      // a press without a click: the sheen runtime only listens to pointerdown (upstream elements keep the variables
+      // in Klassisch unless they are removed)
+      res[device + 'Sheen'] = await ev(used.page, () => {
+        const el = document.querySelector('.header-cluster .notifications-wrap');
+        if (!el) return false;
+        const b = __g.r(el);
+        el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: b.x + 4, clientY: b.y + 4 }));
+        return el.style.getPropertyValue('--gx') !== '';
+      });
+      await used.page.locator('[data-glas-style-option="classic"]').click();
+      await run(used.page, 50);
+      res[device + 'AfterSwitch'] = await ev(used.page, () => __g.remnants());
+      await used.close();
+    }
+    out.frameClassic = res;
+    out.frameClassicOk = res.phoneBefore === true && res.desktopBefore === true && res.desktopSheen === true
+      && ['phone', 'desktop', 'phoneAfterSwitch', 'desktopAfterSwitch'].every((k) => res[k].count === 0 && res[k].nonItems === 0);
+  });
+
+  // 2. Phone tab bar: minimises scrolling down (> 24 px from the turning point), expands scrolling up, near the top and
+  //    at the page end; a keyboard focus in the bar keeps it expanded
+  await block('tabsMin', async () => {
+    const { page, close } = await open('phone', 'glas', '/');
+    const min = () => ev(page, () => document.documentElement.hasAttribute('data-tabs-min'));
+    const maxY = await ev(page, () => document.scrollingElement.scrollHeight - innerHeight);
+    const ys = [300, 270, 285, 300, maxY, maxY - 200, maxY - 100, 30];
+    const seq = [];
+    for (const y of ys) { await scrollTick(page, y); seq.push(await min()); }
+    const want = [true, false, false, true, false, false, true, false];
+    await scrollTick(page, 0);
+    await ev(page, () => document.activeElement && document.activeElement.blur());
+    let inBar = false;
+    for (let i = 0; i < 8 && !inBar; i++) {
+      await page.keyboard.press('Shift+Tab');
+      inBar = await ev(page, () => !!document.activeElement.closest('.app-tabs') && document.activeElement.matches(':focus-visible'));
+    }
+    await scrollTick(page, 300);
+    const keptByFocus = inBar && !(await min());
+    out.tabsMin = { maxY, ys, seq, want, focusInBar: inBar, keptByFocus };
+    out.tabsMinOk = maxY > 700 && same(seq, want) && keptByFocus;
+    await close();
+  });
+
+  // 3. Minimised: a 52 circle with the shown symbol in its middle at 375, 390, 430 and 820 (iPad upright); expanded,
+  //    the lens covers the shown entry. The bar is the viewport minus 32 wide, from 600 px at most 560 and centred
+  //    (K33). Behind "Mehr" (settings) the lens sits on "Mehr". Desktop: the sidebar lens on the active entry (2 px in
+  //    at the top and the bottom, K40).
+  await block('tabGeometry', async () => {
+    const res = {};
+    for (const device of ['phone375', 'phone', 'phone430', 'ipadUpright']) {
+      const { page, close } = await open(device, 'glas', '/');
+      await settleAnimations(page);
+      const lens = await ev(page, () => {
+        const l = __g.r(document.querySelector('.g-tabs__lens'));
+        const e = __g.r(document.querySelector('.app-tabs [data-g-tab-pick]'));
+        const b = __g.r(document.querySelector('.app-tabs'));
+        return { dx: l.x - e.x, dy: l.y - e.y, dw: l.w - e.w, dh: l.h - e.h, bar: { w: b.w, left: b.x, right: innerWidth - b.x - b.w } };
+      });
+      await scrollTick(page, 400);
+      await settleAnimations(page);
+      const circle = await ev(page, () => {
+        const g = __g.r(document.querySelector('.g-tabs__glass'));
+        const s = __g.r(document.querySelector('.app-tabs [data-g-tab-pick] > svg'));
+        return { w: g.w, h: g.h, dx: s.x + s.w / 2 - (g.x + g.w / 2), dy: s.y + s.h / 2 - (g.y + g.h / 2) };
+      });
+      res[device] = { lens, circle };
+      await close();
+    }
+    const more = await open('phone', 'glas', '/settings');
+    await settleAnimations(more.page);
+    res.moreRoute = await ev(more.page, (label) => {
+      const m = document.querySelector(`.app-tabs__item[aria-label="${label}"]`);
+      const l = __g.r(document.querySelector('.g-tabs__lens'));
+      const e = __g.r(m);
+      return { picked: m.hasAttribute('data-g-tab-pick'), dx: l.x - e.x, dy: l.y - e.y, dw: l.w - e.w, dh: l.h - e.h };
+    }, DE['nav.moreNavigation']);
+    await more.close();
+    const side = await open('desktop', 'glas', '/energy');
+    await settleAnimations(side.page);
+    res.sidebar = await ev(side.page, () => {
+      const l = __g.r(document.querySelector('.g-navgroups__lens'));
+      const e = __g.r(document.querySelector('.sidebar-nav__item--active'));
+      return { dx: l.x - e.x, dy: l.y - (e.y + 2), dw: l.w - e.w, dh: l.h - (e.h - 4) };
+    });
+    await side.close();
+    const zero = (o) => ['dx', 'dy', 'dw', 'dh'].every((k) => near(o[k], 0));
+    out.tabGeometry = res;
+    const barOk = (d) => {
+      const { w, left, right } = res[d].lens.bar;
+      const vw = DEVICES[d].viewport.width;
+      return near(w, vw >= 600 ? Math.min(560, vw - 32) : vw - 32) && near(left, right);
+    };
+    out.tabGeometryOk = ['phone375', 'phone', 'phone430', 'ipadUpright'].every((d) => zero(res[d].lens) && barOk(d)
+      && near(res[d].circle.w, 52) && near(res[d].circle.h, 52) && near(res[d].circle.dx, 0) && near(res[d].circle.dy, 0))
+      && res.moreRoute.picked && zero(res.moreRoute) && zero(res.sidebar);
+  });
+
+  // 4. Minimised, only "Tab-Leiste einblenden" can take the focus; Enter on it expands the bar and puts the focus on
+  //    the shown entry
+  await block('tabsExpand', async () => {
+    const { page, close } = await open('phone', 'glas', '/');
+    await scrollTick(page, 400);
+    await settleAnimations(page); // the entries turn invisible after the shrink (real time)
+    const focusable = await ev(page, () => [...document.querySelectorAll('.app-tabs a, .app-tabs button')]
+      .filter((el) => el.checkVisibility({ visibilityProperty: true }) && el.tabIndex >= 0).map((el) => __g.desc(el)));
+    await page.locator('.g-tabs__expand').focus();
+    await page.keyboard.press('Enter');
+    await run(page, 20);
+    const after = await ev(page, () => ({ min: document.documentElement.hasAttribute('data-tabs-min'),
+      onShown: document.activeElement.hasAttribute('data-g-tab-pick'), active: __g.desc(document.activeElement) }));
+    out.tabsExpand = { focusable, after };
+    out.tabsExpandOk = focusable.length === 1 && /g-tabs__expand/.test(focusable[0]) && !after.min && after.onShown;
+    await close();
+  });
+
+  // 5. Avatar menu (phone): Enter, arrows with wrap-around, Home/End, Escape and Tab close it with the focus back on
+  //    the avatar, ArrowUp on the closed avatar opens it on the last item; a tap on the dim layer closes it without
+  //    reaching the page below
+  await block('avatarMenu', async () => {
+    const { page, close } = await open('phone', 'glas', '/');
+    const steps = {};
+    const opened = () => until(page, () => !!document.activeElement && document.activeElement.matches('.g-avatar-menu [role="menuitem"]'));
+    const closed = () => until(page, () => !document.querySelector('.g-avatar-menu'));
+    await page.locator('.g-avatar__btn').focus();
+    await page.keyboard.press('Enter');
+    await opened();
+    steps.enter = await avatarItems(page);
+    for (const key of ['ArrowDown', 'End', 'Home', 'ArrowUp']) {
+      await page.keyboard.press(key);
+      steps[key] = (await avatarItems(page)).i;
+    }
+    await page.keyboard.press('Escape');
+    await closed();
+    steps.escape = await avatarItems(page);
+    await page.keyboard.press('ArrowUp');
+    await opened();
+    steps.arrowUpOpens = (await avatarItems(page)).i;
+    await page.keyboard.press('Tab');
+    await closed();
+    steps.tab = await avatarItems(page);
+    await page.locator('.g-avatar__btn').click();
+    await until(page, () => !!document.querySelector('.g-avatar-menu'));
+    // the dim layer is what a tap there hits, not a tile below it
+    const hit = await ev(page, () => { const el = document.elementFromPoint(195, 640); return el ? __g.desc(el) : ''; });
+    await page.mouse.click(195, 640);
+    await closed();
+    steps.outside = { ...(await avatarItems(page)), path: await ev(page, () => location.pathname), hit };
+    const n = steps.enter.n;
+    out.avatarMenu = steps;
+    out.avatarMenuOk = steps.enter.open && n === 3 && steps.enter.i === 0 && steps.enter.expanded === 'true'
+      && steps.ArrowDown === 1 && steps.End === n - 1 && steps.Home === 0 && steps.ArrowUp === n - 1
+      && !steps.escape.open && steps.escape.onAvatar && steps.escape.expanded === 'false'
+      && steps.arrowUpOpens === n - 1 && !steps.tab.open && steps.tab.onAvatar
+      && !steps.outside.open && steps.outside.path === '/' && /g-avatar-dim/.test(steps.outside.hit);
+    await close();
+  });
+
+  // 6. Notifications: on the phone from the avatar menu — focus into the panel, Escape closes it with the focus back on
+  //    the avatar; on the desktop the popover under the bell, Escape returns the focus to the bell
+  await block('notifications', async () => {
+    const res = {};
+    const phone = await open('phone', 'glas', '/');
+    await phone.page.locator('.g-avatar__btn').focus();
+    await phone.page.keyboard.press('Enter');
+    await until(phone.page, () => !!document.activeElement && document.activeElement.matches('.g-avatar-menu [role="menuitem"]'));
+    await phone.page.keyboard.press('Enter'); // first item: notifications
+    await until(phone.page, () => !!document.activeElement && !!document.activeElement.closest('.notifications-panel'));
+    await settleAnimations(phone.page);
+    res.phoneOpen = await ev(phone.page, () => ({ panel: __g.visible(document.querySelector('.notifications-panel')),
+      focusIn: !!document.activeElement.closest('.notifications-panel'), active: __g.desc(document.activeElement),
+      rows: document.querySelectorAll('.notifications-panel .notif-row').length }));
+    await phone.page.keyboard.press('Escape');
+    await until(phone.page, () => !document.querySelector('.notifications-panel'));
+    res.phoneEscape = await ev(phone.page, () => ({ panel: !!document.querySelector('.notifications-panel'),
+      onAvatar: document.activeElement === document.querySelector('.g-avatar__btn') }));
+    await phone.close();
+    const desk = await open('desktop', 'glas', '/');
+    await desk.page.locator('.header-cluster .notifications-trigger').focus();
+    await desk.page.keyboard.press('Enter');
+    await until(desk.page, () => !!document.querySelector('.notifications-panel'));
+    await settleAnimations(desk.page);
+    res.desktopOpen = await ev(desk.page, () => {
+      const p = __g.r(document.querySelector('.notifications-panel'));
+      const b = __g.r(document.querySelector('.header-cluster .notifications-trigger'));
+      return { w: p.w, belowBell: p.y > b.bottom, rightAligned: Math.abs(p.right - b.right) <= 2 };
+    });
+    await desk.page.keyboard.press('Escape');
+    await until(desk.page, () => !document.querySelector('.notifications-panel'));
+    res.desktopEscape = await ev(desk.page, () => document.activeElement === document.querySelector('.header-cluster .notifications-trigger'));
+    await desk.close();
+    out.notifications = res;
+    out.notificationsOk = res.phoneOpen.panel && res.phoneOpen.focusIn && res.phoneOpen.rows > 0 && !res.phoneEscape.panel
+      && res.phoneEscape.onAvatar && near(res.desktopOpen.w, 392) && res.desktopOpen.belowBell && res.desktopEscape;
+  });
+
+  // 7. More and rooms menus: open with Enter, focus on the first item, arrows with wrap-around, Home/End, Escape closes
+  //    with the focus back on the trigger (phone sheets, desktop rooms popover beside the sidebar)
+  await block('menus', async () => {
+    const res = {};
+    const walk = async (page, trigger, menu) => {
+      const state = () => ev(page, (s) => {
+        const items = [...document.querySelectorAll(s + ' [role="menuitem"]')];
+        return { open: !!document.querySelector(s), n: items.length, i: items.indexOf(document.activeElement) };
+      }, menu);
+      const steps = {};
+      await page.locator(trigger).first().focus();
+      await page.keyboard.press('Enter');
+      await until(page, (s) => !!document.querySelector(s), menu);
+      await run(page, 20); // both menus focus their first item in requestAnimationFrame (paused clock)
+      steps.open = await state();
+      for (const key of ['ArrowDown', 'End', 'Home', 'ArrowUp']) {
+        await page.keyboard.press(key);
+        steps[key] = (await state()).i;
+      }
+      await page.keyboard.press('Escape');
+      await until(page, (s) => !document.querySelector(s), menu);
+      steps.escape = { open: (await state()).open, onTrigger: await ev(page, (t) => document.activeElement === document.querySelector(t), trigger) };
+      const n = steps.open.n;
+      steps.ok = steps.open.open && n > 2 && steps.open.i === 0 && steps.ArrowDown === 1 && steps.End === n - 1
+        && steps.Home === 0 && steps.ArrowUp === n - 1 && !steps.escape.open && steps.escape.onTrigger;
+      return steps;
+    };
+    const more = await open('phone', 'glas', '/');
+    res.more = await walk(more.page, `.app-tabs__item[aria-label="${DE['nav.moreNavigation']}"]`, '.app-more-menu--open');
+    await more.close();
+    const rooms = await open('phone', 'glas', '/');
+    res.rooms = await walk(rooms.page, `.app-tabs__item[aria-label="${DE['nav.rooms']}"]`, '.rooms-menu--open');
+    await rooms.close();
+    const desk = await open('desktop', 'glas', '/');
+    res.roomsDesktop = await walk(desk.page, ".sidebar-nav__item[aria-haspopup='menu']", '.rooms-menu--open');
+    await desk.page.locator(".sidebar-nav__item[aria-haspopup='menu']").click();
+    await until(desk.page, () => !!document.querySelector('.rooms-menu--open'));
+    await settleAnimations(desk.page);
+    res.roomsDesktop.place = await ev(desk.page, () => {
+      const s = __g.r(document.querySelector('.app-sidebar'));
+      const p = __g.r(document.querySelector('.rooms-menu--open'));
+      return { gap: Math.round(p.x - s.right), w: p.w };
+    });
+    await desk.close();
+    out.menus = res;
+    out.menusOk = res.more.ok && res.rooms.ok && res.roomsDesktop.ok && res.roomsDesktop.place.gap >= 0
+      && res.roomsDesktop.place.gap <= 24 && near(res.roomsDesktop.place.w, 280);
+  });
+
+  // 8. Every route, phone/iPad/desktop, Klassisch next to Glas: "Bearbeiten" exactly where Klassisch shows an edit
+  //    toggle (K23), chips where Klassisch has them (A17); at rest at most three glass surfaces, no glass in glass, no
+  //    backdrop root above a glass surface; fixed buttons at their place and on top (the scroll edge catches no tap);
+  //    hit areas of the frame ≥ 44; desktop header flush with the content.
+  await block('frameRoutes', async () => {
+    const rows = [];
+    const PHONE_HITS = '.app-tabs__item, .g-avatar__btn, .g-back, .g-done, .app-chips-mobile .summary-chip';
+    const WIDE_HITS = '.sidebar-nav__item, .app-sidebar__collapse, .home-status-pill, .header-cluster .notifications-trigger, '
+      + '.g-edit-capsule, .header-cluster .user-avatar, .header-cluster__weather--btn, .g-head-back, .header-cluster__chips .summary-chip';
+    for (const device of ['phone', 'ipad', 'desktop']) {
+      const phone = device === 'phone';
+      for (const p of FRAME_ROUTES) {
+        const k = await open(device, 'classic', p);
+        await settleAnimations(k.page); // the entry animation starts at opacity 0
+        const classic = await ev(k.page, () => ({
+          edit: [...document.querySelectorAll('.edit-toggle')].filter((el) => __g.visible(el)).length > 0,
+          chips: [...document.querySelectorAll('.app-chips-mobile, .header-cluster__chips')].some((el) => __g.visible(el)),
+        }));
+        await k.close();
+        const g = await open(device, 'glas', p);
+        await settleAnimations(g.page);
+        const row = await ev(g.page, ([isPhone, hits]) => {
+          const q = (s) => document.querySelector(s);
+          const res = {
+            chips: [...document.querySelectorAll('.app-chips-mobile, .header-cluster__chips')].some((el) => __g.visible(el)),
+            glass: __g.glass(),
+            small: __g.small(hits),
+            edge: q('.g-edge') ? getComputedStyle(q('.g-edge')).pointerEvents : null,
+          };
+          if (isPhone) {
+            const fixed = {};
+            const want = { '.g-avatar__btn': { y: 8, right: innerWidth - 14 }, '.g-back': { y: 8, x: 16 } };
+            for (const [sel, pos] of Object.entries(want)) {
+              const el = q(sel);
+              if (!el) continue;
+              const b = __g.r(el);
+              fixed[sel] = { ok: Math.abs(b.y - pos.y) <= 1 && (pos.x === undefined || Math.abs(b.x - pos.x) <= 1)
+                && (pos.right === undefined || Math.abs(b.right - pos.right) <= 1) && Math.abs(b.w - 44) <= 1 && Math.abs(b.h - 44) <= 1,
+                onTop: __g.onTop(el), roots: __g.badAncestors(el) };
+            }
+            res.fixed = fixed;
+          } else {
+            res.edit = !!q('.g-edit-capsule') && __g.visible(q('.g-edit-capsule'));
+            const inner = q('.header-cluster-wrapper');
+            const main = q('.app-main');
+            if (inner && main) {
+              const a = __g.r(inner), m = __g.r(main), ia = getComputedStyle(inner), cm = getComputedStyle(main);
+              res.flush = { left: Math.round(a.x + parseFloat(ia.paddingLeft) - (m.x + parseFloat(cm.paddingLeft))),
+                right: Math.round(a.right - parseFloat(ia.paddingRight) - (m.right - parseFloat(cm.paddingRight))) };
+            }
+            res.onTop = ['.header-cluster .notifications-trigger', '.g-edit-capsule', '.header-cluster .user-avatar']
+              .filter((s) => q(s) && __g.visible(q(s)) && !__g.onTop(q(s)));
+          }
+          return res;
+        }, [phone, phone ? PHONE_HITS : WIDE_HITS]);
+        if (phone && await g.page.locator('.g-avatar__btn').count()) {
+          // "Bearbeiten" in the avatar menu
+          await tap(g.page, '.g-avatar__btn');
+          row.edit = (await avatarItems(g.page)).texts.includes(DE['glas.avatar.edit']);
+        } else if (phone) row.edit = false;
+        if (phone) {
+          // scrolled: the edge does not take the tap at the small title, the avatar stays on top of it
+          await g.page.keyboard.press('Escape');
+          await until(g.page, () => !document.querySelector('.g-avatar-menu'));
+          await scrollTick(g.page, 200);
+          row.edgeTap = await ev(g.page, () => {
+            const top = document.elementFromPoint(innerWidth / 2, 30);
+            const av = document.querySelector('.g-avatar__btn');
+            return { edgeTook: !!top && !!top.closest('.g-edge'), avatarOnTop: !av || __g.onTop(av) };
+          });
+        }
+        await g.close();
+        const n = row.glass.length;
+        const okRow = row.edit === classic.edit && row.chips === classic.chips && n <= 3 && n >= (phone ? 1 : 2)
+          && row.glass.every((x) => !x.inGlass && x.roots.length === 0) && row.small.length === 0
+          && (row.edge === null || row.edge === 'none')
+          && (phone ? Object.values(row.fixed).every((f) => f.ok && f.onTop && f.roots.length === 0)
+            && !row.edgeTap.edgeTook && row.edgeTap.avatarOnTop
+            : row.onTop.length === 0 && (!row.flush || (near(row.flush.left, 0) && near(row.flush.right, 0))));
+        rows.push({ device, path: p, ok: okRow, classic, ...row, glass: row.glass.map((x) => x.el + (x.inGlass ? ' IN GLASS' : '')
+          + (x.roots.length ? ' ROOTS ' + x.roots.join(' | ') : '')) });
+      }
+    }
+    out.frameRoutes = rows.filter((x) => !x.ok).concat(rows.length ? [] : [{ none: true }]);
+    out.frameRoutesCount = rows.length;
+    out.frameRoutesOk = rows.length === FRAME_ROUTES.length * 3 && rows.every((x) => x.ok);
+  });
+
+  // 9. Edit mode on every route (also a room that does not exist): "Fertig" stays (phone capsule next to the avatar,
+  //    desktop header capsule); right after each route change no fixed button has a moving or transformed ancestor
+  //    (entry animation, K35)
+  await block('editEverywhere', async () => {
+    const res = {};
+    for (const device of ['phone', 'desktop']) {
+      const phone = device === 'phone';
+      const { page, close } = await open(device, 'glas', '/');
+      if (phone) {
+        await tap(page, '.g-avatar__btn');
+        await page.locator(`.g-avatar-menu__item:has-text("${DE['glas.avatar.edit']}")`).click();
+      } else await page.locator('.g-edit-capsule').click();
+      await until(page, (ph) => !!document.querySelector(ph ? '.g-done' : '.g-edit-capsule[aria-pressed="true"]'), phone);
+      const rows = [];
+      for (const p of FRAME_ROUTES) {
+        const shown = (await ev(page, () => location.pathname)) === p ? 'same' : await navigate(page, p);
+        const early = await ev(page, () => ['.g-avatar__btn', '.g-back', '.g-done', '.app-header-cluster-wrapper']
+          .map((s) => document.querySelector(s)).filter(Boolean).flatMap((el) => __g.badAncestors(el)));
+        await settleAnimations(page);
+        const late = await ev(page, (ph) => {
+          const done = document.querySelector(ph ? '.g-done' : '.g-edit-capsule[aria-pressed="true"]');
+          const av = document.querySelector('.g-avatar__btn');
+          const b = done && __g.r(done);
+          return { done: !!done && __g.visible(done) && __g.onTop(done),
+            place: !ph || !b ? null : { y: Math.round(b.y), right: Math.round(innerWidth - b.right), h: Math.round(b.h) },
+            withAvatar: !!av };
+        }, phone);
+        const placeOk = !phone || (late.place && late.place.y === 8 && late.place.h === 44
+          && late.place.right === (late.withAvatar ? 66 : 16));
+        rows.push({ path: p, shown, ok: !!shown && early.length === 0 && late.done && placeOk, early, ...late });
+      }
+      // "Fertig" ends edit mode
+      await page.locator(phone ? '.g-done' : '.g-edit-capsule').click();
+      const ended = await until(page, () => !document.querySelector('.g-done, .g-edit-capsule[aria-pressed="true"]'));
+      res[device] = { bad: rows.filter((x) => !x.ok), routes: rows.length, ended };
+      await close();
+    }
+    out.editEverywhere = res;
+    out.editEverywhereOk = Object.values(res).every((x) => x.bad.length === 0 && x.routes === FRAME_ROUTES.length && x.ended);
+  });
+
+  // 10. Opaque (strength "Deckend"; the same as "Transparenz reduzieren"/more contrast): no backdrop-filter anywhere,
+  //     also with the avatar menu, the notifications panel, More and the rooms sheet open (phone) and the
+  //     notifications and rooms popovers (desktop); more contrast alike. Each opened layer must really be there.
+  await block('opaque', async () => {
+    const res = {};
+    const shown = {};
+    const isOpen = (page, sel) => ev(page, (q) => !!document.querySelector(q), sel);
+    const phone = await open('phone', 'glas', '/', { strength: 'opaque' });
+    res.phoneRest = await ev(phone.page, () => __g.anyBlur());
+    await scrollTick(phone.page, 400);
+    res.phoneScrolled = await ev(phone.page, () => __g.anyBlur());
+    await scrollTick(phone.page, 0);
+    await tap(phone.page, '.g-avatar__btn');
+    shown.phoneAvatar = await isOpen(phone.page, '.g-avatar-menu');
+    res.phoneAvatar = await ev(phone.page, () => __g.anyBlur());
+    await tap(phone.page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.notifications']}")`);
+    shown.phoneNotifications = await isOpen(phone.page, '.notifications-panel');
+    res.phoneNotifications = await ev(phone.page, () => __g.anyBlur());
+    await phone.close();
+    const more = await open('phone', 'glas', '/', { strength: 'opaque' });
+    await tap(more.page, `.app-tabs__item[aria-label="${DE['nav.moreNavigation']}"]`);
+    shown.phoneMore = await isOpen(more.page, '.app-more-menu--open');
+    res.phoneMore = await ev(more.page, () => __g.anyBlur());
+    await more.close();
+    const rooms = await open('phone', 'glas', '/', { strength: 'opaque' });
+    await tap(rooms.page, `.app-tabs__item[aria-label="${DE['nav.rooms']}"]`);
+    shown.phoneRooms = await isOpen(rooms.page, '.rooms-menu--open');
+    res.phoneRooms = await ev(rooms.page, () => __g.anyBlur());
+    await rooms.close();
+    const desk = await open('desktop', 'glas', '/', { strength: 'opaque' });
+    res.desktopRest = await ev(desk.page, () => __g.anyBlur());
+    await tap(desk.page, '.header-cluster .notifications-trigger');
+    shown.desktopNotifications = await isOpen(desk.page, '.notifications-panel');
+    res.desktopNotifications = await ev(desk.page, () => __g.anyBlur());
+    await desk.page.keyboard.press('Escape');
+    await tap(desk.page, ".sidebar-nav__item[aria-haspopup='menu']");
+    shown.desktopRooms = await isOpen(desk.page, '.rooms-menu--open');
+    res.desktopRooms = await ev(desk.page, () => __g.anyBlur());
+    await desk.close();
+    const contrast = await open('phone', 'glas', '/', { contrast: true });
+    await scrollTick(contrast.page, 400);
+    res.contrastScrolled = await ev(contrast.page, () => ({ glass: document.documentElement.getAttribute('data-glass'), blur: __g.anyBlur() }));
+    await contrast.close();
+    out.opaque = res;
+    out.opaqueShown = shown;
+    out.opaqueOk = Object.values(shown).every(Boolean)
+      && Object.entries(res).every(([k, v]) => (k === 'contrastScrolled' ? v.glass === 'opaque' && v.blur.length === 0 : v.length === 0));
+  });
+
+  // 11. Desktop sidebar: groups "Zuhause", "Bereiche", "System" with every visible entry; edit mode = the flat list as
+  //     in Klassisch (drag, eyes); collapsed to 72 with a tooltip on every entry
+  await block('sidebar', async () => {
+    const { page, close } = await open('desktop', 'glas', '/');
+    const read = () => ev(page, () => ({
+      titles: [...document.querySelectorAll('.g-navgroup__title')].map((x) => x.textContent.trim()),
+      groups: !!document.querySelector('.g-navgroups'),
+      grouped: document.querySelectorAll('.g-navgroups .sidebar-nav__item').length,
+      width: Math.round(__g.r(document.querySelector('.app-sidebar')).w),
+      titlesOnItems: [...document.querySelectorAll('.sidebar-nav__item')].filter((x) => x.getAttribute('title')).length,
+      items: document.querySelectorAll('.sidebar-nav__item').length,
+    }));
+    const res = { rest: await read() };
+    await page.locator('.g-edit-capsule').click();
+    await until(page, () => !document.querySelector('.g-navgroups'));
+    res.edit = await read();
+    await page.locator('.g-edit-capsule').click();
+    await until(page, () => !!document.querySelector('.g-navgroups'));
+    await page.locator('.app-sidebar__collapse').click();
+    await until(page, () => !!document.querySelector('.app-sidebar--collapsed'));
+    await settleAnimations(page);
+    res.collapsed = await read();
+    await close();
+    const titles = [DE['glas.nav.group.home'], DE['glas.nav.group.areas'], DE['glas.nav.group.system']];
+    out.sidebar = res;
+    out.sidebarOk = same(res.rest.titles, titles) && res.rest.groups && res.rest.grouped === res.rest.items && res.rest.items > 5
+      && !res.edit.groups && res.edit.items >= res.rest.items && res.edit.titles.length === 0 && res.rest.titlesOnItems === 0 && near(res.rest.width, 260) && near(res.collapsed.width, 72)
+      && res.collapsed.titlesOnItems === res.collapsed.items;
+  });
+
+  // 12. Reduced motion: menus and toasts cross-fade 200 ms (opacity only), the tab bar and the lens switch at once,
+  //     the banner ring stands still. The lens is moved by a tab that changes the route (a link; "Räume" only opens
+  //     its menu); the same tap without reduced motion does animate it (control).
+  const lensAfterTap = async (page) => {
+    const before = await ev(page, () => location.pathname);
+    await page.locator('a.app-tabs__item:not([data-g-tab-pick])').first().click();
+    await until(page, (p) => location.pathname !== p, before);
+    await run(page, 50); // the lens moves in the next frames (useLens: layout, then requestAnimationFrame)
+    return { moved: (await ev(page, () => location.pathname)) !== before,
+      anims: await ev(page, () => __g.anims('.g-tabs__lens, .app-tabs__item > svg').filter((a) => a.ms > 1)) };
+  };
+  await block('reducedMotionFrame', async () => {
+    const res = {};
+    const rm = { reducedMotion: 'reduce' };
+    const phone = await open('phone', 'glas', '/', rm);
+    await phone.page.locator('.g-avatar__btn').click();
+    await until(phone.page, () => !!document.querySelector('.g-avatar-menu'));
+    res.avatarMenu = await ev(phone.page, () => __g.anims('.g-avatar-menu'));
+    await phone.page.keyboard.press('Escape');
+    await until(phone.page, () => !document.querySelector('.g-avatar-menu'));
+    await phone.page.evaluate(TOAST, [DE['toast.notConnected'], DE['toast.dismiss']]);
+    res.toast = await ev(phone.page, () => __g.anims('.toaster__item'));
+    await phone.page.evaluate(BANNER, ['warning', DE['banner.reconnecting']]);
+    res.bannerRing = await ev(phone.page, () => getComputedStyle(document.querySelector('.app-banner'), '::before').animationName);
+    await scrollTick(phone.page, 400);
+    res.tabBar = await ev(phone.page, () => __g.anims('.app-tabs, .app-tabs *').filter((a) => a.ms > 1));
+    await scrollTick(phone.page, 0);
+    res.lens = await lensAfterTap(phone.page);
+    await phone.close();
+    const control = await open('phone', 'glas', '/');
+    res.lensControl = await lensAfterTap(control.page);
+    await control.close();
+    const more = await open('phone', 'glas', '/', rm);
+    await more.page.locator(`.app-tabs__item[aria-label="${DE['nav.moreNavigation']}"]`).click();
+    await until(more.page, () => !!document.querySelector('.app-more-menu--open'));
+    res.more = await ev(more.page, () => __g.anims('.app-more-menu--open'));
+    await more.close();
+    const fade = (list) => list.length > 0 && list.every((a) => a.name === 'g-fade-in' && a.ms === 200 && same(a.props, ['opacity']));
+    out.reducedMotionFrame = res;
+    out.reducedMotionFrameOk = fade(res.avatarMenu) && fade(res.toast) && fade(res.more) && res.bannerRing === 'none'
+      && res.tabBar.length === 0 && res.lens.moved && res.lens.anims.length === 0
+      && res.lensControl.moved && res.lensControl.anims.length > 0;
+  });
+
+  // 13. Keyboard walk: every Tab stop is visible (the EditToggles Glas hides are never reached), and the frame's stops
+  //     draw a 2-px ring in the focus colour (--g-focus). Forward from the top, backwards from the end (tab bar);
+  //     on the phone also in edit mode ("Fertig" comes first) and on a room (Zurück).
+  await block('focusWalk', async () => {
+    const walk = async (device, p, key, n, edit = false) => {
+      const { page, close } = await open(device, 'glas', p);
+      if (edit) {
+        await tap(page, '.g-avatar__btn');
+        await tap(page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.edit']}")`);
+        // the menu hands the focus back to the avatar: start the walk from the top of the document again
+        await ev(page, () => {
+          const start = document.createElement('button');
+          document.body.prepend(start);
+          start.focus();
+          start.remove();
+        });
+      }
+      await settleAnimations(page);
+      const stops = [];
+      for (let i = 0; i < n; i++) {
+        await page.keyboard.press(key);
+        stops.push(await ev(page, () => {
+          const el = document.activeElement;
+          if (!el || el === document.body) return null;
+          const probe = document.createElement('i');
+          probe.style.color = 'var(--g-focus)';
+          document.body.append(probe);
+          const focus = getComputedStyle(probe).color;
+          probe.remove();
+          // the ring may sit on a child ("Fertig" draws it on its visible capsule)
+          const ringEl = [el, ...el.querySelectorAll('*')].find((x) => {
+            const cs = getComputedStyle(x);
+            return cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2;
+          });
+          return { el: __g.desc(el).slice(0, 60), visible: __g.visible(el),
+            frame: !!el.closest('.app-sidebar, .app-header-cluster-wrapper, .app-tabs, .g-avatar, .g-back, .g-done'),
+            ring: !!ringEl && getComputedStyle(ringEl).outlineColor === focus };
+        }));
+      }
+      await close();
+      return stops.filter(Boolean);
+    };
+    const res = {
+      phoneHome: await walk('phone', '/', 'Tab', 16),
+      phoneRoom: await walk('phone', '/room/living_room', 'Tab', 16),
+      phoneEdit: await walk('phone', '/', 'Tab', 2, true),
+      phoneEnd: await walk('phone', '/', 'Shift+Tab', 5),
+      desktopHome: await walk('desktop', '/', 'Tab', 30),
+      desktopRoom: await walk('desktop', '/room/living_room', 'Tab', 30),
+    };
+    const has = (stops, cls) => stops.some((s) => s.frame && s.el.includes(cls));
+    const bad = Object.entries(res).flatMap(([k, stops]) => stops.filter((s) => !s.visible || (s.frame && !s.ring))
+      .map((s) => `${k}: ${s.el}${s.visible ? '' : ' (hidden)'}${s.frame && !s.ring ? ' (no ring)' : ''}`));
+    out.focusWalk = { bad, frameStops: Object.fromEntries(Object.entries(res).map(([k, stops]) => [k, stops.filter((s) => s.frame).map((s) => s.el)])) };
+    out.focusWalkOk = bad.length === 0 && has(res.phoneHome, 'g-avatar__btn') && has(res.phoneRoom, 'g-back')
+      && has(res.phoneRoom, 'g-avatar__btn') && res.phoneEdit.length > 0 && res.phoneEdit[0].el.includes('g-done')
+      && res.phoneEnd.length === 5 && res.phoneEnd.every((s) => s.el.includes('app-tabs__item'))
+      && ['sidebar-nav__item', 'app-sidebar__collapse', 'notifications-trigger', 'g-edit-capsule'].every((c) => has(res.desktopHome, c))
+      && has(res.desktopRoom, 'g-head-back');
+  });
+
+  out.framePageErrors = pageErrors;
+  return out.frameClassicOk && out.tabsMinOk && out.tabGeometryOk && out.tabsExpandOk && out.avatarMenuOk && out.notificationsOk
+    && out.menusOk && out.frameRoutesOk && out.editEverywhereOk && out.opaqueOk && out.sidebarOk && out.reducedMotionFrameOk
+    && out.focusWalkOk && pageErrors.length === 0;
+}
+
+async function checks() {
+  const { srv, url } = await baseUrl(3);
+  const pw = loadPlaywright();
+  const browser = await pw[arg('engine', 'chromium')].launch();
+  const part = arg('part', 'all');
+  const out = {};
+  let ok = true;
+  if (part === 'all' || part === 'stage1') ok = (await stage1Checks(browser, url, out)) && ok;
+  if (part === 'all' || part === 'frame') ok = (await frameChecks(browser, url, out)) && ok;
   await browser.close();
   if (srv) srv.close();
-  const ok = out.prePaintOk && out.noWebfontsOk && out.switchBackOk && out.accentSliderOk && out.autoModeOk && out.reducedMotionOk
-    && out.knobsOk && out.cardBordersOk;
   console.log(JSON.stringify({ ok, ...out }, null, 1));
   process.exit(ok ? 0 : 1);
 }

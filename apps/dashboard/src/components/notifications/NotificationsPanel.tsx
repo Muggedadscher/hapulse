@@ -4,13 +4,14 @@ import { Bell, X, CheckCheck, BellOff } from 'lucide-react';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { callService, subscribeNotifications } from '../../ha/service';
 import { useT } from '../../i18n/useT';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: bell 44 (docs/glas/PLAN-ETAPPE-2.md K41)
 import './NotificationsPanel.css';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-interface HANotification {
+export interface HANotification { // [fork] exported: the Glas avatar menu shows the same list
   notificationId: string;
   title: string;
   message: string;
@@ -20,7 +21,7 @@ interface HANotification {
 // Subscription
 // ---------------------------------------------------------------------------
 
-function useNotifications(): HANotification[] {
+export function useNotifications(): HANotification[] { // [fork] exported (Glas avatar menu)
   const status = useConnectionStore((s) => s.status);
   const mode = useConnectionStore((s) => s.mode);
   const [list, setList] = useState<HANotification[]>([]);
@@ -90,7 +91,7 @@ interface PanelProps {
   onDismissAll: () => void;
 }
 
-function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: PanelProps) {
+export function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: PanelProps) { // [fork] exported (Glas avatar menu)
   const t = useT();
   const count = notifications.length;
   return ReactDOM.createPortal(
@@ -146,6 +147,7 @@ function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: Pane
 
 export function NotificationsPanel() {
   const t = useT();
+  const bell = useIsGlas() ? 44 : 40; // [fork] Glas: 44 inside the 48 glass capsule
   const notifications = useNotifications();
   const count = notifications.length;
 
@@ -211,7 +213,7 @@ export function NotificationsPanel() {
         ref={triggerRef}
         type="button"
         className="icon-btn icon-btn--ghost notifications-trigger"
-        style={{ width: 40, height: 40, minWidth: 40, minHeight: 40 }}
+        style={{ width: bell, height: bell, minWidth: bell, minHeight: bell }} // [fork] bell size
         aria-label={count > 0 ? t('notifications.unread', { count }) : t('notifications.title')}
         aria-expanded={open}
         aria-haspopup="dialog"

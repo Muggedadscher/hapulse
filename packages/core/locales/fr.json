@@ -1342,5 +1342,22 @@
   "glas.strength.opaque": "Opaque",
   "glas.reduceTransparency.label": "Réduire la transparence",
   "glas.reduceTransparency.hint": "Surfaces opaques au lieu du verre, sur tous les appareils (p. ex. pour les tablettes anciennes)",
-  "glas.themeHint": "Le style Verre utilise une palette neutre. Votre thème reste enregistré pour Classique."
+  "glas.themeHint": "Le style Verre utilise une palette neutre. Votre thème reste enregistré pour Classique.",
+  "glas.nav.group.home": "Maison",
+  "glas.nav.group.areas": "Catégories",
+  "glas.nav.group.system": "Système",
+  "glas.tabs.expand": "Afficher la barre d’onglets",
+  "glas.avatar.account": "Compte {name}",
+  "glas.avatar.accountNoName": "Compte",
+  "glas.avatar.label": "{account}. Ouvrir le menu",
+  "glas.avatar.labelUnread.one": "{account}, {count} nouvelle notification. Ouvrir le menu",
+  "glas.avatar.labelUnread.other": "{account}, {count} nouvelles notifications. Ouvrir le menu",
+  "glas.avatar.notifications": "Notifications",
+  "glas.avatar.notificationsCount.one": "Notifications ({count})",
+  "glas.avatar.notificationsCount.other": "Notifications ({count})",
+  "glas.avatar.edit": "Modifier",
+  "glas.avatar.editDone": "Terminer l’édition",
+  "glas.avatar.menuLabel": "Menu du compte",
+  "glas.edit.label": "Modifier",
+  "glas.edit.done": "Terminé"
 }

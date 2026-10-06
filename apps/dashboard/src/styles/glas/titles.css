@@ -1,0 +1,219 @@
+/* [fork] Glas — titles, the weather line and the summary chips (docs/GLAS-DESIGN.md §4.2, §7.4, §7.5, §6.3; plan
+   docs/glas/PLAN-ETAPPE-2.md §3.4, §3.5, §5.2, §5.3, K21, K26, K27, K37).
+   Only the frame's text styles change in stage 2; everything else keeps the Klassisch sizes until its stage. */
+
+/* ---- Large title (page titles; the greeting on the desktop) ---- */
+:root[data-style='glas'] :is(.page__title, .greeting__title) {
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 700;
+  letter-spacing: 0.37px;
+  color: var(--g-label);
+}
+
+/* the greeting without the waving hand (GLAS-DESIGN §7.4) */
+:root[data-style='glas'] .greeting__title > span[aria-hidden='true'] {
+  display: none;
+}
+
+:root[data-style='glas'] .greeting {
+  margin-bottom: 0;
+}
+
+/* The weather line belongs to the phone; the desktop shows the subtitle and the header's weather pill. */
+:root[data-style='glas'] .g-weather-line {
+  display: none;
+}
+
+/* ---- Summary chips: 44 capsule, card, colour only on the glyph (GLAS-DESIGN §7.5, D29) ---- */
+:root[data-style='glas'] .summary-chips {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .summary-chip,
+:root[data-style='glas'] .summary-chip--clickable {
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px 0 13px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-card);
+  color: var(--g-label);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+:root[data-style='glas'] .summary-chip--clickable:hover {
+  background: var(--g-card);
+  box-shadow: none;
+}
+
+/* off: secondary text and glyph instead of the classic 45 % opacity */
+:root[data-style='glas'] .summary-chip--dimmed {
+  opacity: 1;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .summary-chip__count {
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: inherit;
+}
+
+:root[data-style='glas'] .summary-chip__icon {
+  display: inline-flex;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .summary-chip__icon > svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] .summary-chip--active .summary-chip__icon {
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .summary-chip--alert .summary-chip__icon {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .summary-chip--danger .summary-chip__icon {
+  color: var(--g-red-ink);
+}
+
+/* a warning (open door, alarm) is told by the weight too, not only by colour */
+:root[data-style='glas'] :is(.summary-chip--alert, .summary-chip--danger) .summary-chip__count {
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .summary-chip__avatar {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--g-card);
+  background: var(--g-fill-2);
+  color: var(--g-label);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+/* ---- Phone ---- */
+@media (max-width: 899px) {
+  /* greeting: one line, 30/36 (GLAS-DESIGN §4.2 "Begrüßung Handy") */
+  :root[data-style='glas'] .greeting__title {
+    font-size: 30px;
+    line-height: 36px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  :root[data-style='glas'] .greeting:has(.g-weather-line) .greeting__subtitle {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-weather-line {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 6px;
+    max-width: 100%;
+    min-height: 44px;
+    margin: -6px 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--g-label-2);
+    font-family: var(--g-font);
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  :root[data-style='glas'] .g-weather-line:active {
+    opacity: 0.55;
+  }
+
+  :root[data-style='glas'] .g-weather-line__icon {
+    flex: none;
+  }
+
+  :root[data-style='glas'] .g-weather-line__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :root[data-style='glas'] .g-weather-line__chevron {
+    flex: none;
+    color: var(--g-label-3);
+  }
+
+  /* Coupled to the scroll (GLAS-DESIGN §6.3): the large title runs under the edge and hands over to the small title
+     there. --g-y comes from GlasRuntime on .app-main (K22), unitless px 0–64. */
+  :root[data-style='glas'] .app-main :is(.page__title, .greeting__title) {
+    opacity: calc(1 - var(--g-y, 0) / 40);
+    scale: calc(1 - 0.05 * min(var(--g-y, 0) / 48, 1));
+    transform-origin: 0 100%;
+    transition:
+      opacity 140ms linear,
+      scale 140ms linear;
+  }
+
+  :root[data-style='glas'] .app-main :is(.greeting__subtitle, .g-weather-line) {
+    opacity: calc(1 - var(--g-y, 0) / 28);
+    transition: opacity 140ms linear;
+  }
+
+  /* Overview: greeting → weather line → chips (K26; the markup order follows in stage 4). Chips 14 below the weather
+     line, the row runs to the screen edges. */
+  :root[data-style='glas'] .home-page__header {
+    order: -1;
+    margin-bottom: -10px;
+  }
+
+  :root[data-style='glas'] .home-chips-mobile {
+    margin-bottom: 0;
+  }
+
+  :root[data-style='glas'] .home-chips-mobile .summary-chips {
+    margin: -4px -16px;
+    padding: 4px 16px;
+    scroll-padding-inline: 16px;
+  }
+
+  /* other pages: the chips row on top (K27), edge to edge */
+  :root[data-style='glas'] .app-chips-mobile {
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .app-chips-mobile .summary-chips {
+    padding: 4px 16px;
+    scroll-padding-inline: 16px;
+  }
+}
+
+/* ---- Desktop: chips carry a soft shadow (content, not glass; GLAS-DESIGN §7.3) ---- */
+@media (min-width: 900px) {
+  :root[data-style='glas'] :is(.summary-chip, .summary-chip--clickable, .summary-chip--clickable:hover) {
+    box-shadow: var(--g-shadow-chip);
+  }
+
+  :root[data-style='glas'] .summary-chip__icon > svg {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .app-main :is(.page__title, .greeting__title) {
+    scale: none;
+  }
+}
