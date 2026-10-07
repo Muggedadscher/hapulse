@@ -1359,5 +1359,7 @@
   "glas.avatar.editDone": "Avsluta redigering",
   "glas.avatar.menuLabel": "Kontomeny",
   "glas.edit.label": "Redigera",
-  "glas.edit.done": "Klar"
+  "glas.edit.done": "Klar",
+  "glas.sheet.grow": "Förstora bladet",
+  "glas.sheet.shrink": "Förminska bladet"
 }

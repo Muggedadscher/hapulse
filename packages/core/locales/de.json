@@ -1359,5 +1359,7 @@
   "glas.avatar.editDone": "Bearbeiten beenden",
   "glas.avatar.menuLabel": "Kontomenü",
   "glas.edit.label": "Bearbeiten",
-  "glas.edit.done": "Fertig"
+  "glas.edit.done": "Fertig",
+  "glas.sheet.grow": "Blatt vergrößern",
+  "glas.sheet.shrink": "Blatt verkleinern"
 }

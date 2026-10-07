@@ -1359,5 +1359,7 @@
   "glas.avatar.editDone": "Terminar edição",
   "glas.avatar.menuLabel": "Menu da conta",
   "glas.edit.label": "Editar",
-  "glas.edit.done": "Concluído"
+  "glas.edit.done": "Concluído",
+  "glas.sheet.grow": "Expandir a folha",
+  "glas.sheet.shrink": "Reduzir a folha"
 }
