@@ -11,7 +11,8 @@
    A surface's own rule sets its position, size and radius and, as variables only:
    --g-surface-tint (minimum tint, K28) and, for another material, --g-surface-fill/-filter/-solid/-shadow/-rim
    (sheet material, phone toast). It never sets background, filter or shadow itself. "Fertig" (prominent, no glass)
-   is not in the list. */
+   is not in the list. Since stage 3 the windows are in it while glass (medium sheet, desktop dialog — sheets.css;
+   plan docs/glas/PLAN-ETAPPE-3.md §3.2). */
 
 :root[data-style='glas']
   :where(
@@ -27,7 +28,8 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
-    .toaster__item
+    .toaster__item,
+    .modal-panel[data-g-mat='glass']
   ) {
   --g-surface-tint: 0;
   --g-t: max(var(--g-surface-tint), var(--g-glass-tint));
@@ -67,7 +69,8 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
-    .toaster__item
+    .toaster__item,
+    .modal-panel[data-g-mat='glass']
   )::before {
   content: '';
   position: absolute;
@@ -97,7 +100,8 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
-    .toaster__item
+    .toaster__item,
+    .modal-panel[data-g-mat='glass']
   )::after {
   content: '';
   position: absolute;
@@ -145,7 +149,8 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
-    .toaster__item
+    .toaster__item,
+    .modal-panel[data-g-mat='glass']
   ) {
   --g-surface-bg: var(--g-surface-solid);
   -webkit-backdrop-filter: none;
@@ -172,7 +177,8 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
-    .toaster__item
+    .toaster__item,
+    .modal-panel[data-g-mat='glass']
   )::before {
   display: none;
 }
@@ -193,7 +199,8 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
-      .toaster__item
+      .toaster__item,
+      .modal-panel[data-g-mat='glass']
     ) {
     --g-surface-bg: var(--g-surface-solid);
     box-shadow: var(--g-glass-opaque-shadow);
@@ -218,7 +225,8 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
-      .toaster__item
+      .toaster__item,
+      .modal-panel[data-g-mat='glass']
     )::before {
     display: none;
   }
@@ -240,7 +248,8 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
-      .toaster__item
+      .toaster__item,
+      .modal-panel[data-g-mat='glass']
     ) {
     --g-surface-bg: Canvas;
     color: CanvasText;
@@ -263,7 +272,8 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
-      .toaster__item
+      .toaster__item,
+      .modal-panel[data-g-mat='glass']
     )::before,
   :root[data-style='glas']
     :where(
@@ -279,7 +289,8 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
-      .toaster__item
+      .toaster__item,
+      .modal-panel[data-g-mat='glass']
     )::after {
     display: none;
   }

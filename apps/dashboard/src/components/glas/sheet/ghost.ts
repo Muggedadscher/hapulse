@@ -224,7 +224,7 @@ function decide(g: Ghost, original: HTMLElement): void {
 }
 
 function leave(g: Ghost, together: boolean): (Animation | null)[] {
-  const { clone, panel, scrim, src, box } = g;
+  const { panel, scrim, src, box } = g;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const from = panel.style.transform || 'none';
@@ -233,7 +233,12 @@ function leave(g: Ghost, together: boolean): (Animation | null)[] {
   const out: (Animation | null)[] = [];
 
   if (reducedMotion()) {
-    out.push(play(clone, [{ opacity: 1 }, { opacity: 0 }], { duration: REDUCED_MS, easing: 'ease', fill: 'forwards' }));
+    // Panel and scrim fade on their own: opacity on the clone (their parent) would make it the backdrop root of the
+    // panel's glass, which would then blur nothing.
+    if (scrim) {
+      out.push(play(scrim, [{ opacity: Number(scrim.style.opacity || 1) }, { opacity: 0 }], { duration: REDUCED_MS, easing: 'ease', fill: 'forwards' }));
+    }
+    out.push(play(panel, [{ opacity }, { opacity: 0 }], { duration: REDUCED_MS, easing: 'ease', fill: 'forwards' }));
     return out;
   }
   if (g.note?.taken) {

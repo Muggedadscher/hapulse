@@ -469,12 +469,17 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
         st.height = panel.offsetHeight;
         return;
       }
-      const a = play(panel, [before, geometry(panel)], { duration: 350, easing: spring('snappy') });
+      const after = geometry(panel);
+      // The medium detent's max-height would clamp the first frames of large → medium (a jump); the end height
+      // already respects it.
+      panel.style.maxHeight = 'none';
+      const a = play(panel, [before, after], { duration: 350, easing: spring('snappy') });
       if (scrim && scrimFrom < 1) play(scrim, [{ opacity: scrimFrom }, { opacity: 1 }], { duration: 350, easing: 'ease' });
       st.sizing = a;
       const done = () => {
         if (st.sizing !== a) return;
         st.sizing = null;
+        if (!st.drag) panel.style.removeProperty('max-height'); // a drag that finished the animation sets its own
         if (st.registered && st.detent) panel.setAttribute('data-g-mat', st.detent === 'large' ? 'solid' : 'glass');
         st.height = panel.offsetHeight;
       };

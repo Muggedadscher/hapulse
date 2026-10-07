@@ -2,7 +2,7 @@
    docs/glas/PLAN-ETAPPE-2.md §3.2, §3.3, §3.6, §4.1, §4.4, K25, K36, K38, K40, K43).
 
    - phone: avatar menu (components/glas/AvatarMenu.tsx) with its dim layer; More and rooms menu as a sheet look with
-     a scrim (no real sheets yet — they come in stage 3);
+     a scrim, closing animated since stage 3 (they stay upstream menus, not windows);
    - both: the notifications panel as a glass popover, the host's account menu;
    - desktop: the rooms popover next to the sidebar.
    The material comes from material.css (these surfaces are in its list); the rules here set position, size, radius
@@ -394,9 +394,21 @@
     padding: 10px 0;
     border-radius: 40px;
     overflow: hidden;
+    /* closing (plan docs/glas/PLAN-ETAPPE-3.md K61, §3.10): out downwards, `display` held until the end; without
+       allow-discrete (Safari < 17.4) the declaration is dropped and the sheet closes at once as before */
+    opacity: 0;
+    transform: translateY(calc(100% + 24px + env(safe-area-inset-bottom, 0px)));
+    transition:
+      transform 360ms cubic-bezier(0.4, 0, 1, 1),
+      opacity 360ms cubic-bezier(0.4, 0, 1, 1),
+      display 360ms allow-discrete;
   }
 
+  /* open: no transition (it would stand above the entry animation in the cascade) */
   :root[data-style='glas'] :is(.rooms-menu--open, .app-more-menu--open) {
+    opacity: 1;
+    transform: none;
+    transition: none;
     animation: g-sheet-in var(--g-d-smooth) var(--g-spring-smooth) backwards;
   }
 
@@ -406,12 +418,26 @@
     overscroll-behavior: contain;
   }
 
-  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open)::before {
+  /* the scrim is always there so that it can fade out (K61): at rest invisible and not hit */
+  :root[data-style='glas'] .app-layout::before {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 250;
     background: var(--g-scrim);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 320ms cubic-bezier(0.4, 0, 1, 1),
+      visibility 0s linear 320ms;
+  }
+
+  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open)::before {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: none;
     animation: g-fade-in 300ms ease backwards;
   }
 
@@ -516,5 +542,19 @@
 
   :root[data-style='glas'] :is(.g-avatar-dim--closing, .g-avatar-menu--closing) {
     animation-name: g-fade-out !important;
+  }
+}
+
+/* Reduced motion, phone: More and rooms close with a 200-ms fade, without moving (K61). */
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] :is(.rooms-menu, .app-more-menu) {
+    transform: none;
+    transition-duration: 200ms !important;
+    transition-timing-function: ease !important;
+  }
+
+  :root[data-style='glas'] .app-layout::before {
+    transition-duration: 200ms, 0s !important;
+    transition-delay: 0s, 200ms !important;
   }
 }

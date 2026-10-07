@@ -675,6 +675,7 @@ export function glasCssVars(input: GlasInput): Record<string, string> {
   // Windows and gestures (plan Etappe 3 §5.1)
   const windowShadows = GLAS_WINDOW_SHADOWS[input.mode];
   for (const name of Object.keys(windowShadows) as GlasWindowShadow[]) out[`--g-shadow-${kebab(name)}`] = windowShadows[name];
+  out['--g-pill-open-ink'] = openPillInk(input.mode, c);
 
   for (const name of ['smooth', 'snappy', 'bouncy'] as const) {
     const s = GLAS_SPRINGS[name];
@@ -735,6 +736,12 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
   return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a)];
 }
 
+/** Text of the "open" status pill (redSoft) in a window's group: dark, redInk on redSoft over the lighter group is
+ * 3.85:1 (the sketch's value), so the text is `label` there; the red dot stays (plan Etappe 3 K71). */
+function openPillInk(mode: GlasMode, c: Record<GlasColorKey, string>): string {
+  return mode === 'light' ? c.redInk : c.label;
+}
+
 /**
  * Windows (plan Etappe 3 §6.1): text in the opaque groups of sheets and dialogs, the status pills there, white on the
  * action colours (swipe actions, destructive buttons), the play glyph (3:1, non-text) and the desktop dialog's and
@@ -748,9 +755,7 @@ function windowContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, 
   pairs.push({ name: 'accent ink on group', fg: a.accentInk, bg: c.group, min: 4.5 });
   pairs.push({ name: 'accent ink on accentSoft over group (alarm mode)', fg: a.accentInk, bg: compositeOver(a.accentSoft, c.group), min: 4.5 });
   pairs.push({ name: 'label on accentSoft over group (alarm mode)', fg: c.label, bg: compositeOver(a.accentSoft, c.group), min: 4.5 });
-  // dark: redInk on redSoft over the lighter group is 3.85:1 (the sketch's value), so the pill's text is `label` (K71)
-  const openPillText = input.mode === 'light' ? c.redInk : c.label;
-  pairs.push({ name: '"open" pill text on redSoft over group', fg: openPillText, bg: compositeOver(c.redSoft, c.group), min: 4.5 });
+  pairs.push({ name: '"open" pill text on redSoft over group', fg: openPillInk(input.mode, c), bg: compositeOver(c.redSoft, c.group), min: 4.5 });
   pairs.push({ name: 'label2 on fill over group ("closed" pill)', fg: c.label2, bg: compositeOver(c.fill, c.group), min: 4.5 });
   pairs.push({ name: 'label on fill over group (secondary button)', fg: c.label, bg: compositeOver(c.fill, c.group), min: 4.5 });
   for (const act of ['actDel', 'actOk', 'actNeutral'] as const) {
