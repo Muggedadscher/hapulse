@@ -107,9 +107,10 @@ Transition).
   Innenabstand 4, ohne eigenen Hintergrund, Rand und `backdrop-filter` (sonst Backdrop-Root für die Glasfläche darin).
   K33 ab 600 px.
 - `GlasTabBar` (K20): `.g-tabs__glass` (Glas, Radius 31, Tönung `--g-tint-tab-bar`), `.g-tabs__lens` (70 × 54,
-  Radius 27, `--g-lens`, gleitet `snappy` .35 s mit Dehnung 420 ms; Position aus `useLens`), `.g-tabs__expand`
-  (52-px-Knopf „Tab-Leiste einblenden“, nur minimiert vorhanden). Alle `aria-hidden` außer dem Knopf. Nach dem
-  Einblenden per Knopf geht der Fokus auf den aktiven Eintrag (der Knopf verschwindet, sonst fiele er auf `body`).
+  Radius 27, `--g-lens`, gleitet `snappy` .35 s mit Dehnung 420 ms, seit K45 .75 s und 480 ms; Position aus
+  `useLens`), `.g-tabs__expand` (52-px-Knopf „Tab-Leiste einblenden“, nur minimiert vorhanden). Alle `aria-hidden`
+  außer dem Knopf. Nach dem Einblenden per Knopf geht der Fokus auf den aktiven Eintrag (der Knopf verschwindet, sonst
+  fiele er auf `body`).
 - Einträge: 54 hoch, Radius 27, Symbol 24 (per CSS, Strich 1,75), Abstand 2, Beschriftung 11/13 600 `label`; aktiv
   `--g-tab-ink`. **Gefülltes Symbol** nur für eine geprüfte Liste von Lucide-Symbolen (Haus, Kamera, Wellen, Schild,
   Raster …) über ihre Klassen am `svg` (`lucide-house` usw., stehen im Selektor-Wächter als Laufzeit-Klassen),
@@ -123,8 +124,8 @@ Transition).
   bei jeder Breite ein Kreis 52 entsteht (bei W = 358 sind es `scale(.1453, .8387)` und `179px / 31px` aus GLAS-DESIGN
   §7.1); aktives Symbol per `translate(var(--g-tab-dx), 12.5px)` in den Kreis; übrige Einträge `opacity 0` +
   `scale(.5)`, Beschriftungen zuerst (120 ms). Einträge sind dann `visibility: hidden` (nicht fokussierbar), das aktive
-  Symbol bleibt sichtbar; fokussierbar ist nur der Einblenden-Knopf. Klein `smooth` .5 s, groß `bouncy` .6 s; reduzierte
-  Bewegung: ohne Animation.
+  Symbol bleibt sichtbar; fokussierbar ist nur der Einblenden-Knopf. Klein `smooth` .5 s, groß `bouncy` .6 s (seit
+  K45 .65 s und .75 s); reduzierte Bewegung: ohne Animation.
 - **Versteckt**, solange das Mehr- oder Räume-Sheet offen ist (`:has()`): `translateY(14px) scale(.94)`, Glas blendet aus.
 - Inhalt läuft unter die Leiste: `.app-main` unten 132 + Safe Area.
 

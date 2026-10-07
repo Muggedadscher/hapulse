@@ -317,7 +317,8 @@
     transition-delay: 0s;
   }
 
-  :root[data-style='glas'] .app-tabs .g-tabs__lens,
+  /* as specific as the stretch rules above (.app-tabs[data-g-lens='a'] .g-tabs__lens), later in the file */
+  :root[data-style='glas'] .app-tabs[data-g-lens] .g-tabs__lens,
   :root[data-style='glas'] .app-tabs__item[data-g-pop] > svg {
     animation: none;
   }
