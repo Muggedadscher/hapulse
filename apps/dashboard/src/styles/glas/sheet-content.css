@@ -26,7 +26,8 @@
     .weather-modal__stat,
     .weather-modal__forecast-list,
     .waste-modal__next,
-    .waste-modal__list
+    .waste-modal__list,
+    .g-notes__list
   ) {
   --text-dim: var(--g-label-2);
   --text-faint: var(--g-label-2);
@@ -46,7 +47,8 @@
     .locks-list,
     .pool-modal__glances,
     .weather-modal__forecast-list,
-    .waste-modal__list
+    .waste-modal__list,
+    .g-notes__list
   ) {
   display: flex;
   flex-direction: column;
@@ -100,7 +102,8 @@
     .locks-row,
     .pool-modal__glance,
     .weather-modal__forecast-row,
-    .waste-modal__row
+    .waste-modal__row,
+    .g-notes__row
   ) {
   border: 0;
   border-radius: 0;
@@ -116,7 +119,8 @@
 :root[data-style='glas'] .modal-body .locks-row + .locks-row,
 :root[data-style='glas'] .modal-body .pool-modal__glance + .pool-modal__glance,
 :root[data-style='glas'] .modal-body .weather-modal__forecast-row + .weather-modal__forecast-row,
-:root[data-style='glas'] .modal-body .waste-modal__row + .waste-modal__row {
+:root[data-style='glas'] .modal-body .waste-modal__row + .waste-modal__row,
+:root[data-style='glas'] .modal-body .g-notes__row + .g-notes__row {
   background-image: linear-gradient(var(--g-sep), var(--g-sep));
 }
 
@@ -1393,12 +1397,122 @@
   line-height: 20px;
 }
 
+/* ---- Notifications (components/glas/NotificationsSheet.tsx, plan §3.9, sketch g5h-notifications-l): count and
+   "Dismiss all" over one group; rows with title 17/22 600, text 15/20 and time 13/18, × 44 with a 16 glyph ---- */
+:root[data-style='glas'] .modal-body .g-notes__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  margin: 0 4px 8px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__count {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__all {
+  flex: none;
+  min-height: 44px;
+  margin: -6px 0;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--g-accent-ink);
+  font-family: var(--g-font);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 6px 12px 16px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__text {
+  flex: 1;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .modal-body :is(.g-notes__title, .g-notes__message, .g-notes__time) {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* long texts end after 2 (title) and 3 lines (text), as the classic panel does */
+:root[data-style='glas'] .modal-body :is(.g-notes__title, .g-notes__message) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__title {
+  -webkit-line-clamp: 2;
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__message {
+  -webkit-line-clamp: 3;
+  margin-top: 2px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__time {
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__dismiss {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__dismiss:hover {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .modal-body :is(.g-notes__all, .g-notes__dismiss):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
 /* ---- Confirmations: question 17/22 600 centred, the code field 17 (at least 16 px, K54) ---- */
 :root[data-style='glas'] .modal-body .lock-confirm {
   gap: 14px;
 }
 
-:root[data-style='glas'] .modal-body :is(.lock-confirm__text, .garage-confirm__text) {
+:root[data-style='glas'] .modal-body :is(.lock-confirm__text, .garage-confirm__text, .g-confirm__text) {
   margin: 6px 0 2px;
   color: var(--g-label);
   font-size: 17px;
@@ -1448,7 +1562,8 @@
       .weather-modal__hero,
       .weather-modal__forecast-list,
       .waste-modal__next,
-      .waste-modal__list
+      .waste-modal__list,
+      .g-notes__list
     ) {
     border-radius: 20px;
   }

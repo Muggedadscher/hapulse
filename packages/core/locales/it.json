@@ -1361,5 +1361,15 @@
   "glas.edit.label": "Modifica",
   "glas.edit.done": "Fine",
   "glas.sheet.grow": "Espandi il foglio",
-  "glas.sheet.shrink": "Riduci il foglio"
+  "glas.sheet.shrink": "Riduci il foglio",
+  "glas.sheet.cancel": "Annulla",
+  "glas.notifications.unread.one": "{count} non letta",
+  "glas.notifications.unread.other": "{count} non lette",
+  "glas.notifications.none": "Niente di nuovo",
+  "glas.notifications.count.one": "{count} notifica",
+  "glas.notifications.count.other": "{count} notifiche",
+  "glas.notifications.dismissAll": "Ignora tutte",
+  "glas.notifications.dismissOne": "Ignora: {title}",
+  "glas.notifications.emptyHint": "I nuovi messaggi di Home Assistant compaiono qui.",
+  "glas.pool.restartAction": "Riavvia"
 }

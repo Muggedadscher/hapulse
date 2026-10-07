@@ -7,13 +7,14 @@
  * shown by callService's toast.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
 import type { HassEntity } from '@hapulse/core';
 import { Modal } from '../ui/Modal';
 import { callService } from '../../ha/service';
 import { useT } from '../../i18n/useT';
 import { lockCodeIsNumeric, lockNeedsCode, lockNeedsDialog } from './lockLogic';
+import { shake } from '../glas/sheet/shake';
 import './LockConfirm.css';
 
 const stopBubble = (e: React.SyntheticEvent) => e.stopPropagation();
@@ -31,6 +32,7 @@ function LockConfirmDialog({ request, onClose }: { request: Request; onClose: ()
   const t = useT();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const codeRef = useRef<HTMLInputElement>(null);
   const { service, entities } = request;
   const withCode = entities.some(lockNeedsCode);
   const numeric = withCode && entities.filter(lockNeedsCode).every(lockCodeIsNumeric);
@@ -46,7 +48,10 @@ function LockConfirmDialog({ request, onClose }: { request: Request; onClose: ()
     );
     setBusy(false);
     if (results.every((r) => r.status === 'fulfilled')) onClose();
-    else setCode('');
+    else {
+      setCode('');
+      shake(codeRef.current); // Glas only: a wrong code shakes the field (docs/glas/PLAN-ETAPPE-3.md K56)
+    }
   }, [busy, withCode, code, entities, service, onClose]);
 
   const question =
@@ -88,6 +93,7 @@ function LockConfirmDialog({ request, onClose }: { request: Request; onClose: ()
           <input
             type="password"
             className="lock-confirm__code"
+            ref={codeRef}
             autoComplete="off"
             autoFocus
             inputMode={numeric ? 'numeric' : 'text'}

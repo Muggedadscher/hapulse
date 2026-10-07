@@ -155,7 +155,8 @@
   padding: 6px;
 }
 
-/* ---- Notifications panel → glass popover (desktop under the bell, phone under the avatar; K25) ---- */
+/* ---- Notifications panel → glass popover under the bell (desktop; K25). The phone has a sheet since stage 3
+   (components/glas/NotificationsSheet.tsx, K57). ---- */
 :root[data-style='glas'] .notifications-panel {
   --g-surface-tint: var(--g-tint-menu);
   --g-surface-shadow: var(--g-shadow-popover);
@@ -167,20 +168,6 @@
   color: var(--g-label);
   transform-origin: calc(100% - 24px) 0;
   animation: g-materialize var(--g-d-snappy) var(--g-spring-snappy) backwards;
-}
-
-/* Phone: in the avatar menu's place, with its sheet material — the panel lies over the large title, and the menu
-   glass let the title show through; the sheet is also what stage 3 turns the panel into (K25). */
-@media (max-width: 899px) {
-  :root[data-style='glas'] .notifications-panel {
-    --g-surface-fill: var(--g-sheet-fill);
-    --g-surface-filter: var(--g-sheet-filter);
-    --g-surface-solid: var(--g-sheet-solid);
-    --g-surface-shadow: var(--g-shadow-menu);
-    width: auto;
-    max-width: none;
-    transform-origin: calc(100% - 22px) -28px;
-  }
 }
 
 :root[data-style='glas'] .notifications-panel__header {

@@ -375,7 +375,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
     : activityExpanded ? logbook.slice(0, 40) : logbook.slice(0, ACTIVITY_COLLAPSED);
 
   return (
-    <Modal open={entityId != null} onClose={onClose} title={name} className="entity-detail-modal">
+    <Modal open={entityId != null} onClose={onClose} title={name} className="entity-detail-modal" contentKey={entityId}>{/* [fork] Glas: a member tap swaps the content (docs/glas/PLAN-ETAPPE-3.md K70) */}
       <div className="entity-detail">
         {/* ── Header: icon, name, last changed, current state ── */}
         <div className="entity-detail__header">

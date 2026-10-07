@@ -93,7 +93,7 @@ interface PanelProps {
   onDismissAll: () => void;
 }
 
-export function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: PanelProps) { // [fork] exported (Glas avatar menu)
+function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: PanelProps) {
   const t = useT();
   const count = notifications.length;
   return ReactDOM.createPortal(

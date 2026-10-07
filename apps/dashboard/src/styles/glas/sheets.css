@@ -353,7 +353,14 @@
    white, the others grey fill. A row that does not fit wraps, each button then takes the full width. */
 :root[data-style='glas']
   .modal-footer
-  :is(.lock-confirm__actions, .garage-confirm__actions, .global-admin__actions, .nvr-setup__actions, .pool-editor__footer) {
+  :is(
+    .lock-confirm__actions,
+    .garage-confirm__actions,
+    .global-admin__actions,
+    .nvr-setup__actions,
+    .pool-editor__footer,
+    .g-confirm__actions
+  ) {
   display: flex;
   flex-wrap: wrap;
   justify-content: stretch;
