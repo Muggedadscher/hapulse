@@ -557,8 +557,8 @@ Skizze: Desktop nutzt leicht andere Stützpunkte (max. Abweichung smooth 0,04 / 
 | Druck Textlink | Deckkraft .55 |
 | Druck Glas | Flex §3.3 + Glanz (120 ms ein, 400 ms aus) |
 | Hover Kachel (Desktop) | `translateY(-1px)` + `cardHover`-Schatten, `smooth` .35 s |
-| **Tab-Linse** | `translateX` `snappy` .35 s + Dehnung 420 ms ease-in-out (40 %: `scaleX(1.12) scaleY(.94)`); neues Symbol gefüllt + Pop `.9 → 1.15 → 1` 440 ms `cubic-bezier(.3,0,.2,1)` |
-| **Tab-Leiste minimieren** | runter: ab y > Anker + 24 px → klein (`smooth` .5 s); hoch: y < Anker − 24 px oder y ≤ 40 → groß (`bouncy` .6 s); Beschriftungen blenden zuerst aus (120 ms); Gummiband (y < 0) ignorieren |
+| **Tab-Linse** | `translateX` `snappy` .35 s + Dehnung 420 ms ease-in-out (40 %: `scaleX(1.12) scaleY(.94)`); neues Symbol gefüllt + Pop `.9 → 1.15 → 1` 440 ms `cubic-bezier(.3,0,.2,1)`. Umgesetzt langsamer: Linse .75 s, Dehnung 480 ms, Pop 520 ms (K45, `glas/PLAN-ETAPPE-2.md`) |
+| **Tab-Leiste minimieren** | runter: ab y > Anker + 24 px → klein (`smooth` .5 s); hoch: y < Anker − 24 px oder y ≤ 40 → groß (`bouncy` .6 s); Beschriftungen blenden zuerst aus (120 ms); Gummiband (y < 0) ignorieren. Umgesetzt langsamer: klein .65 s, groß .75 s (K45) |
 | **Großer Titel** | scroll-gekoppelt (y in 4-px-Schritten, max 64): Titel `opacity 1 − y/40`, `scale(1 − .05·min(y/48,1))` (Ursprung unten links); Wetterzeile/Untertitel `opacity 1 − y/28`; Kante `y/40`; kleiner Titel `opacity (y − 24)/28` + `translateY((1 − o)·6px)`; 120–160 ms linear |
 | **Sheet öffnen (Morph)** | aus dem Rechteck des Auslösers: translate + scale, Radius `22/scale → 40`, `smooth` .5 s; Inhalt fade 240 ms ab 120 ms; Scrim fade 300 ms |
 | Sheet öffnen ohne Ursprung | `translateY(calc(100% + 16px)) → 0`, `smooth` .5 s |
@@ -1199,7 +1199,7 @@ Tab-Leiste (`tb`, `tabs`), Energie (`en`), Kontext (`ctx`), Avatar (`av`).
 | Hinweise, aktive Szene, Kartentitel, Energie, Licht, S/M/L | GLAS-PLAN §2.11–2.16 |
 | Tests (Kontrast, Selektor-Wächter, Screenshots, Leistung, Safari) | GLAS-PLAN §5 |
 | Umsetzung Etappe 0 und 1, Abweichungen K1–K19, Laborliste | `glas/PLAN-ETAPPE-0-1.md` |
-| Umsetzung Etappe 2 (Rahmen), Festlegungen K20–K44, Abweichungen U1–U13, Laborpunkte | `glas/PLAN-ETAPPE-2.md` |
+| Umsetzung Etappe 2 (Rahmen), Festlegungen K20–K45, Abweichungen U1–U13, Laborpunkte | `glas/PLAN-ETAPPE-2.md` |
 | NVR-Paket-Hooks, immersive Kameraseite | GLAS-PLAN §4 |
 | Checkliste „nicht verlieren“ | `glas/HAPULSE-INVENTORY.md` |
 | Glas-Rezept / Bewegung / Grundsatz / Glas-5-Änderungen | `glas/spec/SPEC3.md` §1–2, `SPEC4.md`, `SPEC5.md`; Beispieldaten `SPEC.md` §3 |

@@ -34,7 +34,14 @@
 }
 
 @media (max-width: 899px) {
+  /* The bar's own timings (K45, 2026-10-07): slower than GLAS-DESIGN §6.3 at the user's wish — the lens covered half
+     its way in ~60 ms and was only half seen. The springs stay those of §6.1; only the durations grow. */
   :root[data-style='glas'] .app-tabs {
+    --g-tab-d-lens: 0.75s;
+    --g-tab-d-stretch: 480ms;
+    --g-tab-d-pop: 520ms;
+    --g-tab-d-min: 0.65s;
+    --g-tab-d-expand: 0.75s;
     left: 16px;
     right: 16px;
     bottom: calc(22px + env(safe-area-inset-bottom, 0px));
@@ -66,8 +73,8 @@
     border-radius: 31px;
     transform-origin: 0 100%;
     transition:
-      transform var(--g-d-bouncy) var(--g-spring-bouncy),
-      border-radius var(--g-d-bouncy) var(--g-spring-bouncy),
+      transform var(--g-tab-d-expand) var(--g-spring-bouncy),
+      border-radius var(--g-tab-d-expand) var(--g-spring-bouncy),
       opacity 200ms ease;
   }
 
@@ -93,17 +100,17 @@
 
   :root[data-style='glas'] .app-tabs:is([data-g-lens='a'], [data-g-lens='b']) .g-tabs__lens {
     transition:
-      translate var(--g-d-snappy) var(--g-spring-snappy),
-      width var(--g-d-snappy) var(--g-spring-snappy),
+      translate var(--g-tab-d-lens) var(--g-spring-snappy),
+      width var(--g-tab-d-lens) var(--g-spring-snappy),
       opacity 200ms ease;
   }
 
   :root[data-style='glas'] .app-tabs[data-g-lens='a'] .g-tabs__lens {
-    animation: g-lens-stretch-a 420ms ease-in-out;
+    animation: g-lens-stretch-a var(--g-tab-d-stretch) ease-in-out;
   }
 
   :root[data-style='glas'] .app-tabs[data-g-lens='b'] .g-tabs__lens {
-    animation: g-lens-stretch-b 420ms ease-in-out;
+    animation: g-lens-stretch-b var(--g-tab-d-stretch) ease-in-out;
   }
 
   /* ---- Entries: 54 high, symbol 24 (stroke 1.75), caption 2 ---- */
@@ -137,8 +144,8 @@
     height: 24px;
     transition:
       opacity 300ms ease,
-      scale var(--g-d-bouncy) var(--g-spring-bouncy),
-      translate var(--g-d-bouncy) var(--g-spring-bouncy);
+      scale var(--g-tab-d-expand) var(--g-spring-bouncy),
+      translate var(--g-tab-d-expand) var(--g-spring-bouncy);
   }
 
   :root[data-style='glas'] .app-tabs__label {
@@ -159,7 +166,7 @@
   }
 
   :root[data-style='glas'] .app-tabs__item[data-g-pop] > svg {
-    animation: g-tab-pop 440ms cubic-bezier(0.3, 0, 0.2, 1);
+    animation: g-tab-pop var(--g-tab-d-pop) cubic-bezier(0.3, 0, 0.2, 1);
   }
 
   /* Filled symbol for the shown entry — only for Lucide symbols checked on a screenshot (plan §3.1, risk 4); inner
@@ -202,7 +209,7 @@
   :root[data-style='glas'][data-tabs-min] .g-tabs__glass {
     transform: scale(var(--g-tab-sx, 1), var(--g-tab-sy, 1));
     border-radius: var(--g-tab-rx, 31px) / 31px;
-    transition-duration: var(--g-d-smooth);
+    transition-duration: var(--g-tab-d-min);
     transition-timing-function: var(--g-spring-smooth);
   }
 
@@ -214,7 +221,7 @@
     visibility: hidden;
     transition:
       color 160ms ease-out,
-      visibility 0s linear var(--g-d-smooth),
+      visibility 0s linear var(--g-tab-d-min),
       opacity 200ms ease;
   }
 
@@ -223,8 +230,8 @@
     scale: 0.5;
     transition:
       opacity 300ms ease,
-      scale var(--g-d-smooth) var(--g-spring-smooth),
-      translate var(--g-d-smooth) var(--g-spring-smooth);
+      scale var(--g-tab-d-min) var(--g-spring-smooth),
+      translate var(--g-tab-d-min) var(--g-spring-smooth);
   }
 
   :root[data-style='glas'][data-tabs-min] .app-tabs__label {
@@ -310,7 +317,8 @@
     transition-delay: 0s;
   }
 
-  :root[data-style='glas'] .app-tabs .g-tabs__lens,
+  /* as specific as the stretch rules above (.app-tabs[data-g-lens='a'] .g-tabs__lens), later in the file */
+  :root[data-style='glas'] .app-tabs[data-g-lens] .g-tabs__lens,
   :root[data-style='glas'] .app-tabs__item[data-g-pop] > svg {
     animation: none;
   }

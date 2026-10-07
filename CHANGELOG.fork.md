@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F33 — 2026-10-07
+
+**Vorschau Glas: ruhigere Tab-Leiste** · _Glass preview: calmer tab bar_
+
+### Geändert / Changed
+
+- Glas am Handy: die Linse der Tab-Leiste gleitet langsamer zum neuen Eintrag, und die Leiste schrumpft und wächst beim Scrollen ruhiger, damit man die Bewegung sieht  
+  _Glass on the phone: the tab bar’s lens glides more slowly to the new entry, and the bar shrinks and grows more calmly when you scroll, so the motion can be seen_
+
 ## F32 — 2026-10-06
 
 **Vorschau Glas: neuer Rahmen** · _Glass preview: new frame_

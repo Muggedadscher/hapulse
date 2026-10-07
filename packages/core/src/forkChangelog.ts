@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 33,
+    date: '2026-10-07',
+    title: { de: 'Vorschau Glas: ruhigere Tab-Leiste', en: 'Glass preview: calmer tab bar' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas am Handy: die Linse der Tab-Leiste gleitet langsamer zum neuen Eintrag, und die Leiste schrumpft und wächst beim Scrollen ruhiger, damit man die Bewegung sieht',
+            en: 'Glass on the phone: the tab bar’s lens glides more slowly to the new entry, and the bar shrinks and grows more calmly when you scroll, so the motion can be seen',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 32,
     date: '2026-10-06',
     title: { de: 'Vorschau Glas: neuer Rahmen', en: 'Glass preview: new frame' },
