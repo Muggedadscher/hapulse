@@ -15,6 +15,7 @@ export interface HANotification { // [fork] exported: the Glas avatar menu shows
   notificationId: string;
   title: string;
   message: string;
+  createdAt?: string | undefined; // [fork] Glas notifications sheet shows "3 h ago" (docs/glas/PLAN-ETAPPE-3.md K57)
 }
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ export function useNotifications(): HANotification[] { // [fork] exported (Glas 
           notificationId: n.notification_id,
           title: n.title ?? n.notification_id.replace(/_/g, ' '),
           message: n.message ?? '',
+          createdAt: n.created_at, // [fork] K57
         }))
       );
     });
