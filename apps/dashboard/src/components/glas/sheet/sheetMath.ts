@@ -40,13 +40,15 @@ export interface PresentationInput {
   viewportW: number;
   /** The caller asked for the inspector (`EntityDetailModal`, stage 3b). */
   wantsInspector: boolean;
-  /** Another Glas window is already open below this one (it then becomes a page in the top window, K48). */
-  stacked: boolean;
+  /** Rendered inside an open Glas window's content (`SheetContext`): a page in that window (K48). */
+  nested: boolean;
+  /** Another modal window is open: the inspector then opens as a dialog above it (K60). */
+  othersOpen: boolean;
 }
 
-export function pickPresentation({ viewportW, wantsInspector, stacked }: PresentationInput): Presentation {
-  if (stacked) return 'page';
-  if (wantsInspector && viewportW >= INSPECTOR_FROM) return 'inspector';
+export function pickPresentation({ viewportW, wantsInspector, nested, othersOpen }: PresentationInput): Presentation {
+  if (nested) return 'page';
+  if (wantsInspector && !othersOpen && viewportW >= INSPECTOR_FROM) return 'inspector';
   return viewportW >= DIALOG_FROM ? 'dialog' : 'sheet';
 }
 

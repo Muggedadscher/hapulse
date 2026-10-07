@@ -1,12 +1,13 @@
 /**
- * [fork] Glas sheets (stage 3) — the stack of open windows (plan docs/glas/PLAN-ETAPPE-3.md K48, §3.6). Pure core:
- * the order of the open windows, which one is on top (Esc, `inert`), whether a new one is a page in the window below,
- * and the counted scroll lock. The DOM effects live in `useGlasSheet.ts`.
+ * [fork] Glas sheets (stage 3) — the stack of open windows (plan docs/glas/PLAN-ETAPPE-3.md K48, K49, §3.6). Pure
+ * core: the order of the open windows, which one is on top (Esc, focus, the only one without `inert`), the commit
+ * batches and the hand-over marker. Whether a window is a page in another one is not decided here but by
+ * `SheetContext` (rendered inside an open window's content). The DOM effects live in `useGlasSheet.ts`.
  *
  * Order: the inspector (not modal) lies at the bottom; modal windows in the order they opened. Windows that open in
- * the same commit share a batch; inside a batch a window rendered in another one's children (React context, also
+ * the same commit share a batch; inside a batch a window rendered in another one's content (React context, also
  * through portals) lies above it — React runs the child's layout effect first, so the order cannot come from the
- * order of registration.
+ * order of registration. A window is registered once per opening; registering it again never moves it.
  */
 
 export type StackKind = 'modal' | 'inspector';
@@ -26,66 +27,26 @@ function before(a: StackEntry, b: StackEntry): boolean {
   return a.depth < b.depth;
 }
 
-/** The list with `entry` at its place (an entry with the same id is replaced). */
+/** The list with `entry` at its place. An entry with the same id keeps its place: an update never changes the order. */
 export function insertEntry(list: readonly StackEntry[], entry: StackEntry): StackEntry[] {
-  const rest = list.filter((e) => e.id !== entry.id);
-  let i = rest.length;
-  while (i > 0 && before(entry, rest[i - 1]!)) i--;
-  return [...rest.slice(0, i), entry, ...rest.slice(i)];
+  if (list.some((e) => e.id === entry.id)) return list as StackEntry[];
+  let i = list.length;
+  while (i > 0 && before(entry, list[i - 1]!)) i--;
+  return [...list.slice(0, i), entry, ...list.slice(i)];
 }
 
 export function removeEntry(list: readonly StackEntry[], id: number): StackEntry[] {
   return list.some((e) => e.id === id) ? list.filter((e) => e.id !== id) : (list as StackEntry[]);
 }
 
-/** The window on top: gets Esc, focus and is the only one without `inert`. */
+/** The window on top: gets Esc and the focus, and is the only one without `inert`. */
 export function topEntry(list: readonly StackEntry[]): StackEntry | undefined {
   return list[list.length - 1];
 }
 
-/** A modal window with another modal window below it is a page in that window (K48). */
-export function isPage(list: readonly StackEntry[], id: number): boolean {
-  const i = list.findIndex((e) => e.id === id);
-  if (i < 0 || list[i]!.kind !== 'modal') return false;
-  return list.slice(0, i).some((e) => e.kind === 'modal');
-}
-
-/** The modal window directly below `id` (the one a page covers), if any. */
-export function parentOf(list: readonly StackEntry[], id: number): StackEntry | undefined {
-  const i = list.findIndex((e) => e.id === id);
-  for (let j = i - 1; j >= 0; j--) if (list[j]!.kind === 'modal') return list[j];
-  return undefined;
-}
-
+/** Modal windows (scroll lock, tab bar, `data-g-sheets`); the inspector does not count. */
 export function modalCount(list: readonly StackEntry[]): number {
   return list.reduce((n, e) => n + (e.kind === 'modal' ? 1 : 0), 0);
-}
-
-/**
- * Scroll lock with a counter (K63 b): the first modal window remembers `overflow` and sets `hidden`, the last one
- * restores it — whatever order the windows disappear in.
- */
-export class ScrollLock {
-  private count = 0;
-  private saved = '';
-
-  acquire(style: { overflow: string }): void {
-    if (this.count === 0) {
-      this.saved = style.overflow;
-      style.overflow = 'hidden';
-    }
-    this.count++;
-  }
-
-  release(style: { overflow: string }): void {
-    if (this.count === 0) return;
-    this.count--;
-    if (this.count === 0) style.overflow = this.saved;
-  }
-
-  get held(): number {
-    return this.count;
-  }
 }
 
 /**
@@ -110,5 +71,35 @@ export class Batches {
       });
     }
     return this.n;
+  }
+}
+
+/**
+ * Hand-over marker (K49): a window that closes notes itself here during React's commit (its ghost); a window that
+ * opens in the same commit takes the note in the layout phase and continues from that place instead of rising. The
+ * note expires with the next microtask, after the commit, so a later opening never takes it.
+ */
+export class Handoff<T> {
+  private note: T | null = null;
+  private gen = 0;
+  private readonly defer: (fn: () => void) => void;
+
+  constructor(defer: (fn: () => void) => void) {
+    this.defer = defer;
+  }
+
+  put(value: T): void {
+    this.note = value;
+    const gen = ++this.gen;
+    this.defer(() => {
+      if (this.gen === gen) this.note = null;
+    });
+  }
+
+  /** The note of a window that closed in this commit, once. */
+  take(): T | null {
+    const value = this.note;
+    this.note = null;
+    return value;
   }
 }

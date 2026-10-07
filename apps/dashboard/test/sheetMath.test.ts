@@ -18,23 +18,27 @@ import {
 // [fork] Glas sheets (stage 3): pure window maths (docs/glas/PLAN-ETAPPE-3.md K48, K50–K52, K60).
 
 describe('pickPresentation', () => {
+  const base = { wantsInspector: false, nested: false, othersOpen: false };
+
   it('phone sheet below 900, dialog from 900', () => {
-    expect(pickPresentation({ viewportW: 390, wantsInspector: false, stacked: false })).toBe('sheet');
-    expect(pickPresentation({ viewportW: 899, wantsInspector: false, stacked: false })).toBe('sheet');
-    expect(pickPresentation({ viewportW: 900, wantsInspector: false, stacked: false })).toBe('dialog');
+    expect(pickPresentation({ ...base, viewportW: 390 })).toBe('sheet');
+    expect(pickPresentation({ ...base, viewportW: 899 })).toBe('sheet');
+    expect(pickPresentation({ ...base, viewportW: 900 })).toBe('dialog');
   });
 
-  it('inspector only from 1100 and only when asked for', () => {
-    expect(pickPresentation({ viewportW: 1099, wantsInspector: true, stacked: false })).toBe('dialog');
-    expect(pickPresentation({ viewportW: 1100, wantsInspector: true, stacked: false })).toBe('inspector');
-    expect(pickPresentation({ viewportW: 1400, wantsInspector: false, stacked: false })).toBe('dialog');
-    expect(pickPresentation({ viewportW: 600, wantsInspector: true, stacked: false })).toBe('sheet');
+  it('inspector only from 1100, only when asked for and only when no other window is open', () => {
+    const asked = { ...base, wantsInspector: true };
+    expect(pickPresentation({ ...asked, viewportW: 1099 })).toBe('dialog');
+    expect(pickPresentation({ ...asked, viewportW: 1100 })).toBe('inspector');
+    expect(pickPresentation({ ...base, viewportW: 1400 })).toBe('dialog');
+    expect(pickPresentation({ ...asked, viewportW: 600 })).toBe('sheet');
+    expect(pickPresentation({ ...asked, viewportW: 1400, othersOpen: true })).toBe('dialog');
   });
 
-  it('a window opened over another one is a page, at every width', () => {
+  it("a window rendered inside an open window's content is a page, at every width", () => {
     for (const w of [390, 900, 1400]) {
-      expect(pickPresentation({ viewportW: w, wantsInspector: false, stacked: true })).toBe('page');
-      expect(pickPresentation({ viewportW: w, wantsInspector: true, stacked: true })).toBe('page');
+      expect(pickPresentation({ ...base, viewportW: w, nested: true })).toBe('page');
+      expect(pickPresentation({ ...base, viewportW: w, nested: true, wantsInspector: true })).toBe('page');
     }
   });
 });
