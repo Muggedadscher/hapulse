@@ -302,12 +302,25 @@ export const GLAS_SHADOWS = {
   chip: '0 1px 3px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08)',
 } as const;
 
-export type GlasWindowShadow = 'dialog' | 'inspector' | 'sheetLarge' | 'pushedScreen' | 'liftContext' | 'liftContextDesktop';
+export type GlasWindowShadow =
+  | 'dialog'
+  | 'inspector'
+  | 'sheetLarge'
+  | 'pushedScreen'
+  | 'liftContext'
+  | 'liftContextDesktop'
+  | 'cardHover'
+  | 'tileLift'
+  | 'tileOnDesktop'
+  | 'knob'
+  | 'lightGlow';
 
 /**
  * Shadows of windows and gestures (stage 3, plan docs/glas/PLAN-ETAPPE-3.md §5.1; glas-tokens.json → elevation, verbatim):
- * desktop dialog, inspector, large sheet, the page pushed over a sheet and the lifted card of the context menu. Dark
- * overrides `sheetLarge` and both lifts; the others are the same in both modes.
+ * desktop dialog, inspector, large sheet, the page pushed over a sheet and the lifted card of the context menu; since
+ * stage 4 (docs/glas/PLAN-ETAPPE-4.md K83) also the tiles: card hover, an "on" tile (phone / desktop), the switch knob
+ * and the glow of a lit light circle. Dark overrides `sheetLarge`, both lifts, `cardHover`, `tileLift` and
+ * `tileOnDesktop`; the others are the same in both modes.
  */
 export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, string>> = {
   light: {
@@ -317,6 +330,11 @@ export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, stri
     pushedScreen: '-12px 0 32px rgba(0,0,0,.14)',
     liftContext: '0 18px 50px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.08)',
     liftContextDesktop: '0 18px 50px rgba(0,0,0,.28)',
+    cardHover: '0 1px 2px rgba(0,0,0,.05), 0 10px 24px rgba(0,0,0,.08)',
+    tileLift: '0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.06)',
+    tileOnDesktop: '0 1px 2px rgba(0,0,0,.06), 0 6px 16px rgba(0,0,0,.08)',
+    knob: '0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16)',
+    lightGlow: '0 4px 14px rgba(255,204,0,.35)',
   },
   dark: {
     dialog: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 30px 80px rgba(0,0,0,.28)',
@@ -325,6 +343,11 @@ export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, stri
     pushedScreen: '-12px 0 32px rgba(0,0,0,.14)',
     liftContext: '0 18px 50px rgba(0,0,0,.6)',
     liftContextDesktop: '0 18px 50px rgba(0,0,0,.6)',
+    cardHover: '0 10px 24px rgba(0,0,0,.5)',
+    tileLift: 'none',
+    tileOnDesktop: '0 6px 16px rgba(0,0,0,.4)',
+    knob: '0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16)',
+    lightGlow: '0 4px 14px rgba(255,204,0,.35)',
   },
 };
 

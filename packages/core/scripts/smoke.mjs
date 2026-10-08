@@ -1787,7 +1787,9 @@ console.log('\n── glas tokens ──');
     assertEqual(glasCssVars({ mode: 'dark', strength: 'clear' })[`--g-shadow-${name}`], GLAS_SHADOWS[name], `--g-shadow-${name} written`);
   }
   // windows and gestures (docs/glas/PLAN-ETAPPE-3.md §5.1): per mode, dark falls back to light where the json has no value
-  const windowShadows = { dialog: 'dialog', inspector: 'inspector', 'sheet-large': 'sheetLarge', 'pushed-screen': 'pushedScreen', 'lift-context': 'liftContext', 'lift-context-desktop': 'liftContextDesktop' };
+  const windowShadows = { dialog: 'dialog', inspector: 'inspector', 'sheet-large': 'sheetLarge', 'pushed-screen': 'pushedScreen', 'lift-context': 'liftContext', 'lift-context-desktop': 'liftContextDesktop',
+    // tiles (docs/glas/PLAN-ETAPPE-4.md K83)
+    'card-hover': 'cardHover', 'tile-lift': 'tileLift', 'tile-on-desktop': 'tileOnDesktop', knob: 'knob', 'light-glow': 'lightGlow' };
   for (const m of modes) {
     const w = glasCssVars({ mode: m, strength: 'clear' });
     for (const [name, key] of Object.entries(windowShadows)) {
