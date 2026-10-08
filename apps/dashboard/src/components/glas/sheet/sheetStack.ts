@@ -39,6 +39,30 @@ export function removeEntry(list: readonly StackEntry[], id: number): StackEntry
   return list.some((e) => e.id === id) ? list.filter((e) => e.id !== id) : (list as StackEntry[]);
 }
 
+/**
+ * The entry `id` with a new kind or batch, at the place that gives it. The inspector that turns into a dialog (narrower
+ * window) keeps its batch, so it stays under the windows opened after it; a window asked for again while another one
+ * lies above it gets the current batch and goes on top.
+ */
+export function moveEntry(
+  list: readonly StackEntry[],
+  id: number,
+  change: { kind?: StackKind; batch?: number },
+): StackEntry[] {
+  const entry = list.find((e) => e.id === id);
+  if (!entry) return list as StackEntry[];
+  const next = { ...entry, ...change };
+  if (next.kind === entry.kind && next.batch === entry.batch) return list as StackEntry[];
+  return insertEntry(removeEntry(list, id), next);
+}
+
+/** Whether a modal window of its own (not a page rendered inside another window) lies above `id`: a chip dialog over
+ *  the inspector counts, a confirmation inside the inspector does not. */
+export function rootModalAbove(list: readonly StackEntry[], id: number): boolean {
+  const i = list.findIndex((e) => e.id === id);
+  return i >= 0 && list.slice(i + 1).some((e) => e.kind === 'modal' && e.depth === 0);
+}
+
 /** The window on top: gets Esc and the focus, and is the only one without `inert`. */
 export function topEntry(list: readonly StackEntry[]): StackEntry | undefined {
   return list[list.length - 1];

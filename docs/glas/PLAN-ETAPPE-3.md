@@ -524,13 +524,15 @@ Grundlage für „gleiches DOM je Fenster“, die Aufnahmen und die Abnahme. Dem
 - [x] Reduzierte Bewegung: alles Überblendung; Bewegungsprobe zeigt Bewegung bei 0/80/160/320 ms.
 - [x] Klassisch 0 Pixel, gleiches DOM in jedem Fenster aus §6.0.
 
-**3b**
-- [ ] Kontextmenü: Langdruck 550 ms, Rechtsklick; Aktionen korrekt; Tipp auf Anzeige-Karten öffnet weiter direkt das
-      Detail.
-- [ ] Wisch-Aktionen mit Knopf-Zwilling; nie Entriegeln/Öffnen per Wischen.
-- [ ] Inspector ab 1100 px nicht modal, Inhalt tauscht, Esc und Fokus.
+**3b** (2026-10-08, §13.3)
+- [x] Kontextmenü: Langdruck 550 ms, Rechtsklick; Aktionen korrekt; Tipp auf Anzeige-Karten öffnet weiter direkt das
+      Detail. (Langdruck ohne iOS-Callout im Labor)
+- [x] Wisch-Aktionen mit Knopf-Zwilling; nie Entriegeln/Öffnen per Wischen. (Wischen gegen senkrechtes Scrollen in
+      WebKit im Labor)
+- [x] Inspector ab 1100 px nicht modal, Inhalt tauscht, Esc und Fokus. (Kopf und Inhalt fertig in Etappe 4)
 
-**Nicht verlieren** (Inventar B, F, H2–H3, H8, I, V9, X; je PR geprüft, was er berührt — 3a am 2026-10-08)
+**Nicht verlieren** (Inventar B, F, H2–H3, H8, I, V9, X; je PR geprüft, was er berührt — 3a am 2026-10-08; 3b am
+2026-10-08: Licht-Zeilen, Garage, Schlösser, Benachrichtigungen, Detail und Fokus)
 - [x] Personen: Avatare/Initiale, Zone (Zuhause grün/Weg/Name), seit wann (B2)
 - [x] Licht: nach Raum in Nutzer-Reihenfolge + „Andere“, Zeilen-Tipp schaltet, „Alle ausschalten“ (B4)
 - [x] Türen/Fenster: zwei Gruppen, offen/gesamt, offene zuerst (B6) · Alarm: ein Panel je Zentrale, schwerste zuerst,
@@ -755,3 +757,48 @@ einem Fenster mit Seite der Beobachter der Seite vor dem des Wurzelfensters lauf
 Chromium weiter einmal eine Schleife (selten, ohne Folgen); (2) umgesetzt — eine Reaktion, die nie zur Ruhe käme, gäbe
 mit U11 keinen Fehler mehr, sondern einen Rückruf je Bild: Prüfung 5b zählt die Rückrufe eines ruhenden Fensters (eine
 solche Reaktion, zur Probe eingebaut, macht sie rot).
+
+### 13.3 Teil 3b — Gesten und Inspector (Stand 2026-10-08)
+
+Gebaut wie §4 und §5. Zusätzlich neu: `apps/dashboard/scripts/glas-checks-gestures.cjs` (Szenen `ctx-card`,
+`swipe-lights`, `swipe-notes` und `checks --part gestures`; nutzt die Fenster-Helfer und `reach` aus
+`glas-checks-sheets.cjs`). Über §5 hinaus geändert: `stores/uiStore.ts` (`[fork]`, `detailSeq`) und
+`components/ui/Modal.tsx` (`[fork]`, Prop `requestKey` neben `presentation`) für U14; in der Fenster-Laufzeit
+`sheetStack.ts` (`moveEntry`, `rootModalAbove`, mit Tests), `sheetHost.ts` (Inspector im Stapel auf Ebene 400,
+`data-g-inspector`), `sheetMath.ts` (Weg 460 px), `ghost.ts` (der Geist des Inspectors gleitet nach rechts hinaus) und
+`useGlasSheet.ts`.
+
+**Abweichungen der Umsetzung**
+
+| # | Stelle | Umsetzung | Grund |
+|---|---|---|---|
+| U12 | K58 | Im Bearbeiten-Modus bleiben Langdruck (Detail) und Rechtsklick (Menü des Browsers) wie in Klassisch | Dort beginnt auch das Ziehen einer Karte mit einem Druck (`SortableItem`) |
+| U13 | K58 Fokus | Öffnet die Kontextmenü-Taste das Menü, bekommt der erste Eintrag den Fokus; nach Finger oder Maus das Menü selbst, ↓ führt dann zum ersten Eintrag. Tab schließt das Menü wie Esc, der Fokus geht zurück zur Karte | Browser zeigen nach einem Tipp für jeden Fokus, den ein Skript setzt, einen Ring: der erste Eintrag sah nach einem Langdruck wie gewählt aus |
+| U14 | K60 | Jede Anfrage nach dem Detail zählt (`uiStore.detailSeq`), `Modal` reicht sie als `requestKey` an die Laufzeit: der Fokus kehrt beim Schließen zu dem Element zurück, das zuletzt gefragt hat; liegt ein eigenes Fenster über dem Inspector, kommt das Detail aus seiner Lage als Dialog (unter 900 px als Sheet) nach oben, bleibt bis zum Schließen ein modales Fenster und gibt den Fokus danach in das Fenster darunter | Sonst wechselte eine Anfrage unter einem Chip-Fenster nur den Inhalt des verdeckten Inspectors. In 3b öffnet kein Inhalt eines Fensters das Detail; der Weg nach oben ist per Skript geprüft (Prüfung 7) |
+
+Ergänzungen im Rahmen von §4:
+- Kontextmenü: ein Langdruck öffnet das Menü, während der Finger noch liegt; das Loslassen schließt es nicht. Das Menü
+  liegt über dem Inspector (Ebene 900), Esc schließt dort nur das Menü. „Raum öffnen“ erscheint erst mit den
+  Langdruck-Quellen aus Etappe 4: auf einer Raumseite ist es der eigene Raum (`contextActions.test.ts` prüft die Regel).
+- Wisch-Zeilen: Garage und Schlösser wischen auch auf der Sicherheitsseite (dieselben Listen). Die Aktionen tragen die
+  Beschriftung ihres Zwillings („Schließen“, „Verriegeln“), neu sind „Verwerfen“ und „Aus“ (`glas.swipe.*`). Der Hinweis
+  im Desktop-Popover erscheint nur bei Touch (mit der Maus hat jede Zeile ihr ×; wischen geht trotzdem, 96 breit).
+- Inspector: die Seite rückt ohne Übergang zur Seite (ein Übergang ließe das Raster durch jede Spaltenzahl auf dem Weg
+  umbrechen); seine Höhe bleibt fest, eine Seite darin scrollt. Unter 1100 px wird er ohne Animation zum Dialog bzw.
+  Sheet, mit seinem Platz im Stapel, und darüber wieder zum Inspector.
+
+Beim Bau gefunden und behoben:
+- Aus 3a: der Inhaltswechsel (K70) spielte auch in dem Commit, der das Detail öffnet, wenn die Entität eine andere war
+  als beim letzten Öffnen; jetzt nur bei schon offenem Fenster.
+- Mit der Maus schloss der Klick am Ende eines Wischens die eben geöffnete Zeile wieder (Touch erzeugt diesen Klick
+  nicht); er wird jetzt geschluckt. Klicks von der Tastatur (Leertaste auf dem Schalter) kommen immer durch.
+- Chromium zeichnete die unscharfe Abdunkelung über das Loch, wenn das Außenrechteck des `clip-path`-Pfads viel größer
+  als die Ebene war; der Pfad hat jetzt genau ihre Größe.
+
+**Nicht in der Demo prüfbar (Labor, §11):** Langdruck ohne iOS-Callout und Wischen gegen senkrechtes Scrollen in
+WebKit, Loch und Unschärfe der Kontext-Abdunkelung in WebKit, Inspector am iPad quer; Android löst beim Langdruck
+zusätzlich `contextmenu` aus (in Chromium nachgestellt: ein Menü).
+
+**Ergebnisse**
+
+ERGEBNISSE-3B

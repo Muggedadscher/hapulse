@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react'; // [fork] useRef
 import { domainOf, isGarageDoor } from '@hapulse/core'; // [fork] isGarageDoor
 import type { HassEntity } from '@hapulse/core';
 import { LightCard } from './LightCard';
@@ -14,6 +14,8 @@ import { VacuumCard } from './VacuumCard';
 import { GarageCard } from '../garage/GarageCard'; // [fork]
 import { useLongPress } from '../../lib/useLongPress';
 import { useUIStore } from '../../stores/uiStore';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas context menu (docs/glas/PLAN-ETAPPE-3.md K58)
+import { useGlasUiStore } from '../../stores/glasUiStore'; // [fork]
 
 interface EntityCardProps {
   entity: HassEntity;
@@ -87,7 +89,27 @@ export function EntityCard({ entity, name: nameOverride, detailPress = true }: E
     () => openEntityDetail(entity.entity_id),
     [openEntityDetail, entity.entity_id],
   );
-  const longPress = useLongPress(openDetail);
+  // [fork] Glas: a long press, a right click and the context-menu key open the context menu instead (K58); the edit
+  // mode keeps the detail (dragging there starts with a press, too)
+  const editMode = useUIStore((s) => s.editMode); // [fork]
+  const glasMenu = useIsGlas() && !editMode; // [fork]
+  const openContextMenu = useGlasUiStore((s) => s.openContextMenu); // [fork]
+  const pressRef = useRef<HTMLDivElement>(null); // [fork]
+  const openMenu = useCallback( // [fork]
+    (pressing: boolean) => {
+      if (pressRef.current) openContextMenu({ entityId: entity.entity_id, el: pressRef.current, name, pressing });
+    },
+    [openContextMenu, entity.entity_id, name],
+  );
+  const openMenuOnHold = useCallback(() => openMenu(true), [openMenu]); // [fork]
+  const longPress = useLongPress(glasMenu ? openMenuOnHold : openDetail); // [fork] Glas: menu
+  const openMenuOnContext = useCallback( // [fork] Android also fires this for a long press: opening is idempotent
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      openMenu((e.nativeEvent as PointerEvent).pointerType === 'touch');
+    },
+    [openMenu],
+  );
 
   // Tap opens the detail unless it landed on one of the card's own controls
   // (a slider, a play button, …) — those keep their action.
@@ -106,8 +128,10 @@ export function EntityCard({ entity, name: nameOverride, detailPress = true }: E
 
   return (
     <div
+      ref={pressRef} // [fork]
       className={`entity-card-press${tapOpens ? ' entity-card-press--tappable' : ''}`}
       {...longPress}
+      onContextMenu={glasMenu ? openMenuOnContext : longPress.onContextMenu} // [fork]
       onClick={handleClick}
     >
       <CardForDomain entity={entity} name={name} />

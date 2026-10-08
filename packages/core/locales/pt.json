@@ -1371,5 +1371,19 @@
   "glas.notifications.dismissAll": "Dispensar todas",
   "glas.notifications.dismissOne": "Dispensar: {title}",
   "glas.notifications.emptyHint": "As novas mensagens do Home Assistant aparecem aqui.",
-  "glas.pool.restartAction": "Reiniciar"
+  "glas.pool.restartAction": "Reiniciar",
+  "glas.context.menuLabel": "Ações para {name}",
+  "glas.context.activate": "Ativar",
+  "glas.context.details": "Detalhes",
+  "glas.context.turnOn": "Ligar",
+  "glas.context.turnOff": "Desligar",
+  "glas.context.run": "Executar",
+  "glas.context.press": "Premir",
+  "glas.context.favoriteAdd": "Adicionar aos favoritos",
+  "glas.context.favoriteRemove": "Remover dos favoritos",
+  "glas.context.room": "Abrir divisão",
+  "glas.context.hide": "Ocultar",
+  "glas.swipe.dismiss": "Dispensar",
+  "glas.swipe.off": "Desligar",
+  "glas.swipe.hint": "Dica: deslize uma linha para a esquerda para a dispensar."
 }

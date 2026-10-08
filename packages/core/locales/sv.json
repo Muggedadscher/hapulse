@@ -1371,5 +1371,19 @@
   "glas.notifications.dismissAll": "Avfärda alla",
   "glas.notifications.dismissOne": "Avfärda: {title}",
   "glas.notifications.emptyHint": "Nya meddelanden från Home Assistant visas här.",
-  "glas.pool.restartAction": "Starta om"
+  "glas.pool.restartAction": "Starta om",
+  "glas.context.menuLabel": "Åtgärder för {name}",
+  "glas.context.activate": "Aktivera",
+  "glas.context.details": "Detaljer",
+  "glas.context.turnOn": "Slå på",
+  "glas.context.turnOff": "Stäng av",
+  "glas.context.run": "Kör",
+  "glas.context.press": "Tryck",
+  "glas.context.favoriteAdd": "Lägg till i favoriter",
+  "glas.context.favoriteRemove": "Ta bort från favoriter",
+  "glas.context.room": "Öppna rum",
+  "glas.context.hide": "Dölj",
+  "glas.swipe.dismiss": "Avfärda",
+  "glas.swipe.off": "Av",
+  "glas.swipe.hint": "Tips: svep en rad åt vänster för att avfärda den."
 }

@@ -1371,5 +1371,19 @@
   "glas.notifications.dismissAll": "Alle verwerfen",
   "glas.notifications.dismissOne": "Verwerfen: {title}",
   "glas.notifications.emptyHint": "Neue Meldungen von Home Assistant erscheinen hier.",
-  "glas.pool.restartAction": "Neu starten"
+  "glas.pool.restartAction": "Neu starten",
+  "glas.context.menuLabel": "Aktionen für {name}",
+  "glas.context.activate": "Aktivieren",
+  "glas.context.details": "Details",
+  "glas.context.turnOn": "Einschalten",
+  "glas.context.turnOff": "Ausschalten",
+  "glas.context.run": "Ausführen",
+  "glas.context.press": "Drücken",
+  "glas.context.favoriteAdd": "Zu Favoriten",
+  "glas.context.favoriteRemove": "Aus Favoriten",
+  "glas.context.room": "Raum öffnen",
+  "glas.context.hide": "Ausblenden",
+  "glas.swipe.dismiss": "Verwerfen",
+  "glas.swipe.off": "Aus",
+  "glas.swipe.hint": "Tipp: Zeile nach links wischen zum Verwerfen."
 }

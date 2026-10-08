@@ -1,0 +1,295 @@
+/* [fork] Glas — gestures and the inspector (stage 3b): the context menu of an entity card, swipe rows, the detail as
+   an inspector (docs/GLAS-DESIGN.md §7.20, §7.23, §7.24; plan docs/glas/PLAN-ETAPPE-3.md §4, K58–K60).
+
+   The movements run in code (components/glas/ContextMenu.tsx, SwipeRow.tsx, sheet/useGlasSheet.ts with
+   sheet/sheetMotion.ts); these rules hold the resting states. The menu and the inspector are surfaces of the material
+   list (material.css): they set position, size, radius and the surface variables only. */
+
+/* ---- Context menu (K58) ---- */
+
+/* The pressed card stays lifted while its menu is open (the lift itself is animated in code). */
+:root[data-style='glas'] .entity-card-press[data-g-lifted] {
+  transform: scale(1.04);
+}
+
+:root[data-style='glas'] .g-ctx {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  pointer-events: none;
+}
+
+/* The dim layer, with a hole over the card (clip-path from code). */
+:root[data-style='glas'] .g-ctx__dim {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: var(--g-ctx-dim);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* Over the hole: takes the taps (the live card does not react under the menu) and casts the lift shadow over the dim
+   layer. An outer shadow is never drawn inside its own box, so the card shows through. */
+:root[data-style='glas'] .g-ctx__hole {
+  position: absolute;
+  pointer-events: auto;
+  box-shadow: var(--g-shadow-lift-context);
+}
+
+:root[data-style='glas'] .g-ctx--closing :is(.g-ctx__dim, .g-ctx__hole, .g-ctx__menu) {
+  pointer-events: none;
+}
+
+/* Phone: 250 wide, sheet material (as the avatar menu). */
+:root[data-style='glas'] .g-ctx__menu {
+  --g-surface-tint: var(--g-tint-menu);
+  --g-surface-fill: var(--g-sheet-fill);
+  --g-surface-filter: var(--g-sheet-filter);
+  --g-surface-solid: var(--g-sheet-solid);
+  --g-surface-shadow: var(--g-shadow-menu);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  max-width: calc(100vw - 32px);
+  border-radius: 22px;
+  overflow: hidden;
+  pointer-events: auto;
+  color: var(--g-label);
+  /* it holds the focus after a touch or a right click; the items show theirs */
+  outline: none;
+}
+
+:root[data-style='glas'] .g-ctx__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+/* separators from the text start (16) to the edge */
+:root[data-style='glas'] .g-ctx__item:not(:first-child) {
+  background-image: linear-gradient(var(--g-sep), var(--g-sep));
+  background-repeat: no-repeat;
+  background-position: 16px 0;
+  background-size: calc(100% - 16px) 0.5px;
+}
+
+:root[data-style='glas'] .g-ctx__item:hover {
+  background-color: var(--g-hover);
+}
+
+:root[data-style='glas'] .g-ctx__item:active {
+  background-color: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-ctx__item:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .g-ctx__item--danger {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .g-ctx__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-ctx__icon {
+  flex: none;
+}
+
+/* the group band before "Hide" is a desktop thing */
+:root[data-style='glas'] .g-ctx__band {
+  display: none;
+}
+
+/* opaque, "Transparenz reduzieren", more contrast: the dim layer without blur (GLAS-DESIGN §3.7) */
+:root[data-style='glas'][data-glass='opaque'] .g-ctx__dim {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Desktop: a lighter scrim, the glass menu (tint .88) 256 wide with 6 inside, rows of 44 with radius 14, no hairlines,
+   a 6-px band of `fill` before "Hide". */
+@media (min-width: 900px) {
+  :root[data-style='glas'] .g-ctx__dim {
+    background: var(--g-ctx-scrim-desktop);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    backdrop-filter: blur(10px) saturate(120%);
+  }
+
+  :root[data-style='glas'] .g-ctx__hole {
+    box-shadow: var(--g-shadow-lift-context-desktop);
+  }
+
+  :root[data-style='glas'] .g-ctx__menu {
+    --g-surface-fill: var(--g-glass-fill);
+    --g-surface-filter: var(--g-glass-filter);
+    --g-surface-solid: var(--g-card-solid);
+    width: 256px;
+    padding: 6px;
+  }
+
+  :root[data-style='glas'] .g-ctx__item {
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 14px;
+  }
+
+  :root[data-style='glas'] .g-ctx__item:not(:first-child) {
+    background-image: none;
+  }
+
+  :root[data-style='glas'] .g-ctx__band {
+    display: block;
+    height: 6px;
+    margin: 0 -6px;
+    background: var(--g-fill);
+  }
+}
+
+/* Reduced motion: the card is not lifted, the menu fades (in code, 200 ms). */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .entity-card-press[data-g-lifted] {
+    transform: none;
+  }
+}
+
+/* ---- Swipe rows (K59) ---- */
+
+/* The row (any list row SwipeRow wraps): it keeps its place in the list; vertical scrolling stays the browser's. */
+:root[data-style='glas'] [data-g-swipe] {
+  position: relative;
+  touch-action: pan-y;
+}
+
+:root[data-style='glas'] [data-g-swipe-state='moving'] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The action: still under the row's right end (it counters the row's movement in code), seen only where the row has
+   moved away (clip-path from code); 36 px wider for pulling past it. White 15/20 600 on the action colour. */
+:root[data-style='glas'] .g-swipe-act {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: calc(var(--g-swipe-w, 104px) + 36px);
+  border-radius: inherit;
+  clip-path: inset(0 0 0 100%);
+  color: var(--g-on-badge);
+  cursor: pointer;
+  animation: g-fade-in 150ms ease backwards;
+}
+
+:root[data-style='glas'] .g-swipe-act--del {
+  background: var(--g-act-del);
+}
+
+:root[data-style='glas'] .g-swipe-act--ok {
+  background: var(--g-act-ok);
+}
+
+:root[data-style='glas'] .g-swipe-act--neutral {
+  background: var(--g-act-neutral);
+}
+
+:root[data-style='glas'] .g-swipe-act__label {
+  flex: none;
+  width: var(--g-swipe-w, 104px);
+  padding: 0 8px;
+  overflow: hidden;
+  font-family: var(--g-font);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* "Tip: swipe a row to the left to dismiss it." — 13 label2 under the notifications. */
+:root[data-style='glas'] .g-notes__hint {
+  margin: 8px 16px 0;
+  color: var(--g-label-2);
+  font-family: var(--g-font);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* the desktop popover: only where a finger can swipe (a mouse has the × of every row) */
+:root[data-style='glas'] .notifications-panel .g-notes__hint {
+  margin: 6px 12px 8px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root[data-style='glas'] .notifications-panel .g-notes__hint {
+    display: none;
+  }
+}
+
+/* ---- Inspector (K60): the entity detail from 1100 px while no other window is open ---- */
+
+/* Not modal: no scrim, the page beside it stays usable; only the panel takes pointers. */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='inspector'] {
+  pointer-events: none;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='inspector'] > .g-sheet-scrim,
+:root[data-style='glas'] .modal-panel[data-g-sheet='inspector'] > .g-sheet-grabber {
+  display: none;
+}
+
+/* At the right, 12 from the edges, 420 wide, radius 30; glass with the inspector's tint (.68) and shadow. The head and
+   the content are the dialog's until stage 4 builds the inspector's own. */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='inspector'] > .modal-panel {
+  --g-surface-tint: var(--g-tint-inspector);
+  --g-surface-shadow: var(--g-shadow-inspector);
+  --g-surface-solid: var(--g-sheet-solid);
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: auto;
+  width: 420px;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border-radius: 30px;
+  pointer-events: auto;
+}
+
+/* The page makes room: content and header row end 452 from the right edge (12 + 420 + 20; the header's own inset of 32
+   stays). Without a transition: the grid reflows once instead of through every column count on the way. */
+:root[data-style='glas'][data-g-inspector] .app-content {
+  margin-right: 420px;
+}
+
+:root[data-style='glas'][data-g-inspector] .app-header-cluster-wrapper {
+  right: 420px;
+}

@@ -1,6 +1,7 @@
 /**
  * [fork] GarageList — garage door / gate rows with Open (asks first) and Close,
  * plus Stop while a door that supports it is moving. Built like LocksList.
+ * Glas: a row swipes to the left to "Close" (never to open; docs/glas/PLAN-ETAPPE-3.md K59).
  */
 
 import React from 'react';
@@ -11,6 +12,7 @@ import { getRoomName } from '../security/roomUtils';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { GarageIcon, garageTone } from './GarageIcon';
 import { useGarageAction } from './GarageConfirm';
+import { SwipeRow } from '../glas/SwipeRow';
 import './garage.css';
 
 interface GarageRowProps {
@@ -29,51 +31,59 @@ function GarageRow({ entity, roomName, onOpen, onClose, onStop }: GarageRowProps
   const deviceClass = entity.attributes['device_class'] as string | undefined;
 
   return (
-    <div className="garage-row">
-      <span className={`garage-row__icon garage--${tone}`}>
-        <GarageIcon entity={entity} size={18} />
-      </span>
-      <div className="garage-row__name-col">
-        <span className="garage-row__name">{name}</span>
-        {roomName && <span className="garage-row__room">{roomName}</span>}
-      </div>
-      <span className={`garage-row__state garage--${tone}`}>
-        {sl('cover', entity.state, { deviceClass })}
-      </span>
-      <div className="garage-row__actions">
-        {garageCanStop(entity) && (
+    <SwipeRow
+      label={t('garage.close')}
+      tone="ok"
+      width={104}
+      disabled={!garageCanAct(entity, 'close')}
+      onAction={() => onClose(entity)}
+    >
+      <div className="garage-row">
+        <span className={`garage-row__icon garage--${tone}`}>
+          <GarageIcon entity={entity} size={18} />
+        </span>
+        <div className="garage-row__name-col">
+          <span className="garage-row__name">{name}</span>
+          {roomName && <span className="garage-row__room">{roomName}</span>}
+        </div>
+        <span className={`garage-row__state garage--${tone}`}>
+          {sl('cover', entity.state, { deviceClass })}
+        </span>
+        <div className="garage-row__actions">
+          {garageCanStop(entity) && (
+            <button
+              className="garage-row__btn"
+              onClick={() => onStop(entity)}
+              aria-label={`${t('garage.stop')}: ${name}`}
+              type="button"
+            >
+              <Square size={13} strokeWidth={1.75} />
+              {t('garage.stop')}
+            </button>
+          )}
           <button
-            className="garage-row__btn"
-            onClick={() => onStop(entity)}
-            aria-label={`${t('garage.stop')}: ${name}`}
+            className="garage-row__btn garage-row__btn--close"
+            onClick={() => onClose(entity)}
+            disabled={!garageCanAct(entity, 'close')}
+            aria-label={`${t('garage.close')}: ${name}`}
             type="button"
           >
-            <Square size={13} strokeWidth={1.75} />
-            {t('garage.stop')}
+            <ArrowDown size={15} strokeWidth={1.75} />
+            {t('garage.close')}
           </button>
-        )}
-        <button
-          className="garage-row__btn garage-row__btn--close"
-          onClick={() => onClose(entity)}
-          disabled={!garageCanAct(entity, 'close')}
-          aria-label={`${t('garage.close')}: ${name}`}
-          type="button"
-        >
-          <ArrowDown size={15} strokeWidth={1.75} />
-          {t('garage.close')}
-        </button>
-        <button
-          className="garage-row__btn garage-row__btn--open"
-          onClick={() => onOpen(entity)}
-          disabled={!garageCanAct(entity, 'open')}
-          aria-label={`${t('garage.open')}: ${name}`}
-          type="button"
-        >
-          <ArrowUp size={15} strokeWidth={1.75} />
-          {t('garage.open')}
-        </button>
+          <button
+            className="garage-row__btn garage-row__btn--open"
+            onClick={() => onOpen(entity)}
+            disabled={!garageCanAct(entity, 'open')}
+            aria-label={`${t('garage.open')}: ${name}`}
+            type="button"
+          >
+            <ArrowUp size={15} strokeWidth={1.75} />
+            {t('garage.open')}
+          </button>
+        </div>
       </div>
-    </div>
+    </SwipeRow>
   );
 }
 

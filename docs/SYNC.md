@@ -123,14 +123,17 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/glasTokens.ts` | Stil Glas: Farben, Akzent (`glasAccent`), Federn, Kontrast-Hilfen, Abbildung auf die 24 HAPulse-Tokens + `--g-*` (DOM-frei) |
 | `apps/dashboard/src/theme/glasAppearance.ts` | Stil Glas: `applyAppearance` (umhüllt `applyTheme`, schreibt Tokens + `--g-*` + Attribute auf `:root`), `resolveAppearance`, `readPersistedStyle` (Pre-Paint), `watchAppearance` |
 | `apps/dashboard/src/app/glas/useUiStyle.ts` | `useUiStyle`/`useIsGlas` für Komponenten |
-| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`; Fenster seit Etappe 3: `sheets`, `sheet-content`); jeder Selektor beginnt mit `:root[data-style='glas']` |
+| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`; Fenster seit Etappe 3: `sheets`, `sheet-content`; Gesten und Inspector seit Etappe 3b: `gestures`); jeder Selektor beginnt mit `:root[data-style='glas']` |
 | `apps/dashboard/src/app/glas/{GlasRuntime,GlasTabBar,GlasNavGroups}.tsx`, `{glasScroll,menuKeys,navGroups,shellStore,useLens}.ts` | Glas-Rahmen (Etappe 2): Scroll-Kante und kleiner Titel, Tab-Leiste minimieren, Linse, Pfeiltasten in Räume-/Mehr-Menü, Gruppen der Seitenleiste, Bearbeiten-Angebot je Seite |
 | `apps/dashboard/src/components/glas/{AvatarMenu,DoneCapsule,WeatherLine}.tsx`, `weatherIcon.ts` | Glas am Handy: Avatar-Menü (Benachrichtigungen, Bearbeiten, Einstellungen), „Fertig“, Wetterzeile; Wettersymbol je Zustand |
 | `apps/dashboard/test/{glasScroll,menuKeys,navGroups}.test.ts` | Tests des Glas-Rahmens |
-| `apps/dashboard/src/components/glas/sheet/{useGlasSheet,sheetHost,sheetStack,sheetMath,sheetMotion,origin,ghost,shake}.ts`, `{SheetHeader,SheetGrabber}.tsx`, `SheetContext.ts` | Glas-Fenster (Etappe 3): Sheet, Dialog oder Seite je Breite und Stapel, Stapel mit `inert` und einem Esc für alle, Wachsen aus dem Auslöser und zurück (Geist), Ziehen am Griff, Übergabe an das nächste Fenster, Fokus hinein und zurück, Schütteln bei falschem Code |
+| `apps/dashboard/src/components/glas/sheet/{useGlasSheet,sheetHost,sheetStack,sheetMath,sheetMotion,origin,ghost,shake}.ts`, `{SheetHeader,SheetGrabber}.tsx`, `SheetContext.ts` | Glas-Fenster (Etappe 3): Sheet, Dialog oder Seite je Breite und Stapel, Stapel mit `inert` und einem Esc für alle, Wachsen aus dem Auslöser und zurück (Geist), Ziehen am Griff, Übergabe an das nächste Fenster, Fokus hinein und zurück, Schütteln bei falschem Code; seit Etappe 3b der Inspector (Detail ab 1100 px rechts neben der Seite, nicht modal) |
 | `apps/dashboard/src/components/glas/{NotificationsSheet.tsx,notificationOrder.ts}` | Glas am Handy: Benachrichtigungen als Fenster (neueste zuerst, Verwerfen, „Alle verwerfen“) |
 | `apps/dashboard/test/{sheetMath,sheetStack,notificationOrder}.test.ts` | Tests der Fenster |
 | `apps/dashboard/scripts/glas-checks-sheets.cjs` | Fenster-Szenen (`win-…`) und `checks --part sheets` für `glas-shots.cjs` |
+| `apps/dashboard/src/components/glas/{ContextMenu,SwipeRow}.tsx`, `{contextActions,swipeMath}.ts`, `apps/dashboard/src/stores/glasUiStore.ts` | Glas-Gesten (Etappe 3b): Kontextmenü der Karten in den Räumen (Langdruck, Rechtsklick, Kontextmenü-Taste; Aktionen je Entität und Rechten), Wisch-Zeilen (Verwerfen, Aus, Schließen, Verriegeln; nie Öffnen oder Entriegeln) |
+| `apps/dashboard/test/{contextActions,swipeMath}.test.ts` | Tests der Gesten |
+| `apps/dashboard/scripts/glas-checks-gestures.cjs` | Gesten-Szenen (`ctx-card`, `swipe-…`) und `checks --part gestures` für `glas-shots.cjs` |
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
@@ -166,11 +169,14 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/stores/settingsStore.ts` | Stil Glas: `uiStyle`, `glassStrength`, `reduceTransparency` (GLOBAL); `applyGlobal` setzt sie auf den Standard, wenn das Admin-Dokument sie nicht trägt |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 2): `GlasRuntime` vor dem Inhalt, `GlasTabBar` als erste Kinder der Tab-Leiste, Gruppen der Seitenleiste außerhalb des Bearbeiten-Modus (`GlasNavGroups`), Kopf: Zurück 48, Kapsel „Bearbeiten“/„Fertig“ statt des Stift-Knopfs, Wettersymbol je Zustand und „14 °C“ |
 | `apps/dashboard/src/components/ui/{PageHeaderActions,EditToggle,PulseLogo}.tsx`, `components/home/GreetingBlock.tsx`, `pages/Room.tsx` | Stil Glas (Etappe 2): Avatar-Menü statt Glocke + Avatar am Handy; `EditToggle` meldet Seiten mit Bearbeiten-Modus und hat die Variante `label` (Kopf-Kapsel); Wortmarke 20/25 700; Wetterzeile unter der Begrüßung; Zurück als Glaskreis 44 |
-| `apps/dashboard/src/components/notifications/NotificationsPanel.tsx` | Stil Glas (Etappe 2/3): `useNotifications` und `HANotification` (mit `createdAt`) exportiert (Avatar-Menü, Benachrichtigungs-Fenster), Glocke 44 |
-| `apps/dashboard/src/components/ui/Modal.tsx` | Stil Glas (Etappe 3): `useGlasSheet` (Sheet, Dialog oder Seite; Ziehen; Wachsen aus dem Auslöser), Glas-Kopf und Griff, Props `subtitle`, `swipeToClose`, `contentKey`, `returnFocus` (wirken nur in Glas); in Glas setzt die Laufzeit den Fokus |
+| `apps/dashboard/src/components/notifications/NotificationsPanel.tsx` | Stil Glas (Etappe 2/3): `useNotifications` und `HANotification` (mit `createdAt`) exportiert (Avatar-Menü, Benachrichtigungs-Fenster), Glocke 44; Etappe 3b: Zeilen in `SwipeRow` (Wischen zum Verwerfen), Wisch-Hinweis unter der Liste (nur bei Touch) |
+| `apps/dashboard/src/components/ui/Modal.tsx` | Stil Glas (Etappe 3): `useGlasSheet` (Sheet, Dialog oder Seite; Ziehen; Wachsen aus dem Auslöser), Glas-Kopf und Griff, Props `subtitle`, `swipeToClose`, `contentKey`, `returnFocus`, seit Etappe 3b `presentation`, `requestKey` (wirken nur in Glas); in Glas setzt die Laufzeit den Fokus |
 | `apps/dashboard/src/components/security/AlarmPanelCard.tsx` | Stil Glas (Etappe 3): Ziffernblock als Fenster (Seite im Alarm-Fenster, sonst eigenes Sheet), schüttelt bei falschem Code; Klassisch unverändert |
-| `apps/dashboard/src/components/home/chipmodals/LightsModal.tsx` | Stil Glas (Etappe 3): „Alle ausschalten“ ohne Inline-Größe (prominent per Glas-CSS) |
-| `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Stil Glas (Etappe 3): `contentKey` = Entity (ein Tipp auf ein Gruppenmitglied tauscht den Inhalt im selben Fenster) |
+| `apps/dashboard/src/components/home/chipmodals/LightsModal.tsx` | Stil Glas (Etappe 3): „Alle ausschalten“ ohne Inline-Größe (prominent per Glas-CSS); Etappe 3b: Zeilen in `SwipeRow` (Wischen zum Ausschalten) |
+| `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Stil Glas (Etappe 3): `contentKey` = Entity (ein Tipp auf ein Gruppenmitglied tauscht den Inhalt im selben Fenster); Etappe 3b: `presentation="inspector"`, `requestKey` = `detailSeq` |
+| `apps/dashboard/src/components/cards/EntityCard.tsx` | Stil Glas (Etappe 3b): Langdruck, Rechtsklick und Kontextmenü-Taste öffnen das Kontextmenü statt des Details (nicht im Bearbeiten-Modus); Klassisch unverändert |
+| `apps/dashboard/src/stores/uiStore.ts` | Stil Glas (Etappe 3b): `detailSeq` zählt jede Anfrage nach dem Detail, auch für die schon gezeigte Entität (der Inspector unter einem Chip-Fenster kommt dann nach oben) |
+| `apps/dashboard/src/components/security/LocksList.tsx` | Stil Glas (Etappe 3b): Zeilen in `SwipeRow` (Wischen zum Verriegeln, über `useLockAction`) |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/src/domain.ts` | `formatEntityState`: Zahl über `formatNumber` (Sprache), numerische Zustände ohne Einheit (sensor/number/input_number/counter) formatiert statt `humanizeState` (Minus ging verloren) |
@@ -305,3 +311,10 @@ Nach jedem Upstream-Merge:
    16 px (die Prüfung `sheetsAll` meldet kleinere). Nach einem React-Update `checks --part sheets` immer laufen lassen:
    das Schließen (der Geist, `ghost.ts`) hängt an der Reihenfolge, in der React beim Entfernen Refs löst
    (PLAN-ETAPPE-3 K47).
+8. Seit Etappe 3b (Gesten, Inspector): Upstream-Änderungen an `components/cards/EntityCard.tsx` und
+   `lib/useLongPress.ts` (Langdruck, `onContextMenu`, Tipp auf Karten) mit `components/glas/ContextMenu.tsx` abgleichen;
+   neue Zustands-Aktionen einer Entität gehören in `components/glas/contextActions.ts` (Test). Listen, deren Zeilen
+   `SwipeRow` umhüllt (Benachrichtigungen, Licht, Garage, Schlösser), behalten ihre Zeile als genau ein Element; ändert
+   Upstream das Markup einer solchen Zeile, `checks --part gestures` laufen lassen. Das Detail (`EntityDetailModal`)
+   ist in Glas ab 1100 px der Inspector: der Platz, den die Seite dafür macht, hängt an `.app-content` und
+   `.app-header-cluster-wrapper` (`styles/glas/gestures.css`, der Selektor-Wächter meldet Umbenennungen).

@@ -1371,5 +1371,19 @@
   "glas.notifications.dismissAll": "Descartar todas",
   "glas.notifications.dismissOne": "Descartar: {title}",
   "glas.notifications.emptyHint": "Los nuevos mensajes de Home Assistant aparecen aquí.",
-  "glas.pool.restartAction": "Reiniciar"
+  "glas.pool.restartAction": "Reiniciar",
+  "glas.context.menuLabel": "Acciones para {name}",
+  "glas.context.activate": "Activar",
+  "glas.context.details": "Detalles",
+  "glas.context.turnOn": "Encender",
+  "glas.context.turnOff": "Apagar",
+  "glas.context.run": "Ejecutar",
+  "glas.context.press": "Pulsar",
+  "glas.context.favoriteAdd": "Añadir a favoritos",
+  "glas.context.favoriteRemove": "Quitar de favoritos",
+  "glas.context.room": "Abrir estancia",
+  "glas.context.hide": "Ocultar",
+  "glas.swipe.dismiss": "Descartar",
+  "glas.swipe.off": "Apagar",
+  "glas.swipe.hint": "Consejo: desliza una fila hacia la izquierda para descartarla."
 }

@@ -11,7 +11,7 @@
 | `docs/GLAS-PLAN.md` | dieses Dokument: Architektur, Etappen, Abnahme, Tests, Risiken |
 | `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K19 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
 | `docs/glas/PLAN-ETAPPE-2.md` | Umsetzung von Etappe 2 (Rahmen): Festlegungen K20–K45, Review des Plans, Abweichungen der Umsetzung U1–U13, Prüfungen, Laborpunkte (Stand 2026-10-06) |
-| `docs/glas/PLAN-ETAPPE-3.md` | Umsetzung von Etappe 3 (Fenster, Gesten, Inspector): Festlegungen K46–K73, Review des Plans, Umsetzung von 3a und ihr Review (Stand 2026-10-08) |
+| `docs/glas/PLAN-ETAPPE-3.md` | Umsetzung von Etappe 3 (Fenster, Gesten, Inspector): Festlegungen K46–K73, Review des Plans, Umsetzung von 3a und 3b und ihre Reviews (Stand 2026-10-08) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
@@ -607,8 +607,8 @@ Tokens) und das Host-Menü im Avatar-Menü (PLAN-ETAPPE-2 §11.4).
 
 ### Etappe 3 — Sheets, Dialoge, Gesten
 
-**Stand 2026-10-08: Teil 3a (Sheets und Dialoge) umgesetzt; 3b (Kontextmenü, Wisch-Zeilen, Inspector) folgt.** Etappe
-3 kommt in zwei PRs (K46). Plan, Festlegungen K46–K73, Review, Abweichungen der Umsetzung, Prüfungen und Laborpunkte:
+**Stand 2026-10-08: umgesetzt, Teil 3a (Sheets und Dialoge, PR #106) und 3b (Kontextmenü, Wisch-Zeilen,
+Inspector-Grundgerüst).** Etappe 3 kommt in zwei PRs (K46). Plan, Festlegungen K46–K73, Review, Abweichungen der Umsetzung, Prüfungen und Laborpunkte:
 [`glas/PLAN-ETAPPE-3.md`](glas/PLAN-ETAPPE-3.md) (§1, §12, §13, §11). Das Schließen animiert ein Geist (K47) statt
 `usePresence`; Bestätigungen sind Seiten im Fenster (K48).
 
@@ -621,11 +621,13 @@ Abnahme:
       werden 24, dazu drei nur in Glas = 27 Fenster, K73; „Für alle übernehmen“ und die NVR-Datumswahl nur im Labor)
 - [ ] Bestätigungen (Garage öffnen, Entriegeln mit Code, Pool-Neustart, Alarm-Code) erscheinen **im** Sheet; falscher
       Code: bleibt offen und leert (H3, H8). (3a: im Sheet erledigt; falscher Code im Labor, die Demo nimmt jeden Code)
-- [ ] Kontextmenü: Langdruck 550 ms, Rechtsklick; Aktionen korrekt; Tipp auf Anzeige-Karten öffnet weiter direkt das Detail.
+- [x] Kontextmenü: Langdruck 550 ms, Rechtsklick; Aktionen korrekt; Tipp auf Anzeige-Karten öffnet weiter direkt das Detail.
+      (3b, 2026-10-08; dazu Wisch-Aktionen und Inspector, PLAN-ETAPPE-3 §7)
 - [x] Reduzierte Bewegung: alles Überblendung; Animationsprobe (§5.4) zeigt Bewegung zwischen 0/80/160/320 ms. (3a)
 
 Nicht verlieren (Inventar B, F, H2–H3, H8, I; 3a ändert an den Inhalten nur CSS und die `[fork]`-Stellen aus
-PLAN-ETAPPE-3 §5.2, geprüft in den Aufnahmen beider Stile, `checks` und im Klick-Fuzz, 2026-10-08):
+PLAN-ETAPPE-3 §5.2, geprüft in den Aufnahmen beider Stile, `checks` und im Klick-Fuzz, 2026-10-08; 3b ebenso für Licht-Zeilen,
+Garage, Schlösser, Benachrichtigungen und Detail):
 - [x] People: Avatare/Initiale, Zone (Zuhause grün/Weg/Name), seit wann (B2)
 - [x] Licht: nach Raum in Nutzer-Reihenfolge + „Andere“, Zeilen-Tipp toggelt, **„Alle ausschalten“** (B4)
 - [x] Türen/Fenster: zwei Gruppen, offen/gesamt, offene zuerst (B6) · Alarm: ein Panel je Zentrale, schwerste zuerst,

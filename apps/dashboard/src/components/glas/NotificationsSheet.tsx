@@ -4,7 +4,8 @@
  *
  * Subtitle "N unread" (HA has no read state: a notification counts until it is dismissed, like the avatar's dot), a
  * row "N notifications" + "Dismiss all", rows newest first with title, text and time, × per row. "Dismiss all" keeps
- * the sheet open and shows the empty state once HA reports the empty list. Swiping a row away comes with stage 3b.
+ * the sheet open and shows the empty state once HA reports the empty list. A row swipes to the left to "Dismiss"
+ * (stage 3b, K59; the × is its twin for keyboards and screen readers).
  */
 
 import { useEffect, useMemo, useRef } from 'react';
@@ -16,6 +17,7 @@ import { relativeTime } from '../security/roomUtils';
 import { callService } from '../../ha/service';
 import { useT } from '../../i18n/useT';
 import { createdMs, newestFirst } from './notificationOrder';
+import { SwipeRow } from './SwipeRow';
 
 interface NotificationsSheetProps {
   open: boolean;
@@ -50,8 +52,8 @@ export function NotificationsSheet({ open, onClose, notifications, returnFocus }
     (next ?? root.closest<HTMLElement>('[role="dialog"]'))?.focus();
   }, [rows]);
 
-  const dismiss = (id: string, index: number, button: HTMLElement) => {
-    if (document.activeElement === button) lostFocus.current = index;
+  const dismiss = (id: string, index: number, button: HTMLElement | null) => {
+    if (button && document.activeElement === button) lostFocus.current = index;
     void callService('persistent_notification', 'dismiss', { notification_id: id });
   };
 
@@ -88,24 +90,33 @@ export function NotificationsSheet({ open, onClose, notifications, returnFocus }
               {rows.map((n, i) => {
                 const time = n.createdAt && createdMs(n) !== null ? relativeTime(t, n.createdAt) : null;
                 return (
-                  <li key={n.notificationId} className="g-notes__row">
-                    <div className="g-notes__text">
-                      <p className="g-notes__title">{n.title}</p>
-                      {n.message && <p className="g-notes__message">{n.message}</p>}
-                      {time && <p className="g-notes__time">{time}</p>}
-                    </div>
-                    <button
-                      type="button"
-                      className="g-notes__dismiss"
-                      aria-label={t('glas.notifications.dismissOne', { title: n.title })}
-                      onClick={(e) => dismiss(n.notificationId, i, e.currentTarget)}
-                    >
-                      <X size={16} strokeWidth={2.5} aria-hidden="true" />
-                    </button>
-                  </li>
+                  <SwipeRow
+                    key={n.notificationId}
+                    label={t('glas.swipe.dismiss')}
+                    tone="del"
+                    width={104}
+                    onAction={() => dismiss(n.notificationId, i, null)}
+                  >
+                    <li className="g-notes__row">
+                      <div className="g-notes__text">
+                        <p className="g-notes__title">{n.title}</p>
+                        {n.message && <p className="g-notes__message">{n.message}</p>}
+                        {time && <p className="g-notes__time">{time}</p>}
+                      </div>
+                      <button
+                        type="button"
+                        className="g-notes__dismiss"
+                        aria-label={t('glas.notifications.dismissOne', { title: n.title })}
+                        onClick={(e) => dismiss(n.notificationId, i, e.currentTarget)}
+                      >
+                        <X size={16} strokeWidth={2.5} aria-hidden="true" />
+                      </button>
+                    </li>
+                  </SwipeRow>
                 );
               })}
             </ul>
+            <p className="g-notes__hint">{t('glas.swipe.hint')}</p>
           </>
         )}
       </div>
