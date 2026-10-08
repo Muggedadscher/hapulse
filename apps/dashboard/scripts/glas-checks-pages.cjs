@@ -2,8 +2,8 @@
 // `checks --part pages`. glas-shots.cjs loads this file with its helpers; it is not run on its own.
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
-// pagesSwitches (K91), pagesControls (K93). The plan's other blocks (frame, segments, edit, keep, empty, menus)
-// come with their steps.
+// pagesSwitches (K91), pagesControls (K93), pagesFields (K94). The plan's other blocks (frame, segments, edit, keep,
+// empty, menus) come with their steps.
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
@@ -315,6 +315,56 @@ module.exports = function pages(h) {
       }
       out.pagesControls = res;
       out.pagesControlsOk = Object.entries(res).filter(([k]) => !k.endsWith('-after')).every(([, r]) => r.ok);
+    });
+
+    // ---- K94 fields: fill, 36 visible in a hit area of 44, text 17; a click 2 px inside the hit area but outside the
+    //      visible field still focuses it, and typing still reaches it. Glas only. ----
+    await block('pagesFields', async () => {
+      const res = {};
+      const FIELDS = [
+        ['devices', '/devices', '.devices-toolbar__search-input', '.devices-toolbar__search'],
+        ['automations', '/automations', '.automations-toolbar__search-input', '.automations-toolbar__search'],
+        ['settings', '/settings', '.settings-text-input', null],
+        ['library', '/music', '.library-card__search-input', null],
+      ];
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        for (const [name, p, input, bar] of FIELDS) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const field = page.locator(input).filter({ visible: true }).first();
+            if (!(await field.count())) throw new Error('not visible: ' + input);
+            await field.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const a = await ev(page, ([sel, barSel]) => {
+              const el = [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
+              const shown = barSel ? el.closest(barSel) : el;
+              const cs = getComputedStyle(shown);
+              const d = document.createElement('div');
+              d.style.background = 'var(--g-fill)';
+              document.body.appendChild(d);
+              const fill = getComputedStyle(d).backgroundColor;
+              d.remove();
+              const r = el.getBoundingClientRect();
+              const s = shown.getBoundingClientRect();
+              const visible = barSel ? s.height : r.height - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth);
+              return { hit: r.height, visible, top: Math.min(r.top, s.top), x: r.left + Math.min(40, r.width / 2), bg: cs.backgroundColor, fill, font: getComputedStyle(el).fontSize, visTop: barSel ? s.top : r.top + parseFloat(cs.borderTopWidth) };
+            }, [input, bar]);
+            // a click 2 px above the visible field, inside the hit area
+            await page.mouse.click(a.x, a.visTop - 2);
+            await sleep(100);
+            const focused = await ev(page, (sel) => document.activeElement && document.activeElement.matches(sel), input);
+            await page.keyboard.type('ab');
+            const typed = await field.inputValue();
+            const ok = Math.abs(a.hit - 44) < 0.6 && Math.abs(a.visible - 36) < 0.6 && a.bg === a.fill && a.font === '17px' && focused && typed.endsWith('ab');
+            res[`${device}-${name}`] = { ok, hit: a.hit, visible: a.visible, bg: a.bg, font: a.font, focused, typed };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesFields = res;
+      out.pagesFieldsOk = Object.values(res).every((r) => r.ok);
     });
 
     out.pagesPageErrors = pageErrors;

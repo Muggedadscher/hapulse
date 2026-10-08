@@ -180,3 +180,14 @@ und übernommen, außer wo anders vermerkt.
   schaltet und wechselt die Farbe.
 - Mit den Seiten (Schritt 3) folgen: Alarm-Modi auf der Sicherheitsseite, „Alle verriegeln/schließen“, Gefahr-Knöpfe,
   Play der Bibliothek, Stepper und Transport im Gerätefenster (`device-icon-btn`) und die übrigen Steuerknöpfe.
+
+### 7.3 Felder (K94, Baustein)
+
+- `lists.css`: App-Name/Token (`settings-text-input`), Onboarding, Suche in Geräten, Automationen und Bibliothek.
+  Ein Feld für sich zeichnet seine sichtbaren 36 in einem durchsichtigen Rand von 4 oben und unten (Ecken
+  `10px / 14px`, an der sichtbaren Kante 10); bei den Suchleisten ist die Leiste 36 hoch und ihr Eingabefeld ragt
+  4 darüber und darunter hinaus. Fokusring innen (`focus`), mit erzwungenen Farben als Umriss.
+- Prüfung `pagesFields`: sichtbar 36, Treffer 44, `fill`, Schrift 17, ein Klick 2 px über der sichtbaren Kante
+  fokussiert das Feld, Tippen kommt an.
+- Die Listen „inset grouped“ hängen an der Markup-Struktur jeder Seite; sie kommen mit den Seiten (Schritt 3) in
+  `lists.css`, je Seite mit ihrem `pagesKeep`-Block.
