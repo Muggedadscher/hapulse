@@ -602,6 +602,8 @@ async function stage1Checks(browser, url, out) {
       deviceCard: '.device-toggle--on .device-toggle__thumb',
       deviceRow: '.device-toggle--on .device-toggle__knob',
       admin: '.admin-toggle--on .admin-toggle__thumb',
+      // stage 4: the Glas switch (the start page's device rows) draws its knob as ::after
+      glasSwitch: ['[aria-checked="true"] > .g-switch', '::after'],
     };
     const found = {};
     const bad = [];
@@ -614,8 +616,10 @@ async function stage1Checks(browser, url, out) {
       for (const p of ['/', '/room/living_room', '/automations', '/pool', '/settings']) {
         const { page } = await openPage(ctx, url + p);
         await settleAnimations(page); // the knob's background transition runs on real time
-        const r = await page.evaluate((sels) => Object.fromEntries(Object.entries(sels).map(([k, s]) =>
-          [k, [...document.querySelectorAll(s)].map((el) => getComputedStyle(el).backgroundColor)])), KNOBS);
+        const r = await page.evaluate((sels) => Object.fromEntries(Object.entries(sels).map(([k, s]) => {
+          const [sel, pseudo] = Array.isArray(s) ? s : [s, null];
+          return [k, [...document.querySelectorAll(sel)].map((el) => getComputedStyle(el, pseudo).backgroundColor)];
+        })), KNOBS);
         for (const [k, colors] of Object.entries(r)) {
           found[k] = (found[k] || 0) + colors.length;
           colors.filter((c) => c !== 'rgb(255, 255, 255)').forEach((c) => bad.push({ mode, page: p, knob: k, color: c }));
@@ -625,8 +629,9 @@ async function stage1Checks(browser, url, out) {
       await ctx.close();
     }
     out.knobs = { found, bad };
-    // the demo shows these kinds switched on; the others (legacy, device rows in a dialog) are checked where they appear
-    out.knobsOk = bad.length === 0 && ['pill', 'autoRow', 'pool', 'deviceCard', 'admin'].every((k) => found[k] > 0);
+    // the demo shows these kinds switched on; the others (legacy, device rows in a dialog, since stage 4 the classic
+    // device card, which Glas draws with its own switch) are checked where they appear
+    out.knobsOk = bad.length === 0 && ['pill', 'autoRow', 'pool', 'glasSwitch', 'admin'].every((k) => found[k] > 0);
   }
 
   // 6. cards are borderless in Glas, except borders that show a state: a triggered alarm card (added to the security

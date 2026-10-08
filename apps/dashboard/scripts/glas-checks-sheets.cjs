@@ -56,7 +56,7 @@ module.exports = function sheets(h) {
     'win-weather': { act: sel('.g-weather-line, .header-cluster__weather--btn') },
     'win-climate': { act: sel('.climate-card__link') },
     'win-blinds': { customization: { hiddenSections: [] }, act: sel('.blinds-card__link') },
-    'win-waste': { act: sel('.waste-hero') },
+    'win-waste': { act: sel('.waste-hero, .g-waste__row') }, // Glas: the first row of its list (stage 4)
     'win-detail': { path: '/room/living_room', act: (page, tile = '.sensor-tile') => reach(page, tile) },
     'win-manual': { act: seq(chip('pool'), sel('.modal-body .pool-modal__mode-btn--manual')) },
     'win-schedule': { path: '/pool', act: sel(`.pool-card .btn:has-text("${DE['pool.schedule.edit']}")`) },

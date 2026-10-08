@@ -39,7 +39,7 @@ export interface ForkRelease {
 export const FORK_RELEASES: ForkRelease[] = [
   {
     version: 36,
-    date: '2026-10-08',
+    date: '2026-10-09',
     title: { de: 'Hinweise und aktive Szenen; Vorschau Glas: Übersicht', en: 'Notices and active scenes; Glass preview: overview' },
     sections: [
       {

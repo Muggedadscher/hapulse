@@ -20,6 +20,7 @@ import { garageSummary, isGarageDoor } from '@hapulse/core'; // [fork]
 import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
 import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
 import { lockSummary, lockSummaryText, lockTone } from '../security/lockLogic'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] row tones only in Glas
 
 interface SecurityCardProps {
   entities: HassEntityMap;
@@ -98,6 +99,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   // Cameras
   const cameras = all.filter((e) => e.entity_id.startsWith('camera.'));
   const cameraCount = useCameraCount(cameras.length); // [fork] Sentinel's cameras when it is the source
+  const isGlas = useIsGlas(); // [fork]
 
   // Overall status: positive if alarm disarmed/absent, no unlocked locks, no active motion, no open sensors
   const anyAlert =
@@ -120,7 +122,9 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
   // [fork] Glas only (styles/glas/home-lists.css, GLAS-DESIGN §7.13): calm rows stay grey, a problem row gets a tone.
   // An armed alarm is calm; triggered or pending is the alarm, arming a warning. Open lock or gate = alarm.
-  const gTone = {
+  // Klassisch keeps upstream's markup (no data-g-* attribute).
+  type Row = 'alarm' | 'locks' | 'garage' | 'windows' | 'doors' | 'motion' | 'cameras';
+  const gTone: Partial<Record<Row, string | undefined>> = !isGlas ? {} : {
     alarm: alarmTriggered ? 'alarm' : alarmState === 'arming' ? 'warn' : undefined,
     locks: lockState === 'open' ? 'alarm' : lockState === 'problem' ? 'warn' : undefined,
     garage: garageTone === 'open' ? 'alarm' : garageTone === 'unavailable' ? 'warn' : undefined,

@@ -6,7 +6,7 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
-## F36 — 2026-10-08
+## F36 — 2026-10-09
 
 **Hinweise und aktive Szenen; Vorschau Glas: Übersicht** · _Notices and active scenes; Glass preview: overview_
 
