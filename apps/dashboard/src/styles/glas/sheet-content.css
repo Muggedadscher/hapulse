@@ -965,8 +965,13 @@
   outline-offset: -2px;
 }
 
-/* ---- Manual run: presets 44, stepper value 28/34 700 in a group, "Starten" prominent 50 (foot, sheets.css) ---- */
+/* ---- Manual run: presets 44, stepper value 28/34 700 in a group, "Starten" prominent 50 (foot, sheets.css). The
+   layout is complete here: the pool page's stylesheet (pages/Pool.css) is not loaded when the window opens from the
+   home page's pool chip ---- */
 :root[data-style='glas'] .modal-body .pool-duration {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   gap: 0;
 }
 
@@ -979,6 +984,8 @@
 }
 
 :root[data-style='glas'] .modal-body .pool-manual__presets {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -995,6 +1002,7 @@
   font-size: 15px;
   line-height: 20px;
   font-weight: 600;
+  cursor: pointer;
   transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
 }
 
@@ -1015,18 +1023,32 @@
 }
 
 :root[data-style='glas'] .modal-body .pool-manual__custom {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-top: 14px;
   padding: 10px 12px;
 }
 
 :root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
   width: 44px;
   height: 44px;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   background: var(--g-fill);
   color: var(--g-label);
+  cursor: pointer;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 :root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:hover:not(:disabled) {
@@ -1039,7 +1061,9 @@
 }
 
 :root[data-style='glas'] .modal-body .pool-manual__custom-value {
+  min-width: 90px;
   color: var(--g-label);
+  text-align: center;
   font-size: 28px;
   line-height: 34px;
   font-weight: 700;
@@ -1170,7 +1194,11 @@
   font-weight: 400;
 }
 
-/* 16 px at least: iOS zooms into smaller fields on focus (K54) */
+/* 16 px at least: iOS zooms into smaller fields on focus (K54; also the entity search of Settings → Entities) */
+:root[data-style='glas'] .modal-body .settings-text-input {
+  font-size: 16px;
+}
+
 :root[data-style='glas'] .modal-body .weather-modal__picker-select select {
   min-height: 36px;
   padding: 0 32px 0 14px;
@@ -1270,7 +1298,8 @@
   font-size: 13px;
   line-height: 18px;
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 :root[data-style='glas'] .modal-body .weather-modal__stat-value {

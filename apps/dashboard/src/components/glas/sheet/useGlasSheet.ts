@@ -514,13 +514,13 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       const radius = shown ? shownRadius(panel) : 0;
       if (st.pres === 'sheet' && !st.keepLarge) setDetent(startDetent());
       if (!a || !oldBox || !shown) return;
-      const box = panel.getBoundingClientRect();
-      if (Math.abs(box.height - oldBox.h) < 0.5 && Math.abs(box.top - oldBox.y) < 0.5) return;
+      // the box without the running transform (the observer also fires once right after the entry started)
+      const next = layoutRect(panel);
+      if (Math.abs(next.h - oldBox.h) < 0.5 && Math.abs(next.y - oldBox.y) < 0.5) return;
       const timing = a.effect?.getTiming();
       const total = typeof timing?.duration === 'number' ? timing.duration : 500;
       const left = Math.max(200, total - (Number(a.currentTime) || 0));
       a.cancel();
-      const next = { x: box.left, y: box.top, w: box.width, h: box.height };
       const m = morphFrom(shown, next, radius);
       track(
         play(

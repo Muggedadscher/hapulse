@@ -512,16 +512,17 @@ Grundlage für „gleiches DOM je Fenster“, die Aufnahmen und die Abnahme. Dem
 
 ## 7. Abnahme (GLAS-PLAN §3 Etappe 3, ergänzt)
 
-**3a**
-- [ ] Jedes der 27 Fenster aus §6.0 in Glas als Sheet (Handy) bzw. Glas-Dialog (Desktop), Morph aus dem Element und
+**3a** (2026-10-08, §13.1)
+- [x] Jedes der 27 Fenster aus §6.0 in Glas als Sheet (Handy) bzw. Glas-Dialog (Desktop), Morph aus dem Element und
       zurück, Detents mittel/groß, Wischen nach unten schließt (außer `swipeToClose={false}`); die NVR-Datumswahl im
-      Labor.
-- [ ] Schließen animiert auf jedem Weg, auch wenn ein Fenster verschwindet; kein Geist, wo ein Fenster bleibt
+      Labor. (Fenster 20 ist in der Demo nicht erreichbar: Labor)
+- [x] Schließen animiert auf jedem Weg, auch wenn ein Fenster verschwindet; kein Geist, wo ein Fenster bleibt
       (Stilwechsel, StrictMode).
-- [ ] Bestätigungen (Garage öffnen, Entriegeln mit Code, Alarm-Code, Pool-Neustart) erscheinen im Sheet bzw. als
-      Sheet; falscher Code: bleibt offen, leert und schüttelt (H3, H8).
-- [ ] Reduzierte Bewegung: alles Überblendung; Bewegungsprobe zeigt Bewegung bei 0/80/160/320 ms.
-- [ ] Klassisch 0 Pixel, gleiches DOM in jedem Fenster aus §6.0.
+- [x] Bestätigungen (Garage öffnen, Entriegeln mit Code, Alarm-Code, Pool-Neustart) erscheinen im Sheet bzw. als
+      Sheet.
+- [ ] Falscher Code: bleibt offen, leert und schüttelt (H3, H8) — Labor, die Demo nimmt jeden Code.
+- [x] Reduzierte Bewegung: alles Überblendung; Bewegungsprobe zeigt Bewegung bei 0/80/160/320 ms.
+- [x] Klassisch 0 Pixel, gleiches DOM in jedem Fenster aus §6.0.
 
 **3b**
 - [ ] Kontextmenü: Langdruck 550 ms, Rechtsklick; Aktionen korrekt; Tipp auf Anzeige-Karten öffnet weiter direkt das
@@ -529,19 +530,19 @@ Grundlage für „gleiches DOM je Fenster“, die Aufnahmen und die Abnahme. Dem
 - [ ] Wisch-Aktionen mit Knopf-Zwilling; nie Entriegeln/Öffnen per Wischen.
 - [ ] Inspector ab 1100 px nicht modal, Inhalt tauscht, Esc und Fokus.
 
-**Nicht verlieren** (Inventar B, F, H2–H3, H8, I, V9, X; je PR geprüft, was er berührt)
-- [ ] Personen: Avatare/Initiale, Zone (Zuhause grün/Weg/Name), seit wann (B2)
-- [ ] Licht: nach Raum in Nutzer-Reihenfolge + „Andere“, Zeilen-Tipp schaltet, „Alle ausschalten“ (B4)
-- [ ] Türen/Fenster: zwei Gruppen, offen/gesamt, offene zuerst (B6) · Alarm: ein Panel je Zentrale, schwerste zuerst,
+**Nicht verlieren** (Inventar B, F, H2–H3, H8, I, V9, X; je PR geprüft, was er berührt — 3a am 2026-10-08)
+- [x] Personen: Avatare/Initiale, Zone (Zuhause grün/Weg/Name), seit wann (B2)
+- [x] Licht: nach Raum in Nutzer-Reihenfolge + „Andere“, Zeilen-Tipp schaltet, „Alle ausschalten“ (B4)
+- [x] Türen/Fenster: zwei Gruppen, offen/gesamt, offene zuerst (B6) · Alarm: ein Panel je Zentrale, schwerste zuerst,
       nur unterstützte Modi, nur Unscharf während „wird scharf“ (B8, H2)
-- [ ] Medien: aktiv/inaktiv, Play/Pause, Lautstärke (300-ms-Drossel), Link Musik-Seite (B10)
-- [ ] Pool: Status, Modus aus `input_select`, Manuell → Dauerwahl, Solar vs. Schwelle, Laufzeit, Restzeit live, Link (B12)
-- [ ] Garage: offene zuerst, Stopp nur beim Fahren + unterstützt, Schließen sofort, Öffnen fragt (B14, I4)
-- [ ] Schlösser: offene zuerst, Entriegeln fragt immer, Verriegeln nur mit Code fragt, gesperrt bei busy/jammed (B16, I7)
-- [ ] Wetter: Kennzahlen, Stunden/Tage, Entitäts-Wahl für Bearbeiter (D10) · Klima-/Rollläden-„Alle anzeigen“ (C9, C11)
-- [ ] Detail: Einstiegspunkte (F14) inkl. Pool-Kacheln, Gruppen-Mitglieder, Kamera-Kacheln; Inhalt vollständig (§2.3)
-- [ ] Benachrichtigungen: verwerfen einzeln und alle, Zähler am Avatar, Desktop-Popover unverändert (V9)
-- [ ] Fokus-/Esc-Verhalten aller Fenster (V9) · `data-autofocus` („Verstanden“ in „Was ist neu“) · Leerzustände (X)
+- [x] Medien: aktiv/inaktiv, Play/Pause, Lautstärke (300-ms-Drossel), Link Musik-Seite (B10)
+- [x] Pool: Status, Modus aus `input_select`, Manuell → Dauerwahl, Solar vs. Schwelle, Laufzeit, Restzeit live, Link (B12)
+- [x] Garage: offene zuerst, Stopp nur beim Fahren + unterstützt, Schließen sofort, Öffnen fragt (B14, I4)
+- [x] Schlösser: offene zuerst, Entriegeln fragt immer, Verriegeln nur mit Code fragt, gesperrt bei busy/jammed (B16, I7)
+- [x] Wetter: Kennzahlen, Stunden/Tage, Entitäts-Wahl für Bearbeiter (D10) · Klima-/Rollläden-„Alle anzeigen“ (C9, C11)
+- [x] Detail: Einstiegspunkte (F14) inkl. Pool-Kacheln, Gruppen-Mitglieder, Kamera-Kacheln; Inhalt vollständig (§2.3)
+- [x] Benachrichtigungen: verwerfen einzeln und alle, Zähler am Avatar, Desktop-Popover unverändert (V9)
+- [x] Fokus-/Esc-Verhalten aller Fenster (V9) · `data-autofocus` („Verstanden“ in „Was ist neu“) · Leerzustände (X)
 
 ---
 
@@ -651,4 +652,53 @@ die Node-Umgebung von vitest passen; der Plan nennt keine internen Hosts, Adress
 
 ## 13. Umsetzung
 
-(folgt mit den PRs)
+### 13.1 Teil 3a — Sheets und Dialoge (Stand 2026-10-08)
+
+Gebaut wie §3 und §5. Zusätzlich zu §5.1 neu: `components/glas/sheet/sheetMotion.ts` (Federkurven aus `--g-spring-*`
+und die Web-Animationen, die Hook und Geist teilen), `components/glas/sheet/shake.ts` (Schütteln von Ziffernblock und
+Code-Feld, K56), `components/glas/notificationOrder.ts` mit Test (neueste zuerst, K57) und
+`apps/dashboard/scripts/glas-checks-sheets.cjs` (Szenen `win-…` und `checks --part sheets`, wie in §6.2 vorgesehen).
+`click-fuzz-test.cjs` läuft mit dem Argument `edit` auch im Bearbeiten-Modus.
+
+**Abweichungen der Umsetzung**
+
+| # | Stelle | Umsetzung | Grund |
+|---|---|---|---|
+| U1 | K64 Ebenen | Jedes Fenster und jede Seite liegt auf 1000 + Platz im Stapel (`sheetHost.ts`), Toasts auf 1100; Seiten nicht fest auf 1010 | Liegt ein eigenes Fenster über einem Sheet mit Seite, muss die Ebene der Reihenfolge folgen; eine feste 1010 legte die Seite des unteren Fensters über das obere |
+| U2 | K67, GLAS-DESIGN §7.29 | Alle Knöpfe eines Fensterfußes sind gleich hohe Kapseln (50, 17/22 600) in einer Reihe, sekundär `fill`; passt die Reihe nicht, nimmt jeder Knopf die ganze Breite | Ein grauer 44er neben einem 50er Knopf („Abbrechen“ neben „Entriegeln“) wirkte schief |
+| U3 | §3.8 Wetter | Keine eigene Stundenleiste: die Vorhersage bleibt eine Liste mit Zeilen 48 | `WeatherModal` lädt eine Vorhersage (stündlich, wenn die Entität sie liefert, sonst täglich) und zeigt sie in einem Markup; Stunden und Tage zugleich bräuchten ein zweites Abo und neues Markup in einer Upstream-Datei |
+| U4 | K53 Kopf | Der Titel darf zweizeilig werden (ausgewogen umbrochen) statt mit „…“ abzubrechen | Lange Namen (Geräte, Entitäten im Detail) waren sonst nicht lesbar |
+| U5 | §3.8 Pool | Die Dauerwahl bekommt in Glas ihr ganzes Layout aus `sheet-content.css` | `pages/Pool.css` ist nur geladen, wenn die Poolseite schon offen war; vom Pool-Chip der Startseite aus fehlte das Layout (in Klassisch auch — Nebenbefund für den User) |
+| U6 | K54 | 16 px auch für die Entitäten-Suche in den Einstellungen (`.settings-text-input`, Upstream 15 px) | Von der Feld-Probe gefunden |
+
+Ergänzungen im Rahmen von §3.8: Schlösser zeigen je Zeile den einen möglichen Knopf („Entriegeln“ bei verriegelt,
+sonst „Verriegeln“; bei klemmt/unbekannt beide gesperrt wie heute), Klassisch zeigt beide; der Kreis im Alarm-Kopf ist
+scharf grün, beim Scharfschalten gelb, ausgelöst rot; „Geschlossen“ bei Türen bekommt den grünen Punkt per `::before`
+(das Markup hat keinen); Titel und Text von Benachrichtigungen enden nach 2 bzw. 3 Zeilen; die Kennzahlen-Beschriftungen
+im Wetter trennen bei Bedarf.
+
+**Nicht in der Demo prüfbar (Labor, §11):** Fenster 20 („Für alle übernehmen“: der Knopf ist ohne echte Verbindung
+gesperrt) samt „federt zurück, solange es arbeitet“; falscher Code mit Schütteln (der Demo-Alarm nimmt jeden Code, das
+Demo-Schloss hat keinen) und damit K63 (c); „Was ist neu“ über einem offenen Fenster (öffnet nur beim Start; die
+Reihenfolge prüft `sheetStack.test.ts`); Esc auf der Kameraseite des Pakets (K72) und die NVR-Datumswahl brauchen einen
+laufenden Sentinel; alle Gesten in WebKit.
+
+**Ergebnisse**
+
+- Unit-Tests: `sheetMath`, `sheetStack`, `notificationOrder`, Selektor-Wächter; `smoke.mjs` mit den neuen
+  Kontrastpaaren (K71).
+- `checks --part sheets`: alle Blöcke grün (Klassisch-DOM, Geometrie, Ziehen, Morph, wachsender Inhalt, Seiten samt
+  Ziffernblock und Bestätigung im Detail, Übergabe, Tab-Leiste und Glas-Regeln, Benachrichtigungen, Felder und
+  reduzierte Bewegung, Stilwechsel, Schließen auf jedem Weg inklusive Routenwechsel und gescrollter Liste, Fenster per
+  Effekt, Mehr/Räume, Wiederöffnen, alle Fenster); dieselben Fenster-Proben auch gegen den Vite-Entwicklungsserver
+  (StrictMode): kein Geist, wo ein Fenster bleibt. `--part frame` und `--part stage1` grün; die Linsen-Probe schaut
+  jetzt mehrmals statt einmal.
+- K63 nachgestellt: (a) ja — ein Esc schließt beide verschachtelten Fenster; (b) ja — nach dem Routenwechsel bleibt
+  `body.style.overflow` auf `hidden`; (c) in der Demo nicht messbar.
+- Klassisch: 284 Aufnahmen (Seiten und Rahmen 136, Fenster 148; Handy, iPad, Desktop, hell und dunkel) gleichen dem
+  Build von `main` auf 0 Pixel; das DOM aller 49 Klassisch-Fenster (Handy und Desktop) ist gleich (nur die Uhrzeiten
+  der Diagramm-Achse folgen der echten Uhr). Die Fenster-Szenen schwankten zuerst von Lauf zu Lauf, auch auf `main`:
+  Playwright wiederholte den Klick, solange Karten noch einliefen, und scrollte dabei jedes Mal anders; jetzt holt die
+  Szene den Auslöser vorher in die Mitte (`reach`).
+- Klick-Fuzz: FUZZ_ERGEBNIS
+- Leistung (4-fache CPU-Drosselung, Chromium): LEISTUNG_ERGEBNIS

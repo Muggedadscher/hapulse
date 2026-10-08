@@ -1,11 +1,15 @@
-// [fork] click-fuzz-test.cjs <hapulse-base> [mobile] [glas] — HA demo mode (glas: in the style "Glas"): opens every
-// page of the navigation and clicks every control in the page content once (re-queried after each click), closes
+// [fork] click-fuzz-test.cjs <hapulse-base> [mobile] [glas] [edit] — HA demo mode (glas: in the style "Glas"): opens
+// every page of the navigation and clicks every control in the page content once (re-queried after each click), closes
 // dialogs again (Escape / close button) and returns to the page when a click navigated away. Destructive controls
-// (reset/delete/log out/import/…) are skipped.
+// (reset/delete/log out/import/…) are skipped. edit: each page in edit mode (its edit switch, in Glas on the phone the
+// avatar menu), and the controls that leave edit mode are not clicked.
 // Red on JS exceptions, console errors, the page error card ("Something went wrong") or HTTP ≥ 400.
 // Output: {pages:[{path,clicked,dialogs,navs,errs}], errs, http, crashes}
 const WS = require('ws'), http = require('http');
 const BASE = process.argv[2], MOBILE = process.argv.includes('mobile'), GLAS = process.argv.includes('glas');
+const EDIT = process.argv.includes('edit');
+// the controls that leave edit mode (Klassisch, Glas desktop capsule, Glas phone "Fertig" and the avatar menu)
+const EDIT_SWITCH = '.edit-toggle, .g-edit-capsule, .g-done, .g-avatar__btn';
 const MAX_PER_PAGE = 80;
 const SKIP = /reset|delete|remove|log ?out|sign ?out|disconnect|import|clear|entfernen|löschen|abmelden|zurücksetzen|apply to everyone|für alle/i;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -30,7 +34,24 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const W = MOBILE ? 390 : 1280, H = MOBILE ? 844 : 900;
   await cmd('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: MOBILE ? 3 : 1, mobile: MOBILE, screenWidth: W, screenHeight: H });
   await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',JSON.stringify({state:{theme:'aurora',mode:'light',lastSeenVersion:'99.0.0',lastSeenFork:99${GLAS ? ",customization:{uiStyle:'glas'}" : ''}},version:0}));sessionStorage.setItem('__seeded','1');}window.confirm=()=>false;window.prompt=()=>null;HTMLAnchorElement.prototype.click=function(){};` });
-  const go = async (pth) => { await cmd('Page.navigate', { url: BASE + pth }); await sleep(3000); };
+  const go = async (pth) => {
+    await cmd('Page.navigate', { url: BASE + pth });
+    await sleep(3000);
+    if (EDIT) await enterEdit();
+  };
+  // edit mode lives in memory (uiStore), so every navigation starts without it
+  const enterEdit = async () => {
+    const how = await ev(`(()=>{const vis=(e)=>e&&e.getBoundingClientRect().width>0;
+      const t=Array.from(document.querySelectorAll('.edit-toggle:not(.edit-toggle--active), .g-edit-capsule')).find(vis);
+      if(t){t.click();return 'switch';}
+      const a=document.querySelector('.g-avatar__btn');if(vis(a)){a.click();return 'avatar';}
+      return '';})()`);
+    await sleep(400);
+    if (how === 'avatar') {
+      await ev(`(()=>{const i=Array.from(document.querySelectorAll('.g-avatar-menu__item')).find(e=>/^(Bearbeiten|Edit)$/.test(e.textContent.trim()));if(i)i.click();else document.querySelector('.g-avatar__btn').click();})()`);
+      await sleep(400);
+    }
+  };
   const errorCard = () => ev(`document.body.innerText.includes('Something went wrong')`);
   const dialogOpen = () => ev(`!!document.querySelector('[role=dialog], dialog[open], .modal, [class*=modal-overlay], [class*=Modal]')`);
   const esc = async () => { for (const type of ['keyDown', 'keyUp']) await cmd('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); };
@@ -47,7 +68,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     const here = await ev('location.pathname');
     for (let i = 0; i < MAX_PER_PAGE; i++) {
       // the i-th visible control inside the page content (not the app navigation)
-      const info = await ev(`(()=>{const root=document.querySelector('main, .app-main, .app-content')||document.body;const els=Array.from(root.querySelectorAll('button, [role=button], [role=switch], [role=tab], input[type=checkbox], select')).filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0&&!e.disabled&&!e.closest('nav, .app-sidebar, .app-tabs')});const e=els[${i}];if(!e)return null;const lbl=(e.getAttribute('aria-label')||e.textContent||e.getAttribute('title')||'').trim().slice(0,40);if(${SKIP}.test(lbl))return {skip:lbl};if(e.tagName==='SELECT'){return {sel:lbl}};e.scrollIntoView({block:'center',behavior:'instant'});e.click();return {lbl};})()`);
+      const info = await ev(`(()=>{const root=document.querySelector('main, .app-main, .app-content')||document.body;const els=Array.from(root.querySelectorAll('button, [role=button], [role=switch], [role=tab], input[type=checkbox], select')).filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0&&!e.disabled&&!e.closest('nav, .app-sidebar, .app-tabs')&&!(${EDIT}&&e.matches('${EDIT_SWITCH}'))});const e=els[${i}];if(!e)return null;const lbl=(e.getAttribute('aria-label')||e.textContent||e.getAttribute('title')||'').trim().slice(0,40);if(${SKIP}.test(lbl))return {skip:lbl};if(e.tagName==='SELECT'){return {sel:lbl}};e.scrollIntoView({block:'center',behavior:'instant'});e.click();return {lbl};})()`);
       if (!info || info.__err) break;
       if (info.skip) { res.skipped.push(info.skip); continue; }
       if (info.sel !== undefined) continue;
@@ -67,6 +88,6 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     pages.push(res);
   }
   const bad = pages.filter((x) => x.errorCard || x.errs.length);
-  console.log(JSON.stringify({ mobile: MOBILE, glas: GLAS, ok: bad.length === 0 && httpBad.length === 0, badPages: bad.map((x) => x.path), http: httpBad.slice(0, 20), totalClicks: pages.reduce((a, x) => a + x.clicked, 0), pages }, null, 1));
+  console.log(JSON.stringify({ mobile: MOBILE, glas: GLAS, edit: EDIT, ok: bad.length === 0 && httpBad.length === 0, badPages: bad.map((x) => x.path), http: httpBad.slice(0, 20), totalClicks: pages.reduce((a, x) => a + x.clicked, 0), pages }, null, 1));
   ws.close(); process.exit(0);
 })().catch((e) => { console.log('ERR ' + e.stack); process.exit(1); });

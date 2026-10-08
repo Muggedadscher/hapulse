@@ -11,6 +11,7 @@
 | `docs/GLAS-PLAN.md` | dieses Dokument: Architektur, Etappen, Abnahme, Tests, Risiken |
 | `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K19 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
 | `docs/glas/PLAN-ETAPPE-2.md` | Umsetzung von Etappe 2 (Rahmen): Festlegungen K20–K45, Review des Plans, Abweichungen der Umsetzung U1–U13, Prüfungen, Laborpunkte (Stand 2026-10-06) |
+| `docs/glas/PLAN-ETAPPE-3.md` | Umsetzung von Etappe 3 (Fenster, Gesten, Inspector): Festlegungen K46–K73, Review des Plans, Umsetzung von 3a (Stand 2026-10-08) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
@@ -606,29 +607,36 @@ Tokens) und das Host-Menü im Avatar-Menü (PLAN-ETAPPE-2 §11.4).
 
 ### Etappe 3 — Sheets, Dialoge, Gesten
 
+**Stand 2026-10-08: Teil 3a (Sheets und Dialoge) umgesetzt; 3b (Kontextmenü, Wisch-Zeilen, Inspector) folgt.** Etappe
+3 kommt in zwei PRs (K46). Plan, Festlegungen K46–K73, Review, Abweichungen der Umsetzung, Prüfungen und Laborpunkte:
+[`glas/PLAN-ETAPPE-3.md`](glas/PLAN-ETAPPE-3.md) (§1, §12, §13, §11). Das Schließen animiert ein Geist (K47) statt
+`usePresence`; Bestätigungen sind Seiten im Fenster (K48).
+
 Umfang: 2.1–2.5. Alle Chip-Modals, Wetter, Klima-/Rollläden-„Alle“, Müll-Tonne, Pool (inkl. Dauerwahl), Alarm mit
 Ziffernblock, Bestätigungen im Sheet, Kontextmenü, Wisch-Aktionen, Inspector-Grundgerüst.
 
 Abnahme:
-- [ ] Jedes der 25 `Modal`-Vorkommen in Glas als Sheet (Handy) bzw. Glas-Dialog (Desktop), Morph aus dem Element und
-      zurück, Detents mittel/groß, Wischen nach unten schließt (außer `swipeToClose={false}`).
+- [x] Jedes der 25 `Modal`-Vorkommen in Glas als Sheet (Handy) bzw. Glas-Dialog (Desktop), Morph aus dem Element und
+      zurück, Detents mittel/groß, Wischen nach unten schließt (außer `swipeToClose={false}`). (3a, 2026-10-08; gerendert
+      werden 24, dazu drei nur in Glas = 27 Fenster, K73; „Für alle übernehmen“ und die NVR-Datumswahl nur im Labor)
 - [ ] Bestätigungen (Garage öffnen, Entriegeln mit Code, Pool-Neustart, Alarm-Code) erscheinen **im** Sheet; falscher
-      Code: bleibt offen und leert (H3, H8).
+      Code: bleibt offen und leert (H3, H8). (3a: im Sheet erledigt; falscher Code im Labor, die Demo nimmt jeden Code)
 - [ ] Kontextmenü: Langdruck 550 ms, Rechtsklick; Aktionen korrekt; Tipp auf Anzeige-Karten öffnet weiter direkt das Detail.
-- [ ] Reduzierte Bewegung: alles Überblendung; Animationsprobe (§5.4) zeigt Bewegung zwischen 0/80/160/320 ms.
+- [x] Reduzierte Bewegung: alles Überblendung; Animationsprobe (§5.4) zeigt Bewegung zwischen 0/80/160/320 ms. (3a)
 
-Nicht verlieren (Inventar B, F, H2–H3, H8, I):
-- [ ] People: Avatare/Initiale, Zone (Zuhause grün/Weg/Name), seit wann (B2)
-- [ ] Licht: nach Raum in Nutzer-Reihenfolge + „Andere“, Zeilen-Tipp toggelt, **„Alle ausschalten“** (B4)
-- [ ] Türen/Fenster: zwei Gruppen, offen/gesamt, offene zuerst (B6) · Alarm: ein Panel je Zentrale, schwerste zuerst,
+Nicht verlieren (Inventar B, F, H2–H3, H8, I; 3a ändert an den Inhalten nur CSS und die `[fork]`-Stellen aus
+PLAN-ETAPPE-3 §5.2, geprüft in den Aufnahmen beider Stile, `checks` und im Klick-Fuzz, 2026-10-08):
+- [x] People: Avatare/Initiale, Zone (Zuhause grün/Weg/Name), seit wann (B2)
+- [x] Licht: nach Raum in Nutzer-Reihenfolge + „Andere“, Zeilen-Tipp toggelt, **„Alle ausschalten“** (B4)
+- [x] Türen/Fenster: zwei Gruppen, offen/gesamt, offene zuerst (B6) · Alarm: ein Panel je Zentrale, schwerste zuerst,
       nur unterstützte Modi, nur Unscharf während „wird scharf“ (B8, H2)
-- [ ] Medien: aktiv/inaktiv, Play/Pause, Lautstärke (300-ms-Drossel), Link Musik-Seite (B10)
-- [ ] Pool: Status, Modus aus `input_select`, Manuell → Dauerwahl, Solar vs. Schwelle, Laufzeit, Restzeit live, Link (B12)
-- [ ] Garage: offene zuerst, Stopp nur beim Fahren + unterstützt, Schließen sofort, Öffnen fragt (B14, I4)
-- [ ] Schlösser: offene zuerst, Entriegeln fragt immer, Verriegeln nur mit Code fragt, gesperrt bei busy/jammed (B16, I7)
-- [ ] Wetter: Kennzahlen, Stunden/Tage, **Entity-Wahl für Bearbeiter** (D10) · Klima-/Rollläden-„Alle anzeigen“ (C9, C11)
-- [ ] Detail: alle Punkte aus §2.3; Einstiegspunkte (F14) inkl. Pool-Kacheln, Gruppen-Mitglieder, Kamera-Kacheln
-- [ ] Fokus-/Esc-Verhalten aller Modals (V9) · `data-autofocus` („Verstanden“ in „Was ist neu“) · Leerzustände (X)
+- [x] Medien: aktiv/inaktiv, Play/Pause, Lautstärke (300-ms-Drossel), Link Musik-Seite (B10)
+- [x] Pool: Status, Modus aus `input_select`, Manuell → Dauerwahl, Solar vs. Schwelle, Laufzeit, Restzeit live, Link (B12)
+- [x] Garage: offene zuerst, Stopp nur beim Fahren + unterstützt, Schließen sofort, Öffnen fragt (B14, I4)
+- [x] Schlösser: offene zuerst, Entriegeln fragt immer, Verriegeln nur mit Code fragt, gesperrt bei busy/jammed (B16, I7)
+- [x] Wetter: Kennzahlen, Stunden/Tage, **Entity-Wahl für Bearbeiter** (D10) · Klima-/Rollläden-„Alle anzeigen“ (C9, C11)
+- [x] Detail: alle Punkte aus §2.3; Einstiegspunkte (F14) inkl. Pool-Kacheln, Gruppen-Mitglieder, Kamera-Kacheln
+- [x] Fokus-/Esc-Verhalten aller Modals (V9) · `data-autofocus` („Verstanden“ in „Was ist neu“) · Leerzustände (X)
 
 ### Etappe 4 — Übersicht komplett
 

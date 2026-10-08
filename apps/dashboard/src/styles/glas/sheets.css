@@ -260,6 +260,7 @@
 }
 
 :root[data-style='glas'] .g-sheet-header__title {
+  display: -webkit-box;
   min-width: 0;
   margin: 0;
   overflow: hidden;
@@ -269,8 +270,11 @@
   line-height: 22px;
   font-weight: 600;
   letter-spacing: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  /* a long title ("Kameras den Räumen zuordnen") takes a second line instead of losing its end */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 :root[data-style='glas'] .g-sheet-header__subtitle {

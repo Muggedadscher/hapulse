@@ -2,7 +2,8 @@
 //
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
-//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame]
+//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets]
+//     [--dom-out <file>] [--only <block>,…]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
 //   --devices phone,ipad,desktop  --scenes home,room,…  --contrast  --forced-colors  --engine chromium|webkit
@@ -11,8 +12,12 @@
 //   at viewport size (fixed layers); a scene that does not exist in a style or at a width is listed as skipped.
 //   --elements <css> (also one picture per matching element, named after its first line of text, e.g.
 //     "--scenes settings --elements .settings-page__section" → …-settings__2-darstellung.png)
+//   Window scenes of stage 3 (win-…, glas-checks-sheets.cjs, docs/glas/PLAN-ETAPPE-3.md §6.0) open one window each and
+//   are taken at viewport size; they are not part of the default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
-// checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2) and the frame of stage 2 (PLAN-ETAPPE-2.md §6.3); --part runs one.
+// checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3) and the windows of
+//   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs); --part runs one. --dom-out: the Klassisch DOM of every
+//   window as JSON, to compare a build with main's. --only runs some blocks of the window checks (e.g. sheetsDrag).
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
@@ -163,12 +168,16 @@ async function newContext(browser, device, opts) {
   // Paused at once, before any page exists: a pauseAt later than `install + real time` would throw on a slow machine.
   await ctx.clock.install({ time: FIXED - 60_000 });
   await ctx.clock.pauseAt(FIXED + 500);
+  faked.add(ctx);
   return ctx;
 }
 
 /** Fake time spent per document (the demo ticker must never fire). */
 const spent = new WeakMap();
+/** Contexts with the paused clock; the window checks of stage 3 run in real time and just wait. */
+const faked = new WeakSet();
 async function run(page, ms) {
+  if (!faked.has(page.context())) return page.waitForTimeout(ms);
   const total = (spent.get(page) || 0) + ms;
   if (total >= BUDGET) throw new Error(`clock budget: ${total} ms in one document (demo ticker at 2000 ms)`);
   spent.set(page, total);
@@ -180,12 +189,16 @@ async function gotoPage(page, url) {
   await page.goto(url, { waitUntil: 'load' });
 }
 
+/** The console line of a request the context aborted on purpose (only local requests, see newContext; the NVR window
+ * scenes point Sentinel at a documentation address). */
+const ABORTED = /^Failed to load resource: net::ERR_FAILED$/;
+
 /** Load a path with the clock paused, let it settle deterministically. */
 async function openPage(ctx, url, extraRun = 0) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push('exc: ' + String(e.message).slice(0, 200)));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().slice(0, 200)); });
+  page.on('console', (m) => { if (m.type() === 'error' && !ABORTED.test(m.text())) errors.push('console: ' + m.text().slice(0, 200)); });
   await gotoPage(page, url);
   await page.waitForFunction(() => document.querySelector('#root > *'), null, { timeout: 15000 });
   await page.waitForLoadState('networkidle');
@@ -237,10 +250,16 @@ const MATERIAL_PROBE = `(() => {
 const isPhone = (page) => page.viewportSize().width < 900;
 const isGlas = (page) => page.evaluate(() => document.documentElement.getAttribute('data-style') === 'glas');
 
+// stage 3: the windows — scenes win-… and `checks --part sheets`
+const SHEETS = require('./glas-checks-sheets.cjs')({ DE, DEVICES, ABORTED, tap, run, settleAnimations, isGlas, seedScript,
+  pageHelpers });
+Object.assign(SCENES, SHEETS.scenes);
+
 /** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
 async function tap(page, sel) {
   const el = page.locator(sel).filter({ visible: true }).first();
   if (!(await el.count())) return 'not visible: ' + sel;
+  if (await el.isDisabled()) return 'disabled: ' + sel;
   await el.click();
   await run(page, 150);
   await settleAnimations(page);
@@ -319,7 +338,8 @@ async function shoot() {
       for (const scene of list('scenes', DEFAULT_SCENES.join(','))) {
         const sc = SCENES[scene];
         if (!sc) throw new Error('unknown scene ' + scene);
-        const ctx = await newContext(browser, device, { demo: sc.demo !== false, mode, style, strength, reduce, contrast, forcedColors });
+        const ctx = await newContext(browser, device, { demo: sc.demo !== false, mode, style, strength, reduce, contrast, forcedColors,
+          customization: sc.customization });
         const { page, errors } = await openPage(ctx, url + sc.path);
         let note = '';
         if (sc.click) {
@@ -959,8 +979,8 @@ async function frameChecks(browser, url, out) {
     await close();
   });
 
-  // 6. Notifications: on the phone from the avatar menu — focus into the panel, Escape closes it with the focus back on
-  //    the avatar; on the desktop the popover under the bell, Escape returns the focus to the bell
+  // 6. Notifications: on the phone from the avatar menu — the sheet of stage 3 (K57) takes the focus, Escape closes it
+  //    with the focus back on the avatar; on the desktop the popover under the bell, Escape returns the focus to the bell
   await block('notifications', async () => {
     const res = {};
     const phone = await open('phone', 'glas', '/');
@@ -968,14 +988,16 @@ async function frameChecks(browser, url, out) {
     await phone.page.keyboard.press('Enter');
     await until(phone.page, () => !!document.activeElement && document.activeElement.matches('.g-avatar-menu [role="menuitem"]'));
     await phone.page.keyboard.press('Enter'); // first item: notifications
-    await until(phone.page, () => !!document.activeElement && !!document.activeElement.closest('.notifications-panel'));
+    await until(phone.page, () => !!document.activeElement && !!document.activeElement.closest('.modal-panel[role="dialog"]'));
     await settleAnimations(phone.page);
-    res.phoneOpen = await ev(phone.page, () => ({ panel: __g.visible(document.querySelector('.notifications-panel')),
-      focusIn: !!document.activeElement.closest('.notifications-panel'), active: __g.desc(document.activeElement),
-      rows: document.querySelectorAll('.notifications-panel .notif-row').length }));
+    res.phoneOpen = await ev(phone.page, () => {
+      const p = document.querySelector('.modal-panel[role="dialog"]');
+      return { panel: __g.visible(p) && !!p.querySelector('.g-notes'), focusIn: !!document.activeElement.closest('.modal-panel[role="dialog"]'),
+        active: __g.desc(document.activeElement), rows: p.querySelectorAll('.g-notes__row').length };
+    });
     await phone.page.keyboard.press('Escape');
-    await until(phone.page, () => !document.querySelector('.notifications-panel'));
-    res.phoneEscape = await ev(phone.page, () => ({ panel: !!document.querySelector('.notifications-panel'),
+    await until(phone.page, () => !document.querySelector('.modal-panel[role="dialog"], .g-sheet-ghost'));
+    res.phoneEscape = await ev(phone.page, () => ({ panel: !!document.querySelector('.modal-panel[role="dialog"]'),
       onAvatar: document.activeElement === document.querySelector('.g-avatar__btn') }));
     await phone.close();
     const desk = await open('desktop', 'glas', '/');
@@ -1176,7 +1198,7 @@ async function frameChecks(browser, url, out) {
   });
 
   // 10. Opaque (strength "Deckend"; the same as "Transparenz reduzieren"/more contrast): no backdrop-filter anywhere,
-  //     also with the avatar menu, the notifications panel, More and the rooms sheet open (phone) and the
+  //     also with the avatar menu, the notifications sheet, More and the rooms sheet open (phone) and the
   //     notifications and rooms popovers (desktop); more contrast alike. Each opened layer must really be there.
   await block('opaque', async () => {
     const res = {};
@@ -1191,7 +1213,7 @@ async function frameChecks(browser, url, out) {
     shown.phoneAvatar = await isOpen(phone.page, '.g-avatar-menu');
     res.phoneAvatar = await ev(phone.page, () => __g.anyBlur());
     await tap(phone.page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.notifications']}")`);
-    shown.phoneNotifications = await isOpen(phone.page, '.notifications-panel');
+    shown.phoneNotifications = await isOpen(phone.page, '.modal-panel .g-notes');
     res.phoneNotifications = await ev(phone.page, () => __g.anyBlur());
     await phone.close();
     const more = await open('phone', 'glas', '/', { strength: 'opaque' });
@@ -1262,8 +1284,13 @@ async function frameChecks(browser, url, out) {
     await page.locator('a.app-tabs__item:not([data-g-tab-pick])').first().click();
     await until(page, (p) => location.pathname !== p, before);
     await run(page, 50); // the lens moves in the next frames (useLens: layout, then requestAnimationFrame)
-    return { moved: (await ev(page, () => location.pathname)) !== before,
-      anims: await ev(page, () => __g.anims('.g-tabs__lens, .app-tabs__item > svg').filter((a) => a.ms > 1)) };
+    // its transition runs in real time: look several times instead of once (a busy machine starts it later)
+    let anims = [];
+    for (let i = 0; i < 10 && !anims.length; i++) {
+      if (i) await new Promise((r) => setTimeout(r, 40));
+      anims = await ev(page, () => __g.anims('.g-tabs__lens, .app-tabs__item > svg').filter((a) => a.ms > 1));
+    }
+    return { moved: (await ev(page, () => location.pathname)) !== before, anims };
   };
   await block('reducedMotionFrame', async () => {
     const res = {};
@@ -1374,6 +1401,9 @@ async function checks() {
   let ok = true;
   if (part === 'all' || part === 'stage1') ok = (await stage1Checks(browser, url, out)) && ok;
   if (part === 'all' || part === 'frame') ok = (await frameChecks(browser, url, out)) && ok;
+  if (part === 'all' || part === 'sheets') {
+    ok = (await SHEETS.sheetsChecks(browser, url, out, { domOut: arg('dom-out', ''), only: list('only', '') })) && ok;
+  }
   await browser.close();
   if (srv) srv.close();
   console.log(JSON.stringify({ ok, ...out }, null, 1));
