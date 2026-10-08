@@ -7,9 +7,16 @@
 
 /* ---- Context menu (K58) ---- */
 
-/* The pressed card stays lifted while its menu is open (the lift itself is animated in code). */
-:root[data-style='glas'] .entity-card-press[data-g-lifted] {
+/* The pressed card stays lifted while its menu is open (the lift itself is animated in code). The card, not its
+   wrapper: the wrapper is a grid cell and as tall as its row. Above the card's own `:active` scale. */
+:root[data-style='glas'] .entity-card-press > [data-g-lifted] {
   transform: scale(1.04);
+}
+
+/* The focus the menu gives back after a finger or the mouse: without its ring until a key is used (code). */
+:root[data-style='glas'] [data-g-quiet-focus]:focus-visible,
+:root[data-style='glas'] [data-g-quiet-focus]:focus-visible + .pill-toggle__track {
+  outline: none;
 }
 
 :root[data-style='glas'] .g-ctx {
@@ -170,7 +177,7 @@
 
 /* Reduced motion: the card is not lifted, the menu fades (in code, 200 ms). */
 @media (prefers-reduced-motion: reduce) {
-  :root[data-style='glas'] .entity-card-press[data-g-lifted] {
+  :root[data-style='glas'] .entity-card-press > [data-g-lifted] {
     transform: none;
   }
 }

@@ -6,6 +6,7 @@ import {
   holePath,
   liftBox,
   placeContextMenu,
+  unscaledBox,
   type ContextActionInput,
 } from '../src/components/glas/contextActions';
 
@@ -137,6 +138,32 @@ describe('liftBox', () => {
   it('grows the box about its centre', () => {
     expect(liftBox({ x: 100, y: 200, w: 100, h: 50 }, 1.04)).toEqual({ x: 98, y: 199, w: 104, h: 52 });
     expect(liftBox({ x: 10, y: 20, w: 30, h: 40 }, 1)).toEqual({ x: 10, y: 20, w: 30, h: 40 });
+  });
+});
+
+describe('unscaledBox', () => {
+  const near = (a: { x: number; y: number; w: number; h: number }, b: typeof a) =>
+    (['x', 'y', 'w', 'h'] as const).forEach((k) => expect(a[k]).toBeCloseTo(b[k], 6));
+
+  it('keeps an untransformed box', () => {
+    expect(unscaledBox({ x: 10, y: 20, w: 30, h: 40 }, { a: 1, d: 1, e: 0, f: 0 }, { x: 15, y: 20 })).toEqual({ x: 10, y: 20, w: 30, h: 40 });
+  });
+
+  it('measures a pressed card (scale .98 about its centre) as if it were not pressed', () => {
+    // laid out at 100/200, 300 × 100; pressed it shows at 103/201, 294 × 98
+    near(unscaledBox({ x: 103, y: 201, w: 294, h: 98 }, { a: 0.98, d: 0.98, e: 0, f: 0 }, { x: 150, y: 50 }), { x: 100, y: 200, w: 300, h: 100 });
+  });
+
+  it('undoes a lift about another origin and a translation', () => {
+    const box = { x: 40, y: 60, w: 200, h: 80 };
+    const o = { x: 0, y: 80 };
+    const m = { a: 1.04, d: 1.04, e: 5, f: -3 };
+    const shown = { x: box.x + o.x * (1 - m.a) + m.e, y: box.y + o.y * (1 - m.d) + m.f, w: box.w * m.a, h: box.h * m.d };
+    near(unscaledBox(shown, m, o), box);
+  });
+
+  it('gives a box with a flat scale back as it shows', () => {
+    expect(unscaledBox({ x: 1, y: 2, w: 0, h: 4 }, { a: 0, d: 1, e: 0, f: 0 }, { x: 0, y: 0 })).toEqual({ x: 1, y: 2, w: 0, h: 4 });
   });
 });
 

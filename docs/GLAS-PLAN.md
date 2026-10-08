@@ -527,6 +527,13 @@ Jede Etappe = **ein Branch + ein PR** (`claude/glas-etappe-<n>-…`), CI grün, 
 (§6), `docs/SYNC.md`-Inventar aktualisiert (neue Dateien, neue `[fork]`-Stellen). Vor jedem Push:
 `npm run typecheck && npm run build && npm test -w @hapulse/core` (+ `npm test -w @hapulse/dashboard`, `npm run lint`).
 
+**Ablauf ab Etappe 4 (Entscheid des Users, 2026-10-08):** vor der Etappe ein kurzer Plan von 1 bis 2 Seiten in
+`docs/glas/PLAN-ETAPPE-<n>.md` (was sich ändert, welche Dateien, welche Prüfungen), unabhängig geprüft; eine Etappe
+bleibt, wo es geht, ein PR ohne Aufteilung in a und b; jeder PR bekommt eine unabhängige Code-Prüfung. Nach
+Korrekturen laufen nur die betroffenen Prüfungen erneut; der volle Lauf (alle `checks`, Klassisch-Pixelvergleich mit
+`main`, Klick-Fuzz) läuft genau einmal, direkt vor dem Merge. Klassisch bleibt pixelgleich, gemergt wird nur bei
+grüner CI.
+
 Bis zur letzten Etappe heißt die Option **„Glas (Vorschau)“** (siehe E11).
 
 ### Etappe 0 — Vorbereitung (kein Nutzer-Effekt)

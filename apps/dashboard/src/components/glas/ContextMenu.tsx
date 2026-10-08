@@ -5,10 +5,13 @@
  *
  * The preview is the real card at its place: lifted (`data-g-lifted`: scale 1.04 and the lift shadow) and seen
  * through a hole in the dim layer (`clip-path` with `evenodd`) — over the dim layer it could not come (the page's
- * stacking contexts). A surface over the hole takes taps and closes, so the live card does not react under the menu.
- * The menu (`role="menu"`) sits 14 px under the card or above it, 16 px from the sides, and grows out of the card's
- * centre. Scrolling and resizing close it (the hole would not match any more), as do Esc, Tab and a tap anywhere
- * outside the menu; the focus goes back to the card. Reduced motion: no lifting and no scaling, fades of 200 ms.
+ * stacking contexts). The card is the first child of the pressed wrapper: the wrapper is a grid cell, as tall as its
+ * row (an off light beside an on one with its sliders). A surface over the hole takes taps and closes, so the live
+ * card does not react under the menu. The menu (`role="menu"`) sits 14 px under the card or above it, 16 px from the
+ * sides, and grows out of the card's centre. Scrolling, resizing and anything else that moves the card close it (the
+ * hole would not match any more), as do a window opening over it, Esc, Tab and a tap or a right click anywhere
+ * outside the menu. The focus goes back to where it was in the card, else to the card; after a finger or the mouse
+ * without its ring. Reduced motion: no lifting and no scaling, fades of 200 ms.
  */
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
@@ -24,10 +27,13 @@ import {
   holePath,
   liftBox,
   placeContextMenu,
+  unscaledBox,
   type ContextActionId,
+  type CtxBox,
 } from './contextActions';
 import { noteOrigin } from './sheet/origin';
-import { allDone, layoutRect, play, reducedMotion, spring } from './sheet/sheetMotion';
+import { openModals } from './sheet/sheetHost';
+import { allDone, play, reducedMotion, spring } from './sheet/sheetMotion';
 import { roomIdOf } from '../../app/glas/glasScroll';
 import { nextMenuIndex } from '../../app/glas/menuKeys';
 import { useCanEdit, useRooms } from '../../ha/hooks';
@@ -52,12 +58,58 @@ const RELEASE_GUARD_MS = 400;
 /** How the last input came: a menu opened from the keyboard puts the focus on its first item (with its ring), one
  * opened by finger or mouse on the menu itself (browsers show a ring on any focus a script sets after a touch). */
 let lastInput: 'key' | 'pointer' = 'pointer';
+/** Fingers on the screen: a `contextmenu` that comes as a plain MouseEvent (no pointer type) during a touch belongs to
+ * a long press whose finger is still down. */
+let touches = 0;
 const onKeyInput = (e: KeyboardEvent) => {
   if (!e.repeat) lastInput = 'key';
 };
 const onPointerInput = () => {
   lastInput = 'pointer';
 };
+const onTouches = (e: TouchEvent) => {
+  touches = e.touches.length;
+};
+const TOUCH_EVENTS = ['touchstart', 'touchend', 'touchcancel'] as const;
+
+/** Ends the quiet focus (below) on the element that has it. */
+let endQuiet: (() => void) | null = null;
+
+/** The focus back on `el` after the menu. After a finger or the mouse without its ring (`data-g-quiet-focus`, U13:
+ * browsers draw one on any focus a script sets after a tap) until a key is used or the focus moves on. */
+function giveFocusBack(el: HTMLElement, ring: boolean): void {
+  endQuiet?.();
+  el.focus({ preventScroll: true });
+  if (ring || document.activeElement !== el) return;
+  el.setAttribute('data-g-quiet-focus', '');
+  const end = () => {
+    el.removeAttribute('data-g-quiet-focus');
+    el.removeEventListener('blur', end);
+    document.removeEventListener('keydown', end, true);
+    if (endQuiet === end) endQuiet = null;
+  };
+  el.addEventListener('blur', end);
+  document.addEventListener('keydown', end, true);
+  endQuiet = end;
+}
+
+/** The card in the pressed wrapper (the wrapper itself when it has none). */
+function cardOf(el: HTMLElement): HTMLElement {
+  return el.firstElementChild instanceof HTMLElement ? el.firstElementChild : el;
+}
+
+/** Where the card is laid out on screen, also while it is pressed (`:active` scales it to .98) or lifted. */
+function cardBox(card: HTMLElement): CtxBox {
+  const r = card.getBoundingClientRect();
+  const cs = getComputedStyle(card);
+  const shown = { x: r.left, y: r.top, w: r.width, h: r.height };
+  if (!cs.transform || cs.transform === 'none') return shown;
+  const [ox = 0, oy = 0] = cs.transformOrigin.split(' ').map((v) => parseFloat(v) || 0);
+  return unscaledBox(shown, new DOMMatrixReadOnly(cs.transform), { x: ox, y: oy });
+}
+
+/** The card moved or changed its size (more than half a pixel). */
+const moved = (a: CtxBox, b: CtxBox) => (['x', 'y', 'w', 'h'] as const).some((k) => Math.abs(a[k] - b[k]) > 0.5);
 
 const LABEL: Record<ContextActionId, TKey> = {
   activate: 'glas.context.activate',
@@ -96,9 +148,13 @@ export function ContextMenu() {
   useEffect(() => {
     document.addEventListener('keydown', onKeyInput, { capture: true, passive: true });
     document.addEventListener('pointerdown', onPointerInput, { capture: true, passive: true });
+    for (const type of TOUCH_EVENTS) document.addEventListener(type, onTouches, { capture: true, passive: true });
     return () => {
       document.removeEventListener('keydown', onKeyInput, { capture: true });
       document.removeEventListener('pointerdown', onPointerInput, { capture: true });
+      for (const type of TOUCH_EVENTS) document.removeEventListener(type, onTouches, { capture: true });
+      touches = 0;
+      endQuiet?.();
       useGlasUiStore.getState().closeContextMenu();
     };
   }, []);
@@ -122,7 +178,7 @@ interface MenuProps {
   onGone: () => void;
 }
 
-/** The card's own focusable control (the card itself is `role="button"` on the toggles), else the wrapper. */
+/** The card's first focusable element (the card itself on the toggles, `role="button"`), or none. */
 function focusTarget(el: HTMLElement): HTMLElement | null {
   if (!el.isConnected) return null;
   return el.querySelector<HTMLElement>('[tabindex]:not([tabindex="-1"]), button:not([disabled]), a[href]');
@@ -147,10 +203,16 @@ function Menu({ target, closing, onGone }: MenuProps) {
   const holeRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const anims = useRef<(Animation | null)[]>([]);
+  /** Opened while a finger or a button is still down (a long press): measured once, when the menu comes. */
+  const pressing = useRef(target.pressing || touches > 0).current;
   /** The opening press: whether it has been released, and until when its click may still come (event time). */
-  const release = useRef({ seen: !target.pressing, until: -Infinity });
-  /** Where the focus goes when the menu closes without opening something else. */
+  const release = useRef({ seen: !pressing, until: -Infinity });
+  /** Whether the focus goes back to the card when the menu closes (not when it opens something else). */
   const restoreFocus = useRef(true);
+  /** The element in the card that had the focus when the menu opened (the context-menu key on a switch). */
+  const returnTo = useRef<HTMLElement | null>(null);
+  /** The card's box when the menu opened: anything that moves the card closes the menu. */
+  const measured = useRef<CtxBox | null>(null);
   const onGoneRef = useRef(onGone);
   onGoneRef.current = onGone;
 
@@ -171,6 +233,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
   // Open: measure the card, cut the hole, place the menu, lift — before the first paint. Close: fade, drop the card.
   useLayoutEffect(() => {
     const el = target.el;
+    const card = cardOf(el);
     const dim = dimRef.current;
     const hole = holeRef.current;
     const menu = menuRef.current;
@@ -181,9 +244,12 @@ function Menu({ target, closing, onGone }: MenuProps) {
     }
     const desktop = window.matchMedia(DESKTOP).matches;
     const reduced = reducedMotion();
-    const card = el.firstElementChild instanceof HTMLElement ? el.firstElementChild : el;
-    const radius = parseFloat(getComputedStyle(card).borderTopLeftRadius) || 0;
-    const box = layoutRect(el);
+    const cs = getComputedStyle(card);
+    const radius = parseFloat(cs.borderTopLeftRadius) || 0;
+    // the lift starts where the press left the card (`:active` scales it to .98)
+    const pressed = cs.transform && cs.transform !== 'none' ? cs.transform : null;
+    const box = cardBox(card);
+    measured.current = box;
     const scale = reduced ? 1 : CONTEXT_LIFT;
     const lifted = liftBox(box, scale);
     const layer = { w: dim.offsetWidth, h: dim.offsetHeight };
@@ -200,7 +266,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
     menu.style.left = `${at.x}px`;
     menu.style.top = `${at.y}px`;
     menu.style.transformOrigin = `${lifted.x + lifted.w / 2 - at.x}px ${lifted.y + lifted.h / 2 - at.y}px`;
-    el.setAttribute('data-g-lifted', desktop ? 'desktop' : 'phone');
+    card.setAttribute('data-g-lifted', desktop ? 'desktop' : 'phone');
 
     const fade = { duration: reduced ? 200 : FADE_IN_MS, easing: 'ease' };
     anims.current = [
@@ -210,11 +276,12 @@ function Menu({ target, closing, onGone }: MenuProps) {
     ];
     if (!reduced) {
       const lift = { duration: LIFT_MS, easing: spring('bouncy') };
+      const s0 = pressed ? new DOMMatrixReadOnly(pressed).a || 1 : 1;
       anims.current.push(
-        play(el, [{ transform: 'scale(1)' }, { transform: `scale(${CONTEXT_LIFT})` }], lift),
-        play(dim, [{ clipPath: holePath(box, radius, layer) }, { clipPath: holePath(lifted, radius * scale, layer) }], lift),
+        play(card, [{ transform: pressed ?? 'scale(1)' }, { transform: `scale(${CONTEXT_LIFT})` }], lift),
+        play(dim, [{ clipPath: holePath(liftBox(box, s0), radius * s0, layer) }, { clipPath: holePath(lifted, radius * scale, layer) }], lift),
         // the shadow grows with the card
-        play(hole, [{ transform: `scale(${1 / CONTEXT_LIFT})` }, { transform: 'none' }], lift),
+        play(hole, [{ transform: `scale(${s0 / CONTEXT_LIFT})` }, { transform: 'none' }], lift),
         play(
           menu,
           [
@@ -227,13 +294,15 @@ function Menu({ target, closing, onGone }: MenuProps) {
     }
 
     // the focus goes into the menu (arrows, Home, End, Enter); the card gets it back when the menu closes
+    const active = document.activeElement;
+    returnTo.current = active instanceof HTMLElement && el.contains(active) ? active : null;
     const first = lastInput === 'key' ? menu.querySelector<HTMLElement>('[role="menuitem"]') : null;
     (first ?? menu).focus({ preventScroll: true });
 
     return () => {
       for (const a of anims.current) a?.cancel();
       anims.current = [];
-      el.removeAttribute('data-g-lifted');
+      card.removeAttribute('data-g-lifted');
     };
     // measured once per opening; the store gives every opening its own instance
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -242,7 +311,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
   // A press that opened the menu (long press) lifts after it: its click must not land on the dim layer, and the finger
   // that is still down must not scroll the page under the menu (scrolling closes it).
   useLayoutEffect(() => {
-    if (!target.pressing) return undefined;
+    if (!pressing) return undefined;
     let down = true;
     const onUp = (e: PointerEvent | TouchEvent) => {
       down = false;
@@ -267,14 +336,15 @@ function Menu({ target, closing, onGone }: MenuProps) {
       remove();
       document.removeEventListener('touchmove', onTouchMove, { capture: true });
     };
-  }, [target.pressing]);
+  }, [pressing]);
 
-  // Scrolling, resizing and Esc close it (Esc before the windows' listener: an inspector may be open under it).
+  // Scrolling, resizing and Esc close it (Esc before the windows' listener: an inspector may be open under it; a
+  // window over the menu takes its own Esc).
   useLayoutEffect(() => {
     if (closing) return undefined;
     const onScroll = () => closeMenu();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.isComposing) return;
+      if (e.key !== 'Escape' || e.isComposing || openModals() > 0) return;
       e.preventDefault();
       e.stopPropagation();
       closeMenu();
@@ -294,32 +364,54 @@ function Menu({ target, closing, onGone }: MenuProps) {
     if (!closing && (!entity || !target.el.isConnected)) closeMenu();
   });
 
+  // So does anything that moves the card or changes its size (a light above it turns on and pushes it down, its own
+  // sliders come) and a window that opens over the menu: the hole would show something else. Checked every frame.
+  useEffect(() => {
+    if (closing) return undefined;
+    const card = cardOf(target.el);
+    let raf = 0;
+    const tick = () => {
+      const at = measured.current;
+      if (!card.isConnected || (at && moved(cardBox(card), at)) || document.documentElement.hasAttribute('data-g-sheets')) {
+        closeMenu();
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [closing, target.el, closeMenu]);
+
   // Closing: everything fades, the card drops back; then the instance goes.
   useLayoutEffect(() => {
     if (!closing) return;
     const el = target.el;
+    const card = cardOf(el);
     const dim = dimRef.current;
     const hole = holeRef.current;
     const menu = menuRef.current;
     const reduced = reducedMotion();
     // where the running movements are now, before they stop
-    const lifted = el.hasAttribute('data-g-lifted') && !reduced ? getComputedStyle(el).transform : 'none';
+    const lifted = card.hasAttribute('data-g-lifted') && !reduced ? getComputedStyle(card).transform : 'none';
     const opacity = (node: HTMLElement | null) => (node ? getComputedStyle(node).opacity : '1');
     const from = { dim: opacity(dim), hole: opacity(hole), menu: opacity(menu) };
     for (const a of anims.current) a?.cancel();
-    el.removeAttribute('data-g-lifted');
+    card.removeAttribute('data-g-lifted');
     const fade = { duration: reduced ? 200 : FADE_OUT_MS, easing: 'ease-out', fill: 'forwards' as const };
     anims.current = [
       dim ? play(dim, [{ opacity: from.dim }, { opacity: 0 }], fade) : null,
       hole ? play(hole, [{ opacity: from.hole }, { opacity: 0 }], fade) : null,
       menu ? play(menu, [{ opacity: from.menu }, { opacity: 0 }], fade) : null,
-      lifted !== 'none' && el.isConnected
-        ? play(el, [{ transform: lifted }, { transform: 'none' }], { duration: DROP_MS, easing: spring('smooth') })
+      lifted !== 'none' && card.isConnected
+        ? play(card, [{ transform: lifted }, { transform: 'none' }], { duration: DROP_MS, easing: spring('smooth') })
         : null,
     ];
     if (restoreFocus.current) {
       const active = document.activeElement;
-      if (!active || active === document.body || menu?.contains(active)) focusTarget(el)?.focus({ preventScroll: true });
+      if (!active || active === document.body || menu?.contains(active)) {
+        const back = returnTo.current?.isConnected && el.contains(returnTo.current) ? returnTo.current : focusTarget(el);
+        if (back) giveFocusBack(back, lastInput === 'key');
+      }
     }
     const mine = anims.current;
     void allDone(mine).then(() => {
@@ -337,13 +429,11 @@ function Menu({ target, closing, onGone }: MenuProps) {
       return;
     }
     switch (action) {
-      case 'details': {
+      case 'details':
         // the detail grows out of the card, not out of the menu item that is fading away
-        const card = target.el.firstElementChild ?? target.el;
-        noteOrigin(card);
+        noteOrigin(cardOf(target.el));
         openEntityDetail(id);
         break;
-      }
       case 'favoriteAdd':
         updateCustomization({ favorites: [...favorites, id] });
         break;
@@ -376,6 +466,13 @@ function Menu({ target, closing, onGone }: MenuProps) {
   // A press on the layers (also the mouse events after a long press's release) must not move the focus to the body.
   const keepFocus = (e: React.MouseEvent) => e.preventDefault();
 
+  // A right click on the layers closes the menu instead of opening the browser's own. The `contextmenu` that a long
+  // press sends while its finger is still down (Android, after the menu opened) only must not open the browser's.
+  const onLayerContext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (release.current.seen) closeMenu();
+  };
+
   const onMenuKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -391,8 +488,22 @@ function Menu({ target, closing, onGone }: MenuProps) {
 
   return ReactDOM.createPortal(
     <div className={`g-ctx${closing ? ' g-ctx--closing' : ''}`}>
-      <div ref={dimRef} className="g-ctx__dim" aria-hidden="true" onMouseDown={keepFocus} onClick={onDismissClick} />
-      <div ref={holeRef} className="g-ctx__hole" aria-hidden="true" onMouseDown={keepFocus} onClick={onDismissClick} />
+      <div
+        ref={dimRef}
+        className="g-ctx__dim"
+        aria-hidden="true"
+        onMouseDown={keepFocus}
+        onClick={onDismissClick}
+        onContextMenu={onLayerContext}
+      />
+      <div
+        ref={holeRef}
+        className="g-ctx__hole"
+        aria-hidden="true"
+        onMouseDown={keepFocus}
+        onClick={onDismissClick}
+        onContextMenu={onLayerContext}
+      />
       <div
         ref={menuRef}
         className="g-ctx__menu g-glass"

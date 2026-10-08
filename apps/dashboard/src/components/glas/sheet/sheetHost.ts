@@ -133,11 +133,22 @@ export function topModalPanel(): HTMLElement | null {
 
 // ---- Esc (K72): one listener for every window; the window on top closes ----
 
+/** A popup the page opened beside the inspector (the bell's panel, the avatar's or the rooms menu: its trigger says
+ *  `aria-expanded`). It lies above the inspector and closes with its own Esc listener. */
+function pagePopupOpen(win: HostWindow): boolean {
+  for (const el of document.querySelectorAll('[aria-haspopup][aria-expanded="true"]')) {
+    if (!win.backdrop.contains(el)) return true;
+  }
+  return false;
+}
+
 function onKeyDown(e: KeyboardEvent): void {
   if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
   const top = topEntry(stack);
   const win = top ? windows.get(top.id) : undefined;
-  if (!win) return;
+  if (!top || !win) return;
+  // the inspector is not modal: a popup of the page beside it takes this Esc
+  if (top.kind === 'inspector' && pagePopupOpen(win)) return;
   e.preventDefault();
   win.close();
 }

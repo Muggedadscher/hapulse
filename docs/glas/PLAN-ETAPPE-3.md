@@ -582,8 +582,9 @@ Plan), dieser Plan §13 (Umsetzung).
 8. **`inert`** (Safari ≥ 15.5) und **`allow-discrete`** (Safari ≥ 17.4): ältere Geräte bekommen Fenster ohne
    Inertheit bzw. Menüs, die sofort schließen — kein Funktionsverlust.
 9. **Kontextmenü-Loch (3b):** scrollt oder ändert sich die Karte während des Menüs, stimmt das Loch nicht mehr —
-   deshalb schließen Scrollen und Größenänderung. Ob WebKit den Blur der Abdunkelung am `clip-path`-Loch (`evenodd`)
-   beschneidet, prüft das Labor; sonst besteht die Abdunkelung aus vier Flächen um die Karte.
+   deshalb schließen Scrollen und Größenänderung (seit dem Review jede Bewegung der Karte, §13.4). Ob WebKit den Blur
+   der Abdunkelung am `clip-path`-Loch (`evenodd`) beschneidet, prüft das Labor; sonst besteht die Abdunkelung aus
+   vier Flächen um die Karte.
 
 ## 10. Bewusst offen nach Etappe 3
 
@@ -761,7 +762,7 @@ solche Reaktion, zur Probe eingebaut, macht sie rot).
 ### 13.3 Teil 3b — Gesten und Inspector (Stand 2026-10-08)
 
 Gebaut wie §4 und §5. Zusätzlich neu: `apps/dashboard/scripts/glas-checks-gestures.cjs` (Szenen `ctx-card`,
-`swipe-lights`, `swipe-notes` und `checks --part gestures`; nutzt die Fenster-Helfer und `reach` aus
+`ctx-card-off`, `swipe-lights`, `swipe-notes` und `checks --part gestures`; nutzt die Fenster-Helfer und `reach` aus
 `glas-checks-sheets.cjs`). Über §5 hinaus geändert: `stores/uiStore.ts` (`[fork]`, `detailSeq`) und
 `components/ui/Modal.tsx` (`[fork]`, Prop `requestKey` neben `presentation`) für U14; in der Fenster-Laufzeit
 `sheetStack.ts` (`moveEntry`, `rootModalAbove`, mit Tests), `sheetHost.ts` (Inspector im Stapel auf Ebene 400,
@@ -801,4 +802,49 @@ zusätzlich `contextmenu` aus (in Chromium nachgestellt: ein Menü).
 
 **Ergebnisse**
 
-ERGEBNISSE-3B
+- Unit-Tests: `contextActions` (Aktionen je Entität und Rechten, Lage des Menüs, Loch-Pfad, Maß einer gedrückten
+  Karte), `swipeMath`, `sheetStack` (`moveEntry`, `rootModalAbove`); alle Pflichtbefehle grün.
+- `checks --part gestures`: alle Blöcke grün, gegen den Build und gegen den Vite-Entwicklungsserver (StrictMode), ohne
+  Seitenfehler. Geprüft: Klassisch unverändert (Langdruck öffnet das Detail, Rechtsklick das Menü des Browsers);
+  Kontextmenü per Finger (Halten 550 ms, das Menü kommt, solange der Finger liegt, Loslassen schließt nicht, Loch auf
+  der Karte ± 1 px, Fokus danach ohne Ring und nach einer Taste mit Ring, das `contextmenu` von Android in drei
+  Reihenfolgen öffnet genau ein Menü, Scrollen schließt, ein kurzer Tipp schaltet weiter, nach einem Langdruck wirkt
+  der nächste Tipp auf einen Knopf der Karte); reduzierte Bewegung (keine Bewegung außer Deckkraft ≤ 200 ms); Desktop
+  (Rechtsklick, Maße 256/44 und das Band vor „Ausblenden“, auch für ein ausgeschaltetes Licht, dessen Zelle 174 px
+  höher ist als die Karte, Pfeile, Home/End, Esc und Tab, Kontextmenü-Taste, die Aktionen jeder Kartenart, Esc über dem
+  Inspector, Bearbeiten-Modus mit dem Menü des Browsers); Schließen (Abdunkelung, Rechtsklick darauf, die Karte rückt
+  oder wächst, ein Fenster öffnet darüber); Wisch-Zeilen in Licht, Benachrichtigungen, Garage und Schlössern (Schwelle,
+  eine offen, Scrollen schließt, Aktion nicht im Tab-Weg, kein Schalten nach dem Wischen) und ein Stilwechsel bei
+  offener Zeile; Inspector (ab 1100 px nicht modal, die Seite antwortet und scrollt, Glocke und Esc, Tausch im selben
+  Fenster, Fokus nach zwei Anfragen per Tastatur, Routenwechsel, Chip-Fenster darüber und Hochholen, Bestätigung aus
+  der Karte als Seite; 900–1099 px Dialog, darunter Sheet). Gegen den Build vor den Behebungen des Reviews (§13.4) war
+  jede neue Prüfung rot, die zu einem Befund gehört (1 bis 6, 9 bis 11).
+- `--part stage1`, `frame` und `sheets`: grün (alle 53 Blöcke zusammen), ohne Seitenfehler.
+- Klassisch: 284 Aufnahmen (Seiten und Rahmen 136, Fenster 148; Handy, iPad, Desktop, hell und dunkel) gleichen dem
+  Build von `main` auf 0 Pixel, bis auf den neuen Changelog-Eintrag F35 („Was ist neu“ und die Versionszeile der
+  Einstellungen, 12 Aufnahmen); das DOM aller 49 Klassisch-Fenster (Handy und Desktop) ist gleich (nur die Uhrzeiten
+  in Diagramm und Verlauf folgen der echten Uhr, und „Was ist neu“ zeigt den Eintrag F35).
+- Glas-Aufnahmen der Szenen `ctx-card`, `ctx-card-off`, `swipe-lights`, `swipe-notes` und `win-detail` (Handy, iPad,
+  Desktop, hell und dunkel) angesehen; die Behebungen ändern keine der Aufnahmen von vor dem Review, `ctx-card-off`
+  zeigt das Loch genau über dem ausgeschalteten Licht.
+- Klick-Fuzz in Glas (Build): Handy 298, Desktop 265, im Bearbeiten-Modus Handy 455 und Desktop 492 Klicks auf
+  13 Seiten, ohne Fehler.
+
+### 13.4 Review von 3b (2026-10-08)
+
+Ein unabhängiger Prüfer hat den Stand `e20f5e1` gegen Plan und Code gelesen (nur statisch): keine Blocker, drei
+Befunde zum Beheben, einen vermuteten und sieben kleinere. Alle am Code nachgeprüft und behoben, Befund 10 nur in Glas.
+
+| # | Befund | Erledigt |
+|---|---|---|
+| 1 | Loch, Anheben und Lage des Menüs hingen an der Hülle der Karte, einer Rasterzelle so hoch wie ihre Reihe: ein ausgeschaltetes Licht neben einem eingeschalteten bekam ein Loch über der ganzen Zelle (ein scharfer Streifen Seite unter der Karte) und das Menü weit darunter; „Loch ± 1 px über der Karte“ (§6.2) war nicht geprüft | Gemessen, angehoben und ausgespart wird die Karte selbst (das erste Kind der Hülle); eine schon gedrückte Karte (`:active` skaliert auf 0,98) wird ohne diese Skalierung gemessen (`unscaledBox`, mit Test), das Anheben beginnt bei ihr. Die Geometrie-Prüfungen vergleichen mit der Karte, Prüfung 4 misst ein ausgeschaltetes Licht an 1440 px, dessen Zelle 174 px höher ist |
+| 2 | Glas → Klassisch bei offener Wisch-Zeile (der Admin stellt um, ein anderes Gerät übernimmt es sofort): die Zeile blieb in Klassisch verschoben; jeder Stilwechsel baute den Inhalt aller Zeilen neu auf | Beim Verlassen von Glas nimmt die Zeile Verschiebung und Zustand selbst zurück, vor dem Zeichnen; ihre Kinder tragen in beiden Stilen dieselben Schlüssel. Prüfung 6b: Stilwechsel bei offener Zeile, danach nichts übrig, dasselbe Kind, das Popover bleibt offen |
+| 3 | Ein Esc schloss den Inspector und zugleich das Popover der Glocke, das neben ihm offen war | Ist neben dem Inspector ein Popup der Seite offen (sein Auslöser trägt `aria-expanded="true"`), lässt die Fenster-Laufzeit das Esc dem Popup. Prüfung 7: nur das Popover schließt, der Fokus geht zur Glocke |
+| 4 | Nach Finger oder Maus gab das Menü der Karte den Fokus mit Ring zurück, und immer dem ersten fokussierbaren Element | Der Fokus geht dorthin zurück, wo er beim Öffnen in der Karte war; nach Finger oder Maus ohne Ring, bis eine Taste gedrückt wird (`data-g-quiet-focus`). Prüfungen 2, 4 und 4b |
+| 5 | Verschob sich die Karte ohne Scrollen (eine Karte darüber wächst), stimmte das Loch nicht mehr | Das Menü misst die Karte in jedem Bild und schließt, sobald sie sich bewegt oder ihre Größe ändert, wie beim Scrollen. Prüfung 4b |
+| 6 | Ein Rechtsklick auf die Abdunkelung öffnete das Menü des Browsers über dem Glas-Menü | Rechtsklick auf Abdunkelung oder Loch schließt das Menü (nach einem Langdruck erst, wenn er losgelassen ist). Prüfung 4b |
+| 7 | Prüfung 7 traf den Fokus nach dem Hochholen nur über einen Rückfall; der Fokus nach einem Inhaltswechsel war ungeprüft | Das Hochholen beginnt mit einem Druck auf die Kachel; neu: das Detail per Tastatur von zwei Karten nacheinander, Esc gibt der zweiten den Fokus |
+| 8 | Reduzierte Bewegung wurde 700 ms nach dem Halten gemessen (knappes Fenster); Android nur in einer Reihenfolge | gemessen, sobald das Menü da ist; Android in drei Reihenfolgen (Zeitgeber zuerst, `contextmenu` zuerst, `contextmenu` als einfaches Mausereignis mit Fingerbewegung danach) |
+| 9 | Ein `contextmenu` ohne `pointerType` (etwa Firefox auf Android) schaltete die Sperren gegen Loslassen und Scrollen ab | Liegt noch ein Finger auf, gilt das Menü als gehalten. Prüfung 2 (die Seite scrollt nicht, das Menü bleibt) |
+| 10 | Nach einem Langdruck konnte der nächste Tipp auf einen Knopf der Karte verpuffen (`useLongPress`, Upstream) | In Glas wird nur der Klick dieses Drucks geschluckt. Prüfung 2: Langdruck auf die Medien-Karte, Menü zu, der Tipp auf Wiedergabe wirkt. Klassisch bleibt wie Upstream (Nebenbefund für den User) |
+| 11 | Öffnete ein Fenster per Effekt über dem Menü, nahm das verdeckte Menü das Esc | Öffnet ein modales Fenster, schließt das Menü; sein Esc greift nicht, solange eines offen ist. Prüfung 4b |

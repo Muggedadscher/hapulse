@@ -13,8 +13,8 @@
 //   --elements <css> (also one picture per matching element, named after its first line of text, e.g.
 //     "--scenes settings --elements .settings-page__section" → …-settings__2-darstellung.png)
 //   Window scenes of stage 3 (win-…, glas-checks-sheets.cjs, docs/glas/PLAN-ETAPPE-3.md §6.0) open one window each,
-//   the gesture scenes of stage 3b (ctx-card, swipe-lights, swipe-notes, glas-checks-gestures.cjs) a context menu or a
-//   swipe row; both are taken at viewport size and are not part of the default list.
+//   the gesture scenes of stage 3b (ctx-card, ctx-card-off, swipe-lights, swipe-notes, glas-checks-gestures.cjs) a
+//   context menu or a swipe row; both are taken at viewport size and are not part of the default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
 //   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs) and the gestures and the inspector of stage 3b

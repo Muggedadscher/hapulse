@@ -117,6 +117,25 @@ export function liftBox(b: CtxBox, scale: number): CtxBox {
 }
 
 /**
+ * The box a card takes in the layout, from where it shows (`shown`) under a transform of scale and translation (`a`,
+ * `d`, `e`, `f` of its matrix) about `origin` (px from the box's top left): a card that is pressed (`:active` scales it
+ * to .98) or lifted is measured as if it were not.
+ */
+export function unscaledBox(
+  shown: CtxBox,
+  m: { a: number; d: number; e: number; f: number },
+  origin: { x: number; y: number },
+): CtxBox {
+  if (!m.a || !m.d) return shown;
+  return {
+    x: shown.x - origin.x * (1 - m.a) - m.e,
+    y: shown.y - origin.y * (1 - m.d) - m.f,
+    w: shown.w / m.a,
+    h: shown.h / m.d,
+  };
+}
+
+/**
  * Where the menu goes: 14 under the card when it fits above the bottom margin, else 14 above it, else as low as the
  * screen allows (a card taller than the screen). Horizontally it lines up with the card's left edge, or its right edge
  * when the card's centre is in the right half, and keeps 16 from both sides.

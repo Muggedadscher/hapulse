@@ -174,7 +174,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/security/AlarmPanelCard.tsx` | Stil Glas (Etappe 3): Ziffernblock als Fenster (Seite im Alarm-Fenster, sonst eigenes Sheet), schüttelt bei falschem Code; Klassisch unverändert |
 | `apps/dashboard/src/components/home/chipmodals/LightsModal.tsx` | Stil Glas (Etappe 3): „Alle ausschalten“ ohne Inline-Größe (prominent per Glas-CSS); Etappe 3b: Zeilen in `SwipeRow` (Wischen zum Ausschalten) |
 | `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Stil Glas (Etappe 3): `contentKey` = Entity (ein Tipp auf ein Gruppenmitglied tauscht den Inhalt im selben Fenster); Etappe 3b: `presentation="inspector"`, `requestKey` = `detailSeq` |
-| `apps/dashboard/src/components/cards/EntityCard.tsx` | Stil Glas (Etappe 3b): Langdruck, Rechtsklick und Kontextmenü-Taste öffnen das Kontextmenü statt des Details (nicht im Bearbeiten-Modus); Klassisch unverändert |
+| `apps/dashboard/src/components/cards/EntityCard.tsx` | Stil Glas (Etappe 3b): Langdruck, Rechtsklick und Kontextmenü-Taste öffnen das Kontextmenü statt des Details (nicht im Bearbeiten-Modus); nach dem Langdruck schluckt Glas nur den Klick dieses Drucks (`useLongPress` schluckte sonst den nächsten Tipp auf einen Knopf der Karte); Klassisch unverändert |
 | `apps/dashboard/src/stores/uiStore.ts` | Stil Glas (Etappe 3b): `detailSeq` zählt jede Anfrage nach dem Detail, auch für die schon gezeigte Entität (der Inspector unter einem Chip-Fenster kommt dann nach oben) |
 | `apps/dashboard/src/components/security/LocksList.tsx` | Stil Glas (Etappe 3b): Zeilen in `SwipeRow` (Wischen zum Verriegeln, über `useLockAction`) |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
@@ -313,8 +313,13 @@ Nach jedem Upstream-Merge:
    (PLAN-ETAPPE-3 K47).
 8. Seit Etappe 3b (Gesten, Inspector): Upstream-Änderungen an `components/cards/EntityCard.tsx` und
    `lib/useLongPress.ts` (Langdruck, `onContextMenu`, Tipp auf Karten) mit `components/glas/ContextMenu.tsx` abgleichen;
-   neue Zustands-Aktionen einer Entität gehören in `components/glas/contextActions.ts` (Test). Listen, deren Zeilen
+   neue Zustands-Aktionen einer Entität gehören in `components/glas/contextActions.ts` (Test). Das Menü misst, hebt
+   und spart die Karte als erstes Kind der Hülle `.entity-card-press` aus (die Hülle ist eine Rasterzelle, so hoch wie
+   ihre Reihe); ändert Upstream diese Struktur, `checks --part gestures` laufen lassen. Listen, deren Zeilen
    `SwipeRow` umhüllt (Benachrichtigungen, Licht, Garage, Schlösser), behalten ihre Zeile als genau ein Element; ändert
    Upstream das Markup einer solchen Zeile, `checks --part gestures` laufen lassen. Das Detail (`EntityDetailModal`)
    ist in Glas ab 1100 px der Inspector: der Platz, den die Seite dafür macht, hängt an `.app-content` und
-   `.app-header-cluster-wrapper` (`styles/glas/gestures.css`, der Selektor-Wächter meldet Umbenennungen).
+   `.app-header-cluster-wrapper` (`styles/glas/gestures.css`, der Selektor-Wächter meldet Umbenennungen). Ein Popup
+   der Seite neben dem Inspector (Glocke, Avatar, Räume-Menü) erkennt `sheetHost.ts` an seinem Auslöser
+   (`aria-haspopup` und `aria-expanded="true"`) und lässt ihm das Esc; ein neues Upstream-Popup ohne diese Attribute
+   schlösse mit demselben Esc auch den Inspector.

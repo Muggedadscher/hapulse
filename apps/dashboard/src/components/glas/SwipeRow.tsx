@@ -11,7 +11,8 @@
  * every action has a visible twin in the row (×, switch, "Lock", "Close") for keyboards and screen readers.
  *
  * One row is open at a time. A tap on the open row, a press anywhere else and scrolling close it. In Klassisch the
- * row comes back untouched.
+ * row comes back with its own props and children; its children keep the same keys in both styles, so a switch of the
+ * style does not mount them anew, and a switch while the row is open leaves nothing on it.
  */
 
 import {
@@ -193,8 +194,8 @@ export function SwipeRow({ children, label, tone, width, onAction, disabled = fa
     if (disabled && !drag.current && (rest.current > 0 || reveal.current > 0)) settle(0);
   }, [disabled, settle]);
 
-  // Glas → Klassisch, unmount: nothing stays behind.
-  useEffect(() => {
+  // Glas → Klassisch: nothing stays behind, before the first Klassisch paint (the row is the same element in both).
+  useLayoutEffect(() => {
     if (glas) return;
     stopAnims();
     drag.current = null;
@@ -203,6 +204,11 @@ export function SwipeRow({ children, label, tone, width, onAction, disabled = fa
     unlisten.current?.();
     unlisten.current = null;
     if (openRow === me.current) openRow = null;
+    const row = rowRef.current;
+    if (row?.hasAttribute('data-g-swipe-state')) {
+      row.style.removeProperty('transform');
+      row.removeAttribute('data-g-swipe-state');
+    }
     setShown(false);
   }, [glas, stopAnims]);
 
@@ -231,7 +237,30 @@ export function SwipeRow({ children, label, tone, width, onAction, disabled = fa
     [ownRef],
   );
 
-  if (!glas) return children;
+  const runAction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    settle(0);
+    onActionRef.current();
+  };
+
+  // keyed, so that the action coming and going (and a switch of the style) never mounts the row's own children anew
+  const kids = [
+    ...Children.toArray(own.children),
+    glas && shown ? (
+      <div
+        key="g-swipe-act"
+        ref={actRef}
+        className={`g-swipe-act g-swipe-act--${tone}`}
+        aria-hidden="true"
+        onClick={runAction}
+      >
+        <span className="g-swipe-act__label">{label}</span>
+      </div>
+    ) : null,
+  ];
+
+  if (!glas) return cloneElement(children, { ref: setRow } as Partial<RowProps>, ...kids);
 
   const onPointerDown = (e: React.PointerEvent<HTMLElement>) => {
     own.onPointerDown?.(e);
@@ -312,12 +341,6 @@ export function SwipeRow({ children, label, tone, width, onAction, disabled = fa
     own.onClickCapture?.(e);
   };
 
-  const runAction = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    settle(0);
-    onActionRef.current();
-  };
 
   return cloneElement(
     children,
@@ -341,18 +364,6 @@ export function SwipeRow({ children, label, tone, width, onAction, disabled = fa
       },
       onClickCapture,
     } as Partial<RowProps>,
-    // keyed, so that the action coming and going never remounts the row's own children
-    ...Children.toArray(own.children),
-    shown ? (
-      <div
-        key="g-swipe-act"
-        ref={actRef}
-        className={`g-swipe-act g-swipe-act--${tone}`}
-        aria-hidden="true"
-        onClick={runAction}
-      >
-        <span className="g-swipe-act__label">{label}</span>
-      </div>
-    ) : null,
+    ...kids,
   );
 }

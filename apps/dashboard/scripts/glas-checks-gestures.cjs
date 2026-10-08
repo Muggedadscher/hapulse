@@ -1,7 +1,7 @@
 // [fork] glas-checks-gestures.cjs — the gestures and the inspector of Glas stage 3b for glas-shots.cjs
 // (docs/glas/PLAN-ETAPPE-3.md §4, §6.2): scenes that open a context menu or a swipe row (`shoot --scenes ctx-card,
-// swipe-lights,swipe-notes`; the inspector is the picture of win-detail at 1100 px and wider) and `checks --part
-// gestures`. glas-shots.cjs loads this file with its helpers; it is not run on its own.
+// ctx-card-off,swipe-lights,swipe-notes`; the inspector is the picture of win-detail at 1100 px and wider) and
+// `checks --part gestures`. glas-shots.cjs loads this file with its helpers; it is not run on its own.
 //
 // The checks run in real time like the window checks (glas-checks-sheets.cjs): the long press waits for its 550 ms
 // timer; the menu, the rows and the inspector move with the Web Animations API. Touch goes through CDP touch events
@@ -18,6 +18,7 @@ module.exports = function gestures(h) {
   const LIGHT_OFF = 'light.living_room_shelf';
   const SENSOR = 'sensor.living_room_temperature';
   const SENSOR_2 = 'sensor.living_room_humidity';
+  const MEDIA = 'media_player.living_room_tv';
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // ---- shared steps (scenes and checks; the scenes run on the paused clock of `shoot`, these steps set no timers) ----
@@ -106,6 +107,8 @@ module.exports = function gestures(h) {
 
   const scenes = {
     'ctx-card': { path: '/room/living_room', act: menuScene(LIGHT_ON) },
+    // an off light: from two columns on, its grid cell is as tall as the on light's beside it — the hole is the card
+    'ctx-card-off': { path: '/room/living_room', act: menuScene(LIGHT_OFF) },
     'swipe-lights': { path: '/', act: glasOnly(seq((page) => reach(page, '.summary-chip[aria-label^="lights:"]'),
       swipeScene('.modal-body [data-g-swipe]', true))) },
     'swipe-notes': { path: '/', act: glasOnly(seq(openNotes, swipeScene('[data-g-swipe]'))) },
@@ -169,8 +172,14 @@ module.exports = function gestures(h) {
       const send = (type, touchPoints) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
       return {
         down: (pt) => send('touchStart', [{ x: pt.x, y: pt.y }]),
+        move: (pt) => send('touchMove', [{ x: pt.x, y: pt.y }]),
         up: async () => {
           await send('touchEnd', []);
+          await cdp.detach();
+        },
+        /** Lifts without a click: CDP touch makes one after every touchEnd, also after a long hold (a phone makes none). */
+        cancel: async () => {
+          await send('touchCancel', []);
           await cdp.detach();
         },
       };
@@ -183,6 +192,13 @@ module.exports = function gestures(h) {
       await sleep(ms);
       return f;
     };
+    /** Where a long press on a card lands: on a light card its name and subtitle (the middle of that card lies between
+     *  two sliders, Chromium's touch adjustment may snap a finger there onto a slider, and a press on a control never
+     *  arms the hold), else the card's centre. Call after `bring`. */
+    const pressPoint = async (page, id) => mid(await ev(page, (e) => {
+      const c = __x.card(e);
+      return __x.rect(c.querySelector('.light-card__text') || c);
+    }, id));
     const tapAt = async (page, pt) => {
       const f = await finger(page);
       await f.down(pt);
@@ -198,7 +214,7 @@ module.exports = function gestures(h) {
       await page.mouse.click(c.x + c.w / 2, c.y + c.h / 2, { button: 'right' });
       if (!(await menuOpen(page))) throw new Error('no menu for ' + id);
       await settleAnimations(page);
-      return ev(page, () => __x.menu());
+      return ev(page, (e) => __x.menu(e), id);
     };
     const escape = async (page) => {
       await page.keyboard.press('Escape');
@@ -215,10 +231,14 @@ module.exports = function gestures(h) {
       await menuGone(page);
       await settleAnimations(page);
     };
-    /** The hole over the card, ±1 px; the menu 14 under or over the card and 16 from the sides. */
-    const geometryOk = (m, view, width) => !!m.lifted && ['x', 'y', 'w', 'h'].every((k) => Math.abs(m.hole[k] - m.lifted.rect[k]) <= 1)
+    /** The card lifted, the hole over it (±1 px; the card is the `.card` in the wrapper, the wrapper is a grid cell as
+     *  tall as its row); the menu 14 under or over the card and 16 from the sides. */
+    const geometryOk = (m, view, width) => !!m.lifted && m.lifted.isCard && !!m.card
+      && ['x', 'y', 'w', 'h'].every((k) => Math.abs(m.hole[k] - m.card[k]) <= 1)
       && /^path\(evenodd/.test(m.clip) && near(m.rect.w, width) && m.rect.x >= 15.5 && m.rect.right <= view - 15.5
-      && (m.rect.y >= m.lifted.rect.bottom + 13 || m.rect.bottom <= m.lifted.rect.y - 13);
+      && (m.rect.y >= m.card.bottom + 13 || m.rect.bottom <= m.card.y - 13);
+    /** The focused element, whether it is in the card of `id` and whether it shows a ring. */
+    const focusRing = (page, id) => ev(page, (e) => __x.focusRing(e), id);
     const FAV = [DE['glas.context.favoriteAdd'], DE['glas.context.favoriteRemove']];
     /** "Aktionen für <name>" with a name. */
     const labelOk = (label) => {
@@ -259,9 +279,10 @@ module.exports = function gestures(h) {
       await d.close();
 
       const p = await open('phone', 'classic', '/room/living_room');
-      const l = await bring(p.page, LIGHT_ON);
-      const f = await hold(p.page, mid(l), 750);
-      await f.up();
+      await bring(p.page, LIGHT_ON);
+      const f = await hold(p.page, await pressPoint(p.page, LIGHT_ON), 750);
+      // lifted without CDP's click: it would land on the light card of the detail that opened under the finger
+      await f.cancel();
       await sleep(400);
       await settleAnimations(p.page);
       res.longPress = await ev(p.page, (id) => ({ menu: !!document.querySelector('.g-ctx'), dialogs: document.querySelectorAll('[role="dialog"]').length,
@@ -290,47 +311,94 @@ module.exports = function gestures(h) {
 
     // 2. The menu on the phone: a long press (550 ms) opens it while the finger is still down and the release keeps it;
     //    the card is lifted and shows through the hole (±1 px); the actions of a light; a tap on the hole closes without
-    //    switching; scrolling closes; a tap without holding still switches the light or opens a display card's detail;
-    //    a long press plus the `contextmenu` Android fires on top opens one menu.
+    //    switching and gives the card the focus without a ring until a key is used; scrolling closes; a tap without
+    //    holding still switches the light or opens a display card's detail. The `contextmenu` Android sends for the long
+    //    press (a PointerEvent of a finger, at the element under it) opens one menu in either order and never the
+    //    browser's; as a plain MouseEvent during the touch it counts as a long press too (the finger cannot scroll the
+    //    page under the menu). After a menu the first tap on a control of the card works.
     await block('gesturesMenuTouch', async () => {
       const res = {};
       const w = await open('phone', 'glas', '/room/living_room');
       const page = w.page;
-      let l = await bring(page, LIGHT_ON);
-      const f = await hold(page, mid(l), 350);
+      await bring(page, LIGHT_ON);
+      const f = await hold(page, await pressPoint(page, LIGHT_ON), 350);
       res.at350 = await ev(page, () => !!document.querySelector('.g-ctx'));
       await sleep(400);
       res.held = await ev(page, () => __x.menu());
       await f.up();
       await sleep(500);
       await settleAnimations(page);
-      res.released = await ev(page, (id) => ({ ...__x.menu(), state: __x.cardState(id), dialogs: __s.panels().length }), LIGHT_ON);
-      // a tap on the hole closes; the light under it does not switch
+      res.released = await ev(page, (id) => ({ ...__x.menu(id), state: __x.cardState(id), dialogs: __s.panels().length }), LIGHT_ON);
+      // a tap on the hole closes; the light under it does not switch; the card has the focus, its ring comes with a key
       await tapAt(page, mid(res.released.hole));
       res.holeClosed = await menuGone(page);
       res.afterHole = await ev(page, (id) => ({ state: __x.cardState(id), dialogs: __s.panels().length }), LIGHT_ON);
+      res.quietFocus = await focusRing(page, LIGHT_ON);
+      await page.keyboard.press('Shift');
+      res.keyFocus = await focusRing(page, LIGHT_ON);
       // scrolling closes
-      l = await bring(page, LIGHT_ON);
-      await (await hold(page, mid(l))).up();
+      await bring(page, LIGHT_ON);
+      await (await hold(page, await pressPoint(page, LIGHT_ON))).up();
       await menuOpen(page);
       await settleAnimations(page);
       await ev(page, () => window.scrollBy({ top: 60, behavior: 'instant' }));
       res.scrollClosed = await menuGone(page);
-      // the `contextmenu` of Android on top of the long press: one menu, the same one
-      l = await bring(page, LIGHT_ON);
-      const g = await hold(page, mid(l));
-      await ev(page, (id) => {
-        window.__menuNode = document.querySelector('.g-ctx__menu');
-        const card = __x.card(id).firstElementChild;
-        const b = card.getBoundingClientRect();
-        card.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: b.left + 20, clientY: b.top + 20 }));
-      }, LIGHT_ON);
+      // Android's `contextmenu` for the long press, at the element under the finger (the hole once the menu is there)
+      const ctxAt = (pt, kind) => ev(page, ([x, y, k]) => {
+        const init = { bubbles: true, cancelable: true, clientX: x, clientY: y };
+        const evt = k === 'touch' ? new PointerEvent('contextmenu', { ...init, pointerType: 'touch', isPrimary: true })
+          : new MouseEvent('contextmenu', init);
+        document.elementFromPoint(x, y).dispatchEvent(evt);
+        return evt.defaultPrevented;
+      }, [pt.x, pt.y, kind]);
+      /** The menu now, to see later that no second one replaced it. */
+      const mark = () => ev(page, () => { window.__menuNode = document.querySelector('.g-ctx__menu'); });
+      const menuNow = () => ev(page, () => ({ hosts: document.querySelectorAll('.g-ctx').length,
+        same: !!window.__menuNode && document.querySelector('.g-ctx__menu') === window.__menuNode,
+        open: !!document.querySelector('.g-ctx:not(.g-ctx--closing)') }));
+      //   after the menu came (550 ms)
+      await bring(page, LIGHT_ON);
+      const pt = await pressPoint(page, LIGHT_ON);
+      const g = await hold(page, pt);
+      await mark();
+      res.timerFirst = { prevented: await ctxAt(pt, 'touch') };
       await sleep(150);
-      res.twice = await ev(page, () => ({ hosts: document.querySelectorAll('.g-ctx').length,
-        same: document.querySelector('.g-ctx__menu') === window.__menuNode, closing: !!document.querySelector('.g-ctx--closing') }));
+      Object.assign(res.timerFirst, await menuNow());
       await g.up();
       await sleep(400);
-      res.twiceReleased = await ev(page, () => !!document.querySelector('.g-ctx:not(.g-ctx--closing)'));
+      res.timerFirst.released = (await menuNow()).open;
+      await escape(page);
+      await menuGone(page);
+      //   before it (the menu comes with it, the 550 ms timer then changes nothing)
+      const g2 = await finger(page);
+      await g2.down(pt);
+      await sleep(250);
+      res.ctxFirst = { prevented: await ctxAt(pt, 'touch') };
+      await sleep(50);
+      await mark();
+      await sleep(450);
+      Object.assign(res.ctxFirst, await menuNow());
+      await g2.up();
+      await sleep(400);
+      res.ctxFirst.released = (await menuNow()).open;
+      await escape(page);
+      await menuGone(page);
+      //   as a plain MouseEvent (no pointer type) during the touch: the finger moving on does not scroll the page
+      const g3 = await finger(page);
+      await g3.down(pt);
+      await sleep(250);
+      res.plain = { prevented: await ctxAt(pt, 'mouse'), y: await ev(page, () => scrollY) };
+      await sleep(50);
+      await mark();
+      for (let i = 1; i <= 6; i += 1) {
+        await g3.move({ x: pt.x, y: pt.y - i * 8 });
+        await sleep(20);
+      }
+      await sleep(150);
+      Object.assign(res.plain, await menuNow(), { scrolled: (await ev(page, () => scrollY)) !== res.plain.y });
+      await g3.up();
+      await sleep(400);
+      res.plain.released = (await menuNow()).open;
       await escape(page);
       await menuGone(page);
       // a tap without holding: the light switches (its own tap on the header), a display card opens its detail
@@ -343,42 +411,73 @@ module.exports = function gestures(h) {
       await until(page, () => !!__s.panel());
       await settleAnimations(page);
       res.tapSensor = await ev(page, () => ({ menu: !!document.querySelector('.g-ctx'), windows: __s.panels().length, pres: __s.state().pres }));
+      await escape(page);
+      await until(page, () => !__s.panels().length);
+      await settleAnimations(page);
+      // after a menu (the finger lifted over its layer) the first tap on the media card's play button plays or pauses
+      await bring(page, MEDIA);
+      res.media = { before: await ev(page, (id) => __x.cardState(id), MEDIA) };
+      const mh = await hold(page, mid(await ev(page, (id) => __x.rect(__x.card(id).querySelector('.media-card__info')), MEDIA)));
+      await mh.up();
+      res.media.menu = await menuOpen(page);
+      await sleep(400);
+      await settleAnimations(page);
+      await tapAt(page, { x: 4, y: 40 });
+      await menuGone(page);
+      await settleAnimations(page);
+      await tapAt(page, mid(await ev(page, (id) => __x.rect(__x.card(id).querySelector('.media-card__play-btn')), MEDIA)));
+      await sleep(400);
+      res.media.after = await ev(page, (id) => __x.cardState(id), MEDIA);
       await w.close();
       out.gesturesMenuTouch = res;
       const r = res.released;
+      const oneMenu = (x) => x.prevented && x.hosts === 1 && x.same && x.open && x.released;
       out.gesturesMenuTouchOk = res.at350 === false && res.held.open && r.open && !r.closing && r.state === 'on' && r.dialogs === 0
         && r.lifted.attr === 'phone' && geometryOk(r, 390, 250) && r.role === 'menu' && labelOk(r.label)
         && itemsOk(r.items, ['details', 'turnOff', 'FAV', 'hide']) && r.itemH >= 45.5 && r.focus === 'menu'
-        && res.holeClosed && res.afterHole.state === 'on' && res.afterHole.dialogs === 0 && res.scrollClosed
-        && res.twice.hosts === 1 && res.twice.same && !res.twice.closing && res.twiceReleased
+        && res.holeClosed && res.afterHole.state === 'on' && res.afterHole.dialogs === 0
+        && res.quietFocus.inCard && res.quietFocus.quiet && res.quietFocus.outline === 'none'
+        && res.keyFocus.inCard && !res.keyFocus.quiet && res.keyFocus.outline !== 'none'
+        && res.scrollClosed
+        && oneMenu(res.timerFirst) && oneMenu(res.ctxFirst) && oneMenu(res.plain) && !res.plain.scrolled
         && !res.tapLight.menu && res.tapLight.state === 'off' && res.tapLight.dialogs === 0
-        && !res.tapSensor.menu && res.tapSensor.windows === 1 && res.tapSensor.pres === 'sheet';
+        && !res.tapSensor.menu && res.tapSensor.windows === 1 && res.tapSensor.pres === 'sheet'
+        && res.media.menu && ['playing', 'paused'].includes(res.media.before) && ['playing', 'paused'].includes(res.media.after)
+        && res.media.after !== res.media.before;
     });
 
-    // 3. Reduced motion: the card is not lifted (the hole = the card), the menu only fades, at most 200 ms.
+    // 3. Reduced motion: the card is not lifted (the hole = the card), the menu only fades, at most 200 ms (sampled as
+    //    soon as the menu is there, while its fades run). Transitions of 0.01 ms are the global reduced-motion rule
+    //    (global.css): instant, not movement.
     await block('gesturesMenuReduced', async () => {
       const w = await open('phone', 'glas', '/room/living_room', { reduce: true });
-      const l = await bring(w.page, LIGHT_ON);
-      const f = await hold(w.page, mid(l));
+      await bring(w.page, LIGHT_ON);
+      const f = await finger(w.page);
+      await f.down(await pressPoint(w.page, LIGHT_ON));
+      await w.page.waitForFunction(() => !!document.querySelector('.g-ctx'), null, { polling: 'raf', timeout: 3000 });
       const motion = await ev(w.page, () => [...document.querySelectorAll('.g-ctx, .g-ctx *, [data-g-lifted]')].flatMap((el) => el.getAnimations()
         .filter((a) => a.playState === 'running')
-        .map((a) => ({ ms: Math.round(Number(a.effect.getComputedTiming().duration) || 0),
+        .map((a) => ({ ms: Math.round((Number(a.effect.getComputedTiming().duration) || 0) * 100) / 100,
           props: [...new Set(a.effect.getKeyframes().flatMap((k) => Object.keys(k)))]
             .filter((p) => !['offset', 'computedOffset', 'easing', 'composite'].includes(p)) }))));
+      await sleep(200);
       await f.up();
       await sleep(400);
       await settleAnimations(w.page);
-      const m = await ev(w.page, () => __x.menu());
+      const m = await ev(w.page, (id) => __x.menu(id), LIGHT_ON);
       await w.close();
-      out.gesturesMenuReduced = { motion, lifted: m.lifted, hole: m.hole, card: l };
-      out.gesturesMenuReducedOk = motion.length > 0 && motion.every((a) => a.ms <= 200 && a.props.every((p) => p === 'opacity'))
-        && m.open && m.lifted.transform === 'none' && ['x', 'y', 'w', 'h'].every((k) => Math.abs(m.hole[k] - l[k]) <= 1);
+      out.gesturesMenuReduced = { motion, lifted: m.lifted, hole: m.hole, card: m.card };
+      const moving = motion.filter((a) => a.ms >= 1);
+      out.gesturesMenuReducedOk = moving.length > 0 && moving.every((a) => a.ms <= 200 && a.props.every((p) => p === 'opacity'))
+        && motion.every((a) => a.ms >= 1 || a.ms <= 0.01)
+        && m.open && m.lifted.isCard && m.lifted.transform === 'none' && ['x', 'y', 'w', 'h'].every((k) => Math.abs(m.hole[k] - m.card[k]) <= 1);
     });
 
     // 4. The menu on the desktop: right click, the desktop's geometry (256 wide, rows of 44, the band before "Hide"),
-    //    arrows and Home/End, Esc and Tab close with the focus back on the card; the context-menu key puts the focus on
-    //    the first item; the actions of each kind of card; the actions work; Esc over an open inspector closes only the
-    //    menu; the edit mode keeps the browser's menu.
+    //    also for an off light whose grid cell an on light beside it makes taller; arrows and Home/End, Esc and Tab
+    //    close with the focus back on the card and its ring; the context-menu key puts the focus on the first item; the
+    //    actions of each kind of card; the actions work; Esc over an open inspector closes only the menu; the edit mode
+    //    keeps the browser's menu.
     await block('gesturesMenuDesktop', async () => {
       const res = {};
       const w = await open('desktop', 'glas', '/room/living_room');
@@ -392,7 +491,7 @@ module.exports = function gestures(h) {
       }
       res.keys = keys;
       await escape(page);
-      res.escape = { gone: await menuGone(page), focus: await ev(page, (id) => __x.focusOn(id), LIGHT_ON) };
+      res.escape = { gone: await menuGone(page), focus: await ev(page, (id) => __x.focusOn(id), LIGHT_ON), ring: await focusRing(page, LIGHT_ON) };
       await rightClick(page, LIGHT_ON);
       await page.keyboard.press('Tab');
       res.tab = { gone: await menuGone(page), focus: await ev(page, (id) => __x.focusOn(id), LIGHT_ON) };
@@ -440,6 +539,9 @@ module.exports = function gestures(h) {
         }
         const k = await rightClick(page, id);
         res.kinds[id] = { items: k.items, ok: itemsOk(k.items, want) };
+        if (id === LIGHT_OFF) {
+          res.offLight = { geometry: geometryOk(k, 1440, 256), cellTaller: Math.round(k.cell.h - k.card.layoutH), hole: k.hole, card: k.card };
+        }
         await escape(page);
         await menuGone(page);
       }
@@ -465,12 +567,62 @@ module.exports = function gestures(h) {
       out.gesturesMenuDesktopOk = res.menu.lifted.attr === 'desktop' && geometryOk(res.menu, 1440, 256) && res.menu.itemH >= 43.5
         && res.menu.bandBeforeHide && res.menu.focus === 'menu' && itemsOk(res.menu.items, ['details', 'turnOff', 'FAV', 'hide'])
         && JSON.stringify(res.keys) === JSON.stringify([0, 1, 3, 0, 3])
-        && res.escape.gone && res.escape.focus && res.tab.gone && res.tab.focus && res.key === 0
+        && res.escape.gone && res.escape.focus && res.escape.ring.inCard && !res.escape.ring.quiet && res.escape.ring.outline !== 'none'
+        && res.tab.gone && res.tab.focus && res.key === 0
         && res.turnedOff === 'off' && itemsOk(res.offItems, ['details', 'turnOn', 'FAV', 'hide']) && res.turnedOn === 'on'
         && res.favItems[0] !== res.favItems[1] && res.favItems.every((x) => FAV.includes(x))
         && res.overInspector.gone && JSON.stringify(res.overInspector.windows) === '["inspector"]'
-        && Object.values(res.kinds).every((k) => k.ok) && res.hidden
+        && Object.values(res.kinds).every((k) => k.ok) && !!res.offLight && res.offLight.geometry && res.offLight.cellTaller > 20
+        && res.hidden
         && !res.editMode.menu && res.editMode.prevented.length === 1 && res.editMode.prevented[0] === false;
+    });
+
+    // 4b. What else closes the menu on the desktop: a click on the dim layer (the card gets the focus without a ring), a
+    //     right click on it (and never the browser's menu over it), anything that moves the card (the page above grows,
+    //     the card itself grows) and a window opening over it (from a script; at 1000 px the detail is a dialog) — Esc
+    //     then closes that window.
+    await block('gesturesMenuClose', async () => {
+      const res = {};
+      const w = await open('desktop', 'glas', '/room/living_room');
+      const page = w.page;
+      const outside = { x: 120, y: 900 };
+      await rightClick(page, LIGHT_ON);
+      await page.mouse.click(outside.x, outside.y);
+      res.dim = { gone: await menuGone(page), ring: await focusRing(page, LIGHT_ON) };
+      await rightClick(page, LIGHT_ON);
+      await ev(page, () => {
+        window.__ctx = [];
+        addEventListener('contextmenu', (e) => window.__ctx.push(e.defaultPrevented));
+      });
+      await page.mouse.click(outside.x, outside.y, { button: 'right' });
+      res.rightDim = { gone: await menuGone(page), prevented: await ev(page, () => window.__ctx) };
+      await rightClick(page, LIGHT_ON);
+      await ev(page, (id) => {
+        const spacer = Object.assign(document.createElement('div'), { id: '__spacer' });
+        spacer.style.height = '120px';
+        __x.card(id).closest('.room-page__card-grid').before(spacer);
+      }, LIGHT_ON);
+      res.pageGrew = await menuGone(page);
+      await ev(page, () => document.getElementById('__spacer').remove());
+      await rightClick(page, LIGHT_ON);
+      await ev(page, (id) => { __x.card(id).querySelector('.card').style.paddingBottom = '60px'; }, LIGHT_ON);
+      res.cardGrew = await menuGone(page);
+      await ev(page, (id) => { __x.card(id).querySelector('.card').style.removeProperty('padding-bottom'); }, LIGHT_ON);
+      await page.setViewportSize({ width: 1000, height: 1000 });
+      await sleep(300);
+      await rightClick(page, LIGHT_ON);
+      await ev(page, (id) => __x.card(id).querySelector('.card').click(), SENSOR);
+      res.windowOver = { gone: await menuGone(page), window: await until(page, () => !!__s.panel()) };
+      await settleAnimations(page);
+      res.windowOver.pres = await ev(page, () => __s.state().pres);
+      await escape(page);
+      res.windowOver.closed = await until(page, () => !__s.panels().length);
+      await w.close();
+      out.gesturesMenuClose = res;
+      out.gesturesMenuCloseOk = res.dim.gone && res.dim.ring.inCard && res.dim.ring.quiet && res.dim.ring.outline === 'none'
+        && res.rightDim.gone && res.rightDim.prevented.length === 1 && res.rightDim.prevented[0] === true
+        && res.pageGrew && res.cardGrew
+        && res.windowOver.gone && res.windowOver.window && res.windowOver.pres === 'dialog' && res.windowOver.closed;
     });
 
     // 5. Swipe rows in the lights sheet (K59): a plain tap on a closed row still switches the light (B4); below the
@@ -667,11 +819,41 @@ module.exports = function gestures(h) {
         && res.lock.unlockEnabled && res.lock.windows === 1;
     });
 
+    // 6b. A switch to Klassisch while a row is open (an admin on another device switches the style for everyone): the
+    //     row in the bell's panel, which Klassisch keeps open, is back at its place with nothing of Glas on it or in the
+    //     document, and its children are the same nodes (a switch of the style does not mount them anew).
+    await block('gesturesSwipeStyle', async () => {
+      const w = await open('desktop', 'glas', '/settings');
+      const page = w.page;
+      const SEL = '.notifications-panel [data-g-swipe]';
+      await page.locator('.header-cluster .notifications-trigger').click();
+      await until(page, (q) => !!document.querySelector(q), SEL);
+      await settleAnimations(page);
+      await swipe(page, (await rows(page, SEL))[0], -60, { at: 0.5 });
+      const opened = (await rows(page, SEL))[0];
+      await ev(page, () => { window.__rowKid = document.querySelector('.notifications-panel .notif-row').firstElementChild; });
+      await ev(page, () => document.querySelector('[data-glas-style-option="classic"]').click());
+      await sleep(300);
+      const after = await ev(page, () => {
+        const row = document.querySelector('.notifications-panel .notif-row');
+        return { style: document.documentElement.getAttribute('data-style'), popover: !!document.querySelector('.notifications-panel'),
+          row: !!row, transform: row && getComputedStyle(row).transform, inline: row && row.getAttribute('style'),
+          sameKid: !!row && row.firstElementChild === window.__rowKid, acts: document.querySelectorAll('.g-swipe-act').length,
+          remnants: __g.remnants() };
+      });
+      await w.close();
+      out.gesturesSwipeStyle = { opened: { state: opened.state, moved: opened.moved }, after };
+      out.gesturesSwipeStyleOk = opened.state === 'open' && opened.moved > 50 && after.style === 'classic' && after.popover && after.row
+        && after.transform === 'none' && !after.inline && after.sameKid && after.acts === 0 && after.remnants.count === 0;
+    });
+
     // 7. The inspector (K60) at 1440: the right panel 420 wide, not modal (no scrim, no scroll lock, the page answers
-    //    taps and scrolls), under the context menu; the page makes room; a tap on another tile swaps the content in
-    //    the same panel; Esc closes it and its ghost slides out; a route change closes it; a chip's dialog lies above
-    //    it and makes it inert, and a request for the detail then brings it up on top; the confirmation from the card
-    //    in it is a page in it.
+    //    taps and scrolls), under the context menu; the page makes room; a popup of the page beside it (the bell's
+    //    panel) takes Esc first; a tap on another tile swaps the content in the same panel; Esc closes it and its ghost
+    //    slides out; asked for from the keyboard (the context-menu key, "Details") by one card and then by another, its
+    //    Esc gives the focus to the card that asked last; a route change closes it; a chip's dialog lies
+    //    above it and makes it inert, and a request for the detail (a press on a tile) then brings it up on top, whose
+    //    Esc gives the focus to the chip's dialog; the confirmation from the card in it is a page in it.
     await block('gesturesInspector', async () => {
       const res = {};
       const w = await open('desktop', 'glas', '/room/living_room');
@@ -693,6 +875,16 @@ module.exports = function gestures(h) {
         return { hit: !!hit && card.contains(hit), scrolled };
       }, SENSOR_2);
       await sleep(200);
+      // the bell's panel beside it takes Esc: it closes and gives the bell the focus, the inspector stays
+      await page.locator('.header-cluster .notifications-trigger').click();
+      res.bell = { popover: await until(page, () => !!document.querySelector('.notifications-panel')) };
+      await settleAnimations(page);
+      await page.keyboard.press('Escape');
+      await sleep(150);
+      await settleAnimations(page);
+      Object.assign(res.bell, await ev(page, () => ({ after: !!document.querySelector('.notifications-panel'),
+        windows: __x.windows().list.map((x) => x.pres),
+        bellFocus: document.activeElement === document.querySelector('.header-cluster .notifications-trigger') })));
       // swap: another tile, the same panel
       await ev(page, () => { window.__panel = __s.panel(); });
       const s2 = await bring(page, SENSOR_2);
@@ -711,6 +903,23 @@ module.exports = function gestures(h) {
       });
       await until(page, () => !document.querySelector('.g-sheet-ghost'), null, 3000);
       res.closed = await ev(page, () => __x.windows());
+      // the keyboard's way to the detail, from one card and then from another: Esc in it gives the focus to the second
+      const keyDetail = async (id) => {
+        await ev(page, (e) => __x.card(e).querySelector('[tabindex]:not([tabindex="-1"]), button').focus(), id);
+        await page.keyboard.press('ContextMenu');
+        await menuOpen(page);
+        await page.keyboard.press('Enter');
+        await menuGone(page);
+        await until(page, () => !!__s.panel());
+        await settleAnimations(page);
+        return ev(page, () => __x.windows().list.map((x) => `${x.pres}:${x.title}`).join());
+      };
+      res.swapFocus = { titles: [await keyDetail(LIGHT_ON), await keyDetail(LIGHT_OFF)] };
+      res.swapFocus.inPanel = await ev(page, () => { __s.panel().focus(); return __s.panel().contains(document.activeElement); });
+      await page.keyboard.press('Escape');
+      await until(page, () => !__s.panels().length && !document.querySelector('.g-sheet-ghost'), null, 3000);
+      Object.assign(res.swapFocus, await ev(page, ([a, b]) => ({ first: __x.focusOn(a), last: __x.focusOn(b),
+        windows: __x.windows().list.length }), [LIGHT_ON, LIGHT_OFF]));
       // a route change closes it
       const t = await bring(page, SENSOR);
       await page.mouse.click(t.x + t.w / 2, t.y + t.h / 2);
@@ -731,12 +940,20 @@ module.exports = function gestures(h) {
       await until(page, () => __s.panels().length === 2);
       await settleAnimations(page);
       res.chip = await ev(page, () => __x.windows());
-      await ev(page, (id) => __x.card(id).click(), SENSOR_2);
+      // a press on the tile (the origin GlasRuntime notes), then its click
+      await ev(page, (id) => {
+        const card = __x.card(id).querySelector('.card');
+        const at = { bubbles: true, isPrimary: true, pointerType: 'mouse' };
+        card.dispatchEvent(new PointerEvent('pointerdown', at));
+        card.dispatchEvent(new PointerEvent('pointerup', at));
+        card.click();
+      }, SENSOR_2);
       await sleep(100);
       await settleAnimations(page);
       res.raised = await ev(page, () => __x.windows());
       await escape(page);
-      res.raisedEsc = await ev(page, () => ({ ...__x.windows(), focusInChip: __s.panel() && __s.panel().contains(document.activeElement) }));
+      res.raisedEsc = await ev(page, (id) => ({ ...__x.windows(), focusInChip: __s.panel() && __s.panel().contains(document.activeElement),
+        onTile: __x.focusOn(id) }), SENSOR_2);
       await escape(page);
       await until(page, () => !__s.panels().length);
       await sleep(200);
@@ -768,14 +985,19 @@ module.exports = function gestures(h) {
       out.gesturesInspectorOk = o.list.length === 1 && insp(o.list[0]) && o.list[0].focusIn && o.inspector && !o.sheets
         && o.overflow === 'visible' && o.content > 0 && o.content <= 988.5 && o.head > 0 && o.head <= 988.5
         && res.page.hit && res.page.scrolled
+        && res.bell.popover && !res.bell.after && JSON.stringify(res.bell.windows) === '["inspector"]' && res.bell.bellFocus
         && res.swap.list.length === 1 && insp(res.swap.list[0]) && res.swap.same && res.swap.list[0].title !== o.list[0].title
         && !!res.ghost && !res.ghost.role && res.ghost.moves.some((m) => /translateX\(460px\)/.test(m)) && quiet(res.closed)
+        && /^inspector:/.test(res.swapFocus.titles[0]) && /^inspector:/.test(res.swapFocus.titles[1])
+        && res.swapFocus.titles[0] !== res.swapFocus.titles[1] && res.swapFocus.inPanel && res.swapFocus.last && !res.swapFocus.first
+        && res.swapFocus.windows === 0
         && quiet(res.route)
         && res.chip.list.length === 2 && res.chip.list[0].pres === 'inspector' && res.chip.list[0].inert && res.chip.list[1].pres === 'dialog'
         && res.chip.sheets
         && res.raised.list.length === 2 && res.raised.list[1].pres === 'dialog' && res.raised.list[1].title !== ''
         && res.raised.list[0].inert && res.raised.list[1].modal === 'true'
         && res.raisedEsc.list.length === 1 && res.raisedEsc.list[0].pres === 'dialog' && res.raisedEsc.focusInChip
+        && !res.raisedEsc.onTile
         && quiet(res.raisedEnd)
         && res.garage.list.length === 1 && insp(res.garage.list[0])
         && res.confirm.list.length === 2 && res.confirm.list[1].pres === 'page' && res.confirm.list[1].back
@@ -850,7 +1072,15 @@ module.exports = function gestures(h) {
         const el = this.card(id);
         return !!el && el.contains(document.activeElement);
       },
-      menu() {
+      /** The focused element: in the card of `id`, quiet (given back without its ring by the menu), its outline. */
+      focusRing(id) {
+        const a = document.activeElement;
+        return { inCard: this.focusOn(id), quiet: !!a && a.hasAttribute('data-g-quiet-focus'), visible: !!a && a.matches(':focus-visible'),
+          outline: a ? getComputedStyle(a).outlineStyle : null, el: a ? a.className || a.tagName : null };
+      },
+      /** The open menu; with `id` also the card of that entity (its `.card`, found without the app's marks) and the
+       *  card's wrapper (`cell`, a grid cell as tall as its row). */
+      menu(id) {
         const host = document.querySelector('.g-ctx');
         if (!host) return { open: false };
         const menu = host.querySelector('.g-ctx__menu');
@@ -859,14 +1089,18 @@ module.exports = function gestures(h) {
         const lifted = document.querySelector('[data-g-lifted]');
         const last = items[items.length - 1];
         const label = menu.getAttribute('aria-label') || '';
+        const wrap = id ? this.card(id) : null;
+        const card = wrap && wrap.querySelector('.card');
         return {
+          card: card ? { ...rect(card), layoutH: card.offsetHeight } : null, cell: wrap ? rect(wrap) : null,
           open: true, closing: host.classList.contains('g-ctx--closing'), role: menu.getAttribute('role'), label,
           items: items.map((b) => b.textContent.trim()), rect: rect(menu),
           itemH: Math.min(...items.map((b) => b.getBoundingClientRect().height)),
           bandBeforeHide: !!band && getComputedStyle(band).display !== 'none' && band.nextElementSibling === last
             && last.classList.contains('g-ctx__item--danger'),
           hole: rect(host.querySelector('.g-ctx__hole')), clip: getComputedStyle(host.querySelector('.g-ctx__dim')).clipPath.slice(0, 20),
-          lifted: lifted ? { attr: lifted.getAttribute('data-g-lifted'), rect: rect(lifted), transform: getComputedStyle(lifted).transform } : null,
+          lifted: lifted ? { attr: lifted.getAttribute('data-g-lifted'), rect: rect(lifted), transform: getComputedStyle(lifted).transform,
+            isCard: !!card && lifted === card } : null,
           focus: document.activeElement === menu ? 'menu' : items.indexOf(document.activeElement),
         };
       },
