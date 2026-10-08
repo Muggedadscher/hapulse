@@ -663,9 +663,12 @@
   transition-duration: 120ms;
 }
 
-/* lifted by the context menu (the tile is the card it lifts, components/glas/ContextMenu.tsx) */
+/* lifted by the context menu (the tile is the card it lifts, components/glas/ContextMenu.tsx): the lift starts where
+   the hover and the press left the tile and takes them over, so their transitions stop here */
 :root[data-style='glas'] .home-page .scene-tile[data-g-lifted] {
+  translate: none;
   transform: scale(1.04);
+  transition-property: background-color, box-shadow;
 }
 
 :root[data-style='glas'] .home-page .scene-tile__icon {
@@ -880,6 +883,10 @@
 
   :root[data-style='glas'] .home-page .scene-tile:active {
     translate: 0 0;
+  }
+
+  :root[data-style='glas'] .home-page .scene-tile[data-g-lifted] {
+    translate: none;
   }
 }
 
@@ -1637,9 +1644,11 @@
   transition-duration: 120ms;
 }
 
-/* lifted by the context menu (the tile is the card it lifts) */
+/* lifted by the context menu (the tile is the card it lifts): like the scene tiles, the lift takes the press over */
 :root[data-style='glas'] .g-device[data-g-lifted] {
-  scale: 1.04;
+  scale: none;
+  transform: scale(1.04);
+  transition-property: background-color, box-shadow;
 }
 
 :root[data-style='glas'] :is(.g-device__toggle, .g-device__open, .g-device__switch) {
@@ -1941,6 +1950,10 @@
 @media (prefers-reduced-motion: reduce) {
   :root[data-style='glas'] .g-device:is(:active, [data-g-lifted]) {
     scale: none;
+  }
+
+  :root[data-style='glas'] .g-device[data-g-lifted] {
+    transform: none;
   }
 }
 

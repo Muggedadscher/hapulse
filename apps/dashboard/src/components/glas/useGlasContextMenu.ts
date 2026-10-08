@@ -23,7 +23,12 @@ export type GlasMenuHandlers = Pick<
   | 'onContextMenu'
 >;
 
-export function useGlasContextMenu(ref: React.RefObject<HTMLElement | null>, entityId: string, name: string): GlasMenuHandlers {
+export function useGlasContextMenu(
+  ref: React.RefObject<HTMLElement | null>,
+  entityId: string,
+  name: string,
+  onSwitch?: (on: boolean) => void,
+): GlasMenuHandlers {
   const editMode = useUIStore((s) => s.editMode);
   const on = useIsGlas() && !editMode;
   const openContextMenu = useGlasUiStore((s) => s.openContextMenu);
@@ -31,9 +36,9 @@ export function useGlasContextMenu(ref: React.RefObject<HTMLElement | null>, ent
   const open = useCallback(
     (pressing: boolean) => {
       const el = ref.current;
-      if (el) openContextMenu({ entityId, el, card: el, name, pressing });
+      if (el) openContextMenu({ entityId, el, card: el, name, pressing, onSwitch });
     },
-    [ref, openContextMenu, entityId, name],
+    [ref, openContextMenu, entityId, name, onSwitch],
   );
   const onHold = useCallback(() => {
     heldRef.current = true;

@@ -121,7 +121,7 @@ const RUNTIME_CLASSES = new Set<string>(FILLED_ICONS.map(([, cls]) => cls));
 describe('Glas stylesheets', () => {
   it('exist', () => {
     expect(glasCss.map((f) => f.name).sort()).toEqual([
-      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/controls.css', 'styles/glas/detail.css',
+      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/controls.css', 'styles/glas/detail.css', 'styles/glas/edit.css',
       'styles/glas/feedback.css', 'styles/glas/gestures.css', 'styles/glas/home-cards.css', 'styles/glas/home-lists.css',
       'styles/glas/home.css', 'styles/glas/index.css', 'styles/glas/material.css', 'styles/glas/menus.css',
       'styles/glas/motion.css', 'styles/glas/nvr.css', 'styles/glas/sheet-content.css', 'styles/glas/sheets.css',

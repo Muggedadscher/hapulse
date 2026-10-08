@@ -3,11 +3,11 @@
  * docs/glas/PLAN-ETAPPE-4.md K81, K83). Switching and the detail are separate: on the phone a tile whose circle
  * switches and whose text opens the detail, on the desktop a row that opens the detail with a switch on the right.
  * One markup for both, the layout per width in styles/glas/home-cards.css (the control of the other width is not
- * displayed, so neither a screen reader nor Tab reaches it). Switched off here, the device stays in the card as
- * "Aus" until the page is reloaded (stores/keptOffStore.ts); a long press opens the context menu.
+ * displayed, so neither a screen reader nor Tab reaches it). Switched off here (also from its context menu, which a
+ * long press opens), the device stays in the card as "Aus" until the page is reloaded (stores/keptOffStore.ts).
  */
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import type { ReactNode } from 'react';
 import { domainOf, formatEntityState, formatNumber, lightPercent } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
@@ -45,15 +45,17 @@ export function GlasDeviceItem({ entity, name, roomName, icon, on, toggleable, o
   const state = pct !== null ? `${base} · ${formatNumber(pct, locale)} %` : base;
   const toggleAria = on ? t('home.devices.turnOffAria', { name }) : t('home.devices.turnOnAria', { name });
 
+  // switched off here (also from the context menu) the device stays as "Aus"; switched on it follows the card's rule
+  const remember = useCallback((nextOn: boolean) => (nextOn ? release(id) : keep(id)), [id, keep, release]);
+
   const toggle = () => {
     setPulse((n) => n + 1);
-    if (on) keep(id);
-    else release(id);
+    remember(!on);
     onToggle();
   };
 
   return (
-    <GlasMenuTarget entityId={id} name={name}>
+    <GlasMenuTarget entityId={id} name={name} onSwitch={remember}>
       <li
         className="g-device"
         data-on={on || undefined}

@@ -4,7 +4,8 @@
  * A track, a lens that slides to the chosen option (`snappy` spring) and equally wide options with text only.
  * `role="radiogroup"` with `role="radio"` options; arrow keys, Home and End choose and move the focus (selection
  * follows focus, the arrows wrap), only the chosen option is in the tab order. The sizes per use come from a
- * modifier class (`g-seg--energy`, …) in styles/glas/controls.css.
+ * modifier class (`g-seg--energy`, …) in styles/glas/controls.css. `value: null` chooses nothing (no lens, the first
+ * option takes the tab stop; the card sizes S/M/L when a size matches no preset, K78).
  */
 
 import React, { useRef } from 'react';
@@ -18,7 +19,7 @@ export interface SegmentOption<V extends string> {
 
 interface SegmentProps<V extends string> {
   options: readonly SegmentOption<V>[];
-  value: V;
+  value: V | null;
   onChange: (value: V) => void;
   /** Accessible name of the group. */
   label: string;
@@ -28,12 +29,13 @@ interface SegmentProps<V extends string> {
 export function Segment<V extends string>({ options, value, onChange, label, className }: SegmentProps<V>) {
   const ref = useRef<HTMLDivElement>(null);
   const n = options.length;
-  const index = Math.max(0, options.findIndex((o) => o.value === value));
+  const found = options.findIndex((o) => o.value === value);
+  const index = Math.max(0, found);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     let i: number | null = null;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') i = (index + 1) % n;
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') i = (index - 1 + n) % n;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') i = found < 0 ? 0 : (index + 1) % n;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') i = found < 0 ? n - 1 : (index - 1 + n) % n;
     else if (e.key === 'Home') i = 0;
     else if (e.key === 'End') i = n - 1;
     const next = i === null ? undefined : options[i];
@@ -49,6 +51,7 @@ export function Segment<V extends string>({ options, value, onChange, label, cla
       role="radiogroup"
       aria-label={label}
       className={className ? `g-seg ${className}` : 'g-seg'}
+      data-none={found < 0 ? '' : undefined}
       style={{ '--g-seg-n': n, '--g-seg-i': index } as React.CSSProperties}
       onKeyDown={onKeyDown}
     >
@@ -59,7 +62,7 @@ export function Segment<V extends string>({ options, value, onChange, label, cla
           key={o.value}
           type="button"
           role="radio"
-          aria-checked={i === index}
+          aria-checked={i === found}
           aria-label={o.aria}
           tabIndex={i === index ? 0 : -1}
           className="g-seg__opt"

@@ -16,6 +16,8 @@ export interface ContextMenuTarget {
   name: string;
   /** Opened while a finger or button is still down (long press): its release must not close the menu. */
   pressing: boolean;
+  /** Called when the menu switches the entity on (true) or off: the devices card keeps a device it turned off (K83). */
+  onSwitch?: ((on: boolean) => void) | undefined;
 }
 
 interface GlasUiState {

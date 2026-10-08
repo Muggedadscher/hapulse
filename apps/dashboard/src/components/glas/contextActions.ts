@@ -116,6 +116,49 @@ export function liftBox(b: CtxBox, scale: number): CtxBox {
   return { x: b.x - (w - b.w) / 2, y: b.y - (h - b.h) / 2, w, h };
 }
 
+/** The scale (`a`, `d`) and translation (`e`, `f`) of a 2-D transform matrix; rotation and skew are not used on cards. */
+export interface ScaleMatrix {
+  a: number;
+  d: number;
+  e: number;
+  f: number;
+}
+
+const num = (v: string | undefined, fallback: number): number => {
+  const n = parseFloat(v ?? '');
+  return Number.isFinite(n) ? n : fallback;
+};
+
+/**
+ * Everything that moves a card off its layout box, as one matrix, from its computed `transform`, `translate` and
+ * `scale` (`size` = its own box, for a `translate` in %): CSS applies the individual properties before `transform`. A
+ * tile's hover and press use them (scene tiles `translate`, device tiles `scale`); measured with `transform` alone, a
+ * transition of theirs looked like the card moving and closed the menu at once.
+ */
+export function cardMatrix(transform: string, translate: string, scale: string, size: { w: number; h: number }): ScaleMatrix {
+  let m: ScaleMatrix = { a: 1, d: 1, e: 0, f: 0 };
+  const t = /^matrix(3d)?\(([^)]*)\)$/.exec(transform.trim());
+  if (t) {
+    const n = t[2]!.split(',');
+    m = t[1]
+      ? { a: num(n[0], 1), d: num(n[5], 1), e: num(n[12], 0), f: num(n[13], 0) }
+      : { a: num(n[0], 1), d: num(n[3], 1), e: num(n[4], 0), f: num(n[5], 0) };
+  }
+  const length = (v: string | undefined, ref: number) => (v?.endsWith('%') ? (num(v, 0) * ref) / 100 : num(v, 0));
+  const [tx, ty] = translate === 'none' ? [] : translate.trim().split(/\s+/);
+  const [sx0, sy0] = scale === 'none' ? [] : scale.trim().split(/\s+/);
+  const factor = (v: string | undefined, fallback: number) => (v?.endsWith('%') ? num(v, 100) / 100 : num(v, fallback));
+  const sx = factor(sx0, 1);
+  const sy = factor(sy0, sx);
+  return { a: sx * m.a, d: sy * m.d, e: length(tx, size.w) + sx * m.e, f: length(ty, size.h) + sy * m.f };
+}
+
+/** The matrix as a CSS transform; null when it changes nothing. */
+export function matrixTransform(m: ScaleMatrix): string | null {
+  if (m.a === 1 && m.d === 1 && m.e === 0 && m.f === 0) return null;
+  return `matrix(${m.a}, 0, 0, ${m.d}, ${m.e}, ${m.f})`;
+}
+
 /**
  * The box a card takes in the layout, from where it shows (`shown`) under a transform of scale and translation (`a`,
  * `d`, `e`, `f` of its matrix) about `origin` (px from the box's top left): a card that is pressed (`:active` scales it

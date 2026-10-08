@@ -15,6 +15,8 @@ export interface GlasMenuTargetProps {
   entityId: string;
   /** Name shown in the menu's header. */
   name: string;
+  /** Called when the menu switches the entity on (true) or off. */
+  onSwitch?: ((on: boolean) => void) | undefined;
   children: ReactElement<ChildProps>;
 }
 
@@ -23,9 +25,9 @@ function setRef<T>(ref: Ref<T> | undefined, value: T | null): void {
   else if (ref && typeof ref === 'object') (ref as React.RefObject<T | null>).current = value;
 }
 
-export function GlasMenuTarget({ entityId, name, children }: GlasMenuTargetProps) {
+export function GlasMenuTarget({ entityId, name, onSwitch, children }: GlasMenuTargetProps) {
   const ref = useRef<HTMLElement | null>(null);
-  const handlers = useGlasContextMenu(ref, entityId, name);
+  const handlers = useGlasContextMenu(ref, entityId, name, onSwitch);
   const own = children.props;
   const childRef = own.ref;
   const mergedRef = useCallback(
