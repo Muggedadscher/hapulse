@@ -154,6 +154,18 @@ anders vermerkt.
 - **Demo-Steuerung (K84):** dazu `placeEntity(id, areaId)` (Prüfungen mit mehreren Räumen), `openDetail(id)` und
   `entity(id)` (liest, was eine Bedienung gesendet hat).
 - **Energie (Code-Prüfung):** der Kartentitel heißt in Glas „Energie“, weil das Segment den Zeitraum nennt.
+- **Spalten (K85) mit Inspector:** unter 480 px Inhaltsbreite (Klassischs eigene Grenze) eine Spalte, jede breite Karte
+  nimmt die Zeile. Das iPad quer lässt mit offenem Inspector etwa 430 px; vorher standen dort zwei gequetschte Spalten.
+- **Kopf ab 900 px:** ist der Chip-Streifen schmaler als 96 px (iPad quer mit Inspector), blendet er seine Chips aus;
+  vorher lugte ein Streifen des ersten Chips hervor. Der Streifen bleibt als Abstandhalter, die Kapseln bleiben rechts.
+- **Erzwungene Farben (§5.4):** Bedienelemente, deren einzige Kante ihre Füllung ist (Szenen-Kacheln, Pillen und
+  Lichtkreise im Hauptraum, Chips, Geräte-Kacheln am Handy), bekommen eine 1-px-Kante in der Textfarbe; aktive Szene,
+  leuchtende Kreise und die Licht-Pille behalten ihre Highlight-Kante, ein fokussiertes Element den Fokusring.
+- **Kontrast:** `homeContrastPairs` in `glasTokens.ts` prüft die neuen Farbpaare (Texte auf Kacheln, Symbole im grauen
+  und im farbigen Kreis, Netz, Solar-Kante und Ø-Linie auf der Karte, Ink auf der Gruppe und auf der .22-Fläche des
+  Diagramms).
+- **Kontextmenü (Entwicklungsserver):** Reacts Doppellauf der Effekte in StrictMode fand den Fokus schon im Menü und
+  vergaß die Karte; das Menü merkt sie sich jetzt nur, solange der Fokus noch nicht im Menü ist.
 
 ## 8. Code-Prüfung (2026-10-08)
 
@@ -171,3 +183,17 @@ Unabhängige Prüfung von 15f1d41: keine Blocker, 2 Punkte „sollte“, 8 Klein
 | Ergebnis eines Zeitraums nach dem Wechsel verworfen | wird gemerkt, solange die Verbindung dieselbe ist |
 | Shift während eines gehaltenen Pfeils sendet | nur Pegeltasten beenden das Halten (Prüfung `homeLight`) |
 | Kamera-Hinweis, wenn Sentinel nicht erreichbar ist | offen: K76 nennt nur `offline`/`stalled`; ein eigener Hinweis wäre neu, Frage an Jannick |
+
+## 9. Proben und Bilder (2026-10-08)
+
+- **Bilder:** `home-hints`, `home-edit`, `energy-bubble`, `detail-light` und die Übersicht oben und gescrollt (Glas,
+  Handy/iPad/Desktop, hell/dunkel) neben `g5h-*`, `g5d-*`, `g5e-*` und `glas/energie-varianten/v4-*`: gleiche Hierarchie,
+  Abstände und Farben; Abweichungen durch echte Daten, Schrift und §7. NVR-Karte mit einem nachgestellten Sentinel
+  (Dokumentationsadresse): eine bis vier Kameras, offline, Aufnahme hängt, ohne Ereignisse, fehlendes Bild, Laden,
+  Fehler.
+- **Reduzierte Bewegung:** Ring der Szene, Puls der Szene, des Geräts und der Lichtkreise stehen; die Linse des Segments
+  springt; keine Animation über 200 ms, nichts bewegt oder skaliert sich (Handy und Desktop).
+- **Erzwungene Farben:** Energie-Diagramm (Balken, Ø-Linie), iOS-Schalter und Segment bleiben in Systemfarben lesbar
+  (Handy und Desktop, hell und dunkel); Kanten siehe §7.
+- **Kontrastpaare:** alle neuen Paare in `smoke.mjs` grün.
+- **Entwicklungsserver (StrictMode):** `checks --part home` und `--part gestures` grün.

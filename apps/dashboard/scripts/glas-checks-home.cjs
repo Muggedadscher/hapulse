@@ -20,6 +20,7 @@ module.exports = function home(h) {
   const ALARM = 'alarm_control_panel.home';
   const BIN = 'sensor.grauetonne_komplett';
   const BLINDS = 'cover.bedroom_blinds';
+  const TV = 'media_player.living_room_tv';
   const CLIMATE = 'climate.living_room';
   const LIGHT = 'light.living_room_ceiling';
   const ROOM_LIGHTS = ['light.living_room_ceiling', 'light.living_room_floor_lamp', 'light.living_room_shelf'];
@@ -329,9 +330,10 @@ module.exports = function home(h) {
       });
     });
 
-    // 3. Nothing lost (GLAS-PLAN stage 4): the main room's lights pill and climate stepper, the climate card's rooms and
-    //    stepper, close/stop/open of the blinds, the seven security rows, a room's status symbol, a capped card that
-    //    scrolls inside, dragging a card with the keyboard, hiding a chip, the question before unlocking.
+    // 3. Nothing lost (GLAS-PLAN stage 4): the main room's media pill only while playing, › and the card open the room,
+    //    its lights pill and climate stepper, the climate card's rooms and stepper, close/stop/open of the blinds, the
+    //    seven security rows, a room's status symbol, a capped card that scrolls inside, dragging a card with the
+    //    keyboard, hiding a chip, the question before unlocking, the devices card's two empty states.
     await block('homeKeep', async () => {
       const res = {};
       // `at` names the step a failure stopped in
@@ -343,6 +345,29 @@ module.exports = function home(h) {
         const at = (step) => { res.at = `${device}-${style}: ${step}`; };
         at('hero');
         const states = (ids) => ev(page, (list) => list.map((i) => window.__hapulseDemo.entity(i).state), ids);
+
+        // main room: the media pill only while something plays (no other media plays in the demo, so whichever room
+        // the card shows has none); › and a tap on the card open the room
+        await ev(page, () => window.scrollTo(0, 0));
+        const mediaPill = () => ev(page, () => !!document.querySelector('.hero-room-card .hero-pill--media'));
+        const media0 = await mediaPill();
+        await click(page, '.hero-room-card .hero-pill--media');
+        await until(page, (id) => window.__hapulseDemo.entity(id).state === 'paused', TV);
+        const mediaGone = await until(page, () => !document.querySelector('.hero-room-card .hero-pill--media'));
+        await patch(page, TV, { state: 'playing' });
+        r.heroMedia = { before: media0, gone: mediaGone, back: await until(page, () => !!document.querySelector('.hero-room-card .hero-pill--media')) };
+        at('hero room');
+        const toRoom = async (sel) => {
+          await click(page, sel);
+          const went = await until(page, () => location.pathname.startsWith('/room/'));
+          const where = await ev(page, () => location.pathname);
+          await page.goBack();
+          await until(page, () => location.pathname === '/' && !!document.querySelector('.hero-room-card'));
+          await sleep(300);
+          await settleAnimations(page);
+          return went ? where : null;
+        };
+        r.heroOpen = { chevron: await toRoom('.hero-room-card .hero-pill--nav'), card: await toRoom('.hero-room-card .hero-room-card__sub') };
 
         // main room: the stepper changes the setpoint, the lights pill switches the room's lights. Klassisch then shows
         // the next most active room (upstream; Glas keeps the room for a minute), so only Glas switches them on again.
@@ -473,7 +498,20 @@ module.exports = function home(h) {
         await editMode(page);
         await w.close();
 
-        r.ok = same(r.heroLights.before, ['on', 'on', 'off']) && r.heroLights.off.every((s) => s === 'off')
+        // devices: the two empty states (no favourites; favourites, all off)
+        at('devices empty');
+        r.devicesEmpty = [];
+        for (const favorites of [[], ['light.living_room_shelf', 'light.kitchen_counter']]) {
+          const v = await open(device, style, '/', { customization: { favorites, hiddenSections: [] } });
+          await bringSection(v.page, 'devices');
+          r.devicesEmpty.push(await ev(v.page, () => (document.querySelector('.home-page [data-section="devices"] .devices-card__empty-sub') || {}).textContent || null));
+          await v.close();
+        }
+
+        r.ok = r.heroMedia.before && r.heroMedia.gone && r.heroMedia.back
+          && r.heroOpen.chevron === '/room/living_room' && r.heroOpen.card === '/room/living_room'
+          && same(r.devicesEmpty, [DE['home.devices.emptyHintNoFavorites'], DE['home.devices.emptyHintAllOff']])
+          && same(r.heroLights.before, ['on', 'on', 'off']) && r.heroLights.off.every((s) => s === 'off')
           && (style === 'classic' || r.heroLights.on.every((s) => s === 'on'))
           && r.heroStep[1] > r.heroStep[0] && r.climateStep[1] > r.climateStep[0]
           && Object.values(r.climateRoom).every((list) => list.length === 2 && list.filter((x) => x.on).length === 1)
@@ -559,9 +597,9 @@ module.exports = function home(h) {
     });
 
     // 5. Glas, edit mode from 900 px: S/M/L write the classic span and height plus `tallSections`; "⋯" sets columns and
-    //    a height cap (a cap ends L); ‹ › move a card and keep the focus; Space on the eye hides without a keyboard drag;
-    //    a press on the bar never drags, one on the card does. After a style switch Klassisch shows the same order and
-    //    spans.
+    //    a height cap (a cap ends L); ‹ › move a card and keep the focus; Space on the eye hides without a keyboard drag,
+    //    the phone button hides on phones; a press on the bar never drags, one on the card does. After a style switch
+    //    Klassisch shows the same order and spans.
     await block('homeEdit', async () => {
       const res = {};
       const w = await open('desktop', 'glas');
@@ -644,6 +682,16 @@ module.exports = function home(h) {
       await settle(300);
       res.eyeBack = (await cust()).hiddenSections || [];
 
+      // the phone button hides the card on phones only
+      const phoneBtn = `${bar(second)} button[aria-label="${DE[`home.section.hideMobile.${second}`]}"]`;
+      await page.click(phoneBtn);
+      await settle(300);
+      res.phone = { hidden: (await cust()).mobileHiddenSections || [],
+        pressed: await ev(page, (sel) => document.querySelector(sel).getAttribute('aria-pressed'), phoneBtn) };
+      await page.click(phoneBtn);
+      await settle(300);
+      res.phoneBack = (await cust()).mobileHiddenSections || [];
+
       // a press on the bar does not drag, one on the card does
       const drag = async (from, to) => {
         await page.mouse.move(from.x, from.y);
@@ -704,6 +752,7 @@ module.exports = function home(h) {
         && res.moveEnter.order[2] === second && res.moveEnter.focus === `1|${second}`
         && res.moveSpace.order[3] === second && res.moveSpace.focus === `1|${second}` && same(res.moveBack, o1)
         && res.eye.hidden.includes(second) && same(res.eye.order, o1) && !/picked up/i.test(res.eye.live) && !res.eyeBack.includes(second)
+        && res.phone.hidden.includes(second) && res.phone.pressed === 'true' && !res.phoneBack.includes(second)
         && same(res.barDrag, o1) && !same(res.cardDrag, o1)
         && res.glas === res.classic && res.classicStyle !== 'glas' && res.classicTall === 0;
     });

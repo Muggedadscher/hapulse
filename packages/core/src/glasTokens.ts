@@ -476,6 +476,12 @@ export function resolveMix(input: string): string {
   return toHex({ r: a.r * p + b.r * (1 - p), g: a.g * p + b.g * (1 - p), b: a.b * p + b.b * (1 - p) });
 }
 
+/** An opaque colour at `alpha`, for `compositeOver` (a chart part drawn with an opacity). */
+function atAlpha(color: string, alpha: number): string {
+  const p = mustParse(color);
+  return `rgba(${p.r},${p.g},${p.b},${alpha})`;
+}
+
 // ---------------------------------------------------------------------------
 // Accent (GLAS-DESIGN §2.3)
 // ---------------------------------------------------------------------------
@@ -756,7 +762,7 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
       pairs.push({ name: `glassLabel2 on glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
     }
   }
-  return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a)];
+  return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a), ...homeContrastPairs(c, a)];
 }
 
 /** Text of the "open" status pill (redSoft) in a window's group: dark, redInk on redSoft over the lighter group is
@@ -795,6 +801,41 @@ function windowContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, 
         pairs.push({ name: `glassLabel2 on ${surface} glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
       }
     }
+  }
+  return pairs;
+}
+
+/**
+ * The overview and the detail (plan Etappe 4 §3): text on the scene and device tiles; their glyphs (3:1, non-text) in
+ * the grey circle when off and on the full colour when on; the energy chart's parts on the card (3:1: grid bars, the
+ * solar part's edge where yellow on the card is too light, the dashed average at its .7 opacity); the detail chart's
+ * line in its ink on the group and over its own area (.22). The ring and the full-colour circle of an active scene
+ * need no pair: the tile says "Aktiv".
+ */
+function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
+  const pairs: ContrastPair[] = [];
+  const tileOff = resolveMix(c.tileOff);
+  for (const [name, tile] of [['tileOff', tileOff], ['tileOn', resolveMix(c.tileOn)]] as const) {
+    pairs.push({ name: `label on ${name}`, fg: c.label, bg: tile, min: 4.5 });
+    pairs.push({ name: `label2 on ${name}`, fg: c.label2, bg: tile, min: 4.5 });
+  }
+  pairs.push({ name: 'tileOffLabel on tileOff (device off)', fg: c.tileOffLabel, bg: tileOff, min: 4.5 });
+  const circleOff = compositeOver(c.fill, tileOff);
+  pairs.push({ name: 'label2 glyph in the grey circle (device off)', fg: c.label2, bg: circleOff, min: 3 });
+  for (const ink of ['yellowInk', 'orangeInk', 'tealInk', 'purpleInk', 'indigoInk', 'blueInk'] as const) {
+    pairs.push({ name: `${ink} glyph in the grey circle (scene off)`, fg: c[ink], bg: circleOff, min: 3 });
+  }
+  const onCircle = [['yellow', 'glyphDark'], ['orange', 'glyphDark'], ['teal', 'glyphDark'], ['green', 'glyphDark'], ['purple', 'onBadge'], ['indigo', 'onBadge'], ['blue', 'onBadge']] as const;
+  for (const [tone, glyph] of onCircle) {
+    pairs.push({ name: `${glyph} glyph on ${tone} (scene or device on)`, fg: c[glyph], bg: c[tone], min: 3 });
+  }
+  pairs.push({ name: 'grid bars on card', fg: c.chartNetz, bg: c.card, min: 3 });
+  const solarEdge = (parseColor(c.chartSolarEdge)?.a ?? 0) > 0 ? c.chartSolarEdge : c.chartSolar;
+  pairs.push({ name: 'solar bars (their edge) on card', fg: solarEdge, bg: c.card, min: 3 });
+  pairs.push({ name: 'average line on card', fg: compositeOver(atAlpha(c.chartAvg, 0.7), c.card), bg: c.card, min: 3 });
+  for (const [name, fill, ink] of [['accent', a.accent, a.accentInk], ['orange', c.orange, c.orangeInk], ['blue', c.blue, c.blueInk]] as const) {
+    pairs.push({ name: `${name} chart line on group`, fg: ink, bg: c.group, min: 3 });
+    pairs.push({ name: `${name} chart line on its area over group`, fg: ink, bg: compositeOver(atAlpha(fill, 0.22), c.group), min: 3 });
   }
   return pairs;
 }

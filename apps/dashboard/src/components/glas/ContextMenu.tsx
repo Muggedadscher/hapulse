@@ -306,9 +306,10 @@ function Menu({ target, closing, onGone }: MenuProps) {
       );
     }
 
-    // the focus goes into the menu (arrows, Home, End, Enter); the card gets it back when the menu closes
+    // the focus goes into the menu (arrows, Home, End, Enter); the card gets it back when the menu closes (a second run
+    // of this effect, React's development check, finds the focus already in the menu and keeps what it had)
     const active = document.activeElement;
-    returnTo.current = active instanceof HTMLElement && el.contains(active) ? active : null;
+    if (!menu.contains(active)) returnTo.current = active instanceof HTMLElement && el.contains(active) ? active : null;
     const first = lastInput === 'key' ? menu.querySelector<HTMLElement>('[role="menuitem"]') : null;
     (first ?? menu).focus({ preventScroll: true });
 

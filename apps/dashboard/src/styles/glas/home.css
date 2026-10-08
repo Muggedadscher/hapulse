@@ -10,7 +10,8 @@
    A capped card that scrolls as a whole (Page.css "Fallback": no .card-scroll-body) keeps its title inside the
    surface: a sticky title above a surface that scrolls away would not work. */
 
-/* ---- Columns by content width (K85): ≥ 1180 → 4, ≥ 900 → 3, else 2; below 900 px the classic rules apply ---- */
+/* ---- Columns by content width (K85): ≥ 1180 → 4, ≥ 900 → 3, < 480 → 1, else 2; below 900 px the classic rules
+   apply ---- */
 
 :root[data-style='glas'] .home-page .overview-grid {
   row-gap: 20px;
@@ -45,6 +46,18 @@
 
   :root[data-style='glas'] .home-page .overview-grid__cell--span-3 {
     grid-column: span 3;
+  }
+}
+
+/* below Klassisch's own one-column limit (480, Page.css) one column, every span takes the row: an iPad in landscape
+   with the inspector open leaves about 430 */
+@container g-home (max-width: 479px) {
+  :root[data-style='glas'] .home-page .overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :root[data-style='glas'] .home-page :is(.overview-grid__cell--span-2, .overview-grid__cell--span-3) {
+    grid-column: 1 / -1;
   }
 }
 
@@ -376,4 +389,28 @@
   margin: 0 -16px 8px;
   padding: 6px 16px 0;
   background: var(--bg-card);
+}
+
+/* Forced colours (GLAS-DESIGN §3.7, edges visible): the overview's controls whose only edge is their fill get one in
+   the text colour. The active scene, lit circles and the lit light pill keep their Highlight outline, a focused control
+   its focus ring; the phone's device tiles too, the desktop's device rows lie in their card. */
+@media (forced-colors: active) {
+  :root[data-style='glas']
+    :where(.home-page, .header-cluster__chips)
+    :where(
+      .scene-tile:not([data-active]),
+      .hero-room-card .hero-pill:not(.hero-pill--lights-on),
+      .g-hero-light:not([data-on]) .g-hero-light__circle,
+      .summary-chip--clickable
+    ):not(:focus-visible) {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+}
+
+@media (forced-colors: active) and (max-width: 899px) {
+  :root[data-style='glas'] :where(.home-page .g-device):not(:focus-visible) {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
 }
