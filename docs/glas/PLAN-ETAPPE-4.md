@@ -197,3 +197,10 @@ Unabhängige Prüfung von 15f1d41: keine Blocker, 2 Punkte „sollte“, 8 Klein
   (Handy und Desktop, hell und dunkel); Kanten siehe §7.
 - **Kontrastpaare:** alle neuen Paare in `smoke.mjs` grün.
 - **Entwicklungsserver (StrictMode):** `checks --part home` und `--part gestures` grün.
+- **Gesamtlauf vor dem Merge:** `checks` aller Teile 57 von 62 Blöcken grün. Rot waren fünf ältere Prüfungen, die diese
+  Etappe traf: in Klassisch stand das Ton-Attribut der Sicherheitszeilen im DOM (jetzt nur in Glas), das Müll-Fenster
+  fand in Glas seinen Auslöser nicht (jetzt die erste Zeile der Liste), und die Schalter-Zählung erwartete die klassische
+  Gerätekarte (jetzt der Glas-Schalter der Geräte-Zeilen). Danach Stufe 1, Rahmen und Fenster erneut: alle 62 grün.
+  Klassisch gegen `main`: Bilder nur in Energie, Hinweisen und F36 anders, das DOM der 49 Fenster nur in der laufenden
+  Uhrzeit des Details und in „Was ist neu“. Klick-Fuzz mit Hinweis in beiden Stilen: acht Läufe, 3614 Klicks, keine
+  Fehler.
