@@ -205,3 +205,14 @@ und übernommen, außer wo anders vermerkt.
 - `pagesContrastPairs` in `glasTokens.ts`: Feldtext und Platzhalter auf `fill` über Karte und Seite, gewählte
   Auswahl-Pille (`accentInk` auf `accentSoft` über der Karte); alle Modi, Stärken und Akzent-Farbtöne grün.
   `actDel` + Weiß (Bewegungs-Badge, Gefahr-Knopf) kommt mit den Seiten, die es benutzen.
+
+### 7.6 Kartentitel über der Fläche (K89, Sicherheit)
+
+- `pages.css`: Personen, Schlösser, Garagentore und Türen/Fenster/Bewegung tragen den Titel über der Fläche wie die
+  Übersicht (Kopf 44, Abstand 6, Fläche als `::before`, Symbol ohne Chip in `label2`, Anzahl 15 `label2` am Ende der
+  Zeile). Die Teile im Körper (Knöpfe, Trennlinie, Liste) haben einheitlich 12 Abstand wie auf der Übersicht (Klassisch
+  12 bzw. 14).
+- **Abweichung:** Die gemeinsame Liste beginnt mit der Sicherheit, `home.css` behält die Liste der Übersicht. Die
+  übrigen Seiten kommen mit ihren Schritten dazu; erst wenn alle drin sind, wird die Übersicht in dieselbe Liste
+  gezogen (ein Vergleich der Übersicht mit 0 Pixeln deckt das ab).
+- Prüfung `pagesCardTitles` (Desktop hell, Handy dunkel); auf dem Stand davor ist sie rot.

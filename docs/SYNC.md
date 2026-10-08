@@ -145,7 +145,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/glas/detail/{GlasDetailHead,LightBrightnessControl}.tsx`, `lightLevel.ts`, `apps/dashboard/test/lightLevel.test.ts` | Glas-Detail: Zustands-Kachel, Zustandszeile, Diagrammfarbe, senkrechter Helligkeitsregler (gesendet beim Loslassen) |
 | `apps/dashboard/src/nvr/{NvrHomeGlas,HomeSnapshot}.tsx` | Glas-Körper der NVR-Karte der Übersicht (Kopf, Fehler und Daten bleiben in `NvrHomeCard`) |
 | `apps/dashboard/scripts/glas-checks-home.cjs` | Übersichts-Szenen (`home-hints`, `home-edit`, `energy-bubble`, `detail-light`) und `checks --part home` für `glas-shots.cjs` |
-| `apps/dashboard/scripts/glas-checks-pages.cjs` | Etappe 5 (übrige Seiten): `checks --part pages` für `glas-shots.cjs` (bisher Schalter, Regler/Stepper/Pillen/Play, Felder, Abschnittstitel) |
+| `apps/dashboard/scripts/glas-checks-pages.cjs` | Etappe 5 (übrige Seiten): `checks --part pages` für `glas-shots.cjs` (bisher Schalter, Regler/Stepper/Pillen/Play, Felder, Abschnitts- und Kartentitel) |
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
@@ -356,5 +356,6 @@ Nach jedem Upstream-Merge:
    `components/glas/edit/noDrag.ts` abgleichen, an `Modal` mit den Props `lead`/`trailing`. Danach
    `checks --part home` laufen lassen (Hinweise, aktive Szene, „Nicht verlieren“, Energie, Bearbeiten, Licht, Menü).
    Seit Etappe 5 (übrige Seiten, im Bau): Schalter, Regler, Stepper, Auswahl-Pillen und Play der klassischen Seiten
-   zeichnet `styles/glas/controls.css` über ihre Upstream-Klassen, Felder `lists.css`, Abschnittstitel `pages.css`;
-   ändert Upstream diese Klassen oder das Markup von `SectionLabel`, `checks --part pages` laufen lassen.
+   zeichnet `styles/glas/controls.css` über ihre Upstream-Klassen, Felder `lists.css`, Abschnittstitel und die
+   Kartentitel der Sicherheit `pages.css`; ändert Upstream diese Klassen, das Markup von `SectionLabel` oder den Kopf
+   der Sicherheitskarten (`*-card__header`, bei der Garage `__title-row`), `checks --part pages` laufen lassen.

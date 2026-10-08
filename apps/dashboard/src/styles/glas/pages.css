@@ -1,5 +1,6 @@
 /* [fork] Glas — the frame of the other pages (docs/GLAS-DESIGN.md §2.13, plan docs/glas/PLAN-ETAPPE-5.md K89, K90):
-   so far the section titles; the card titles above the surface, the columns and the heroes follow. */
+   so far the section titles and the card titles above the surface on the security page; the other pages, the columns
+   and the heroes follow. */
 
 /* ---- Section titles (K89): no capitals. In a room a title 20/25 600 like the card titles on the overview, in the
    settings a group title 15/20 600 in `label2` above its list. The hairline beside them falls away. ---- */
@@ -32,4 +33,137 @@
   > .section-label
   > :first-child::first-letter {
   text-transform: uppercase;
+}
+
+/* ---- Card titles above the surface (K89, like the overview §2.13): the title row leaves the surface, the surface
+   becomes a ::before below it. So far the security page; the other pages join this list with their steps, home.css
+   keeps the overview's own list. The garage card has no header wrapper, its title row is the head. ---- */
+:root[data-style='glas']
+  .security-page
+  :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card) {
+  --g-card-head: 44px;
+  --g-card-gap: 6px;
+  position: relative;
+  isolation: isolate;
+  row-gap: 0;
+  padding: 0 16px 16px;
+  background: none;
+  box-shadow: none;
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card)::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--g-card-head) + var(--g-card-gap)) 0 0;
+  z-index: -1;
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+}
+
+/* the classic gap between the parts of a multi-part body (buttons, divider, list) */
+:root[data-style='glas']
+  .security-page
+  :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card)
+  > :nth-child(n + 3) {
+  margin-top: 12px;
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(
+    .people-list-card__header,
+    .locks-section-card__header,
+    .garage-section-card__title-row,
+    .sensor-section-card__header
+  ) {
+  display: flex;
+  align-items: center;
+  min-height: var(--g-card-head);
+  margin: 0 -16px calc(var(--g-card-gap) + 16px);
+  padding: 0;
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(
+    .people-list-card__title-row,
+    .locks-section-card__title-row,
+    .garage-section-card__title-row,
+    .sensor-section-card__title-row
+  ) {
+  gap: 8px;
+  min-width: 0;
+}
+
+/* inside a header the row spans it (the garage's row is the card's own flex item and must not grow) */
+:root[data-style='glas']
+  .security-page
+  :is(.people-list-card__title-row, .locks-section-card__title-row, .sensor-section-card__title-row) {
+  flex: 1;
+}
+
+/* the tinted icon chip becomes the bare 18-px symbol in label2, as on the overview */
+:root[data-style='glas']
+  .security-page
+  :is(
+    .people-list-card__icon-chip,
+    .locks-section-card__icon-chip,
+    .garage-section-card__icon-chip,
+    .sensor-section-card__icon-chip
+  ) {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(
+    .people-list-card__icon-chip,
+    .locks-section-card__icon-chip,
+    .garage-section-card__icon-chip,
+    .sensor-section-card__icon-chip
+  )
+  > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(
+    .people-list-card__title,
+    .locks-section-card__title,
+    .garage-section-card__title,
+    .sensor-section-card__title
+  ) {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+  letter-spacing: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* the count stays at the end of the row, in label2 like the overview's links */
+:root[data-style='glas']
+  .security-page
+  :is(
+    .people-list-card__count,
+    .locks-section-card__count,
+    .garage-section-card__count,
+    .sensor-section-card__count
+  ) {
+  flex: none;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  white-space: nowrap;
 }

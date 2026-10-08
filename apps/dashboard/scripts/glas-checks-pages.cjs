@@ -2,8 +2,8 @@
 // `checks --part pages`. glas-shots.cjs loads this file with its helpers; it is not run on its own.
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
-// pagesSwitches (K91), pagesControls (K93), pagesFields (K94). The plan's other blocks (frame, segments, edit, keep,
-// empty, menus) come with their steps.
+// pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles and pagesCardTitles (K89). The plan's other
+// blocks (frame, segments, edit, keep, empty, menus) come with their steps.
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
@@ -415,6 +415,56 @@ module.exports = function pages(h) {
       }
       out.pagesTitles = res;
       out.pagesTitlesOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K89 card titles above the surface on the security page: the card itself has no background, its ::before
+    //      surface starts below the 44-px head + 6-px gap, the title (20, label) sits above it, the first body part
+    //      16 px inside it, the icon chip is a bare symbol. Glas only. ----
+    await block('pagesCardTitles', async () => {
+      const res = {};
+      const CARDS = ['people-list-card', 'locks-section-card', 'garage-section-card', 'sensor-section-card'];
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        const { page, close } = await open(device, 'glas', '/security', { mode });
+        try {
+          const cards = await ev(page, (names) => {
+            const d = document.createElement('div');
+            d.style.color = 'var(--g-label)';
+            document.body.appendChild(d);
+            const label = getComputedStyle(d).color;
+            d.remove();
+            return names.map((n) => {
+              const card = document.querySelector(`.security-page .${n}`);
+              if (!card) return { n, missing: true };
+              const r = card.getBoundingClientRect();
+              const surface = r.top + 44 + 6;
+              const title = card.querySelector(`.${n}__title`);
+              const tr = title.getBoundingClientRect();
+              const tcs = getComputedStyle(title);
+              const body = card.children[1]?.getBoundingClientRect();
+              const before = getComputedStyle(card, '::before');
+              const chip = card.querySelector(`.${n}__icon-chip`);
+              return {
+                n,
+                bg: getComputedStyle(card).backgroundColor,
+                surface: before.content !== 'none' && before.backgroundColor !== 'rgba(0, 0, 0, 0)',
+                above: tr.bottom <= surface + 0.5,
+                size: tcs.fontSize,
+                label: tcs.color === label,
+                inside: !!body && body.top >= surface + 16 - 0.5,
+                chip: !chip || getComputedStyle(chip).backgroundColor === 'rgba(0, 0, 0, 0)',
+              };
+            });
+          }, CARDS);
+          const ok = cards.every((c) => !c.missing && c.bg === 'rgba(0, 0, 0, 0)' && c.surface && c.above
+            && c.size === '20px' && c.label && c.inside && c.chip);
+          res[device] = { ok, cards: ok ? cards.length : cards };
+        } catch (e) {
+          res[device] = { ok: false, error: String(e.message).slice(0, 160) };
+        }
+        await close();
+      }
+      out.pagesCardTitles = res;
+      out.pagesCardTitlesOk = Object.values(res).every((r) => r.ok);
     });
 
     out.pagesPageErrors = pageErrors;
