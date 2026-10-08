@@ -191,3 +191,11 @@ und übernommen, außer wo anders vermerkt.
   fokussiert das Feld, Tippen kommt an.
 - Die Listen „inset grouped“ hängen an der Markup-Struktur jeder Seite; sie kommen mit den Seiten (Schritt 3) in
   `lists.css`, je Seite mit ihrem `pagesKeep`-Block.
+
+### 7.4 Abschnittstitel (K89, erster Teil des Rahmens)
+
+- Neue Datei `pages.css`: `SectionLabel` im Raum (auch im Bearbeiten-Modus) als Titel 20/25 600 `label`, in den
+  Einstellungen als Gruppentitel 15/20 600 `label2`; ohne Versalien und ohne die Linie daneben.
+- Abweichung: Die Einstellungs-Titel stehen in den Locales klein („verbindung“), Klassisch zeigt sie in Versalien.
+  Glas setzt nur den ersten Buchstaben groß (Satzanfang, `::first-letter`), statt der Versalien.
+- Prüfung `pagesTitles`. Kartentitel über der Fläche, Heroes und Spalten folgen.

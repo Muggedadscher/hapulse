@@ -1,0 +1,35 @@
+/* [fork] Glas — the frame of the other pages (docs/GLAS-DESIGN.md §2.13, plan docs/glas/PLAN-ETAPPE-5.md K89, K90):
+   so far the section titles; the card titles above the surface, the columns and the heroes follow. */
+
+/* ---- Section titles (K89): no capitals. In a room a title 20/25 600 like the card titles on the overview, in the
+   settings a group title 15/20 600 in `label2` above its list. The hairline beside them falls away. ---- */
+:root[data-style='glas'] :is(.room-page__section, .room-section__label-row, .settings-page__section) > .section-label {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas'] :is(.room-page__section, .room-section__label-row) > .section-label {
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page__section > .section-label {
+  color: var(--g-label-2);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas']
+  :is(.room-page__section, .room-section__label-row, .settings-page__section)
+  > .section-label
+  > [aria-hidden='true'] {
+  display: none;
+}
+
+/* The labels come in lower case from the locales ("verbindung"); Klassisch shows them in capitals. Glas raises only
+   the first letter (sentence case), the room's labels already start with one. */
+:root[data-style='glas']
+  :is(.room-page__section, .room-section__label-row, .settings-page__section)
+  > .section-label
+  > :first-child::first-letter {
+  text-transform: uppercase;
+}

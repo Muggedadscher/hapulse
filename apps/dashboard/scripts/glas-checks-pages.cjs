@@ -367,6 +367,56 @@ module.exports = function pages(h) {
       out.pagesFieldsOk = Object.values(res).every((r) => r.ok);
     });
 
+    // ---- K89 section titles: sentence case instead of capitals, no hairline; room 20 in label (also in edit mode),
+    //      settings 15 in label2. Glas only. ----
+    await block('pagesTitles', async () => {
+      const res = {};
+      const read = (page) => ev(page, () => {
+        const d = document.createElement('div');
+        d.style.color = 'var(--g-label)';
+        document.body.appendChild(d);
+        const label = getComputedStyle(d).color;
+        d.style.color = 'var(--g-label-2)';
+        const label2 = getComputedStyle(d).color;
+        d.remove();
+        return {
+          label, label2,
+          titles: [...document.querySelectorAll('.section-label')].filter((e) => e.getClientRects().length && !e.closest('.home-page')).map((e) => {
+            const cs = getComputedStyle(e);
+            const line = e.querySelector('[aria-hidden="true"]');
+            const first = getComputedStyle(e.firstElementChild, '::first-letter').textTransform;
+            return { size: cs.fontSize, caps: cs.textTransform, first, color: cs.color, line: !!line && line.getClientRects().length > 0 };
+          }),
+        };
+      });
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        for (const [name, p] of [['room', '/room/living_room'], ['settings', '/settings']]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const runs = [await read(page)];
+            if (name === 'room') {
+              // edit mode: the header capsule on the desktop, the avatar menu on the phone (as the edit scene)
+              if (device === 'phone') {
+                await click(page, '.g-avatar__btn');
+                await click(page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.edit']}")`);
+              } else await click(page, '.g-edit-capsule');
+              await page.waitForSelector('.room-section__label-row', { timeout: 3000 });
+              runs.push(await read(page));
+            }
+            const want = name === 'room' ? ['20px', 'label'] : ['15px', 'label2'];
+            const ok = runs.every((r) => r.titles.length > 0 && r.titles.every((t) => t.size === want[0]
+              && t.caps === 'none' && t.first === 'uppercase' && t.color === r[want[1]] && !t.line));
+            res[`${device}-${name}`] = { ok, n: runs.map((r) => r.titles.length), first: runs.map((r) => r.titles[0]) };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesTitles = res;
+      out.pagesTitlesOk = Object.values(res).every((r) => r.ok);
+    });
+
     out.pagesPageErrors = pageErrors;
     return ran.every((k) => out[k + 'Ok']) && pageErrors.length === 0;
   }
