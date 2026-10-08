@@ -762,7 +762,13 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
       pairs.push({ name: `glassLabel2 on glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
     }
   }
-  return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a), ...homeContrastPairs(c, a)];
+  return [
+    ...pairs,
+    ...frameContrastPairs(input, c, a),
+    ...windowContrastPairs(input, c, a),
+    ...homeContrastPairs(c, a),
+    ...pagesContrastPairs(c, a),
+  ];
 }
 
 /** Text of the "open" status pill (redSoft) in a window's group: dark, redInk on redSoft over the lighter group is
@@ -837,6 +843,22 @@ function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Cont
     pairs.push({ name: `${name} chart line on group`, fg: ink, bg: c.group, min: 3 });
     pairs.push({ name: `${name} chart line on its area over group`, fg: ink, bg: compositeOver(atAlpha(fill, 0.22), c.group), min: 3 });
   }
+  return pairs;
+}
+
+/**
+ * The other pages (plan Etappe 5 §3, K93/K94): the text of a field and its placeholder on `fill` over the card and
+ * over the page; the chosen choice pill (`accentInk` on `accentSoft` over the card). Steppers and play draw `label`
+ * on `fill`, the playing state white on blue (window pairs).
+ */
+function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
+  const pairs: ContrastPair[] = [];
+  for (const [name, under] of [['card', c.card], ['bg', c.bg]] as const) {
+    const field = compositeOver(c.fill, under);
+    pairs.push({ name: `field text (label) on fill over ${name}`, fg: c.label, bg: field, min: 4.5 });
+    pairs.push({ name: `field placeholder (label2) on fill over ${name}`, fg: c.label2, bg: field, min: 4.5 });
+  }
+  pairs.push({ name: 'chosen pill (accentInk on accentSoft over card)', fg: a.accentInk, bg: compositeOver(a.accentSoft, c.card), min: 4.5 });
   return pairs;
 }
 

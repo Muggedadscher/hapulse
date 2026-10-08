@@ -199,3 +199,9 @@ und übernommen, außer wo anders vermerkt.
 - Abweichung: Die Einstellungs-Titel stehen in den Locales klein („verbindung“), Klassisch zeigt sie in Versalien.
   Glas setzt nur den ersten Buchstaben groß (Satzanfang, `::first-letter`), statt der Versalien.
 - Prüfung `pagesTitles`. Kartentitel über der Fläche, Heroes und Spalten folgen.
+
+### 7.5 Kontrastpaare (§3)
+
+- `pagesContrastPairs` in `glasTokens.ts`: Feldtext und Platzhalter auf `fill` über Karte und Seite, gewählte
+  Auswahl-Pille (`accentInk` auf `accentSoft` über der Karte); alle Modi, Stärken und Akzent-Farbtöne grün.
+  `actDel` + Weiß (Bewegungs-Badge, Gefahr-Knopf) kommt mit den Seiten, die es benutzen.
