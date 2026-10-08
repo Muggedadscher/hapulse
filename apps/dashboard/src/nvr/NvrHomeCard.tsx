@@ -1,20 +1,24 @@
 /**
  * [fork] Home overview card "Sentinel NVR": camera snapshots (tap → timeline)
  * and the latest events (tap → timeline at the event). Rendered only when the
- * NVR is configured (Home gates the section on `useNvrConfigured()`).
+ * NVR is configured (Home gates the section on `useNvrConfigured()`). In Glas the
+ * body is NvrHomeGlas (docs/GLAS-DESIGN.md §7.15), header and error stay.
  */
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Cctv, ChevronRight, Camera, WifiOff } from 'lucide-react';
+import { Cctv, ChevronRight, WifiOff } from 'lucide-react';
 import { sentinelEventPlayTs, sentinelRecordingState } from '@sentinel-nvr/web/api';
 import { Card } from '../components/ui/Card';
 import { useT, useLocale } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { fmtTime, fmtRelative } from './format';
-import { EventBadges, eventLabel, rememberTileSnapshot, tileSnapshotWidth } from '@sentinel-nvr/web/ui';
+import { EventBadges, eventLabel, tileSnapshotWidth } from '@sentinel-nvr/web/ui';
 import { useNvrT } from './ui';
 import { cameraPath, NVR_ROOT } from './paths';
+import { HomeSnapshot } from './HomeSnapshot';
+import { NvrHomeGlas } from './NvrHomeGlas';
+import { useIsGlas } from '../app/glas/useUiStyle';
 import './nvr.css';
 
 const SNAPSHOT_MS = 10_000;
@@ -26,6 +30,7 @@ export function NvrHomeCard() {
   const locale = useLocale();
   const navigate = useNavigate();
   const { cfg, status, cameras, recent, stats, errorStatus } = useNvrOverview(15_000);
+  const isGlas = useIsGlas();
   const [tick, setTick] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => { if (document.visibilityState === 'visible') setTick(Date.now()); }, SNAPSHOT_MS);
@@ -59,6 +64,8 @@ export function NvrHomeCard() {
 
       {status === 'error' ? (
         <p className="nvr-muted nvr-home__error"><WifiOff size={14} strokeWidth={2} />{errorStatus === 401 ? t('nvr.error.unauthorized') : t('nvr.error.unreachable')}</p>
+      ) : isGlas ? (
+        <NvrHomeGlas client={client} cameras={cameras} events={events} tick={tick} loading={status !== 'ready'} />
       ) : (
         <>
           <div className="nvr-home__meta">
@@ -99,24 +106,5 @@ export function NvrHomeCard() {
         </>
       )}
     </Card>
-  );
-}
-
-// The loaded snapshot is also the camera page's poster (drawn at once instead of a grey stage) — crossOrigin keeps the
-// poster canvas untainted, the plugin answers with ACAO *.
-function HomeSnapshot({ camId, src, fallback }: { camId: string; src: string; fallback: string | null }) {
-  const [failed, setFailed] = useState(0);
-  const url = failed === 0 ? src : failed === 1 && fallback ? fallback : null;
-  return url ? (
-    <img
-      className="nvr-home__cam-img"
-      src={url}
-      alt=""
-      crossOrigin="anonymous"
-      onLoad={(e) => { if (failed === 0) rememberTileSnapshot(camId, e.currentTarget); }}
-      onError={() => setFailed((f) => Math.min(2, f + 1))}
-    />
-  ) : (
-    <span className="nvr-home__cam-img nvr-home__cam-ph" aria-hidden="true"><Camera size={22} strokeWidth={1.5} /></span>
   );
 }

@@ -5,6 +5,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { useShallow } from 'zustand/react/shallow';
 import { Thermometer, Droplets, Lightbulb } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react'; // [fork] Glas title (docs/glas/PLAN-ETAPPE-4.md K83)
 import { roomSummary } from '@hapulse/core';
 import type { Room, HassEntityMap } from '@hapulse/core';
 import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
@@ -12,6 +13,8 @@ import { roomDisplayIcon } from '../../lib/roomIcon';
 import { SectionLabel } from '../ui/SectionLabel';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useT } from '../../i18n/useT';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (K83)
+import { GlasRoomTile } from '../glas/home/GlasRoomTile'; // [fork]
 import './RoomsQuickAccess.css';
 
 interface RoomsQuickAccessProps {
@@ -22,6 +25,7 @@ interface RoomsQuickAccessProps {
 export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
   const navigate = useNavigate();
   const t = useT();
+  const isGlas = useIsGlas(); // [fork]
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -30,7 +34,7 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
 
   return (
     <section className="rooms-quick-section">
-      <SectionLabel style={{ marginBottom: 0 }}>{t('home.roomsQuickAccess.sectionLabel')}</SectionLabel>
+      <SectionLabel style={{ marginBottom: 0 }}>{isGlas && <LayoutGrid className="g-rooms__icon" size={18} strokeWidth={2} aria-hidden="true" />}{t('home.roomsQuickAccess.sectionLabel')}</SectionLabel>{/* [fork] Glas: symbol */}
       <div className="rooms-quick-strip" role="list" aria-label={t('home.roomsQuickAccess.listAria')}>
         {rooms.map((room) => {
           const summary = roomSummary(room, entities);
@@ -50,6 +54,23 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
             summary.temperature != null ||
             summary.humidity != null ||
             visibleLightIds.length > 0;
+
+          if (isGlas) { // [fork] Glas tile (GLAS-DESIGN §7.17)
+            return (
+              <GlasRoomTile
+                key={room.id}
+                room={room}
+                iconName={iconName}
+                isStatus={isStatus}
+                temperature={summary.temperature}
+                humidity={summary.humidity}
+                lights={visibleLightIds.length}
+                lightsOn={visibleLightsOn}
+                devices={totalDevices}
+                onOpen={() => void navigate(`/room/${room.id}`)}
+              />
+            );
+          } // [fork]
 
           return (
             <button
