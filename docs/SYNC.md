@@ -140,7 +140,8 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/ha/demoControl.ts` | Nur im Demo-Modus `window.__hapulseDemo` (`patch`, `patchArea`, `placeEntity`, `openDetail`, `entity`) für die Prüfungen |
 | `apps/dashboard/src/stores/keptOffStore.ts` | Glas: in der Geräte-Karte ausgeschaltete Geräte bleiben bis zum Neuladen als „Aus“ stehen |
 | `apps/dashboard/src/components/glas/{Segment,RollingValue,GlasMenuTarget}.tsx`, `useGlasContextMenu.ts` | Glas-Bausteine (Etappe 4): Segment mit Linse (`role="radiogroup"`), rollende Zahl, Kontextmenü an beliebigen Elementen (Szenen, Geräte) |
-| `apps/dashboard/src/components/glas/home/*` | Glas-Übersicht: `EnergyGlas`, Hauptraum (`HeroLights`, `HeroGlance`), Geräte (`GlasDeviceItem`), Klima/Rollläden (`GlasClimateBody`, `GlasBlindsBody`, `GlasArc`, `GlasRoomPicker`), Räume (`GlasRoomTile`), Szenen (`SceneRing`, `sceneTone.ts`), Bearbeiten (`SizeBar`, `SizeSheet`, `noDrag.ts`) |
+| `apps/dashboard/src/components/glas/home/*` | Glas-Übersicht: `EnergyGlas`, Hauptraum (`HeroLights`, `HeroGlance`), Geräte (`GlasDeviceItem`), Klima/Rollläden (`GlasClimateBody`, `GlasBlindsBody`, `GlasArc`, `GlasRoomPicker`), Räume (`GlasRoomTile`), Szenen (`SceneRing`, `sceneTone.ts`) |
+| `apps/dashboard/src/components/glas/edit/*` | Glas-Bearbeiten (Etappe 4, ab Etappe 5 für alle Seiten mit Raster): Leiste `SizeBar`, „⋯“-Fenster `SizeSheet`, `noDrag.ts`, Hook `useGlasSectionEdit` (S/M/L, ‹ ›, „⋯“; die klassischen Handler bleiben in den Seiten) |
 | `apps/dashboard/src/components/glas/detail/{GlasDetailHead,LightBrightnessControl}.tsx`, `lightLevel.ts`, `apps/dashboard/test/lightLevel.test.ts` | Glas-Detail: Zustands-Kachel, Zustandszeile, Diagrammfarbe, senkrechter Helligkeitsregler (gesendet beim Loslassen) |
 | `apps/dashboard/src/nvr/{NvrHomeGlas,HomeSnapshot}.tsx` | Glas-Körper der NVR-Karte der Übersicht (Kopf, Fehler und Daten bleiben in `NvrHomeCard`) |
 | `apps/dashboard/scripts/glas-checks-home.cjs` | Übersichts-Szenen (`home-hints`, `home-edit`, `energy-bubble`, `detail-light`) und `checks --part home` für `glas-shots.cjs` |
@@ -187,7 +188,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/cards/EntityCard.tsx` | Stil Glas (Etappe 3b): Langdruck, Rechtsklick und Kontextmenü-Taste öffnen das Kontextmenü statt des Details (nicht im Bearbeiten-Modus); nach dem Langdruck schluckt Glas nur den Klick dieses Drucks (`useLongPress` schluckte sonst den nächsten Tipp auf einen Knopf der Karte); Klassisch unverändert |
 | `apps/dashboard/src/stores/uiStore.ts` | Stil Glas (Etappe 3b): `detailSeq` zählt jede Anfrage nach dem Detail, auch für die schon gezeigte Entität (der Inspector unter einem Chip-Fenster kommt dann nach oben) |
 | `apps/dashboard/src/components/security/LocksList.tsx` | Stil Glas (Etappe 3b): Zeilen in `SwipeRow` (Wischen zum Verriegeln, über `useLockAction`) |
-| `apps/dashboard/src/pages/Home.tsx` | Etappe 4: Sektion `'hints'` (vorn, volle Zeile, nur mit Abweichung oder im Bearbeiten-Modus, `HintWindows` außerhalb des Rasters); Glas: `EnergyGlas` statt `EnergyWidget`, Chips nach der Begrüßung (K86), Bearbeiten-Leiste `SizeBar` statt der Abzeichen, „⋯“-Fenster `SizeSheet`, Klasse `g-tall` für L |
+| `apps/dashboard/src/pages/Home.tsx` | Etappe 4: Sektion `'hints'` (vorn, volle Zeile, nur mit Abweichung oder im Bearbeiten-Modus, `HintWindows` außerhalb des Rasters); Glas: `EnergyGlas` statt `EnergyWidget`, Chips nach der Begrüßung (K86), Bearbeiten-Leiste `SizeBar` statt der Abzeichen, „⋯“-Fenster `SizeSheet` (beide über `useGlasSectionEdit`), Klasse `g-tall` für L |
 | `apps/dashboard/src/components/home/ScenesCard.{tsx,css}` | Aktive Szene (`data-active`, Untertitel „Aktiv“ bzw. „N Geräte“, beide Stile); Glas: Ring, Farbton je Szene, Kontextmenü |
 | `apps/dashboard/src/components/home/EnergyWidget.{tsx,css}` | Netz/Solar gestapelt und Zeile „PV-Ertrag“ (beide Stile, Entscheid E3/E9) |
 | `apps/dashboard/src/components/home/{HeroRoomCard,DevicesCard,ClimateCard,BlindsCard,ActivityCard,RoomsQuickAccess,SecurityCard,SummaryChips}.tsx` | Stil Glas (Etappe 4): eigene Körper (Lichtkreise, Geräte-Kacheln/-Zeilen, Klima- und Rollladen-Ring mit Raumauswahl, Raumkacheln), Hauptraum hält in Glas seinen Raum 1 min nach einer Aktion, Töne der Sicherheitszeilen (`data-g-tone`), Chip-Farbe (`data-chip`); Klassisch unverändert |
@@ -350,5 +351,5 @@ Nach jedem Upstream-Merge:
    Glas-Körper abgleichen (Klima: Schritt, Grenzen und schnelle Tipps bleiben in `ClimateCard`, der Körper bekommt sie als
    Props). Eine neue Home-Sektion bekommt in Glas die Bearbeiten-Leiste von selbst; soll sie keine Größen haben, gehört sie in
    `NO_SIZE_PRESETS` (`pages/Home.tsx`). Upstream-Änderungen an `components/ui/SortableItem.tsx` (Listener) mit
-   `components/glas/home/noDrag.ts` abgleichen, an `Modal` mit den Props `lead`/`trailing`. Danach
+   `components/glas/edit/noDrag.ts` abgleichen, an `Modal` mit den Props `lead`/`trailing`. Danach
    `checks --part home` laufen lassen (Hinweise, aktive Szene, „Nicht verlieren“, Energie, Bearbeiten, Licht, Menü).

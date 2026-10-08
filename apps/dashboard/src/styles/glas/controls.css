@@ -56,6 +56,23 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* A symbol option (grid/list, stage 5 K92): the symbol centred, 18 px; its name is the button's aria-label. */
+:root[data-style='glas'] .g-seg__opt--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:root[data-style='glas'] .g-seg__opt--icon > span {
+  display: inline-flex;
+}
+
+:root[data-style='glas'] .g-seg__opt--icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
 /* Energy Tag | Woche | Monat (§7.9): hit area 44, visible track 32, lens 28. */
 :root[data-style='glas'] .g-seg--energy {
   --g-seg-h: 44px;

@@ -1,7 +1,7 @@
 /* [fork] Glas — edit mode of the overview (plan docs/glas/PLAN-ETAPPE-4.md K78, GLAS-DESIGN §7.32, sketch
    glas/screens/g5d-bearbeiten). The other pages keep the classic badges and handles until stage 5.
 
-   One bar per card (components/glas/home/SizeBar.tsx) instead of the classic badges, dots and handles, which stay in
+   One bar per card (components/glas/edit/SizeBar.tsx) instead of the classic badges, dots and handles, which stay in
    the DOM and are switched off here. No dashed outline, no extra margins; a hidden card is drawn at .4, its bar not.
 
    Where the bar sits:

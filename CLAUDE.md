@@ -191,10 +191,11 @@ sauber übernehmen können.
   aktiv, bis sich ein Mitglied ändert) und Netz/Solar gestapelt in der Energie-Karte. Nur Glas: eigene Körper der Karten
   in `components/glas/home/` (Hauptraum mit Lichtkreisen, Geräte als Kachel/Zeile, Klima und Rollläden mit Raumauswahl,
   `EnergyGlas` mit Tag/Woche/Monat über `ha/useEnergyWindow.ts`), Detail mit `LightBrightnessControl` und `Segment`,
-  Bearbeiten ab 900 px mit `SizeBar` (S/M/L, Feld `tallSections`, „⋯“ = `SizeSheet`), Kontextmenü auch an Szenen und
-  Geräten (`GlasMenuTarget`). CSS in `styles/glas/{home,home-cards,home-lists,controls,detail,edit,nvr}.css`. Prüfungen
-  `checks --part home` (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus
-  `ha/demoControl.ts`). Nächste Etappen 5–7 (übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  Bearbeiten ab 900 px mit `SizeBar` (S/M/L, Feld `tallSections`, „⋯“ = `SizeSheet`, beide in `components/glas/edit/`
+  über den Hook `useGlasSectionEdit`), Kontextmenü auch an Szenen und Geräten (`GlasMenuTarget`). CSS in
+  `styles/glas/{home,home-cards,home-lists,controls,detail,edit,nvr}.css`. Prüfungen `checks --part home`
+  (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus `ha/demoControl.ts`). Nächste
+  Etappen 5–7 (übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 
