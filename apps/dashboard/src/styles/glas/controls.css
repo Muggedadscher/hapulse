@@ -1,0 +1,74 @@
+/* [fork] Glas — controls that stage 4 introduces for the overview and the detail (plan docs/glas/PLAN-ETAPPE-4.md
+   K80); the other pages and sheets get them in stage 5.
+
+   Segmented control (GLAS-DESIGN §7.27, components/glas/Segment.tsx): track `fill`, lens `seg` + `segShadow` that
+   slides with the snappy spring, equally wide options with text only. The size per use comes from a modifier
+   class that sets the variables: --g-seg-h (hit area), --g-seg-inset (space above and below the visible track),
+   --g-seg-pad (space between track and lens). The component sets --g-seg-n (options) and --g-seg-i (chosen one). */
+
+:root[data-style='glas'] .g-seg {
+  --g-seg-h: 36px;
+  --g-seg-inset: 0px;
+  --g-seg-pad: 2px;
+  position: relative;
+  display: flex;
+  height: var(--g-seg-h);
+}
+
+:root[data-style='glas'] .g-seg__track {
+  position: absolute;
+  inset: var(--g-seg-inset) 0;
+  border-radius: 999px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-seg__lens {
+  position: absolute;
+  top: calc(var(--g-seg-inset) + var(--g-seg-pad));
+  left: var(--g-seg-pad);
+  width: calc((100% - 2 * var(--g-seg-pad)) / var(--g-seg-n));
+  height: calc(var(--g-seg-h) - 2 * (var(--g-seg-inset) + var(--g-seg-pad)));
+  border-radius: 999px;
+  background: var(--g-seg);
+  box-shadow: var(--g-seg-shadow);
+  transform: translateX(calc(var(--g-seg-i) * 100%));
+  transition: transform var(--g-d-snappy) var(--g-spring-snappy);
+  pointer-events: none;
+}
+
+:root[data-style='glas'] .g-seg__opt {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--g-seg-h);
+  padding: 0 4px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--g-label);
+  font: 600 13px / 18px var(--g-font);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Energy Tag | Woche | Monat (§7.9): hit area 44, visible track 32, lens 28. */
+:root[data-style='glas'] .g-seg--energy {
+  --g-seg-h: 44px;
+  --g-seg-inset: 6px;
+  --g-seg-pad: 2px;
+  flex: none;
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .g-seg__track {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .g-seg__lens {
+    border: 2px solid Highlight;
+  }
+}

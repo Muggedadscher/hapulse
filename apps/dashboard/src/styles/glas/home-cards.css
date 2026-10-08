@@ -1,0 +1,513 @@
+/* [fork] Glas — cards of the overview (plan docs/glas/PLAN-ETAPPE-4.md K75, K83; GLAS-DESIGN §4.3, §7.9).
+
+   Title above the card (§4.3): Title 3 with an 18-px monochrome symbol, an optional link on the right (phone
+   `label2`, desktop `accentInk` with a hover area). Glas-own cards (EnergyGlas) carry the row as .g-card-head.
+
+   Energy card, variant V4 "kompakt" (Jannick 08.10., mockups glas/energie-varianten): segment, the consumption with
+   comparison and PV yield, chart with the axis on the right, fine solid lines, dashed Ø line, stacked bars (grid at
+   the bottom, solar on top), stubs for hours to come, bubble on tap/hover, legend. Column sizes per period come
+   inline from the component (--g-en-gap, --g-en-max, --g-en-r, --g-en-delay), each column's index as --i. */
+
+@keyframes g-en-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes g-en-swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes g-en-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+}
+
+/* ---- title above the card ---- */
+
+:root[data-style='glas'] .g-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 0 6px;
+}
+
+:root[data-style='glas'] .g-card-head__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+}
+
+:root[data-style='glas'] .g-card-head__icon {
+  flex: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .g-card-head__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-card-head__link {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 0 0 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-card-head__link:active {
+  opacity: 0.55;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .g-card-head {
+    min-height: 40px;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  :root[data-style='glas'] .g-card-head__link {
+    min-height: 36px;
+    padding: 0 8px 0 12px;
+    color: var(--g-accent-ink);
+    font-weight: 500;
+  }
+
+  :root[data-style='glas'] .g-card-head__link:hover {
+    background: var(--g-hover);
+  }
+}
+
+/* ---- energy card ---- */
+
+:root[data-style='glas'] .g-energy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-energy__card {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 6px 16px 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Everything but the segment; dimmed while another period loads (K75). */
+:root[data-style='glas'] .g-energy__data {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  transition: opacity 0.2s ease;
+}
+
+:root[data-style='glas'] .g-energy[data-stale] .g-energy__data {
+  opacity: 0.5;
+}
+
+/* figure: "8,4 kWh Verbrauch", below it "−12 % ggü. gestern · ☀ 12,1 kWh PV-Ertrag" */
+:root[data-style='glas'] .g-energy__fig {
+  flex: none;
+  margin-top: 6px;
+}
+
+:root[data-style='glas'] .g-energy__fig--swap {
+  animation: g-en-swap 450ms var(--g-spring-smooth) both;
+}
+
+:root[data-style='glas'] .g-energy__total {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-energy__num {
+  color: var(--g-label);
+  font: 600 34px / 41px var(--g-font);
+}
+
+:root[data-style='glas'] .g-energy__unit {
+  color: var(--g-label-2);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .g-energy__unit-word {
+  font-weight: 400;
+}
+
+/* Comparison and PV yield wrap as whole parts (a comparison longer than the line wraps within itself). Every part
+   starts with its "·" in a 16-px slot; the row reaches 16 px into the clipped space on the left, so the dot of
+   whichever part begins a line is cut off. */
+:root[data-style='glas'] .g-energy__line-2 {
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-energy__line-2-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-inline-start: -16px;
+}
+
+:root[data-style='glas'] .g-energy__part {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-energy__dot {
+  flex: none;
+  width: 16px;
+  text-align: center;
+}
+
+:root[data-style='glas'] .g-energy__pv {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-energy__sun {
+  flex: none;
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .g-energy__pv-value {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+/* chart: 132 high on the phone; on the desktop it takes the card's free height, 124 to 210 */
+:root[data-style='glas'] .g-energy__chart {
+  position: relative;
+  flex: none;
+  height: 132px;
+  margin-top: 22px;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .g-energy__card {
+    padding: 6px 20px 16px;
+  }
+
+  :root[data-style='glas'] .g-energy__chart {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 124px;
+    max-height: 210px;
+  }
+}
+
+:root[data-style='glas'] .g-energy__rule-h {
+  position: absolute;
+  left: 0;
+  right: 44px;
+  height: 1px;
+  background: var(--g-sep);
+}
+
+:root[data-style='glas'] .g-energy__rule-h--base {
+  background: var(--g-sep-strong);
+}
+
+:root[data-style='glas'] .g-energy__tick {
+  position: absolute;
+  right: 0;
+  width: 40px;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+  white-space: nowrap;
+  transform: translateY(50%);
+  transition: opacity 0.2s ease;
+}
+
+:root[data-style='glas'] .g-energy__tick--hidden {
+  opacity: 0;
+}
+
+:root[data-style='glas'] .g-energy__tick--avg {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .g-energy__plot {
+  position: absolute;
+  inset: 0 44px 0 0;
+}
+
+:root[data-style='glas'] .g-energy__bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--g-en-gap);
+}
+
+:root[data-style='glas'] .g-energy__bar {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-energy__bar--stub {
+  cursor: default;
+}
+
+:root[data-style='glas'] .g-energy__col {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--g-en-max);
+  transform-origin: 50% 100%;
+  transition: opacity 0.2s ease;
+  animation: g-en-grow 0.6s var(--g-spring-bouncy) both;
+  animation-delay: calc(var(--i) * var(--g-en-delay));
+}
+
+:root[data-style='glas'] .g-energy__bar--dim .g-energy__col {
+  opacity: 0.35;
+}
+
+:root[data-style='glas'] .g-energy__col--both {
+  gap: 1.5px;
+}
+
+:root[data-style='glas'] .g-energy__solar,
+:root[data-style='glas'] .g-energy__grid {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+:root[data-style='glas'] .g-energy__col--both .g-energy__solar {
+  flex: none;
+}
+
+:root[data-style='glas'] .g-energy__col > :first-child {
+  border-radius: var(--g-en-r) var(--g-en-r) 0 0;
+}
+
+:root[data-style='glas'] .g-energy__solar {
+  background: var(--g-chart-solar);
+  box-shadow: inset 0 0 0 1px var(--g-chart-solar-edge);
+}
+
+:root[data-style='glas'] .g-energy__grid {
+  background: var(--g-chart-netz);
+}
+
+:root[data-style='glas'] .g-energy__stub {
+  display: block;
+  width: 100%;
+  max-width: var(--g-en-max);
+  height: 3px;
+  border-radius: 1.5px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-energy__avg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--g-chart-avg) 0 4px, transparent 4px 7px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* bubble: a line from the bar up to 30 px below the top, the bubble above the chart */
+:root[data-style='glas'] .g-energy__rule-v {
+  position: absolute;
+  top: 30px;
+  width: 1px;
+  margin-left: -0.5px;
+  background: var(--g-sep-strong);
+  pointer-events: none;
+  transition:
+    left 0.35s var(--g-spring-snappy),
+    height 0.35s var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] .g-energy__bubble {
+  position: absolute;
+  top: -16px;
+  z-index: 1;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: var(--g-card-2);
+  white-space: nowrap;
+  pointer-events: none;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  transition: left 0.35s var(--g-spring-snappy);
+  animation: g-en-pop 0.3s var(--g-spring-snappy) both;
+}
+
+:root[data-style='glas'] .g-energy__bubble-when {
+  display: block;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+:root[data-style='glas'] .g-energy__bubble-value {
+  display: block;
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-energy__bubble-solar {
+  color: var(--g-label-2);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* x axis and legend */
+:root[data-style='glas'] .g-energy__x {
+  position: relative;
+  flex: none;
+  height: 16px;
+  margin: 6px 44px 0 0;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+:root[data-style='glas'] .g-energy__xl {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-energy__xl--centre {
+  translate: -50% 0;
+}
+
+/* thinned out where labels would touch (EnergyGlas labelStep) */
+:root[data-style='glas'] .g-energy__xl--off {
+  visibility: hidden;
+}
+
+:root[data-style='glas'] .g-energy__legend {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  margin-top: 12px;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .g-energy__key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:root[data-style='glas'] .g-energy__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+:root[data-style='glas'] .g-energy__swatch--grid {
+  background: var(--g-chart-netz);
+}
+
+:root[data-style='glas'] .g-energy__swatch--solar {
+  background: var(--g-chart-solar);
+  box-shadow: inset 0 0 0 1px var(--g-chart-solar-edge);
+}
+
+:root[data-style='glas'] .g-energy__avg-text {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Reduced motion (§6.4): bars and figure fade in over 200 ms, the bubble over 150 ms, nothing grows or moves.
+   !important answers upstream's global switch-off (global.css). */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .g-energy__col,
+  :root[data-style='glas'] .g-energy__fig--swap {
+    animation-name: g-fade-in !important;
+    animation-duration: 200ms !important;
+    animation-timing-function: ease !important;
+    animation-delay: 0s !important;
+  }
+
+  :root[data-style='glas'] .g-energy__bubble {
+    animation-name: g-fade-in !important;
+    animation-duration: 150ms !important;
+    animation-timing-function: ease !important;
+  }
+}
+
+/* Forced colours: the chart keeps its parts in system colours (grid = text, solar = highlight). */
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.g-energy__grid, .g-energy__swatch--grid) {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  :root[data-style='glas'] :is(.g-energy__solar, .g-energy__swatch--solar) {
+    forced-color-adjust: none;
+    background: Highlight;
+    box-shadow: none;
+  }
+
+  :root[data-style='glas'] :is(.g-energy__stub, .g-energy__rule-h, .g-energy__rule-v) {
+    forced-color-adjust: none;
+    background: GrayText;
+  }
+
+  :root[data-style='glas'] .g-energy__avg {
+    height: 0;
+    border-top: 1px dashed CanvasText;
+    background: none;
+  }
+
+  :root[data-style='glas'] .g-energy__bubble {
+    border: 1px solid CanvasText;
+  }
+}

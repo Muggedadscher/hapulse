@@ -119,10 +119,10 @@ const RUNTIME_CLASSES = new Set<string>(FILLED_ICONS.map(([, cls]) => cls));
 describe('Glas stylesheets', () => {
   it('exist', () => {
     expect(glasCss.map((f) => f.name).sort()).toEqual([
-      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/feedback.css', 'styles/glas/gestures.css',
-      'styles/glas/index.css', 'styles/glas/material.css', 'styles/glas/menus.css', 'styles/glas/motion.css',
-      'styles/glas/sheet-content.css', 'styles/glas/sheets.css', 'styles/glas/shell.css', 'styles/glas/tabbar.css',
-      'styles/glas/titles.css',
+      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/controls.css', 'styles/glas/feedback.css',
+      'styles/glas/gestures.css', 'styles/glas/home-cards.css', 'styles/glas/index.css', 'styles/glas/material.css',
+      'styles/glas/menus.css', 'styles/glas/motion.css', 'styles/glas/sheet-content.css', 'styles/glas/sheets.css',
+      'styles/glas/shell.css', 'styles/glas/tabbar.css', 'styles/glas/titles.css',
     ]);
   });
 

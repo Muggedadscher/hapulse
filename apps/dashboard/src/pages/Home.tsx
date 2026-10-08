@@ -18,6 +18,8 @@ import { useCameraSource, withoutHaCameras } from '../nvr/cameraSource'; // [for
 import { HintsCard, HintWindows } from '../components/home/HintsCard'; // [fork] Glas Etappe 4, K76
 import type { HintWindow } from '../components/home/HintsCard'; // [fork]
 import { useHints } from '../components/home/useHints'; // [fork]
+import { EnergyGlas } from '../components/glas/home/EnergyGlas'; // [fork] Glas Etappe 4, K75
+import { useIsGlas } from '../app/glas/useUiStyle'; // [fork]
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
 import { SortableGrid } from '../components/ui/SortableGrid';
@@ -297,6 +299,7 @@ export function Home() {
   const hasWaste = wasteBins.length > 0;
   const hasNvr = useNvrConfigured(); // [fork] NVR card only when a Sentinel connection is configured
   const { hints, cameraNames } = useHints(); // [fork] the hints card renders only while there is one
+  const isGlas = useIsGlas(); // [fork]
 
   // Compute display order from stored order
   const orderedIds = applyStoredOrder([...SECTION_IDS], homeSectionOrder);
@@ -398,7 +401,7 @@ export function Home() {
           <HeroRoomCard rooms={roomsWithDevices} entities={entities} />
         );
       case 'energy':
-        return <EnergyWidget />;
+        return isGlas ? <EnergyGlas /> : <EnergyWidget />; // [fork] Glas: own card, variant V4 (K75)
       case 'devices':
         return (
           <DevicesCard
