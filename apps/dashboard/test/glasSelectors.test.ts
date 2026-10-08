@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { createElement, type ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Cpu, Home, LayoutGrid, MoreHorizontal, Monitor, Music, Settings, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
+import { Cpu, Home, LayoutGrid, Lightbulb, MoreHorizontal, Monitor, Music, Settings, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
 
 // [fork] Guard for the Glas stylesheets (docs/GLAS-PLAN.md §1.4, §5.2): Glas must never touch Klassisch, and an
 // upstream rename must not leave a Glas rule silently pointing at nothing.
@@ -96,9 +96,10 @@ function whereLists(css: string): string[] {
 const glasCss = files(GLAS, /\.css$/).map((p) => ({ name: relative(SRC, p), css: readFileSync(p, 'utf8') }));
 
 /**
- * Lucide symbols that tabbar.css fills for the shown tab (plan docs/glas/PLAN-ETAPPE-2.md §3.1, risk 4): the class it
- * targets and the child elements its :first-child/:last-child/:first-of-type selectors rely on. A Lucide update that
- * renames a symbol or reorders its parts fails here instead of filling the wrong part.
+ * Lucide symbols that the Glas CSS fills — tabbar.css for the shown tab (plan docs/glas/PLAN-ETAPPE-2.md §3.1, risk 4),
+ * titles.css the bulb of the light chip (PLAN-ETAPPE-4.md K87): the class it targets and the child elements its
+ * :first-child/:last-child/:first-of-type selectors rely on. A Lucide update that renames a symbol or reorders its parts
+ * fails here instead of filling the wrong part.
  */
 const FILLED_ICONS: [ComponentType<{ size?: number }>, string, string][] = [
   [Home, 'lucide-house', 'path path'],
@@ -111,6 +112,7 @@ const FILLED_ICONS: [ComponentType<{ size?: number }>, string, string][] = [
   [Monitor, 'lucide-monitor', 'rect line line'],
   [Settings, 'lucide-settings', 'path circle'],
   [MoreHorizontal, 'lucide-ellipsis', 'circle circle circle'],
+  [Lightbulb, 'lucide-lightbulb', 'path path path'],
 ];
 
 /** Classes that only exist at runtime (set from code, never in a stylesheet) and may still be targeted. */
@@ -120,9 +122,9 @@ describe('Glas stylesheets', () => {
   it('exist', () => {
     expect(glasCss.map((f) => f.name).sort()).toEqual([
       'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/controls.css', 'styles/glas/feedback.css',
-      'styles/glas/gestures.css', 'styles/glas/home-cards.css', 'styles/glas/index.css', 'styles/glas/material.css',
-      'styles/glas/menus.css', 'styles/glas/motion.css', 'styles/glas/sheet-content.css', 'styles/glas/sheets.css',
-      'styles/glas/shell.css', 'styles/glas/tabbar.css', 'styles/glas/titles.css',
+      'styles/glas/gestures.css', 'styles/glas/home-cards.css', 'styles/glas/home.css', 'styles/glas/index.css',
+      'styles/glas/material.css', 'styles/glas/menus.css', 'styles/glas/motion.css', 'styles/glas/sheet-content.css',
+      'styles/glas/sheets.css', 'styles/glas/shell.css', 'styles/glas/tabbar.css', 'styles/glas/titles.css',
     ]);
   });
 

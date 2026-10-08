@@ -1,0 +1,379 @@
+/* [fork] Glas — layout of the overview and the frame of its upstream cards (plan docs/glas/PLAN-ETAPPE-4.md K83, K85;
+   GLAS-PLAN §2.13; GLAS-DESIGN §4.3, §5.1). The cards' contents follow in home-cards.css.
+
+   Title above the card (§4.3): the upstream cards (scenes, devices, climate, blinds, security, waste, activity, NVR,
+   hints) carry their title row inside the card. In Glas the card box turns transparent and ::before paints the
+   surface below the title row, so the title stands on the page background without a change to the markup.
+   --g-card-head = height of the title row (44, the hit area of its link; the sketch draws 40 on the desktop),
+   --g-card-gap = space between title row and surface. The cards' own row gap moves into the surface (waste, NVR).
+
+   A capped card that scrolls as a whole (Page.css "Fallback": no .card-scroll-body) keeps its title inside the
+   surface: a sticky title above a surface that scrolls away would not work. */
+
+/* ---- Columns by content width (K85): ≥ 1180 → 4, ≥ 900 → 3, else 2; below 900 px the classic rules apply ---- */
+
+:root[data-style='glas'] .home-page .overview-grid {
+  row-gap: 20px;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .home-page {
+    container: g-home / inline-size;
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 20px;
+  }
+
+  /* a span wider than the grid takes the row */
+  :root[data-style='glas'] .home-page .overview-grid__cell--span-3 {
+    grid-column: 1 / -1;
+  }
+}
+
+@container g-home (min-width: 900px) {
+  :root[data-style='glas'] .home-page .overview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container g-home (min-width: 1180px) {
+  :root[data-style='glas'] .home-page .overview-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell--span-3 {
+    grid-column: span 3;
+  }
+}
+
+/* ---- Title above the card ---- */
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card,
+    .devices-card,
+    .climate-card,
+    .blinds-card,
+    .security-card,
+    .waste-card,
+    .activity-card,
+    .nvr-home,
+    .hints-card
+  ) {
+  --g-card-head: 44px;
+  --g-card-gap: 6px;
+  position: relative;
+  isolation: isolate;
+  row-gap: 0;
+  padding: 0 16px 16px;
+  background: none;
+  box-shadow: none;
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card,
+    .devices-card,
+    .climate-card,
+    .blinds-card,
+    .security-card,
+    .waste-card,
+    .activity-card,
+    .nvr-home,
+    .hints-card
+  )::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--g-card-head) + var(--g-card-gap)) 0 0;
+  z-index: -1;
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+}
+
+/* the classic gap between the parts of a multi-part body */
+:root[data-style='glas'] .home-page :is(.waste-card, .nvr-home) > :nth-child(n + 3) {
+  margin-top: 12px;
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__header,
+    .devices-card__header,
+    .climate-card__header,
+    .blinds-card__header,
+    .security-card__header,
+    .waste-card__header,
+    .activity-card__header,
+    .nvr-home__header,
+    .hints-card__header
+  ) {
+  gap: 8px;
+  min-height: var(--g-card-head);
+  margin: 0 -16px calc(var(--g-card-gap) + 16px);
+  padding: 0;
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__title-row,
+    .devices-card__title-row,
+    .climate-card__title-row,
+    .blinds-card__title-row,
+    .security-card__title-row,
+    .activity-card__title-row,
+    .nvr-home__title-row
+  ) {
+  gap: 8px;
+  min-width: 0;
+}
+
+/* the tinted icon chip becomes the bare 18-px symbol in label2 */
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__icon-chip,
+    .devices-card__icon-chip,
+    .climate-card__icon-chip,
+    .blinds-card__icon-chip,
+    .security-card__shield-chip,
+    .waste-card__icon-chip,
+    .activity-card__icon-chip,
+    .nvr-home__chip,
+    .hints-card__icon-chip
+  ) {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__icon-chip,
+    .devices-card__icon-chip,
+    .climate-card__icon-chip,
+    .blinds-card__icon-chip,
+    .security-card__shield-chip,
+    .waste-card__icon-chip,
+    .activity-card__icon-chip,
+    .nvr-home__chip,
+    .hints-card__icon-chip
+  )
+  > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__title,
+    .devices-card__title,
+    .climate-card__title,
+    .blinds-card__title,
+    .security-card__title,
+    .waste-card__title,
+    .activity-card__title,
+    .nvr-home__title,
+    .hints-card__title
+  ) {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+  letter-spacing: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* link: phone label2, desktop accent ink with a hover area (§4.3) */
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__link,
+    .devices-card__all-link,
+    .climate-card__link,
+    .blinds-card__link,
+    .security-card__view-link,
+    .activity-card__see-all,
+    .nvr-home__link
+  ) {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 0 0 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__link,
+    .devices-card__all-link,
+    .climate-card__link,
+    .blinds-card__link,
+    .security-card__view-link,
+    .activity-card__see-all,
+    .nvr-home__link
+  ):hover {
+  opacity: 1;
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__link,
+    .devices-card__all-link,
+    .climate-card__link,
+    .blinds-card__link,
+    .security-card__view-link,
+    .activity-card__see-all,
+    .nvr-home__link
+  ):active {
+  opacity: 0.55;
+}
+
+:root[data-style='glas']
+  .home-page
+  :is(
+    .scenes-card__link,
+    .devices-card__all-link,
+    .climate-card__link,
+    .blinds-card__link,
+    .security-card__view-link,
+    .activity-card__see-all,
+    .nvr-home__link
+  )
+  > svg {
+  flex: none;
+  stroke-width: 2.25;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas']
+    .home-page
+    :is(
+      .scenes-card__header,
+      .devices-card__header,
+      .climate-card__header,
+      .blinds-card__header,
+      .security-card__header,
+      .waste-card__header,
+      .activity-card__header,
+      .nvr-home__header,
+      .hints-card__header
+    ) {
+    padding-left: 4px;
+  }
+
+  :root[data-style='glas']
+    .home-page
+    :is(
+      .scenes-card__link,
+      .devices-card__all-link,
+      .climate-card__link,
+      .blinds-card__link,
+      .security-card__view-link,
+      .activity-card__see-all,
+      .nvr-home__link
+    ) {
+    padding: 0 8px 0 12px;
+    color: var(--g-accent-ink);
+    font-weight: 500;
+  }
+
+  :root[data-style='glas']
+    .home-page
+    :is(
+      .scenes-card__link,
+      .devices-card__all-link,
+      .climate-card__link,
+      .blinds-card__link,
+      .security-card__view-link,
+      .activity-card__see-all,
+      .nvr-home__link
+    ):hover {
+    background: var(--g-hover);
+  }
+}
+
+/* ---- Capped card without its own scroll body: title inside the surface (see the top) ---- */
+
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell[class*='section-h-']
+  :is(
+    .scenes-card,
+    .devices-card,
+    .climate-card,
+    .blinds-card,
+    .security-card,
+    .waste-card,
+    .activity-card,
+    .nvr-home,
+    .hints-card
+  ):not(:has(.card-scroll-body)) {
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell[class*='section-h-']
+  :is(
+    .scenes-card,
+    .devices-card,
+    .climate-card,
+    .blinds-card,
+    .security-card,
+    .waste-card,
+    .activity-card,
+    .nvr-home,
+    .hints-card
+  ):not(:has(.card-scroll-body))::before {
+  content: none;
+}
+
+/* Page.css pins this first child (sticky, card background); it spans the surface so nothing peeks beside it */
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell[class*='section-h-']
+  :is(
+    .scenes-card,
+    .devices-card,
+    .climate-card,
+    .blinds-card,
+    .security-card,
+    .waste-card,
+    .activity-card,
+    .nvr-home,
+    .hints-card
+  ):not(:has(.card-scroll-body))
+  > :first-child {
+  margin: 0 -16px 8px;
+  padding: 6px 16px 0;
+  background: var(--bg-card);
+}

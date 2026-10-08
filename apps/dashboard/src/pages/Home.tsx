@@ -443,14 +443,19 @@ export function Home() {
     }
   }
 
+  // [fork] Glas renders the chips after the greeting, so the tab order follows the page (K86).
+  const chipsBar = (
+    <SummaryChipsBar
+      className={`home-chips-mobile${editMode ? ' home-chips-mobile--edit' : ''}`}
+      editMode={editMode}
+    />
+  );
+
   return (
     <div className="page home-page stagger-rise">
       {/* Summary chips: mobile-only normally; --edit makes it visible on desktop in edit mode
           (HeaderCluster suppresses its own chips when editMode is true to avoid duplication). */}
-      <SummaryChipsBar
-        className={`home-chips-mobile${editMode ? ' home-chips-mobile--edit' : ''}`}
-        editMode={editMode}
-      />
+      {!isGlas && chipsBar}{/* [fork] */}
 
       {/* Greeting row: text + (mobile) bell/avatar + edit toggle.
           Uses the shared PageHeaderActions so the placement matches every other page. */}
@@ -460,6 +465,7 @@ export function Home() {
           <EditToggle className="home-page__edit-toggle" />
         </PageHeaderActions>
       </div>
+      {isGlas && chipsBar}{/* [fork] */}
 
       {/* Sortable overview grid */}
       <SortableGrid

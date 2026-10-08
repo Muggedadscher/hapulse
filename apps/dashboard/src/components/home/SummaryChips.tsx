@@ -10,6 +10,7 @@ import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
 import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
 import { Lock, LockOpen } from 'lucide-react'; // [fork] locks chip
 import { lockSummary, lockSummaryText, lockTone } from '../security/lockLogic'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork]
 import { SortableGrid } from '../ui/SortableGrid';
 import { SortableItem } from '../ui/SortableItem';
 import { applyStoredOrder } from '../../lib/order';
@@ -46,6 +47,7 @@ export function SummaryChips({
 }: SummaryChipsProps) {
   const t = useT();
   const sl = useStateLabel();
+  const isGlas = useIsGlas(); // [fork] Glas colours each chip's glyph by its kind (K87)
   const allEntities = Object.values(entities);
   const { url: haUrl } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
@@ -82,6 +84,8 @@ export function SummaryChips({
   // panels exist (issue #16) — see pickAlarmPanel in core.
   const alarm = pickAlarmPanel(allEntities);
   const alarmState = alarm?.state ?? null;
+  // [fork] Glas: armed is green, triggered red; arming, pending and the rest stay a warning (K87).
+  const alarmTone = alarmState === 'triggered' ? 'triggered' : alarmState?.startsWith('armed') ? 'armed' : undefined;
 
   // Media playing
   const mediaPlaying = allEntities.filter(
@@ -236,6 +240,8 @@ export function SummaryChips({
           >
             {editMode ? (
               <div
+                data-chip={isGlas ? chip.id : undefined} // [fork]
+                data-tone={isGlas && chip.id === 'alarm' ? alarmTone : undefined} // [fork]
                 className={[
                   'summary-chip',
                   'edit-item-outline',
@@ -264,6 +270,8 @@ export function SummaryChips({
             ) : (
               <button
                 type="button"
+                data-chip={isGlas ? chip.id : undefined} // [fork]
+                data-tone={isGlas && chip.id === 'alarm' ? alarmTone : undefined} // [fork]
                 className={[
                   'summary-chip',
                   'summary-chip--clickable',
