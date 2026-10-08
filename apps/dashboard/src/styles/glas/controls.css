@@ -1,6 +1,6 @@
-/* [fork] Glas — controls that stage 4 introduces for the overview and the detail (plan docs/glas/PLAN-ETAPPE-4.md
-   K80): the segmented control, the switch, the pulse and the rolling value; the other pages and sheets get them in
-   stage 5.
+/* [fork] Glas — the controls (plans docs/glas/PLAN-ETAPPE-4.md K80, PLAN-ETAPPE-5.md K91–K93): the segmented control,
+   the switch, the pulse and the rolling value. Stage 4 brought them for the overview and the detail; stage 5 gives the
+   classic switches of the other pages and sheets the same look.
 
    Segmented control (GLAS-DESIGN §7.27, components/glas/Segment.tsx): track `fill`, lens `seg` + `segShadow` that
    slides with the snappy spring, equally wide options with text only. The size per use comes from a modifier
@@ -82,7 +82,8 @@
 }
 
 /* ---- Switch (GLAS-DESIGN §7.28): 51 × 31 capsule, knob 27 white with its shadow, on = iOS green and the knob 20 to
-   the right. Only in list rows; the button around it is the hit area (`role="switch"`, `aria-checked`). ---- */
+   the right. Only in list rows and card heads; on a tile the tile itself switches (K91). The Glas rows of the overview
+   draw it as `.g-switch`, the button around it is the hit area (`role="switch"`, `aria-checked`). ---- */
 
 :root[data-style='glas'] .g-switch {
   position: relative;
@@ -113,6 +114,117 @@
 
 :root[data-style='glas'] [aria-checked='true'] > .g-switch::after {
   translate: 20px 0;
+}
+
+/* The classic switches keep their markup and get the same look (K91): the control card of the detail, the automations,
+   the pool, the lights sheet, the device detail and the settings. The capsule is the track or, for the admin and the
+   device switch, the button itself; the knob is its child (the lights sheet: the track's ::after). The on rules list
+   the classic on selectors, so they outrank them. On a tile the pill stays as it is until the room (stage 5, K95). */
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle__track,
+    .auto-row-toggle__track,
+    .pool-switch__track,
+    .lights-modal__toggle,
+    .admin-toggle,
+    .device-toggle
+  ) {
+  width: 51px;
+  height: 31px;
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle__track,
+    .auto-row-toggle__track,
+    .pool-switch__track,
+    .lights-modal__toggle-track,
+    .admin-toggle,
+    .device-toggle
+  ) {
+  border: 0;
+  border-radius: 16px;
+  background: var(--g-switch-off);
+  box-shadow: none;
+  transition: background-color 250ms ease;
+}
+
+:root[data-style='glas'] .pool-switch__track {
+  padding: 2px;
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle input:checked + .pill-toggle__track,
+    .auto-row-toggle input:checked + .auto-row-toggle__track,
+    .pool-switch input:checked + .pool-switch__track,
+    .lights-modal__toggle input:checked + .lights-modal__toggle-track,
+    .admin-toggle--on,
+    .device-toggle--on
+  ) {
+  background: var(--g-switch-on);
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle__knob,
+    .auto-row-toggle__knob,
+    .pool-switch__thumb,
+    .admin-toggle__thumb,
+    .device-toggle__knob,
+    .device-toggle__thumb
+  ),
+:root[data-style='glas'] .lights-modal__toggle-track::after {
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  transition: transform var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob,
+    .auto-row-toggle input:checked + .auto-row-toggle__track .auto-row-toggle__knob,
+    .pool-switch input:checked + .pool-switch__track .pool-switch__thumb,
+    .admin-toggle--on .admin-toggle__thumb,
+    .device-toggle--on :is(.device-toggle__knob, .device-toggle__thumb)
+  ),
+:root[data-style='glas'] .lights-modal__toggle input:checked + .lights-modal__toggle-track::after {
+  background: var(--g-knob);
+  transform: translateX(20px);
+}
+
+/* Hit area 64 × 44 around the capsule (§7.28) without moving anything: a transparent ::before belongs to the label or
+   button, so a tap on it switches. The automations' label is already 44 high and only grows sideways. */
+:root[data-style='glas'] :is(.admin-toggle, .device-toggle, .lights-modal__toggle, .pool-switch)::before {
+  content: '';
+  position: absolute;
+  inset: -6.5px;
+}
+
+:root[data-style='glas'] .auto-row-toggle {
+  position: relative;
+  min-height: 44px;
+}
+
+:root[data-style='glas'] .auto-row-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0 -6.5px;
+}
+
+/* The pill of a switch card is only a picture (ToggleCard: aria-hidden, no tab stop, "the card switches"); its label
+   stops the click, so a tap right on it did nothing. Here the tap goes through to the card, which switches as a whole
+   (K91) — in the detail's control card and, until the room hides the pill (K95), on tiles. */
+:root[data-style='glas'] .toggle-card .pill-toggle {
+  pointer-events: none;
+}
+
+:root[data-style='glas'] :is(.admin-toggle, .device-toggle):focus-visible,
+:root[data-style='glas'] .auto-row-toggle input:focus-visible + .auto-row-toggle__track,
+:root[data-style='glas'] .pool-switch input:focus-visible + .pool-switch__track,
+:root[data-style='glas'] .lights-modal__toggle input:focus-visible + .lights-modal__toggle-track {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
 }
 
 /* ---- Pulse (GLAS-DESIGN §7.7, §7.10): a circle that switches grows to 1.12 and springs back, 700 ms. The element
@@ -235,6 +347,60 @@
   }
 
   :root[data-style='glas'] [aria-checked='true'] > .g-switch::after {
+    background: HighlightText;
+  }
+
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle__track,
+      .auto-row-toggle__track,
+      .pool-switch__track,
+      .lights-modal__toggle-track,
+      .admin-toggle,
+      .device-toggle
+    ) {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText;
+    background: Canvas;
+  }
+
+  :root[data-style='glas'] .pool-switch__track {
+    padding: 1px;
+  }
+
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle__knob,
+      .auto-row-toggle__knob,
+      .pool-switch__thumb,
+      .admin-toggle__thumb,
+      .device-toggle__knob,
+      .device-toggle__thumb
+    ),
+  :root[data-style='glas'] .lights-modal__toggle-track::after {
+    top: 1px;
+    left: 1px;
+    background: ButtonText;
+    box-shadow: none;
+  }
+
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle input:checked + .pill-toggle__track,
+      .auto-row-toggle input:checked + .auto-row-toggle__track,
+      .pool-switch input:checked + .pool-switch__track,
+      .lights-modal__toggle input:checked + .lights-modal__toggle-track,
+      .admin-toggle--on,
+      .device-toggle--on
+    ) {
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob,
+      .auto-row-toggle input:checked + .auto-row-toggle__track .auto-row-toggle__knob,
+      .pool-switch input:checked + .pool-switch__track .pool-switch__thumb,
+      .admin-toggle--on .admin-toggle__thumb,
+      .device-toggle--on :is(.device-toggle__knob, .device-toggle__thumb)
+    ),
+  :root[data-style='glas'] .lights-modal__toggle input:checked + .lights-modal__toggle-track::after {
     background: HighlightText;
   }
 

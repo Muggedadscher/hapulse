@@ -148,3 +148,19 @@ und übernommen, außer wo anders vermerkt.
 | N7 E-Verweise | Inventar- und Entscheid-Verweise unterschieden (Kopf). |
 | N8 Teilung, Zwischenvergleiche | Teilung 5a/5b, Klassisch-Vergleich nach Schritt 1 und 4 (§4, §5). |
 | N9 Dateiliste | `index.css`, `sheet-content.css`, `glasTokens.ts`, Core `index.ts`, beide Prüfskripte ergänzt (§2). |
+
+## 7. Abweichungen und Nachträge beim Bau
+
+### 7.1 Schalter (K91)
+
+- Die Regel gilt für alle Listen-Schalter in `controls.css`; die aus `detail.css` ist dort aufgegangen. `accent.css`
+  behält nur die Pille auf Kacheln (bis zum Raum, K95) und den alten `toggle-switch`.
+- **Trefferfläche** 64 × 44 über ein durchsichtiges `::before` an Label oder Knopf, das Layout bleibt. Die
+  Automations-Liste scrollt und schnitt die Fläche rechts ab; sie reicht in Glas 7 px in den Innenabstand der Karte
+  (`lists.css`), sichtbar ändert sich nichts. Ihre Zeilen werden 4 px höher (Label 44 statt 40, innerhalb von K94).
+- **Pille der Schalter-Karte:** Sie ist nur ein Bild (`ToggleCard`: `aria-hidden`, kein Tab-Halt), ihr Label hält den
+  Klick aber auf, deshalb tat ein Tipp genau auf die Pille nichts (auch in Klassisch, Nebenbefund 16). In Glas geht der
+  Tipp zur Karte durch (`pointer-events: none`), die als Ganzes schaltet, wie K91 es für Kacheln will. Das betrifft die
+  Steuerkarte im Detail und bis zum Raum-Schritt die Kacheln.
+- `pagesSwitches` prüft auf Handy (dunkel) und Desktop (hell): Automationen, Pool-Zeitplan, Einstellungen, Licht-Sheet,
+  Geräte-Detail und die Pille im Detail.

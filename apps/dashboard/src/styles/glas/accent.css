@@ -9,14 +9,9 @@
    (test/glasSelectors.test.ts) fails when one of the classes disappears upstream. */
 
 :root[data-style='glas'] .btn--primary,
-:root[data-style='glas'] .admin-toggle--on,
 :root[data-style='glas'] .entities-modal-progress::after,
-:root[data-style='glas'] .auto-row-toggle input:checked + .auto-row-toggle__track,
 :root[data-style='glas'] .pill-toggle input:checked + .pill-toggle__track,
 :root[data-style='glas'] .toggle-switch input:checked + .toggle-switch__track,
-:root[data-style='glas'] .pool-switch input:checked + .pool-switch__track,
-:root[data-style='glas'] .lights-modal__toggle input:checked + .lights-modal__toggle-track::after,
-:root[data-style='glas'] .device-toggle--on,
 :root[data-style='glas'] .light-card__fill,
 :root[data-style='glas'] .vacuum-card__btn--start:hover,
 :root[data-style='glas'] .changelog-modal__done,
@@ -79,16 +74,11 @@
   --accent-contrast: var(--g-on-prominent);
 }
 
-/* Switch knobs on the orange track are white in both modes (GLAS-DESIGN §7.28, token knob). Classic paints some of
-   them with --on-accent, which the re-scope above turns dark, others with a surface colour that is dark in the dark
-   mode. The off state and the iOS-green track (§7.28, D25) come with the switches in stage 5. */
+/* Switch knobs on the orange track are white in both modes (GLAS-DESIGN §7.28, token knob). Classic paints them with
+   --on-accent, which the re-scope above turns dark. Since stage 5 the switches in list rows are the iOS switch
+   (controls.css, K91); what is left here is the pill on tiles (until the room, K95) and the legacy switch. */
 :root[data-style='glas'] .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob,
-:root[data-style='glas'] .auto-row-toggle input:checked + .auto-row-toggle__track .auto-row-toggle__knob,
-:root[data-style='glas'] .toggle-switch input:checked ~ .toggle-switch__knob,
-:root[data-style='glas'] .pool-switch input:checked + .pool-switch__track .pool-switch__thumb,
-:root[data-style='glas'] .device-toggle--on .device-toggle__thumb,
-:root[data-style='glas'] .device-toggle--on .device-toggle__knob,
-:root[data-style='glas'] .admin-toggle--on .admin-toggle__thumb {
+:root[data-style='glas'] .toggle-switch input:checked ~ .toggle-switch__knob {
   background: var(--g-knob);
 }
 
@@ -97,8 +87,6 @@
    hide their ring today (.slider sets outline: none); they are listed so a ring added upstream stays ink too. */
 :root[data-style='glas'] :is(
     .btn--primary,
-    .admin-toggle--on,
-    .device-toggle--on,
     .changelog-modal__done,
     .energy-empty-state__btn,
     .hero-pill--lights-on,
@@ -120,9 +108,7 @@
     .nvr-mute,
     .nvr-datechip--rec button
   ):focus-visible,
-:root[data-style='glas'] .auto-row-toggle input:focus-visible + .auto-row-toggle__track,
-:root[data-style='glas'] .pill-toggle input:focus-visible + .pill-toggle__track,
-:root[data-style='glas'] .pool-switch input:focus-visible + .pool-switch__track {
+:root[data-style='glas'] .pill-toggle input:focus-visible + .pill-toggle__track {
   outline-color: var(--g-focus);
 }
 

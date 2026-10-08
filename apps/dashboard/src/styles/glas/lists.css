@@ -1,0 +1,10 @@
+/* [fork] Glas — lists on the pages (docs/GLAS-DESIGN.md §7.30, plan docs/glas/PLAN-ETAPPE-5.md K94): inset-grouped
+   lists and fields. Only presentation of the existing markup. */
+
+/* The automations' list scrolls (classic max-height 400) and clips at its edge, where the row's switch ends: the list
+   reaches 7 px into the card's padding and pads it back, so the switch's hit area (controls.css, K91) is not cut off.
+   Nothing moves. */
+:root[data-style='glas'] .auto-cat-card__list {
+  margin-right: -7px;
+  padding-right: 7px;
+}
