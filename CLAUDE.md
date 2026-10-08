@@ -149,7 +149,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0–3 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (Etappe 0–4 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -185,8 +185,16 @@ sauber übernehmen können.
   Garage schließen, Verriegeln; nie Öffnen oder Entriegeln, die Aktion läuft erst per Tipp, ihr Zwilling bleibt in der
   Zeile); das Detail ist ab 1100 px der Inspector (rechts, nicht modal, die Seite rückt zur Seite; `Modal`-Props
   `presentation`/`requestKey`, ein Routenwechsel schließt ihn). CSS in `styles/glas/gestures.css`, Prüfungen
-  `checks --part gestures` (`scripts/glas-checks-gestures.cjs`). Nächste Etappen 4–7 (Übersicht samt Inhalt des
-  Inspectors, übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  `checks --part gestures` (`scripts/glas-checks-gestures.cjs`). **Übersicht (Etappe 4, `docs/glas/PLAN-ETAPPE-4.md`):**
+  in beiden Stilen die Karte „Hinweise“ (Sektion `'hints'`, nur mit Abweichung, im Bearbeiten-Modus leer; Regeln in
+  Core `hints.ts`, Fenster `HintWindows` außerhalb des Rasters), „Aktiv“ an Szenen (Core `activeScene.ts`, Heuristik:
+  aktiv, bis sich ein Mitglied ändert) und Netz/Solar gestapelt in der Energie-Karte. Nur Glas: eigene Körper der Karten
+  in `components/glas/home/` (Hauptraum mit Lichtkreisen, Geräte als Kachel/Zeile, Klima und Rollläden mit Raumauswahl,
+  `EnergyGlas` mit Tag/Woche/Monat über `ha/useEnergyWindow.ts`), Detail mit `LightBrightnessControl` und `Segment`,
+  Bearbeiten ab 900 px mit `SizeBar` (S/M/L, Feld `tallSections`, „⋯“ = `SizeSheet`), Kontextmenü auch an Szenen und
+  Geräten (`GlasMenuTarget`). CSS in `styles/glas/{home,home-cards,home-lists,controls,detail,edit,nvr}.css`. Prüfungen
+  `checks --part home` (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus
+  `ha/demoControl.ts`). Nächste Etappen 5–7 (übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

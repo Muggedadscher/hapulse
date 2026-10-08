@@ -1,0 +1,413 @@
+/* [fork] Glas — edit mode of the overview (plan docs/glas/PLAN-ETAPPE-4.md K78, GLAS-DESIGN §7.32, sketch
+   glas/screens/g5d-bearbeiten). The other pages keep the classic badges and handles until stage 5.
+
+   One bar per card (components/glas/home/SizeBar.tsx) instead of the classic badges, dots and handles, which stay in
+   the DOM and are switched off here. No dashed outline, no extra margins; a hidden card is drawn at .4, its bar not.
+
+   Where the bar sits:
+   - from 900 px between the title and the surface (the sketch): 36 high, 2 px into the 44-px title row, 10 above the
+     surface — the cards' title gap (--g-card-gap, 6) grows by 38 to 44. Hit areas 44 (the visible parts 36).
+   - above the card where the title is inside the surface (a capped cell without its own scroll body, see home.css)
+     and above the hints while they are a row of capsules.
+   - below 900 px only the eye and the phone, at the right end of the title row (the link is hidden in edit mode);
+     the main room has its title inside the card there, so its bar sits above it.
+   L ("taller", core sizePresets.ts) = a minimum height of 470 px for the cell from 900 px; Klassisch and the phone
+   ignore it. */
+
+@keyframes g-bar-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* ---- classic affordances off, the cell without its margins and outline ---- */
+
+:root[data-style='glas'] .home-page .overview-grid__cell--editing {
+  margin: 0;
+}
+
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell--editing
+  > :is(.edit-badge, .overview-span-dots, .overview-resize-handle, .section-height-dots, .section-height-handle) {
+  display: none;
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell--editing .edit-section-outline {
+  outline: none;
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell--editing.overview-grid__cell--hidden {
+  opacity: 1;
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell--editing.overview-grid__cell--hidden > .edit-section-outline {
+  opacity: 0.4;
+}
+
+/* links in the card heads are hidden while editing (§7.32) */
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell--editing
+  :is(
+    .scenes-card__link,
+    .devices-card__all-link,
+    .climate-card__link,
+    .blinds-card__link,
+    .security-card__view-link,
+    .activity-card__see-all,
+    .nvr-home__link,
+    .g-card-head__link
+  ) {
+  visibility: hidden;
+}
+
+/* ---- the bar ---- */
+
+:root[data-style='glas'] .g-size-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  height: 44px;
+}
+
+:root[data-style='glas'] .g-size-bar > * {
+  animation: g-bar-pop var(--g-d-bouncy) var(--g-spring-bouncy) backwards;
+  animation-delay: calc(min(var(--i, 0), 10) * 30ms);
+}
+
+:root[data-style='glas'] .g-size-bar__space {
+  flex: 1 1 auto;
+  min-width: 4px;
+}
+
+/* ‹ ›, "⋯" and the segment only from 900 px */
+:root[data-style='glas'] .g-size-bar > .g-size-bar__wide {
+  display: none;
+}
+
+:root[data-style='glas'] .g-size-bar__btn {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--g-label);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the visible circle 36 */
+:root[data-style='glas'] .g-size-bar__btn::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  background: var(--g-fill);
+  transition:
+    background-color 0.2s ease,
+    scale var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] .g-size-bar__btn > svg {
+  position: relative;
+}
+
+:root[data-style='glas'] .g-size-bar__btn:active:not(:disabled)::before {
+  scale: 0.9;
+}
+
+/* pressed = hidden: inverted (label surface, bg glyph) */
+:root[data-style='glas'] .g-size-bar__btn[aria-pressed='true'] {
+  color: var(--bg);
+}
+
+:root[data-style='glas'] .g-size-bar__btn[aria-pressed='true']::before {
+  background: var(--g-label);
+}
+
+:root[data-style='glas'] .g-size-bar__btn:disabled {
+  color: var(--g-label-3);
+  cursor: default;
+}
+
+:root[data-style='glas'] .g-size-bar__btn:focus-visible {
+  outline: none;
+}
+
+:root[data-style='glas'] .g-size-bar__btn:focus-visible::before {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .g-size-bar__btn:hover:not(:disabled, [aria-pressed='true'])::before {
+    background: var(--g-fill-2);
+  }
+}
+
+/* S / M / L: hit area 44, visible track 36 */
+:root[data-style='glas'] .g-seg--size {
+  --g-seg-h: 44px;
+  --g-seg-inset: 4px;
+  --g-seg-pad: 2px;
+  flex: none;
+  width: 120px;
+}
+
+/* a size that matches no preset: no lens */
+:root[data-style='glas'] .g-seg[data-none] .g-seg__lens {
+  visibility: hidden;
+}
+
+/* ---- below 900 px: eye and phone at the end of the title row ---- */
+
+@media (max-width: 899px) {
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell--editing
+    :is(
+      .scenes-card__header,
+      .devices-card__header,
+      .climate-card__header,
+      .blinds-card__header,
+      .security-card__header,
+      .waste-card__header,
+      .activity-card__header,
+      .nvr-home__header,
+      .hints-card__header,
+      .g-card-head
+    ),
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing .rooms-quick-section > .section-label {
+    padding-right: 88px;
+  }
+
+  /* the main room has its title inside the card: the bar goes above it */
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing[data-section='hero'] > .edit-section-outline {
+    margin-top: 48px;
+  }
+
+  /* a capped card without its own scroll body has the title inside the surface: the bar at its padding */
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell--editing[class*='section-h-']:not(:has(.card-scroll-body))
+    > .g-size-bar {
+    top: 6px;
+    right: 12px;
+  }
+
+  /* its pinned title row (home.css) keeps clear of the bar: 12 + 88 */
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell--editing[class*='section-h-']
+    :is(
+      .scenes-card,
+      .devices-card,
+      .climate-card,
+      .blinds-card,
+      .security-card,
+      .waste-card,
+      .activity-card,
+      .nvr-home,
+      .hints-card
+    ):not(:has(.card-scroll-body))
+    > :first-child {
+    padding-right: 100px;
+  }
+}
+
+/* ---- from 900 px: the whole bar between title and surface ---- */
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .g-size-bar {
+    container: g-bar / inline-size;
+    top: 38px;
+    left: 0;
+  }
+
+  :root[data-style='glas'] .g-size-bar > .g-size-bar__wide {
+    display: grid;
+  }
+
+  :root[data-style='glas'] .g-size-bar > .g-seg.g-size-bar__wide {
+    display: flex;
+  }
+
+  /* the surface moves down by the bar: title gap 6 → 44 */
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell--editing
+    :is(
+      .scenes-card,
+      .devices-card,
+      .climate-card,
+      .blinds-card,
+      .security-card,
+      .waste-card,
+      .activity-card,
+      .nvr-home,
+      .hints-card,
+      .hero-room-card
+    ) {
+    --g-card-gap: 44px;
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing .g-energy > .g-card-head {
+    margin-bottom: 44px;
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing:not([class*='section-h-']) .rooms-quick-section {
+    gap: 60px;
+  }
+
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell--editing:not([class*='section-h-'])
+    .rooms-quick-section::before {
+    inset: 88px 0 0;
+  }
+
+  /* title inside the surface (capped, no own scroll body) or the hints as a row of capsules: the bar above */
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell--editing:is(
+      [class*='section-h-']:not(:has(.card-scroll-body)),
+      :has(.hints-card__list)
+    )
+    > .g-size-bar {
+    top: 0;
+  }
+
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell--editing:is(
+      [class*='section-h-']:not(:has(.card-scroll-body)),
+      :has(.hints-card__list)
+    )
+    > .edit-section-outline {
+    margin-top: 48px;
+  }
+
+  /* a capped card with its title above the surface: the cap keeps the size it has outside edit mode (bar + 38) */
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing.section-h-1:has(.card-scroll-body) > .edit-section-outline {
+    height: calc(180px + 38px);
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing.section-h-2:has(.card-scroll-body) > .edit-section-outline {
+    height: calc(280px + 38px);
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing.section-h-3:has(.card-scroll-body) > .edit-section-outline {
+    height: calc(400px + 38px);
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing.section-h-4:has(.card-scroll-body) > .edit-section-outline {
+    height: calc(560px + 38px);
+  }
+
+  /* L: taller (the bar's 38 on top while editing). The cards' classic 400-px cap goes; a scrolling list fills the
+     height instead of pushing it (flex basis 0). */
+  :root[data-style='glas'] .home-page .overview-grid__cell.g-tall {
+    min-height: 470px;
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid > .g-tall > .overview-grid__cell--editing {
+    min-height: calc(470px + 38px);
+  }
+
+  :root[data-style='glas']
+    .home-page
+    .g-tall
+    :is(.devices-card, .activity-card, .climate-card, .blinds-card, .waste-card, .nvr-home) {
+    max-height: none;
+  }
+
+  :root[data-style='glas'] .home-page .g-tall .devices-card__list--scrollable {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
+  }
+}
+
+/* a narrow card (four columns): circles 32, segment 96 — the bar still fits 280 px */
+@container g-bar (max-width: 339px) {
+  :root[data-style='glas'] .g-size-bar__btn {
+    width: 36px;
+  }
+
+  :root[data-style='glas'] .g-size-bar__btn::before {
+    inset: 6px 2px;
+  }
+
+  :root[data-style='glas'] .g-seg--size {
+    --g-seg-inset: 6px;
+    width: 96px;
+  }
+}
+
+/* ---- the "⋯" window: two labelled segments ---- */
+
+:root[data-style='glas'] .g-size-sheet__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:root[data-style='glas'] .g-size-sheet__group + .g-size-sheet__group {
+  margin-top: 20px;
+}
+
+:root[data-style='glas'] .g-size-sheet__label {
+  padding-left: 4px;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .g-seg--sheet {
+  --g-seg-h: 44px;
+  --g-seg-inset: 4px;
+  --g-seg-pad: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .g-size-bar > * {
+    animation: g-fade-in 200ms ease backwards !important;
+  }
+
+  :root[data-style='glas'] .g-size-bar__btn::before {
+    transition: background-color 0.2s ease !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .g-size-bar__btn::before {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+  }
+
+  :root[data-style='glas'] .g-size-bar__btn[aria-pressed='true'] {
+    color: HighlightText;
+  }
+
+  :root[data-style='glas'] .g-size-bar__btn[aria-pressed='true']::before {
+    border-color: Highlight;
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] .g-size-bar__btn:disabled {
+    color: GrayText;
+  }
+
+  :root[data-style='glas'] .g-size-bar__btn:disabled::before {
+    border-color: GrayText;
+  }
+}

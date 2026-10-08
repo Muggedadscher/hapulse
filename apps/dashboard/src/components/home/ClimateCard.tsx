@@ -10,6 +10,8 @@ import { useT, useStateLabel, useLocale } from '../../i18n/useT'; // [fork] useL
 import { formatNumber } from '@hapulse/core'; // [fork]
 import './ClimateCard.css';
 import { climateSetpoint, gaugeRange, stepSetpoint } from './climateLogic'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (docs/glas/PLAN-ETAPPE-4.md K83)
+import { GlasClimateBody } from '../glas/home/GlasClimateBody'; // [fork]
 
 interface ClimateCardProps {
   entities: HassEntityMap;
@@ -133,6 +135,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
   const t = useT();
   const locale = useLocale(); // [fork] number formatting
   const sl = useStateLabel();
+  const isGlas = useIsGlas(); // [fork]
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   // Build list of rooms that have at least one climate entity
@@ -262,6 +265,17 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
       </div>
 
       <div className="card-scroll-body card-scroll-wrap">
+      {isGlas ? ( // [fork] Glas: ring with the setpoint, the rooms as radios
+        <GlasClimateBody
+          room={activeRoom}
+          rooms={climateRooms}
+          onSelect={setSelectedRoomName}
+          setpoint={setpointTemp}
+          sp={sp}
+          onDown={handleDown}
+          onUp={handleUp}
+        />
+      ) : (<>{/* [fork] */}
       {/* Controls — top, reflect selected room */}
       <div className="climate-card__gauge-wrap" data-hvac={colorKey}>
         <ArcGauge value={currentTemp} label={gaugeLabel} size={128} fillColor={gaugeColor} {...gaugeRange(sp)} />
@@ -316,6 +330,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
           );
         })}
       </ul>
+      </>)}{/* [fork] */}
       </div>
     </Card>
   );

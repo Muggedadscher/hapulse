@@ -20,6 +20,7 @@ import { garageSummary, isGarageDoor } from '@hapulse/core'; // [fork]
 import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
 import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
 import { lockSummary, lockSummaryText, lockTone } from '../security/lockLogic'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] row tones only in Glas
 
 interface SecurityCardProps {
   entities: HassEntityMap;
@@ -98,6 +99,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
   // Cameras
   const cameras = all.filter((e) => e.entity_id.startsWith('camera.'));
   const cameraCount = useCameraCount(cameras.length); // [fork] Sentinel's cameras when it is the source
+  const isGlas = useIsGlas(); // [fork]
 
   // Overall status: positive if alarm disarmed/absent, no unlocked locks, no active motion, no open sensors
   const anyAlert =
@@ -117,6 +119,20 @@ export function SecurityCard({ entities }: SecurityCardProps) {
     windowSensors.length > 0 ||
     doorSensors.length > 0;
   if (!hasAnySecurityEntity) return null;
+
+  // [fork] Glas only (styles/glas/home-lists.css, GLAS-DESIGN §7.13): calm rows stay grey, a problem row gets a tone.
+  // An armed alarm is calm; triggered or pending is the alarm, arming a warning. Open lock or gate = alarm.
+  // Klassisch keeps upstream's markup (no data-g-* attribute).
+  type Row = 'alarm' | 'locks' | 'garage' | 'windows' | 'doors' | 'motion' | 'cameras';
+  const gTone: Partial<Record<Row, string | undefined>> = !isGlas ? {} : {
+    alarm: alarmTriggered ? 'alarm' : alarmState === 'arming' ? 'warn' : undefined,
+    locks: lockState === 'open' ? 'alarm' : lockState === 'problem' ? 'warn' : undefined,
+    garage: garageTone === 'open' ? 'alarm' : garageTone === 'unavailable' ? 'warn' : undefined,
+    windows: openWindows.length > 0 ? 'warn' : undefined,
+    doors: openDoors.length > 0 ? 'warn' : undefined,
+    motion: activeMotion.length > 0 ? 'info' : undefined,
+    cameras: cameraCount.active < cameraCount.total ? 'warn' : undefined,
+  };
 
   return (
     <Card className="security-card">
@@ -148,7 +164,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
       <div className="card-scroll-body card-scroll-wrap">
       {/* Alarm row */}
       {alarm && (
-        <div className="security-row">
+        <div className="security-row" data-g-tone={gTone.alarm}>{/* [fork] */}
           <span
             className={`security-row__dot security-row__dot--${alarmColor}`}
             aria-hidden="true"
@@ -165,7 +181,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
       {/* Locks */}
       {locks.length > 0 && (
-        <div className="security-row">
+        <div className="security-row" data-g-tone={gTone.locks}>{/* [fork] */}
           <span className={`security-row__dot security-row__dot--${lockColor}`} aria-hidden="true" />{/* [fork] */}
           <span className="security-row__icon" aria-hidden="true">
             {lockState === 'open' /* [fork] */
@@ -185,7 +201,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
       {/* [fork] Garage doors / gates */}
       {garage.total > 0 && (
-        <div className="security-row">
+        <div className="security-row" data-g-tone={gTone.garage}>{/* [fork] */}
           <span className={`security-row__dot security-row__dot--${garageColor}`} aria-hidden="true" />
           <span className="security-row__icon" aria-hidden="true">
             <GarageSummaryIcon tone={garageTone} size={15} />
@@ -203,7 +219,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
       {/* Windows */}
       {windowSensors.length > 0 && (
-        <div className="security-row">
+        <div className="security-row" data-g-tone={gTone.windows}>{/* [fork] */}
           <span
             className={`security-row__dot${openWindows.length === 0 ? ' security-row__dot--ok' : ' security-row__dot--warn'}`}
             aria-hidden="true"
@@ -222,7 +238,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
       {/* Doors */}
       {doorSensors.length > 0 && (
-        <div className="security-row">
+        <div className="security-row" data-g-tone={gTone.doors}>{/* [fork] */}
           <span
             className={`security-row__dot${openDoors.length === 0 ? ' security-row__dot--ok' : ' security-row__dot--danger'}`}
             aria-hidden="true"
@@ -243,7 +259,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
       {/* Motion */}
       {motionSensors.length > 0 && (
-        <div className="security-row">
+        <div className="security-row" data-g-tone={gTone.motion}>{/* [fork] */}
           <span
             className={`security-row__dot${activeMotion.length === 0 ? ' security-row__dot--ok' : ' security-row__dot--warn'}`}
             aria-hidden="true"
@@ -260,7 +276,7 @@ export function SecurityCard({ entities }: SecurityCardProps) {
 
       {/* Cameras */}
       {cameraCount.total > 0 && ( // [fork]
-        <div className="security-row">
+        <div className="security-row" data-g-tone={gTone.cameras}>{/* [fork] */}
           <span className={`security-row__dot security-row__dot--${cameraCount.active < cameraCount.total ? 'warn' : 'ok'}`} aria-hidden="true" />
           <span className="security-row__icon" aria-hidden="true">
             <Camera size={15} strokeWidth={1.75} />

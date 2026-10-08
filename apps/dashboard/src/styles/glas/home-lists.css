@@ -1,0 +1,1614 @@
+/* [fork] Glas — contents of the overview's control and list cards (plan docs/glas/PLAN-ETAPPE-4.md K83;
+   GLAS-DESIGN §7.6, §7.11–§7.17): climate and blinds (ring, room picker, rows per room), security, waste, activity,
+   the room tiles and the hints. The frame of the cards (title above the surface) is home.css; scenes, main room,
+   devices and energy are home-cards.css. */
+
+/* ---- Ring (components/glas/home/GlasArc.tsx) ---- */
+
+:root[data-style='glas'] .g-arc {
+  display: block;
+  max-width: none;
+}
+
+:root[data-style='glas'] .g-arc__track {
+  stroke: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-arc__value {
+  stroke: var(--g-ctl);
+  transition:
+    stroke-dashoffset var(--g-d-bouncy) var(--g-spring-bouncy),
+    stroke 350ms ease,
+    opacity 200ms ease;
+}
+
+/* ---- Control above the rooms (components/glas/home/GlasClimateBody.tsx, GlasBlindsBody.tsx) ----
+   Phone (§7.11, §7.12): ring with the value and its word, beside it the room, its state and the buttons. The tone
+   (`data-tone`, what the thermostat does) colours the ring and the state; idle and off are grey. */
+
+:root[data-style='glas'] .g-ctl {
+  --g-ctl: var(--g-label-3);
+  --g-ctl-ink: var(--g-label-2);
+  --g-ctl-bg: var(--g-fill);
+  --g-ctl-fg: var(--g-label-2);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 14px;
+}
+
+:root[data-style='glas'] .g-ctl[data-tone='heat'] {
+  --g-ctl: var(--g-orange);
+  --g-ctl-ink: var(--g-orange-ink);
+  --g-ctl-bg: var(--g-orange);
+  --g-ctl-fg: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .g-ctl[data-tone='cool'] {
+  --g-ctl: var(--g-blue);
+  --g-ctl-ink: var(--g-blue-ink);
+  --g-ctl-bg: var(--g-blue-soft);
+  --g-ctl-fg: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] .g-ctl[data-tone='auto'] {
+  --g-ctl: var(--g-green);
+  --g-ctl-ink: var(--g-green-ink);
+  --g-ctl-bg: var(--g-green-soft);
+  --g-ctl-fg: var(--g-green-ink);
+}
+
+/* the blinds ring is how far closed: always grey, it follows the motor slowly */
+:root[data-style='glas'] .g-ctl--blinds {
+  --g-ctl: var(--g-label-2);
+}
+
+:root[data-style='glas'] .g-ctl--blinds .g-arc__value {
+  transition:
+    stroke-dashoffset 1.4s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 350ms ease,
+    opacity 200ms ease;
+}
+
+:root[data-style='glas'] .g-ctl__gauge {
+  position: relative;
+  flex: none;
+  width: 116px;
+  height: 116px;
+}
+
+:root[data-style='glas'] :is(.g-ctl__arc--big, .g-ctl__marker, .g-ctl__center-sub) {
+  display: none;
+}
+
+:root[data-style='glas'] .g-ctl__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+:root[data-style='glas'] .g-ctl__value {
+  height: 28px;
+  color: var(--g-label);
+  font: 600 22px / 28px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-ctl__label {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .g-ctl__side {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-ctl__title {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-ctl__sub {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .g-ctl__action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--g-ctl-ink);
+  font: 600 15px / 20px var(--g-font);
+  transition: color 300ms ease;
+}
+
+:root[data-style='glas'] .g-ctl__action-circle {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--g-ctl-bg);
+  color: var(--g-ctl-fg);
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+
+:root[data-style='glas'] .g-ctl__buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+:root[data-style='glas'] .g-ctl__btn {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    scale var(--g-d-snappy) var(--g-spring-snappy),
+    opacity 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-ctl__btn:active:not(:disabled) {
+  scale: 0.92;
+  transition-duration: 120ms;
+}
+
+:root[data-style='glas'] .g-ctl__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---- Rooms as a choice (components/glas/home/GlasRoomPicker.tsx) ----
+   Phone: full-width rows of 48 with a separator from the text on, the check on the chosen one; about six rows, the
+   rest scrolls (not in a height-capped cell: there the whole body scrolls). */
+
+:root[data-style='glas'] .g-pick {
+  max-height: calc(6 * 48px);
+  margin: 0 -16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  scrollbar-width: thin;
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .g-pick {
+  max-height: none;
+  overflow: visible;
+}
+
+:root[data-style='glas'] .g-pick__row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 0 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-pick__row:active {
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-pick__row:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .g-pick__line {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding-right: 16px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .g-pick__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-pick__row[aria-checked='true'] .g-pick__name {
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .g-pick__note {
+  display: none;
+}
+
+:root[data-style='glas'] .g-pick__value {
+  flex: none;
+  color: var(--g-label-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-pick__check {
+  flex: none;
+  max-width: none;
+  color: var(--g-accent-ink);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+:root[data-style='glas'] .g-pick__row[aria-checked='true'] .g-pick__check {
+  opacity: 1;
+}
+
+/* ---- The climate and blinds cards ----
+   The ring and the rooms need more than the classic 400-px cap; a height-capped cell keeps its cap (Page.css). */
+
+:root[data-style='glas'] .home-page :is(.climate-card:has(.g-ctl), .blinds-card:has(.g-ctl)) {
+  max-height: none;
+}
+
+@media (max-width: 899px) {
+  :root[data-style='glas'] .home-page :is(.climate-card:has(.g-ctl), .blinds-card:has(.g-ctl)) {
+    padding-bottom: 0;
+  }
+
+  :root[data-style='glas'] .g-blinds__desk {
+    display: none;
+  }
+}
+
+/* ---- Desktop: climate (§7.11) ----
+   A bigger ring (168, its open end below the 150-high box) with the setpoint and what the thermostat does inside, a
+   marker on the ring for the current temperature, − / + outside below; the rooms below with what heats or cools. */
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .home-page .climate-card:has(.g-ctl) {
+    container: g-clim / inline-size;
+    padding-bottom: 6px;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate {
+    position: relative;
+    display: block;
+    width: 168px;
+    height: 150px;
+    margin: 2px auto 0;
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__gauge {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__arc {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__arc--big {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-arc__track {
+    stroke: var(--g-fill-2);
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__marker {
+    position: absolute;
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    box-shadow: inset 0 0 0 2px var(--g-label);
+    transition:
+      left 0.6s var(--g-spring-smooth),
+      top 0.6s var(--g-spring-smooth);
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__center {
+    inset: 46px 0 auto;
+    justify-content: flex-start;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__value {
+    height: 41px;
+    font-size: 34px;
+    line-height: 41px;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__label {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__center-sub {
+    display: block;
+    color: var(--g-ctl-ink);
+    font: 600 13px / 18px var(--g-font);
+    white-space: nowrap;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__side {
+    display: contents;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate :is(.g-ctl__title, .g-ctl__sub, .g-ctl__action) {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__buttons {
+    position: absolute;
+    inset: auto -56px 2px;
+    justify-content: space-between;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__btn {
+    pointer-events: auto;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__btn > svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate + .g-pick {
+    max-height: calc(6 * 46px);
+    margin-top: 12px;
+    border-radius: 0;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate + .g-pick .g-pick__row {
+    min-height: 46px;
+    padding-left: 20px;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate + .g-pick .g-pick__line {
+    gap: 8px;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate + .g-pick .g-pick__row:first-child .g-pick__line {
+    border-top: 0;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate + .g-pick .g-pick__note {
+    display: inline;
+    flex: none;
+    color: var(--g-orange-ink);
+    font: 600 13px / 18px var(--g-font);
+    white-space: nowrap;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate + .g-pick .g-pick__note[data-tone='cool'] {
+    color: var(--g-blue-ink);
+  }
+
+  :root[data-style='glas'] .g-ctl--climate + .g-pick .g-pick__check {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* a narrow card (four columns): − / + closer to the ring */
+@container g-clim (max-width: 299px) {
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__buttons {
+    inset-inline: -48px;
+  }
+}
+
+/* ---- Desktop: blinds (§7.12) ----
+   A row per room: its name, a bar for how far it is open and its state, then an Auf / Stopp / Zu capsule; at the
+   bottom "Alle öffnen" / "Alle schließen". About five rows, the rest scrolls. */
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .home-page .blinds-card:has(.g-ctl) {
+    padding-bottom: 8px;
+  }
+
+  :root[data-style='glas'] .g-blinds__phone {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-blinds__desk {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    margin: -12px -16px 0;
+  }
+}
+
+:root[data-style='glas'] .g-blinds__rows {
+  max-height: calc(5 * 64px);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .g-blinds__rows {
+  max-height: none;
+  overflow: visible;
+}
+
+:root[data-style='glas'] .g-blinds__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px 0 20px;
+}
+
+:root[data-style='glas'] .g-blinds__info {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 64px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .g-blinds__row:first-child .g-blinds__info {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .g-blinds__name {
+  overflow: hidden;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-blinds__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+:root[data-style='glas'] .g-blinds__bar {
+  flex: 1 1 auto;
+  max-width: 120px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .g-blinds__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--g-label-3);
+  transform-origin: left center;
+  transition: transform 0.5s var(--g-spring-smooth);
+}
+
+:root[data-style='glas'] .g-blinds__state {
+  flex: none;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-blinds__caps {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: 44px;
+  padding: 0 2px;
+  border-radius: 999px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-blinds__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--g-label);
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    scale var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] .g-blinds__btn:active {
+  scale: 0.9;
+  transition-duration: 120ms;
+}
+
+:root[data-style='glas'] .g-blinds__all {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding: 10px 16px 0 20px;
+}
+
+:root[data-style='glas'] .g-blinds__all-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: scale var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] .g-blinds__all-btn:active {
+  scale: 0.97;
+  transition-duration: 120ms;
+}
+
+/* ---- Capped cells: a scroll body spans the surface, so rows that reach its edges are not clipped ---- */
+
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell[class*='section-h-']
+  :is(.climate-card, .security-card, .activity-card)
+  .card-scroll-body {
+  margin-inline: -16px;
+  padding-inline: 16px;
+}
+
+/* ---- Security (SecurityCard, `data-g-tone` per row; §7.13) ----
+   The full list with plain symbols; only a deviation gets a colour: alarm (lock or gate open, alarm going off) red,
+   warning (window or door open, arming, a lock or gate out of reach, a camera not recording) yellow, motion blue on
+   the desktop. The phone tints symbol and value, the desktop the whole row (no separators beside it). The rows open
+   nothing, as in Klassisch, so they carry no chevron. "All sensors normal" is the footnote below the surface on the
+   phone (inside it while the cell is capped) and left out on the desktop. */
+
+:root[data-style='glas'] .home-page .security-card {
+  padding-bottom: 0;
+}
+
+:root[data-style='glas'] .home-page .security-card__header {
+  margin-bottom: var(--g-card-gap);
+}
+
+:root[data-style='glas'] .home-page .security-card .security-row {
+  position: relative;
+  gap: 0;
+  min-height: 52px;
+  margin: 0 -16px;
+  padding: 0 16px;
+  border-bottom: 0;
+}
+
+/* the separator starts at the text */
+:root[data-style='glas'] .home-page .security-card .security-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 56px;
+  height: 0.5px;
+  background: var(--g-sep);
+}
+
+:root[data-style='glas'] .home-page .security-card .security-row:first-child::before {
+  content: none;
+}
+
+:root[data-style='glas'] .home-page .security-card :is(.security-row__dot, .security-card__summary-dot) {
+  display: none;
+}
+
+:root[data-style='glas'] .home-page .security-card .security-row__icon {
+  justify-content: flex-start;
+  width: 24px;
+  margin-right: 16px;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .home-page .security-card .security-row__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+:root[data-style='glas'] .home-page .security-card .security-row__label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .home-page .security-card .security-row__value {
+  flex: none;
+  max-width: 60%;
+  margin-left: 8px;
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .home-page .security-row[data-g-tone='alarm'] :is(.security-row__icon, .security-row__value) {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .home-page .security-row[data-g-tone='warn'] :is(.security-row__icon, .security-row__value) {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .home-page .security-row:is([data-g-tone='alarm'], [data-g-tone='warn']) .security-row__value {
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .home-page .security-card:has(.security-card__summary)::before {
+  bottom: 26px;
+}
+
+:root[data-style='glas'] .home-page .security-card__summary {
+  display: block;
+  margin: 8px 0 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell[class*='section-h-']
+  .security-card:has(.security-card__summary)::before {
+  bottom: 0;
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .security-card__summary {
+  margin-bottom: 12px;
+}
+
+/* ---- Waste (WasteCard's Glas list, §7.14) ----
+   A row per bin, the next one first: bin dot, name and date, the countdown on the right. Phone: the date under the
+   name and a chevron. Desktop: the next bin's row is taller ("Als Nächstes", countdown in orange ink), the date sits
+   under the countdown, no chevron. Every row opens the bin's window, as in Klassisch. */
+
+:root[data-style='glas'] .home-page .waste-card {
+  padding-bottom: 0;
+}
+
+:root[data-style='glas'] .home-page .waste-card__header {
+  margin-bottom: var(--g-card-gap);
+}
+
+:root[data-style='glas'] .g-waste {
+  margin: 0 -16px;
+  padding: 0;
+  list-style: none;
+}
+
+:root[data-style='glas'] .g-waste__row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 60px;
+  padding: 0 0 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--g-label);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-waste__row:active {
+  background: var(--g-fill);
+  transition-duration: 0s;
+}
+
+:root[data-style='glas'] .g-waste__row:focus-visible {
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .g-waste__dot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0 21px 0 5px;
+  border-radius: 50%;
+  background: var(--g-bin-rest);
+  box-shadow: inset 0 0 0 0.5px var(--g-sep);
+}
+
+:root[data-style='glas'] .g-waste__dot[data-tone='info'] {
+  background: var(--g-bin-paper);
+}
+
+:root[data-style='glas'] .g-waste__dot[data-tone='warning'] {
+  background: var(--g-bin-yellow);
+}
+
+:root[data-style='glas'] .g-waste__dot[data-tone='positive'] {
+  background: var(--g-bin-bio);
+}
+
+:root[data-style='glas'] .g-waste__dot[data-tone='danger'] {
+  background: var(--g-red);
+}
+
+:root[data-style='glas'] .g-waste__line {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  align-self: stretch;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 12px 8px 0;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .g-waste__row[data-next] .g-waste__line {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .g-waste__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:root[data-style='glas'] :is(.g-waste__name, .g-waste__date, .g-waste__count, .g-waste__over) {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-waste__name {
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .g-waste__row[data-next] .g-waste__name {
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .g-waste__date {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] :is(.g-waste__over, .g-waste__date--end) {
+  display: none;
+}
+
+:root[data-style='glas'] .g-waste__when {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 50%;
+}
+
+:root[data-style='glas'] .g-waste__count {
+  max-width: 100%;
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .g-waste__row[data-next] .g-waste__count {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .g-waste__chev {
+  flex: none;
+  color: var(--g-label-3);
+}
+
+/* ---- Activity (ActivityCard, §7.16) ----
+   Five calm rows: name, what happened and when. Phone without symbols, the rows indented by 16 with the separator
+   from there; desktop with the plain symbol in a 36 column. The rows open nothing, as in Klassisch. */
+
+:root[data-style='glas'] .home-page .activity-card {
+  padding-bottom: 0;
+}
+
+:root[data-style='glas'] .home-page .activity-card__header {
+  margin-bottom: var(--g-card-gap);
+}
+
+:root[data-style='glas'] .home-page .activity-card .activity-row {
+  position: relative;
+  gap: 12px;
+  min-height: 60px;
+  margin-right: -16px;
+  padding: 8px 16px 8px 0;
+  border-top: 0.5px solid var(--g-sep);
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .home-page .activity-card .activity-row:first-child {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .home-page .activity-card .activity-row__icon {
+  display: none;
+}
+
+:root[data-style='glas'] .home-page .activity-card .activity-row__info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .home-page .activity-card .activity-row__name {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .home-page .activity-card .activity-row__desc {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .home-page .activity-card .activity-row__time {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Rooms (RoomsQuickAccess → components/glas/home/GlasRoomTile.tsx, §7.17) ----
+   Phone: two columns of tiles on the page. Desktop: the section is a card like the others (title above the surface)
+   with a grid of tiles in card2. A status (window or door open, gate open, water, smoke) tints the circle and makes
+   its line bold; a light on makes the circle yellow. A capped cell scrolls the whole section (Page.css), so the
+   section itself is the surface there and the title sits inside it, as for the cards in home.css. */
+
+:root[data-style='glas'] .home-page .rooms-quick-section {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .home-page .rooms-quick-section > .section-label {
+  min-height: 44px;
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .home-page .rooms-quick-section > .section-label > :first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  text-transform: capitalize;
+}
+
+/* the hairline after the title */
+:root[data-style='glas'] .home-page .rooms-quick-section > .section-label > :last-child {
+  display: none;
+}
+
+:root[data-style='glas'] .g-rooms__icon {
+  flex: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .home-page .rooms-quick-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+:root[data-style='glas'] .g-room-item {
+  display: flex;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-room {
+  --g-room-circle: var(--g-fill);
+  --g-room-glyph: var(--g-label-2);
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 96px;
+  padding: 13px 12px 12px 16px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  color: var(--g-label);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 350ms ease,
+    box-shadow 350ms ease,
+    scale var(--g-d-smooth) var(--g-spring-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-room:active {
+  scale: 0.97;
+  transition-duration: 120ms;
+}
+
+:root[data-style='glas'] .g-room[data-tone='on'] {
+  --g-room-circle: var(--g-yellow);
+  --g-room-glyph: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .g-room[data-tone='warn'] {
+  --g-room-circle: var(--g-warn-soft);
+  --g-room-glyph: var(--g-warn-ink);
+  box-shadow: inset 0 0 0 1.5px var(--g-warn-soft);
+}
+
+:root[data-style='glas'] .g-room[data-tone='alarm'] {
+  --g-room-circle: var(--g-red-soft);
+  --g-room-glyph: var(--g-red-ink);
+  box-shadow: inset 0 0 0 1.5px var(--g-red-soft);
+}
+
+:root[data-style='glas'] .g-room__name {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  font: 600 17px / 22px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-room__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-room__circle {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--g-room-circle);
+  color: var(--g-room-glyph);
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+
+:root[data-style='glas'] .g-room__circle svg {
+  width: 15px;
+  height: 15px;
+}
+
+:root[data-style='glas'] .g-room__lines {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .g-room__line {
+  display: block;
+  overflow: hidden;
+  color: var(--g-label-2);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-room[data-status] .g-room__line--2 {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .rooms-quick-section {
+  gap: 8px;
+  padding: 0 16px 16px;
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .rooms-quick-section > .section-label {
+  margin-inline: -16px;
+  padding: 6px 16px 0;
+  background: var(--bg-card);
+}
+
+/* tiles on the surface: card2 (a lit or flagged tile on the desktop stays tileOn, below) */
+:root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .g-room {
+  background: var(--g-card-2);
+}
+
+:root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .g-room:not([data-tone]) {
+  box-shadow: none;
+}
+
+/* ---- Hints (HintsCard, §7.6) ----
+   Phone: a list card (row 60: symbol 24 + 16, title 17, the places 15, chevron; separator from the text). Desktop
+   (≥ 900 px): a row under the greeting, "Hinweise" as a small label, then a capsule per hint. Symbols plain, only the
+   critical ones in red ink. In edit mode without a hint the card keeps its empty text in the surface. */
+
+:root[data-style='glas'] .home-page .hints-card {
+  padding-bottom: 0;
+}
+
+:root[data-style='glas'] .home-page .hints-card__header {
+  margin-bottom: var(--g-card-gap);
+}
+
+:root[data-style='glas'] .home-page .hints-card__list {
+  margin: 0 -16px;
+}
+
+:root[data-style='glas'] .home-page .hints-card__item + .hints-card__item {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .home-page .hint-row {
+  position: relative;
+  gap: 0;
+  min-height: 60px;
+  padding: 0 0 0 16px;
+  border-radius: 0;
+  color: var(--g-label);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .home-page .hints-card__item + .hints-card__item .hint-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 56px;
+  height: 0.5px;
+  background: var(--g-sep);
+}
+
+:root[data-style='glas'] .home-page .hint-row:hover {
+  background: none;
+}
+
+:root[data-style='glas'] .home-page .hint-row:active {
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .home-page .hint-row:focus-visible {
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .home-page .hint-row__icon {
+  justify-content: flex-start;
+  width: 24px;
+  height: auto;
+  margin-right: 16px;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .home-page .hint-row--critical .hint-row__icon {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .home-page .hint-row__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+:root[data-style='glas'] .home-page .hint-row__text {
+  align-self: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: 8px 8px 8px 0;
+}
+
+:root[data-style='glas'] .home-page .hint-row__title {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .home-page .hint-row__sub {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .home-page .hint-row__chev {
+  margin-right: 12px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .home-page .hints-card__empty {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- Desktop: security, waste, activity, rooms, hints ---- */
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .home-page :is(.security-card, .activity-card) {
+    padding-bottom: 6px;
+  }
+
+  :root[data-style='glas'] .home-page :is(.security-card__header, .activity-card__header) {
+    margin-bottom: calc(var(--g-card-gap) + 6px);
+  }
+
+  :root[data-style='glas'] .home-page .security-card:has(.security-card__summary)::before {
+    bottom: 0;
+  }
+
+  :root[data-style='glas'] .home-page .security-card__summary {
+    display: none;
+  }
+
+  :root[data-style='glas'] .home-page .security-card .security-row {
+    min-height: 48px;
+    padding: 0 20px;
+  }
+
+  :root[data-style='glas'] .home-page .security-card .security-row__icon {
+    width: 36px;
+    margin-right: 0;
+  }
+
+  :root[data-style='glas'] .home-page .security-card .security-row__icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  :root[data-style='glas'] .home-page .security-card .security-row__value {
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  :root[data-style='glas'] .home-page .security-row[data-g-tone='alarm'] {
+    background: var(--g-red-soft);
+  }
+
+  :root[data-style='glas'] .home-page .security-row[data-g-tone='warn'] {
+    background: var(--g-warn-soft);
+  }
+
+  :root[data-style='glas'] .home-page .security-row[data-g-tone='info'] :is(.security-row__icon, .security-row__value) {
+    color: var(--g-blue-ink);
+  }
+
+  /* no separator beside a tinted row */
+  :root[data-style='glas'] .home-page .security-row:is([data-g-tone='alarm'], [data-g-tone='warn'])::before,
+  :root[data-style='glas']
+    .home-page
+    .security-row:is([data-g-tone='alarm'], [data-g-tone='warn'])
+    + .security-row::before {
+    content: none;
+  }
+
+  :root[data-style='glas'] .home-page .waste-card {
+    padding-bottom: 4px;
+  }
+
+  :root[data-style='glas'] .home-page .waste-card__header {
+    margin-bottom: calc(var(--g-card-gap) + 4px);
+  }
+
+  :root[data-style='glas'] .g-waste__row {
+    min-height: 52px;
+    padding-left: 20px;
+  }
+
+  :root[data-style='glas'] .g-waste__row[data-next] {
+    min-height: 64px;
+  }
+
+  :root[data-style='glas'] .g-waste__dot {
+    width: 12px;
+    height: 12px;
+    margin: 0 16px 0 0;
+  }
+
+  :root[data-style='glas'] .g-waste__row[data-next] .g-waste__dot {
+    width: 14px;
+    height: 14px;
+    margin-right: 14px;
+  }
+
+  :root[data-style='glas'] .g-waste__line {
+    padding: 4px 20px 4px 0;
+  }
+
+  :root[data-style='glas'] .g-waste__over {
+    display: block;
+    color: var(--g-label-2);
+    font: 400 13px / 18px var(--g-font);
+  }
+
+  :root[data-style='glas'] .g-waste__date--end {
+    display: block;
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  :root[data-style='glas'] .g-waste__text > .g-waste__date,
+  :root[data-style='glas'] .g-waste__chev {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-waste__count {
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  :root[data-style='glas'] .g-waste__row[data-next] .g-waste__count {
+    color: var(--g-orange-ink);
+    font-size: 17px;
+    line-height: 22px;
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row {
+    gap: 0;
+    min-height: 56px;
+    margin: 0 -16px;
+    padding: 0 20px;
+    border-top: 0;
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 56px;
+    height: 0.5px;
+    background: var(--g-sep);
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row:first-child::before {
+    content: none;
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row__icon {
+    display: flex;
+    justify-content: flex-start;
+    width: 36px;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    color: var(--g-label-2);
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row__icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row__info {
+    margin-right: 10px;
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row__name {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  :root[data-style='glas'] .home-page .activity-card .activity-row__desc {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  :root[data-style='glas'] .home-page .rooms-quick-section {
+    position: relative;
+    isolation: isolate;
+    gap: 22px;
+    padding: 0 16px 16px;
+  }
+
+  :root[data-style='glas'] .home-page .rooms-quick-section::before {
+    content: '';
+    position: absolute;
+    inset: 50px 0 0;
+    z-index: -1;
+    border-radius: var(--radius-card);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-card);
+    pointer-events: none;
+  }
+
+  /* SectionLabel sets margin-bottom inline: the section's gap holds the space to the surface */
+  :root[data-style='glas'] .home-page .rooms-quick-section > .section-label {
+    margin-inline: -16px;
+    padding-left: 4px;
+  }
+
+  :root[data-style='glas'] .home-page .rooms-quick-strip {
+    grid-template-columns: repeat(auto-fill, minmax(208px, 1fr));
+  }
+
+  :root[data-style='glas'] .g-room {
+    display: grid;
+    grid-template-areas:
+      'circle name'
+      'circle lines';
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-content: center;
+    gap: 0 12px;
+    min-height: 76px;
+    padding: 10px 14px;
+    background: var(--g-card-2);
+    box-shadow: none;
+  }
+
+  :root[data-style='glas'] .g-room[data-tone] {
+    background: var(--g-tile-on);
+    box-shadow: var(--g-shadow-tile-on-desktop);
+  }
+
+  :root[data-style='glas'] .g-room__info {
+    display: contents;
+  }
+
+  :root[data-style='glas'] .g-room__circle {
+    grid-area: circle;
+    align-self: center;
+    width: 36px;
+    height: 36px;
+  }
+
+  :root[data-style='glas'] .g-room__circle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  :root[data-style='glas'] .g-room__name {
+    grid-area: name;
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  :root[data-style='glas'] .g-room__lines {
+    grid-area: lines;
+  }
+
+  :root[data-style='glas'] .g-room[data-tone='on'] .g-room__line--2 {
+    color: var(--g-label);
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .rooms-quick-section::before {
+    content: none;
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell[class*='section-h-'] .g-room[data-tone] {
+    background: var(--g-tile-on);
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) {
+    flex-flow: row wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list)::before {
+    content: none;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hints-card__header {
+    min-height: 0;
+    margin: 0 4px 0 0;
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hints-card__icon-chip {
+    display: none;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hints-card__title {
+    color: var(--g-label-2);
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card__list {
+    flex: 1 1 0;
+    flex-flow: row wrap;
+    gap: 12px;
+    min-width: 0;
+    margin: 0;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card__item {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card__item + .hints-card__item .hint-row::before {
+    content: none;
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hint-row {
+    gap: 12px;
+    width: auto;
+    max-width: 100%;
+    height: 52px;
+    min-height: 0;
+    padding: 0 14px 0 16px;
+    border-radius: 999px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-card);
+    transition:
+      background-color 200ms ease,
+      scale var(--g-d-snappy) var(--g-spring-snappy);
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hint-row:active {
+    scale: 0.97;
+    transition-duration: 120ms;
+  }
+
+  :root[data-style='glas'] .home-page .hint-row:focus-visible {
+    outline-offset: 2px;
+  }
+
+  :root[data-style='glas'] .home-page .hint-row__icon {
+    width: auto;
+    margin-right: 0;
+  }
+
+  :root[data-style='glas'] .home-page .hint-row__icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  :root[data-style='glas'] .home-page .hint-row__text {
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .home-page .hint-row__title {
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :root[data-style='glas'] .home-page .hint-row__sub {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  :root[data-style='glas'] .home-page .hint-row__chev {
+    width: 14px;
+    height: 14px;
+    margin: 0 0 0 4px;
+    color: var(--g-label-2);
+  }
+}
+
+@media (min-width: 900px) and (hover: hover) {
+  :root[data-style='glas'] .g-pick__row:hover {
+    background: var(--g-hover);
+  }
+
+  :root[data-style='glas'] :is(.g-blinds__btn, .g-ctl__btn:not(:disabled), .g-blinds__all-btn):hover {
+    background: var(--g-fill-2);
+  }
+
+  :root[data-style='glas'] .g-waste__row:hover {
+    background: var(--g-hover);
+  }
+
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hint-row:hover {
+    background: var(--g-card-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] :is(.g-ctl__btn, .g-blinds__btn, .g-blinds__all-btn, .g-room):active,
+  :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hint-row:active {
+    scale: none;
+  }
+}
+
+/* Forced colours: the rings, bars and the chosen room stay visible. */
+@media (forced-colors: active) {
+  :root[data-style='glas'] .g-arc__track {
+    stroke: GrayText;
+  }
+
+  :root[data-style='glas'] .g-arc__value {
+    stroke: Highlight;
+  }
+
+  :root[data-style='glas'] .g-blinds__bar {
+    border: 1px solid GrayText;
+  }
+
+  :root[data-style='glas'] .g-blinds__fill {
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] .g-ctl--climate .g-ctl__marker {
+    border: 2px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .g-pick__check {
+    color: Highlight;
+  }
+
+  /* the bin colours and the room tiles' edges carry meaning */
+  :root[data-style='glas'] .g-waste__dot {
+    border: 1px solid CanvasText;
+    forced-color-adjust: none;
+  }
+
+  :root[data-style='glas'] .g-room {
+    border: 1px solid ButtonText;
+  }
+}

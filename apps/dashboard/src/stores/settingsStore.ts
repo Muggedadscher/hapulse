@@ -173,6 +173,10 @@ export interface CustomizationSettings {
   wasteSectionMigrated: boolean;
   /** [fork] Same one-time placement for the Sentinel NVR home card (after Waste/Security). */
   nvrSectionMigrated: boolean;
+  /** [fork] Same one-time placement for the home hints (first). */
+  hintsSectionMigrated: boolean;
+  /** [fork] Glas S/M/L: sections drawn "taller" (L), as `<page>:<section>` (core `tallKey`). Read in Glas ≥ 900 px only. */
+  tallSections: string[];
   /** [fork] One-time sidebar reorder to Overview, Rooms, NVR, Pool, rest (see navOrderMigration.ts). */
   navOrderV2Migrated: boolean;
   /** [fork] Sentinel camera id → HA area id (null = no room): room pages show these cameras (nvr/cameraSource.ts). */
@@ -241,6 +245,17 @@ function migrateWasteSection(cust: CustomizationSettings): CustomizationSettings
     ];
   }
   return { ...cust, homeSectionOrder, wasteSectionMigrated: true };
+}
+
+/**
+ * [fork] Home hints (docs/glas/PLAN-ETAPPE-4.md K76): an explicit `homeSectionOrder` from before the section existed
+ * would append it LAST; hints belong at the top, once. Idempotent via the marker; a later move is kept.
+ */
+export function migrateHintsSection(cust: CustomizationSettings): CustomizationSettings {
+  if (cust.hintsSectionMigrated) return cust;
+  const homeSectionOrder =
+    cust.homeSectionOrder.length > 0 && !cust.homeSectionOrder.includes('hints') ? ['hints', ...cust.homeSectionOrder] : cust.homeSectionOrder;
+  return { ...cust, homeSectionOrder, hintsSectionMigrated: true };
 }
 
 /**
@@ -389,6 +404,8 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   locksChipMigrated: false, // [fork]
   wasteSectionMigrated: false, // [fork]
   nvrSectionMigrated: false, // [fork]
+  hintsSectionMigrated: false, // [fork]
+  tallSections: [], // [fork] Glas S/M/L
   navOrderV2Migrated: false, // [fork]
   nvrCameraRooms: {}, // [fork]
   uiStyle: 'classic', // [fork] Glas
@@ -453,6 +470,8 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           incoming.garageChipMigrated ??= false;
           incoming.locksChipMigrated ??= false;
         }
+        // [fork] Same for the hints section marker and the section order it belongs to (Glas Etappe 4, K76).
+        if (incoming.homeSectionOrder) incoming.hintsSectionMigrated ??= false;
         // [fork] Glas: a document written before the style existed carries none — the admin's choice is then
         // Klassisch, not a style this device happened to keep (e.g. from an imported export).
         incoming.uiStyle ??= DEFAULT_CUSTOMIZATION.uiStyle;
@@ -466,10 +485,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           appName: typeof payload.appName === 'string' ? payload.appName : undefined,
           appIcon: typeof payload.appIcon === 'string' ? payload.appIcon : undefined,
           appIconHidden: typeof payload.appIconHidden === 'boolean' ? payload.appIconHidden : false,
-          customization: migrateNavOrderV2(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({
+          customization: migrateNavOrderV2(migrateHintsSection(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({
             ...cur.customization,
             ...incoming,
-          })))))), // [fork] + migrateLocksChip
+          }))))))), // [fork] + migrateLocksChip, migrateHintsSection
         });
       },
 
@@ -609,14 +628,14 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
+            customization: migrateNavOrderV2(migrateUrlToken(migrateHintsSection(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
               ...DEFAULT_CUSTOMIZATION,
               ...incoming,
               scryptedToken,
               maToken,
               entityOrder,
               favorites,
-            }))))))), // [fork] + migrateLocksChip
+            })))))))), // [fork] + migrateLocksChip, migrateHintsSection
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -668,10 +687,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenFork: persisted == null
             ? current.lastSeenFork
             : Number.isInteger(p.lastSeenFork) && (p.lastSeenFork as number) >= 0 ? (p.lastSeenFork as number) : 0,
-          customization: migrateNavOrderV2(migrateUrlToken(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
+          customization: migrateNavOrderV2(migrateUrlToken(migrateHintsSection(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
             ...DEFAULT_CUSTOMIZATION,
             ...(p.customization ?? {}),
-          }))))))), // [fork] + migrateLocksChip
+          })))))))), // [fork] + migrateLocksChip, migrateHintsSection
         };
       },
     }

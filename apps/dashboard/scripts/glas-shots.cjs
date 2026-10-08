@@ -2,7 +2,7 @@
 //
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
-//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures]
+//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home]
 //     [--dom-out <file>] [--only <block>,…]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
@@ -14,12 +14,15 @@
 //     "--scenes settings --elements .settings-page__section" → …-settings__2-darstellung.png)
 //   Window scenes of stage 3 (win-…, glas-checks-sheets.cjs, docs/glas/PLAN-ETAPPE-3.md §6.0) open one window each,
 //   the gesture scenes of stage 3b (ctx-card, ctx-card-off, swipe-lights, swipe-notes, glas-checks-gestures.cjs) a
-//   context menu or a swipe row; both are taken at viewport size and are not part of the default list.
+//   context menu or a swipe row, the overview scenes of stage 4 (home-hints, home-edit, energy-bubble, detail-light,
+//   glas-checks-home.cjs) the hints card, edit mode, a picked energy bar or a light's detail; all are taken at viewport
+//   size and are not part of the default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
-//   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs) and the gestures and the inspector of stage 3b
-//   (glas-checks-gestures.cjs); --part runs one. --dom-out: the Klassisch DOM of every window as JSON, to compare a
-//   build with main's. --only runs some blocks of the window or gesture checks (e.g. sheetsDrag, gesturesInspector).
+//   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
+//   (glas-checks-gestures.cjs) and the overview's content of stage 4 (PLAN-ETAPPE-4.md §3, glas-checks-home.cjs);
+//   --part runs one. --dom-out: the Klassisch DOM of every window as JSON, to compare a build with main's. --only runs
+//   some blocks of the window, gesture or overview checks (e.g. sheetsDrag, gesturesInspector, homeHints).
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
@@ -260,6 +263,9 @@ Object.assign(SCENES, SHEETS.scenes);
 const GESTURES = require('./glas-checks-gestures.cjs')({ DE, DEVICES, ABORTED, run, settleAnimations, isGlas, seedScript,
   pageHelpers, sheetHelpers: SHEETS.sheetHelpers, reach: SHEETS.reach });
 Object.assign(SCENES, GESTURES.scenes);
+// stage 4: the overview's content — scenes home-hints, home-edit, energy-bubble, detail-light and `checks --part home`
+const HOME = require('./glas-checks-home.cjs')({ DE, DEVICES, ABORTED, run, settleAnimations, isGlas, seedScript });
+Object.assign(SCENES, HOME.scenes);
 
 /** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
 async function tap(page, sel) {
@@ -596,6 +602,8 @@ async function stage1Checks(browser, url, out) {
       deviceCard: '.device-toggle--on .device-toggle__thumb',
       deviceRow: '.device-toggle--on .device-toggle__knob',
       admin: '.admin-toggle--on .admin-toggle__thumb',
+      // stage 4: the Glas switch (the start page's device rows) draws its knob as ::after
+      glasSwitch: ['[aria-checked="true"] > .g-switch', '::after'],
     };
     const found = {};
     const bad = [];
@@ -608,8 +616,10 @@ async function stage1Checks(browser, url, out) {
       for (const p of ['/', '/room/living_room', '/automations', '/pool', '/settings']) {
         const { page } = await openPage(ctx, url + p);
         await settleAnimations(page); // the knob's background transition runs on real time
-        const r = await page.evaluate((sels) => Object.fromEntries(Object.entries(sels).map(([k, s]) =>
-          [k, [...document.querySelectorAll(s)].map((el) => getComputedStyle(el).backgroundColor)])), KNOBS);
+        const r = await page.evaluate((sels) => Object.fromEntries(Object.entries(sels).map(([k, s]) => {
+          const [sel, pseudo] = Array.isArray(s) ? s : [s, null];
+          return [k, [...document.querySelectorAll(sel)].map((el) => getComputedStyle(el, pseudo).backgroundColor)];
+        })), KNOBS);
         for (const [k, colors] of Object.entries(r)) {
           found[k] = (found[k] || 0) + colors.length;
           colors.filter((c) => c !== 'rgb(255, 255, 255)').forEach((c) => bad.push({ mode, page: p, knob: k, color: c }));
@@ -619,8 +629,9 @@ async function stage1Checks(browser, url, out) {
       await ctx.close();
     }
     out.knobs = { found, bad };
-    // the demo shows these kinds switched on; the others (legacy, device rows in a dialog) are checked where they appear
-    out.knobsOk = bad.length === 0 && ['pill', 'autoRow', 'pool', 'deviceCard', 'admin'].every((k) => found[k] > 0);
+    // the demo shows these kinds switched on; the others (legacy, device rows in a dialog, since stage 4 the classic
+    // device card, which Glas draws with its own switch) are checked where they appear
+    out.knobsOk = bad.length === 0 && ['pill', 'autoRow', 'pool', 'glasSwitch', 'admin'].every((k) => found[k] > 0);
   }
 
   // 6. cards are borderless in Glas, except borders that show a state: a triggered alarm card (added to the security
@@ -1411,6 +1422,7 @@ async function checks() {
     ok = (await SHEETS.sheetsChecks(browser, url, out, { domOut: arg('dom-out', ''), only: list('only', '') })) && ok;
   }
   if (part === 'all' || part === 'gestures') ok = (await GESTURES.gesturesChecks(browser, url, out, { only: list('only', '') })) && ok;
+  if (part === 'all' || part === 'home') ok = (await HOME.homeChecks(browser, url, out, { only: list('only', '') })) && ok;
   await browser.close();
   if (srv) srv.close();
   console.log(JSON.stringify({ ok, ...out }, null, 1));

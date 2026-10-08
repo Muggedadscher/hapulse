@@ -27,6 +27,7 @@ import { useEntityStore } from './entityStore';
 import { onboardingRedirectUrl } from '../app/basename';
 import { startHASettingsSync, stopHASettingsSync } from '../ha/settingsSync';
 import { startGlobalSettings, stopGlobalSettings } from '../ha/globalSettings'; // [fork]
+import { startDemoControl, stopDemoControl } from '../ha/demoControl'; // [fork] lab checks, demo only
 import { isDefaultPersistenceAdapter } from '../persistence'; // [fork]
 
 // ---------------------------------------------------------------------------
@@ -226,6 +227,7 @@ function teardown(): void {
 
   _stopDemoTicker?.();
   _stopDemoTicker = null;
+  stopDemoControl(); // [fork]
 
   _conn?.close();
   _conn = null;
@@ -378,6 +380,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
       teardown();
       useEntityStore.getState().setRegistries(DEMO_REGISTRIES);
       useEntityStore.getState().setEntities(DEMO_ENTITIES);
+      startDemoControl(); // [fork]
 
       _stopDemoTicker = createDemoTicker(
         (entities) => {

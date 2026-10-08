@@ -11,9 +11,10 @@
  * SortableContext.
  */
 
-import React from 'react';
+import React, { useMemo } from 'react'; // [fork] useMemo
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { withoutBarDrag } from '../glas/home/noDrag'; // [fork] Glas edit bar (K78)
 
 interface SortableItemProps {
   id: string;
@@ -33,6 +34,7 @@ const prefersReducedMotion =
 function SortableItemInner({ id, children, className }: { id: string; children: React.ReactNode; className?: string | undefined }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
+  const dragListeners = useMemo(() => withoutBarDrag(listeners), [listeners]); // [fork] presses on the Glas bar stay its own
 
   const scaledTransform =
     isDragging && !prefersReducedMotion && transform
@@ -52,7 +54,7 @@ function SortableItemInner({ id, children, className }: { id: string; children: 
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={className} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className={className} {...attributes} {...dragListeners}>{/* [fork] dragListeners */}
       {children}
     </div>
   );

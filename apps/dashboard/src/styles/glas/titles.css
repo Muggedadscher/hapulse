@@ -89,6 +89,37 @@
   font-weight: 600;
 }
 
+/* Ink per kind (K87, SummaryChips sets data-chip in Glas): light yellow with a filled bulb, pool teal, media blue;
+   the alarm green while armed (no warning, so no weight) and red when triggered. Doors, garage and locks are told by
+   the state rules above (open = warning or danger). */
+:root[data-style='glas'] .summary-chip--active[data-chip='lights'] .summary-chip__icon {
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .summary-chip--active[data-chip='lights'] .lucide-lightbulb > path:first-child {
+  fill: var(--g-yellow);
+}
+
+:root[data-style='glas'] .summary-chip--active[data-chip='pool'] .summary-chip__icon {
+  color: var(--g-teal-ink);
+}
+
+:root[data-style='glas'] .summary-chip--active[data-chip='media'] .summary-chip__icon {
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] [data-chip='alarm'][data-tone='armed'] .summary-chip__icon {
+  color: var(--g-green-ink);
+}
+
+:root[data-style='glas'] [data-chip='alarm'][data-tone='armed'] .summary-chip__count {
+  font-weight: 400;
+}
+
+:root[data-style='glas'] [data-chip='alarm'][data-tone='triggered'] .summary-chip__icon {
+  color: var(--g-red-ink);
+}
+
 :root[data-style='glas'] .summary-chip__avatar {
   width: 26px;
   height: 26px;
@@ -172,15 +203,15 @@
     transition: opacity 140ms linear;
   }
 
-  /* Overview: greeting → weather line → chips (K26; the markup order follows in stage 4). Chips 14 below the weather
+  /* Overview: greeting → weather line → chips (K26, in the markup since stage 4, K86). Chips 14 below the weather
      line, the row runs to the screen edges. */
   :root[data-style='glas'] .home-page__header {
-    order: -1;
     margin-bottom: -10px;
   }
 
+  /* 16 to the first section (page gap 24) */
   :root[data-style='glas'] .home-chips-mobile {
-    margin-bottom: 0;
+    margin-bottom: -8px;
   }
 
   :root[data-style='glas'] .home-chips-mobile .summary-chips {

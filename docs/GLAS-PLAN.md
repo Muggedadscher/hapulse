@@ -649,34 +649,52 @@ Garage, Schlösser, Benachrichtigungen und Detail):
 
 ### Etappe 4 — Übersicht komplett
 
+**Stand 2026-10-08: umgesetzt (ein PR).** Plan, Festlegungen K74–K87, Abweichungen der Umsetzung und Code-Prüfung:
+[`glas/PLAN-ETAPPE-4.md`](glas/PLAN-ETAPPE-4.md) (§1, §7, §8). Klassisch zeigt nach dem Entscheid K74 („Beide Stile“)
+die Hinweise, „Aktiv“ bzw. die Gerätezahl an Szenen und Netz/Solar gestapelt; sonst bleibt es pixelgleich. Geprüft mit
+`glas-shots.cjs checks --part home` (Build und Entwicklungsserver), den Aufnahmen beider Stile und dem Klick-Fuzz.
+
 Umfang: 2.11–2.17; alle elf Sektionen im Glas-3-Look (SPEC5 Änderung 2), Hinweise, aktive Szene, Energie Netz/Solar,
 Geräte-Zeilen, Licht-Detail, Inspector fertig, Bearbeiten-Modus S/M/L, Handy-Reihenfolge Begrüßung → Wetter → Chips →
 Hinweise.
 
 Abnahme:
-- [ ] Vergleich mit `docs/glas/screens/g5h-*.webp` / `g5d-*.webp` (hell/dunkel, oben/gescrollt, Bearbeiten, Inspector, Licht-Sheet,
+- [x] Vergleich mit `docs/glas/screens/g5h-*.webp` / `g5d-*.webp` (hell/dunkel, oben/gescrollt, Bearbeiten, Inspector, Licht-Sheet,
       Avatar-Menü, Wetter, Kontextmenü) — gleiche Hierarchie, Abstände, Farben (Abweichung nur durch echte Daten/Schrift).
-- [ ] Hinweise erscheinen/verschwinden live mit den Entitäten; keine Karte, wenn nichts abweicht; ausgeblendete
-      Entitäten zählen nicht.
-- [ ] Aktive Szene: wird nach Aktivierung markiert, verliert die Markierung bei Änderung eines Mitglieds.
-- [ ] S/M/L + „⋯ Anpassen“ schreiben dieselben Felder wie Klassisch; Wechsel des Stils zeigt dasselbe Layout.
+      (PLAN-ETAPPE-4 §9, Abweichungen §7)
+- [x] Hinweise erscheinen/verschwinden live mit den Entitäten; keine Karte, wenn nichts abweicht; ausgeblendete
+      Entitäten zählen nicht. (`homeHints`, beide Stile)
+- [x] Aktive Szene: wird nach Aktivierung markiert, verliert die Markierung bei Änderung eines Mitglieds. (`homeScene`)
+- [x] S/M/L + „⋯ Anpassen“ schreiben dieselben Felder wie Klassisch; Wechsel des Stils zeigt dieselbe Reihenfolge und
+      dieselben Breiten (das Bild ist wegen der Glas-Spalten K85 nicht gleich). (`homeEdit`)
 
-Nicht verlieren (Inventar C, D, E, F):
-- [ ] Begrüßung nach Tageszeit + Namensquelle (C1) · Grid 4/3/2/1 Spalten (C3) · Standard-Reihenfolge inkl. Müll/NVR (C3)
-- [ ] Szenen: Favoriten, Symbol nach Name, „Alle Szenen ›“, Leerzustand (C4)
-- [ ] Hauptraum: automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3), Temp/Feuchte, **Licht-Pille**,
+Nicht verlieren (Inventar C, D, E, F), geprüft mit `checks --part home` (Blocknamen in Klammern), den Bildern und dem
+Klick-Fuzz:
+- [x] Begrüßung nach Tageszeit + Namensquelle (C1) · Grid 4/3/2/1 Spalten (C3) · Standard-Reihenfolge inkl. Müll/NVR (C3)
+      (Spalten in Glas nach Inhaltsbreite, K85; Reihenfolge nach Stilwechsel gleich: `homeEdit`)
+- [x] Szenen: Favoriten, Symbol nach Name, „Alle Szenen ›“, Leerzustand (C4) (Bilder, `homeScene`, `homeMenu`)
+- [x] Hauptraum: automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3), Temp/Feuchte, **Licht-Pille**,
       **Klima −/+**, **Medien-Pille nur beim Abspielen**, **› öffnet Raum**, Tipp auf Karte öffnet Raum (C5)
-- [ ] Energie: kWh groß, Balken, „Details ›“, Einrichtungs-Hinweis (C6) · Geräte: nur aktive Favoriten, zwei Leerzustände (C7)
-- [ ] Klima: Bogen mit Farbe nach Aktion, Stepper mit Schrittweite/min/max, schnelle Tipps addieren, **Raumliste wählbar**,
+      (`homeKeep`; Glas hält den Raum 1 min nach einer Aktion in der Karte, PLAN-ETAPPE-4 §7)
+- [x] Energie: kWh groß, Balken, „Details ›“, Einrichtungs-Hinweis (C6) · Geräte: nur aktive Favoriten, zwei Leerzustände (C7)
+      (`homeEnergy`, Bilder; ohne Einrichtung zeigt Glas die klassische Karte mit dem Hinweis; Leerzustände `homeKeep`;
+      ein in der Karte ausgeschaltetes Gerät bleibt bis zum Neuladen als „Aus“ stehen, K83, `homeKeptOff`)
+- [x] Klima: Bogen mit Farbe nach Aktion, Stepper mit Schrittweite/min/max, schnelle Tipps addieren, **Raumliste wählbar**,
       „Alle ›“ (C8) · Rollläden: Bogen, **Zu/Stopp/Auf**, Raumliste, Garagen ausgeschlossen, „Alle ›“ (C10)
-- [ ] Sicherheit: alle sieben Zeilen inkl. Garage, Sentinel-Kamerazähler, „Alles normal“, „Details ›“ (C12)
-- [ ] Müll: nächste Tonne mit Countdown + Farbe, weitere Tonnen, Tonnen-Sheet mit „(verlegt)“ (C13, L)
-- [ ] NVR-Karte: Schnappschüsse, Online-Punkt, neueste Ereignisse → Kamera **an diesem Moment** (C14, J3)
-- [ ] Aktivität: fünf Zeilen, Ton je Domain inkl. Garage, „Details ›“ (C15)
-- [ ] Räume: Kacheln, **Status-Symbol-Override** (Tür, Garage/Auto, Fenster, Wasser, Rauch), Licht an = hervorgehoben (C16)
-- [ ] Sichtbarkeits-Gates (C17) · Bearbeiten: Ziehen (6 px / 200 ms Touch / Tastatur), Auge, **Handy-Ausblenden**,
+      (`homeKeep`; Schritt, Grenzen und schnelle Tipps bleiben in `ClimateCard`, die Garagen-Regel in `BlindsCard`)
+- [x] Sicherheit: alle sieben Zeilen inkl. Garage, Sentinel-Kamerazähler, „Alles normal“, „Details ›“ (C12)
+      (`homeKeep`; die Zeilen samt Kamerazähler kommen unverändert aus `SecurityCard`)
+- [x] Müll: nächste Tonne mit Countdown + Farbe, weitere Tonnen, Tonnen-Sheet mit „(verlegt)“ (C13, L) (Bilder, `homeHints`)
+- [x] NVR-Karte: Schnappschüsse, Online-Punkt, neueste Ereignisse → Kamera **an diesem Moment** (C14, J3) (Bilder mit
+      nachgestelltem Sentinel; ein Ereignis öffnet die Kamera über denselben Aufruf wie Klassisch)
+- [x] Aktivität: fünf Zeilen, Ton je Domain inkl. Garage, „Details ›“ (C15) (Bilder)
+- [x] Räume: Kacheln, **Status-Symbol-Override** (Tür, Garage/Auto, Fenster, Wasser, Rauch), Licht an = hervorgehoben (C16)
+      (`homeKeep`, Bilder)
+- [x] Sichtbarkeits-Gates (C17) · Bearbeiten: Ziehen (6 px / 200 ms Touch / Tastatur), Auge, **Handy-Ausblenden**,
       **Spalten**, **Höhendeckel mit Innen-Scroll**, Chip-Bearbeiten (Reihenfolge + Auge) (D1–D6, B17) · Standard-Slots (D11)
-- [ ] Langdruck vs. Tipp (Prinzip 3) · Gefahr-Aktionen bestätigen (Prinzip 4) · versteckte Entitäten überall (Prinzip 2)
+      (`homeEdit`, `homeKeep`)
+- [x] Langdruck vs. Tipp (Prinzip 3) · Gefahr-Aktionen bestätigen (Prinzip 4) · versteckte Entitäten überall (Prinzip 2)
+      (`homeMenu`, `homeKeep`, `homeHints`)
 
 ### Etappe 5 — Übrige Seiten
 

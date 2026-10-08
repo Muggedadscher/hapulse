@@ -44,9 +44,13 @@ interface ModalProps {
   presentation?: 'auto' | 'inspector' | undefined;
   /** [fork] Glas only: a new value while open asks for the window again; one under another window comes up (K60). */
   requestKey?: number | undefined;
+  /** [fork] Glas only: before the title instead of the icon, also on the phone (the detail's state tile, K79). */
+  lead?: React.ReactNode;
+  /** [fork] Glas only: at the end of the head (the detail's star, K79). */
+  trailing?: React.ReactNode;
 }
 
-export function Modal({ open, onClose, title, icon, children, footer, className, subtitle, swipeToClose, contentKey, returnFocus, presentation, requestKey }: ModalProps) { // [fork] Glas props
+export function Modal({ open, onClose, title, icon, children, footer, className, subtitle, swipeToClose, contentKey, returnFocus, presentation, requestKey, lead, trailing }: ModalProps) { // [fork] Glas props
   const t = useT();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -128,7 +132,7 @@ export function Modal({ open, onClose, title, icon, children, footer, className,
       >
         {sheet.on && !sheet.page && <SheetGrabber control={sheet.grabber} />}{/* [fork] */}
         {sheet.on ? ( // [fork] Glas head (K53)
-          <SheetHeader title={title} titleId={titleId} subtitle={subtitle} icon={icon} page={sheet.page} onClose={onClose} />
+          <SheetHeader title={title} titleId={titleId} subtitle={subtitle} icon={icon} lead={lead} trailing={trailing} page={sheet.page} onClose={onClose} />
         ) : (
         <div className="modal-header">
           {icon && <span className="modal-header__icon" aria-hidden="true">{icon}</span>}

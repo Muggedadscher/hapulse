@@ -260,3 +260,29 @@ export {
   glasContrastPairs,
 } from './glasTokens.js';
 export type { GlasMode, GlasStrength, UiStyle, GlasColorKey, Rgba, GlasAccent, GlasInput, ContrastPair } from './glasTokens.js';
+
+// [fork] Lock summary shared by the chip, the security cards and the home hints
+export { lockSummary, lockTone, lockIsOpen, lockHasProblem } from './locks.js';
+export type { LockSummary, LockTone } from './locks.js';
+
+// [fork] Home hints, active scenes, Glas energy chart and card sizes (docs/glas/PLAN-ETAPPE-4.md)
+export { collectHints, DOOR_OPEN_MINUTES } from './hints.js';
+export type { Hint, HintKind, HintSeverity, HintOptions, HintResult } from './hints.js';
+export { activeSceneIds, sceneMembers, ACTIVE_SCENE_GRACE_MS, ACTIVE_SCENE_MAX_AGE_MS } from './activeScene.js';
+export type { ActiveSceneOptions } from './activeScene.js';
+export {
+  glasEnergyWindow,
+  glasEnergyBars,
+  energyAxis,
+  energyAverage,
+  hiddenTicks,
+  barPercent,
+  glasEnergyCompare,
+  trimStatistics,
+  energyChange,
+} from './glasEnergy.js';
+export type { GlasEnergyPeriod, GlasEnergyWindow, GlasEnergyBar, GlasEnergyAxis } from './glasEnergy.js';
+export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './sizePresets.js';
+export type { SizePreset, SectionSize } from './sizePresets.js';
+export { roomGlances, lightPercent, climateTone } from './roomGlance.js';
+export type { RoomGlance, ClimateTone } from './roomGlance.js';

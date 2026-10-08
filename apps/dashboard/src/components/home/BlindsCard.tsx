@@ -10,6 +10,8 @@ import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { isGarageDoor } from '@hapulse/core'; // [fork]
 import { callService } from '../../ha/service';
 import { useT } from '../../i18n/useT';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (docs/glas/PLAN-ETAPPE-4.md K83)
+import { GlasBlindsBody } from '../glas/home/GlasBlindsBody'; // [fork]
 import type { TKey } from '../../i18n/useT';
 import './BlindsCard.css';
 
@@ -140,6 +142,7 @@ function ArcGauge({ value, size = 120, label, fillColor = 'var(--accent)' }: Arc
 
 export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
   const t = useT();
+  const isGlas = useIsGlas(); // [fork]
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   const blindRooms: BlindRoomEntry[] = rooms.flatMap((room) => {
@@ -245,6 +248,9 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
         )}
       </div>
 
+      {isGlas ? ( // [fork] Glas: ring and rooms (phone), a row per room (desktop)
+        <GlasBlindsBody room={activeRoom} rooms={blindRooms} onSelect={setSelectedRoomName} />
+      ) : (<>{/* [fork] */}
       {/* Controls — top, reflect selected room */}
       <div className="blinds-card__gauge-wrap" data-blind={colorKey}>
         <ArcGauge
@@ -307,6 +313,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
           );
         })}
       </ul>
+      </>)}{/* [fork] */}
     </Card>
   );
 }

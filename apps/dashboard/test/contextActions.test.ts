@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cardMatrix,
   contextActions,
   contextRights,
   contextService,
   holePath,
   liftBox,
+  matrixTransform,
   placeContextMenu,
   unscaledBox,
   type ContextActionInput,
@@ -164,6 +166,56 @@ describe('unscaledBox', () => {
 
   it('gives a box with a flat scale back as it shows', () => {
     expect(unscaledBox({ x: 1, y: 2, w: 0, h: 4 }, { a: 0, d: 1, e: 0, f: 0 }, { x: 0, y: 0 })).toEqual({ x: 1, y: 2, w: 0, h: 4 });
+  });
+});
+
+describe('cardMatrix', () => {
+  const size = { w: 200, h: 80 };
+
+  it('is the identity for a card at rest', () => {
+    const m = cardMatrix('none', 'none', 'none', size);
+    expect(m).toEqual({ a: 1, d: 1, e: 0, f: 0 });
+    expect(matrixTransform(m)).toBeNull();
+  });
+
+  it('reads a computed transform, 2-D and 3-D', () => {
+    expect(cardMatrix('matrix(0.98, 0, 0, 0.98, 0, 0)', 'none', 'none', size)).toEqual({ a: 0.98, d: 0.98, e: 0, f: 0 });
+    expect(cardMatrix('matrix3d(1.04, 0, 0, 0, 0, 1.04, 0, 0, 0, 0, 1, 0, 3, -2, 0, 1)', 'none', 'none', size)).toEqual({
+      a: 1.04,
+      d: 1.04,
+      e: 3,
+      f: -2,
+    });
+  });
+
+  it('adds the hover lift of a scene tile (translate)', () => {
+    expect(cardMatrix('none', '0px -0.6px', 'none', size)).toEqual({ a: 1, d: 1, e: 0, f: -0.6 });
+    expect(cardMatrix('none', '10%', 'none', size)).toEqual({ a: 1, d: 1, e: 20, f: 0 });
+    expect(cardMatrix('none', '0px 50%', 'none', size)).toEqual({ a: 1, d: 1, e: 0, f: 40 });
+  });
+
+  it('adds the press of a device tile (scale), one or two values', () => {
+    expect(cardMatrix('none', 'none', '0.97', size)).toEqual({ a: 0.97, d: 0.97, e: 0, f: 0 });
+    expect(cardMatrix('none', 'none', '0.97 1.16', size)).toEqual({ a: 0.97, d: 1.16, e: 0, f: 0 });
+    expect(cardMatrix('none', 'none', '104%', size)).toEqual({ a: 1.04, d: 1.04, e: 0, f: 0 });
+  });
+
+  it('applies translate and scale before transform, as CSS does', () => {
+    // translate(5, 6) · scale(2) · matrix(1.5, 0, 0, 1.5, 10, 20)
+    expect(cardMatrix('matrix(1.5, 0, 0, 1.5, 10, 20)', '5px 6px', '2', size)).toEqual({ a: 3, d: 3, e: 25, f: 46 });
+  });
+
+  it('writes the matrix as a transform', () => {
+    expect(matrixTransform({ a: 0.97, d: 0.97, e: 0, f: -0.5 })).toBe('matrix(0.97, 0, 0, 0.97, 0, -0.5)');
+  });
+
+  it('measures a hovered, pressed tile at its layout box', () => {
+    const box = { x: 300, y: 270, w: 156, h: 116 };
+    const o = { x: 78, y: 58 };
+    const m = cardMatrix('matrix(0.985, 0, 0, 0.985, 0, 0)', '0px -0.6px', 'none', { w: box.w, h: box.h });
+    const shown = { x: box.x + o.x * (1 - m.a) + m.e, y: box.y + o.y * (1 - m.d) + m.f, w: box.w * m.a, h: box.h * m.d };
+    const back = unscaledBox(shown, m, o);
+    (['x', 'y', 'w', 'h'] as const).forEach((k) => expect(back[k]).toBeCloseTo(box[k], 6));
   });
 });
 

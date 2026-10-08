@@ -1,0 +1,504 @@
+/* [fork] Glas — Sentinel NVR (docs/GLAS-DESIGN.md §7.15 and §3.6, plan docs/glas/PLAN-ETAPPE-4.md K83).
+
+   Stage 4 holds the Home card's Glas body (nvr/NvrHomeGlas.tsx); the NVR pages follow in stage 6 (GLAS-PLAN §4).
+   Phone: no card surface — per camera a snapshot 220 high (radius 26, shade 76 on top and 90 at the bottom), a clear
+   capsule top left (dot pulsing while recording runs, name and state), today's events bottom left; several cameras
+   side by side to swipe; the latest events as a strip to the screen edge (150 wide, picture 150 × 112). With a capped
+   height the card keeps its surface and both strips end at its edge. From 900 px the card keeps its surface: tile 16:10
+   (radius 18, shade 110) with name 20, state badge and today's events, then the latest three events as rows (picture
+   92 × 69) — beside the tile once the card is 560 px wide (1.65fr / 1fr), else below it. */
+
+@keyframes g-nvr-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* the classic cap (400 px, overflow hidden) would cut the taller Glas body and the strips that reach the edge */
+:root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr) {
+  max-height: none;
+  overflow: visible;
+}
+
+/* a recording camera offline or stalled: the title symbol turns red as the classic chip does */
+:root[data-style='glas'] .home-page .nvr-home__chip.nvr-home__chip--danger {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .g-nvr {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* ---- Cameras ---- */
+
+:root[data-style='glas'] .g-nvr__cams {
+  display: grid;
+  grid-auto-columns: 100%;
+  grid-auto-flow: column;
+  gap: 10px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+:root[data-style='glas'] .g-nvr__cams::-webkit-scrollbar {
+  display: none;
+}
+
+/* several cameras: the next one peeks in from the edge */
+:root[data-style='glas'] .g-nvr__cams[data-several] {
+  grid-auto-columns: calc(100% - 20px);
+  margin: 0 calc(-1 * var(--g-nvr-bleed, 16px));
+  padding: 0 var(--g-nvr-bleed, 16px);
+  scroll-padding-inline: var(--g-nvr-bleed, 16px);
+}
+
+:root[data-style='glas'] .g-nvr__cam-item {
+  display: flex;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+:root[data-style='glas'] :is(.g-nvr__cam, .g-nvr__wait) {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 220px;
+  padding: 0;
+  border: 0;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--g-media-bg);
+  color: var(--g-on-media);
+  text-align: left;
+}
+
+:root[data-style='glas'] .g-nvr__cam {
+  cursor: pointer;
+  transition: scale var(--g-d-smooth) var(--g-spring-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-nvr__cam:active {
+  scale: 0.98;
+  transition-duration: 120ms;
+}
+
+/* the strips clip anything outside their items: the ring goes inside — on the tile as its last layer, an outline
+   would lie under the picture */
+:root[data-style='glas'] .g-nvr__ev:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .g-nvr__cam:focus-visible {
+  outline: none;
+}
+
+:root[data-style='glas'] .g-nvr__cam:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--g-focus);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* no answer yet: a calm placeholder, not a black block */
+:root[data-style='glas'] .g-nvr__wait {
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .g-nvr__cam .nvr-home__cam-ph {
+  color: color-mix(in srgb, var(--g-on-media) 55%, transparent);
+}
+
+:root[data-style='glas'] .g-nvr__shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(color-mix(in srgb, var(--g-media-bg) 35%, transparent), transparent) top / 100% 76px no-repeat,
+    linear-gradient(transparent, color-mix(in srgb, var(--g-media-bg) 60%, transparent)) bottom / 100% 90px no-repeat;
+  pointer-events: none;
+}
+
+/* the clear capsule (material.css .g-glass--clear: fill, rim, white text with shadow) */
+:root[data-style='glas'] .g-nvr__pill {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+  height: 32px;
+  padding: 0 14px 0 12px;
+  border-radius: 16px;
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-nvr__pill-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-nvr__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g-live-dot);
+  animation: g-nvr-pulse 2s ease-in-out infinite;
+}
+
+/* recording on but nothing arrives: the dot stands still, grey when offline, yellow while it hangs */
+:root[data-style='glas'] .g-nvr__cam:not([data-state='ok']) .g-nvr__dot {
+  background: color-mix(in srgb, var(--g-on-media) 55%, transparent);
+  animation: none;
+}
+
+:root[data-style='glas'] .g-nvr__cam[data-state='stalled'] .g-nvr__dot {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .g-nvr__caption {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--g-on-media);
+  text-shadow: var(--g-glass-clear-text-shadow);
+}
+
+:root[data-style='glas'] .g-nvr__title {
+  display: none;
+}
+
+:root[data-style='glas'] .g-nvr__today {
+  max-width: 100%;
+  overflow: hidden;
+  font: 600 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-nvr__empty {
+  margin: 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* NVR not reachable (classic markup): the symbol stays at the first line, the text wraps beside it */
+:root[data-style='glas'] .home-page .nvr-home__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .home-page .nvr-home__error > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+/* ---- Latest events ---- */
+
+:root[data-style='glas'] .g-nvr__events {
+  display: flex;
+  gap: 10px;
+  margin: 0 calc(-1 * var(--g-nvr-bleed, 16px));
+  padding: 0 var(--g-nvr-bleed, 16px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  list-style: none;
+  scroll-padding-inline: var(--g-nvr-bleed, 16px);
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+:root[data-style='glas'] .g-nvr__events::-webkit-scrollbar {
+  display: none;
+}
+
+:root[data-style='glas'] .g-nvr__ev-item {
+  flex: none;
+  display: flex;
+  scroll-snap-align: start;
+}
+
+:root[data-style='glas'] .g-nvr__ev {
+  display: block;
+  width: 150px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--g-label);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    scale var(--g-d-smooth) var(--g-spring-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-nvr__ev:active {
+  scale: 0.97;
+  transition-duration: 120ms;
+}
+
+:root[data-style='glas'] .g-nvr__ev-img {
+  display: block;
+  width: 150px;
+  height: 112px;
+  border-radius: 16px;
+  background: var(--g-fill);
+  object-fit: cover;
+}
+
+:root[data-style='glas'] .g-nvr__ev-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 6px 4px 0;
+}
+
+:root[data-style='glas'] .g-nvr__ev-time {
+  font: 600 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .g-nvr__ev-sub {
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-nvr__ev-ago {
+  display: none;
+}
+
+/* ---- Phone without a capped height: the pictures are the card ---- */
+
+@media (max-width: 899px) {
+  /* the strips reach the screen edge: page gutter 16 + the card's transparent border */
+  :root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr__cams) {
+    --g-nvr-bleed: calc(16px + 1px);
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr__cams)::before {
+    content: none;
+  }
+
+  :root[data-style='glas']
+    .home-page
+    .overview-grid__cell:not([class*='section-h-'])
+    .nvr-home:has(.g-nvr__cams)
+    .nvr-home__header {
+    margin: 0 0 var(--g-card-gap);
+  }
+}
+
+/* ---- From 900 px: tile and rows in the card ---- */
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .home-page .nvr-home:has(.g-nvr) {
+    container: g-nvr / inline-size;
+  }
+
+  :root[data-style='glas'] .g-nvr__cams,
+  :root[data-style='glas'] .g-nvr__cams[data-several] {
+    grid-auto-flow: row;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  :root[data-style='glas'] .g-nvr__cams[data-several] {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  :root[data-style='glas'] .g-nvr__cam-item {
+    display: block;
+  }
+
+  :root[data-style='glas'] :is(.g-nvr__cam, .g-nvr__wait) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    border-radius: 18px;
+    background: var(--g-card-2);
+  }
+
+  :root[data-style='glas'] .g-nvr__cam .nvr-home__cam-ph {
+    color: var(--g-label-3);
+  }
+
+  :root[data-style='glas'] .g-nvr__shade {
+    background: linear-gradient(transparent, color-mix(in srgb, var(--g-media-bg) 50%, transparent)) bottom / 100% 110px
+      no-repeat;
+  }
+
+  :root[data-style='glas'] .g-nvr__pill {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-nvr__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  :root[data-style='glas'] .g-nvr__name {
+    min-width: 0;
+    overflow: hidden;
+    font: 700 20px / 25px var(--g-font);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :root[data-style='glas'] .g-nvr__badge {
+    flex: none;
+    height: 20px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--g-live);
+    color: var(--g-on-media);
+    font: 700 12px / 20px var(--g-font);
+    letter-spacing: 0.4px;
+    text-shadow: none;
+  }
+
+  :root[data-style='glas'] .g-nvr__cam[data-state='offline'] .g-nvr__badge {
+    background: color-mix(in srgb, var(--g-media-bg) 55%, transparent);
+  }
+
+  :root[data-style='glas'] .g-nvr__cam[data-state='stalled'] .g-nvr__badge {
+    background: var(--g-yellow);
+    color: var(--g-glyph-dark);
+  }
+
+  :root[data-style='glas'] .g-nvr__today {
+    font-weight: 400;
+  }
+
+  /* several cameras: smaller tiles, smaller caption */
+  :root[data-style='glas'] .g-nvr__cams[data-several] .g-nvr__caption {
+    right: 12px;
+    bottom: 10px;
+    left: 12px;
+  }
+
+  :root[data-style='glas'] .g-nvr__cams[data-several] .g-nvr__name {
+    font-size: 17px;
+    line-height: 22px;
+  }
+
+  :root[data-style='glas'] .g-nvr__cams[data-several] .g-nvr__today {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  :root[data-style='glas'] .g-nvr__events {
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev-item {
+    display: block;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev-item:nth-child(n + 4) {
+    display: none;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 4px;
+    border-radius: 16px;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev-img {
+    flex: none;
+    width: 92px;
+    height: 69px;
+    border-radius: 12px;
+    background: var(--g-card-2);
+  }
+
+  :root[data-style='glas'] .g-nvr__ev-text {
+    flex: 1 1 auto;
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev-time {
+    font-size: 17px;
+    line-height: 22px;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev-ago {
+    display: inline;
+  }
+}
+
+@container g-nvr (min-width: 560px) {
+  :root[data-style='glas'] .g-nvr:has(> .g-nvr__events) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 900px) and (hover: hover) {
+  :root[data-style='glas'] .g-nvr__ev:hover {
+    background: var(--g-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .g-nvr__dot {
+    animation: none;
+  }
+
+  :root[data-style='glas'] :is(.g-nvr__cam, .g-nvr__ev):active {
+    scale: none;
+  }
+}
+
+/* Forced colours: the tile keeps an edge (the picture is its only surface). */
+@media (forced-colors: active) {
+  :root[data-style='glas'] .g-nvr__cam {
+    border: 1px solid ButtonText;
+  }
+}

@@ -1,13 +1,14 @@
-// [fork] click-fuzz-test.cjs <hapulse-base> [mobile] [glas] [edit] — HA demo mode (glas: in the style "Glas"): opens
-// every page of the navigation and clicks every control in the page content once (re-queried after each click), closes
-// dialogs again (Escape / close button) and returns to the page when a click navigated away. Destructive controls
+// [fork] click-fuzz-test.cjs <hapulse-base> [mobile] [glas] [edit] [hint] — HA demo mode (glas: in the style "Glas"):
+// opens every page of the navigation and clicks every control in the page content once (re-queried after each click),
+// closes dialogs again (Escape / close button) and returns to the page when a click navigated away. Destructive controls
 // (reset/delete/log out/import/…) are skipped. edit: each page in edit mode (its edit switch, in Glas on the phone the
-// avatar menu), and the controls that leave edit mode are not clicked.
+// avatar menu), and the controls that leave edit mode are not clicked. hint: after each navigation a window is open and
+// the front door unlocked, so the overview shows its hints card.
 // Red on JS exceptions, console errors, the page error card ("Something went wrong") or HTTP ≥ 400.
 // Output: {pages:[{path,clicked,dialogs,navs,errs}], errs, http, crashes}
 const WS = require('ws'), http = require('http');
 const BASE = process.argv[2], MOBILE = process.argv.includes('mobile'), GLAS = process.argv.includes('glas');
-const EDIT = process.argv.includes('edit');
+const EDIT = process.argv.includes('edit'), HINT = process.argv.includes('hint');
 // the controls that leave edit mode (Klassisch, Glas desktop capsule, Glas phone "Fertig" and the avatar menu)
 const EDIT_SWITCH = '.edit-toggle, .g-edit-capsule, .g-done, .g-avatar__btn';
 const MAX_PER_PAGE = 80;
@@ -37,6 +38,10 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const go = async (pth) => {
     await cmd('Page.navigate', { url: BASE + pth });
     await sleep(3000);
+    if (HINT) {
+      await ev(`(()=>{const d=window.__hapulseDemo;if(!d)return;d.patch('binary_sensor.bedroom_window',{state:'on'});d.patch('lock.front_door',{state:'unlocked'});})()`);
+      await sleep(300);
+    }
     if (EDIT) await enterEdit();
   };
   // edit mode lives in memory (uiStore), so every navigation starts without it

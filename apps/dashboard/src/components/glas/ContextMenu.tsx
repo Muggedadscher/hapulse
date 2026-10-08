@@ -21,15 +21,18 @@ import { useShallow } from 'zustand/react/shallow';
 import { DoorOpen, EyeOff, Info, Play, Power, PowerOff, Sparkles, Star, StarOff, Zap, type LucideIcon } from 'lucide-react';
 import {
   CONTEXT_LIFT,
+  cardMatrix,
   contextActions,
   contextRights,
   contextService,
   holePath,
   liftBox,
+  matrixTransform,
   placeContextMenu,
   unscaledBox,
   type ContextActionId,
   type CtxBox,
+  type ScaleMatrix,
 } from './contextActions';
 import { noteOrigin } from './sheet/origin';
 import { openModals } from './sheet/sheetHost';
@@ -93,9 +96,16 @@ function giveFocusBack(el: HTMLElement, ring: boolean): void {
   endQuiet = end;
 }
 
-/** The card in the pressed wrapper (the wrapper itself when it has none). */
-function cardOf(el: HTMLElement): HTMLElement {
+/** The card in the pressed wrapper (the wrapper itself when it has none); a tile or row names its own (`card`). */
+function cardOf(target: ContextMenuTarget): HTMLElement {
+  if (target.card) return target.card;
+  const el = target.el;
   return el.firstElementChild instanceof HTMLElement ? el.firstElementChild : el;
+}
+
+/** How the card is moved off its layout box now: `transform` with the individual `translate` and `scale` (E4). */
+function cardMotion(card: HTMLElement, cs: CSSStyleDeclaration): ScaleMatrix {
+  return cardMatrix(cs.transform || 'none', cs.translate || 'none', cs.scale || 'none', { w: card.offsetWidth, h: card.offsetHeight });
 }
 
 /** Where the card is laid out on screen, also while it is pressed (`:active` scales it to .98) or lifted. */
@@ -103,9 +113,10 @@ function cardBox(card: HTMLElement): CtxBox {
   const r = card.getBoundingClientRect();
   const cs = getComputedStyle(card);
   const shown = { x: r.left, y: r.top, w: r.width, h: r.height };
-  if (!cs.transform || cs.transform === 'none') return shown;
+  const m = cardMotion(card, cs);
+  if (matrixTransform(m) === null) return shown;
   const [ox = 0, oy = 0] = cs.transformOrigin.split(' ').map((v) => parseFloat(v) || 0);
-  return unscaledBox(shown, new DOMMatrixReadOnly(cs.transform), { x: ox, y: oy });
+  return unscaledBox(shown, m, { x: ox, y: oy });
 }
 
 /** The card moved or changed its size (more than half a pixel). */
@@ -233,7 +244,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
   // Open: measure the card, cut the hole, place the menu, lift — before the first paint. Close: fade, drop the card.
   useLayoutEffect(() => {
     const el = target.el;
-    const card = cardOf(el);
+    const card = cardOf(target);
     const dim = dimRef.current;
     const hole = holeRef.current;
     const menu = menuRef.current;
@@ -246,8 +257,10 @@ function Menu({ target, closing, onGone }: MenuProps) {
     const reduced = reducedMotion();
     const cs = getComputedStyle(card);
     const radius = parseFloat(cs.borderTopLeftRadius) || 0;
-    // the lift starts where the press left the card (`:active` scales it to .98)
-    const pressed = cs.transform && cs.transform !== 'none' ? cs.transform : null;
+    // the lift starts where the press left the card (`:active` scales it to .98); a tile's own `translate` and `scale`
+    // (hover, press) go to none while it is lifted (CSS), the lift takes them over
+    const start = cardMotion(card, cs);
+    const pressed = matrixTransform(start);
     const box = cardBox(card);
     measured.current = box;
     const scale = reduced ? 1 : CONTEXT_LIFT;
@@ -276,7 +289,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
     ];
     if (!reduced) {
       const lift = { duration: LIFT_MS, easing: spring('bouncy') };
-      const s0 = pressed ? new DOMMatrixReadOnly(pressed).a || 1 : 1;
+      const s0 = pressed ? start.a || 1 : 1;
       anims.current.push(
         play(card, [{ transform: pressed ?? 'scale(1)' }, { transform: `scale(${CONTEXT_LIFT})` }], lift),
         play(dim, [{ clipPath: holePath(liftBox(box, s0), radius * s0, layer) }, { clipPath: holePath(lifted, radius * scale, layer) }], lift),
@@ -293,9 +306,10 @@ function Menu({ target, closing, onGone }: MenuProps) {
       );
     }
 
-    // the focus goes into the menu (arrows, Home, End, Enter); the card gets it back when the menu closes
+    // the focus goes into the menu (arrows, Home, End, Enter); the card gets it back when the menu closes (a second run
+    // of this effect, React's development check, finds the focus already in the menu and keeps what it had)
     const active = document.activeElement;
-    returnTo.current = active instanceof HTMLElement && el.contains(active) ? active : null;
+    if (!menu.contains(active)) returnTo.current = active instanceof HTMLElement && el.contains(active) ? active : null;
     const first = lastInput === 'key' ? menu.querySelector<HTMLElement>('[role="menuitem"]') : null;
     (first ?? menu).focus({ preventScroll: true });
 
@@ -368,7 +382,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
   // sliders come) and a window that opens over the menu: the hole would show something else. Checked every frame.
   useEffect(() => {
     if (closing) return undefined;
-    const card = cardOf(target.el);
+    const card = cardOf(target);
     let raf = 0;
     const tick = () => {
       const at = measured.current;
@@ -380,13 +394,13 @@ function Menu({ target, closing, onGone }: MenuProps) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [closing, target.el, closeMenu]);
+  }, [closing, target, closeMenu]);
 
   // Closing: everything fades, the card drops back; then the instance goes.
   useLayoutEffect(() => {
     if (!closing) return;
     const el = target.el;
-    const card = cardOf(el);
+    const card = cardOf(target);
     const dim = dimRef.current;
     const hole = holeRef.current;
     const menu = menuRef.current;
@@ -417,11 +431,12 @@ function Menu({ target, closing, onGone }: MenuProps) {
     void allDone(mine).then(() => {
       if (anims.current === mine) onGoneRef.current();
     });
-  }, [closing, target.el]);
+  }, [closing, target]);
 
   const run = (action: ContextActionId) => {
     if (closing || !entity) return;
     restoreFocus.current = action !== 'details' && action !== 'room' && action !== 'hide';
+    if (action === 'turnOn' || action === 'turnOff') target.onSwitch?.(action === 'turnOn');
     closeMenu();
     const service = contextService(action, id);
     if (service) {
@@ -431,7 +446,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
     switch (action) {
       case 'details':
         // the detail grows out of the card, not out of the menu item that is fading away
-        noteOrigin(cardOf(target.el));
+        noteOrigin(cardOf(target));
         openEntityDetail(id);
         break;
       case 'favoriteAdd':

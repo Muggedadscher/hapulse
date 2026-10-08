@@ -15,3 +15,10 @@
 @import './sheets.css';
 @import './sheet-content.css';
 @import './gestures.css';
+@import './controls.css';
+@import './home.css';
+@import './home-cards.css';
+@import './home-lists.css';
+@import './nvr.css';
+@import './detail.css';
+@import './edit.css';

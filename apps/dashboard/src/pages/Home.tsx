@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'; // [fork] useLayoutEffect, useRef
 import { Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { GreetingBlock } from '../components/home/GreetingBlock';
@@ -15,6 +15,13 @@ import { WasteCard } from '../components/waste/WasteCard'; // [fork]
 import { NvrHomeCard } from '../nvr/NvrHomeCard'; // [fork]
 import { useNvrConfigured } from '../nvr/config'; // [fork]
 import { useCameraSource, withoutHaCameras } from '../nvr/cameraSource'; // [fork]
+import { HintsCard, HintWindows } from '../components/home/HintsCard'; // [fork] Glas Etappe 4, K76
+import type { HintWindow } from '../components/home/HintsCard'; // [fork]
+import { useHints } from '../components/home/useHints'; // [fork]
+import { EnergyGlas } from '../components/glas/home/EnergyGlas'; // [fork] Glas Etappe 4, K75
+import { useIsGlas } from '../app/glas/useUiStyle'; // [fork]
+import { SizeBar } from '../components/glas/home/SizeBar'; // [fork] Glas edit bar (K78)
+import { SizeSheet } from '../components/glas/home/SizeSheet'; // [fork]
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
 import { SortableGrid } from '../components/ui/SortableGrid';
@@ -29,7 +36,7 @@ import {
   useEntityMap,
   useDisplayName,
 } from '../ha/hooks';
-import { detectWasteBins } from '@hapulse/core'; // [fork]
+import { detectWasteBins, sizeOfPreset, tallKey, withTall, type SizePreset } from '@hapulse/core'; // [fork] waste; Glas sizes (K78)
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
@@ -42,6 +49,7 @@ const MAX_COLS = 4;
 
 /** Sections that default to more than 1 column when no stored span exists. */
 const DEFAULT_SPANS: Partial<Record<string, number>> = {
+  hints: 4, // [fork] a full row
   hero: 2,
   rooms: 4,
 };
@@ -138,6 +146,7 @@ function ResizeHandle({
 
 /** Canonical Home section ids in default display order. */
 const SECTION_IDS = [
+  'hints', // [fork] first: only what deviates from normal
   'scenes',
   'hero',
   'energy',
@@ -156,6 +165,13 @@ type SectionId = (typeof SECTION_IDS)[number];
 type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
 
 const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
+  // [fork] Home hints.
+  hints: {
+    hide: 'home.section.hide.hints',
+    show: 'home.section.show.hints',
+    hideMobile: 'home.section.hideMobile.hints',
+    showMobile: 'home.section.showMobile.hints',
+  },
   scenes: {
     hide: 'home.section.hide.scenes',
     show: 'home.section.show.scenes',
@@ -226,6 +242,25 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
   },
 };
 
+// [fork] Glas edit bar (K78): the card's name for the bar's group and the size window
+const SECTION_NAME_KEYS: Record<SectionId, TKey> = {
+  hints: 'glas.edit.card.hints',
+  scenes: 'glas.edit.card.scenes',
+  hero: 'glas.edit.card.hero',
+  energy: 'glas.edit.card.energy',
+  devices: 'glas.edit.card.devices',
+  climate: 'glas.edit.card.climate',
+  blinds: 'glas.edit.card.blinds',
+  security: 'glas.edit.card.security',
+  waste: 'glas.edit.card.waste',
+  nvr: 'glas.edit.card.nvr',
+  activity: 'glas.edit.card.activity',
+  rooms: 'glas.edit.card.rooms',
+};
+
+/** [fork] Cards without S / M / L in Glas: the hints and the rooms keep their width (K78). */
+const NO_SIZE_PRESETS: ReadonlySet<string> = new Set(['hints', 'rooms']);
+
 export function Home() {
   const t = useT();
   const rooms = useRooms();
@@ -253,6 +288,7 @@ export function Home() {
   const homeSectionHeights = useSettingsStore(
     useShallow((s) => s.customization.homeSectionHeights)
   );
+  const tallSections = useSettingsStore(useShallow((s) => s.customization.tallSections)); // [fork] Glas L (K78)
   const roomOrder = useSettingsStore(
     useShallow((s) => s.customization.roomOrder)
   );
@@ -267,6 +303,9 @@ export function Home() {
 
   const [climateModalOpen, setClimateModalOpen] = useState(false);
   const [blindsModalOpen, setBlindsModalOpen] = useState(false);
+  const [hintWindow, setHintWindow] = useState<HintWindow | null>(null); // [fork] outlives the hints card (K76)
+  const [sizeSheetFor, setSizeSheetFor] = useState<SectionId | null>(null); // [fork] Glas "⋯" (K78)
+  const moveFocus = useRef<{ id: string; dir: -1 | 1 } | null>(null); // [fork] Glas ‹ ›: the button keeps the focus
 
   // Rooms that have domains (real devices), in the user's stored order
   const roomsWithDevices = applyStoredOrder(
@@ -283,6 +322,9 @@ export function Home() {
   );
   const hasWaste = wasteBins.length > 0;
   const hasNvr = useNvrConfigured(); // [fork] NVR card only when a Sentinel connection is configured
+  const { hints, cameraNames } = useHints(); // [fork] the hints card renders only while there is one
+  const isGlas = useIsGlas(); // [fork]
+  if (sizeSheetFor !== null && !(editMode && isGlas)) setSizeSheetFor(null); // [fork] leaving edit mode or Glas closes "⋯"
 
   // Compute display order from stored order
   const orderedIds = applyStoredOrder([...SECTION_IDS], homeSectionOrder);
@@ -298,7 +340,8 @@ export function Home() {
         return true;
       })
   ).filter((id) => id !== 'waste' || hasWaste) // [fork] hide the waste card when no bins exist
-   .filter((id) => id !== 'nvr' || hasNvr); // [fork] hide the NVR card without a connection
+   .filter((id) => id !== 'nvr' || hasNvr) // [fork] hide the NVR card without a connection
+   .filter((id) => id !== 'hints' || editMode || hints.length > 0); // [fork] no hints card while nothing deviates (edit mode: empty card)
 
   /** Toggle a section's hidden state. */
   function handleToggleHidden(id: string) {
@@ -373,6 +416,51 @@ export function Home() {
     [orderedIds, updateCustomization]
   );
 
+  // ── [fork] Glas edit bar (docs/glas/PLAN-ETAPPE-4.md K78) ──────────────────
+  // S / M / L write the classic span and height plus the Glas-only "taller" entry, in one change.
+  function handlePreset(id: string, preset: SizePreset) {
+    const size = sizeOfPreset(preset);
+    updateCustomization({
+      homeSectionSpans: { ...homeSectionSpans, [id]: size.span },
+      homeSectionHeights: { ...homeSectionHeights, [id]: size.height },
+      tallSections: withTall(tallSections, tallKey('home', id), size.tall),
+    });
+  }
+
+  // "⋯": a height cap sets the height itself, so it leaves "taller".
+  function handleSheetHeight(id: string, level: number) {
+    updateCustomization({
+      homeSectionHeights: { ...homeSectionHeights, [id]: level },
+      ...(level > 0 ? { tallSections: withTall(tallSections, tallKey('home', id), false) } : {}),
+    });
+  }
+
+  // ‹ ›: one place earlier or later among the cards shown in edit mode.
+  function handleMove(id: string, dir: -1 | 1, keepFocus: boolean) {
+    const from = visibleIds.indexOf(id);
+    const to = from + dir;
+    if (from < 0 || to < 0 || to >= visibleIds.length) return;
+    const next = [...visibleIds];
+    next.splice(from, 1);
+    next.splice(to, 0, id);
+    moveFocus.current = keepFocus ? { id, dir } : null;
+    handleReorder(next);
+  }
+
+  // A moved card's DOM node can be re-inserted, which drops the focus: give it back (the other arrow at an end).
+  useLayoutEffect(() => {
+    const pending = moveFocus.current;
+    if (!pending) return;
+    moveFocus.current = null;
+    const bar = document.querySelector(`.home-page [data-section="${pending.id}"] .g-size-bar`);
+    const same = bar?.querySelector<HTMLButtonElement>(`[data-move="${pending.dir}"]`);
+    const other = bar?.querySelector<HTMLButtonElement>(`[data-move="${-pending.dir}"]`);
+    const target = same && !same.disabled ? same : other;
+    if (!target || document.activeElement === target) return;
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ block: 'nearest' });
+  });
+
   /** Render the widget for a section id. */
   function renderWidget(id: SectionId) {
     switch (id) {
@@ -383,7 +471,7 @@ export function Home() {
           <HeroRoomCard rooms={roomsWithDevices} entities={entities} />
         );
       case 'energy':
-        return <EnergyWidget />;
+        return isGlas ? <EnergyGlas /> : <EnergyWidget />; // [fork] Glas: own card, variant V4 (K75)
       case 'devices':
         return (
           <DevicesCard
@@ -414,6 +502,8 @@ export function Home() {
         return <WasteCard bins={wasteBins} />;
       case 'nvr': // [fork]
         return <NvrHomeCard />;
+      case 'hints': // [fork]
+        return <HintsCard hints={hints} cameraNames={cameraNames} onOpen={setHintWindow} />;
       case 'activity':
         return <ActivityCard entities={entities} />;
       case 'rooms':
@@ -423,14 +513,19 @@ export function Home() {
     }
   }
 
+  // [fork] Glas renders the chips after the greeting, so the tab order follows the page (K86).
+  const chipsBar = (
+    <SummaryChipsBar
+      className={`home-chips-mobile${editMode ? ' home-chips-mobile--edit' : ''}`}
+      editMode={editMode}
+    />
+  );
+
   return (
     <div className="page home-page stagger-rise">
       {/* Summary chips: mobile-only normally; --edit makes it visible on desktop in edit mode
           (HeaderCluster suppresses its own chips when editMode is true to avoid duplication). */}
-      <SummaryChipsBar
-        className={`home-chips-mobile${editMode ? ' home-chips-mobile--edit' : ''}`}
-        editMode={editMode}
-      />
+      {!isGlas && chipsBar}{/* [fork] */}
 
       {/* Greeting row: text + (mobile) bell/avatar + edit toggle.
           Uses the shared PageHeaderActions so the placement matches every other page. */}
@@ -440,6 +535,7 @@ export function Home() {
           <EditToggle className="home-page__edit-toggle" />
         </PageHeaderActions>
       </div>
+      {isGlas && chipsBar}{/* [fork] */}
 
       {/* Sortable overview grid */}
       <SortableGrid
@@ -455,6 +551,8 @@ export function Home() {
           const sc = spanClass(currentSpan);
           const currentHeight = getHeightLevel(id, homeSectionHeights);
           const hc = heightClass(currentHeight);
+          // [fork] Glas L: taller from 900 px (K78); a height cap (set in Klassisch) wins
+          const tall = isGlas && currentHeight === 0 && tallSections.includes(tallKey('home', id));
 
           const widget = renderWidget(id as SectionId);
 
@@ -466,6 +564,7 @@ export function Home() {
               hc,
               isHidden ? 'overview-grid__cell--hidden' : '',
               isMobileHidden ? 'section-mobile-hidden' : '',
+              tall ? 'g-tall' : '', // [fork]
             ].filter(Boolean).join(' ');
 
             return (
@@ -486,7 +585,7 @@ export function Home() {
           ].filter(Boolean).join(' ');
 
           return (
-            <SortableItem key={id} id={id} editMode={editMode} className={sc}>
+            <SortableItem key={id} id={id} editMode={editMode} className={tall ? `${sc} g-tall` : sc}>{/* [fork] g-tall */}
               <div className={cellClass} data-section={id}>
                 <div className="edit-section-outline">
                   {widget}
@@ -511,6 +610,24 @@ export function Home() {
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />
                 <HeightDots level={currentHeight} />
                 <HeightHandle id={id} level={currentHeight} onCommit={handleHeightChange} />
+                {isGlas && ( // [fork] Glas: one bar instead of the badges and handles above (K78)
+                  <SizeBar
+                    name={t(SECTION_NAME_KEYS[id as SectionId])}
+                    index={visibleIds.indexOf(id)}
+                    size={NO_SIZE_PRESETS.has(id) ? undefined : { span: currentSpan, height: currentHeight, tall }}
+                    onPreset={(preset) => handlePreset(id, preset)}
+                    first={visibleIds.indexOf(id) === 0}
+                    last={visibleIds.indexOf(id) === visibleIds.length - 1}
+                    onMove={(dir, keepFocus) => handleMove(id, dir, keepFocus)}
+                    hidden={isHidden}
+                    hideLabel={t(SECTION_TOGGLE_KEYS[id as SectionId].hide)}
+                    onToggleHidden={() => handleToggleHidden(id)}
+                    mobileHidden={isMobileHidden}
+                    mobileLabel={t(SECTION_TOGGLE_KEYS[id as SectionId].hideMobile)}
+                    onToggleMobileHidden={() => handleToggleMobileHidden(id)}
+                    onCustomize={() => setSizeSheetFor(id as SectionId)}
+                  />
+                )}
               </div>
             </SortableItem>
           );
@@ -519,6 +636,18 @@ export function Home() {
 
       <ClimateAllModal open={climateModalOpen} onClose={() => setClimateModalOpen(false)} />
       <BlindsAllModal open={blindsModalOpen} onClose={() => setBlindsModalOpen(false)} />
+      <HintWindows target={hintWindow} onClose={() => setHintWindow(null)} />{/* [fork] */}
+      {isGlas && ( // [fork] Glas "⋯": the classic values of one card (K78)
+        <SizeSheet
+          open={editMode && sizeSheetFor !== null}
+          onClose={() => setSizeSheetFor(null)}
+          name={sizeSheetFor ? t(SECTION_NAME_KEYS[sizeSheetFor]) : ''}
+          span={sizeSheetFor ? getSpan(sizeSheetFor, homeSectionSpans) : 1}
+          height={sizeSheetFor ? getHeightLevel(sizeSheetFor, homeSectionHeights) : 0}
+          onSpan={(span) => sizeSheetFor && handleSpanChange(sizeSheetFor, span)}
+          onHeight={(level) => sizeSheetFor && handleSheetHeight(sizeSheetFor, level)}
+        />
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import type { HassEntityMap, HassEntity } from '@hapulse/core';
 import { useT, useStateLabel } from '../../i18n/useT';
 import type { TFunction, StateLabel } from '../../i18n/useT';
 import './ActivityCard.css';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (docs/glas/PLAN-ETAPPE-4.md K83)
 
 interface ActivityCardProps {
   entities: HassEntityMap;
@@ -126,6 +127,7 @@ export function ActivityCard({ entities, hideSeeAll = false }: ActivityCardProps
   const navigate = useNavigate();
   const t = useT();
   const sl = useStateLabel();
+  const isGlas = useIsGlas(); // [fork]
   const recent = Object.values(entities)
     .filter((e) => {
       if (e.state === 'unavailable' || e.state === 'unknown') return false;
@@ -174,7 +176,7 @@ export function ActivityCard({ entities, hideSeeAll = false }: ActivityCardProps
             <li key={entity.entity_id} className="activity-row">
               <span
                 className="activity-row__icon"
-                style={{ background: chip.bg, color: chip.color }}
+                style={isGlas ? undefined : { background: chip.bg, color: chip.color } /* [fork] Glas: plain symbols */}
                 aria-hidden="true"
               >
                 {activityIcon(entity)}

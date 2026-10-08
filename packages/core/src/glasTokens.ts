@@ -302,12 +302,25 @@ export const GLAS_SHADOWS = {
   chip: '0 1px 3px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08)',
 } as const;
 
-export type GlasWindowShadow = 'dialog' | 'inspector' | 'sheetLarge' | 'pushedScreen' | 'liftContext' | 'liftContextDesktop';
+export type GlasWindowShadow =
+  | 'dialog'
+  | 'inspector'
+  | 'sheetLarge'
+  | 'pushedScreen'
+  | 'liftContext'
+  | 'liftContextDesktop'
+  | 'cardHover'
+  | 'tileLift'
+  | 'tileOnDesktop'
+  | 'knob'
+  | 'lightGlow';
 
 /**
  * Shadows of windows and gestures (stage 3, plan docs/glas/PLAN-ETAPPE-3.md §5.1; glas-tokens.json → elevation, verbatim):
- * desktop dialog, inspector, large sheet, the page pushed over a sheet and the lifted card of the context menu. Dark
- * overrides `sheetLarge` and both lifts; the others are the same in both modes.
+ * desktop dialog, inspector, large sheet, the page pushed over a sheet and the lifted card of the context menu; since
+ * stage 4 (docs/glas/PLAN-ETAPPE-4.md K83) also the tiles: card hover, an "on" tile (phone / desktop), the switch knob
+ * and the glow of a lit light circle. Dark overrides `sheetLarge`, both lifts, `cardHover`, `tileLift` and
+ * `tileOnDesktop`; the others are the same in both modes.
  */
 export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, string>> = {
   light: {
@@ -317,6 +330,11 @@ export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, stri
     pushedScreen: '-12px 0 32px rgba(0,0,0,.14)',
     liftContext: '0 18px 50px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.08)',
     liftContextDesktop: '0 18px 50px rgba(0,0,0,.28)',
+    cardHover: '0 1px 2px rgba(0,0,0,.05), 0 10px 24px rgba(0,0,0,.08)',
+    tileLift: '0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.06)',
+    tileOnDesktop: '0 1px 2px rgba(0,0,0,.06), 0 6px 16px rgba(0,0,0,.08)',
+    knob: '0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16)',
+    lightGlow: '0 4px 14px rgba(255,204,0,.35)',
   },
   dark: {
     dialog: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 30px 80px rgba(0,0,0,.28)',
@@ -325,6 +343,11 @@ export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, stri
     pushedScreen: '-12px 0 32px rgba(0,0,0,.14)',
     liftContext: '0 18px 50px rgba(0,0,0,.6)',
     liftContextDesktop: '0 18px 50px rgba(0,0,0,.6)',
+    cardHover: '0 10px 24px rgba(0,0,0,.5)',
+    tileLift: 'none',
+    tileOnDesktop: '0 6px 16px rgba(0,0,0,.4)',
+    knob: '0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16)',
+    lightGlow: '0 4px 14px rgba(255,204,0,.35)',
   },
 };
 
@@ -451,6 +474,12 @@ export function resolveMix(input: string): string {
   if (!m) return toHex(mustParse(input));
   const a = mustParse(m[1]!), b = mustParse(m[3]!), p = parseFloat(m[2]!) / 100;
   return toHex({ r: a.r * p + b.r * (1 - p), g: a.g * p + b.g * (1 - p), b: a.b * p + b.b * (1 - p) });
+}
+
+/** An opaque colour at `alpha`, for `compositeOver` (a chart part drawn with an opacity). */
+function atAlpha(color: string, alpha: number): string {
+  const p = mustParse(color);
+  return `rgba(${p.r},${p.g},${p.b},${alpha})`;
 }
 
 // ---------------------------------------------------------------------------
@@ -733,7 +762,7 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
       pairs.push({ name: `glassLabel2 on glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
     }
   }
-  return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a)];
+  return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a), ...homeContrastPairs(c, a)];
 }
 
 /** Text of the "open" status pill (redSoft) in a window's group: dark, redInk on redSoft over the lighter group is
@@ -772,6 +801,41 @@ function windowContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, 
         pairs.push({ name: `glassLabel2 on ${surface} glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
       }
     }
+  }
+  return pairs;
+}
+
+/**
+ * The overview and the detail (plan Etappe 4 §3): text on the scene and device tiles; their glyphs (3:1, non-text) in
+ * the grey circle when off and on the full colour when on; the energy chart's parts on the card (3:1: grid bars, the
+ * solar part's edge where yellow on the card is too light, the dashed average at its .7 opacity); the detail chart's
+ * line in its ink on the group and over its own area (.22). The ring and the full-colour circle of an active scene
+ * need no pair: the tile says "Aktiv".
+ */
+function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
+  const pairs: ContrastPair[] = [];
+  const tileOff = resolveMix(c.tileOff);
+  for (const [name, tile] of [['tileOff', tileOff], ['tileOn', resolveMix(c.tileOn)]] as const) {
+    pairs.push({ name: `label on ${name}`, fg: c.label, bg: tile, min: 4.5 });
+    pairs.push({ name: `label2 on ${name}`, fg: c.label2, bg: tile, min: 4.5 });
+  }
+  pairs.push({ name: 'tileOffLabel on tileOff (device off)', fg: c.tileOffLabel, bg: tileOff, min: 4.5 });
+  const circleOff = compositeOver(c.fill, tileOff);
+  pairs.push({ name: 'label2 glyph in the grey circle (device off)', fg: c.label2, bg: circleOff, min: 3 });
+  for (const ink of ['yellowInk', 'orangeInk', 'tealInk', 'purpleInk', 'indigoInk', 'blueInk'] as const) {
+    pairs.push({ name: `${ink} glyph in the grey circle (scene off)`, fg: c[ink], bg: circleOff, min: 3 });
+  }
+  const onCircle = [['yellow', 'glyphDark'], ['orange', 'glyphDark'], ['teal', 'glyphDark'], ['green', 'glyphDark'], ['purple', 'onBadge'], ['indigo', 'onBadge'], ['blue', 'onBadge']] as const;
+  for (const [tone, glyph] of onCircle) {
+    pairs.push({ name: `${glyph} glyph on ${tone} (scene or device on)`, fg: c[glyph], bg: c[tone], min: 3 });
+  }
+  pairs.push({ name: 'grid bars on card', fg: c.chartNetz, bg: c.card, min: 3 });
+  const solarEdge = (parseColor(c.chartSolarEdge)?.a ?? 0) > 0 ? c.chartSolarEdge : c.chartSolar;
+  pairs.push({ name: 'solar bars (their edge) on card', fg: solarEdge, bg: c.card, min: 3 });
+  pairs.push({ name: 'average line on card', fg: compositeOver(atAlpha(c.chartAvg, 0.7), c.card), bg: c.card, min: 3 });
+  for (const [name, fill, ink] of [['accent', a.accent, a.accentInk], ['orange', c.orange, c.orangeInk], ['blue', c.blue, c.blueInk]] as const) {
+    pairs.push({ name: `${name} chart line on group`, fg: ink, bg: c.group, min: 3 });
+    pairs.push({ name: `${name} chart line on its area over group`, fg: ink, bg: compositeOver(atAlpha(fill, 0.22), c.group), min: 3 });
   }
   return pairs;
 }

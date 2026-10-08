@@ -157,3 +157,22 @@
   color: var(--text-faint);
   max-width: 20ch;
 }
+
+/* [fork] Subtitle of a scene tile ("Aktiv" / "5 Geräte") and the active tile (Glas Etappe 4, K77, user decision E3). */
+.scene-tile__sub {
+  margin-top: -0.25rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.scene-tile[data-active] {
+  border-color: var(--accent);
+}
+
+.scene-tile[data-active] .scene-tile__sub {
+  color: var(--accent);
+  font-weight: 600;
+}

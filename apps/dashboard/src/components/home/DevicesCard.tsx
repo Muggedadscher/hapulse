@@ -14,6 +14,9 @@ import { callService } from '../../ha/service';
 import { useLocale, useT, useStateLabel } from '../../i18n/useT';
 import type { StateLabel } from '../../i18n/useT';
 import './DevicesCard.css';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas tiles and rows (K83)
+import { useKeptOffStore } from '../../stores/keptOffStore'; // [fork]
+import { GlasDeviceItem } from '../glas/home/GlasDeviceItem'; // [fork]
 
 interface DevicesCardProps {
   entities: HassEntityMap;
@@ -72,6 +75,8 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
   const t = useT();
   const sl = useStateLabel();
   const locale = useLocale();
+  const isGlas = useIsGlas(); // [fork]
+  const keptOff = useKeptOffStore((s) => s.ids); // [fork]
 
   // All favorited device entities (available, right domain)
   const favDevices = favorites
@@ -81,7 +86,9 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
     );
 
   // Subset that are currently on/active
-  const activeDevices = favDevices.filter(isActiveState);
+  // [fork] Glas: plus the ones switched off in this card since the page loaded (K83)
+  const activeDevices = favDevices.filter((e) => isActiveState(e) || (isGlas && keptOff.includes(e.entity_id)));
+  const onCount = favDevices.filter(isActiveState).length; // [fork] Glas: "4 an" next to the title
 
   const handleToggle = useCallback((entity: HassEntity) => {
     const domain = domainOf(entity.entity_id);
@@ -103,6 +110,7 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
             <Layers size={16} strokeWidth={1.75} />
           </span>
           <span className="devices-card__title">{t('home.devices.title')}</span>
+          {isGlas && onCount > 0 && <span className="g-devices__meta">{t('home.hero.onCount', { count: onCount })}</span>}{/* [fork] */}
         </div>
         {activeDevices.length > 0 && (
           <button
@@ -135,6 +143,20 @@ export function DevicesCard({ entities, rooms, favorites }: DevicesCardProps) {
             const domain = domainOf(entity.entity_id);
             const toggleable = isToggleable(domain);
             const isOn = isActiveState(entity);
+            if (isGlas) { // [fork]
+              return (
+                <GlasDeviceItem
+                  key={entity.entity_id}
+                  entity={entity}
+                  name={name}
+                  roomName={roomName}
+                  icon={chip.icon}
+                  on={isOn}
+                  toggleable={toggleable}
+                  onToggle={() => handleToggle(entity)}
+                />
+              );
+            }
 
             return (
               <li key={entity.entity_id} className="device-row">

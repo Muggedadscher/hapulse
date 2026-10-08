@@ -17,9 +17,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { EntityCard } from '../cards/EntityCard';
+import { LightCard } from '../cards/LightCard'; // [fork] Glas: colour temperature and colour in the light control
 import { DomainIcon } from '../settings/DomainIcon';
 import { relativeTime } from '../security/roomUtils';
-import { useEntity } from '../../ha/hooks';
+import { useEntity, useRooms } from '../../ha/hooks'; // [fork] useRooms
 import { useConnectionStore } from '../../stores/connectionStore';
 import { resolveEntityPicture } from '../../lib/media';
 import { Camera } from 'lucide-react';
@@ -34,6 +35,10 @@ import { FavoriteToggle } from './FavoriteToggle'; // [fork]
 import { useIsManaged } from '../../ha/managedHooks'; // [fork]
 import { useCameraSource } from '../../nvr/cameraSource'; // [fork]
 import { NvrCameraHint } from '../../nvr/components/NvrCameraHint'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas detail (docs/glas/PLAN-ETAPPE-4.md K79, K80)
+import { GlasDetailState, GlasDetailTile, glasChartTone } from '../glas/detail/GlasDetailHead'; // [fork]
+import { LightBrightnessControl } from '../glas/detail/LightBrightnessControl'; // [fork]
+import { Segment } from '../glas/Segment'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -280,6 +285,8 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const detailSeq = useUIStore((s) => s.detailSeq); // [fork] Glas: every request for the detail (K60)
   const managed = useIsManaged(); // [fork] star for per-user favorites under global management
   const cameraSource = useCameraSource(); // [fork]
+  const isGlas = useIsGlas(); // [fork] Glas: the head in the window's head, the light control, the segment
+  const rooms = useRooms(); // [fork] Glas: the room under the name
 
   // [fork] Selected history range is remembered per user (synced to HA storage).
   const detailRange = useSettingsStore((s) => s.customization.detailHistoryRange);
@@ -356,6 +363,9 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
     override?.name ??
     (entity.attributes.friendly_name as string | undefined) ??
     entity.entity_id;
+  const room = rooms.find((r) => r.entityIds.includes(entity.entity_id))?.name; // [fork] Glas subtitle
+  // [fork] Glas: a light that answers gets the vertical brightness control, its card only colour temperature and colour
+  const glasLight = isGlas && domain === 'light' && entity.state !== 'unavailable' && entity.state !== 'unknown';
 
   const stateLabel = formatEntityState(entity, locale, (d, s, o) => sl(d, s, o));
   const windowStart = windowEnd - histRangeH * 3_600_000; // [fork] matches the displayed series
@@ -376,9 +386,10 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
     : activityExpanded ? logbook.slice(0, 40) : logbook.slice(0, ACTIVITY_COLLAPSED);
 
   return (
-    <Modal open={entityId != null} onClose={onClose} title={name} className="entity-detail-modal" contentKey={entityId} presentation="inspector" requestKey={detailSeq}>{/* [fork] Glas: a member tap swaps the content (docs/glas/PLAN-ETAPPE-3.md K70); the inspector from 1100 px (K60) */}
+    <Modal open={entityId != null} onClose={onClose} title={name} className="entity-detail-modal" contentKey={entityId} presentation="inspector" requestKey={detailSeq} subtitle={room} lead={<GlasDetailTile entity={entity} />} trailing={managed ? <FavoriteToggle entityId={entity.entity_id} /> : undefined}>{/* [fork] Glas: a member tap swaps the content (docs/glas/PLAN-ETAPPE-3.md K70); the inspector from 1100 px (K60); room, state tile and star in the head (PLAN-ETAPPE-4.md K79) */}
       <div className="entity-detail">
         {/* ── Header: icon, name, last changed, current state ── */}
+        {isGlas ? <GlasDetailState entity={entity} stateLabel={stateLabel} /> : ( // [fork] Glas: name, room, tile and star are in the window's head
         <div className="entity-detail__header">
           <span className="entity-detail__icon-chip" aria-hidden="true">
             <DomainIcon entity={entity} size={20} />
@@ -392,6 +403,12 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
           <div className="entity-detail__header-state">{stateLabel}</div>
           {managed && <FavoriteToggle entityId={entity.entity_id} />}{/* [fork] per-user favorites */}
         </div>
+        )}{/* [fork] */}
+        {glasLight && ( // [fork] Glas (K79): the light control, colour temperature and colour beside the capsule
+          <LightBrightnessControl key={entity.entity_id} entity={entity}>
+            <LightCard entity={entity} name={name} colorOnly />
+          </LightBrightnessControl>
+        )}
 
         {/* ── Camera: live view ── */}
         {domain === 'camera' && (cameraSource === 'sentinel' // [fork] cameras come from Sentinel
@@ -399,7 +416,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
           : <CameraLiveView entity={entity} name={name} />)}
 
         {/* ── Control (interactive domains only) ── */}
-        {CONTROL_DOMAINS.has(domain) && (
+        {CONTROL_DOMAINS.has(domain) && !glasLight && ( // [fork] Glas: a light's control is above
           <div className="entity-detail__control">
             <EntityCard entity={entity} name={name} detailPress={false} />
           </div>
@@ -410,6 +427,15 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
           <div className="entity-detail__section-head">
             <h3 className="entity-detail__section-title">{t('entityDetail.history')}</h3>
             {/* [fork] Range pills (24H/7D/30D) — replaces the 24h/7d toggle. */}
+            {isGlas ? ( // [fork] Glas: a segment with a lens (K80)
+              <Segment
+                options={HISTORY_RANGES.map((r) => ({ value: r.id as string, label: r.label }))}
+                value={detailRange}
+                onChange={(v) => updateCustomization({ detailHistoryRange: v })}
+                label={t('entityDetail.history')}
+                className="g-seg--detail"
+              />
+            ) : (
             <div className="entity-detail__ranges" role="group" aria-label={t('entityDetail.history')}>
               {HISTORY_RANGES.map((r) => (
                 <button
@@ -423,6 +449,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
                 </button>
               ))}
             </div>
+            )}{/* [fork] */}
           </div>
           {history == null ? (
             <div className="entity-detail__placeholder">{t('common.loading')}</div>
@@ -433,6 +460,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
                eases back to full opacity when the new one arrives. */
             <div
               className={`entity-detail__history-view${historyLoading ? ' entity-detail__history-view--loading' : ''}`}
+              data-g-tone={isGlas && numeric ? glasChartTone(deviceClass) : undefined} // [fork] Glas: the chart's colour
             >
               {numeric ? (
                 <ValueChart points={history} start={windowStart} end={windowEnd} unit={unit} locale={locale} /> // [fork] locale
