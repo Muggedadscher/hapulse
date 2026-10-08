@@ -10,6 +10,8 @@ export interface ContextMenuTarget {
   entityId: string;
   /** The pressed card (the `.entity-card-press` wrapper): lifted and shown through the hole of the dim layer. */
   el: HTMLElement;
+  /** The visible card when it is not the wrapper's first child (a scene tile, a device row: the element itself). */
+  card?: HTMLElement | undefined;
   /** The card's name, for the menu's label. */
   name: string;
   /** Opened while a finger or button is still down (long press): its release must not close the menu. */

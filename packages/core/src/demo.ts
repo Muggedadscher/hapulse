@@ -729,6 +729,27 @@ export const DEMO_ENTITIES: HassEntityMap = {
   ...demoPoolEntities(),
 };
 
+// [fork] Scene members (`attributes.entity_id`, as HA reports them) so the Home scenes card can show
+// "Aktiv" and "N Geräte" (docs/glas/PLAN-ETAPPE-4.md K77). Kept out of the upstream scene lines above.
+// No media player: the demo ticker rewrites the playing TV every few seconds, which would end "Aktiv" at once.
+const DEMO_SCENE_MEMBERS: Record<string, string[]> = {
+  'scene.living_room_movie': ['light.living_room_ceiling', 'light.living_room_floor_lamp', 'light.living_room_shelf'],
+  'scene.living_room_bright': ['light.living_room_ceiling', 'light.living_room_floor_lamp', 'light.living_room_shelf'],
+  'scene.living_room_relax': ['light.living_room_floor_lamp', 'light.living_room_shelf'],
+  'scene.bedroom_sleep': ['light.bedroom_ceiling', 'light.bedroom_nightstand', 'cover.bedroom_blinds'],
+  'scene.bedroom_wake': ['light.bedroom_ceiling', 'light.bedroom_nightstand', 'cover.bedroom_blinds'],
+  'scene.kitchen_cooking': ['light.kitchen_ceiling', 'light.kitchen_counter'],
+  'scene.kitchen_morning': ['light.kitchen_ceiling', 'switch.coffee_machine'],
+  'scene.office_focus': ['light.office_ceiling', 'light.office_desk', 'switch.office_desk'],
+  'scene.office_meeting': ['light.office_ceiling', 'light.office_desk'],
+  'scene.hallway_away': ['light.hallway', 'light.living_room_ceiling', 'light.kitchen_ceiling'],
+  'scene.hallway_welcome': ['light.hallway', 'light.living_room_floor_lamp'],
+};
+for (const [id, members] of Object.entries(DEMO_SCENE_MEMBERS)) {
+  const scene = DEMO_ENTITIES[id];
+  if (scene) DEMO_ENTITIES[id] = { ...scene, attributes: { ...scene.attributes, entity_id: members } };
+}
+
 /** [fork] Build demo waste sensors with future `upcoming` dates + `daysTo`. */
 function demoWasteSensors(): HassEntityMap {
   const iso = (offsetDays: number): string => {

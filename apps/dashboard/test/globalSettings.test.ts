@@ -104,6 +104,7 @@ describe('scope table', () => {
       'mobileHiddenEnergySections', 'scryptedUrl', 'poolChipMigrated', 'wasteSectionMigrated', 'nvrSectionMigrated', 'navOrderV2Migrated',
       'nvrCameraRooms', 'garageChipMigrated', 'locksChipMigrated',
       'uiStyle', 'glassStrength', 'reduceTransparency', // Glas: the admin sets the style for everybody (E1/E2)
+      'hintsSectionMigrated', 'tallSections', // Etappe 4: home hints placed once; Glas L sizes (E6) for everybody
     ];
     const all = [...KNOWN_GLOBAL, ...scope.USER_CUSTOMIZATION_KEYS, ...scope.SECRET_CUSTOMIZATION_KEYS].sort();
     expect(Object.keys(INITIAL.customization).sort()).toEqual(all);
@@ -480,5 +481,54 @@ describe('locks chip migration', () => {
     await G.flushGlobalPush();
     expect(ha.systemWrites.length).toBeLessThanOrEqual(1);
     expect(useSettingsStore.getState().customization.homeChips).toContain('locks');
+  });
+});
+
+// [fork] Home hints section (Glas Etappe 4, K76): placed first once, a later move is kept
+describe('hints section migration', () => {
+  const OLD_ORDER = ['scenes', 'hero', 'energy', 'devices', 'security', 'rooms'];
+  function oldDoc(homeSectionOrder: string[]) {
+    const base = doc().settings;
+    const { hintsSectionMigrated: _h, ...cust } = base.customization;
+    void _h;
+    return doc({ settings: { ...base, customization: { ...cust, homeSectionOrder } as typeof base.customization } });
+  }
+
+  it('pure: puts hints first once, keeps a later move, an empty order stays the default', async () => {
+    const { migrateHintsSection } = await import('../src/stores/settingsStore');
+    const cust = INITIAL.customization;
+    expect(migrateHintsSection({ ...cust, homeSectionOrder: OLD_ORDER, hintsSectionMigrated: false }).homeSectionOrder).toEqual(['hints', ...OLD_ORDER]);
+    expect(migrateHintsSection({ ...cust, homeSectionOrder: [], hintsSectionMigrated: false }).homeSectionOrder).toEqual([]);
+    const moved = [...OLD_ORDER, 'hints'];
+    expect(migrateHintsSection({ ...cust, homeSectionOrder: moved, hintsSectionMigrated: false }).homeSectionOrder).toEqual(moved);
+    expect(migrateHintsSection({ ...cust, homeSectionOrder: OLD_ORDER, hintsSectionMigrated: true }).homeSectionOrder).toEqual(OLD_ORDER);
+    expect(migrateHintsSection({ ...cust, homeSectionOrder: OLD_ORDER, hintsSectionMigrated: false }).hintsSectionMigrated).toBe(true);
+  });
+
+  it('non-admin: a global order from before the section puts hints first, nothing is written', async () => {
+    ha = fakeHA(false);
+    ha.system.set(G.GLOBAL_KEY, oldDoc(OLD_ORDER));
+    await startAs(USER);
+    expect(useSettingsStore.getState().customization.homeSectionOrder[0]).toBe('hints');
+    expect(ha.systemWrites).toHaveLength(0);
+  });
+
+  it('non-admin: hints the admin moved (marker set) stay where the admin put them', async () => {
+    ha = fakeHA(false);
+    const base = doc().settings;
+    const moved = [...OLD_ORDER, 'hints'];
+    ha.system.set(G.GLOBAL_KEY, doc({ settings: { ...base, customization: { ...base.customization, homeSectionOrder: moved, hintsSectionMigrated: true } } }));
+    await startAs(USER);
+    expect(useSettingsStore.getState().customization.homeSectionOrder).toEqual(moved);
+  });
+
+  it('admin: the migration settles in one write at most — no ping-pong', async () => {
+    ha = fakeHA(true);
+    ha.system.set(G.GLOBAL_KEY, oldDoc(OLD_ORDER));
+    await startAs(ADMIN);
+    await G.flushGlobalPush();
+    await G.flushGlobalPush();
+    expect(ha.systemWrites.length).toBeLessThanOrEqual(1);
+    expect(useSettingsStore.getState().customization.homeSectionOrder[0]).toBe('hints');
   });
 });

@@ -130,6 +130,24 @@ import {
   glasColorVar,
   glasCssVars,
   glasContrastPairs,
+  // [fork] Etappe 4: hints, locks, active scenes, Glas energy chart, card sizes
+  collectHints,
+  lockSummary,
+  lockTone,
+  activeSceneIds,
+  sceneMembers,
+  energyBucketBounds,
+  energyBars,
+  energyAxis,
+  energyAverage,
+  hiddenTicks,
+  barPercent,
+  energyCompareRange,
+  energyChange,
+  sizePresetOf,
+  sizeOfPreset,
+  tallKey,
+  withTall,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1824,4 +1842,179 @@ console.log('\n── glas tokens ──');
     }
   }
   assert(worse.length === 0, `more contrast is never lower${worse.length ? ' — ' + worse.slice(0, 5).join('; ') : ''}`);
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Home hints, locks, active scenes, Glas energy chart, card sizes (docs/glas/PLAN-ETAPPE-4.md)
+// ---------------------------------------------------------------------------
+console.log('\n── hints, active scenes, glas energy, sizes ──');
+{
+  const T0 = Date.parse('2026-10-08T12:00:00Z');
+  const iso = (ms) => new Date(ms).toISOString();
+  const ent = (entity_id, state, attributes = {}, changedMs = T0 - 3600_000, updatedMs = changedMs) => ({
+    entity_id, state, attributes, last_changed: iso(changedMs), last_updated: iso(updatedMs),
+    context: { id: '', parent_id: null, user_id: null },
+  });
+  const kinds = (r) => r.hints.map((h) => h.kind).join(',');
+
+  // locks (moved to core; the dashboard re-exports them)
+  const ls = lockSummary([ent('lock.a', 'locked'), ent('lock.b', 'unlocked'), ent('lock.c', 'jammed'), ent('lock.d', 'locking')]);
+  assertEqual(JSON.stringify(ls), JSON.stringify({ total: 4, locked: 1, open: 2, problem: 1 }), 'lockSummary counts (locking = open)');
+  assertEqual(lockTone(ls), 'open', 'lockTone: an open lock wins');
+  assertEqual(lockTone(lockSummary([ent('lock.a', 'locked'), ent('lock.c', 'unavailable')])), 'problem', 'lockTone: unreachable → problem');
+
+  // hints: nothing deviates → no hints
+  let r = collectHints([ent('lock.a', 'locked'), ent('binary_sensor.w', 'off', { device_class: 'window' })], { now: T0 });
+  assertEqual(r.hints.length, 0, 'hints: nothing deviates → empty');
+  assertEqual(r.recheckAt, null, 'hints: no recheck without a waiting door');
+
+  // windows at once, doors after 10 minutes (E4)
+  const doorJust = ent('binary_sensor.door', 'on', { device_class: 'door' }, T0 - 5 * 60_000);
+  r = collectHints([ent('binary_sensor.w2', 'on', { device_class: 'window' }), ent('binary_sensor.w1', 'on', { device_class: 'window' }), doorJust], { now: T0 });
+  assertEqual(kinds(r), 'window-open', 'hints: a window counts at once, a door open 5 min not yet');
+  assertEqual(r.hints[0].entityIds.join(','), 'binary_sensor.w1,binary_sensor.w2', 'hints: entity ids sorted');
+  assertEqual(r.hints[0].count, 2, 'hints: two windows');
+  assertEqual(r.recheckAt, T0 + 5 * 60_000, 'hints: recheck when the door reaches 10 minutes');
+  r = collectHints([ent('binary_sensor.door', 'on', { device_class: 'door' }, T0 - 10 * 60_000)], { now: T0 });
+  assertEqual(kinds(r), 'door-open', 'hints: a door open 10 min counts');
+  r = collectHints([ent('binary_sensor.gd', 'on', { device_class: 'garage_door' }, T0 - 11 * 60_000), ent('binary_sensor.op', 'on', { device_class: 'opening' }, T0 - 60_000)], { now: T0, doorOpenMinutes: 1 });
+  assertEqual(r.hints[0]?.count, 2, 'hints: garage_door and opening sensors are doors (custom minutes)');
+  r = collectHints([{ ...ent('binary_sensor.door', 'on', { device_class: 'door' }), last_changed: '' }], { now: T0 });
+  assertEqual(kinds(r), 'door-open', 'hints: unknown opening time counts');
+
+  // critical things, faults, alarm, cameras
+  const garage = (id, state) => ent(id, state, { device_class: 'garage', supported_features: 3 });
+  r = collectHints([
+    garage('cover.g1', 'open'), garage('cover.g2', 'unavailable'), ent('lock.l1', 'unlocked'), ent('lock.l2', 'jammed'),
+    ent('binary_sensor.leak', 'on', { device_class: 'moisture' }), ent('binary_sensor.co', 'on', { device_class: 'carbon_monoxide' }),
+    ent('alarm_control_panel.home', 'triggered'), ent('binary_sensor.w', 'on', { device_class: 'window' }),
+  ], { now: T0, camerasOffline: 2 });
+  assertEqual(kinds(r), 'alarm-triggered,leak,smoke,garage-open,lock-open,garage-fault,lock-fault,window-open,camera-offline',
+    'hints: critical first in table order, then warnings');
+  assertEqual(r.hints.find((h) => h.kind === 'camera-offline')?.count, 2, 'hints: cameras offline counted');
+  assert(r.hints.slice(0, 5).every((h) => h.severity === 'critical'), 'hints: the first five are critical');
+  r = collectHints([ent('alarm_control_panel.a', 'arming'), ent('alarm_control_panel.b', 'disarmed')], { now: T0 });
+  assertEqual(kinds(r), 'alarm-pending', 'hints: arming → pending hint (most severe panel, like the chip)');
+  assertEqual(kinds(collectHints([ent('alarm_control_panel.a', 'armed_away')], { now: T0 })), '', 'hints: armed is normal');
+  assertEqual(kinds(collectHints([garage('cover.g', 'closing')], { now: T0 })), 'garage-open', 'hints: a moving door is open (chip rule)');
+  assertEqual(kinds(collectHints([ent('cover.blind', 'open', { device_class: 'blind' })], { now: T0 })), '', 'hints: blinds are no garage');
+
+  // hidden entities never count
+  r = collectHints([ent('binary_sensor.w', 'on', { device_class: 'window' }), ent('lock.l', 'unlocked')], { now: T0, hidden: ['binary_sensor.w', 'lock.l'] });
+  assertEqual(r.hints.length, 0, 'hints: hidden entities do not count');
+
+  // waste today/tomorrow only, info last
+  const bin = (entityId, daysTo) => ({ entityId, name: entityId, daysTo, nextDate: '2026-10-09', upcoming: [] });
+  r = collectHints([ent('binary_sensor.w', 'on', { device_class: 'window' })], { now: T0, waste: [bin('sensor.b2', 2), bin('sensor.b1', 1), bin('sensor.b0', 0), bin('sensor.bx', null)] });
+  assertEqual(r.hints.map((h) => h.id).join(','), 'window-open,waste-soon:sensor.b0,waste-soon:sensor.b1', 'hints: waste today, then tomorrow, after the warnings');
+  assertEqual(r.hints[1].bin?.daysTo, 0, 'hints: waste hint carries its bin');
+  assertEqual(collectHints([], { now: T0, waste: [bin('sensor.b0', 0)], hidden: ['sensor.b0'] }).hints.length, 0, 'hints: hidden bin skipped');
+
+  // the demo deviates nowhere (Klassisch stays unchanged by default)
+  const demoNow = Date.now();
+  const demoHints = collectHints(Object.values(DEMO_ENTITIES), { now: demoNow, waste: detectWasteBins(DEMO_ENTITIES, { nowMs: demoNow }) });
+  assertEqual(kinds(demoHints), '', 'hints: none in the default demo');
+
+  // active scenes (E5 heuristic)
+  const ACT = T0 - 60_000;
+  const states = {
+    'light.a': ent('light.a', 'on', {}, ACT - 5000, ACT + 2000),
+    'light.b': ent('light.b', 'off', {}, ACT - 600_000, ACT - 600_000),
+    'light.c': ent('light.c', 'on', {}, ACT + 30_000, ACT + 30_000),
+    'light.u': ent('light.u', 'unavailable', {}, ACT - 600_000),
+  };
+  const scene = (id, at, members) => ent(id, at === null ? 'unknown' : iso(at), members ? { entity_id: members } : {});
+  let act = activeSceneIds([scene('scene.ok', ACT, ['light.a', 'light.b'])], states, T0);
+  assert(act.has('scene.ok'), 'active: members untouched since activation (within grace)');
+  act = activeSceneIds([scene('scene.changed', ACT, ['light.a', 'light.c'])], states, T0);
+  assert(!act.has('scene.changed'), 'active: a member changed after the grace → not active');
+  act = activeSceneIds([scene('scene.c', ACT, ['light.c'])], states, T0, { graceMs: 40_000 });
+  assert(act.has('scene.c'), 'active: graceMs widens the window');
+  assert(!activeSceneIds([scene('scene.u', ACT, ['light.a', 'light.u'])], states, T0).has('scene.u'), 'active: unavailable member → not active');
+  assert(!activeSceneIds([scene('scene.none', ACT, null)], states, T0).has('scene.none'), 'active: no member list → never');
+  assert(!activeSceneIds([scene('scene.never', null, ['light.a'])], states, T0).has('scene.never'), 'active: never activated → not active');
+  assert(!activeSceneIds([scene('scene.old', T0 - 13 * 3600_000, ['light.b'])], states, T0).has('scene.old'), 'active: older than 12 h → not active');
+  act = activeSceneIds([scene('scene.first', ACT - 60_000, ['light.b', 'light.a']), scene('scene.later', ACT, ['light.b'])], states, T0);
+  assert(act.has('scene.later') && !act.has('scene.first'), 'active: overlapping scenes → only the later one');
+  act = activeSceneIds([scene('scene.x', ACT - 60_000, ['light.b']), scene('scene.y', ACT, ['light.a'])], { ...states, 'light.a': ent('light.a', 'on', {}, ACT - 600_000) }, T0);
+  assert(act.has('scene.x') && act.has('scene.y'), 'active: disjoint scenes can both be active');
+  assert(!activeSceneIds([scene('scene.gone', ACT, ['light.removed'])], states, T0).has('scene.gone'), 'active: only missing members → not active');
+  assertEqual(sceneMembers(scene('scene.m', ACT, ['light.a', 5, ''])).join(','), 'light.a', 'sceneMembers: strings only');
+
+  // Glas energy chart — local calendar, DST days (Europe/Berlin)
+  const tzBefore = process.env.TZ;
+  process.env.TZ = 'Europe/Berlin';
+  try {
+    const at = (y, mo, d, h = 0, mi = 0) => new Date(y, mo - 1, d, h, mi);
+    assertEqual(energyBucketBounds('today', at(2026, 10, 8, 14, 30)).length - 1, 24, 'energy: normal day → 24 hours');
+    assertEqual(energyBucketBounds('today', at(2026, 10, 25, 14)).length - 1, 25, 'energy: DST end → 25 hours');
+    assertEqual(energyBucketBounds('today', at(2026, 3, 29, 14)).length - 1, 23, 'energy: DST start → 23 hours');
+    const week = energyBucketBounds('week', at(2026, 10, 8, 14, 30));
+    assertEqual(week.length - 1, 7, 'energy: week → 7 days');
+    assertEqual(new Date(week[0]).toDateString(), at(2026, 10, 5).toDateString(), 'energy: week starts Monday');
+    assertEqual(energyBucketBounds('month', at(2026, 2, 10)).length - 1, 28, 'energy: February 2026 → 28 days');
+    assertEqual(energyBucketBounds('month', at(2026, 10, 25, 12)).length - 1, 31, 'energy: October → 31 days (DST inside)');
+
+    const now = at(2026, 10, 8, 14, 30);
+    const hour = (h) => at(2026, 10, 8, h).getTime();
+    const bars = energyBars('today', [
+      { start: hour(0), gridConsumed: 0.5, gridReturned: 0, solar: 0 },
+      { start: hour(13), gridConsumed: 0.2, gridReturned: 0.1, solar: 0.9 },
+      { start: hour(14), gridConsumed: 0.3, gridReturned: 0, solar: 0.4 },
+      { start: hour(14) + 1, gridConsumed: -1, gridReturned: 0, solar: 0 },
+    ], now);
+    assertEqual(bars.length, 24, 'energy bars: one per hour');
+    assertEqual(bars[13].total, 1.1, 'energy bars: grid + solar');
+    assert(bars[14].current && !bars[14].future && bars[15].future && !bars[13].current, 'energy bars: current and future flags');
+    assert(Math.abs(bars[14].total - 0.7) < 1e-9, 'energy bars: points inside one bucket add up, negative grid ignored');
+    const avg = energyAverage(bars);
+    assert(Math.abs(avg - (0.5 + 1.1 + 0.7) / 15) < 1e-9, 'energy: Ø over begun hours (running one included)');
+    assertEqual(energyAverage(energyBars('today', [], at(2026, 10, 8, 0, 0))), 0, 'energy: Ø of an empty first hour is 0');
+
+    assertEqual(JSON.stringify(energyAxis(1.6)), JSON.stringify({ step: 1, top: 2, ticks: [0, 1, 2] }), 'axis: day 0/1/2 kWh');
+    assertEqual(JSON.stringify(energyAxis(18).ticks), JSON.stringify([0, 10, 20]), 'axis: week 0/10/20 kWh');
+    assertEqual(energyAxis(2.3).top, 4, 'axis: 2.3 → top 4');
+    assertEqual(energyAxis(45).step, 25, 'axis: 45 → step 25');
+    assertEqual(energyAxis(0).top, 0.5, 'axis: empty → top 0.5');
+    assertEqual(hiddenTicks(energyAxis(1.6), 0.95).join(','), '1', 'axis: value within 10 % of Ø hidden');
+    assertEqual(hiddenTicks(energyAxis(1.6), 0.5).join(','), '', 'axis: Ø far from the values hides nothing');
+    const tiny = barPercent({ start: 0, end: 1, grid: 0.005, solar: 0.005, total: 0.01, future: false, current: false }, 2);
+    assert(Math.abs(tiny.grid + tiny.solar - 1.5) < 1e-9 && Math.abs(tiny.grid - 0.75) < 1e-9, 'bar: at least 1.5 %, split in proportion');
+    assertEqual(JSON.stringify(barPercent({ start: 0, end: 1, grid: 0, solar: 0, total: 0, future: false, current: false }, 2)), JSON.stringify({ grid: 0, solar: 0 }), 'bar: empty stays empty');
+
+    const cmp = (period, n) => { const c = energyCompareRange(period, n); return `${c.start.toString().slice(4, 21)} → ${c.end.toString().slice(4, 21)}`; };
+    assertEqual(cmp('today', now), 'Oct 07 2026 00:00 → Oct 07 2026 14:30', 'compare: yesterday up to the same time');
+    assertEqual(cmp('week', now), 'Sep 28 2026 00:00 → Oct 01 2026 14:30', 'compare: last week up to the same weekday and time');
+    assertEqual(cmp('month', at(2026, 3, 31, 10)), 'Feb 01 2026 00:00 → Feb 28 2026 10:00', 'compare: last month clamped to its length');
+    assertEqual(cmp('today', at(2026, 10, 26, 12)), 'Oct 25 2026 00:00 → Oct 25 2026 12:00', 'compare: across the DST end (wall time)');
+    assertEqual(cmp('month', at(2026, 1, 15, 8)), 'Dec 01 2025 00:00 → Dec 15 2025 08:00', 'compare: January → December of the year before');
+    assertEqual(energyChange(88, 100), -12, 'change: −12 %');
+    assertEqual(energyChange(1, 0), null, 'change: nothing to compare with');
+  } finally {
+    if (tzBefore === undefined) delete process.env.TZ;
+    else process.env.TZ = tzBefore;
+  }
+
+  // card sizes S / M / L (E6)
+  for (const p of ['S', 'M', 'L']) assertEqual(sizePresetOf(sizeOfPreset(p)), p, `size: ${p} round trip`);
+  assertEqual(JSON.stringify(sizeOfPreset('L')), JSON.stringify({ span: 2, height: 0, tall: true }), 'size: L = 2 columns + taller');
+  assertEqual(sizePresetOf({ span: 3, height: 0, tall: false }), null, 'size: 3 columns → own');
+  assertEqual(sizePresetOf({ span: 2, height: 2, tall: false }), null, 'size: height cap → own');
+  assertEqual(sizePresetOf({ span: 1, height: 0, tall: true }), null, 'size: 1 column + taller → own');
+  assertEqual(tallKey('home', 'energy'), 'home:energy', 'size: tall key');
+  assertEqual(withTall(['home:a', 'home:b'], 'home:a', true).join(','), 'home:b,home:a', 'size: withTall no duplicate');
+  assertEqual(withTall(['home:a', 'home:b'], 'home:a', false).join(','), 'home:b', 'size: withTall removes');
+
+  // demo scenes (K77): members everywhere, none active at start, active right after scene.turn_on
+  const demoScenes = Object.values(DEMO_ENTITIES).filter((e) => e.entity_id.startsWith('scene.'));
+  assert(demoScenes.length > 0 && demoScenes.every((e) => sceneMembers(e).length > 0), 'demo: every scene lists its members');
+  assert(demoScenes.every((e) => sceneMembers(e).every((m) => DEMO_ENTITIES[m])), 'demo: every scene member exists');
+  assertEqual(activeSceneIds(demoScenes, DEMO_ENTITIES, Date.now()).size, 0, 'demo: no scene active at start');
+  const afterOn = applyDemoService(DEMO_ENTITIES, 'scene', 'turn_on', {}, { entity_id: 'scene.living_room_relax' });
+  const nowActive = activeSceneIds(Object.values(afterOn).filter((e) => e.entity_id.startsWith('scene.')), afterOn, Date.now());
+  assertEqual([...nowActive].join(','), 'scene.living_room_relax', 'demo: the activated scene is active');
+  const dimmed = applyDemoService(afterOn, 'light', 'turn_on', { brightness: 20 }, { entity_id: 'light.living_room_shelf' });
+  // a member changed after the activation (+ grace): no longer active
+  const later = { ...dimmed, 'light.living_room_shelf': { ...dimmed['light.living_room_shelf'], last_updated: new Date(Date.now() + 60_000).toISOString() } };
+  assertEqual(activeSceneIds(Object.values(later).filter((e) => e.entity_id.startsWith('scene.')), later, Date.now() + 61_000).size, 0, 'demo: a changed member ends "active"');
 }

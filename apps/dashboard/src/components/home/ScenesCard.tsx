@@ -2,7 +2,7 @@
  * ScenesCard — favorited scenes as quick-activate tiles.
  * Shows up to 4 in a 2×2 grid; scrolls horizontally when more than 4 are favorited.
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useId } from 'react'; // [fork] useId
 import { useNavigate } from 'react-router';
 import {
   Sparkles, Sun, Moon, Coffee, Tv, Music2, Sunset, PartyPopper, BookOpen, ChevronRight, Star,
@@ -10,6 +10,8 @@ import {
 import { useShallow } from 'zustand/react/shallow';
 import { Card } from '../ui/Card';
 import type { HassEntityMap } from '@hapulse/core';
+import { activeSceneIds, sceneMembers } from '@hapulse/core'; // [fork] active scene (Glas Etappe 4, K77)
+import { GlasMenuTarget } from '../glas/GlasMenuTarget'; // [fork] Glas context menu (K81)
 import { callService } from '../../ha/service';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useT } from '../../i18n/useT';
@@ -47,6 +49,8 @@ export function ScenesCard({ entities }: ScenesCardProps) {
 
   const scenes = Object.values(entities)
     .filter((e) => e.entity_id.startsWith('scene.') && favorites.includes(e.entity_id));
+  const active = activeSceneIds(scenes, entities, Date.now()); // [fork]
+  const uid = useId(); // [fork] subtitle ids
 
   const handleActivate = useCallback((entityId: string) => {
     void callService('scene', 'turn_on', {}, { entity_id: entityId });
@@ -79,12 +83,18 @@ export function ScenesCard({ entities }: ScenesCardProps) {
           {scenes.map((scene, i) => {
             const palette = SCENE_ICON_COLORS[i % SCENE_ICON_COLORS.length]!;
             const name = (scene.attributes.friendly_name ?? scene.entity_id.split('.')[1]!).replace(/_/g, ' ');
+            const isActive = active.has(scene.entity_id); // [fork]
+            const members = sceneMembers(scene).length; // [fork]
+            const subId = `${uid}-${i}`; // [fork]
             return (
+              <GlasMenuTarget key={scene.entity_id} entityId={scene.entity_id} name={name /* [fork] */}>
               <button
                 key={scene.entity_id}
                 className="scene-tile"
                 onClick={() => handleActivate(scene.entity_id)}
                 aria-label={t('home.scenes.activateAria', { name })}
+                aria-describedby={isActive || members > 0 ? subId : undefined /* [fork] */}
+                data-active={isActive || undefined /* [fork] */}
                 type="button"
               >
                 <span
@@ -95,7 +105,13 @@ export function ScenesCard({ entities }: ScenesCardProps) {
                   {sceneIcon(name)}
                 </span>
                 <span className="scene-tile__name">{name}</span>
+                {(isActive || members > 0) && ( // [fork] subtitle: "Aktiv" or "5 Geräte"
+                  <span className="scene-tile__sub" id={subId}>
+                    {isActive ? t('home.scenes.active') : t('home.scenes.members', { count: members })}
+                  </span>
+                )}
               </button>
+              {/* [fork] */}</GlasMenuTarget>
             );
           })}
         </div>

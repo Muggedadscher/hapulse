@@ -93,8 +93,10 @@ function giveFocusBack(el: HTMLElement, ring: boolean): void {
   endQuiet = end;
 }
 
-/** The card in the pressed wrapper (the wrapper itself when it has none). */
-function cardOf(el: HTMLElement): HTMLElement {
+/** The card in the pressed wrapper (the wrapper itself when it has none); a tile or row names its own (`card`). */
+function cardOf(target: ContextMenuTarget): HTMLElement {
+  if (target.card) return target.card;
+  const el = target.el;
   return el.firstElementChild instanceof HTMLElement ? el.firstElementChild : el;
 }
 
@@ -233,7 +235,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
   // Open: measure the card, cut the hole, place the menu, lift — before the first paint. Close: fade, drop the card.
   useLayoutEffect(() => {
     const el = target.el;
-    const card = cardOf(el);
+    const card = cardOf(target);
     const dim = dimRef.current;
     const hole = holeRef.current;
     const menu = menuRef.current;
@@ -368,7 +370,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
   // sliders come) and a window that opens over the menu: the hole would show something else. Checked every frame.
   useEffect(() => {
     if (closing) return undefined;
-    const card = cardOf(target.el);
+    const card = cardOf(target);
     let raf = 0;
     const tick = () => {
       const at = measured.current;
@@ -380,13 +382,13 @@ function Menu({ target, closing, onGone }: MenuProps) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [closing, target.el, closeMenu]);
+  }, [closing, target, closeMenu]);
 
   // Closing: everything fades, the card drops back; then the instance goes.
   useLayoutEffect(() => {
     if (!closing) return;
     const el = target.el;
-    const card = cardOf(el);
+    const card = cardOf(target);
     const dim = dimRef.current;
     const hole = holeRef.current;
     const menu = menuRef.current;
@@ -417,7 +419,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
     void allDone(mine).then(() => {
       if (anims.current === mine) onGoneRef.current();
     });
-  }, [closing, target.el]);
+  }, [closing, target]);
 
   const run = (action: ContextActionId) => {
     if (closing || !entity) return;
@@ -431,7 +433,7 @@ function Menu({ target, closing, onGone }: MenuProps) {
     switch (action) {
       case 'details':
         // the detail grows out of the card, not out of the menu item that is fading away
-        noteOrigin(cardOf(target.el));
+        noteOrigin(cardOf(target));
         openEntityDetail(id);
         break;
       case 'favoriteAdd':

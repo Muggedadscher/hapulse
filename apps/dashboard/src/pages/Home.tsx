@@ -15,6 +15,8 @@ import { WasteCard } from '../components/waste/WasteCard'; // [fork]
 import { NvrHomeCard } from '../nvr/NvrHomeCard'; // [fork]
 import { useNvrConfigured } from '../nvr/config'; // [fork]
 import { useCameraSource, withoutHaCameras } from '../nvr/cameraSource'; // [fork]
+import { HintsCard } from '../components/home/HintsCard'; // [fork] Glas Etappe 4, K76
+import { useHints } from '../components/home/useHints'; // [fork]
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
 import { SortableGrid } from '../components/ui/SortableGrid';
@@ -42,6 +44,7 @@ const MAX_COLS = 4;
 
 /** Sections that default to more than 1 column when no stored span exists. */
 const DEFAULT_SPANS: Partial<Record<string, number>> = {
+  hints: 4, // [fork] a full row
   hero: 2,
   rooms: 4,
 };
@@ -138,6 +141,7 @@ function ResizeHandle({
 
 /** Canonical Home section ids in default display order. */
 const SECTION_IDS = [
+  'hints', // [fork] first: only what deviates from normal
   'scenes',
   'hero',
   'energy',
@@ -156,6 +160,13 @@ type SectionId = (typeof SECTION_IDS)[number];
 type ToggleKeys = { hide: TKey; show: TKey; hideMobile: TKey; showMobile: TKey };
 
 const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
+  // [fork] Home hints.
+  hints: {
+    hide: 'home.section.hide.hints',
+    show: 'home.section.show.hints',
+    hideMobile: 'home.section.hideMobile.hints',
+    showMobile: 'home.section.showMobile.hints',
+  },
   scenes: {
     hide: 'home.section.hide.scenes',
     show: 'home.section.show.scenes',
@@ -283,6 +294,7 @@ export function Home() {
   );
   const hasWaste = wasteBins.length > 0;
   const hasNvr = useNvrConfigured(); // [fork] NVR card only when a Sentinel connection is configured
+  const { hints, cameraNames } = useHints(); // [fork] the hints card renders only while there is one
 
   // Compute display order from stored order
   const orderedIds = applyStoredOrder([...SECTION_IDS], homeSectionOrder);
@@ -298,7 +310,8 @@ export function Home() {
         return true;
       })
   ).filter((id) => id !== 'waste' || hasWaste) // [fork] hide the waste card when no bins exist
-   .filter((id) => id !== 'nvr' || hasNvr); // [fork] hide the NVR card without a connection
+   .filter((id) => id !== 'nvr' || hasNvr) // [fork] hide the NVR card without a connection
+   .filter((id) => id !== 'hints' || hints.length > 0); // [fork] no hints card while nothing deviates
 
   /** Toggle a section's hidden state. */
   function handleToggleHidden(id: string) {
@@ -414,6 +427,8 @@ export function Home() {
         return <WasteCard bins={wasteBins} />;
       case 'nvr': // [fork]
         return <NvrHomeCard />;
+      case 'hints': // [fork]
+        return <HintsCard hints={hints} cameraNames={cameraNames} />;
       case 'activity':
         return <ActivityCard entities={entities} />;
       case 'rooms':
