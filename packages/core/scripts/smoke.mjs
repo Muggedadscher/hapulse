@@ -136,13 +136,14 @@ import {
   lockTone,
   activeSceneIds,
   sceneMembers,
-  energyBucketBounds,
-  energyBars,
+  glasEnergyWindow,
+  glasEnergyBars,
   energyAxis,
   energyAverage,
   hiddenTicks,
   barPercent,
-  energyCompareRange,
+  glasEnergyCompare,
+  trimStatistics,
   energyChange,
   sizePresetOf,
   sizeOfPreset,
@@ -1948,30 +1949,42 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
   process.env.TZ = 'Europe/Berlin';
   try {
     const at = (y, mo, d, h = 0, mi = 0) => new Date(y, mo - 1, d, h, mi);
-    assertEqual(energyBucketBounds('today', at(2026, 10, 8, 14, 30)).length - 1, 24, 'energy: normal day → 24 hours');
-    assertEqual(energyBucketBounds('today', at(2026, 10, 25, 14)).length - 1, 25, 'energy: DST end → 25 hours');
-    assertEqual(energyBucketBounds('today', at(2026, 3, 29, 14)).length - 1, 23, 'energy: DST start → 23 hours');
-    const week = energyBucketBounds('week', at(2026, 10, 8, 14, 30));
-    assertEqual(week.length - 1, 7, 'energy: week → 7 days');
-    assertEqual(new Date(week[0]).toDateString(), at(2026, 10, 5).toDateString(), 'energy: week starts Monday');
-    assertEqual(energyBucketBounds('month', at(2026, 2, 10)).length - 1, 28, 'energy: February 2026 → 28 days');
-    assertEqual(energyBucketBounds('month', at(2026, 10, 25, 12)).length - 1, 31, 'energy: October → 31 days (DST inside)');
+    const span = (w) => `${new Date(w.bounds[0]).toString().slice(4, 21)} → ${new Date(w.bounds[w.bounds.length - 1]).toString().slice(4, 21)}`;
+    assertEqual(glasEnergyWindow('day', at(2026, 10, 8, 14, 30)).bounds.length - 1, 24, 'energy: normal day → 24 hours');
+    assertEqual(glasEnergyWindow('day', at(2026, 10, 25, 14)).bounds.length - 1, 25, 'energy: DST end → 25 hours');
+    assertEqual(glasEnergyWindow('day', at(2026, 3, 29, 14)).bounds.length - 1, 23, 'energy: DST start → 23 hours');
+    assertEqual(glasEnergyWindow('day', at(2026, 3, 29, 14)).bucket, 'hour', 'energy: day asks for hours');
+    const week = glasEnergyWindow('week', at(2026, 10, 8, 14, 30));
+    assertEqual(week.bounds.length - 1, 7, 'energy: week → 7 days');
+    assertEqual(span(week), 'Oct 02 2026 00:00 → Oct 09 2026 00:00', 'energy: week = the last 7 days including today');
+    assertEqual(week.bucket, 'day', 'energy: week asks for days');
+    const month = glasEnergyWindow('month', at(2026, 3, 10, 9));
+    assertEqual(month.bounds.length - 1, 30, 'energy: month → 30 days');
+    assertEqual(span(month), 'Feb 09 2026 00:00 → Mar 11 2026 00:00', 'energy: month = the last 30 days, across the month end');
+    const dst = glasEnergyWindow('month', at(2026, 11, 5, 12));
+    assert(dst.bounds.every((b) => new Date(b).getHours() === 0), 'energy: every day starts at local midnight across the DST end');
 
     const now = at(2026, 10, 8, 14, 30);
     const hour = (h) => at(2026, 10, 8, h).getTime();
-    const bars = energyBars('today', [
+    const dayWin = glasEnergyWindow('day', now);
+    const bars = glasEnergyBars(dayWin, [
       { start: hour(0), gridConsumed: 0.5, gridReturned: 0, solar: 0 },
       { start: hour(13), gridConsumed: 0.2, gridReturned: 0.1, solar: 0.9 },
       { start: hour(14), gridConsumed: 0.3, gridReturned: 0, solar: 0.4 },
       { start: hour(14) + 1, gridConsumed: -1, gridReturned: 0, solar: 0 },
+      { start: hour(12), gridConsumed: 0, gridReturned: 1.5, solar: 1.2 },
     ], now);
     assertEqual(bars.length, 24, 'energy bars: one per hour');
-    assertEqual(bars[13].total, 1.1, 'energy bars: grid + solar');
+    assert(Math.abs(bars[13].solar - 0.8) < 1e-9 && Math.abs(bars[13].total - 1.0) < 1e-9, 'energy bars: used solar = produced − exported');
+    assertEqual(bars[12].solar, 0, 'energy bars: exporting more than produced (battery) → no negative solar');
     assert(bars[14].current && !bars[14].future && bars[15].future && !bars[13].current, 'energy bars: current and future flags');
     assert(Math.abs(bars[14].total - 0.7) < 1e-9, 'energy bars: points inside one bucket add up, negative grid ignored');
+    assert(bars[0].hasData && !bars[1].hasData, 'energy bars: buckets without rows are marked');
     const avg = energyAverage(bars);
-    assert(Math.abs(avg - (0.5 + 1.1 + 0.7) / 15) < 1e-9, 'energy: Ø over begun hours (running one included)');
-    assertEqual(energyAverage(energyBars('today', [], at(2026, 10, 8, 0, 0))), 0, 'energy: Ø of an empty first hour is 0');
+    assert(Math.abs(avg - (0.5 + 1.0 + 0) / 3) < 1e-9, 'energy: Ø over completed hours with data (running one left out)');
+    assertEqual(energyAverage(glasEnergyBars(dayWin, [{ start: hour(14), gridConsumed: 1, gridReturned: 0, solar: 0 }], now)), null, 'energy: only the running hour → no Ø');
+    const weekBars = glasEnergyBars(week, [{ start: at(2026, 10, 2).getTime(), gridConsumed: 9, gridReturned: 1, solar: 4 }, { start: at(2026, 10, 8).getTime(), gridConsumed: 2, gridReturned: 0, solar: 1 }], now);
+    assert(weekBars[0].total === 12 && weekBars[6].current && weekBars[6].total === 3, 'energy bars: daily rows land on their day, today is the running bar');
 
     assertEqual(JSON.stringify(energyAxis(1.6)), JSON.stringify({ step: 1, top: 2, ticks: [0, 1, 2] }), 'axis: day 0/1/2 kWh');
     assertEqual(JSON.stringify(energyAxis(18).ticks), JSON.stringify([0, 10, 20]), 'axis: week 0/10/20 kWh');
@@ -1980,16 +1993,22 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
     assertEqual(energyAxis(0).top, 0.5, 'axis: empty → top 0.5');
     assertEqual(hiddenTicks(energyAxis(1.6), 0.95).join(','), '1', 'axis: value within 10 % of Ø hidden');
     assertEqual(hiddenTicks(energyAxis(1.6), 0.5).join(','), '', 'axis: Ø far from the values hides nothing');
-    const tiny = barPercent({ start: 0, end: 1, grid: 0.005, solar: 0.005, total: 0.01, future: false, current: false }, 2);
+    const tiny = barPercent({ grid: 0.005, solar: 0.005, total: 0.01 }, 2);
     assert(Math.abs(tiny.grid + tiny.solar - 1.5) < 1e-9 && Math.abs(tiny.grid - 0.75) < 1e-9, 'bar: at least 1.5 %, split in proportion');
-    assertEqual(JSON.stringify(barPercent({ start: 0, end: 1, grid: 0, solar: 0, total: 0, future: false, current: false }, 2)), JSON.stringify({ grid: 0, solar: 0 }), 'bar: empty stays empty');
+    assertEqual(JSON.stringify(barPercent({ grid: 0, solar: 0, total: 0 }, 2)), JSON.stringify({ grid: 0, solar: 0 }), 'bar: empty stays empty');
 
-    const cmp = (period, n) => { const c = energyCompareRange(period, n); return `${c.start.toString().slice(4, 21)} → ${c.end.toString().slice(4, 21)}`; };
-    assertEqual(cmp('today', now), 'Oct 07 2026 00:00 → Oct 07 2026 14:30', 'compare: yesterday up to the same time');
-    assertEqual(cmp('week', now), 'Sep 28 2026 00:00 → Oct 01 2026 14:30', 'compare: last week up to the same weekday and time');
-    assertEqual(cmp('month', at(2026, 3, 31, 10)), 'Feb 01 2026 00:00 → Feb 28 2026 10:00', 'compare: last month clamped to its length');
-    assertEqual(cmp('today', at(2026, 10, 26, 12)), 'Oct 25 2026 00:00 → Oct 25 2026 12:00', 'compare: across the DST end (wall time)');
-    assertEqual(cmp('month', at(2026, 1, 15, 8)), 'Dec 01 2025 00:00 → Dec 15 2025 08:00', 'compare: January → December of the year before');
+    const cmp = (period, n) => {
+      const c = glasEnergyCompare(glasEnergyWindow(period, n), n);
+      const f = (t) => new Date(t).toString().slice(4, 21);
+      return `${f(c.current.start)} → ${f(c.current.end)} | ${f(c.previous.start)} → ${f(c.previous.end)}`;
+    };
+    assertEqual(cmp('day', now), 'Oct 08 2026 00:00 → Oct 08 2026 14:00 | Oct 07 2026 00:00 → Oct 07 2026 14:00', 'compare: today and yesterday up to the last full hour');
+    assertEqual(cmp('week', now), 'Oct 02 2026 00:00 → Oct 08 2026 14:00 | Sep 25 2026 00:00 → Oct 01 2026 14:00', 'compare: the 7 days before, same wall times');
+    assertEqual(cmp('month', at(2026, 3, 31, 10, 5)), 'Mar 02 2026 00:00 → Mar 31 2026 10:00 | Jan 31 2026 00:00 → Mar 01 2026 10:00', 'compare: the 30 days before');
+    assertEqual(cmp('day', at(2026, 10, 26, 12)), 'Oct 26 2026 00:00 → Oct 26 2026 12:00 | Oct 25 2026 00:00 → Oct 25 2026 12:00', 'compare: across the DST end (wall time)');
+    assertEqual(cmp('day', at(2026, 10, 8, 0, 20)), 'Oct 08 2026 00:00 → Oct 08 2026 00:00 | Oct 07 2026 00:00 → Oct 07 2026 00:00', 'compare: before the first full hour both spans are empty');
+    const trimmed = trimStatistics({ a: [{ start: hour(12), end: hour(13), change: 1 }, { start: hour(14), end: hour(15), change: 2 }] }, hour(14));
+    assertEqual(trimmed.a.length, 1, 'compare: rows from the last full hour on are left out');
     assertEqual(energyChange(88, 100), -12, 'change: −12 %');
     assertEqual(energyChange(1, 0), null, 'change: nothing to compare with');
   } finally {

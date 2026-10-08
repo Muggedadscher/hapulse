@@ -271,15 +271,16 @@ export type { Hint, HintKind, HintSeverity, HintOptions, HintResult } from './hi
 export { activeSceneIds, sceneMembers, ACTIVE_SCENE_GRACE_MS, ACTIVE_SCENE_MAX_AGE_MS } from './activeScene.js';
 export type { ActiveSceneOptions } from './activeScene.js';
 export {
-  energyBucketBounds,
-  energyBars,
+  glasEnergyWindow,
+  glasEnergyBars,
   energyAxis,
   energyAverage,
   hiddenTicks,
   barPercent,
-  energyCompareRange,
+  glasEnergyCompare,
+  trimStatistics,
   energyChange,
 } from './glasEnergy.js';
-export type { GlasEnergyBar, GlasEnergyAxis } from './glasEnergy.js';
+export type { GlasEnergyPeriod, GlasEnergyWindow, GlasEnergyBar, GlasEnergyAxis } from './glasEnergy.js';
 export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './sizePresets.js';
 export type { SizePreset, SectionSize } from './sizePresets.js';
