@@ -281,7 +281,8 @@
 
   /* ---- Hidden while the More or rooms sheet or a window is open (GLAS-DESIGN §7.1 "Versteckt"; windows: plan
      docs/glas/PLAN-ETAPPE-3.md §3.6) — the children fade, not the nav (its opacity would cut the glass off from the
-     page behind it) ---- */
+     page behind it). The children are named, not `*`: with `*` every `data-g-sheets` toggle on :root restyled the
+     whole page (plan §13.1) ---- */
   :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open) .app-tabs,
   :root[data-style='glas'][data-g-sheets] .app-tabs {
     translate: 0 14px;
@@ -289,8 +290,8 @@
     pointer-events: none;
   }
 
-  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open) .app-tabs > *,
-  :root[data-style='glas'][data-g-sheets] .app-tabs > * {
+  :root[data-style='glas'] .app-layout:has(.app-more-menu--open, .rooms-menu--open) .app-tabs > :where(.g-tabs__glass, .g-tabs__lens, .g-tabs__expand, .app-tabs__item),
+  :root[data-style='glas'][data-g-sheets] .app-tabs > :where(.g-tabs__glass, .g-tabs__lens, .g-tabs__expand, .app-tabs__item) {
     opacity: 0;
   }
 }

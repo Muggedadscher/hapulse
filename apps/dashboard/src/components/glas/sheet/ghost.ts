@@ -3,10 +3,15 @@
  *
  * React calls the cleanup of the backdrop's ref before it takes a window out of the document (react-dom 19.3:
  * `safelyDetachRef` before `removeChild`), so the window still hangs there, laid out. React calls the same cleanup when
- * the window stays (StrictMode, style switch, Suspense hiding). The ghost therefore clones invisibly, sits right in
- * front of the original (a window opened in the same commit lies above it) and decides in a microtask, still before
- * the next frame: original still there → the clone goes; otherwise it becomes visible and animates out. This covers
- * windows that get `open=false` and windows that disappear with their parent alike, without changing a caller.
+ * the window stays (StrictMode, style switch, Suspense hiding). The ghost therefore clones, sits right in front of the
+ * original (a window opened in the same commit lies above it) and decides in a microtask, still before the next frame:
+ * original still there → the clone goes; otherwise it shows and animates out. This covers windows that get
+ * `open=false` and windows that disappear with their parent alike, without changing a caller.
+ *
+ * Everything the ghost needs from the original is read before the clone goes in, and the clone waits with
+ * `display: none` until it decides: otherwise a read in between, or Chromium restyling the page while React takes the
+ * window out, styles and lays out the clone in the middle of the commit (29 ms for the entity list). A big window copies
+ * only what its scroll areas show (plan §6.3, §13.1).
  */
 
 import { batches, handoff, type HandoffNote } from './sheetHost';
@@ -35,6 +40,19 @@ interface Ghost {
   /** The original panel's box without its transform. */
   box: OriginRect;
   note: HandoffNote | null;
+  /** Read while copying, like everything from the page: the decision only writes, so the page and the clone get
+   *  their styles once, in the next frame (a read there restyled the page in the click's task, plan §13.1). */
+  view: { w: number; h: number };
+  /** Where the window came from, if it showed then. */
+  originRect: OriginRect | null;
+  /** The shadow a page casts while it slides out. */
+  pageShadow: string;
+  /** Scroll positions of the copy, set once it shows (a box without layout forgets them). */
+  scrolled: Copy['scrolled'];
+  /** The clone's own inline display, back when it shows. */
+  display: string;
+  /** Decided and animating out. */
+  shown: boolean;
 }
 
 /** Ghosts that have not finished; ghosts of the same commit find each other here (window and page leave together). */
@@ -50,6 +68,32 @@ const STILL_PROPS = [
 ] as const;
 const PAGE_SHADOW_REACH = 40;
 const FALLBACK_MS = 1200;
+/** Windows with more elements than this copy only what their scroll areas show: the entity list's 2121 elements took
+ *  38 ms at full speed and 177 ms at 4× CPU slowdown, most of it styling and laying out the copy (plan §13.1). */
+const PARTIAL_FROM = 600;
+/** Subtrees this small are copied whole while no scroll area decides about them. */
+const SMALL_TREE = 40;
+/** Kept around what a scroll area shows, as a share of its height. */
+const BAND_EXTRA = 0.25;
+/** Display types whose box keeps its size without its content. */
+const BOXES = new Set(['block', 'flex', 'grid', 'flow-root', 'list-item', 'inline-block', 'inline-flex', 'inline-grid']);
+
+type Pair = readonly [from: Element, to: Element];
+
+/** The clone and what it needs from the original, all read before the clone goes into the document. */
+interface Copy {
+  clone: HTMLElement;
+  /** Images, canvases and videos with their copies: drawn as stills. */
+  media: Pair[];
+  /** Scroll positions, set once the clone shows. */
+  scrolled: { to: Element; top: number; left: number }[];
+}
+
+/** What a scroll area shows, in viewport coordinates. */
+interface Band {
+  top: number;
+  bottom: number;
+}
 
 /** Called from the backdrop's ref cleanup. Never throws: an error here would reach React's error boundary. */
 export function spawnGhost(backdrop: HTMLElement, src: GhostSource): void {
@@ -57,12 +101,20 @@ export function spawnGhost(backdrop: HTMLElement, src: GhostSource): void {
     if (document.documentElement.dataset.style !== 'glas' || !backdrop.isConnected) return;
     const panel = backdrop.querySelector<HTMLElement>(':scope > .modal-panel');
     if (!panel) return;
-    const clone = backdrop.cloneNode(true) as HTMLElement;
+    const box = layoutRect(panel);
+    const seen = panel.getBoundingClientRect();
+    const view = { w: window.innerWidth, h: window.innerHeight };
+    const originRect = src.origin?.el.isConnected ? rectOf(src.origin.el) : null;
+    const pageShadow =
+      src.pres === 'page'
+        ? getComputedStyle(document.documentElement).getPropertyValue('--g-shadow-pushed-screen').trim() || 'none'
+        : 'none';
+    const copy = copyWindow(backdrop, panel);
+    const clone = copy.clone;
     const clonePanel = clone.querySelector<HTMLElement>(':scope > .modal-panel');
     if (!clonePanel) return;
 
     // Freeze the current state: box, running animations (transform, opacity …) of the panel, its parts and the scrim.
-    const box = layoutRect(panel);
     freeze(panel, clonePanel, PANEL_FROZEN);
     Object.assign(clonePanel.style, {
       position: 'fixed',
@@ -79,13 +131,13 @@ export function spawnGhost(backdrop: HTMLElement, src: GhostSource): void {
     const parts = [...panel.children];
     const cloneParts = [...clonePanel.children];
     parts.forEach((part, i) => {
-      const copy = cloneParts[i];
-      if (part instanceof HTMLElement && copy instanceof HTMLElement) freeze(part, copy, PART_FROZEN);
+      const twin = cloneParts[i];
+      if (part instanceof HTMLElement && twin instanceof HTMLElement) freeze(part, twin, PART_FROZEN);
     });
     const scrim = backdrop.querySelector<HTMLElement>(':scope > .g-sheet-scrim');
     const cloneScrim = clone.querySelector<HTMLElement>(':scope > .g-sheet-scrim');
     if (scrim && cloneScrim) cloneScrim.style.opacity = getComputedStyle(scrim).opacity;
-    stills(panel, clonePanel);
+    stills(copy.media);
 
     // A ghost is no window: no ids, roles, form names or focus, nothing to hit.
     for (const el of clone.querySelectorAll('[id]')) el.removeAttribute('id');
@@ -96,16 +148,29 @@ export function spawnGhost(backdrop: HTMLElement, src: GhostSource): void {
     clone.inert = true;
     clone.style.pointerEvents = 'none';
     clone.style.animation = 'none';
-    clone.style.visibility = 'hidden';
+    const display = clone.style.display;
+    clone.style.display = 'none';
 
     backdrop.before(clone);
-    copyScroll(backdrop, clone); // only now: a clone outside the document forgets scroll positions
 
-    const ghost: Ghost = { clone, panel: clonePanel, scrim: cloneScrim, src, batch: batches.now(), box, note: null };
+    const ghost: Ghost = {
+      clone,
+      panel: clonePanel,
+      scrim: cloneScrim,
+      src,
+      batch: batches.now(),
+      box,
+      note: null,
+      view,
+      originRect,
+      pageShadow,
+      scrolled: copy.scrolled,
+      display,
+      shown: false,
+    };
     if (src.pres === 'sheet' || src.pres === 'dialog') {
-      const r = panel.getBoundingClientRect();
       ghost.note = {
-        rect: { x: r.left, y: r.top, w: r.width, h: r.height },
+        rect: { x: seen.left, y: seen.top, w: seen.width, h: seen.height },
         pres: src.pres,
         detent: src.detent,
         origin: src.origin,
@@ -126,23 +191,143 @@ function freeze(from: HTMLElement, to: HTMLElement, props: readonly string[]): v
   for (const p of props) to.style.setProperty(p, cs.getPropertyValue(p));
 }
 
+/**
+ * Copies the window. A small one is copied whole. A big one keeps only what the scroll areas of its panel show, plus a
+ * quarter of their height around it: everything further out becomes an empty box of the same size (same tag and
+ * classes), so what shows sits where it sat and the scroll positions still fit. The ghost only shrinks or slides
+ * away, so nothing outside a scroll area's box ever comes into view.
+ */
+function copyWindow(backdrop: HTMLElement, panel: HTMLElement): Copy {
+  const copy: Copy = { clone: backdrop, media: [], scrolled: [] };
+  if (backdrop.getElementsByTagName('*').length <= PARTIAL_FROM) {
+    copy.clone = whole(backdrop, copy);
+    return copy;
+  }
+  // `scan`: inside the panel, where an element may be a scroll area (the backdrop and the panel never decide)
+  const visit = (el: Element, band: Band | null, scan: boolean): Node => {
+    if (!(el instanceof HTMLElement)) return el.cloneNode(true);
+    if (el instanceof HTMLDetailsElement && !el.open) return shut(el, copy);
+    if (band) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom < band.top || r.top > band.bottom) {
+        const stand = standIn(el);
+        if (stand) return stand;
+      } else if (r.top >= band.top && r.bottom <= band.bottom) {
+        return whole(el, copy);
+      }
+    }
+    const inner = scan ? scrollBand(el, band) : band;
+    if (!inner && el.getElementsByTagName('*').length <= SMALL_TREE) return whole(el, copy);
+    const to = el.cloneNode(false) as HTMLElement;
+    note(el, to, copy);
+    const deeper = scan || el === panel;
+    for (const child of el.childNodes) {
+      to.appendChild(child instanceof Element ? visit(child, inner, deeper) : child.cloneNode(true));
+    }
+    return to;
+  };
+  copy.clone = visit(backdrop, null, false) as HTMLElement;
+  return copy;
+}
+
+/** A closed <details>: its summary, and its other children empty — they are not rendered, in the ghost neither (the
+ *  entity groups in the settings hold most of that window's elements). */
+function shut(el: HTMLDetailsElement, copy: Copy): HTMLElement {
+  const to = el.cloneNode(false) as HTMLElement;
+  note(el, to, copy);
+  for (const child of el.childNodes) {
+    to.appendChild(child instanceof HTMLElement && child.tagName === 'SUMMARY' ? whole(child, copy) : child.cloneNode(false));
+  }
+  return to;
+}
+
+/** A subtree copied whole. */
+function whole(el: HTMLElement, copy: Copy): HTMLElement {
+  const to = el.cloneNode(true) as HTMLElement;
+  noteTree(el, to, copy);
+  return to;
+}
+
+/**
+ * Notes media and scroll positions of a subtree and its copy, child by child. Skips what is not rendered — the content
+ * of a closed <details> (the entity groups in the settings): reading a scroll position there lays it out first, which
+ * made up most of the 38 ms (plan §13.1).
+ */
+function noteTree(from: Element, to: Element, copy: Copy): void {
+  note(from, to, copy);
+  const closed = from instanceof HTMLDetailsElement && !from.open;
+  const a = from.children;
+  const b = to.children;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (!x || !y || (closed && x.tagName !== 'SUMMARY')) continue;
+    noteTree(x, y, copy);
+  }
+}
+
+function note(from: Element, to: Element, copy: Copy): void {
+  if (from instanceof HTMLImageElement || from instanceof HTMLCanvasElement || from instanceof HTMLVideoElement) {
+    copy.media.push([from, to]);
+  }
+  if (from.scrollTop || from.scrollLeft) copy.scrolled.push({ to, top: from.scrollTop, left: from.scrollLeft });
+}
+
+/** The band of `el` if it scrolls vertically, narrowed by the band it lies in; else the band it lies in. */
+function scrollBand(el: HTMLElement, band: Band | null): Band | null {
+  if (el.scrollHeight <= el.clientHeight + 1) return band;
+  const overflow = getComputedStyle(el).overflowY;
+  if (overflow === 'visible' || overflow === 'clip') return band;
+  const r = el.getBoundingClientRect();
+  const extra = r.height * BAND_EXTRA;
+  const own = { top: r.top - extra, bottom: r.bottom + extra };
+  return band ? { top: Math.max(band.top, own.top), bottom: Math.min(band.bottom, own.bottom) } : own;
+}
+
+/** An element outside every band as an empty box of its size, never painted; `null` where the box needs its content
+ *  for its size (inline, `contents`, table parts) — that one is visited instead. */
+function standIn(el: HTMLElement): HTMLElement | null {
+  const cs = getComputedStyle(el);
+  if (cs.display === 'none') return el.cloneNode(false) as HTMLElement;
+  if (!BOXES.has(cs.display)) return null;
+  const px = (v: string) => parseFloat(v) || 0;
+  const content = cs.boxSizing !== 'border-box';
+  const w = px(cs.width) + (content ? px(cs.paddingLeft) + px(cs.paddingRight) + px(cs.borderLeftWidth) + px(cs.borderRightWidth) : 0);
+  const h = px(cs.height) + (content ? px(cs.paddingTop) + px(cs.paddingBottom) + px(cs.borderTopWidth) + px(cs.borderBottomWidth) : 0);
+  const box = el.cloneNode(false) as HTMLElement;
+  Object.assign(box.style, {
+    boxSizing: 'border-box',
+    width: `${w}px`,
+    minWidth: `${w}px`,
+    maxWidth: `${w}px`,
+    height: `${h}px`,
+    minHeight: `${h}px`,
+    maxHeight: `${h}px`,
+    padding: '0',
+    borderWidth: '0',
+    flex: '0 0 auto',
+    overflow: 'hidden',
+    visibility: 'hidden',
+    contain: 'strict',
+  });
+  return box;
+}
+
 /** Loaded images, canvases and video frames as still copies: a cloned <img> loads again (empty with `no-store`), a
  * cloned canvas is blank. The copies are drawn, never read. */
-function stills(from: HTMLElement, to: HTMLElement): void {
-  const a = from.querySelectorAll<HTMLElement>('img, canvas, video');
-  const b = to.querySelectorAll<HTMLElement>('img, canvas, video');
-  a.forEach((orig, i) => {
-    const copy = b[i];
-    if (!copy) return;
+function stills(media: readonly Pair[]): void {
+  for (const [from, to] of media) {
+    const orig = from as HTMLElement;
+    const copy = to as HTMLElement;
     try {
-      if (orig instanceof HTMLImageElement && !(orig.complete && orig.naturalWidth > 0)) return;
+      if (orig instanceof HTMLImageElement && !(orig.complete && orig.naturalWidth > 0)) continue;
       if (orig instanceof HTMLVideoElement && orig.readyState < 2) {
         copy.style.visibility = 'hidden';
-        return;
+        continue;
       }
       const w = orig.offsetWidth;
       const h = orig.offsetHeight;
-      if (!w || !h) return;
+      if (!w || !h) continue;
       const canvas = document.createElement('canvas');
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.round(w * dpr);
@@ -153,7 +338,7 @@ function stills(from: HTMLElement, to: HTMLElement): void {
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) continue;
       const source = orig as CanvasImageSource;
       const [sw, sh] =
         orig instanceof HTMLImageElement ? [orig.naturalWidth, orig.naturalHeight]
@@ -164,7 +349,7 @@ function stills(from: HTMLElement, to: HTMLElement): void {
     } catch {
       copy.style.visibility = 'hidden';
     }
-  });
+  }
 }
 
 function drawFitted(
@@ -179,18 +364,6 @@ function drawFitted(
     return;
   }
   ctx.drawImage(src, 0, 0, dw, dh);
-}
-
-function copyScroll(from: HTMLElement, to: HTMLElement): void {
-  const a = from.querySelectorAll<HTMLElement>('*');
-  const b = to.querySelectorAll<HTMLElement>('*');
-  a.forEach((el, i) => {
-    if (!el.scrollTop && !el.scrollLeft) return;
-    const copy = b[i];
-    if (!copy) return;
-    copy.scrollTop = el.scrollTop;
-    copy.scrollLeft = el.scrollLeft;
-  });
 }
 
 function drop(g: Ghost): void {
@@ -208,7 +381,12 @@ function decide(g: Ghost, original: HTMLElement): void {
     const same = ghosts.filter((o) => o !== g && o.batch === g.batch);
     const parentGone = g.src.parentId !== null && same.some((o) => o.src.id === g.src.parentId);
     const together = parentGone || same.some((o) => o.src.parentId === g.src.id);
-    g.clone.style.visibility = '';
+    g.clone.style.display = g.display;
+    g.shown = true;
+    for (const { to, top, left } of g.scrolled) {
+      to.scrollTop = top;
+      to.scrollLeft = left;
+    }
     const animations = leave(g, together);
     let done = false;
     const end = () => {
@@ -225,8 +403,8 @@ function decide(g: Ghost, original: HTMLElement): void {
 
 function leave(g: Ghost, together: boolean): (Animation | null)[] {
   const { panel, scrim, src, box } = g;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+  const vw = g.view.w;
+  const vh = g.view.h;
   const from = panel.style.transform || 'none';
   const opacity = Number(panel.style.opacity || 1);
   const parts = [...panel.children];
@@ -263,8 +441,8 @@ function leave(g: Ghost, together: boolean): (Animation | null)[] {
   }
 
   if (src.pres === 'page') {
-    const radius = panel.style.borderRadius || getComputedStyle(panel).borderRadius;
-    const shadow = getComputedStyle(document.documentElement).getPropertyValue('--g-shadow-pushed-screen').trim() || 'none';
+    const radius = panel.style.borderRadius;
+    const shadow = g.pageShadow;
     const w = box.w;
     out.push(
       play(
@@ -279,7 +457,7 @@ function leave(g: Ghost, together: boolean): (Animation | null)[] {
     return out;
   }
 
-  const origin = src.origin?.el.isConnected ? rectOf(src.origin.el) : null;
+  const origin = src.origin?.el.isConnected ? g.originRect : null;
   const target = origin && originVisible(origin, vw, vh) ? origin : null;
   const dialog = src.pres === 'dialog';
   if (target) {
@@ -290,7 +468,7 @@ function leave(g: Ghost, together: boolean): (Animation | null)[] {
       play(
         panel,
         [
-          { transform: from, borderRadius: panel.style.borderRadius || getComputedStyle(panel).borderRadius },
+          { transform: from, borderRadius: panel.style.borderRadius },
           { transform: translateScale(m.x, m.y, m.sx, m.sy), borderRadius: `${m.rx}px / ${m.ry}px` },
         ],
         { duration, easing: dialog ? DIALOG_OUT : spring('smooth'), fill: 'forwards' },
@@ -332,7 +510,7 @@ export function takeGhost(id: number, origin: HTMLElement | null): OriginRect | 
   const g = ghosts.find(
     (o) =>
       o.clone.isConnected &&
-      o.clone.style.visibility !== 'hidden' &&
+      o.shown &&
       !o.note?.taken &&
       (o.src.id === id || (origin !== null && o.src.origin?.el === origin)),
   );

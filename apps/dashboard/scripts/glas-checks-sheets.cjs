@@ -710,16 +710,96 @@ module.exports = function sheets(h) {
       out.sheetsReopenOk = during === 1 && after.panels === 1 && after.ghosts === 0 && after.sheet === 'medium';
     });
 
-    // 17. Performance (a report, GLAS-PLAN §5.5, plan §6.3), at full speed and at 4× CPU slowdown: frames dropped in the
-    //     900 ms after the press that opens a sheet (morph) and after the press that closes it (ghost), long tasks, and
-    //     how long the ghost's synchronous work takes — from the backdrop's clone until the ghost queues its decision
-    //     (clone, frozen styles, stills, insertion, scroll copy) — with the number of nodes it copies.
+    // 18. The ghost shows the window as it was (plan §13.1): every text that showed in a scroll area sits at the same place
+    //     in the ghost, measured right after the ghost decides (a mutation observer runs before its microtask and queues
+    //     the measurement behind it; the closing animation still stands at its start). The entity list is big enough to
+    //     be copied in part (only what shows, plus a margin), lights and the detail are copied whole.
+    await block('sheetsGhostCopy', async () => {
+      const res = {};
+      // the entity groups are closed <details> (not rendered); `entitiesOpen` opens the biggest one and scrolls down
+      for (const [key, name, openGroup] of [['entities', 'win-entities'], ['entitiesOpen', 'win-entities', true],
+        ['lights', 'win-lights'], ['detail', 'win-detail']]) {
+        const sc = scenes[name];
+        const w = await open('phone', 'glas', sc.path, sc);
+        await openWin(w.page, name);
+        const openNodes = !openGroup ? 0 : await ev(w.page, () => {
+          const groups = [...__s.panel().querySelectorAll('details')];
+          groups.sort((a, b) => b.getElementsByTagName('*').length - a.getElementsByTagName('*').length);
+          groups[0].open = true;
+          return groups[0].getElementsByTagName('*').length;
+        });
+        await sleep(300);
+        const before = await ev(w.page, () => {
+          const panel = __s.panel();
+          const scroller = [...panel.querySelectorAll('*')].find((e) => e.scrollHeight > e.clientHeight + 1
+            && ['auto', 'scroll'].includes(getComputedStyle(e).overflowY));
+          if (scroller) scroller.scrollTop = Math.round((scroller.scrollHeight - scroller.clientHeight) / 2);
+          return { scrolled: scroller ? scroller.scrollTop : 0 };
+        });
+        await sleep(200);
+        const texts = () => {
+          const panel = document.querySelector('.g-sheet-ghost > .modal-panel') || __s.panel();
+          const p = panel.getBoundingClientRect();
+          const list = [];
+          for (const e of panel.querySelectorAll('*')) {
+            if (e.children.length || !e.textContent.trim()) continue;
+            // not rendered (the content of a closed <details>): nothing shows
+            if (e.checkVisibility && !e.checkVisibility()) continue;
+            const r = e.getBoundingClientRect();
+            if (!r.width || !r.height || r.bottom <= p.top || r.top >= p.bottom) continue;
+            // only what shows: inside every scroll area around it
+            let shown = true;
+            for (let a = e.parentElement; a && a !== panel; a = a.parentElement) {
+              if (a.scrollHeight > a.clientHeight + 1 && ['auto', 'scroll'].includes(getComputedStyle(a).overflowY)) {
+                const b = a.getBoundingClientRect();
+                if (r.bottom <= b.top || r.top >= b.bottom) shown = false;
+              }
+            }
+            if (shown) list.push({ t: e.textContent.trim().slice(0, 40), x: r.left - p.left, y: r.top - p.top, w: r.width, h: r.height });
+          }
+          return { list, nodes: panel.parentElement.getElementsByTagName('*').length };
+        };
+        const orig = await ev(w.page, `(${texts})()`);
+        await ev(w.page, (fn) => {
+          const read = new Function(`return (${fn})()`);
+          const mo = new MutationObserver((records) => {
+            if (!records.some((r) => [...r.addedNodes].some((n) => n.classList && n.classList.contains('g-sheet-ghost')))) return;
+            mo.disconnect();
+            queueMicrotask(() => { window.__ghostCopy = read(); });
+          });
+          mo.observe(document.body, { childList: true });
+        }, texts.toString());
+        await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close'));
+        await sleep(600);
+        const ghost = await ev(w.page, () => window.__ghostCopy || null);
+        await w.close();
+        if (!ghost) {
+          res[key] = { ghost: null };
+          continue;
+        }
+        const missing = orig.list.filter((o) => !ghost.list.some((g) => g.t === o.t && Math.abs(g.x - o.x) <= 0.5
+          && Math.abs(g.y - o.y) <= 0.5 && Math.abs(g.w - o.w) <= 0.5 && Math.abs(g.h - o.h) <= 0.5));
+        res[key] = { scrolled: before.scrolled, texts: orig.list.length, missing: missing.length, sample: missing.slice(0, 3),
+          nodes: orig.nodes, openNodes, ghostNodes: ghost.nodes };
+      }
+      out.sheetsGhostCopy = res;
+      out.sheetsGhostCopyOk = Object.values(res).every((r) => r.ghost !== null && r.texts > 0 && r.missing === 0)
+        // closed groups keep only their summary; of the open, scrolled group only what shows (plus a margin)
+        && res.entities.ghostNodes < res.entities.nodes / 4
+        && res.entitiesOpen.scrolled > 0 && res.entitiesOpen.ghostNodes < res.entitiesOpen.openNodes / 2
+        && res.lights.scrolled > 0 && res.lights.ghostNodes === res.lights.nodes;
+    });
+
+    // 17. Performance (a report, GLAS-PLAN §5.5, plan §6.3), at full speed and at 4× CPU slowdown, Klassisch at 4× as the
+    //     baseline: frames dropped in the 900 ms after the press that opens a window and after the press that closes it,
+    //     long tasks, and how long the ghost's synchronous work takes — from the backdrop's clone until the ghost queues
+    //     its decision (copy, frozen styles, stills, insertion) — with the number of nodes of the window.
     await block('sheetsPerf', async () => {
       const res = {};
-      for (const rate of [1, 4]) {
+      for (const [style, rate] of [['glas', 1], ['glas', 4], ['classic', 4]]) {
         for (const [key, name] of [['lights', 'win-lights'], ['entities', 'win-entities'], ['detail', 'win-detail']]) {
           const sc = scenes[name];
-          const w = await open('phone', 'glas', sc.path, sc);
+          const w = await open('phone', style, sc.path, sc);
           const cdp = await w.page.context().newCDPSession(w.page);
           await cdp.send('Emulation.setCPUThrottlingRate', { rate });
           await ev(w.page, () => {
@@ -764,12 +844,12 @@ module.exports = function sheets(h) {
           await settleAnimations(w.page, 6000);
           await sleep(300);
           const opening = { ...(await frames()), nodes: await ev(w.page, () => __s.panel().querySelectorAll('*').length) };
-          await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close'));
+          await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close, .modal-header__close button'));
           await sleep(1500);
           const closing = { ...(await frames()), ghost: await ev(w.page, () => window.__perf.clones.slice()) };
           await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
           await cdp.detach();
-          res[`${key}@${rate}x`] = { opening, closing };
+          res[`${key}@${rate}x${style === 'classic' ? ' Klassisch' : ''}`] = { opening, closing };
           await w.close();
         }
       }
