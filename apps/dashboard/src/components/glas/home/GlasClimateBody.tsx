@@ -92,7 +92,7 @@ export function GlasClimateBody({ room, rooms, onSelect, setpoint, sp, onDown, o
           <span className="g-ctl__sub">
             {t('cards.climate.current')} {temp(current)}
           </span>
-          <span className="g-ctl__action" aria-live="polite">
+          <span className="g-ctl__action">
             <span className="g-ctl__action-circle" aria-hidden="true">
               <Icon size={14} strokeWidth={2.25} />
             </span>

@@ -8,7 +8,8 @@
  * `placeEntity(id, areaId)` puts an entity into a room (a registry entry is added when the demo has none), so a check
  * can give a card more rooms than the demo has (climate, blinds). `openDetail(id)` opens an entity's detail the way a
  * tap does, so a check can reach the detail of an entity without a card for it (a light's brightness control).
- * Outside demo mode the object does not exist.
+ * `entity(id)` reads an entity as the store holds it, so a check can see what a control has sent (a light's brightness
+ * only after the key is let go). Outside demo mode the object does not exist.
  */
 
 import type { AreaRegistryEntry, EntityRegistryEntry, HassEntity, HassEntityAttributes } from '@hapulse/core';
@@ -27,6 +28,7 @@ interface DemoControl {
   patchArea: (id: string, patch: { picture?: string | null }) => AreaRegistryEntry | null;
   placeEntity: (id: string, areaId: string | null) => EntityRegistryEntry | null;
   openDetail: (id: string) => void;
+  entity: (id: string) => HassEntity | null;
 }
 
 type DemoWindow = Window & { __hapulseDemo?: DemoControl };
@@ -79,6 +81,9 @@ export function startDemoControl(): void {
     },
     openDetail(id) {
       useUIStore.getState().openEntityDetail(id);
+    },
+    entity(id) {
+      return useEntityStore.getState().entities[id] ?? null;
     },
   };
 }

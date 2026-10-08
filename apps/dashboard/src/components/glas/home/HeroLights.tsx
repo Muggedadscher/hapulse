@@ -54,7 +54,7 @@ export function HeroLights({ ids, entities, roomName, onAct }: HeroLightsProps) 
               type="button"
               className="g-hero-light__toggle"
               aria-pressed={on}
-              aria-label={on ? t('home.devices.turnOffAria', { name }) : t('home.devices.turnOnAria', { name })}
+              aria-label={name}
               disabled={entity.state === 'unavailable'}
               onClick={() => {
                 setPulse((p) => ({ id, n: (p?.n ?? 0) + 1 }));

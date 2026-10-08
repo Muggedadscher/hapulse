@@ -170,6 +170,11 @@ export function LightBrightnessControl({ entity, children }: LightBrightnessCont
     if (gesture.current?.kind === 'key') commit();
   };
 
+  // only a key that moves the level ends the gesture (Shift tapped during a hold does not send)
+  const onKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (levelAfterKey(0, e.key) !== null) onKeyEnd();
+  };
+
   const onBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     delete e.currentTarget.dataset.pointer;
     onKeyEnd();
@@ -212,7 +217,7 @@ export function LightBrightnessControl({ entity, children }: LightBrightnessCont
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
           onKeyDown={onKeyDown}
-          onKeyUp={onKeyEnd}
+          onKeyUp={onKeyUp}
           onBlur={onBlur}
         >
           <span className="g-light__fill" aria-hidden="true" />

@@ -123,7 +123,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/glasTokens.ts` | Stil Glas: Farben, Akzent (`glasAccent`), Federn, Kontrast-Hilfen, Abbildung auf die 24 HAPulse-Tokens + `--g-*` (DOM-frei) |
 | `apps/dashboard/src/theme/glasAppearance.ts` | Stil Glas: `applyAppearance` (umhüllt `applyTheme`, schreibt Tokens + `--g-*` + Attribute auf `:root`), `resolveAppearance`, `readPersistedStyle` (Pre-Paint), `watchAppearance` |
 | `apps/dashboard/src/app/glas/useUiStyle.ts` | `useUiStyle`/`useIsGlas` für Komponenten |
-| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`; Fenster seit Etappe 3: `sheets`, `sheet-content`; Gesten und Inspector seit Etappe 3b: `gestures`); jeder Selektor beginnt mit `:root[data-style='glas']` |
+| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`; Fenster seit Etappe 3: `sheets`, `sheet-content`; Gesten und Inspector seit Etappe 3b: `gestures`; Übersicht und Detail seit Etappe 4: `home`, `home-cards`, `home-lists`, `controls`, `detail`, `edit`, `nvr`); jeder Selektor beginnt mit `:root[data-style='glas']` |
 | `apps/dashboard/src/app/glas/{GlasRuntime,GlasTabBar,GlasNavGroups}.tsx`, `{glasScroll,menuKeys,navGroups,shellStore,useLens}.ts` | Glas-Rahmen (Etappe 2): Scroll-Kante und kleiner Titel, Tab-Leiste minimieren, Linse, Pfeiltasten in Räume-/Mehr-Menü, Gruppen der Seitenleiste, Bearbeiten-Angebot je Seite |
 | `apps/dashboard/src/components/glas/{AvatarMenu,DoneCapsule,WeatherLine}.tsx`, `weatherIcon.ts` | Glas am Handy: Avatar-Menü (Benachrichtigungen, Bearbeiten, Einstellungen), „Fertig“, Wetterzeile; Wettersymbol je Zustand |
 | `apps/dashboard/test/{glasScroll,menuKeys,navGroups}.test.ts` | Tests des Glas-Rahmens |
@@ -134,10 +134,20 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/glas/{ContextMenu,SwipeRow}.tsx`, `{contextActions,swipeMath}.ts`, `apps/dashboard/src/stores/glasUiStore.ts` | Glas-Gesten (Etappe 3b): Kontextmenü der Karten in den Räumen (Langdruck, Rechtsklick, Kontextmenü-Taste; Aktionen je Entität und Rechten), Wisch-Zeilen (Verwerfen, Aus, Schließen, Verriegeln; nie Öffnen oder Entriegeln) |
 | `apps/dashboard/test/{contextActions,swipeMath}.test.ts` | Tests der Gesten |
 | `apps/dashboard/scripts/glas-checks-gestures.cjs` | Gesten-Szenen (`ctx-card`, `swipe-…`) und `checks --part gestures` für `glas-shots.cjs` |
+| `packages/core/src/{hints,locks,activeScene,glasEnergy,sizePresets,roomGlance}.ts` | Etappe 4 (DOM-frei, Tests in `smoke.mjs`): Hinweise, Schloss-Regel (aus `lockLogic.ts` nach Core gezogen), aktive Szene (Heuristik), Glas-Energiediagramm (Zeiträume, Balken, Achse, Ø, Vergleich), Größen S/M/L ↔ Spalten/Höhe/`tallSections`, Werte des Hauptraums und der Geräte |
+| `apps/dashboard/src/components/home/{HintsCard.tsx,HintsCard.css,useHints.ts}` | Karte „Hinweise“ in beiden Stilen, ihre Fenster (`HintWindows`, außerhalb des Rasters) und das Sammeln der Eingaben (Tür nach 10 min, Tonne um Mitternacht neu) |
+| `apps/dashboard/src/ha/useEnergyWindow.ts` | Glas-Energie: Zeitraum und Vergleich laden, je Zeitraum gemerkt, beim Wechsel das vorige Ergebnis gedimmt |
+| `apps/dashboard/src/ha/demoControl.ts` | Nur im Demo-Modus `window.__hapulseDemo` (`patch`, `patchArea`, `placeEntity`, `openDetail`, `entity`) für die Prüfungen |
+| `apps/dashboard/src/stores/keptOffStore.ts` | Glas: in der Geräte-Karte ausgeschaltete Geräte bleiben bis zum Neuladen als „Aus“ stehen |
+| `apps/dashboard/src/components/glas/{Segment,RollingValue,GlasMenuTarget}.tsx`, `useGlasContextMenu.ts` | Glas-Bausteine (Etappe 4): Segment mit Linse (`role="radiogroup"`), rollende Zahl, Kontextmenü an beliebigen Elementen (Szenen, Geräte) |
+| `apps/dashboard/src/components/glas/home/*` | Glas-Übersicht: `EnergyGlas`, Hauptraum (`HeroLights`, `HeroGlance`), Geräte (`GlasDeviceItem`), Klima/Rollläden (`GlasClimateBody`, `GlasBlindsBody`, `GlasArc`, `GlasRoomPicker`), Räume (`GlasRoomTile`), Szenen (`SceneRing`, `sceneTone.ts`), Bearbeiten (`SizeBar`, `SizeSheet`, `noDrag.ts`) |
+| `apps/dashboard/src/components/glas/detail/{GlasDetailHead,LightBrightnessControl}.tsx`, `lightLevel.ts`, `apps/dashboard/test/lightLevel.test.ts` | Glas-Detail: Zustands-Kachel, Zustandszeile, Diagrammfarbe, senkrechter Helligkeitsregler (gesendet beim Loslassen) |
+| `apps/dashboard/src/nvr/{NvrHomeGlas,HomeSnapshot}.tsx` | Glas-Körper der NVR-Karte der Übersicht (Kopf, Fehler und Daten bleiben in `NvrHomeCard`) |
+| `apps/dashboard/scripts/glas-checks-home.cjs` | Übersichts-Szenen (`home-hints`, `home-edit`, `energy-bubble`, `detail-light`) und `checks --part home` für `glas-shots.cjs` |
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
-| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`) und 3 (`docs/glas/PLAN-ETAPPE-3.md`) |
+| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`) und 4 (`docs/glas/PLAN-ETAPPE-4.md`) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -160,7 +170,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Room.tsx` | Sektion `nvrCameras`, keine HA-Kameras bei Kameraquelle Sentinel |
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
-| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls |
+| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls; seit Etappe 4 `locks`, `hints`, `activeScene`, `glasEnergy`, `sizePresets`, `roomGlance` |
 | `apps/dashboard/src/components/ui/Modal.{tsx,css}` | Anfangsfokus auf ein Element mit `data-autofocus` (sonst das Panel); kein Fokusrahmen um das Panel selbst |
 | `apps/dashboard/src/components/changelog/ChangelogModal.{tsx,css}` | `ReleaseEntry` exportiert (+ optionales `badge`), Stile für Abzeichen und Kompaktliste |
 | `apps/dashboard/src/app/AppLayout.tsx`, `pages/Settings.tsx` | `ForkChangelogModal` statt `ChangelogModal`; Auslöser auch bei neuen Fork-Releases; Über: „Version 1.3.2 · F11“ |
@@ -177,6 +187,17 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/cards/EntityCard.tsx` | Stil Glas (Etappe 3b): Langdruck, Rechtsklick und Kontextmenü-Taste öffnen das Kontextmenü statt des Details (nicht im Bearbeiten-Modus); nach dem Langdruck schluckt Glas nur den Klick dieses Drucks (`useLongPress` schluckte sonst den nächsten Tipp auf einen Knopf der Karte); Klassisch unverändert |
 | `apps/dashboard/src/stores/uiStore.ts` | Stil Glas (Etappe 3b): `detailSeq` zählt jede Anfrage nach dem Detail, auch für die schon gezeigte Entität (der Inspector unter einem Chip-Fenster kommt dann nach oben) |
 | `apps/dashboard/src/components/security/LocksList.tsx` | Stil Glas (Etappe 3b): Zeilen in `SwipeRow` (Wischen zum Verriegeln, über `useLockAction`) |
+| `apps/dashboard/src/pages/Home.tsx` | Etappe 4: Sektion `'hints'` (vorn, volle Zeile, nur mit Abweichung oder im Bearbeiten-Modus, `HintWindows` außerhalb des Rasters); Glas: `EnergyGlas` statt `EnergyWidget`, Chips nach der Begrüßung (K86), Bearbeiten-Leiste `SizeBar` statt der Abzeichen, „⋯“-Fenster `SizeSheet`, Klasse `g-tall` für L |
+| `apps/dashboard/src/components/home/ScenesCard.{tsx,css}` | Aktive Szene (`data-active`, Untertitel „Aktiv“ bzw. „N Geräte“, beide Stile); Glas: Ring, Farbton je Szene, Kontextmenü |
+| `apps/dashboard/src/components/home/EnergyWidget.{tsx,css}` | Netz/Solar gestapelt und Zeile „PV-Ertrag“ (beide Stile, Entscheid E3/E9) |
+| `apps/dashboard/src/components/home/{HeroRoomCard,DevicesCard,ClimateCard,BlindsCard,ActivityCard,RoomsQuickAccess,SecurityCard,SummaryChips}.tsx` | Stil Glas (Etappe 4): eigene Körper (Lichtkreise, Geräte-Kacheln/-Zeilen, Klima- und Rollladen-Ring mit Raumauswahl, Raumkacheln), Hauptraum hält in Glas seinen Raum 1 min nach einer Aktion, Töne der Sicherheitszeilen (`data-g-tone`), Chip-Farbe (`data-chip`); Klassisch unverändert |
+| `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Stil Glas (Etappe 4): Kopf im Fensterkopf (`lead`, `trailing`, Raum als `subtitle`), Licht mit `LightBrightnessControl`, Verlauf mit `Segment` |
+| `apps/dashboard/src/components/cards/LightCard.tsx` | Prop `colorOnly` (Glas-Detail: nur Farbtemperatur und Farbe, ohne Kopf, nicht klickbar) |
+| `apps/dashboard/src/components/ui/Modal.tsx` | Stil Glas (Etappe 4): Props `lead`, `trailing` für den Fensterkopf |
+| `apps/dashboard/src/components/ui/SortableItem.tsx` | Stil Glas (Etappe 4): Drücken auf die Bearbeiten-Leiste startet kein Ziehen (`withoutBarDrag`) |
+| `apps/dashboard/src/stores/connectionStore.ts` | Demo-Steuerung starten und stoppen (nur im Demo-Modus) |
+| `apps/dashboard/src/stores/settingsStore.ts` | Etappe 4: `hintsSectionMigrated` (+ `migrateHintsSection`), `tallSections` (GLOBAL, Glas L) |
+| `packages/core/src/demo.ts` | Etappe 4: Szenen mit Mitgliedern (`attributes.entity_id`) |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/src/domain.ts` | `formatEntityState`: Zahl über `formatNumber` (Sprache), numerische Zustände ohne Einheit (sensor/number/input_number/counter) formatiert statt `humanizeState` (Minus ging verloren) |
@@ -184,7 +205,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/energy/EnergyCards.tsx`, `components/home/EnergyWidget.tsx` | `fmtEnergy`/`fmtCost` mit Sprache (Währung per `Intl`) |
 | `apps/dashboard/src/components/{cards,home}/ClimateCard.tsx`, `components/home/RoomCard.tsx`, `components/home/{WeatherHero,chipmodals/WeatherModal}.tsx`, `app/AppLayout.tsx`, `components/home/EntityDetailModal.tsx`, `components/system/SystemMonitorCard.tsx`, `components/devices/DeviceEntityRow.tsx` | Anzeige-Zahlen über `formatNumber` (Sprache) |
 | `packages/core/src/demo.ts` | Demo-Pool-Entities (`demoPoolEntities`, IDs wie `poolConfig.ts`) — Pool-Seite in Demo/Labor |
-| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“, „glas tokens“ |
+| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“, „glas tokens“; seit Etappe 4 Hinweise, Schlösser, aktive Szenen, Glas-Energie, Größen, Hauptraum |
 | `apps/dashboard/src/components/home/SummaryChips.tsx`, `SummaryChipsBar.tsx`, `chipmodals/index.ts` | Chips Pool, Garage, Schlösser in der Home-Leiste (+ Fenster, Standardplatz) |
 | `apps/dashboard/src/components/home/SecurityCard.tsx`, `components/security/SecurityHeroCard.tsx` | Garagen-Zeile/-Chip; Schlösser nach gemeinsamer Regel (`lockSummary`: offen rot, blockiert/nicht erreichbar gelb) |
 | `apps/dashboard/src/components/security/{LockConfirm,lockLogic}.*` | Bestätigung beim Entriegeln, Code-Feld, Klick-Stopp im Portal; `lockSummary`/`lockTone`/`lockSummaryText` |
@@ -194,7 +215,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `docs/DESIGN.md` | Verweis auf den zweiten Stil „Glas“ (`docs/GLAS-DESIGN.md`) |
 | `apps/dashboard/src/app/Router.tsx` | Routen `/nvr/*`, `/pool` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Einträge „NVR" + „Pool" (`nav.nvr`, `nav.pool`), direkt nach „Räume" |
-| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `garage.*`, `locks.*`, `glas.*`, `home.summaryChips.locksAllLocked`, `home.section.*.{waste,nvr}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
+| `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `garage.*`, `locks.*`, `glas.*`, `hints.*`, `home.scenes.{active,members.*}`, `home.energy.solarProduced`, `home.summaryChips.locksAllLocked`, `home.section.*.{waste,nvr,hints}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
 > Hinweis: `SensorTile.tsx` und die `.sensor-tile--clickable`-CSS-Regel sind seit
 > dem v1.2.0-Merge **wieder Upstream-Stand** — siehe „Feature: Sensor-Verlauf".
@@ -281,7 +302,7 @@ State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.
 ## Feature: Stil Glas
 
 Zweiter Stil neben Klassisch, nur Aussehen und Bewegung (Plan `docs/GLAS-PLAN.md`, Design `docs/GLAS-DESIGN.md`, Stand
-und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md` und `docs/glas/PLAN-ETAPPE-3.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
+und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md` und `docs/glas/PLAN-ETAPPE-4.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
 `<html data-style="glas">` gesetzt ist, und jede Regel in `styles/glas/` beginnt mit `:root[data-style='glas']`.
 
 Nach jedem Upstream-Merge:
@@ -323,3 +344,11 @@ Nach jedem Upstream-Merge:
    der Seite neben dem Inspector (Glocke, Avatar, Räume-Menü) erkennt `sheetHost.ts` an seinem Auslöser
    (`aria-haspopup` und `aria-expanded="true"`) und lässt ihm das Esc; ein neues Upstream-Popup ohne diese Attribute
    schlösse mit demselben Esc auch den Inspector.
+9. Seit Etappe 4 (Übersicht): Glas rendert eigene Körper für Hauptraum, Geräte, Klima, Rollläden, Räume und Energie
+   (`components/glas/home/`); Upstream-Änderungen an `HeroRoomCard`, `DevicesCard`, `ClimateCard`, `BlindsCard`,
+   `RoomsQuickAccess` oder `EnergyWidget` erreichen Glas deshalb nicht von selbst: neue Funktionen dort mit dem
+   Glas-Körper abgleichen (Klima: Schritt, Grenzen und schnelle Tipps bleiben in `ClimateCard`, der Körper bekommt sie als
+   Props). Eine neue Home-Sektion bekommt in Glas die Bearbeiten-Leiste von selbst; soll sie keine Größen haben, gehört sie in
+   `NO_SIZE_PRESETS` (`pages/Home.tsx`). Upstream-Änderungen an `components/ui/SortableItem.tsx` (Listener) mit
+   `components/glas/home/noDrag.ts` abgleichen, an `Modal` mit den Props `lead`/`trailing`. Danach
+   `checks --part home` laufen lassen (Hinweise, aktive Szene, „Nicht verlieren“, Energie, Bearbeiten, Licht, Menü).

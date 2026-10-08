@@ -78,7 +78,7 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
           </div>
           <div className="g-ctl__side">
             <span className="g-ctl__title">{room.name}</span>
-            <span className="g-ctl__sub" aria-live="polite">
+            <span className="g-ctl__sub">
               {state}
             </span>
             <div className="g-ctl__buttons" role="group" aria-label={t('glas.blinds.roomAria', { room: room.name })}>

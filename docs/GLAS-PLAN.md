@@ -649,6 +649,11 @@ Garage, Schlösser, Benachrichtigungen und Detail):
 
 ### Etappe 4 — Übersicht komplett
 
+**Stand 2026-10-08: umgesetzt (ein PR).** Plan, Festlegungen K74–K87, Abweichungen der Umsetzung und Code-Prüfung:
+[`glas/PLAN-ETAPPE-4.md`](glas/PLAN-ETAPPE-4.md) (§1, §7, §8). Klassisch zeigt nach dem Entscheid K74 („Beide Stile“)
+die Hinweise, „Aktiv“ bzw. die Gerätezahl an Szenen und Netz/Solar gestapelt; sonst bleibt es pixelgleich. Geprüft mit
+`glas-shots.cjs checks --part home` (Build und Entwicklungsserver), den Aufnahmen beider Stile und dem Klick-Fuzz.
+
 Umfang: 2.11–2.17; alle elf Sektionen im Glas-3-Look (SPEC5 Änderung 2), Hinweise, aktive Szene, Energie Netz/Solar,
 Geräte-Zeilen, Licht-Detail, Inspector fertig, Bearbeiten-Modus S/M/L, Handy-Reihenfolge Begrüßung → Wetter → Chips →
 Hinweise.
@@ -656,10 +661,11 @@ Hinweise.
 Abnahme:
 - [ ] Vergleich mit `docs/glas/screens/g5h-*.webp` / `g5d-*.webp` (hell/dunkel, oben/gescrollt, Bearbeiten, Inspector, Licht-Sheet,
       Avatar-Menü, Wetter, Kontextmenü) — gleiche Hierarchie, Abstände, Farben (Abweichung nur durch echte Daten/Schrift).
-- [ ] Hinweise erscheinen/verschwinden live mit den Entitäten; keine Karte, wenn nichts abweicht; ausgeblendete
-      Entitäten zählen nicht.
-- [ ] Aktive Szene: wird nach Aktivierung markiert, verliert die Markierung bei Änderung eines Mitglieds.
-- [ ] S/M/L + „⋯ Anpassen“ schreiben dieselben Felder wie Klassisch; Wechsel des Stils zeigt dasselbe Layout.
+- [x] Hinweise erscheinen/verschwinden live mit den Entitäten; keine Karte, wenn nichts abweicht; ausgeblendete
+      Entitäten zählen nicht. (`homeHints`, beide Stile)
+- [x] Aktive Szene: wird nach Aktivierung markiert, verliert die Markierung bei Änderung eines Mitglieds. (`homeScene`)
+- [x] S/M/L + „⋯ Anpassen“ schreiben dieselben Felder wie Klassisch; Wechsel des Stils zeigt dieselbe Reihenfolge und
+      dieselben Breiten (das Bild ist wegen der Glas-Spalten K85 nicht gleich). (`homeEdit`)
 
 Nicht verlieren (Inventar C, D, E, F):
 - [ ] Begrüßung nach Tageszeit + Namensquelle (C1) · Grid 4/3/2/1 Spalten (C3) · Standard-Reihenfolge inkl. Müll/NVR (C3)

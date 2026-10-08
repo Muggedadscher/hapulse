@@ -31,14 +31,14 @@ Pfade relativ zu `apps/dashboard/src/`, Core = `packages/core/src/`.
 | Hinweise | Core `hints.ts`, `locks.ts`; `components/home/useHints.ts`, `HintsCard.tsx/.css` | `pages/Home.tsx` (Sektion, Gate, Standardbreite, Render, `HintWindows`), `stores/settingsStore.ts` (Marker, Migration), `components/security/lockLogic.ts` (Re-Export) |
 | Aktive Szene | Core `activeScene.ts` | `components/home/ScenesCard.tsx` (`data-active`, Untertitel, Kontextmenü, Glas ohne Inline-Farbe), Core `demo.ts` |
 | Energie | Core `glasEnergy.ts` (Fenster, Balken, Achse, Ø, Vergleich); `components/glas/home/EnergyGlas.tsx`; `ha/useEnergyWindow.ts` | `components/home/EnergyWidget.tsx` (nur Klassisch: gestapelt + PV-Zeile), `pages/Home.tsx` (Glas → `EnergyGlas`) |
-| Hauptraum, Geräte, Klima, Rollläden | `components/glas/home/HeroLights.tsx`, `GlasDeviceItem.tsx`, `GlasBlindsRows.tsx`, `stores/keptOffStore.ts` | `HeroRoomCard.tsx`, `DevicesCard.tsx`, `ClimateCard.tsx`, `BlindsCard.tsx` |
+| Hauptraum, Geräte, Klima, Rollläden | `components/glas/home/HeroLights.tsx`, `GlasDeviceItem.tsx`, `GlasBlindsBody.tsx` (umgesetzt: dazu `GlasClimateBody.tsx`, `GlasArc.tsx`, `GlasRoomPicker.tsx`, `HeroGlance.tsx`, §7), `stores/keptOffStore.ts` | `HeroRoomCard.tsx`, `DevicesCard.tsx`, `ClimateCard.tsx`, `BlindsCard.tsx` |
 | Chips | — | `components/home/SummaryChips.tsx` (`data-chip`, nur Glas), `pages/Home.tsx` (Reihenfolge) |
 | Detail | `components/glas/detail/LightBrightnessControl.tsx`, `components/glas/Segment.tsx` | `components/home/EntityDetailModal.tsx`, `components/ui/Modal.tsx` (`lead`, `trailing`), `components/glas/sheet/SheetHeader.tsx` |
-| Bearbeiten | `components/glas/edit/SizeBar.tsx`, `SizeFineTune.tsx`, Core `sizePresets.ts` | `pages/Home.tsx`, `stores/settingsStore.ts` (`DEFAULT_CUSTOMIZATION`, Test `KNOWN_GLOBAL`) |
+| Bearbeiten | `components/glas/home/SizeBar.tsx`, `SizeSheet.tsx`, `noDrag.ts` (geplant: `glas/edit/SizeBar.tsx`, `SizeFineTune.tsx`, §7), Core `sizePresets.ts` | `pages/Home.tsx`, `stores/settingsStore.ts` (`DEFAULT_CUSTOMIZATION`, Test `KNOWN_GLOBAL`) |
 | Demo | `ha/demoControl.ts` | `stores/connectionStore.ts` |
 | CSS | `styles/glas/home.css`, `home-cards.css`, `controls.css` (Segment, Schalter), `detail.css`, `edit.css` | — |
 
-Dazu Texte in allen sieben Sprachen (`hints.*`, `home.section.*.hints`, `glas.energy.*`, `glas.size.*` u. a.),
+Dazu Texte in allen sieben Sprachen (`hints.*`, `home.section.*.hints`, `glas.energy.*`, `glas.edit.*` u. a.),
 Fork-Changelog F36 + `CHANGELOG.fork.md` (die Inhalte beider Stile als eigener Eintrag ohne „Glas:“),
 `docs/SYNC.md` (neue Dateien, `[fork]`-Stellen, Klassen), `CLAUDE.md`, GLAS-PLAN §3 Etappe 4 und der
 Selektor-Wächter für die neuen CSS-Dateien.
@@ -125,3 +125,49 @@ anders vermerkt.
 | N7 F36 | eigener Eintrag für beide Stile (§2). |
 | N8 Rollläden | Zeilen am Desktop gebaut statt Abweichung (K83). |
 | N9 Bilder und Proben | §3. |
+
+## 7. Umsetzung: Abweichungen vom Plan (2026-10-08)
+
+- **Hauptraum** hält in Glas seinen Raum 1 min nach einer Aktion in der Karte (Lichtkreis, Licht-Pille, Stepper,
+  Medien); sonst springt die Karte beim Ausschalten unter dem Finger zum nächstaktiven Raum. Klassisch unverändert.
+- **Klima und Rollläden** haben einen eigenen Glas-Körper (`GlasClimateBody`, `GlasBlindsBody`) statt nur CSS: der
+  klassische Bogen ist 220° mit Text im SVG, die Raumzeilen sind Maus-`<li>`; Glas braucht den 270°-Ring, den rollenden
+  Sollwert und die Raumwahl per Tastatur (`GlasRoomPicker`, `role="radiogroup"`). Schritt, Grenzen und schnelle Tipps
+  bleiben in `ClimateCard`. Klima-Ring = Sollwert auf 10–30 °C (50–86 °F). Raumliste ab 7 Räumen mit Innen-Scroll.
+  Rollläden-Zustand nach der Skizze (0 % = offen, 100 % = geschlossen, sonst teilweise), Klassisch bleibt bei 20/70.
+- **Sicherheit und Aktivität:** Zeilen öffnen nichts (wie Klassisch), deshalb ohne Chevron; Symbole je Zeile bleiben,
+  Töne über `data-g-tone`.
+- **Müll, Räume, NVR:** eigene Glas-Liste in `WasteCard`, eigene Raumkachel `GlasRoomTile` (Statustexte aus `hints.*`),
+  eigener NVR-Körper `nvr/NvrHomeGlas.tsx` (CSS `styles/glas/nvr.css`, die Datei aus GLAS-PLAN §4). Mehrere Kameras: am
+  Handy zum Wischen, am Desktop ein Raster; die Zeile „Ereignisse heute“ entfällt (je Kamera „N heute“ auf dem Bild).
+- **CSS:** die übrigen Karten in `styles/glas/home-lists.css` (`home-cards.css` wurde zu lang).
+- **Detail (K79):** `LightCard` bekommt `colorOnly` statt der `:has()`-Regel (mit nur versteckter Kopfzeile bliebe
+  eine namenlose Karte mit `role="button"`, die das Licht schaltet). Farbtemperatur bleibt ein Regler. Schließen im
+  Inspector rechts, sonst links; die Zustandszeile zeigt die relative Zeit wie Klassisch; der Stern nur unter globaler
+  Verwaltung (wie Klassisch). Diagrammlinie in der Ink-Farbe (Kontrast ≥ 3:1).
+- **Bearbeiten (K78):** `SizeBar` und das „⋯“-Fenster `SizeSheet` liegen in `components/glas/home/`, Schlüssel
+  `glas.edit.*`. „⋯“ gibt es auch für Hinweise und Räume (Spalten und Höhendeckel wie Klassisch, nur das Segment
+  fehlt). Ein Höhendeckel aus „⋯“ hebt L auf; im Bearbeiten-Modus behält eine gedeckelte Karte ihre Größe samt Leiste.
+  Drücken auf die Leiste startet kein Ziehen (`noDrag.ts`, eine `[fork]`-Zeile in `SortableItem.tsx`).
+- **Kontextmenü (K81):** „Ausschalten“ im Menü eines Geräts lässt es wie der Schalter als „Aus“ stehen (K83). Das Menü
+  misst Karten samt `translate` und `scale` (Szenen-Kacheln heben sich beim Zeigen an; vorher schloss das Menü sofort).
+- **Demo-Steuerung (K84):** dazu `placeEntity(id, areaId)` (Prüfungen mit mehreren Räumen), `openDetail(id)` und
+  `entity(id)` (liest, was eine Bedienung gesendet hat).
+- **Energie (Code-Prüfung):** der Kartentitel heißt in Glas „Energie“, weil das Segment den Zeitraum nennt.
+
+## 8. Code-Prüfung (2026-10-08)
+
+Unabhängige Prüfung von 15f1d41: keine Blocker, 2 Punkte „sollte“, 8 Kleinigkeiten.
+
+| Befund | Ergebnis |
+|---|---|
+| Müll-Hinweis rechnet mit der Uhrzeit beim Öffnen | behoben: frische Uhr bei jeder Neuberechnung, Neuberechnung um Mitternacht, solange es Tonnen gibt |
+| Changelog und Doku fehlen | F36, `CHANGELOG.fork.md`, SYNC.md, CLAUDE.md, GLAS-PLAN §3, Dateitabelle (§2), Prüfskript |
+| Rollläden melden länger als 15 s | Rollläden dürfen 2 min nachmelden (Test); Grenzen im Changelog und im Modul |
+| Aktivierung „in der Zukunft“ bei Uhrversatz | Prüfung entfällt, nur das Alter zählt (Test) |
+| Schalter nach der Aktion benannt | Name des Geräts, Zustand über `aria-checked`/`aria-pressed` |
+| `aria-live` an Heiz-Zustand und Rollladen-Zustand | entfernt (wie Klassisch) |
+| „Energie heute“ auch bei Woche und Monat | Titel „Energie“ |
+| Ergebnis eines Zeitraums nach dem Wechsel verworfen | wird gemerkt, solange die Verbindung dieselbe ist |
+| Shift während eines gehaltenen Pfeils sendet | nur Pegeltasten beenden das Halten (Prüfung `homeLight`) |
+| Kamera-Hinweis, wenn Sentinel nicht erreichbar ist | offen: K76 nennt nur `offline`/`stalled`; ein eigener Hinweis wäre neu, Frage an Jannick |

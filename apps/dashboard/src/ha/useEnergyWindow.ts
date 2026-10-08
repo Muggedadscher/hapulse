@@ -118,8 +118,9 @@ export function useEnergyWindow(period: GlasEnergyPeriod): UseEnergyWindowResult
       const slot = slotOf(Date.now());
       load(period).then(
         (result) => {
+          // remembered also when the period changed meanwhile: switching back needs no second fetch
+          if (cacheOwner === owner) cache.set(period, { result, slot });
           if (cancelled) return;
-          cache.set(period, { result, slot });
           setShown({ result, failed: false });
           // a load that ran across the boundary may miss the newest hour: fetch again right away
           later(slotOf(Date.now()) === slot ? untilNextSlot() : 0);

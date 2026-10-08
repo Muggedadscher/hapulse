@@ -5,6 +5,8 @@
  * One markup for both, the layout per width in styles/glas/home-cards.css (the control of the other width is not
  * displayed, so neither a screen reader nor Tab reaches it). Switched off here (also from its context menu, which a
  * long press opens), the device stays in the card as "Aus" until the page is reloaded (stores/keptOffStore.ts).
+ * The switch is named by the device and says its state as checked/pressed (a name that says the action changed with
+ * it and repeated the state).
  */
 
 import React, { useCallback, useState } from 'react';
@@ -43,7 +45,6 @@ export function GlasDeviceItem({ entity, name, roomName, icon, on, toggleable, o
   const pct = lightPercent(entity);
   const base = formatEntityState(entity, locale, sl);
   const state = pct !== null ? `${base} · ${formatNumber(pct, locale)} %` : base;
-  const toggleAria = on ? t('home.devices.turnOffAria', { name }) : t('home.devices.turnOnAria', { name });
 
   // switched off here (also from the context menu) the device stays as "Aus"; switched on it follows the card's rule
   const remember = useCallback((nextOn: boolean) => (nextOn ? release(id) : keep(id)), [id, keep, release]);
@@ -64,7 +65,7 @@ export function GlasDeviceItem({ entity, name, roomName, icon, on, toggleable, o
         data-switch={toggleable || undefined}
       >
         {toggleable && (
-          <button type="button" className="g-device__toggle" aria-pressed={on} aria-label={toggleAria} onClick={toggle}>
+          <button type="button" className="g-device__toggle" aria-pressed={on} aria-label={name} onClick={toggle}>
             <span className="g-device__circle" aria-hidden="true">
               {icon}
             </span>
@@ -92,7 +93,7 @@ export function GlasDeviceItem({ entity, name, roomName, icon, on, toggleable, o
           </span>
         </button>
         {toggleable && (
-          <button type="button" role="switch" className="g-device__switch" aria-checked={on} aria-label={toggleAria} onClick={toggle}>
+          <button type="button" role="switch" className="g-device__switch" aria-checked={on} aria-label={name} onClick={toggle}>
             <span className="g-switch" aria-hidden="true" />
           </button>
         )}

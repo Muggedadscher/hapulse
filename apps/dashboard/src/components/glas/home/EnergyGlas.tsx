@@ -315,7 +315,7 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
       <div className="g-card-head">
         <h2 className="g-card-head__title">
           <Zap className="g-card-head__icon" size={18} strokeWidth={2} aria-hidden="true" />
-          <span className="g-card-head__text">{t('home.energy.titleToday')}</span>
+          <span className="g-card-head__text">{t('home.energy.title')}</span>
         </h2>
         <button
           type="button"

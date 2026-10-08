@@ -6,11 +6,14 @@
  *   1. it was activated, and not longer ago than `maxAgeMs` (12 h);
  *   2. no other scene that shares a member was activated after it;
  *   3. it lists its members (`attributes.entity_id`) and none of them changed since — `last_updated` at
- *      most `graceMs` (15 s) after the activation, and none is unavailable.
- * Scenes without a member list (some integration scenes) are never active. Limits: a member that HA
- * rewrites without a real change (an attribute tick) ends "active"; a scene re-applied with identical
- * values keeps its old activation time only until HA writes the new timestamp. Pure, tested in
- * scripts/smoke.mjs.
+ *      most `graceMs` (15 s) after the activation, for covers `coverGraceMs` (2 min: they report until they
+ *      stop moving), and none is unavailable.
+ * Scenes without a member list (some integration scenes) are never active. The activation time is Home
+ * Assistant's clock, "now" the browser's: only the age limit compares them, so a clock that runs behind does
+ * not hide a scene just activated. Limits: a member that HA rewrites without a real change (an attribute
+ * tick) ends "active", so does a light whose transition reports later than the grace; a cover moved by hand
+ * within its 2 min does not; a scene re-applied with identical values keeps its old activation time only
+ * until HA writes the new timestamp. Pure, tested in scripts/smoke.mjs.
  */
 
 import type { HassEntity, HassEntityMap } from './types.js';
@@ -18,11 +21,14 @@ import type { HassEntity, HassEntityMap } from './types.js';
 export interface ActiveSceneOptions {
   /** Members may still change this long after the activation (transitions, slow devices). */
   graceMs?: number | undefined;
+  /** The same for covers, which report until they stop moving. */
+  coverGraceMs?: number | undefined;
   /** An activation older than this is no longer "active". */
   maxAgeMs?: number | undefined;
 }
 
 export const ACTIVE_SCENE_GRACE_MS = 15_000;
+export const ACTIVE_SCENE_COVER_GRACE_MS = 120_000;
 export const ACTIVE_SCENE_MAX_AGE_MS = 12 * 3600_000;
 
 /** The member entity ids a scene lists, or an empty list. */
@@ -44,6 +50,7 @@ export function activeSceneIds(
   opts: ActiveSceneOptions = {},
 ): Set<string> {
   const grace = opts.graceMs ?? ACTIVE_SCENE_GRACE_MS;
+  const coverGrace = Math.max(grace, opts.coverGraceMs ?? ACTIVE_SCENE_COVER_GRACE_MS);
   const maxAge = opts.maxAgeMs ?? ACTIVE_SCENE_MAX_AGE_MS;
   const all = scenes
     .filter((s) => s.entity_id.startsWith('scene.'))
@@ -51,7 +58,7 @@ export function activeSceneIds(
   const active = new Set<string>();
 
   for (const s of all) {
-    if (s.at === null || s.members.length === 0 || now - s.at > maxAge || s.at > now + grace) continue;
+    if (s.at === null || s.members.length === 0 || now - s.at > maxAge) continue;
     const at = s.at;
     // 2. A later scene that shares a member took over.
     const overruled = all.some(
@@ -67,7 +74,8 @@ export function activeSceneIds(
       seen++;
       if (e.state === 'unavailable') { untouched = false; break; }
       const updated = Date.parse(e.last_updated);
-      if (Number.isFinite(updated) && updated > at + grace) { untouched = false; break; }
+      const allowed = m.startsWith('cover.') ? coverGrace : grace;
+      if (Number.isFinite(updated) && updated > at + allowed) { untouched = false; break; }
     }
     if (untouched && seen > 0) active.add(s.id);
   }

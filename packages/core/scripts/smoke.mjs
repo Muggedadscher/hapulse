@@ -1946,6 +1946,13 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
   assert(act.has('scene.x') && act.has('scene.y'), 'active: disjoint scenes can both be active');
   assert(!activeSceneIds([scene('scene.gone', ACT, ['light.removed'])], states, T0).has('scene.gone'), 'active: only missing members → not active');
   assertEqual(sceneMembers(scene('scene.m', ACT, ['light.a', 5, ''])).join(','), 'light.a', 'sceneMembers: strings only');
+  // a browser clock 60 s behind Home Assistant: the scene just activated is still active
+  assert(activeSceneIds([scene('scene.skew', T0 + 60_000, ['light.b'])], states, T0).has('scene.skew'), 'active: activation ahead of the browser clock → active');
+  // covers report until they stop moving: 40 s later still the scene's doing, 3 min later not
+  const coverAt = (ms) => ({ ...states, 'cover.r': ent('cover.r', 'closed', {}, ACT + ms, ACT + ms) });
+  assert(activeSceneIds([scene('scene.blinds', ACT, ['light.a', 'cover.r'])], coverAt(40_000), T0 + 60_000).has('scene.blinds'), 'active: a cover may report for 2 min');
+  assert(!activeSceneIds([scene('scene.blinds', ACT, ['light.a', 'cover.r'])], coverAt(180_000), T0 + 200_000).has('scene.blinds'), 'active: a cover changed after 2 min → not active');
+  assert(!activeSceneIds([scene('scene.c40', ACT, ['light.c'])], states, T0, { coverGraceMs: 600_000 }).has('scene.c40'), 'active: the cover grace leaves lights alone');
 
   // Glas energy chart — local calendar, DST days (Europe/Berlin)
   const tzBefore = process.env.TZ;

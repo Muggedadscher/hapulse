@@ -38,6 +38,51 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 36,
+    date: '2026-10-08',
+    title: { de: 'Hinweise und aktive Szenen; Vorschau Glas: Übersicht', en: 'Notices and active scenes; Glass preview: overview' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Übersicht: neue Karte „Hinweise“, nur wenn etwas abweicht (Alarm, Wasser, Rauch, offene Garage oder offenes Schloss, offene Fenster, Türen ab 10 Minuten, Störungen, Kameras ohne Aufnahme, die Tonne von heute oder morgen); ein Tipp öffnet das passende Fenster, im Bearbeiten-Modus lässt sie sich ausblenden',
+            en: 'Overview: a new “Notices” card, only when something deviates (alarm, water, smoke, an open garage door or lock, open windows, doors open for 10 minutes, faults, cameras not recording, the bin due today or tomorrow); a tap opens the matching window, in edit mode it can be hidden',
+          },
+          {
+            de: 'Szenen-Kacheln zeigen nach dem Aktivieren „Aktiv“, sonst die Zahl ihrer Geräte; Home Assistant kennt diesen Zustand nicht, deshalb gilt eine Szene als aktiv, bis sich eines ihrer Geräte ändert (Rollläden dürfen zwei Minuten nachfahren), Szenen ohne Geräteliste nie',
+            en: 'Scene tiles show “Active” after you activate them, otherwise how many devices they have; Home Assistant has no such state, so a scene counts as active until one of its devices changes (blinds may keep moving for two minutes), scenes without a device list never',
+          },
+          {
+            de: 'Energie-Karte: Netz und Solar gestapelt, mit der Zeile „PV-Ertrag“, wenn eine Solaranlage eingerichtet ist',
+            en: 'Energy card: grid and solar stacked, with a “PV yield” line when solar is set up',
+          },
+        ],
+      },
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: die ganze Übersicht im Glas-Look, Titel über den Karten, ein Ring um die aktive Szene, Lichtkreise im Hauptraum, Geräte als Kacheln (Handy) oder Zeilen mit Schalter (Computer), Klima und Rollläden mit Raumauswahl; ein hier ausgeschaltetes Gerät bleibt als „Aus“ stehen, bis die Seite neu lädt',
+            en: 'Glass: the whole overview in the glass look, titles above the cards, a ring around the active scene, light circles in the main room, devices as tiles (phone) or rows with a switch (computer), climate and blinds with a room choice; a device switched off here stays as “Off” until the page reloads',
+          },
+          {
+            de: 'Glas: Energie für Tag, Woche oder Monat mit Verbrauchsbalken (Netz unten, eigener Solarstrom oben), dem Wert eines Balkens per Tipp und dem Vergleich mit dem Zeitraum davor',
+            en: 'Glass: energy for a day, week or month with consumption bars (grid at the bottom, your own solar power on top), the value of a bar on a tap and the comparison with the period before',
+          },
+          {
+            de: 'Glas ab 900 Pixel Breite: im Bearbeiten-Modus hat jede Karte eine Leiste mit den Größen S, M und L, Verschieben, Ausblenden und „⋯“ für Spalten und Höhe',
+            en: 'Glass from 900 pixels wide: in edit mode every card has a bar with the sizes S, M and L, move, hide and “⋯” for columns and height',
+          },
+          {
+            de: 'Glas: das Detail eines Lichts mit großem Helligkeitsregler, der Verlauf mit 24H, 7D und 30D; langes Drücken auf Szenen und Geräte der Übersicht öffnet das Kontextmenü mit „Raum öffnen“; die Chips oben zeigen ihre Art in Farbe',
+            en: 'Glass: a light’s detail with a large brightness control, the history with 24H, 7D and 30D; a long press on scenes and devices of the overview opens the context menu with “Open room”; the chips at the top show their kind in colour',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 35,
     date: '2026-10-08',
     title: { de: 'Vorschau Glas: Kontextmenü, Wischen, Inspector', en: 'Glass preview: context menu, swipe, inspector' },

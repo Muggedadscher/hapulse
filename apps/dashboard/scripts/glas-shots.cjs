@@ -2,7 +2,7 @@
 //
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
-//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures]
+//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home]
 //     [--dom-out <file>] [--only <block>,…]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
@@ -14,12 +14,15 @@
 //     "--scenes settings --elements .settings-page__section" → …-settings__2-darstellung.png)
 //   Window scenes of stage 3 (win-…, glas-checks-sheets.cjs, docs/glas/PLAN-ETAPPE-3.md §6.0) open one window each,
 //   the gesture scenes of stage 3b (ctx-card, ctx-card-off, swipe-lights, swipe-notes, glas-checks-gestures.cjs) a
-//   context menu or a swipe row; both are taken at viewport size and are not part of the default list.
+//   context menu or a swipe row, the overview scenes of stage 4 (home-hints, home-edit, energy-bubble, detail-light,
+//   glas-checks-home.cjs) the hints card, edit mode, a picked energy bar or a light's detail; all are taken at viewport
+//   size and are not part of the default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
-//   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs) and the gestures and the inspector of stage 3b
-//   (glas-checks-gestures.cjs); --part runs one. --dom-out: the Klassisch DOM of every window as JSON, to compare a
-//   build with main's. --only runs some blocks of the window or gesture checks (e.g. sheetsDrag, gesturesInspector).
+//   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
+//   (glas-checks-gestures.cjs) and the overview's content of stage 4 (PLAN-ETAPPE-4.md §3, glas-checks-home.cjs);
+//   --part runs one. --dom-out: the Klassisch DOM of every window as JSON, to compare a build with main's. --only runs
+//   some blocks of the window, gesture or overview checks (e.g. sheetsDrag, gesturesInspector, homeHints).
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
@@ -260,6 +263,9 @@ Object.assign(SCENES, SHEETS.scenes);
 const GESTURES = require('./glas-checks-gestures.cjs')({ DE, DEVICES, ABORTED, run, settleAnimations, isGlas, seedScript,
   pageHelpers, sheetHelpers: SHEETS.sheetHelpers, reach: SHEETS.reach });
 Object.assign(SCENES, GESTURES.scenes);
+// stage 4: the overview's content — scenes home-hints, home-edit, energy-bubble, detail-light and `checks --part home`
+const HOME = require('./glas-checks-home.cjs')({ DE, DEVICES, ABORTED, run, settleAnimations, isGlas, seedScript });
+Object.assign(SCENES, HOME.scenes);
 
 /** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
 async function tap(page, sel) {
@@ -1411,6 +1417,7 @@ async function checks() {
     ok = (await SHEETS.sheetsChecks(browser, url, out, { domOut: arg('dom-out', ''), only: list('only', '') })) && ok;
   }
   if (part === 'all' || part === 'gestures') ok = (await GESTURES.gesturesChecks(browser, url, out, { only: list('only', '') })) && ok;
+  if (part === 'all' || part === 'home') ok = (await HOME.homeChecks(browser, url, out, { only: list('only', '') })) && ok;
   await browser.close();
   if (srv) srv.close();
   console.log(JSON.stringify({ ok, ...out }, null, 1));
