@@ -277,6 +277,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
   const entity = useEntity(entityId ?? '');
   const entityOverrides = useSettingsStore((s) => s.customization.entityOverrides);
   const openEntityDetail = useUIStore((s) => s.openEntityDetail);
+  const detailSeq = useUIStore((s) => s.detailSeq); // [fork] Glas: every request for the detail (K60)
   const managed = useIsManaged(); // [fork] star for per-user favorites under global management
   const cameraSource = useCameraSource(); // [fork]
 
@@ -375,7 +376,7 @@ export function EntityDetailModal({ entityId, onClose }: EntityDetailModalProps)
     : activityExpanded ? logbook.slice(0, 40) : logbook.slice(0, ACTIVITY_COLLAPSED);
 
   return (
-    <Modal open={entityId != null} onClose={onClose} title={name} className="entity-detail-modal" contentKey={entityId}>{/* [fork] Glas: a member tap swaps the content (docs/glas/PLAN-ETAPPE-3.md K70) */}
+    <Modal open={entityId != null} onClose={onClose} title={name} className="entity-detail-modal" contentKey={entityId} presentation="inspector" requestKey={detailSeq}>{/* [fork] Glas: a member tap swaps the content (docs/glas/PLAN-ETAPPE-3.md K70); the inspector from 1100 px (K60) */}
       <div className="entity-detail">
         {/* ── Header: icon, name, last changed, current state ── */}
         <div className="entity-detail__header">

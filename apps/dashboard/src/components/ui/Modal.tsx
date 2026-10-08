@@ -40,14 +40,18 @@ interface ModalProps {
   contentKey?: string | undefined;
   /** [fork] Glas only: where the focus goes back on close, if not to the trigger (K55). */
   returnFocus?: (() => HTMLElement | null) | undefined;
+  /** [fork] Glas only: 'inspector' = from 1100 px a panel at the right that leaves the page usable (K60). */
+  presentation?: 'auto' | 'inspector' | undefined;
+  /** [fork] Glas only: a new value while open asks for the window again; one under another window comes up (K60). */
+  requestKey?: number | undefined;
 }
 
-export function Modal({ open, onClose, title, icon, children, footer, className, subtitle, swipeToClose, contentKey, returnFocus }: ModalProps) { // [fork] Glas props
+export function Modal({ open, onClose, title, icon, children, footer, className, subtitle, swipeToClose, contentKey, returnFocus, presentation, requestKey }: ModalProps) { // [fork] Glas props
   const t = useT();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
-  const sheet = useGlasSheet({ open, onClose, swipeToClose, contentKey, returnFocus, panelRef }); // [fork]
+  const sheet = useGlasSheet({ open, onClose, swipeToClose, contentKey, returnFocus, presentation, requestKey, panelRef }); // [fork]
 
   // Save the element that triggered the modal so we can return focus on close
   useEffect(() => {

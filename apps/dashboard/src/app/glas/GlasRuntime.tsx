@@ -12,6 +12,7 @@
  * - Sheen: where a glass surface is pressed (`--gx`/`--gy`).
  * - Windows (stage 3): the pressed control as the origin a window grows out of, and the one Esc listener of all
  *   windows (plan docs/glas/PLAN-ETAPPE-3.md §3.3, K72).
+ * - Gestures (stage 3b): the context menu of the entity cards (K58); a route change closes the inspector (K60).
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -31,9 +32,10 @@ import {
   type TabsMinState,
 } from './glasScroll';
 import { nextMenuIndex } from './menuKeys';
+import { ContextMenu } from '../../components/glas/ContextMenu';
 import { DoneCapsule } from '../../components/glas/DoneCapsule';
 import { forgetOrigin, noteOrigin, peekOrigin } from '../../components/glas/sheet/origin';
-import { installEscape } from '../../components/glas/sheet/sheetHost';
+import { hasInspector, installEscape } from '../../components/glas/sheet/sheetHost';
 import { useRooms } from '../../ha/hooks';
 import { useUIStore } from '../../stores/uiStore';
 import { useT, type TKey } from '../../i18n/useT';
@@ -203,6 +205,14 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
     return () => ro.disconnect();
   }, [pathname]);
 
+  // The inspector belongs to the page beside it: another route closes it (K60). Modal windows stay as in Klassisch.
+  const routeRef = useRef(pathname);
+  useEffect(() => {
+    if (routeRef.current === pathname) return;
+    routeRef.current = pathname;
+    if (hasInspector()) useUIStore.getState().closeEntityDetail();
+  }, [pathname]);
+
   // Arrow keys, Home and End in the upstream menus (K42); from an open menu's trigger, down/up go to the first/last item.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -304,6 +314,7 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
         </div>
       )}
       {editMode && !desktop && <DoneCapsule />}
+      <ContextMenu />
     </>
   );
 }

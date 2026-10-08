@@ -35,6 +35,8 @@ export const SCRIM_FADE = 500;
 export const MIN_SCALE = 0.05;
 /** Radius the morph starts with, as seen on screen (tiles and chips are around 22). */
 export const ORIGIN_RADIUS = 22;
+/** The inspector comes in from and leaves towards the right by this much (GLAS-DESIGN §6.3: 420 wide + 12 + room). */
+export const INSPECTOR_SLIDE = 460;
 
 export interface PresentationInput {
   viewportW: number;

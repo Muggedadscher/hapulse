@@ -1371,5 +1371,19 @@
   "glas.notifications.dismissAll": "Dismiss all",
   "glas.notifications.dismissOne": "Dismiss: {title}",
   "glas.notifications.emptyHint": "New messages from Home Assistant appear here.",
-  "glas.pool.restartAction": "Restart"
+  "glas.pool.restartAction": "Restart",
+  "glas.context.menuLabel": "Actions for {name}",
+  "glas.context.activate": "Activate",
+  "glas.context.details": "Details",
+  "glas.context.turnOn": "Turn on",
+  "glas.context.turnOff": "Turn off",
+  "glas.context.run": "Run",
+  "glas.context.press": "Press",
+  "glas.context.favoriteAdd": "Add to favorites",
+  "glas.context.favoriteRemove": "Remove from favorites",
+  "glas.context.room": "Open room",
+  "glas.context.hide": "Hide",
+  "glas.swipe.dismiss": "Dismiss",
+  "glas.swipe.off": "Off",
+  "glas.swipe.hint": "Tip: swipe a row to the left to dismiss it."
 }

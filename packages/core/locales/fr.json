@@ -1371,5 +1371,19 @@
   "glas.notifications.dismissAll": "Tout effacer",
   "glas.notifications.dismissOne": "Effacer : {title}",
   "glas.notifications.emptyHint": "Les nouveaux messages de Home Assistant apparaissent ici.",
-  "glas.pool.restartAction": "Redémarrer"
+  "glas.pool.restartAction": "Redémarrer",
+  "glas.context.menuLabel": "Actions pour {name}",
+  "glas.context.activate": "Activer",
+  "glas.context.details": "Détails",
+  "glas.context.turnOn": "Allumer",
+  "glas.context.turnOff": "Éteindre",
+  "glas.context.run": "Exécuter",
+  "glas.context.press": "Appuyer",
+  "glas.context.favoriteAdd": "Ajouter aux favoris",
+  "glas.context.favoriteRemove": "Retirer des favoris",
+  "glas.context.room": "Ouvrir la pièce",
+  "glas.context.hide": "Masquer",
+  "glas.swipe.dismiss": "Effacer",
+  "glas.swipe.off": "Éteindre",
+  "glas.swipe.hint": "Astuce : balayez une ligne vers la gauche pour l’effacer."
 }

@@ -4,7 +4,9 @@ import {
   Handoff,
   insertEntry,
   modalCount,
+  moveEntry,
   removeEntry,
+  rootModalAbove,
   topEntry,
   type StackEntry,
 } from '../src/components/glas/sheet/sheetStack';
@@ -84,6 +86,43 @@ describe('order', () => {
   it('counts only modal windows', () => {
     expect(modalCount([inspector(1, 1), modal(2, 2), modal(3, 3)])).toBe(2);
     expect(modalCount([inspector(1, 1)])).toBe(0);
+  });
+});
+
+describe('inspector (3b, K60)', () => {
+  it('turning into a dialog it keeps its batch: under the windows opened after it, and back', () => {
+    let list: StackEntry[] = [inspector(1, 1), modal(2, 2)];
+    list = moveEntry(list, 1, { kind: 'modal' }); // the window got narrower
+    expect(ids(list)).toEqual([1, 2]);
+    expect(list[0]).toEqual(modal(1, 1));
+    expect(modalCount(list)).toBe(2);
+    list = moveEntry(list, 1, { kind: 'inspector' }); // wider again
+    expect(ids(list)).toEqual([1, 2]);
+    expect(modalCount(list)).toBe(1);
+    // a dialog that turns into the inspector goes to the bottom
+    list = moveEntry([modal(3, 1), modal(4, 2)], 4, { kind: 'inspector' });
+    expect(ids(list)).toEqual([4, 3]);
+  });
+
+  it('asked for again under a chip dialog, it goes on top as a modal window', () => {
+    let list: StackEntry[] = [inspector(1, 1), modal(2, 2), modal(3, 2, 1)];
+    list = moveEntry(list, 1, { kind: 'modal', batch: 5 });
+    expect(ids(list)).toEqual([2, 3, 1]);
+    expect(topEntry(list)?.id).toBe(1);
+  });
+
+  it('no change, no new list; an unknown id changes nothing', () => {
+    const list = [inspector(1, 1), modal(2, 2)];
+    expect(moveEntry(list, 1, { kind: 'inspector' })).toBe(list);
+    expect(moveEntry(list, 9, { kind: 'modal' })).toBe(list);
+  });
+
+  it('only a window of its own above counts, not a page inside the inspector', () => {
+    expect(rootModalAbove([inspector(1, 1)], 1)).toBe(false);
+    expect(rootModalAbove([inspector(1, 1), modal(2, 2, 1)], 1)).toBe(false); // confirmation in the inspector
+    expect(rootModalAbove([inspector(1, 1), modal(2, 2)], 1)).toBe(true); // chip dialog over it
+    expect(rootModalAbove([modal(2, 1), modal(1, 2)], 1)).toBe(false); // it lies on top itself
+    expect(rootModalAbove([modal(2, 1)], 9)).toBe(false);
   });
 });
 

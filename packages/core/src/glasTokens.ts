@@ -814,6 +814,14 @@ function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a
       pairs.push({ name: `accent ink (current row, "on" symbol) on sheet over ${back}`, fg: a.accentInk, bg: sheetOver(back, mode), min: 4.5 });
       pairs.push({ name: `redInk on desktop toast over ${back}`, fg: c.redInk, bg: glassOver(back, mode, t('toastDesktop')), min: 4.5 });
       pairs.push({ name: `focus ring on glass over ${back}`, fg: a.focus, bg: glassOver(back, mode, GLAS_TINT[strength]), min: 3 });
+      // The context menu (stage 3b, GLAS-DESIGN §7.23) lies over the dimmed page: sheet material on the phone, menu glass
+      // on the desktop; "Hide" is redInk.
+      const dimmed = sheetOver(compositeOver(c.ctxDim, back), mode);
+      const scrimmed = glassOver(compositeOver(c.ctxScrimDesktop, back), mode, t('menu'));
+      pairs.push({ name: `label on the context menu over the dimmed ${back}`, fg: c.label, bg: dimmed, min: 4.5 });
+      pairs.push({ name: `redInk ("hide") on the context menu over the dimmed ${back}`, fg: c.redInk, bg: dimmed, min: 4.5 });
+      pairs.push({ name: `label on the desktop context menu over the scrimmed ${back}`, fg: c.label, bg: scrimmed, min: 4.5 });
+      pairs.push({ name: `redInk ("hide") on the desktop context menu over the scrimmed ${back}`, fg: c.redInk, bg: scrimmed, min: 4.5 });
     }
     // Sheet material (dark mode also over a bright camera image, GLAS-DESIGN §2.5 table)
     for (const back of light ? ['#FFFFFF', '#F2F2F7', '#808080'] : ['#000000', '#1C1C1E', '#FFFFFF']) {

@@ -10,6 +10,7 @@ import { getRoomName } from './roomUtils';
 import { useT, useStateLabel } from '../../i18n/useT';
 import { useLockAction } from './LockConfirm'; // [fork]
 import { lockBusy } from './lockLogic';
+import { SwipeRow } from '../glas/SwipeRow'; // [fork] Glas: swipe to lock (docs/glas/PLAN-ETAPPE-3.md K59)
 import './LocksList.css';
 
 interface LockRowProps {
@@ -27,6 +28,7 @@ function LockRow({ entity, roomName }: LockRowProps) {
   const busy = lockBusy(entity.state);
 
   return (
+    <SwipeRow label={t('security.locks.lock')} tone="ok" width={112} disabled={isLocked || busy} onAction={() => request('lock', [entity])}>{/* [fork] Glas only */}
     <div className="locks-row">
       <span className={`locks-row__icon ${isLocked ? 'locks-row__icon--locked' : 'locks-row__icon--unlocked'}`}>
         {isLocked ? <Lock size={18} strokeWidth={1.75} /> : <LockOpen size={18} strokeWidth={1.75} />}
@@ -62,6 +64,7 @@ function LockRow({ entity, roomName }: LockRowProps) {
       </div>
       {dialog}
     </div>
+    </SwipeRow> // [fork]
   );
 }
 

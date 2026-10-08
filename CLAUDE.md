@@ -149,7 +149,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0–2 und 3a von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (Etappe 0–3 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -178,8 +178,15 @@ sauber übernehmen können.
   Scroll-Sperre; `origin` = Auslöser, aus dem das Fenster wächst; `ghost` = Schließen-Bewegung ohne Rolle), CSS in
   `styles/glas/{sheets,sheet-content}.css`. In Glas setzt die Laufzeit Fokus, Esc und Scroll-Sperre, Klassisch bleibt
   beim Upstream-`Modal`. Prüfungen `glas-shots.cjs checks --part sheets` (Szenen `win-…` in
-  `scripts/glas-checks-sheets.cjs`). Nächste Etappen 3b (Kontextmenü, Wisch-Zeilen, Inspector), 4–7 (Übersicht, übrige
-  Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  `scripts/glas-checks-sheets.cjs`). **Gesten und Inspector (Etappe 3b):** Langdruck (550 ms), Rechtsklick oder
+  Kontextmenü-Taste auf einer Karte im Raum öffnet in Glas das Kontextmenü (`components/glas/ContextMenu.tsx`, Host in
+  `GlasRuntime`, Zustand `stores/glasUiStore.ts`, Aktionen je Entität und Rechten rein in `contextActions.ts`; im
+  Bearbeiten-Modus wie Klassisch); `SwipeRow` macht Listenzeilen wischbar (Benachrichtigung verwerfen, Licht aus,
+  Garage schließen, Verriegeln; nie Öffnen oder Entriegeln, die Aktion läuft erst per Tipp, ihr Zwilling bleibt in der
+  Zeile); das Detail ist ab 1100 px der Inspector (rechts, nicht modal, die Seite rückt zur Seite; `Modal`-Props
+  `presentation`/`requestKey`, ein Routenwechsel schließt ihn). CSS in `styles/glas/gestures.css`, Prüfungen
+  `checks --part gestures` (`scripts/glas-checks-gestures.cjs`). Nächste Etappen 4–7 (Übersicht samt Inhalt des
+  Inspectors, übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

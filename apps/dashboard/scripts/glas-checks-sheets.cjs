@@ -1162,5 +1162,6 @@ module.exports = function sheets(h) {
     };
   }
 
-  return { scenes, sheetsChecks };
+  // the gesture checks of stage 3b (glas-checks-gestures.cjs) use the window helpers and `reach` too
+  return { scenes, sheetsChecks, sheetHelpers, reach };
 };

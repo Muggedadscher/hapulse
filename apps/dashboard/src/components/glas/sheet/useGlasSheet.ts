@@ -1,22 +1,37 @@
 /**
- * [fork] Glas sheets (stage 3) — the runtime of one window (plan docs/glas/PLAN-ETAPPE-3.md §3.1–3.6, K47–K55, K65,
- * K66, K69, K70). `Modal` calls it. In Klassisch it returns `on: false` and touches nothing.
+ * [fork] Glas sheets (stage 3) — the runtime of one window (plan docs/glas/PLAN-ETAPPE-3.md §3.1–3.6, §4.3, K47–K55,
+ * K60, K65, K66, K69, K70). `Modal` calls it. In Klassisch it returns `on: false` and touches nothing.
  *
  * In Glas, once per opening and in the layout phase (before the first frame): register the window in the stack,
- * decide the presentation (a page when rendered inside another open window, a sheet below 900 px, a dialog from 900),
- * the detent and the material (attributes on backdrop and panel, read by styles/glas/sheets.css), then play the entry
- * and move the focus in. While open it follows the content and the viewport, handles dragging and the grabber. When
- * the window leaves, its ghost (`ghost.ts`) animates it out and the focus goes back to the trigger.
+ * decide the presentation (a page when rendered inside another open window, a sheet below 900 px, a dialog from 900,
+ * the inspector from 1100 for a window that asks for it while no other one is open), the detent and the material
+ * (attributes on backdrop and panel, read by styles/glas/sheets.css and gestures.css), then play the entry and move the
+ * focus in. While open it follows the content and the viewport, handles dragging and the grabber, and comes up from
+ * under another window when it is asked for again. When the window leaves, its ghost (`ghost.ts`) animates it out and
+ * the focus goes back to the trigger.
  */
 
 import { useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useIsGlas } from '../../../app/glas/useUiStyle';
 import { SheetContext, type SheetParent } from './SheetContext';
-import { addWindow, batches, handoff, newWindowId, openModals, removeWindow, topPanel, type HandoffNote } from './sheetHost';
+import {
+  addWindow,
+  batches,
+  handoff,
+  moveWindow,
+  newWindowId,
+  openModals,
+  removeWindow,
+  topModalPanel,
+  topPanel,
+  windowAbove,
+  type HandoffNote,
+} from './sheetHost';
 import { spawnGhost, takeGhost } from './ghost';
 import { originRect, peekOrigin, takeOrigin, type Origin, type OriginRect } from './origin';
 import {
   DIALOG_FROM,
+  INSPECTOR_SLIDE,
   LARGE_TOP,
   dragFrame,
   hasMediumDetent,
@@ -53,6 +68,11 @@ export interface SheetOptions {
   contentKey?: string | undefined;
   /** Where the focus goes back when the window closes (K55); default: the trigger. */
   returnFocus?: (() => HTMLElement | null) | undefined;
+  /** 'inspector': from 1100 px, and if no other window is open, a panel at the right; the page stays usable (K60). */
+  presentation?: 'auto' | 'inspector' | undefined;
+  /** A new value while open asks for the window again (the detail for another tile): the trigger for the focus
+   *  changes, and a window under another one comes up on top (K60). */
+  requestKey?: number | undefined;
   panelRef: RefObject<HTMLDivElement | null>;
 }
 
@@ -121,6 +141,14 @@ interface Runtime {
   suppressClickUntil: number;
   grabber: GrabberState;
   listeners: Set<() => void>;
+  /** This opening may be the inspector: asked for, opened while no other window was open, never raised (K60). */
+  inspectorOk: boolean;
+  /** Came up over another window in this opening: never the inspector again until it closes. */
+  lifted: boolean;
+  /** Came up in this commit: the content swap does not play over the movement. */
+  raised: boolean;
+  /** Asked for again while open (`requestKey`); set by the opening effect. */
+  request: () => void;
 }
 
 const TAP_SLOP = 4;
@@ -207,6 +235,10 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
     suppressClickUntil: 0,
     grabber: { detent: 'medium', single: false },
     listeners: new Set(),
+    inspectorOk: false,
+    lifted: false,
+    raised: false,
+    request: noop,
   }));
 
   // The trigger is taken before the commit: React's autoFocus (layout phase) would already have moved the focus (K55).
@@ -294,7 +326,8 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       const vh = window.innerHeight;
       let y = r.y;
       let h = r.h;
-      if (natural > r.h + 0.5) {
+      // the inspector already has the full height: a page in it scrolls
+      if (natural > r.h + 0.5 && root.getAttribute('data-g-sheet') !== 'inspector') {
         if (window.innerWidth >= DIALOG_FROM) {
           h = Math.min(natural, Math.min(vh - 64, 900));
           y = Math.max(32, r.y + r.h / 2 - h / 2);
@@ -308,9 +341,11 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       panel.style.height = `${h}px`;
     };
 
-    /** Attributes for the presentation (sheets.css draws from them). */
+    /** Attributes for the presentation (sheets.css and gestures.css draw from them). */
     const place = () => {
       backdrop.setAttribute('data-g-pres', st.pres!);
+      // the inspector is not modal (K60); React wrote "true" once and never again while the prop stays
+      panel.setAttribute('aria-modal', st.pres === 'inspector' ? 'false' : 'true');
       if (st.pres === 'page') {
         panel.setAttribute('data-g-sheet', 'page');
         panel.setAttribute('data-g-mat', 'solid');
@@ -318,8 +353,8 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
         placePage();
         return;
       }
-      if (st.pres === 'dialog') {
-        panel.setAttribute('data-g-sheet', 'dialog');
+      if (st.pres === 'dialog' || st.pres === 'inspector') {
+        panel.setAttribute('data-g-sheet', st.pres);
         panel.setAttribute('data-g-mat', 'glass');
         st.detent = null;
         setGrabber({ detent: 'medium', single: true });
@@ -392,6 +427,15 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
             ],
             { duration: 500, easing: spring('smooth') },
           ),
+          null,
+        );
+        return;
+      }
+      if (st.pres === 'inspector') {
+        // In from the right (GLAS-DESIGN §6.3); opened again while its ghost still leaves: from where the ghost is.
+        const dx = ghostRect ? Math.max(0, ghostRect.x - layoutRect(panel).x) : INSPECTOR_SLIDE;
+        track(
+          play(panel, [{ transform: `translateX(${dx}px)` }, { transform: 'none' }], { duration: 550, easing: spring('smooth') }),
           null,
         );
         return;
@@ -571,8 +615,12 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
         placePage();
         return;
       }
-      const pres = pickPresentation({ viewportW: window.innerWidth, wantsInspector: false, nested: false, othersOpen: false });
+      const pres = pickPresentation({ viewportW: window.innerWidth, wantsInspector: st.inspectorOk, nested: false, othersOpen: false });
       if (pres !== st.pres) {
+        // without animation (§4.3); the inspector keeps its place in the stack when it turns into a dialog and back
+        st.opening?.finish();
+        const inspector = pres === 'inspector';
+        if (inspector !== (st.pres === 'inspector')) moveWindow(st.id, { kind: inspector ? 'inspector' : 'modal' });
         st.pres = pres;
         place();
       } else if (pres === 'sheet') {
@@ -668,23 +716,64 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       settle(st.detent === 'large' ? 'medium' : 'large');
     };
 
+    /** Asked for again while a window of its own lies above it (a tile in a chip dialog over the inspector, K60): it
+     *  comes up on top as a dialog or sheet, moving from where it was, and closes back into what asked for it. */
+    const raise = () => {
+      const was = panel.getBoundingClientRect();
+      st.lifted = true;
+      st.inspectorOk = false;
+      st.raised = true;
+      st.opening?.cancel();
+      st.sizing?.cancel();
+      st.sizing = null;
+      const pressed = takeOrigin();
+      if (pressed) st.origin = pressed;
+      moveWindow(st.id, { kind: 'modal', batch: batches.now() });
+      st.pres = pickPresentation({ viewportW: window.innerWidth, wantsInspector: false, nested: false, othersOpen: true });
+      place();
+      if (reducedMotion()) {
+        track(play(panel, [{ opacity: 0 }, { opacity: 1 }], { duration: REDUCED_MS, easing: 'ease' }), null);
+        if (scrim) play(scrim, [{ opacity: 0 }, { opacity: 1 }], { duration: REDUCED_MS, easing: 'ease' });
+      } else {
+        if (scrim) play(scrim, [{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease' });
+        morphIn({ x: was.left, y: was.top, w: was.width, h: was.height });
+      }
+      const initial = panel.querySelector<HTMLElement>('[data-autofocus]');
+      (initial ?? panel).focus({ preventScroll: true });
+    };
+
     // ---- register (once per opening) and present ----
     st.parent = parent;
     st.registered = true;
     const othersOpen = openModals() > 0;
-    addWindow(
-      { id: st.id, kind: 'modal', batch: batches.now(), depth: parent ? parent.depth + 1 : 0 },
-      {
-        backdrop,
-        panel,
-        close: () => {
-          st.dragged = false;
-          optsRef.current.onClose();
-        },
+    if (fresh) st.lifted = false;
+    st.inspectorOk = optsRef.current.presentation === 'inspector' && parent === null && !othersOpen && !st.lifted;
+    st.pres = pickPresentation({
+      viewportW: window.innerWidth,
+      wantsInspector: st.inspectorOk,
+      nested: parent !== null,
+      othersOpen,
+    });
+    const hostWindow = {
+      backdrop,
+      panel,
+      close: () => {
+        st.dragged = false;
+        optsRef.current.onClose();
       },
+    };
+    addWindow(
+      { id: st.id, kind: st.pres === 'inspector' ? 'inspector' : 'modal', batch: batches.now(), depth: parent ? parent.depth + 1 : 0 },
+      hostWindow,
     );
-    st.pres = pickPresentation({ viewportW: window.innerWidth, wantsInspector: false, nested: parent !== null, othersOpen });
-    const note = fresh && st.pres !== 'page' ? handoff.take() : null;
+    st.request = () => {
+      // the element that asked takes the focus back when the window closes (K55)
+      const asked = peekOrigin()?.el;
+      if (asked?.isConnected && !panel.contains(asked)) st.trigger = asked;
+      if (windowAbove(st.id)) raise();
+    };
+    // a hand-over only between sheets and dialogs (K49): the inspector and pages come in their own way
+    const note = fresh && (st.pres === 'sheet' || st.pres === 'dialog') ? handoff.take() : null;
     if (note) note.taken = true;
     if (fresh) {
       const pressed = takeOrigin();
@@ -753,6 +842,7 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       panel.removeEventListener('pointerup', onPointerEnd);
       panel.removeEventListener('pointercancel', onPointerEnd);
       grabber.toggle = noop;
+      st.request = noop;
       st.registered = false;
       st.drag = null;
       removeWindow(st.id);
@@ -764,6 +854,7 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
           if (!glasNow()) {
             backdrop.removeAttribute('data-g-pres');
             backdrop.style.removeProperty('--g-kb');
+            panel.setAttribute('aria-modal', 'true');
             for (const attr of ['data-g-sheet', 'data-g-mat', PUSHED]) panel.removeAttribute(attr);
             for (const prop of ['left', 'top', 'width', 'height', 'max-height', 'transform', 'border-radius']) {
               panel.style.removeProperty(prop);
@@ -771,12 +862,16 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
           }
           return;
         }
-        // The window left: the focus goes back to its trigger unless it already went somewhere (K55).
+        // The window left: the focus goes back to its trigger unless it already went somewhere (K55) — but not behind a
+        // modal window that is still open (a window that came up from under it, K60): then into that window.
         const active = document.activeElement;
         if (active && active !== document.body) return;
         const target = returnFocus?.() ?? trigger;
-        if (target?.isConnected && !target.closest('[inert]')) target.focus({ preventScroll: true });
-        else topPanel()?.focus({ preventScroll: true });
+        const modal = topModalPanel();
+        if (target?.isConnected && !target.closest('[inert]') && (!modal || modal.contains(target))) {
+          target.focus({ preventScroll: true });
+        }
+        if (document.activeElement === document.body || !document.activeElement) topPanel()?.focus({ preventScroll: true });
       });
       if (parentPanel) {
         // After the ghost decided (it is queued in the same commit, before or after this): the window below gets its
@@ -794,13 +889,24 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [glas, o.open]);
 
+  // ---- asked for again while open (K60): the trigger for the focus, and up from under another window ----
+  const requestRef = useRef(o.requestKey);
+  useLayoutEffect(() => {
+    const prev = requestRef.current;
+    requestRef.current = o.requestKey;
+    // `wasOpen` still holds the last commit: false while this commit opens the window
+    if (!glas || !o.open || !st.registered || !st.wasOpen || prev === o.requestKey) return;
+    st.request();
+  }, [glas, o.open, o.requestKey, st]);
+
   // ---- content swap (K70): a new key while open; the window stays ----
   const keyRef = useRef(o.contentKey);
   useLayoutEffect(() => {
     const prev = keyRef.current;
     keyRef.current = o.contentKey;
     const panel = optsRef.current.panelRef.current;
-    if (!glas || !o.open || !st.registered || prev === o.contentKey || !panel) return;
+    // not in the commit that opens the window (its entry fades the content in) or raises it (its morph does)
+    if (!glas || !o.open || !st.registered || !st.wasOpen || st.raised || prev === o.contentKey || !panel) return;
     const reduce = reducedMotion();
     for (const part of parts(panel)) {
       play(
@@ -814,6 +920,7 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
   // Last: remembers whether the window was open in this commit, for the next run of the effects above.
   useLayoutEffect(() => {
     st.wasOpen = o.open;
+    st.raised = false;
   });
 
   return {

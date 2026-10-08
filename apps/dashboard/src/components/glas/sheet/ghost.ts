@@ -15,7 +15,7 @@
  */
 
 import { batches, handoff, type HandoffNote } from './sheetHost';
-import { DIALOG_FROM, morphFrom, originVisible, type Detent, type Presentation } from './sheetMath';
+import { DIALOG_FROM, INSPECTOR_SLIDE, morphFrom, originVisible, type Detent, type Presentation } from './sheetMath';
 import { rectOf, type Origin, type OriginRect } from './origin';
 import { allDone, DIALOG_OUT, EASE_IN, layoutRect, play, reducedMotion, REDUCED_MS, spring, translateScale } from './sheetMotion';
 
@@ -439,15 +439,17 @@ function decide(g: Ghost, original: HTMLElement): void {
       return;
     }
     const same = ghosts.filter((o) => o !== g && o.batch === g.batch);
-    const parentGone = g.src.parentId !== null && same.some((o) => o.src.id === g.src.parentId);
-    const together = parentGone || same.some((o) => o.src.parentId === g.src.id);
+    const parent = g.src.parentId !== null ? same.find((o) => o.src.id === g.src.parentId) : undefined;
+    const together = parent !== undefined || same.some((o) => o.src.parentId === g.src.id);
+    // the inspector, and a page in it that leaves with it, go out to the right (K60)
+    const inspector = g.src.pres === 'inspector' || parent?.src.pres === 'inspector';
     g.clone.style.display = g.display;
     g.shown = true;
     for (const { to, top, left } of g.scrolled) {
       to.scrollTop = top;
       to.scrollLeft = left;
     }
-    const animations = leave(g, together);
+    const animations = leave(g, together, inspector);
     let done = false;
     const end = () => {
       if (done) return;
@@ -461,7 +463,7 @@ function decide(g: Ghost, original: HTMLElement): void {
   }
 }
 
-function leave(g: Ghost, together: boolean): (Animation | null)[] {
+function leave(g: Ghost, together: boolean, inspector: boolean): (Animation | null)[] {
   const { panel, scrim, src, box } = g;
   const vw = g.view.w;
   const vh = g.view.h;
@@ -483,6 +485,20 @@ function leave(g: Ghost, together: boolean): (Animation | null)[] {
     // Hand-over (K49): the new window takes the place; the old one only fades.
     if (scrim) scrim.style.opacity = '0';
     out.push(play(panel, [{ opacity }, { opacity: 0 }], { duration: 140, easing: 'ease', fill: 'forwards' }));
+    return out;
+  }
+  if (inspector) {
+    // Out to the right, .38 s, fading to .6 (GLAS-DESIGN §6.3); it has no scrim.
+    out.push(
+      play(
+        panel,
+        [
+          { transform: from, opacity },
+          { transform: `translateX(${INSPECTOR_SLIDE}px)`, opacity: opacity * 0.6 },
+        ],
+        { duration: 380, easing: EASE_IN, fill: 'forwards' },
+      ),
+    );
     return out;
   }
   if (scrim) {

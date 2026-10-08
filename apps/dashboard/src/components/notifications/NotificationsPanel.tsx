@@ -5,6 +5,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { callService, subscribeNotifications } from '../../ha/service';
 import { useT } from '../../i18n/useT';
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: bell 44 (docs/glas/PLAN-ETAPPE-2.md K41)
+import { SwipeRow } from '../glas/SwipeRow'; // [fork] Glas: swipe a row to dismiss it (docs/glas/PLAN-ETAPPE-3.md K59)
 import './NotificationsPanel.css';
 
 // ---------------------------------------------------------------------------
@@ -60,6 +61,7 @@ interface NotificationRowProps {
 function NotificationRow({ notification, onDismiss }: NotificationRowProps) {
   const t = useT();
   return (
+    <SwipeRow label={t('glas.swipe.dismiss')} tone="del" width={104} onAction={() => onDismiss(notification.notificationId)}>{/* [fork] Glas only */}
     <div className="notif-row">
       <div className="notif-row__body">
         {notification.title && (
@@ -78,6 +80,7 @@ function NotificationRow({ notification, onDismiss }: NotificationRowProps) {
         <X size={14} strokeWidth={2} />
       </button>
     </div>
+    </SwipeRow> // [fork]
   );
 }
 
@@ -95,6 +98,7 @@ interface PanelProps {
 
 function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: PanelProps) {
   const t = useT();
+  const glas = useIsGlas(); // [fork]
   const count = notifications.length;
   return ReactDOM.createPortal(
     <div
@@ -137,6 +141,7 @@ function Panel({ panelRef, style, notifications, onDismiss, onDismissAll }: Pane
             ))}
           </div>
         )}
+        {glas && count > 0 && <p className="g-notes__hint">{t('glas.swipe.hint')}</p>}{/* [fork] Glas: the swipe hint */}
       </div>
     </div>,
     document.body

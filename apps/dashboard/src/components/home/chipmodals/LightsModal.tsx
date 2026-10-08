@@ -14,6 +14,7 @@ import { callService } from '../../../ha/service';
 import { applyStoredOrder } from '../../../lib/order';
 import { useT } from '../../../i18n/useT';
 import { useIsGlas } from '../../../app/glas/useUiStyle'; // [fork] Glas: "turn all off" prominent (docs/glas/PLAN-ETAPPE-3.md K67)
+import { SwipeRow } from '../../glas/SwipeRow'; // [fork] Glas: swipe a light off (K59)
 import './chipmodals.css';
 
 interface LightsModalProps {
@@ -129,6 +130,7 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
                     brightness != null ? Math.round((brightness / 255) * 100) : null;
 
                   return (
+                    <SwipeRow key={id} label={t('glas.swipe.off')} tone="neutral" width={88} disabled={!isOn} onAction={() => handleToggle(id, true)}>{/* [fork] Glas only */}
                     <div
                       key={id}
                       className="lights-modal__row"
@@ -184,6 +186,7 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
                         <span className="lights-modal__toggle-track" aria-hidden="true" />
                       </label>
                     </div>
+                    </SwipeRow> // [fork]
                   );
                 })}
               </div>

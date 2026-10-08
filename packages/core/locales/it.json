@@ -1371,5 +1371,19 @@
   "glas.notifications.dismissAll": "Ignora tutte",
   "glas.notifications.dismissOne": "Ignora: {title}",
   "glas.notifications.emptyHint": "I nuovi messaggi di Home Assistant compaiono qui.",
-  "glas.pool.restartAction": "Riavvia"
+  "glas.pool.restartAction": "Riavvia",
+  "glas.context.menuLabel": "Azioni per {name}",
+  "glas.context.activate": "Attiva",
+  "glas.context.details": "Dettagli",
+  "glas.context.turnOn": "Accendi",
+  "glas.context.turnOff": "Spegni",
+  "glas.context.run": "Esegui",
+  "glas.context.press": "Premi",
+  "glas.context.favoriteAdd": "Aggiungi ai preferiti",
+  "glas.context.favoriteRemove": "Rimuovi dai preferiti",
+  "glas.context.room": "Apri stanza",
+  "glas.context.hide": "Nascondi",
+  "glas.swipe.dismiss": "Ignora",
+  "glas.swipe.off": "Spegni",
+  "glas.swipe.hint": "Suggerimento: scorri una riga verso sinistra per ignorarla."
 }

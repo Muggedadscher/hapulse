@@ -6,6 +6,19 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F35 — 2026-10-08
+
+**Vorschau Glas: Kontextmenü, Wischen, Inspector** · _Glass preview: context menu, swipe, inspector_
+
+### Geändert / Changed
+
+- Glas: langes Drücken auf eine Karte in einem Raum (am Computer Rechtsklick) öffnet ein Menü mit Details, Ein/Aus, Favoriten und Ausblenden; kurzes Tippen bleibt, wie es war  
+  _Glass: a long press on a card in a room (a right click on a computer) opens a menu with details, on/off, favourites and hide; a short tap stays as it was_
+- Glas: Zeilen nach links wischen, um eine Benachrichtigung zu verwerfen, ein Licht auszuschalten, eine Garage zu schließen oder ein Schloss zu verriegeln; die Aktion läuft erst beim Antippen, geöffnet und entriegelt wird nie per Wischen  
+  _Glass: swipe a row to the left to dismiss a notification, turn a light off, close a garage door or lock a lock; the action runs only when you tap it, nothing is ever opened or unlocked by swiping_
+- Glas ab 1100 Pixel Breite: Details öffnen rechts neben der Seite, die bedienbar bleibt; ein Tipp auf eine andere Karte wechselt den Inhalt  
+  _Glass from 1100 pixels wide: details open on the right next to the page, which stays usable; tapping another card switches the content_
+
 ## F34 — 2026-10-08
 
 **Vorschau Glas: Fenster** · _Glass preview: windows_
