@@ -1,6 +1,6 @@
 /* [fork] Glas — the controls (plans docs/glas/PLAN-ETAPPE-4.md K80, PLAN-ETAPPE-5.md K91–K93): the segmented control,
    the switch, the pulse and the rolling value. Stage 4 brought them for the overview and the detail; stage 5 gives the
-   classic switches of the other pages and sheets the same look.
+   classic switches of the other pages and sheets the same look and adds steppers, choice pills, sliders and play (K93).
 
    Segmented control (GLAS-DESIGN §7.27, components/glas/Segment.tsx): track `fill`, lens `seg` + `segShadow` that
    slides with the snappy spring, equally wide options with text only. The size per use comes from a modifier
@@ -410,5 +410,263 @@
 
   :root[data-style='glas'] .g-seg__lens {
     border: 2px solid Highlight;
+  }
+}
+
+/* ---- Steppers (K93, GLAS-DESIGN §7.29): − and + round 44 in `fill` with the glyph in `label`, a touch darker under
+   the pointer. The pressed scale and the disabled look stay classic. The window of the pool's manual run has its own
+   rule with the same look (sheet-content.css). ---- */
+:root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn) {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+  transition: background-color 200ms ease, transform 160ms ease-out;
+}
+
+:root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn):hover:not(:disabled) {
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Choice pills (K93): 36 high in `fill`; the chosen one `accentSoft` with `accentInk` and a ring of 1.5 px.
+   The accent marks the choice, never a device state (§2.3). ---- */
+:root[data-style='glas'] .climate-card__mode-pill {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font-size: 14px;
+  line-height: 18px;
+  transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+:root[data-style='glas'] .climate-card__mode-pill:not(.climate-card__mode-pill--active):hover {
+  background: var(--g-fill);
+  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .climate-card__mode-pill.climate-card__mode-pill--active {
+  background: var(--g-accent-soft);
+  box-shadow: inset 0 0 0 1.5px var(--g-accent);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .climate-card__mode-pill:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn, .climate-card__mode-pill) {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] .climate-card__mode-pill.climate-card__mode-pill--active {
+    forced-color-adjust: none;
+    background: Highlight;
+    box-shadow: none;
+    color: HighlightText;
+  }
+}
+
+/* ---- Horizontal sliders (K93, GLAS-DESIGN §7.18, §7.29): the classic forms stay — capsules of 28 without a knob
+   (light, media card), the thin lines of the music pages — in Glas colours: track `fill2`, the brightness fills in
+   yellow (D16), volume and position in `label2`. The accent is never a state colour (§2.3). The sliders with a
+   gradient (colour temperature, hue, accent) keep it and get a white knob 24 with the switch's shadow. While a finger
+   or the pointer holds a slider it grows to 1.04 (§6.3). The value is still sent on release. ---- */
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap) {
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .light-card__fill:not(.light-card__fill--temp) {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .media-card__volume-fill {
+  background: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(
+    .now-playing-card__progress,
+    .now-playing-card__volume-slider,
+    .player-tile__volume,
+    .zone-row__slider,
+    .zone-grid-card__slider
+  ) {
+  background: linear-gradient(
+    to right,
+    var(--g-label-2) var(--progress-pct, 0%),
+    var(--g-fill-2) var(--progress-pct, 0%)
+  );
+}
+
+/* The colour temperature fills from the left like the brightness; its knob sits at the end of the fill. */
+:root[data-style='glas'] .light-card__fill--temp {
+  min-width: 28px;
+}
+
+:root[data-style='glas'] .light-card__fill--temp::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  translate: 0 -50%;
+}
+
+:root[data-style='glas'] .accent-slider {
+  height: 28px;
+  border: 0;
+  border-radius: 14px;
+}
+
+:root[data-style='glas'] .light-card__hue-range::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] .accent-slider::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] .light-card__hue-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] .accent-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap, .light-card__hue-range, .accent-slider, .slider) {
+  transition: transform 200ms var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap, .light-card__hue-range, .accent-slider, .slider):active {
+  transform: scale(1.04);
+}
+
+/* the range input over the capsule is invisible (opacity 0): the capsule carries its focus ring */
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap):has(> :focus-visible) {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap, .light-card__hue-range, .accent-slider, .slider):active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap) {
+    border: 1px solid CanvasText;
+  }
+
+  /* the fills are colours, which forced colours drop: the value shows in the system highlight */
+  :root[data-style='glas'] :is(.light-card__fill:not(.light-card__fill--temp), .media-card__volume-fill) {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] :is(
+      .now-playing-card__progress,
+      .now-playing-card__volume-slider,
+      .player-tile__volume,
+      .zone-row__slider,
+      .zone-grid-card__slider
+    ) {
+    forced-color-adjust: none;
+    background: linear-gradient(to right, Highlight var(--progress-pct, 0%), GrayText var(--progress-pct, 0%));
+  }
+
+  /* hue and accent show colours as their content: they keep their gradient and white knob, with an outline */
+  :root[data-style='glas'] :is(.light-card__hue-range, .accent-slider) {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .light-card__fill--temp::after {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText;
+    background: Canvas;
+    box-shadow: none;
+  }
+}
+
+/* ---- Play (K93): like the media window (sheet-content.css) on the pages and cards — round 44, Now Playing 56, in
+   `fill` with the glyph in `label`; while the player plays, blue with white. The cards mark it with `card--active`,
+   Now Playing only by its pause glyph. ---- */
+:root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause),
+:root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause):hover {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  opacity: 1;
+  transition: background-color 250ms ease, color 250ms ease, transform 160ms ease-out;
+}
+
+:root[data-style='glas'] .now-playing-card__play-btn,
+:root[data-style='glas'] .now-playing-card__play-btn:hover {
+  width: 56px;
+  height: 56px;
+  background: var(--g-fill);
+  box-shadow: none;
+  color: var(--g-label);
+  opacity: 1;
+  transition: background-color 250ms ease, color 250ms ease, transform 160ms ease-out;
+}
+
+:root[data-style='glas'] :is(
+    .media-card.card--active .media-card__play-btn,
+    .player-tile.card--active .player-tile__playpause,
+    .now-playing-card__play-btn:has(> .lucide-pause)
+  ) {
+  background: var(--g-blue);
+  color: var(--g-on-badge);
+}
+
+:root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause, .now-playing-card__play-btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause, .now-playing-card__play-btn) {
+    border: 1px solid ButtonText;
   }
 }

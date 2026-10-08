@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { createElement, type ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Cpu, Home, LayoutGrid, Lightbulb, MoreHorizontal, Monitor, Music, Settings, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
+import { Cpu, Home, LayoutGrid, Lightbulb, MoreHorizontal, Monitor, Music, Pause, Settings, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
 
 // [fork] Guard for the Glas stylesheets (docs/GLAS-PLAN.md §1.4, §5.2): Glas must never touch Klassisch, and an
 // upstream rename must not leave a Glas rule silently pointing at nothing.
@@ -115,8 +115,14 @@ const FILLED_ICONS: [ComponentType<{ size?: number }>, string, string][] = [
   [Lightbulb, 'lucide-lightbulb', 'path path path'],
 ];
 
+/**
+ * Lucide symbols whose class the Glas CSS reads as a state: Now Playing shows the pause glyph while it plays
+ * (controls.css, plan docs/glas/PLAN-ETAPPE-5.md K93).
+ */
+const MARKER_ICONS: [ComponentType<{ size?: number }>, string][] = [[Pause, 'lucide-pause']];
+
 /** Classes that only exist at runtime (set from code, never in a stylesheet) and may still be targeted. */
-const RUNTIME_CLASSES = new Set<string>(FILLED_ICONS.map(([, cls]) => cls));
+const RUNTIME_CLASSES = new Set<string>([...FILLED_ICONS, ...MARKER_ICONS].map(([, cls]) => cls));
 
 describe('Glas stylesheets', () => {
   it('exist', () => {
@@ -175,6 +181,13 @@ describe('Glas stylesheets', () => {
       expect(svg.match(/class="([^"]*)"/)?.[1]?.split(' '), cls).toContain(cls);
       const kids = [...svg.matchAll(/<(path|rect|circle|line|polyline|polygon|ellipse)\b/g)].map((m) => m[1]).join(' ');
       expect(kids, cls).toBe(parts.trim());
+    }
+  });
+
+  it('read only Lucide state symbols whose class is as checked', () => {
+    for (const [Icon, cls] of MARKER_ICONS) {
+      const svg = renderToStaticMarkup(createElement(Icon, { size: 24 }));
+      expect(svg.match(/class="([^"]*)"/)?.[1]?.split(' '), cls).toContain(cls);
     }
   });
 

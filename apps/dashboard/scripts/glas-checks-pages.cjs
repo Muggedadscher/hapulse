@@ -2,7 +2,8 @@
 // `checks --part pages`. glas-shots.cjs loads this file with its helpers; it is not run on its own.
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
-// pagesSwitches (K91). The plan's other blocks (frame, segments, edit, keep, empty, menus) come with their steps.
+// pagesSwitches (K91), pagesControls (K93). The plan's other blocks (frame, segments, edit, keep, empty, menus)
+// come with their steps.
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
@@ -207,6 +208,113 @@ module.exports = function pages(h) {
       }
       out.pagesSwitches = res;
       out.pagesSwitchesOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K93 building blocks: steppers round 44 in fill, choice pills 36 (chosen = accentSoft), sliders in Glas
+    //      colours (track fill2, brightness yellow, volume label2), gradient knobs 24, play 44 / 56 (playing = blue).
+    //      A click on +, on a pill and on play still does what it did. Glas only. ----
+    await block('pagesControls', async () => {
+      const res = {};
+      const probe = (page) => ev(page, () => {
+        const tok = (name) => {
+          const d = document.createElement('div');
+          d.style.background = `var(${name})`;
+          document.body.appendChild(d);
+          const v = getComputedStyle(d).backgroundColor;
+          d.remove();
+          return v;
+        };
+        const vis = (sel) => [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
+        const box = (e) => e && { w: Math.round(e.getBoundingClientRect().width * 10) / 10, h: Math.round(e.getBoundingClientRect().height * 10) / 10, bg: getComputedStyle(e).backgroundColor, r: getComputedStyle(e).borderRadius };
+        const step = vis('.climate-card__step-btn');
+        const pills = [...document.querySelectorAll('.climate-card__mode-pill')].filter((e) => e.getClientRects().length);
+        const active = pills.find((e) => e.classList.contains('climate-card__mode-pill--active'));
+        const fill = vis('.light-card__fill:not(.light-card__fill--temp)');
+        const temp = vis('.light-card__fill--temp');
+        const play = vis('.media-card__play-btn');
+        const pool = vis('.pool-stepper__btn');
+        const np = vis('.now-playing-card__play-btn');
+        const accent = vis('.accent-slider');
+        const music = vis('.now-playing-card__progress, .player-tile__volume, .zone-row__slider');
+        return {
+          fill: tok('--g-fill'), fill2: tok('--g-fill-2'), yellow: tok('--g-yellow'), blue: tok('--g-blue'),
+          soft: tok('--g-accent-soft'),
+          step: box(step), pills: pills.map((p) => box(p).h), active: box(active),
+          light: fill && { fill: getComputedStyle(fill).backgroundColor, track: getComputedStyle(fill.parentElement).backgroundColor },
+          tempKnob: temp && parseFloat(getComputedStyle(temp, '::after').width),
+          play: play && { ...box(play), playing: !!play.closest('.card--active') },
+          pool: box(pool),
+          np: np && { ...box(np), playing: !!np.querySelector(':scope > .lucide-pause') },
+          // the thumb has no computed style of its own: read the Glas rule that applies to the slider
+          accent: accent && {
+            h: accent.getBoundingClientRect().height,
+            knob: [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules]; } catch { return []; } })
+              .filter((r) => r.selectorText && r.selectorText.endsWith('.accent-slider::-webkit-slider-thumb')
+                && accent.matches(r.selectorText.replace('::-webkit-slider-thumb', '')) && r.selectorText.includes('data-style'))
+              .map((r) => parseFloat(r.style.width))[0],
+          },
+          music: music && getComputedStyle(music).backgroundImage.includes(tok('--g-label-2')) && getComputedStyle(music).backgroundImage.includes(tok('--g-fill-2')),
+        };
+      });
+      const round44 = (b) => b && Math.abs(b.w - 44) < 0.6 && Math.abs(b.h - 44) < 0.6 && b.r === '50%';
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // room: climate stepper and pills, light sliders, media card play
+        {
+          const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
+          try {
+            const a = await probe(page);
+            const value = () => ev(page, () => [...document.querySelectorAll('.climate-card__target-value')].find((e) => e.getClientRects().length)?.textContent);
+            const v0 = await value();
+            await page.locator('.climate-card__step-btn').filter({ visible: true }).nth(1).click();
+            await sleep(150);
+            const v1 = await value();
+            const other = page.locator('.climate-card__mode-pill:not(.climate-card__mode-pill--active)').filter({ visible: true }).first();
+            const otherText = await other.textContent();
+            await other.click();
+            await sleep(200);
+            const nowActive = await ev(page, () => [...document.querySelectorAll('.climate-card__mode-pill--active')].find((e) => e.getClientRects().length)?.textContent);
+            await page.locator('.media-card__play-btn').filter({ visible: true }).first().click();
+            await sleep(400);
+            await settleAnimations(page);
+            const b = await probe(page);
+            const playOk = (p) => p && Math.abs(p.w - 44) < 0.6 && p.bg === (p.playing ? a.blue : a.fill);
+            const ok = round44(a.step) && a.step.bg === a.fill && v1 !== v0
+              && a.pills.length > 1 && a.pills.every((h) => Math.abs(h - 36) < 0.6) && a.active && a.active.bg === a.soft
+              && nowActive === otherText
+              && a.light && a.light.fill === a.yellow && a.light.track === a.fill2 && (a.tempKnob == null || a.tempKnob === 24)
+              && playOk(a.play) && playOk(b.play) && a.play.playing !== b.play.playing;
+            res[`${device}-room`] = { ok, step: a.step, values: [v0, v1], pills: a.pills, active: a.active, mode: [otherText, nowActive], light: a.light, tempKnob: a.tempKnob, play: [a.play, b.play] };
+          } catch (e) {
+            res[`${device}-room`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        // pool page stepper, music Now Playing, settings accent slider
+        for (const [name, p] of [['pool', '/pool'], ['music', '/music'], ['settings', '/settings']]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const a = await probe(page);
+            let ok;
+            if (name === 'pool') ok = round44(a.pool) && a.pool.bg === a.fill;
+            else if (name === 'settings') ok = !!a.accent && Math.abs(a.accent.h - 28) < 0.6 && a.accent.knob === 24;
+            else {
+              await page.locator('.now-playing-card__play-btn').filter({ visible: true }).first().click();
+              await sleep(400);
+              await settleAnimations(page);
+              const b = await probe(page);
+              const npOk = (n) => n && Math.abs(n.w - 56) < 0.6 && n.bg === (n.playing ? a.blue : a.fill);
+              ok = npOk(a.np) && npOk(b.np) && a.np.playing !== b.np.playing && a.music === true;
+              res[`${device}-${name}-after`] = b.np;
+            }
+            res[`${device}-${name}`] = { ok, pool: a.pool, np: a.np, music: a.music, accent: a.accent };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesControls = res;
+      out.pagesControlsOk = Object.entries(res).filter(([k]) => !k.endsWith('-after')).every(([, r]) => r.ok);
     });
 
     out.pagesPageErrors = pageErrors;

@@ -319,7 +319,8 @@ Nach jedem Upstream-Merge:
    `:not(…)`-Liste in `styles/glas/base.css`; sonst blendet Glas sie mit den übrigen Kartenrändern aus.
 5. Seit Etappe 2 (Rahmen) zusätzlich: eine neue Seite in `NAV_CONFIG` landet in der Seitenleisten-Gruppe „Bereiche“,
    bis `app/glas/navGroups.ts` sie einordnet; Lucide-Symbole, die die Tab-Leiste gefüllt zeigt, prüft der
-   Selektor-Wächter (Klasse und Teile, `FILLED_ICONS`) — ein Lucide-Update, das sie ändert, fällt dort auf; neue
+   Selektor-Wächter (Klasse und Teile, `FILLED_ICONS`; seit Etappe 5 auch das Pause-Symbol, an dem Glas „spielt“
+   erkennt, `MARKER_ICONS`) — ein Lucide-Update, das sie ändert, fällt dort auf; neue
    Elemente in `.app-content`, `.app-tabs` oder der Seitenleiste vor dem Merge in beiden Stilen ansehen (Glas fixiert
    den Kopf, die Tab-Leiste und die Seitenleiste).
 6. Screenshot-Matrix beider Stile ansehen und die Laufzeitprüfungen laufen lassen:

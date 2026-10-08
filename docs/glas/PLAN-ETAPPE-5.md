@@ -164,3 +164,19 @@ und übernommen, außer wo anders vermerkt.
   Steuerkarte im Detail und bis zum Raum-Schritt die Kacheln.
 - `pagesSwitches` prüft auf Handy (dunkel) und Desktop (hell): Automationen, Pool-Zeitplan, Einstellungen, Licht-Sheet,
   Geräte-Detail und die Pille im Detail.
+
+### 7.2 Stepper, Auswahl-Pillen, Regler, Play (K93, Bausteine)
+
+- Gemeinsame Regeln in `controls.css`: Stepper der Klima-Karte und des Pools (Seite) rund 44 `fill`, Klima-Modi als
+  Auswahl-Pillen 36, Regler in Glas-Farben (Spur `fill2`, Helligkeit Gelb, Lautstärke und Position `label2`), Play der
+  Medien-Karte, der Player-Kacheln und von Now Playing (56). `accent.css` führt Helligkeits-Füllung, Musik-Regler und
+  Play nicht mehr.
+- Die Farbtemperatur füllt wie Klassisch von links; ihr Knopf sitzt am Ende der Füllung (mindestens 28 breit, damit
+  er bei kleinen Werten sichtbar bleibt). Farbton und Akzent haben einen echten Regler-Knopf (24, weiß, Schatten).
+- Der Fokusring der Kapseln liegt auf der Kapsel (`:has`), weil das Eingabefeld darüber unsichtbar ist.
+- Now Playing kennt „spielt“ nur am Pause-Symbol (`:has(> .lucide-pause)`); die Karten über `card--active`. Der
+  Selektor-Wächter prüft die Klasse des Symbols (`MARKER_ICONS`).
+- Prüfung `pagesControls` (Teil `pages`): Größen und Farben, „+“ ändert den Zielwert, eine Pille wird gewählt, Play
+  schaltet und wechselt die Farbe.
+- Mit den Seiten (Schritt 3) folgen: Alarm-Modi auf der Sicherheitsseite, „Alle verriegeln/schließen“, Gefahr-Knöpfe,
+  Play der Bibliothek, Stepper und Transport im Gerätefenster (`device-icon-btn`) und die übrigen Steuerknöpfe.

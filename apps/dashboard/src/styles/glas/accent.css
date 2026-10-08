@@ -12,7 +12,6 @@
 :root[data-style='glas'] .entities-modal-progress::after,
 :root[data-style='glas'] .pill-toggle input:checked + .pill-toggle__track,
 :root[data-style='glas'] .toggle-switch input:checked + .toggle-switch__track,
-:root[data-style='glas'] .light-card__fill,
 :root[data-style='glas'] .vacuum-card__btn--start:hover,
 :root[data-style='glas'] .changelog-modal__done,
 :root[data-style='glas'] .energy-legend__swatch--solar,
@@ -26,11 +25,6 @@
 :root[data-style='glas'] .entity-detail__activity-dot--active,
 :root[data-style='glas'] .hero-pill--lights-on,
 :root[data-style='glas'] .library-tile__play,
-:root[data-style='glas'] .now-playing-card__progress,
-:root[data-style='glas'] .now-playing-card__volume-slider,
-:root[data-style='glas'] .now-playing-card__play-btn,
-:root[data-style='glas'] .player-tile__volume,
-:root[data-style='glas'] .player-tile__playpause:hover,
 :root[data-style='glas'] .queue-card__connect-save,
 :root[data-style='glas'] .group-menu__check--on,
 :root[data-style='glas'] .numpad-modal__dot--filled,
@@ -83,19 +77,14 @@
 }
 
 /* Focus rings keep the ink on the orange areas above (global :focus-visible and the switch tracks draw them with
-   var(--accent)). Where the ring is a box-shadow around the area, the area turns ink while focused. The media sliders
-   hide their ring today (.slider sets outline: none); they are listed so a ring added upstream stays ink too. */
+   var(--accent)). Where the ring is a box-shadow around the area, the area turns ink while focused. Since stage 5 the
+   sliders and the play buttons of the media cards no longer use the accent (controls.css, K93). */
 :root[data-style='glas'] :is(
     .btn--primary,
     .changelog-modal__done,
     .energy-empty-state__btn,
     .hero-pill--lights-on,
     .library-tile__play,
-    .now-playing-card__play-btn,
-    .now-playing-card__progress,
-    .now-playing-card__volume-slider,
-    .player-tile__playpause,
-    .player-tile__volume,
     .queue-card__connect-save,
     .numpad-key--confirm,
     .global-confirm__share input,
