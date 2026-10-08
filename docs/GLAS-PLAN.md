@@ -11,7 +11,7 @@
 | `docs/GLAS-PLAN.md` | dieses Dokument: Architektur, Etappen, Abnahme, Tests, Risiken |
 | `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K19 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
 | `docs/glas/PLAN-ETAPPE-2.md` | Umsetzung von Etappe 2 (Rahmen): Festlegungen K20–K45, Review des Plans, Abweichungen der Umsetzung U1–U13, Prüfungen, Laborpunkte (Stand 2026-10-06) |
-| `docs/glas/PLAN-ETAPPE-3.md` | Umsetzung von Etappe 3 (Fenster, Gesten, Inspector): Festlegungen K46–K73, Review des Plans, Umsetzung von 3a (Stand 2026-10-08) |
+| `docs/glas/PLAN-ETAPPE-3.md` | Umsetzung von Etappe 3 (Fenster, Gesten, Inspector): Festlegungen K46–K73, Review des Plans, Umsetzung von 3a und ihr Review (Stand 2026-10-08) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,

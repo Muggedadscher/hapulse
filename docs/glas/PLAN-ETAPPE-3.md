@@ -674,6 +674,7 @@ Code-Feld, K56), `components/glas/notificationOrder.ts` mit Test (neueste zuerst
 | U8 | §3.4 Schritt 2 und 3 | Alles, was der Geist vom Original braucht (Rechtecke, Ursprung, Schatten, Scroll-Lagen), liest er vor dem Einhängen; der Klon wartet mit `display: none` statt `visibility: hidden`, die Scroll-Lagen setzt erst die Entscheidung. Das legt einen gescrollten Klon dort aus, zusammen mit der Seite: eine Scroll-Lage braucht das Layout, das sonst im nächsten Bild anfiele | Chromium berechnete den versteckten Klon sonst mitten im Commit, als React das Fenster entfernte (29 ms bei der Entitätenliste); ein Lesen danach legte ihn erneut aus |
 | U9 | §3.4 Schritt 2 | Kopien von Bildern, Videos, Quellen und iframes entstehen ohne die Attribute, die laden (`src`, `srcset`, `poster` …); Geladenes zeichnet der Geist als Standbild, noch nicht Geladenes bleibt ein leerer Kasten. Teilkopien ersetzen Elemente nicht durch leere Kästen, wenn ein Rand ihres Inhalts durch sie hindurchgeht oder sie Inline-Kästen sind | Review §13.2 Befunde 2 und 9: ein geklontes, geladenes Bild wurde sofort neu angefordert (ein MJPEG-Strom der Kamera hätte eine zweite Verbindung bekommen); ein leerer Kasten verlor durchgehende Ränder und die Grundlinie |
 | U10 | §3.3 | Der gedrückte Ursprung gilt nur bis einen Task nach dem Klick (höchstens 1,5 s, ein Langdruck öffnet vor dem Klick); der Auslöser für den Fokus wird in beiden Stilen beim Öffnen gemerkt | Review §13.2 Befunde 5 und 7: ein Fenster ohne eigenen Tipp wuchs sonst aus dem zuletzt gedrückten Knopf, und nach einem Stilwechsel bei offenem Fenster ging der Fokus beim Schließen verloren |
+| U11 | §3.5 | Was die Reaktion auf eine Inhaltsänderung selbst in der Größe ändert (die Höhe des Fensters bewegt seine Teile), beobachtet der `ResizeObserver` erst ab dem nächsten Bild wieder; die erste Beobachtung meldet dann die Größe, die die Reaktion hinterlassen hat | Nach dem Review im Log des Entwicklungsservers gefunden: Chromium meldete beim Nachführen der Höhe am Handy eine „ResizeObserver loop“ (ein Fehlerereignis, im Build ohne Folgen; einmal je wachsendem Fenster, zweimal beim Verwerfen aller Benachrichtigungen). Die Fenster-Prüfungen zählen solche Ereignisse jetzt als Seitenfehler |
 
 Ergänzungen im Rahmen von §3.8: Schlösser zeigen je Zeile den einen möglichen Knopf („Entriegeln“ bei verriegelt,
 sonst „Verriegeln“; bei klemmt/unbekannt beide gesperrt wie heute), Klassisch zeigt beide; der Kreis im Alarm-Kopf ist
@@ -695,9 +696,10 @@ laufenden Sentinel; alle Gesten in WebKit.
   wachsender Inhalt, Seiten samt Ziffernblock und Bestätigung im Detail, Übergabe, Tab-Leiste und Glas-Regeln,
   Benachrichtigungen, Felder (auch die NVR-Fenster) und reduzierte Bewegung, Stilwechsel samt Fokus danach, Schließen
   auf jedem Weg inklusive Routenwechsel und gescrollter Liste, Fenster per Effekt, Mehr/Räume, Wiederöffnen, alle
-  Fenster, Geist-Kopie, Geist lädt nichts neu, Ursprung verfällt nach dem Klick); dieselben Fenster-Proben auch gegen
-  den Vite-Entwicklungsserver (StrictMode): kein Geist, wo ein Fenster bleibt. Die Geist-Kopie prüft, dass jeder Text,
-  der in einem Scroll-Bereich zu sehen war, im Geist an derselben Stelle steht, auch in der Teilkopie (Entitätenliste
+  Fenster, Geist-Kopie, Geist lädt nichts neu, Ursprung verfällt nach dem Klick), ohne Seitenfehler und ohne
+  „ResizeObserver loop“ (U11); dieselben Fenster-Proben auch gegen den Vite-Entwicklungsserver (StrictMode): kein
+  Geist, wo ein Fenster bleibt. Die Geist-Kopie prüft, dass jeder Text, der in einem Scroll-Bereich zu sehen war, im
+  Geist an derselben Stelle steht, auch in der Teilkopie (Entitätenliste
   mit offener, gescrollter Gruppe: 435 statt 2121 Elemente; „Was ist neu“: 119 statt 742; mit einem durchgehenden Rand
   und einem Inline-Block über dem sichtbaren Bereich, ohne U9 standen dort 23 von 24 Texten verschoben). Übersprungene
   Szenen machen Klassisch-DOM und „alle Fenster“ rot, außer den erwarteten (Wetter am Handy und Pool-Neustart gibt es
@@ -707,11 +709,13 @@ laufenden Sentinel; alle Gesten in WebKit.
 - K63 nachgestellt: (a) ja — ein Esc schließt beide verschachtelten Fenster; (b) ja — nach dem Routenwechsel bleibt
   `body.style.overflow` auf `hidden`; (c) in der Demo nicht messbar.
 - Klassisch: 284 Aufnahmen (Seiten und Rahmen 136, Fenster 148; Handy, iPad, Desktop, hell und dunkel) gleichen dem
-  Build von `main` auf 0 Pixel; das DOM aller 49 Klassisch-Fenster (Handy und Desktop) ist gleich (nur die Uhrzeiten
-  der Diagramm-Achse folgen der echten Uhr). Die Fenster-Szenen schwankten zuerst von Lauf zu Lauf, auch auf `main`:
-  Playwright wiederholte den Klick, solange Karten noch einliefen, und scrollte dabei jedes Mal anders; jetzt holt die
-  Szene den Auslöser vorher in die Mitte (`reach`).
-- Klick-Fuzz: FUZZ_ERGEBNIS
+  Build von `main` auf 0 Pixel, bis auf den neuen Changelog-Eintrag F34 („Was ist neu“ und die Versionszeile der
+  Einstellungen, 12 Aufnahmen); das DOM aller 49 Klassisch-Fenster (Handy und Desktop) ist gleich (nur die Uhrzeiten
+  in Diagramm und Verlauf folgen der echten Uhr, und „Was ist neu“ zeigt den Eintrag F34). Die
+  Fenster-Szenen schwankten zuerst von Lauf zu Lauf, auch auf `main`: Playwright wiederholte den Klick, solange Karten
+  noch einliefen, und scrollte dabei jedes Mal anders; jetzt holt die Szene den Auslöser vorher in die Mitte (`reach`).
+- Klick-Fuzz in Glas (Build): Handy 298, Desktop 265, im Bearbeiten-Modus Handy 455 und Desktop 492 Klicks auf
+  13 Seiten, ohne Fehler.
 - Leistung (Bericht; Chromium ohne GPU, zwei Läufe): bei voller Geschwindigkeit verwirft das Öffnen 0–3 Bilder, das
   Schließen 0–1; der Geist arbeitet 1–3 ms. Bei 4-facher CPU-Drosselung verwirft das Öffnen von Licht 3–5,
   Entitätenliste 11–13 und Detail 3–4 Bilder (Klassisch 3, 8–12 und 1–4), das Schließen 0–5 (Klassisch 0); der Geist
@@ -719,3 +723,35 @@ laufenden Sentinel; alle Gesten in WebKit.
   zudem die ganze Seite neu (658 Elemente); seit die Tab-Leiste nur ihre benannten Kinder ausblendet, sind es 79. Das
   Ziel ≤ 2 (GLAS-PLAN §5.5) verfehlt bei 4-facher Drosselung auch Klassisch, hier rechnet die CPU jede Unschärfe
   selbst; maßgeblich ist die Messung am iPad im Labor (§11).
+
+### 13.2 Review von 3a (2026-10-08)
+
+Ein unabhängiger Prüfer hat den Stand `9320c07` gegen Plan und Code gelesen: keine Blocker, vier Befunde zum Beheben,
+elf kleinere. Alle am Code nachgeprüft (Befund 1 nur zum Teil: die Verbindungsfelder waren über das `font: inherit`
+des Pakets schon 16 px) und behoben bis auf Befund 14 und 15.
+
+| # | Befund | Erledigt |
+|---|---|---|
+| 1 | K54 in den NVR-Fenstern: die Raum-Auswahl je Kamera hatte 14 px, die Verbindungsfelder hingen am Paket | Glas-Regel für `.nvr-input` und `.nvr-select__native`; die Feld-Probe misst die Raum-Auswahl mit einer eingesetzten Zeile (die Demo hat keine Kameras) |
+| 2 | Der Geist klonte Bilder samt Quelle: ein Kamera-Strom hätte eine zweite Verbindung bekommen | Kopien von Medien ohne ladende Attribute (U9); gemessen: ein geladenes Bild wurde schon beim Klonen neu angefordert, ein Entfernen danach kam zu spät. Prüfung 19 zählt die Anfragen |
+| 3 | Übersprungene Szenen zählten als bestanden | Liste der erwarteten Auslassungen; jede andere macht Klassisch-DOM und „alle Fenster“ rot, die Ausgabe nennt alle |
+| 4 | Platzhalter im Plan | gefüllt (§13.1) |
+| 5 | Nach einem Stilwechsel bei offenem Fenster ging der Fokus beim Schließen verloren | Auslöser in beiden Stilen beim Öffnen gemerkt (U10); Prüfung 11 schließt nach dem Wechsel in beide Richtungen |
+| 6 | Nach einem Maus-Zug blieb der Griff für Tasten taub | die Klick-Sperre nach dem Ziehen gilt 500 ms; Prüfung 4 drückt danach Enter |
+| 7 | Ein Fenster ohne eigenen Tipp wuchs bis 1,5 s lang aus dem zuletzt gedrückten Element | Ursprung gilt bis einen Task nach dem Klick (U10); Prüfung 20 |
+| 8 | Die Entscheidung des Geists legt gescrollte Kopien aus, anders als Kommentar und U8 sagten | Kommentar und U8 berichtigt (die Arbeit fiele sonst im nächsten Bild an) |
+| 9 | Leere Kästen in Teilkopien verloren durchgehende Ränder und Grundlinien | solche Elemente werden weiter zerlegt, Inline-Kästen nie ersetzt (U9); die Geist-Kopie prüft es mit Rand und Inline-Block |
+| 10 | Prüfung 16 prüfte die Übergabe nicht | zählt die Geister direkt nach dem Tipp |
+| 11 | F34: „Desktop und iPad“ und „Ziffernblock für Alarm und Codes“ stimmten nicht | „ab 900 Pixel Breite (Desktop, iPad quer)“, Blätter auch „am iPad hochkant“, „Ziffernblock des Alarms“ |
+| 12 | Verschobene Upstream-Zeilen in `AlarmPanelCard.tsx` ohne `[fork]` | markiert |
+| 13 | Veralteter Kommentar zu `!important` in `menus.css` | berichtigt |
+| 14 | StrictMode kann eine Übergabe-Notiz für das falsche Fenster hinterlassen | bleibt: nur im Entwicklungs-Build und nur, wenn im selben Commit ein anderes Fenster neu öffnet |
+| 15 | Laufende Animationen bei Glas → Klassisch während des Öffnens; abgelöste Knoten bleiben bis zum nächsten Druck gemerkt | bleibt: ohne Wirkung (die Animationen enden nach 0,5 s ohne `fill`) |
+| — | Hinweis: Fensterteile bekommen `filter` und `opacity`, eine Glasfläche darin sähe nichts | im Kopf von `material.css` festgehalten (betrifft Etappe 6, NVR) |
+
+Nach dem Review kam U11 dazu (im Log des Entwicklungsservers gefunden). Ein zweiter, kurzer unabhängiger Blick auf diese
+Änderung fand nichts Wesentliches und zwei kleine Punkte: (1) bleibt — nach einem Stilwechsel hin und zurück kann bei
+einem Fenster mit Seite der Beobachter der Seite vor dem des Wurzelfensters laufen; wächst dann das Wurzelfenster, meldet
+Chromium weiter einmal eine Schleife (selten, ohne Folgen); (2) umgesetzt — eine Reaktion, die nie zur Ruhe käme, gäbe
+mit U11 keinen Fehler mehr, sondern einen Rückruf je Bild: Prüfung 5b zählt die Rückrufe eines ruhenden Fensters (eine
+solche Reaktion, zur Probe eingebaut, macht sie rot).

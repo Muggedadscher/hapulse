@@ -128,6 +128,30 @@ module.exports = function sheets(h) {
       }
       await ctx.addInitScript(pageHelpers);
       await ctx.addInitScript(sheetHelpers);
+      // A "ResizeObserver loop" is an error event, not an exception: an observer's reaction resized what it observes in
+      // the same frame. It counts as a page error.
+      await ctx.addInitScript(() => {
+        window.__roLoops = 0;
+        addEventListener('error', (e) => { if (/ResizeObserver loop/.test(e.message)) window.__roLoops += 1; });
+        // Callbacks of observers that watch a window's parts: the sheet pauses what its own reaction resized (U11), so a
+        // reaction that never settles would not raise a loop error but call back every frame (block 5b counts them).
+        window.__roWindow = 0;
+        const Base = window.ResizeObserver;
+        window.ResizeObserver = class extends Base {
+          constructor(cb) {
+            const self = { window: false };
+            super((entries, ro) => {
+              if (self.window) window.__roWindow += 1;
+              cb(entries, ro);
+            });
+            this.__self = self;
+          }
+          observe(target, options) {
+            if (target.closest && target.closest('.modal-backdrop')) this.__self.window = true;
+            return super.observe(target, options);
+          }
+        };
+      });
       const page = await ctx.newPage();
       const errors = [];
       page.on('pageerror', (e) => errors.push('exc: ' + String(e.message).slice(0, 200)));
@@ -137,6 +161,8 @@ module.exports = function sheets(h) {
       await page.waitForLoadState('networkidle');
       await sleep(600);
       const close = async () => {
+        const loops = await page.evaluate(() => window.__roLoops).catch(() => 0);
+        if (loops) errors.push(`ResizeObserver loop ×${loops}`);
         if (errors.length) pageErrors.push({ device: typeof device === 'string' ? device : 'custom', style, path: p, errors: errors.slice(0, 3) });
         await ctx.close();
       };
@@ -433,7 +459,8 @@ module.exports = function sheets(h) {
 
     // 5b. Windows whose content changes while they open (K50): the entities list (a loader first) and a detail (its
     //     history loads after the first render). The movement starts at the trigger and comes to rest; how high the
-    //     window ends up is reported (during the opening the detent may still follow the content, K50).
+    //     window ends up is reported (during the opening the detent may still follow the content, K50). At rest the
+    //     window's ResizeObserver stays quiet (U11).
     await block('sheetsGrow', async () => {
       const res = {};
       const cases = [['entities', 'win-entities', `button:has-text("${DE['settings.admin.editEntitiesBtn']}")`],
@@ -455,13 +482,18 @@ module.exports = function sheets(h) {
         await settleAnimations(w.page, 6000);
         await sleep(300);
         const end = await ev(w.page, () => ({ ...__s.state().rect, sheet: __s.state().sheet, moving: __s.motion().length }));
-        res[key] = { from, frames, end };
+        // at rest the window's observer stays quiet (a demo tick may change the content once); while it opened it ran
+        const opening = await ev(w.page, () => window.__roWindow);
+        await sleep(600);
+        const idle = (await ev(w.page, () => window.__roWindow)) - opening;
+        res[key] = { from, frames, end, observer: { opening, idle } };
         await w.close();
       }
       out.sheetsGrow = res;
       out.sheetsGrowOk = Object.values(res).every((r) => r.frames[0] && Math.abs(r.frames[0].x - r.from.x) < 40
         && Math.abs(r.frames[0].y - r.from.y) < 60 && Math.abs(r.frames[0].w - r.from.w) < 80
-        && r.frames.slice(1).every((f) => f && (f.y !== r.frames[0].y || f.w !== r.frames[0].w)) && r.end.moving === 0);
+        && r.frames.slice(1).every((f) => f && (f.y !== r.frames[0].y || f.w !== r.frames[0].w)) && r.end.moving === 0
+        && r.observer.opening > 0 && r.observer.idle <= 2);
     });
 
     // 6. Pages in a window (K48): locks → "Entriegeln" is a page on the sheet's rectangle, solid, the sheet below pushed
@@ -850,25 +882,6 @@ module.exports = function sheets(h) {
         && res.lights.scrolled > 0 && res.lights.ghostNodes === res.lights.nodes;
     });
 
-    // 20. A tap's element is the origin only until its click is done (review finding 7): a window that opens a moment
-    //     later without a tap of its own (here: from a timer) does not grow out of it.
-    await block('sheetsOriginExpiry', async () => {
-      const w = await open('phone', 'glas', '/');
-      const tab = '.app-tabs__item--active';
-      await ev(w.page, (q) => {
-        const chip = [...document.querySelectorAll('.summary-chip[aria-label^="people:"]')].find((e) => __g.visible(e));
-        document.querySelector(q).addEventListener('click', () => setTimeout(() => chip.click(), 40), { once: true });
-      }, tab);
-      await press(w.page, (q) => document.querySelector(q), tab);
-      await until(w.page, () => !!__s.panel());
-      const first = await ev(w.page, () => __s.state().rect);
-      await settleAnimations(w.page);
-      const end = await ev(w.page, () => __s.state().rect);
-      await w.close();
-      out.sheetsOriginExpiry = { first, end };
-      out.sheetsOriginExpiryOk = first.w >= end.w * 0.9;
-    });
-
     // 19. The ghost loads nothing again (review finding 2): a `no-store` picture and a stream that is still loading (a
     //     camera's MJPEG) are requested once, also after the window closed; the ghost shows the picture as a still and
     //     keeps the stream's place empty.
@@ -915,6 +928,25 @@ module.exports = function sheets(h) {
       out.sheetsGhostMedia = { loaded, before, after, ghost };
       out.sheetsGhostMediaOk = loaded && before.still === 1 && before.stream === 1 && after.still === 1 && after.stream === 1
         && !!ghost && ghost.still === 'CANVAS' && ghost.streamHidden && ghost.sources === 0;
+    });
+
+    // 20. A tap's element is the origin only until its click is done (review finding 7): a window that opens a moment
+    //     later without a tap of its own (here: from a timer) does not grow out of it.
+    await block('sheetsOriginExpiry', async () => {
+      const w = await open('phone', 'glas', '/');
+      const tab = '.app-tabs__item--active';
+      await ev(w.page, (q) => {
+        const chip = [...document.querySelectorAll('.summary-chip[aria-label^="people:"]')].find((e) => __g.visible(e));
+        document.querySelector(q).addEventListener('click', () => setTimeout(() => chip.click(), 40), { once: true });
+      }, tab);
+      await press(w.page, (q) => document.querySelector(q), tab);
+      await until(w.page, () => !!__s.panel());
+      const first = await ev(w.page, () => __s.state().rect);
+      await settleAnimations(w.page);
+      const end = await ev(w.page, () => __s.state().rect);
+      await w.close();
+      out.sheetsOriginExpiry = { first, end };
+      out.sheetsOriginExpiryOk = first.w >= end.w * 0.9;
     });
 
     // 17. Performance (a report, GLAS-PLAN §5.5, plan §6.3), at full speed and at 4× CPU slowdown, Klassisch at 4× as the

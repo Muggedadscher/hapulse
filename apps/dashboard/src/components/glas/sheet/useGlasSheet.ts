@@ -707,10 +707,33 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       st.height = panel.offsetHeight;
     }
 
-    const ro = new ResizeObserver(onContentResize);
-    for (const part of parts(panel)) ro.observe(part);
     const root = st.pres === 'page' ? st.parent?.rootPanel() : null;
-    if (root) ro.observe(root);
+    const watched = root ? [...parts(panel), root] : parts(panel);
+    // A reaction resizes what is watched (the panel's height moves its parts). Seen in the same frame, that would end
+    // the frame with an undelivered observation, which the browser reports as a "ResizeObserver loop" error; those
+    // elements are watched again from the next frame, and their first observation reports the size the reaction left.
+    const paused = new Set<HTMLElement>();
+    let rewatch = 0;
+    const boxSize = (el: HTMLElement) => {
+      const cs = getComputedStyle(el);
+      return `${cs.width} ${cs.height}`;
+    };
+    const ro = new ResizeObserver(() => {
+      const before = watched.map(boxSize);
+      onContentResize();
+      watched.forEach((el, i) => {
+        if (paused.has(el) || boxSize(el) === before[i]) return;
+        ro.unobserve(el);
+        paused.add(el);
+      });
+      if (!paused.size || rewatch) return;
+      rewatch = requestAnimationFrame(() => {
+        rewatch = 0;
+        for (const el of paused) ro.observe(el);
+        paused.clear();
+      });
+    });
+    for (const el of watched) ro.observe(el);
     window.addEventListener('resize', onViewport);
     window.visualViewport?.addEventListener('resize', onKeyboard);
     window.visualViewport?.addEventListener('scroll', onKeyboard);
@@ -721,6 +744,7 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
 
     return () => {
       ro.disconnect();
+      cancelAnimationFrame(rewatch);
       window.removeEventListener('resize', onViewport);
       window.visualViewport?.removeEventListener('resize', onKeyboard);
       window.visualViewport?.removeEventListener('scroll', onKeyboard);
