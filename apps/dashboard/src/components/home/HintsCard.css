@@ -117,3 +117,22 @@
   color: var(--text-dim);
   flex-shrink: 0;
 }
+
+/* Edit mode: the card stays even without a deviation, so it can be hidden or shown (K76); tall enough that the
+   edit controls on the card (eye, phone, resize, move) do not cover its text. */
+.hints-card--edit {
+  min-height: 11rem;
+}
+
+.hints-card__empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 2.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}

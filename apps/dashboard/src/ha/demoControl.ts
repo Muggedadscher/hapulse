@@ -3,10 +3,12 @@
  *
  * In demo mode `window.__hapulseDemo.patch(id, { state, attributes, last_changed, last_updated })` changes one
  * entity in the entity store, so a check can make a home hint appear and disappear or mark a scene member as
- * changed. `patch(id, null)` removes the entity again. Outside demo mode the object does not exist.
+ * changed. `patch(id, null)` removes the entity again. `patchArea(id, { picture })` sets or clears a room picture
+ * (the demo itself has none), so a check can see that Glas keeps the main room card plain (E8). Outside demo mode
+ * the object does not exist.
  */
 
-import type { HassEntity, HassEntityAttributes } from '@hapulse/core';
+import type { AreaRegistryEntry, HassEntity, HassEntityAttributes } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
 
 export interface DemoPatch {
@@ -18,6 +20,7 @@ export interface DemoPatch {
 
 interface DemoControl {
   patch: (id: string, patch: DemoPatch | null) => HassEntity | null;
+  patchArea: (id: string, patch: { picture?: string | null }) => AreaRegistryEntry | null;
 }
 
 type DemoWindow = Window & { __hapulseDemo?: DemoControl };
@@ -47,6 +50,14 @@ export function startDemoControl(): void {
       next[id] = entity;
       setEntities(next);
       return entity;
+    },
+    patchArea(id, patch) {
+      const { registries, setRegistries } = useEntityStore.getState();
+      const area = registries?.areas.find((a) => a.area_id === id);
+      if (!registries || !area) return null;
+      const next: AreaRegistryEntry = { ...area, ...patch };
+      setRegistries({ ...registries, areas: registries.areas.map((a) => (a.area_id === id ? next : a)) });
+      return next;
     },
   };
 }

@@ -24,7 +24,7 @@ export type HintKind =
   | 'window-open'
   | 'door-open'
   | 'alarm-pending'
-  | 'camera-offline'
+  | 'camera-not-recording'
   | 'waste-soon';
 
 export type HintSeverity = 'critical' | 'warning' | 'info';
@@ -34,7 +34,7 @@ export interface Hint {
   id: string;
   kind: HintKind;
   severity: HintSeverity;
-  /** How many things deviate (windows open, locks open, cameras offline, …); 1 for waste. */
+  /** How many things deviate (windows open, locks open, cameras not recording, …); 1 for waste. */
   count: number;
   /** The entities behind the hint, sorted (room names, targets). Empty for cameras. */
   entityIds: string[];
@@ -51,8 +51,8 @@ export interface HintOptions {
   doorOpenMinutes?: number | undefined;
   /** Detected waste bins (`detectWasteBins`, already hidden-filtered). */
   waste?: readonly WasteBin[] | undefined;
-  /** Sentinel cameras that should record but are offline (0 while HA is the camera source). */
-  camerasOffline?: number | undefined;
+  /** Sentinel cameras that should record but don't: offline or stalled (0 while HA is the camera source). */
+  camerasNotRecording?: number | undefined;
 }
 
 export interface HintResult {
@@ -74,7 +74,7 @@ const SEVERITY_RANK: Record<HintSeverity, number> = { critical: 0, warning: 1, i
 /** Order inside one severity (the table in GLAS-PLAN §2.11). */
 const KIND_ORDER: readonly HintKind[] = [
   'alarm-triggered', 'leak', 'smoke', 'garage-open', 'lock-open',
-  'garage-fault', 'lock-fault', 'window-open', 'door-open', 'alarm-pending', 'camera-offline',
+  'garage-fault', 'lock-fault', 'window-open', 'door-open', 'alarm-pending', 'camera-not-recording',
   'waste-soon',
 ];
 
@@ -89,7 +89,7 @@ const SEVERITY: Record<HintKind, HintSeverity> = {
   'window-open': 'warning',
   'door-open': 'warning',
   'alarm-pending': 'warning',
-  'camera-offline': 'warning',
+  'camera-not-recording': 'warning',
   'waste-soon': 'info',
 };
 
@@ -150,8 +150,8 @@ export function collectHints(entities: readonly HassEntity[], opts: HintOptions)
     ids.sort();
     hints.push({ id: kind, kind, severity: SEVERITY[kind], count: ids.length, entityIds: ids });
   }
-  const offline = opts.camerasOffline ?? 0;
-  if (offline > 0) hints.push({ id: 'camera-offline', kind: 'camera-offline', severity: 'warning', count: offline, entityIds: [] });
+  const cameras = opts.camerasNotRecording ?? 0;
+  if (cameras > 0) hints.push({ id: 'camera-not-recording', kind: 'camera-not-recording', severity: 'warning', count: cameras, entityIds: [] });
   for (const bin of opts.waste ?? []) {
     if (hidden.has(bin.entityId) || bin.daysTo === null || bin.daysTo < 0 || bin.daysTo > 1) continue;
     hints.push({ id: `waste-soon:${bin.entityId}`, kind: 'waste-soon', severity: 'info', count: 1, entityIds: [bin.entityId], bin });

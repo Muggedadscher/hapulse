@@ -15,7 +15,8 @@ import { WasteCard } from '../components/waste/WasteCard'; // [fork]
 import { NvrHomeCard } from '../nvr/NvrHomeCard'; // [fork]
 import { useNvrConfigured } from '../nvr/config'; // [fork]
 import { useCameraSource, withoutHaCameras } from '../nvr/cameraSource'; // [fork]
-import { HintsCard } from '../components/home/HintsCard'; // [fork] Glas Etappe 4, K76
+import { HintsCard, HintWindows } from '../components/home/HintsCard'; // [fork] Glas Etappe 4, K76
+import type { HintWindow } from '../components/home/HintsCard'; // [fork]
 import { useHints } from '../components/home/useHints'; // [fork]
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
@@ -278,6 +279,7 @@ export function Home() {
 
   const [climateModalOpen, setClimateModalOpen] = useState(false);
   const [blindsModalOpen, setBlindsModalOpen] = useState(false);
+  const [hintWindow, setHintWindow] = useState<HintWindow | null>(null); // [fork] outlives the hints card (K76)
 
   // Rooms that have domains (real devices), in the user's stored order
   const roomsWithDevices = applyStoredOrder(
@@ -311,7 +313,7 @@ export function Home() {
       })
   ).filter((id) => id !== 'waste' || hasWaste) // [fork] hide the waste card when no bins exist
    .filter((id) => id !== 'nvr' || hasNvr) // [fork] hide the NVR card without a connection
-   .filter((id) => id !== 'hints' || hints.length > 0); // [fork] no hints card while nothing deviates
+   .filter((id) => id !== 'hints' || editMode || hints.length > 0); // [fork] no hints card while nothing deviates (edit mode: empty card)
 
   /** Toggle a section's hidden state. */
   function handleToggleHidden(id: string) {
@@ -428,7 +430,7 @@ export function Home() {
       case 'nvr': // [fork]
         return <NvrHomeCard />;
       case 'hints': // [fork]
-        return <HintsCard hints={hints} cameraNames={cameraNames} />;
+        return <HintsCard hints={hints} cameraNames={cameraNames} onOpen={setHintWindow} />;
       case 'activity':
         return <ActivityCard entities={entities} />;
       case 'rooms':
@@ -534,6 +536,7 @@ export function Home() {
 
       <ClimateAllModal open={climateModalOpen} onClose={() => setClimateModalOpen(false)} />
       <BlindsAllModal open={blindsModalOpen} onClose={() => setBlindsModalOpen(false)} />
+      <HintWindows target={hintWindow} onClose={() => setHintWindow(null)} />{/* [fork] */}
     </div>
   );
 }

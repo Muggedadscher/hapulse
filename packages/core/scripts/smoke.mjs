@@ -1890,10 +1890,10 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
     garage('cover.g1', 'open'), garage('cover.g2', 'unavailable'), ent('lock.l1', 'unlocked'), ent('lock.l2', 'jammed'),
     ent('binary_sensor.leak', 'on', { device_class: 'moisture' }), ent('binary_sensor.co', 'on', { device_class: 'carbon_monoxide' }),
     ent('alarm_control_panel.home', 'triggered'), ent('binary_sensor.w', 'on', { device_class: 'window' }),
-  ], { now: T0, camerasOffline: 2 });
-  assertEqual(kinds(r), 'alarm-triggered,leak,smoke,garage-open,lock-open,garage-fault,lock-fault,window-open,camera-offline',
+  ], { now: T0, camerasNotRecording: 2 });
+  assertEqual(kinds(r), 'alarm-triggered,leak,smoke,garage-open,lock-open,garage-fault,lock-fault,window-open,camera-not-recording',
     'hints: critical first in table order, then warnings');
-  assertEqual(r.hints.find((h) => h.kind === 'camera-offline')?.count, 2, 'hints: cameras offline counted');
+  assertEqual(r.hints.find((h) => h.kind === 'camera-not-recording')?.count, 2, 'hints: cameras not recording counted');
   assert(r.hints.slice(0, 5).every((h) => h.severity === 'critical'), 'hints: the first five are critical');
   r = collectHints([ent('alarm_control_panel.a', 'arming'), ent('alarm_control_panel.b', 'disarmed')], { now: T0 });
   assertEqual(kinds(r), 'alarm-pending', 'hints: arming → pending hint (most severe panel, like the chip)');
