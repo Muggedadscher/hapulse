@@ -40,14 +40,15 @@ interface Ghost {
   /** The original panel's box without its transform. */
   box: OriginRect;
   note: HandoffNote | null;
-  /** Read while copying, like everything from the page: the decision only writes, so the page and the clone get
-   *  their styles once, in the next frame (a read there restyled the page in the click's task, plan §13.1). */
+  /** Read while copying, like everything from the page: the decision reads nothing (a read there restyled the page in
+   *  the click's task, plan §13.1). Only a scrolled copy is laid out there, together with the page: a scroll position
+   *  needs the layout, which the next frame would do anyway. */
   view: { w: number; h: number };
   /** Where the window came from, if it showed then. */
   originRect: OriginRect | null;
   /** The shadow a page casts while it slides out. */
   pageShadow: string;
-  /** Scroll positions of the copy, set once it shows (a box without layout forgets them). */
+  /** Scroll positions of the copy, set once it shows (a box without layout forgets them; setting one lays it out). */
   scrolled: Copy['scrolled'];
   /** The clone's own inline display, back when it shows. */
   display: string;
@@ -75,8 +76,14 @@ const PARTIAL_FROM = 600;
 const SMALL_TREE = 40;
 /** Kept around what a scroll area shows, as a share of its height. */
 const BAND_EXTRA = 0.25;
-/** Display types whose box keeps its size without its content. */
-const BOXES = new Set(['block', 'flex', 'grid', 'flow-root', 'list-item', 'inline-block', 'inline-flex', 'inline-grid']);
+/** Display types whose box keeps its size and place without its content (an inline box would lose its baseline). */
+const BOXES = new Set(['block', 'flex', 'grid', 'flow-root', 'list-item']);
+/** Elements whose copy would load its resource again: cloning a loaded <img> requests it at once (a `no-store`
+ *  snapshot, a camera's MJPEG stream as a second stream), <video> and <audio> select their source, an <iframe> loads
+ *  once it is in the document. Their copies are built without the attributes that load. */
+const LOADS = 'img, source, video, audio, iframe';
+const LOADING = new Set(['IMG', 'SOURCE', 'VIDEO', 'AUDIO', 'IFRAME']);
+const LOAD_ATTRS = new Set(['src', 'srcset', 'sizes', 'srcdoc', 'poster']);
 
 type Pair = readonly [from: Element, to: Element];
 
@@ -205,7 +212,7 @@ function copyWindow(backdrop: HTMLElement, panel: HTMLElement): Copy {
   }
   // `scan`: inside the panel, where an element may be a scroll area (the backdrop and the panel never decide)
   const visit = (el: Element, band: Band | null, scan: boolean): Node => {
-    if (!(el instanceof HTMLElement)) return el.cloneNode(true);
+    if (!(el instanceof HTMLElement)) return deep(el);
     if (el instanceof HTMLDetailsElement && !el.open) return shut(el, copy);
     if (band) {
       const r = el.getBoundingClientRect();
@@ -218,7 +225,7 @@ function copyWindow(backdrop: HTMLElement, panel: HTMLElement): Copy {
     }
     const inner = scan ? scrollBand(el, band) : band;
     if (!inner && el.getElementsByTagName('*').length <= SMALL_TREE) return whole(el, copy);
-    const to = el.cloneNode(false) as HTMLElement;
+    const to = shallow(el) as HTMLElement;
     note(el, to, copy);
     const deeper = scan || el === panel;
     for (const child of el.childNodes) {
@@ -233,18 +240,39 @@ function copyWindow(backdrop: HTMLElement, panel: HTMLElement): Copy {
 /** A closed <details>: its summary, and its other children empty — they are not rendered, in the ghost neither (the
  *  entity groups in the settings hold most of that window's elements). */
 function shut(el: HTMLDetailsElement, copy: Copy): HTMLElement {
-  const to = el.cloneNode(false) as HTMLElement;
+  const to = shallow(el) as HTMLElement;
   note(el, to, copy);
   for (const child of el.childNodes) {
-    to.appendChild(child instanceof HTMLElement && child.tagName === 'SUMMARY' ? whole(child, copy) : child.cloneNode(false));
+    to.appendChild(
+      child instanceof HTMLElement && child.tagName === 'SUMMARY' ? whole(child, copy)
+      : child instanceof Element ? shallow(child)
+      : child.cloneNode(false),
+    );
   }
   return to;
 }
 
 /** A subtree copied whole. */
 function whole(el: HTMLElement, copy: Copy): HTMLElement {
-  const to = el.cloneNode(true) as HTMLElement;
+  const to = deep(el) as HTMLElement;
   noteTree(el, to, copy);
+  return to;
+}
+
+/** `cloneNode(true)`, but copies of media load nothing (`LOADS`): native where the subtree holds none. */
+function deep(el: Element): Element {
+  if (!LOADING.has(el.tagName) && !el.querySelector(LOADS)) return el.cloneNode(true) as Element;
+  const to = shallow(el);
+  for (const child of el.childNodes) to.appendChild(child instanceof Element ? deep(child) : child.cloneNode(true));
+  return to;
+}
+
+/** `cloneNode(false)`, but a copy of media is built without the attributes that load (`stills` draws what showed). */
+function shallow(el: Element): Element {
+  if (!LOADING.has(el.tagName)) return el.cloneNode(false) as Element;
+  const to = document.createElement(el.localName);
+  for (const { name, value } of el.attributes) if (!LOAD_ATTRS.has(name)) to.setAttribute(name, value);
+  if (to instanceof HTMLMediaElement) to.preload = 'none';
   return to;
 }
 
@@ -285,16 +313,17 @@ function scrollBand(el: HTMLElement, band: Band | null): Band | null {
 }
 
 /** An element outside every band as an empty box of its size, never painted; `null` where the box needs its content
- *  for its size (inline, `contents`, table parts) — that one is visited instead. */
+ *  for its size or place (inline, `contents`, table parts, a margin of its content that passes through it) — that one
+ *  is visited instead. */
 function standIn(el: HTMLElement): HTMLElement | null {
   const cs = getComputedStyle(el);
-  if (cs.display === 'none') return el.cloneNode(false) as HTMLElement;
-  if (!BOXES.has(cs.display)) return null;
+  if (cs.display === 'none') return shallow(el) as HTMLElement;
+  if (!BOXES.has(cs.display) || passesMargin(el, cs, 'Top') || passesMargin(el, cs, 'Bottom')) return null;
   const px = (v: string) => parseFloat(v) || 0;
   const content = cs.boxSizing !== 'border-box';
   const w = px(cs.width) + (content ? px(cs.paddingLeft) + px(cs.paddingRight) + px(cs.borderLeftWidth) + px(cs.borderRightWidth) : 0);
   const h = px(cs.height) + (content ? px(cs.paddingTop) + px(cs.paddingBottom) + px(cs.borderTopWidth) + px(cs.borderBottomWidth) : 0);
-  const box = el.cloneNode(false) as HTMLElement;
+  const box = shallow(el) as HTMLElement;
   Object.assign(box.style, {
     boxSizing: 'border-box',
     width: `${w}px`,
@@ -313,15 +342,43 @@ function standIn(el: HTMLElement): HTMLElement | null {
   return box;
 }
 
-/** Loaded images, canvases and video frames as still copies: a cloned <img> loads again (empty with `no-store`), a
- * cloned canvas is blank. The copies are drawn, never read. */
+/**
+ * Whether a margin of the content collapses through the top (bottom) of `el`, outside its box: an empty box of the
+ * same size would then move what follows. A block that starts no formatting context of its own and has no padding or
+ * border on that side passes on the margin of its first (last) child, and that child the one of its own. Cautious: a
+ * child out of the flow counts as passing.
+ */
+function passesMargin(el: Element, cs: CSSStyleDeclaration, side: 'Top' | 'Bottom'): boolean {
+  let style = cs;
+  let box: Element = el;
+  for (let depth = 0; depth < 8; depth++) {
+    if (style.display !== 'block' && style.display !== 'list-item') return false;
+    if (!['visible', 'clip'].includes(style.overflowY) || style.float !== 'none') return false;
+    if (style.position === 'absolute' || style.position === 'fixed' || /layout|paint|strict|content/.test(style.contain)) return false;
+    if (parseFloat(style[`padding${side}`]) || parseFloat(style[`border${side}Width`])) return false;
+    const child = side === 'Top' ? box.firstElementChild : box.lastElementChild;
+    if (!child) return false;
+    const childStyle = getComputedStyle(child);
+    if (parseFloat(childStyle[`margin${side}`])) return true;
+    if (childStyle.display === 'none' || childStyle.display === 'contents' || childStyle.float !== 'none'
+      || childStyle.position === 'absolute' || childStyle.position === 'fixed') return true;
+    box = child;
+    style = childStyle;
+  }
+  return true;
+}
+
+/** Loaded images, canvases and video frames as still copies (the copies of media load nothing, `shallow`; a cloned
+ * canvas is blank). What is not loaded yet stays an empty box. The copies are drawn, never read. */
 function stills(media: readonly Pair[]): void {
   for (const [from, to] of media) {
     const orig = from as HTMLElement;
     const copy = to as HTMLElement;
     try {
-      if (orig instanceof HTMLImageElement && !(orig.complete && orig.naturalWidth > 0)) continue;
-      if (orig instanceof HTMLVideoElement && orig.readyState < 2) {
+      if (
+        (orig instanceof HTMLImageElement && !(orig.complete && orig.naturalWidth > 0))
+        || (orig instanceof HTMLVideoElement && orig.readyState < 2)
+      ) {
         copy.style.visibility = 'hidden';
         continue;
       }
@@ -338,7 +395,10 @@ function stills(media: readonly Pair[]): void {
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       const ctx = canvas.getContext('2d');
-      if (!ctx) continue;
+      if (!ctx) {
+        copy.style.visibility = 'hidden';
+        continue;
+      }
       const source = orig as CanvasImageSource;
       const [sw, sh] =
         orig instanceof HTMLImageElement ? [orig.naturalWidth, orig.naturalHeight]

@@ -46,16 +46,16 @@ export const FORK_RELEASES: ForkRelease[] = [
         kind: 'changed',
         items: [
           {
-            de: 'Glas am Handy: Fenster kommen als Blatt von unten und wachsen aus dem, was man angetippt hat; am Griff zieht man sie größer, kleiner oder nach unten weg, im Querformat sind sie gleich groß',
-            en: 'Glass on the phone: windows come up as a sheet and grow out of what you tapped; drag the grabber to make them taller or smaller or to pull them down, in landscape they open tall right away',
+            de: 'Glas am Handy und am iPad hochkant: Fenster kommen als Blatt von unten und wachsen aus dem, was man angetippt hat; am Griff zieht man sie größer, kleiner oder nach unten weg, am Handy quer sind sie gleich groß',
+            en: 'Glass on the phone and on an upright iPad: windows come up as a sheet and grow out of what you tapped; drag the grabber to make them taller or smaller or to pull them down, on a phone in landscape they open tall right away',
           },
           {
-            de: 'Glas am Desktop und iPad: Fenster schweben als Glas-Dialoge in passender Breite über der Seite',
-            en: 'Glass on the desktop and iPad: windows float over the page as glass dialogs with a fitting width',
+            de: 'Glas ab 900 Pixel Breite (Desktop, iPad quer): Fenster schweben als Glas-Dialoge in passender Breite über der Seite',
+            en: 'Glass from 900 pixels wide (desktop, iPad in landscape): windows float over the page as glass dialogs with a fitting width',
           },
           {
-            de: 'Glas: Rückfragen wie „Entriegeln“ oder „Garage öffnen“ sind eine eigene Seite im Fenster mit „Zurück“; der Ziffernblock für Alarm und Codes hat runde Tasten und wackelt bei falschem Code',
-            en: 'Glass: questions such as “Unlock” or “Open garage” are a page of their own inside the window with “Back”; the keypad for the alarm and codes has round keys and shakes on a wrong code',
+            de: 'Glas: Rückfragen wie „Entriegeln“ oder „Garage öffnen“ sind eine eigene Seite im Fenster mit „Zurück“; der Ziffernblock des Alarms hat runde Tasten und wackelt bei falschem Code',
+            en: 'Glass: questions such as “Unlock” or “Open garage” are a page of their own inside the window with “Back”; the alarm keypad has round keys and shakes on a wrong code',
           },
           {
             de: 'Glas am Handy: Benachrichtigungen aus dem Avatar-Menü als Fenster, neueste zuerst, mit Uhrzeit, Verwerfen und „Alle verwerfen“',

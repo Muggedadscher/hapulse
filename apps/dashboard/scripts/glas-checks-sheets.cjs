@@ -76,6 +76,16 @@ module.exports = function sheets(h) {
     sc.path = sc.path || '/';
     sc.viewport = true;
   }
+  /** Windows a style or width does not have. Any other skip fails the window checks: a trigger that an upstream merge
+   *  renamed would otherwise pass without its window ever opening. */
+  const SKIPS = {
+    classic: ['phone win-weather', 'phone win-pool-restart', 'desktop win-pool-restart'],
+    glas: [],
+  };
+  const skipped = (windows, style) => {
+    const list = Object.entries(windows).filter(([, v]) => v.skipped);
+    return { all: list.map(([n]) => n), unexpected: list.filter(([n]) => !SKIPS[style].includes(n)).map(([n, v]) => `${n}: ${v.skipped}`) };
+  };
 
   // ---- checks --part sheets ----
 
@@ -207,8 +217,10 @@ module.exports = function sheets(h) {
       // the keypad has no Escape in Klassisch (K56), the pool restart is Glas only
       const bad = Object.entries(res.windows).filter(([n, v]) => !v.skipped && (v.dialogs < 1 && !/keypad/.test(n) || v.remnants > 0
         || (!/keypad/.test(n) && (v.after.dialogs > 0 || v.after.overflow !== ''))));
-      out.sheetsClassicBad = bad.map(([n]) => n);
-      out.sheetsClassicOk = bad.length === 0;
+      const skips = skipped(res.windows, 'classic');
+      out.sheetsClassicBad = bad.map(([n]) => n).concat(skips.unexpected);
+      out.sheetsClassicSkipped = skips.all;
+      out.sheetsClassicOk = out.sheetsClassicBad.length === 0;
     });
 
     // 2. The three side findings of Klassisch (K63) as a measurement: (a) Escape closes nested windows all at once,
@@ -340,6 +352,25 @@ module.exports = function sheets(h) {
         const back = await state(page);
         return { grown: grown.sheet, back: back.sheet };
       });
+      // a mouse drag ends with the pointer captured by the panel, so its click never reaches the grabber: the grabber
+      // still answers a key afterwards (review finding 6; a click of the drag itself is swallowed for 500 ms)
+      await run('win-people', async function keyAfterMouseDrag(page) {
+        const g = await grip(page);
+        await page.mouse.move(g.x, g.y);
+        await page.mouse.down();
+        for (let i = 1; i <= 6; i++) await page.mouse.move(g.x, g.y - 6 * i);
+        await page.mouse.up();
+        await sleep(100);
+        await settleAnimations(page);
+        const dragged = await state(page);
+        await sleep(600);
+        await ev(page, () => __s.panel().querySelector('.g-sheet-grabber').focus());
+        await page.keyboard.press('Enter');
+        await sleep(100);
+        await settleAnimations(page);
+        const keyed = await state(page);
+        return { dragged: dragged && dragged.sheet, keyed: keyed && keyed.sheet };
+      });
       await run('win-keypad-security', async function keypadStays(page, s) {
         const g = await grip(page);
         await touchDrag(page, g.x, g.y, s.rect.h * 0.6, 500);
@@ -353,6 +384,7 @@ module.exports = function sheets(h) {
         && res.largeShrinks.before === 'large' && res.largeShrinks.sheet === 'medium'
         && !res.largeCloses.open && !res.fling.open
         && res.grabberTap.grown === 'large' && res.grabberTap.back === 'medium'
+        && !!res.keyAfterMouseDrag.dragged && !!res.keyAfterMouseDrag.keyed && res.keyAfterMouseDrag.keyed !== res.keyAfterMouseDrag.dragged
         && res.keypadStays.open && near(res.keypadStays.y, res.keypadStays.y0);
     });
 
@@ -541,10 +573,16 @@ module.exports = function sheets(h) {
     //     at most 200 ms (K65).
     await block('sheetsFieldsMotion', async () => {
       const res = { fields: {} };
-      for (const name of ['win-weather', 'win-entities', 'win-nvr-setup']) {
+      for (const name of ['win-weather', 'win-entities', 'win-nvr-setup', 'win-nvr-rooms']) {
         const sc = scenes[name];
         const w = await open('phone', 'glas', sc.path, sc);
         await openWin(w.page, name);
+        // the demo Sentinel has no cameras, so the rooms window shows no select: one row as NvrCameraRoomsModal renders it
+        if (name === 'win-nvr-rooms') {
+          await ev(w.page, () => __s.panel().querySelector('.modal-body').insertAdjacentHTML('beforeend', '<div class="nvr-camrooms">'
+            + '<label class="nvr-camrooms__row"><span class="nvr-camrooms__name">Demo</span><span class="nvr-select">'
+            + '<select class="nvr-select__native"><option value="">–</option></select></span></label></div>'));
+        }
         res.fields[name] = await ev(w.page, () => [...document.querySelectorAll('.modal-panel input:not([type=checkbox]):not([type=range]), .modal-panel select, .modal-panel textarea')]
           .filter((e) => __g.visible(e)).map((e) => parseFloat(getComputedStyle(e).fontSize)));
         await w.close();
@@ -561,7 +599,8 @@ module.exports = function sheets(h) {
     });
 
     // 11. A window that stays: switching the style with a window open (Glas → Klassisch → Glas) — no ghost, no
-    //     opening movement, the scroll lock right and free afterwards.
+    //     opening movement, the scroll lock right and free afterwards. Closed after a switch either way, the window
+    //     gives the focus back to its trigger (review finding 5).
     await block('sheetsStyleSwitch', async () => {
       const w = await open('phone', 'glas', '/settings');
       await openWin(w.page, 'win-entities');
@@ -580,10 +619,23 @@ module.exports = function sheets(h) {
       await settleAnimations(w.page);
       const after = await ev(w.page, () => __s.rest(null));
       await w.close();
-      out.sheetsStyleSwitch = { classic, glas, after };
+      const focus = {};
+      for (const [from, to] of [['glas', 'classic'], ['classic', 'glas']]) {
+        const f = await open('phone', from, '/settings');
+        await openWin(f.page, 'win-entities');
+        await ev(f.page, (q) => document.querySelector(`[data-glas-style-option="${q}"]`).click(), to);
+        await sleep(300);
+        await f.page.keyboard.press('Escape');
+        await sleep(400);
+        await settleAnimations(f.page);
+        focus[`${from}→${to}`] = await ev(f.page, () => __s.rest('.admin-entities-btn'));
+        await f.close();
+      }
+      out.sheetsStyleSwitch = { classic, glas, after, focus };
       out.sheetsStyleSwitchOk = classic.dialogs === 1 && classic.ghosts === 0 && classic.style !== 'glas' && classic.overflow === 'hidden'
         && classic.remnants === 0 && glas.dialogs === 1 && glas.ghosts === 0 && glas.style === 'glas' && glas.sheets
-        && glas.overflow === '' && glas.moving === 0 && after.clean;
+        && glas.overflow === '' && glas.moving === 0 && after.clean
+        && Object.values(focus).every((r) => r.clean && r.focusOnChip);
     });
 
     // 13. Closing animates on every way (K47, K69): windows that disappear instead of getting open=false (device,
@@ -692,7 +744,8 @@ module.exports = function sheets(h) {
       out.sheetsMenusOk = Object.values(res).every((r) => r.opened && r.moving > 0 && r.rest.display === 'none' && !r.rest.hitScrim);
     });
 
-    // 16. Reopening while the ghost still runs: one window, no double.
+    // 16. Reopening while the ghost still runs: one window, no double — the new window takes the ghost's place at once
+    //     (`takeGhost` drops it when the window registers, in the task of the tap).
     await block('sheetsReopen', async () => {
       const w = await open('phone', 'glas', '/');
       await openWin(w.page, 'win-people');
@@ -700,25 +753,30 @@ module.exports = function sheets(h) {
       await sleep(80);
       const during = await ev(w.page, () => document.querySelectorAll('.g-sheet-ghost').length);
       await w.page.locator('.summary-chip[aria-label^="people:"]').filter({ visible: true }).first().click();
+      const atOnce = await ev(w.page, () => document.querySelectorAll('.g-sheet-ghost').length);
       await sleep(100);
       await settleAnimations(w.page);
       await until(w.page, () => !document.querySelector('.g-sheet-ghost'), null, 3000);
       const after = await ev(w.page, () => ({ panels: __s.panels().length, ghosts: document.querySelectorAll('.g-sheet-ghost').length,
         sheet: __s.panel() && __s.state().sheet }));
       await w.close();
-      out.sheetsReopen = { during, after };
-      out.sheetsReopenOk = during === 1 && after.panels === 1 && after.ghosts === 0 && after.sheet === 'medium';
+      out.sheetsReopen = { during, atOnce, after };
+      out.sheetsReopenOk = during === 1 && atOnce === 0 && after.panels === 1 && after.ghosts === 0 && after.sheet === 'medium';
     });
 
     // 18. The ghost shows the window as it was (plan §13.1): every text that showed in a scroll area sits at the same place
     //     in the ghost, measured right after the ghost decides (a mutation observer runs before its microtask and queues
-    //     the measurement behind it; the closing animation still stands at its start). The entity list is big enough to
-    //     be copied in part (only what shows, plus a margin), lights and the detail are copied whole.
+    //     the measurement behind it; the closing animation still stands at its start). The entity list and "What's new"
+    //     are big enough to be copied in part (only what shows, plus a margin), lights and the detail are copied whole.
+    //     `margins` puts above what shows what an empty box of the same size would move (review finding 9): a margin
+    //     that passes through its parent, and an inline-block that sets the height of its line by its baseline.
     await block('sheetsGhostCopy', async () => {
       const res = {};
+      const SHIFTERS = '<div><p style="margin:30px 0">Rand</p></div>'
+        + '<div><span style="display:inline-block;font-size:12px;line-height:40px">Grundlinie</span><span style="font-size:30px">y</span></div>';
       // the entity groups are closed <details> (not rendered); `entitiesOpen` opens the biggest one and scrolls down
-      for (const [key, name, openGroup] of [['entities', 'win-entities'], ['entitiesOpen', 'win-entities', true],
-        ['lights', 'win-lights'], ['detail', 'win-detail']]) {
+      for (const [key, name, openGroup, shifters] of [['entities', 'win-entities'], ['entitiesOpen', 'win-entities', true],
+        ['margins', 'win-entities', true, SHIFTERS], ['whatsnew', 'win-whatsnew'], ['lights', 'win-lights'], ['detail', 'win-detail']]) {
         const sc = scenes[name];
         const w = await open('phone', 'glas', sc.path, sc);
         await openWin(w.page, name);
@@ -729,13 +787,14 @@ module.exports = function sheets(h) {
           return groups[0].getElementsByTagName('*').length;
         });
         await sleep(300);
-        const before = await ev(w.page, () => {
+        const before = await ev(w.page, (html) => {
           const panel = __s.panel();
           const scroller = [...panel.querySelectorAll('*')].find((e) => e.scrollHeight > e.clientHeight + 1
             && ['auto', 'scroll'].includes(getComputedStyle(e).overflowY));
+          if (scroller && html) scroller.insertAdjacentHTML('afterbegin', html);
           if (scroller) scroller.scrollTop = Math.round((scroller.scrollHeight - scroller.clientHeight) / 2);
           return { scrolled: scroller ? scroller.scrollTop : 0 };
-        });
+        }, shifters || '');
         await sleep(200);
         const texts = () => {
           const panel = document.querySelector('.g-sheet-ghost > .modal-panel') || __s.panel();
@@ -787,7 +846,75 @@ module.exports = function sheets(h) {
         // closed groups keep only their summary; of the open, scrolled group only what shows (plus a margin)
         && res.entities.ghostNodes < res.entities.nodes / 4
         && res.entitiesOpen.scrolled > 0 && res.entitiesOpen.ghostNodes < res.entitiesOpen.openNodes / 2
+        && res.margins.ghostNodes < res.margins.nodes && res.whatsnew.scrolled > 0 && res.whatsnew.ghostNodes < res.whatsnew.nodes
         && res.lights.scrolled > 0 && res.lights.ghostNodes === res.lights.nodes;
+    });
+
+    // 20. A tap's element is the origin only until its click is done (review finding 7): a window that opens a moment
+    //     later without a tap of its own (here: from a timer) does not grow out of it.
+    await block('sheetsOriginExpiry', async () => {
+      const w = await open('phone', 'glas', '/');
+      const tab = '.app-tabs__item--active';
+      await ev(w.page, (q) => {
+        const chip = [...document.querySelectorAll('.summary-chip[aria-label^="people:"]')].find((e) => __g.visible(e));
+        document.querySelector(q).addEventListener('click', () => setTimeout(() => chip.click(), 40), { once: true });
+      }, tab);
+      await press(w.page, (q) => document.querySelector(q), tab);
+      await until(w.page, () => !!__s.panel());
+      const first = await ev(w.page, () => __s.state().rect);
+      await settleAnimations(w.page);
+      const end = await ev(w.page, () => __s.state().rect);
+      await w.close();
+      out.sheetsOriginExpiry = { first, end };
+      out.sheetsOriginExpiryOk = first.w >= end.w * 0.9;
+    });
+
+    // 19. The ghost loads nothing again (review finding 2): a `no-store` picture and a stream that is still loading (a
+    //     camera's MJPEG) are requested once, also after the window closed; the ghost shows the picture as a still and
+    //     keeps the stream's place empty.
+    await block('sheetsGhostMedia', async () => {
+      const w = await open('phone', 'glas', scenes['win-detail'].path, scenes['win-detail']);
+      const asked = { still: 0, stream: 0 };
+      const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      await w.page.route('**/__ghost-probe/**', (route) => {
+        if (route.request().url().includes('stream')) {
+          asked.stream++; // never answered: a stream that is still loading
+          return;
+        }
+        asked.still++;
+        route.fulfill({ status: 200, headers: { 'content-type': 'image/png', 'cache-control': 'no-store' }, body: png });
+      });
+      await openWin(w.page, 'win-detail');
+      await ev(w.page, () => __s.panel().querySelector('.modal-body').insertAdjacentHTML('afterbegin',
+        '<img class="probe-still" alt="" src="/__ghost-probe/still.png" style="display:block;width:120px;height:80px">'
+        + '<img class="probe-stream" alt="" src="/__ghost-probe/stream.mjpg" style="display:block;width:120px;height:80px">'));
+      const loaded = await until(w.page, () => { const i = document.querySelector('.probe-still'); return i.complete && i.naturalWidth > 0; });
+      await sleep(200);
+      const before = { ...asked };
+      await ev(w.page, () => {
+        const mo = new MutationObserver((records) => {
+          const ghost = records.flatMap((r) => [...r.addedNodes]).find((n) => n.classList && n.classList.contains('g-sheet-ghost'));
+          if (!ghost) return;
+          mo.disconnect();
+          const body = ghost.querySelector('.modal-body');
+          const stream = body.querySelector('.probe-stream');
+          window.__ghostMedia = {
+            still: body.firstElementChild ? body.firstElementChild.tagName : null,
+            streamHidden: !!stream && stream.style.visibility === 'hidden',
+            sources: [...ghost.querySelectorAll('img, source, video, audio, iframe')].filter((e) => e.hasAttribute('src')
+              || e.hasAttribute('srcset') || e.hasAttribute('poster')).length,
+          };
+        });
+        mo.observe(document.body, { childList: true });
+      });
+      await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close'));
+      await sleep(1200);
+      const ghost = await ev(w.page, () => window.__ghostMedia || null);
+      const after = { ...asked };
+      await w.close();
+      out.sheetsGhostMedia = { loaded, before, after, ghost };
+      out.sheetsGhostMediaOk = loaded && before.still === 1 && before.stream === 1 && after.still === 1 && after.stream === 1
+        && !!ghost && ghost.still === 'CANVAS' && ghost.streamHidden && ghost.sources === 0;
     });
 
     // 17. Performance (a report, GLAS-PLAN §5.5, plan §6.3), at full speed and at 4× CPU slowdown, Klassisch at 4× as the
@@ -880,7 +1007,11 @@ module.exports = function sheets(h) {
         }
       }
       out.sheetsAll = res;
-      out.sheetsAllOk = Object.values(res).every((r) => r.skipped || (!r.none && r.onTop && r.small.length === 0));
+      const skips = skipped(res, 'glas');
+      out.sheetsAllSkipped = skips.all;
+      out.sheetsAllUnexpectedSkips = skips.unexpected;
+      out.sheetsAllOk = skips.unexpected.length === 0
+        && Object.values(res).every((r) => r.skipped || (!r.none && r.onTop && r.small.length === 0));
     });
 
     out.sheetsPageErrors = pageErrors;

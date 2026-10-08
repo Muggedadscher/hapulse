@@ -73,6 +73,8 @@ export interface GlasSheet {
   on: boolean;
   /** `on` for effects that must stay silent in Glas without re-running (Modal's focus effect). */
   onRef: { readonly current: boolean };
+  /** The element the window opened from, taken in either style (stable; Modal: focus back after a style switch). */
+  openedFrom: { readonly current: HTMLElement | null };
   /** Rendered inside another open Glas window: a page with "‹ Zurück", no grabber (K48). */
   page: boolean;
   /** For the window's content (`SheetContext`); null in Klassisch. */
@@ -115,12 +117,15 @@ interface Runtime {
   /** Last settled height (medium and dialogs follow their content from there). */
   height: number;
   drag: Drag | null;
-  suppressClick: boolean;
+  /** A drag ended: until then (performance.now()) the click it may still produce is no tap. */
+  suppressClickUntil: number;
   grabber: GrabberState;
   listeners: Set<() => void>;
 }
 
 const TAP_SLOP = 4;
+/** Browsers send the click of a short touch drag after pointerup, on touch even in a later task. */
+const CLICK_AFTER_DRAG_MS = 500;
 const PUSHED = 'data-g-pushed';
 const PAGE_SHADOW_REACH = 40;
 const DRAG_START = '.g-sheet-grabber, .g-sheet-header';
@@ -199,16 +204,18 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
     sizing: null,
     height: 0,
     drag: null,
-    suppressClick: false,
+    suppressClickUntil: 0,
     grabber: { detent: 'medium', single: false },
     listeners: new Set(),
   }));
 
   // The trigger is taken before the commit: React's autoFocus (layout phase) would already have moved the focus (K55).
-  if (glas && o.open && !st.registered) {
+  // In either style and once per opening: after a switch of the style while the window is open, the focus is inside it.
+  if (o.open && !st.wasOpen) {
     const active = document.activeElement;
     st.trigger = peekOrigin()?.el ?? (active instanceof HTMLElement && active !== document.body ? active : null);
   }
+  const openedFrom = useMemo(() => ({ get current() { return st.trigger; } }), [st]);
 
   const backdropRef = useCallback((el: HTMLDivElement | null) => {
     st.backdrop = el;
@@ -578,7 +585,7 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
 
     // ---- dragging (K51): grabber and header, below 900 px, sheets only ----
     const onPointerDown = (e: PointerEvent) => {
-      st.suppressClick = false;
+      st.suppressClickUntil = 0;
       if (st.pres !== 'sheet' || st.drag || !e.isPrimary || e.button !== 0) return;
       const t = e.target instanceof Element ? e.target : null;
       if (!t?.closest(DRAG_START) || t.closest(DRAG_NOT)) return;
@@ -625,7 +632,8 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       if (!d || e.pointerId !== d.pointer) return;
       st.drag = null;
       if (!d.moved || !st.detent) return; // a tap: the grabber's click handles it
-      st.suppressClick = true;
+      // with a time limit: a mouse drag ends captured on the panel, its click never reaches the grabber
+      st.suppressClickUntil = performance.now() + CLICK_AFTER_DRAG_MS;
       const dy = e.clientY - d.y0;
       const snap =
         e.type === 'pointercancel'
@@ -652,8 +660,8 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
       settle(snap === 'stay' ? st.detent : snap);
     };
     grabber.toggle = () => {
-      if (st.suppressClick) {
-        st.suppressClick = false;
+      if (performance.now() < st.suppressClickUntil) {
+        st.suppressClickUntil = 0;
         return;
       }
       if (!st.registered || st.pres !== 'sheet' || !st.hasMedium || !st.detent) return;
@@ -787,6 +795,7 @@ export function useGlasSheet(o: SheetOptions): GlasSheet {
   return {
     on: glas,
     onRef,
+    openedFrom,
     page: glas && parent !== null,
     context: glas ? context : null,
     backdropRef: glas ? backdropRef : undefined,

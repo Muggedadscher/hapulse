@@ -510,7 +510,8 @@
 }
 
 /* Reduced motion (plan K38): menus and popovers cross-fade 200 ms instead of growing or sliding. Upstream shortens
-   every duration with !important, so these need it too — only here and only for animation-* (selector guard). */
+   every duration with !important, so these need it too — only under reduced motion and only for animation-* and
+   transition-* (selector guard; the closing fade of More and rooms below, K61). */
 @media (prefers-reduced-motion: reduce) {
   :root[data-style='glas'] :is(
       .g-avatar-dim,

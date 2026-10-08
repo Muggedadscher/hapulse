@@ -1194,8 +1194,9 @@
   font-weight: 400;
 }
 
-/* 16 px at least: iOS zooms into smaller fields on focus (K54; also the entity search of Settings → Entities) */
-:root[data-style='glas'] .modal-body .settings-text-input {
+/* 16 px at least: iOS zooms into smaller fields on focus (K54; also the entity search of Settings → Entities and the
+   NVR windows: connection fields and the room of each camera) */
+:root[data-style='glas'] .modal-body :is(.settings-text-input, .nvr-input, .nvr-select__native) {
   font-size: 16px;
 }
 

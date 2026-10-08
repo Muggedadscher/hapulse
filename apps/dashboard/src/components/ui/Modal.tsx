@@ -52,9 +52,10 @@ export function Modal({ open, onClose, title, icon, children, footer, className,
   // Save the element that triggered the modal so we can return focus on close
   useEffect(() => {
     if (open) {
-      triggerRef.current = document.activeElement;
+      // [fork] Glas has moved the focus into the window by now: its trigger, for a close after a switch to Klassisch
+      triggerRef.current = sheet.onRef.current ? sheet.openedFrom.current : document.activeElement;
     }
-  }, [open]);
+  }, [open, sheet.onRef, sheet.openedFrom]); // [fork] both stable
 
   // Focus the panel when it opens
   useEffect(() => {

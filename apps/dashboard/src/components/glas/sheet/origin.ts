@@ -1,9 +1,10 @@
 /**
  * [fork] Glas sheets (stage 3) — the element a window opens from (plan docs/glas/PLAN-ETAPPE-3.md §3.3, K55).
- * `GlasRuntime` reports every pointerdown and every Enter/Space keydown (capture phase). A window that opens within
- * 1.5 s takes the element once: it grows out of it, shrinks back into it and returns the focus to it. Windows that open
- * without a gesture ("Was ist neu" from an effect) find nothing. iOS gives buttons no focus on a tap, so the focused
- * element alone would not do.
+ * `GlasRuntime` reports every pointerdown and every Enter/Space keydown (capture phase) and forgets the element one task
+ * after the click that follows. A window that opens until then (at most 1.5 s after the press: a long press opens
+ * before any click) takes the element once: it grows out of it, shrinks back into it and returns the focus to it.
+ * Windows that open without a gesture ("Was ist neu" from an effect) find nothing. iOS gives buttons no focus on a tap,
+ * so the focused element alone would not do.
  */
 
 const ORIGIN = 'button, a, [role="button"], [role="menuitem"], .card, [data-morph-origin]';
@@ -47,6 +48,11 @@ export function takeOrigin(): Origin | null {
   const o = peekOrigin();
   last = null;
   return o;
+}
+
+/** Forgets `o` unless a newer press replaced it (GlasRuntime, one task after the click). */
+export function forgetOrigin(o: Origin): void {
+  if (last === o) last = null;
 }
 
 /** The rectangle to morph from or into: live while the element is in the document, else where it was. */

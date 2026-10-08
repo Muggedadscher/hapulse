@@ -12,7 +12,9 @@
    --g-surface-tint (minimum tint, K28) and, for another material, --g-surface-fill/-filter/-solid/-shadow/-rim
    (sheet material, phone toast). It never sets background, filter or shadow itself. "Fertig" (prominent, no glass)
    is not in the list. Since stage 3 the windows are in it while glass (medium sheet, desktop dialog — sheets.css;
-   plan docs/glas/PLAN-ETAPPE-3.md §3.2). */
+   plan docs/glas/PLAN-ETAPPE-3.md §3.2). No glass surface INSIDE a window: its parts get `filter` while a page lies
+   on them and move with `opacity`, which makes them the backdrop root of anything glass in them — it would blur
+   nothing. A later stage that needs one there (NVR controls) first takes those effects off the parts. */
 
 :root[data-style='glas']
   :where(

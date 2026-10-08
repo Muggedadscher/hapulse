@@ -671,7 +671,9 @@ Code-Feld, K56), `components/glas/notificationOrder.ts` mit Test (neueste zuerst
 | U5 | §3.8 Pool | Die Dauerwahl bekommt in Glas ihr ganzes Layout aus `sheet-content.css` | `pages/Pool.css` ist nur geladen, wenn die Poolseite schon offen war; vom Pool-Chip der Startseite aus fehlte das Layout (in Klassisch auch — Nebenbefund für den User) |
 | U6 | K54 | 16 px auch für die Entitäten-Suche in den Einstellungen (`.settings-text-input`, Upstream 15 px) | Von der Feld-Probe gefunden |
 | U7 | §3.4 Schritt 2, §6.3 | Fenster mit mehr als 600 Elementen kopiert der Geist nur, soweit ihre Scroll-Bereiche sie zeigen (plus ein Viertel der Höhe darüber und darunter); alles weiter draußen wird ein leerer Kasten gleicher Größe, geschlossene `<details>` behalten nur ihre Zusammenfassung | Die Entitätenliste (2121 Elemente) kostete beim Schließen 38 ms, bei 4-facher Drosselung 177 ms; der Geist schrumpft oder gleitet nur, was außerhalb eines Scroll-Bereichs liegt, kommt nie ins Bild |
-| U8 | §3.4 Schritt 2 und 3 | Alles, was der Geist vom Original braucht (Rechtecke, Ursprung, Schatten, Scroll-Lagen), liest er vor dem Einhängen; der Klon wartet mit `display: none` statt `visibility: hidden`, die Scroll-Lagen setzt erst die Entscheidung | Chromium berechnete den versteckten Klon sonst mitten im Commit, als React das Fenster entfernte (29 ms bei der Entitätenliste); ein Lesen danach legte ihn erneut aus |
+| U8 | §3.4 Schritt 2 und 3 | Alles, was der Geist vom Original braucht (Rechtecke, Ursprung, Schatten, Scroll-Lagen), liest er vor dem Einhängen; der Klon wartet mit `display: none` statt `visibility: hidden`, die Scroll-Lagen setzt erst die Entscheidung. Das legt einen gescrollten Klon dort aus, zusammen mit der Seite: eine Scroll-Lage braucht das Layout, das sonst im nächsten Bild anfiele | Chromium berechnete den versteckten Klon sonst mitten im Commit, als React das Fenster entfernte (29 ms bei der Entitätenliste); ein Lesen danach legte ihn erneut aus |
+| U9 | §3.4 Schritt 2 | Kopien von Bildern, Videos, Quellen und iframes entstehen ohne die Attribute, die laden (`src`, `srcset`, `poster` …); Geladenes zeichnet der Geist als Standbild, noch nicht Geladenes bleibt ein leerer Kasten. Teilkopien ersetzen Elemente nicht durch leere Kästen, wenn ein Rand ihres Inhalts durch sie hindurchgeht oder sie Inline-Kästen sind | Review §13.2 Befunde 2 und 9: ein geklontes, geladenes Bild wurde sofort neu angefordert (ein MJPEG-Strom der Kamera hätte eine zweite Verbindung bekommen); ein leerer Kasten verlor durchgehende Ränder und die Grundlinie |
+| U10 | §3.3 | Der gedrückte Ursprung gilt nur bis einen Task nach dem Klick (höchstens 1,5 s, ein Langdruck öffnet vor dem Klick); der Auslöser für den Fokus wird in beiden Stilen beim Öffnen gemerkt | Review §13.2 Befunde 5 und 7: ein Fenster ohne eigenen Tipp wuchs sonst aus dem zuletzt gedrückten Knopf, und nach einem Stilwechsel bei offenem Fenster ging der Fokus beim Schließen verloren |
 
 Ergänzungen im Rahmen von §3.8: Schlösser zeigen je Zeile den einen möglichen Knopf („Entriegeln“ bei verriegelt,
 sonst „Verriegeln“; bei klemmt/unbekannt beide gesperrt wie heute), Klassisch zeigt beide; der Kreis im Alarm-Kopf ist
@@ -689,14 +691,19 @@ laufenden Sentinel; alle Gesten in WebKit.
 
 - Unit-Tests: `sheetMath`, `sheetStack`, `notificationOrder`, Selektor-Wächter; `smoke.mjs` mit den neuen
   Kontrastpaaren (K71).
-- `checks --part sheets`: alle Blöcke grün (Klassisch-DOM, Geometrie, Ziehen, Morph, wachsender Inhalt, Seiten samt
-  Ziffernblock und Bestätigung im Detail, Übergabe, Tab-Leiste und Glas-Regeln, Benachrichtigungen, Felder und
-  reduzierte Bewegung, Stilwechsel, Schließen auf jedem Weg inklusive Routenwechsel und gescrollter Liste, Fenster per
-  Effekt, Mehr/Räume, Wiederöffnen, alle Fenster, Geist-Kopie); dieselben Fenster-Proben auch gegen den
-  Vite-Entwicklungsserver (StrictMode): kein Geist, wo ein Fenster bleibt. Die Geist-Kopie prüft, dass jeder Text, der
-  in einem Scroll-Bereich zu sehen war, im Geist an derselben Stelle steht, auch in der Teilkopie (Entitätenliste mit
-  offener, gescrollter Gruppe: 435 statt 2121 Elemente). `--part frame` und `--part stage1` grün; die Linsen-Probe
-  schaut jetzt mehrmals statt einmal.
+- `checks --part sheets`: alle Blöcke grün (Klassisch-DOM, Geometrie, Ziehen samt Taste nach einem Maus-Zug, Morph,
+  wachsender Inhalt, Seiten samt Ziffernblock und Bestätigung im Detail, Übergabe, Tab-Leiste und Glas-Regeln,
+  Benachrichtigungen, Felder (auch die NVR-Fenster) und reduzierte Bewegung, Stilwechsel samt Fokus danach, Schließen
+  auf jedem Weg inklusive Routenwechsel und gescrollter Liste, Fenster per Effekt, Mehr/Räume, Wiederöffnen, alle
+  Fenster, Geist-Kopie, Geist lädt nichts neu, Ursprung verfällt nach dem Klick); dieselben Fenster-Proben auch gegen
+  den Vite-Entwicklungsserver (StrictMode): kein Geist, wo ein Fenster bleibt. Die Geist-Kopie prüft, dass jeder Text,
+  der in einem Scroll-Bereich zu sehen war, im Geist an derselben Stelle steht, auch in der Teilkopie (Entitätenliste
+  mit offener, gescrollter Gruppe: 435 statt 2121 Elemente; „Was ist neu“: 119 statt 742; mit einem durchgehenden Rand
+  und einem Inline-Block über dem sichtbaren Bereich, ohne U9 standen dort 23 von 24 Texten verschoben). Übersprungene
+  Szenen machen Klassisch-DOM und „alle Fenster“ rot, außer den erwarteten (Wetter am Handy und Pool-Neustart gibt es
+  in Klassisch nicht). Gegen den Stand vor den Behebungen waren die neuen Prüfungen zu Taste nach Maus-Zug,
+  Stilwechsel-Fokus, Ursprung, Geist-Kopie mit Rändern und Geist-Laden rot. `--part frame` und `--part stage1`
+  grün; die Linsen-Probe schaut jetzt mehrmals statt einmal.
 - K63 nachgestellt: (a) ja — ein Esc schließt beide verschachtelten Fenster; (b) ja — nach dem Routenwechsel bleibt
   `body.style.overflow` auf `hidden`; (c) in der Demo nicht messbar.
 - Klassisch: 284 Aufnahmen (Seiten und Rahmen 136, Fenster 148; Handy, iPad, Desktop, hell und dunkel) gleichen dem

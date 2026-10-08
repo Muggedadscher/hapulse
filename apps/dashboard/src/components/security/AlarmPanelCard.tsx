@@ -74,7 +74,7 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
 
   // [fork] the pad's content, the same in both styles
   const pad = (
-    <>
+    <>{/* [fork] */}
         <p className="numpad-modal__subtitle">{t('security.alarmPanel.numpad.subtitle')}</p>
 
         {/* Pin dots display */}
@@ -133,7 +133,7 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
         <button type="button" className="numpad-modal__cancel" onClick={onCancel}>
           {t('security.alarmPanel.numpad.cancel')}
         </button>
-    </>
+    </> // [fork]
   );
 
   // [fork] Glas: a window with the action as its title — a page in the alarm window, elsewhere a sheet of its own,
@@ -146,11 +146,11 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
     );
   }
 
-  return (
-    <div className="numpad-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label={t('security.alarmPanel.numpad.dialogAria')}>
-      <div className="numpad-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="numpad-modal__title">{actionLabel}</h3>
-        {pad}
+  return ( // [fork] moved below the Glas window, as on main otherwise
+    <div className="numpad-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label={t('security.alarmPanel.numpad.dialogAria')}>{/* [fork] moved */}
+      <div className="numpad-modal" onClick={(e) => e.stopPropagation()}>{/* [fork] moved */}
+        <h3 className="numpad-modal__title">{actionLabel}</h3>{/* [fork] moved */}
+        {pad}{/* [fork] */}
       </div>
     </div>
   );
