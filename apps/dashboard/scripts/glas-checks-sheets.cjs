@@ -710,40 +710,68 @@ module.exports = function sheets(h) {
       out.sheetsReopenOk = during === 1 && after.panels === 1 && after.ghosts === 0 && after.sheet === 'medium';
     });
 
-    // 17. Performance (a report, GLAS-PLAN §5.5, plan §6.3): Chromium at 4× CPU slowdown — frames dropped while a sheet
-    //     opens with its morph, and the longest task when a big window closes (the ghost clones it synchronously).
+    // 17. Performance (a report, GLAS-PLAN §5.5, plan §6.3), at full speed and at 4× CPU slowdown: frames dropped in the
+    //     900 ms after the press that opens a sheet (morph) and after the press that closes it (ghost), long tasks, and
+    //     how long the ghost's synchronous work takes — from the backdrop's clone until the ghost queues its decision
+    //     (clone, frozen styles, stills, insertion, scroll copy) — with the number of nodes it copies.
     await block('sheetsPerf', async () => {
       const res = {};
-      for (const [key, name] of [['lights', 'win-lights'], ['entities', 'win-entities'], ['detail', 'win-detail']]) {
-        const sc = scenes[name];
-        const w = await open('phone', 'glas', sc.path, sc);
-        const cdp = await w.page.context().newCDPSession(w.page);
-        await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
-        await ev(w.page, () => {
-          window.__perf = { frames: [], long: [] };
-          new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__perf.long.push(Math.round(e.duration)); })
-            .observe({ type: 'longtask' });
-          const tick = (t) => { window.__perf.frames.push(t); if (window.__perf.frames.length < 400) requestAnimationFrame(tick); };
-          requestAnimationFrame(tick);
-        });
-        const note = await sc.act(w.page);
-        if (note) throw new Error(`${name}: ${note}`);
-        await settleAnimations(w.page, 6000);
-        const opening = await ev(w.page, () => {
-          const f = window.__perf.frames;
-          let dropped = 0;
-          for (let i = 1; i < f.length; i++) dropped += Math.max(0, Math.round((f[i] - f[i - 1]) / 16.7) - 1);
-          const long = window.__perf.long.slice();
-          window.__perf.long.length = 0;
-          return { frames: f.length, dropped, long, nodes: __s.panel().querySelectorAll('*').length };
-        });
-        await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close'));
-        await sleep(1500);
-        const closing = await ev(w.page, () => ({ long: window.__perf.long.slice() }));
-        await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
-        await cdp.detach();
-        res[key] = { opening, closing };
-        await w.close();
+      for (const rate of [1, 4]) {
+        for (const [key, name] of [['lights', 'win-lights'], ['entities', 'win-entities'], ['detail', 'win-detail']]) {
+          const sc = scenes[name];
+          const w = await open('phone', 'glas', sc.path, sc);
+          const cdp = await w.page.context().newCDPSession(w.page);
+          await cdp.send('Emulation.setCPUThrottlingRate', { rate });
+          await ev(w.page, () => {
+            const p = (window.__perf = { frames: [], long: [], downs: [], clones: [], cloneAt: 0, cloneNodes: 0 });
+            new PerformanceObserver((l) => { for (const e of l.getEntries()) p.long.push(Math.round(e.duration)); })
+              .observe({ type: 'longtask' });
+            addEventListener('pointerdown', () => p.downs.push(performance.now()), true);
+            const tick = (t) => { p.frames.push(t); requestAnimationFrame(tick); };
+            requestAnimationFrame(tick);
+            const clone = Node.prototype.cloneNode;
+            Node.prototype.cloneNode = function (deep) {
+              if (this instanceof HTMLElement && this.classList.contains('modal-backdrop')) {
+                p.cloneNodes = this.querySelectorAll('*').length;
+                p.cloneAt = performance.now();
+              }
+              return clone.call(this, deep);
+            };
+            const queue = window.queueMicrotask;
+            window.queueMicrotask = function (cb) {
+              if (p.cloneAt) p.clones.push({ ms: +(performance.now() - p.cloneAt).toFixed(1), nodes: p.cloneNodes });
+              p.cloneAt = 0;
+              return queue.call(window, cb);
+            };
+          });
+          const frames = () => ev(w.page, () => {
+            const p = window.__perf;
+            const t0 = p.downs[p.downs.length - 1] || 0;
+            const f = p.frames.filter((t) => t >= t0 && t <= t0 + 900);
+            let dropped = 0;
+            let worst = 0;
+            for (let i = 1; i < f.length; i++) {
+              const d = f[i] - f[i - 1];
+              worst = Math.max(worst, d);
+              dropped += Math.max(0, Math.round(d / 16.7) - 1);
+            }
+            const long = p.long.slice();
+            p.long.length = 0;
+            return { frames: f.length, dropped, worst: Math.round(worst), long };
+          });
+          const note = await sc.act(w.page);
+          if (note) throw new Error(`${name}: ${note}`);
+          await settleAnimations(w.page, 6000);
+          await sleep(300);
+          const opening = { ...(await frames()), nodes: await ev(w.page, () => __s.panel().querySelectorAll('*').length) };
+          await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close'));
+          await sleep(1500);
+          const closing = { ...(await frames()), ghost: await ev(w.page, () => window.__perf.clones.slice()) };
+          await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+          await cdp.detach();
+          res[`${key}@${rate}x`] = { opening, closing };
+          await w.close();
+        }
       }
       out.sheetsPerf = res;
       out.sheetsPerfOk = true;
