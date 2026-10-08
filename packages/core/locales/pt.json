@@ -1359,5 +1359,17 @@
   "glas.avatar.editDone": "Terminar edição",
   "glas.avatar.menuLabel": "Menu da conta",
   "glas.edit.label": "Editar",
-  "glas.edit.done": "Concluído"
+  "glas.edit.done": "Concluído",
+  "glas.sheet.grow": "Expandir a folha",
+  "glas.sheet.shrink": "Reduzir a folha",
+  "glas.sheet.cancel": "Cancelar",
+  "glas.notifications.unread.one": "{count} por ler",
+  "glas.notifications.unread.other": "{count} por ler",
+  "glas.notifications.none": "Nada de novo",
+  "glas.notifications.count.one": "{count} notificação",
+  "glas.notifications.count.other": "{count} notificações",
+  "glas.notifications.dismissAll": "Dispensar todas",
+  "glas.notifications.dismissOne": "Dispensar: {title}",
+  "glas.notifications.emptyHint": "As novas mensagens do Home Assistant aparecem aqui.",
+  "glas.pool.restartAction": "Reiniciar"
 }

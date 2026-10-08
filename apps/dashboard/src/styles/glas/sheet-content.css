@@ -1,0 +1,1630 @@
+/* [fork] Glas — what the windows hold (docs/GLAS-DESIGN.md §7.18 sheet contents, §7.30 lists, §7.31 empty states;
+   plan docs/glas/PLAN-ETAPPE-3.md §3.8, K54, K56, K67, K71).
+
+   Only presentation of the existing markup: the same rows, buttons and texts, in iOS groups. Everything is scoped to
+   a window's body (.modal-body): several of these lists also stand on pages (garage and locks in the security
+   section, the alarm card, the pool duration picker, player tiles), which keep their look until their stage.
+   Switches, segments and sliders keep the classic form with Glas colours (stage 5); the cards of "Climate/Blinds
+   all" and the content of the entity detail follow in stages 4 and 5. No glass in the content. */
+
+/* ---- Groups (§7.30): opaque `group`, radius 22 (desktop dialog 20), no borders. Text in a group reads label2,
+   also in a glass window (sheets.css turns --text-dim into glassLabel2 for text directly on the glass). ---- */
+:root[data-style='glas']
+  .modal-body
+  :is(
+    .people-modal__list,
+    .lights-modal__list,
+    .doors-modal__list,
+    .garage-list,
+    .locks-list,
+    .alarm-panel-card__state-section,
+    .pool-modal__status,
+    .pool-modal__glances,
+    .pool-manual__custom,
+    .player-tile,
+    .weather-modal__hero,
+    .weather-modal__stat,
+    .weather-modal__forecast-list,
+    .waste-modal__next,
+    .waste-modal__list,
+    .g-notes__list
+  ) {
+  --text-dim: var(--g-label-2);
+  --text-faint: var(--g-label-2);
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+  box-shadow: none;
+}
+
+:root[data-style='glas']
+  .modal-body
+  :is(
+    .people-modal__list,
+    .lights-modal__list,
+    .doors-modal__list,
+    .garage-list,
+    .locks-list,
+    .pool-modal__glances,
+    .weather-modal__forecast-list,
+    .waste-modal__list,
+    .g-notes__list
+  ) {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* Group titles over a group: 15/20 600, sentence case, the count on the right. */
+:root[data-style='glas']
+  .modal-body
+  :is(
+    .lights-modal__group-label,
+    .doors-modal__group-label,
+    .media-modal__group-label,
+    .weather-modal__forecast-title,
+    .waste-modal__section-label
+  ) {
+  color: var(--text-dim);
+  font-family: var(--g-font);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .modal-body :is(.doors-modal__group-header, .media-modal__group-header) {
+  gap: 6px;
+  margin: 6px 4px 8px;
+  padding: 0;
+}
+
+/* the group's symbol: the title says it (sketch) */
+:root[data-style='glas'] .modal-body :is(.doors-modal__group-icon, .media-modal__group-icon) {
+  display: none;
+}
+
+:root[data-style='glas'] .modal-body :is(.lights-modal__group-label, .weather-modal__forecast-title) {
+  margin: 0 4px 8px;
+  padding: 0;
+}
+
+/* ---- Rows: hairline 0.5 px `sep` from the text start, none after the last (§7.30) ---- */
+:root[data-style='glas']
+  .modal-body
+  :is(
+    .people-modal__row,
+    .lights-modal__row,
+    .doors-modal__row,
+    .garage-row,
+    .locks-row,
+    .pool-modal__glance,
+    .weather-modal__forecast-row,
+    .waste-modal__row,
+    .g-notes__row
+  ) {
+  border: 0;
+  border-radius: 0;
+  background-repeat: no-repeat;
+  background-position: var(--g-row-sep, 16px) 0;
+  background-size: calc(100% - var(--g-row-sep, 16px)) 0.5px;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__row + .people-modal__row,
+:root[data-style='glas'] .modal-body .lights-modal__row + .lights-modal__row,
+:root[data-style='glas'] .modal-body .doors-modal__row + .doors-modal__row,
+:root[data-style='glas'] .modal-body .garage-row + .garage-row,
+:root[data-style='glas'] .modal-body .locks-row + .locks-row,
+:root[data-style='glas'] .modal-body .pool-modal__glance + .pool-modal__glance,
+:root[data-style='glas'] .modal-body .weather-modal__forecast-row + .weather-modal__forecast-row,
+:root[data-style='glas'] .modal-body .waste-modal__row + .waste-modal__row,
+:root[data-style='glas'] .modal-body .g-notes__row + .g-notes__row {
+  background-image: linear-gradient(var(--g-sep), var(--g-sep));
+}
+
+/* ---- Empty states in a window (§7.31): circle 56 `fill`, title 17/22 600, explanation 15/20 ---- */
+:root[data-style='glas'] .modal-body .empty-state {
+  gap: 0;
+  padding: 22px 20px 12px;
+}
+
+:root[data-style='glas'] .modal-body .empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 0 12px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  opacity: 1;
+}
+
+:root[data-style='glas'] .modal-body .empty-state__icon > svg {
+  width: 28px;
+  height: 28px;
+}
+
+:root[data-style='glas'] .modal-body .empty-state__title {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .empty-state__description {
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+/* ---- People: rows 62, avatar 40 with the zone dot 12, zone greenInk 600 at home ---- */
+:root[data-style='glas'] .modal-body .people-modal__row {
+  --g-row-sep: 66px;
+  position: relative;
+  gap: 12px;
+  min-height: 62px;
+  padding: 0 16px 0 14px;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__row:hover {
+  background-color: transparent;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__avatar {
+  border: 0;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .modal-body .people-modal__avatar-initial {
+  color: var(--g-label-2);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__row:has(.people-modal__zone--home) .people-modal__avatar {
+  background: var(--g-accent-soft);
+}
+
+:root[data-style='glas'] .modal-body .people-modal__row:has(.people-modal__zone--home) .people-modal__avatar-initial {
+  color: var(--g-accent-ink);
+}
+
+/* the zone dot sits on the avatar's lower right edge; the avatar clips its photo, so the row draws it */
+:root[data-style='glas'] .modal-body .people-modal__row::after {
+  content: '';
+  position: absolute;
+  top: calc(50% + 9px);
+  left: 43px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--g-label-3);
+  box-shadow: 0 0 0 2px var(--g-group);
+  pointer-events: none;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__row:has(.people-modal__zone--home)::after {
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .modal-body .people-modal__info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__name {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__zone {
+  color: var(--g-label-2);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__zone--home {
+  color: var(--g-green-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .people-modal__time {
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* ---- Lights: "Alle ausschalten" prominent 48, groups per room, rows 56 with the circle 32 ---- */
+:root[data-style='glas'] .modal-body .lights-modal__header-action {
+  display: block;
+  margin: 0 0 18px;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__header-action > .btn {
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--g-prominent);
+  color: var(--g-on-prominent);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__header-action > .btn:hover {
+  background: var(--g-prominent);
+  color: var(--g-on-prominent);
+  filter: brightness(1.04);
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__header-action > .btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__group {
+  margin-bottom: 18px;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__group:last-child {
+  margin-bottom: 0;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__row {
+  --g-row-sep: 58px;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 14px;
+  transition: background-color 150ms ease;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__row:hover {
+  background-color: var(--g-hover);
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__row:active {
+  background-color: var(--g-fill);
+  transform: none;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__row:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__icon {
+  border-radius: 50%;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__icon--on {
+  background: var(--g-yellow);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__icon--off {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__name-col {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__name {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body :is(.lights-modal__state, .lights-modal__state--on) {
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* ---- Doors and windows: two groups, open first; pill 26 "open" redSoft, "closed" fill, dot 7 ---- */
+:root[data-style='glas'] .modal-body .doors-modal {
+  gap: 10px;
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__group-count {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__group-count--alert {
+  color: var(--g-red-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__row {
+  gap: 8px;
+  min-height: 54px;
+  padding: 0 14px 0 16px;
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__row-name {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__pill {
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__pill--open {
+  background: var(--g-red-soft);
+  color: var(--g-pill-open-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__pill--closed {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .doors-modal__dot {
+  width: 7px;
+  height: 7px;
+  background: var(--g-red);
+}
+
+/* the closed pill has no dot in the markup; the sketch shows a green one */
+:root[data-style='glas'] .modal-body .doors-modal__pill--closed::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--g-green);
+}
+
+/* ---- Garage: circle 40 soft, state 15/600 in the ink without a pill, buttons 44; the buttons take their own line
+   on the phone and stand in the row on the desktop ---- */
+:root[data-style='glas'] .modal-body .garage-row {
+  --g-row-sep: 66px;
+  gap: 12px;
+  min-height: 0;
+  padding: 14px;
+}
+
+:root[data-style='glas'] .modal-body .garage-row:hover {
+  background-color: transparent;
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__icon, .locks-row__icon) {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__name-col, .locks-row__name-col) {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__name, .locks-row__name) {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__room, .locks-row__room) {
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .modal-body .garage-row__state {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+:root[data-style='glas'] .modal-body .garage-row__actions {
+  flex: 1 0 100%;
+  gap: 8px;
+  margin-left: 0;
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn) {
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  transition: background-color 150ms ease, opacity 150ms ease;
+}
+
+:root[data-style='glas'] .modal-body .garage-row__btn {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 22px;
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn):not(:disabled):hover {
+  border: 0;
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn):disabled {
+  opacity: 0.4;
+}
+
+:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Locks: circle 40 (locked green, otherwise red as on the chip), the state under the name, one button 40:
+   "Entriegeln" while locked, "Verriegeln" otherwise — disabled while busy or jammed as today ---- */
+:root[data-style='glas'] .modal-body .locks-row {
+  --g-row-sep: 66px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 0;
+  min-height: 0;
+  padding: 12px 12px 12px 14px;
+}
+
+:root[data-style='glas'] .modal-body .locks-row:hover {
+  background-color: transparent;
+}
+
+:root[data-style='glas'] .modal-body .locks-row__icon {
+  grid-row: 1 / span 2;
+}
+
+:root[data-style='glas'] .modal-body .locks-row__icon--unlocked {
+  background: var(--g-red-soft);
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .modal-body .locks-row__name-col {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .modal-body .locks-row__state {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: start;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+:root[data-style='glas'] .modal-body .locks-row__state--unlocked {
+  color: var(--g-red-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .locks-row__actions {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  margin-left: 0;
+}
+
+:root[data-style='glas'] .modal-body .locks-row__btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 20px;
+}
+
+:root[data-style='glas'] .modal-body .locks-row:has(.locks-row__state--locked) .locks-row__btn--lock,
+:root[data-style='glas'] .modal-body .locks-row:has(.locks-row__state--unlocked) .locks-row__btn--unlock {
+  display: none;
+}
+
+/* ---- Alarm: head circle 56 + state 22/28 700; modes in two columns, 52 high, radius 18, the chosen one accentSoft
+   with a 2 px accent ring; only supported modes (as today) ---- */
+:root[data-style='glas'] .modal-body .alarm-modal__content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+:root[data-style='glas'] .modal-body .alarm-modal__content .alarm-panel-card,
+:root[data-style='glas'] .modal-body .alarm-modal__content .alarm-panel-card:hover {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__inner {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__state-section {
+  gap: 14px;
+  padding: 16px;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__state-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__state-icon > svg {
+  width: 28px;
+  height: 28px;
+}
+
+:root[data-style='glas']
+  .modal-body
+  :is(.alarm-panel-card__state--home, .alarm-panel-card__state--night, .alarm-panel-card__state--away)
+  .alarm-panel-card__state-icon {
+  background: var(--g-green-soft);
+  color: var(--g-green-ink);
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__state--warning .alarm-panel-card__state-icon {
+  background: var(--g-warn-soft);
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__state--triggered .alarm-panel-card__state-icon {
+  background: var(--g-red-soft);
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__name {
+  margin: 0;
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__state-label {
+  gap: 6px;
+  color: var(--g-label);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__divider {
+  display: none;
+}
+
+:root[data-style='glas'] .modal-body .alarm-panel-card__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* "Unscharf" closes the grid on a line of its own when it would stand alone */
+:root[data-style='glas'] .modal-body .alarm-btn--disarm:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+:root[data-style='glas'] .modal-body .alarm-btn,
+:root[data-style='glas'] .modal-body .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 52px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--g-group);
+  box-shadow: none;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color 250ms ease, color 250ms ease, box-shadow 250ms ease, transform 100ms ease-out;
+}
+
+:root[data-style='glas'] .modal-body .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
+  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+}
+
+:root[data-style='glas'] .modal-body .alarm-btn.alarm-btn--active {
+  background: var(--g-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--g-accent);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .modal-body .alarm-btn:disabled:not(.alarm-btn--active) {
+  opacity: 0.45;
+}
+
+:root[data-style='glas'] .modal-body .alarm-btn.alarm-btn--active:disabled {
+  opacity: 1;
+}
+
+:root[data-style='glas'] .modal-body .alarm-btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Alarm code (K56): a page in the alarm window or a window of its own — subtitle, dots 14, keys 3 × 76 round,
+   "Abbrechen" as text. The keypad's own card frame from Klassisch falls away. ---- */
+:root[data-style='glas'] .modal-body > .numpad-modal {
+  gap: 0;
+  width: auto;
+  padding: 2px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  animation: none;
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__subtitle {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__display {
+  gap: 14px;
+  min-width: 0;
+  height: 16px;
+  margin: 18px 0 20px;
+  padding: 0;
+  border: 0;
+  background: none;
+  align-items: center;
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__dot {
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--g-label-3);
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__dot--filled {
+  background: var(--g-label);
+  box-shadow: none;
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__grid {
+  grid-template-columns: repeat(3, 76px);
+  justify-content: center;
+  gap: 14px 22px;
+  width: auto;
+}
+
+:root[data-style='glas'] .modal-body .numpad-key {
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-group);
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 400;
+}
+
+:root[data-style='glas'] .modal-body .numpad-key:hover:not(:disabled) {
+  background: var(--g-group);
+  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+}
+
+:root[data-style='glas'] .modal-body .numpad-key:active:not(:disabled) {
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .modal-body .numpad-key--action,
+:root[data-style='glas'] .modal-body .numpad-key--action:hover:not(:disabled) {
+  background: transparent;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-body .numpad-key--action > svg {
+  width: 26px;
+  height: 26px;
+}
+
+:root[data-style='glas'] .modal-body .numpad-key--confirm,
+:root[data-style='glas'] .modal-body .numpad-key--confirm:hover:not(:disabled) {
+  background: var(--g-prominent);
+  color: var(--g-on-prominent);
+  filter: none;
+}
+
+:root[data-style='glas'] .modal-body .numpad-key--confirm:disabled {
+  background: var(--g-fill);
+  color: var(--g-label-3);
+  opacity: 1;
+}
+
+:root[data-style='glas'] .modal-body .numpad-key:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__cancel {
+  width: auto;
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 22px;
+  background: none;
+  color: var(--g-accent-ink);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__cancel:hover {
+  background: var(--g-hover);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .modal-body .numpad-modal__cancel:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Pool: status 22/28 700 tealInk, modes as a capsule row 44 (the lens follows in stage 5), figures as a list ---- */
+:root[data-style='glas'] .modal-body .pool-modal {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status {
+  gap: 14px;
+  padding: 16px;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status-icon > svg {
+  width: 26px;
+  height: 26px;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status--running .pool-modal__status-icon {
+  background: var(--g-teal);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status-text {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status-label {
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status-value {
+  color: var(--g-label);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__status--running .pool-modal__status-value {
+  color: var(--g-teal-ink);
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__mode {
+  gap: 0;
+  height: 44px;
+  padding: 3px;
+  border-radius: 22px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__mode-btn {
+  min-height: 0;
+  height: 38px;
+  padding: 0 8px;
+  border-radius: 19px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+  transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__mode-btn:active {
+  transform: none;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__mode-btn.pool-modal__mode-btn--active {
+  background: var(--g-seg);
+  box-shadow: var(--g-seg-shadow);
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__mode-btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__glances {
+  padding: 0;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__glance {
+  --g-row-sep: 52px;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__glance-icon {
+  justify-content: center;
+  width: 24px;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__glance-label {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__glance-value {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .pool-modal__glance-value--positive {
+  color: var(--g-green-ink);
+}
+
+/* "Poolseite öffnen" / "Musikseite öffnen" under the content: accentInk 17/600, centred */
+:root[data-style='glas'] .modal-footer :is(.pool-modal__footer-link, .media-modal__footer-link) {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 12px;
+  border-radius: 22px;
+  color: var(--g-accent-ink);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-footer :is(.pool-modal__footer-link, .media-modal__footer-link):hover {
+  background: var(--g-hover);
+  opacity: 1;
+}
+
+:root[data-style='glas'] .modal-footer :is(.pool-modal__footer-link, .media-modal__footer-link):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+/* ---- Manual run: presets 44, stepper value 28/34 700 in a group, "Starten" prominent 50 (foot, sheets.css). The
+   layout is complete here: the pool page's stylesheet (pages/Pool.css) is not loaded when the window opens from the
+   home page's pool chip ---- */
+:root[data-style='glas'] .modal-body .pool-duration {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__label {
+  margin: 0 4px 10px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__preset {
+  flex: 1 1 calc((100% - 16px) / 3);
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__preset:hover {
+  background: var(--g-group);
+  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__preset.pool-manual__preset--active {
+  background: var(--g-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--g-accent);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__preset:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 12px;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+  cursor: pointer;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:hover:not(:disabled) {
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .pool-manual__custom-value {
+  min-width: 90px;
+  color: var(--g-label);
+  text-align: center;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+}
+
+:root[data-style='glas'] .modal-footer .pool-manual__action {
+  width: 100%;
+  margin-top: 0;
+}
+
+/* ---- Media: groups "active"/"inactive" with a count, a card per player — cover 52 radius 12, play 44 (playing:
+   blue with white); the volume slider keeps its classic form ---- */
+:root[data-style='glas'] .modal-body .media-modal {
+  gap: 0;
+}
+
+/* between the groups (the group wrapper has no class of its own in a stylesheet) */
+:root[data-style='glas'] .modal-body .media-modal > * + * {
+  margin-top: 14px;
+}
+
+:root[data-style='glas'] .modal-body .media-modal__group-label {
+  flex: 0 1 auto;
+}
+
+:root[data-style='glas'] .modal-body .media-modal__group-count {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--g-fill);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: center;
+}
+
+:root[data-style='glas'] .modal-body .media-modal__list {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .modal-body .player-tile,
+:root[data-style='glas'] .modal-body .player-tile:hover,
+:root[data-style='glas'] .modal-body .player-tile:active {
+  gap: 12px;
+  padding: 12px 12px 10px;
+  border: 0;
+  background: var(--g-group);
+  box-shadow: none;
+  transform: none;
+}
+
+:root[data-style='glas'] .modal-body .player-tile:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .player-tile__artwork {
+  border-radius: 12px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .modal-body .player-tile__artwork-fallback {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .player-tile.card--active .player-tile__artwork-fallback {
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] .modal-body .player-tile__body {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .modal-body .player-tile__name {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body :is(.player-tile__room, .player-tile__state) {
+  margin-top: 0;
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .modal-body .player-tile__playpause,
+:root[data-style='glas'] .modal-body .player-tile__playpause:hover {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  transition: background-color 250ms ease, color 250ms ease, transform 160ms ease-out;
+}
+
+:root[data-style='glas'] .modal-body .player-tile.card--active .player-tile__playpause {
+  background: var(--g-blue);
+  color: var(--g-on-badge);
+}
+
+:root[data-style='glas'] .modal-body .player-tile__playpause:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .player-tile__vol-icon {
+  color: var(--g-label-2);
+}
+
+/* ---- Weather: head 48/54 700, figures 3 × 3 (radius 16), forecast list rows 48 with rain in blueInk; the entity
+   choice for editors stays. HAPulse shows hourly and daily forecasts as the same list (no own hour strip). ---- */
+:root[data-style='glas'] .modal-body .weather-modal__picker {
+  margin: 0 0 12px;
+  padding: 0 4px;
+  border: 0;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__picker-label {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+/* 16 px at least: iOS zooms into smaller fields on focus (K54; also the entity search of Settings → Entities and the
+   NVR windows: connection fields and the room of each camera) */
+:root[data-style='glas'] .modal-body :is(.settings-text-input, .nvr-input, .nvr-select__native) {
+  font-size: 16px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__picker-select select {
+  min-height: 36px;
+  padding: 0 32px 0 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 16px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__picker-select select:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__picker-chevron {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__content {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__hero {
+  padding: 20px;
+}
+
+/* the condition wash belongs to Klassisch; the sketch's head is a plain group */
+:root[data-style='glas'] .modal-body .weather-modal__hero-wash {
+  display: none;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__hero-body {
+  gap: 16px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__hero-icon {
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__hero-info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__hero-temp {
+  color: var(--g-label);
+  font-size: 48px;
+  line-height: 54px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__hero-condition {
+  margin: 0;
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__hero-name {
+  margin: 0;
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__stat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'icon label'
+    'value value';
+  align-items: start;
+  gap: 2px 5px;
+  padding: 10px 10px 12px;
+  border-radius: 16px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__stat-icon {
+  grid-area: icon;
+  height: 18px;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__stat-label {
+  grid-area: label;
+  overflow: visible;
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__stat-value {
+  grid-area: value;
+  margin-top: 6px;
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  white-space: normal;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast-title {
+  margin-top: 8px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast-row {
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast-label {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast-icon {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast-precip {
+  width: 64px;
+  color: var(--g-blue-ink);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body :is(.weather-modal__forecast-hi, .weather-modal__forecast-lo) {
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast-hi {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .weather-modal__forecast-lo {
+  color: var(--g-label-2);
+  font-weight: 400;
+}
+
+/* ---- Waste: the next date as the head group, the dates as a list 48; "(verlegt)" stays visible ---- */
+:root[data-style='glas'] .modal-body .waste-modal {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__next,
+:root[data-style='glas'] .modal-body .waste-modal__next--soon {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  padding: 16px;
+  background: var(--g-group);
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__next-count {
+  color: var(--g-label);
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__next--soon .waste-modal__next-count {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__next-date {
+  color: var(--g-label-2);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__section-label {
+  margin: 20px 4px 8px;
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__row {
+  --g-row-sep: 43px;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__row-icon {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__row-date {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__row-type {
+  color: var(--g-warn-ink);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .waste-modal__empty {
+  padding: 8px 4px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+/* ---- Notifications (components/glas/NotificationsSheet.tsx, plan §3.9, sketch g5h-notifications-l): count and
+   "Dismiss all" over one group; rows with title 17/22 600, text 15/20 and time 13/18, × 44 with a 16 glyph ---- */
+:root[data-style='glas'] .modal-body .g-notes__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  margin: 0 4px 8px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__count {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__all {
+  flex: none;
+  min-height: 44px;
+  margin: -6px 0;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--g-accent-ink);
+  font-family: var(--g-font);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 6px 12px 16px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__text {
+  flex: 1;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .modal-body :is(.g-notes__title, .g-notes__message, .g-notes__time) {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* long texts end after 2 (title) and 3 lines (text), as the classic panel does */
+:root[data-style='glas'] .modal-body :is(.g-notes__title, .g-notes__message) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__title {
+  -webkit-line-clamp: 2;
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__message {
+  -webkit-line-clamp: 3;
+  margin-top: 2px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__time {
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__dismiss {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+:root[data-style='glas'] .modal-body .g-notes__dismiss:hover {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .modal-body :is(.g-notes__all, .g-notes__dismiss):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+/* ---- Confirmations: question 17/22 600 centred, the code field 17 (at least 16 px, K54) ---- */
+:root[data-style='glas'] .modal-body .lock-confirm {
+  gap: 14px;
+}
+
+:root[data-style='glas'] .modal-body :is(.lock-confirm__text, .garage-confirm__text, .g-confirm__text) {
+  margin: 6px 0 2px;
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  text-align: center;
+}
+
+:root[data-style='glas'] .modal-body .lock-confirm__code {
+  min-height: 50px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--g-group);
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  text-align: center;
+}
+
+:root[data-style='glas'] .modal-body .lock-confirm__code::placeholder {
+  color: var(--g-label-3);
+  letter-spacing: 0;
+}
+
+:root[data-style='glas'] .modal-body .lock-confirm__code:focus {
+  border: 0;
+  box-shadow: 0 0 0 2px var(--g-focus);
+}
+
+/* ---- Desktop dialog: groups radius 20, group titles 13/18 600 (§7.19, §7.30), keypad digits 26/30 500 ---- */
+@media (min-width: 900px) {
+  :root[data-style='glas']
+    .modal-body
+    :is(
+      .people-modal__list,
+      .lights-modal__list,
+      .doors-modal__list,
+      .garage-list,
+      .locks-list,
+      .alarm-panel-card__state-section,
+      .pool-modal__status,
+      .pool-modal__glances,
+      .pool-manual__custom,
+      .player-tile,
+      .weather-modal__hero,
+      .weather-modal__forecast-list,
+      .waste-modal__next,
+      .waste-modal__list,
+      .g-notes__list
+    ) {
+    border-radius: 20px;
+  }
+
+  :root[data-style='glas']
+    .modal-body
+    :is(
+      .lights-modal__group-label,
+      .doors-modal__group-label,
+      .media-modal__group-label,
+      .weather-modal__forecast-title,
+      .waste-modal__section-label,
+      .doors-modal__group-count
+    ) {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  :root[data-style='glas'] .modal-body .garage-row__actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  :root[data-style='glas'] .modal-body .garage-row__btn {
+    flex: 0 0 auto;
+    padding: 0 16px;
+  }
+
+  :root[data-style='glas'] .modal-body .numpad-key {
+    font-size: 26px;
+    line-height: 30px;
+    font-weight: 500;
+  }
+}

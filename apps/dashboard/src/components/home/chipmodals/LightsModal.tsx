@@ -13,6 +13,7 @@ import { useSettingsStore } from '../../../stores/settingsStore';
 import { callService } from '../../../ha/service';
 import { applyStoredOrder } from '../../../lib/order';
 import { useT } from '../../../i18n/useT';
+import { useIsGlas } from '../../../app/glas/useUiStyle'; // [fork] Glas: "turn all off" prominent (docs/glas/PLAN-ETAPPE-3.md K67)
 import './chipmodals.css';
 
 interface LightsModalProps {
@@ -22,6 +23,7 @@ interface LightsModalProps {
 
 export function LightsModal({ open, onClose }: LightsModalProps) {
   const t = useT();
+  const glas = useIsGlas(); // [fork]
   const rooms = useEntityStore((s) => s.rooms);
   const entities = useEntityStore(
     useShallow((s) => s.entities)
@@ -85,7 +87,7 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
         className="btn btn--ghost"
         onClick={handleTurnAllOff}
         type="button"
-        style={{ fontSize: '0.8125rem', padding: '0.375rem 0.875rem', minHeight: '36px' }}
+        style={glas ? undefined : { fontSize: '0.8125rem', padding: '0.375rem 0.875rem', minHeight: '36px' }} // [fork] Glas: sized by its CSS
       >
         {t('home.chipmodals.lights.turnAllOff')}
       </button>

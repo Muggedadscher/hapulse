@@ -17,6 +17,10 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { IconButton } from './IconButton';
 import { useT } from '../../i18n/useT';
+import { useGlasSheet } from '../glas/sheet/useGlasSheet'; // [fork] Glas sheets (docs/glas/PLAN-ETAPPE-3.md §3.1)
+import { SheetContext } from '../glas/sheet/SheetContext'; // [fork]
+import { SheetHeader } from '../glas/sheet/SheetHeader'; // [fork]
+import { SheetGrabber } from '../glas/sheet/SheetGrabber'; // [fork]
 import './Modal.css';
 
 interface ModalProps {
@@ -28,23 +32,34 @@ interface ModalProps {
   footer?: React.ReactNode;
   /** Extra class on the panel (e.g. a width modifier). */
   className?: string | undefined;
+  /** [fork] Glas only: second line under the title (K53). */
+  subtitle?: string | undefined;
+  /** [fork] Glas only: false = the sheet never closes by dragging (alarm keypad, K51). */
+  swipeToClose?: boolean | undefined;
+  /** [fork] Glas only: a new value while open swaps the content in place (K70). */
+  contentKey?: string | undefined;
+  /** [fork] Glas only: where the focus goes back on close, if not to the trigger (K55). */
+  returnFocus?: (() => HTMLElement | null) | undefined;
 }
 
-export function Modal({ open, onClose, title, icon, children, footer, className }: ModalProps) {
+export function Modal({ open, onClose, title, icon, children, footer, className, subtitle, swipeToClose, contentKey, returnFocus }: ModalProps) { // [fork] Glas props
   const t = useT();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
+  const sheet = useGlasSheet({ open, onClose, swipeToClose, contentKey, returnFocus, panelRef }); // [fork]
 
   // Save the element that triggered the modal so we can return focus on close
   useEffect(() => {
     if (open) {
-      triggerRef.current = document.activeElement;
+      // [fork] Glas has moved the focus into the window by now: its trigger, for a close after a switch to Klassisch
+      triggerRef.current = sheet.onRef.current ? sheet.openedFrom.current : document.activeElement;
     }
-  }, [open]);
+  }, [open, sheet.onRef, sheet.openedFrom]); // [fork] both stable
 
   // Focus the panel when it opens
   useEffect(() => {
+    if (sheet.onRef.current) return; // [fork] Glas: the sheet runtime moves the focus in and back (K55)
     if (open && panelRef.current) {
       // [fork] a dialog can name its default action (`data-autofocus`, e.g. What's New → "Got it"); otherwise the panel
       const initial = panelRef.current.querySelector<HTMLElement>('[data-autofocus]');
@@ -54,11 +69,11 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
       triggerRef.current.focus();
       triggerRef.current = null;
     }
-  }, [open]);
+  }, [open, sheet.onRef]); // [fork] sheet.onRef is stable: a style switch does not re-run it
 
   // Esc to close
   useEffect(() => {
-    if (!open) return;
+    if (!open || sheet.on) return; // [fork] Glas: one Esc listener for all windows (K72)
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -67,17 +82,17 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
+  }, [open, onClose, sheet.on]); // [fork] sheet.on
 
   // Lock body scroll while modal is open
   useEffect(() => {
-    if (!open) return;
+    if (!open || sheet.on) return; // [fork] Glas: scroll lock by CSS while a window is open (K63)
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [open]);
+  }, [open, sheet.on]); // [fork] sheet.on
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -91,11 +106,14 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
   if (!open) return null;
 
   return createPortal(
+    <SheetContext.Provider value={sheet.context}>{/* [fork] the content knows its Glas window (pages, K48) */}
     <div
       className="modal-backdrop"
       onClick={handleBackdropClick}
       aria-hidden="false"
+      ref={sheet.backdropRef} // [fork] Glas: the ghost closes the window animated (K47)
     >
+      {sheet.on && <div className="g-sheet-scrim" aria-hidden="true" />}{/* [fork] */}
       <div
         className={`modal-panel${className ? ` ${className}` : ''}`}
         role="dialog"
@@ -104,6 +122,10 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
         ref={panelRef}
         tabIndex={-1}
       >
+        {sheet.on && !sheet.page && <SheetGrabber control={sheet.grabber} />}{/* [fork] */}
+        {sheet.on ? ( // [fork] Glas head (K53)
+          <SheetHeader title={title} titleId={titleId} subtitle={subtitle} icon={icon} page={sheet.page} onClose={onClose} />
+        ) : (
         <div className="modal-header">
           {icon && <span className="modal-header__icon" aria-hidden="true">{icon}</span>}
           <h2 className="modal-header__title" id={titleId}>{title}</h2>
@@ -118,6 +140,7 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
             </IconButton>
           </span>
         </div>
+        )}{/* [fork] */}
 
         <div className="modal-body">
           {children}
@@ -129,7 +152,8 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
           </div>
         )}
       </div>
-    </div>,
+    </div>
+    </SheetContext.Provider>,
     document.body
   );
 }

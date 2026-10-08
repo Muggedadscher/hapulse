@@ -149,7 +149,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0–2 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (Etappe 0–2 und 3a von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -162,7 +162,8 @@ sauber übernehmen können.
   umbenannt hat (siehe `docs/SYNC.md` → „Feature: Stil Glas“). Screenshots beider Stile + Laufzeitprüfungen:
   `apps/dashboard/scripts/glas-shots.cjs` (deterministisch, `compare` verlangt 0 Pixel). Design **`docs/GLAS-DESIGN.md`**
   (+ `docs/glas/glas-tokens.json`), Etappen und verbindliche User-Entscheidungen (§7.3) **`docs/GLAS-PLAN.md`**, Stand,
-  Abweichungen und Laborliste **`docs/glas/PLAN-ETAPPE-0-1.md`** und **`docs/glas/PLAN-ETAPPE-2.md`**, Skizze und
+  Abweichungen und Laborliste **`docs/glas/PLAN-ETAPPE-0-1.md`**, **`docs/glas/PLAN-ETAPPE-2.md`** und
+  **`docs/glas/PLAN-ETAPPE-3.md`**, Skizze und
   Funktions-Checkliste **`docs/glas/`**. **Rahmen (Etappe 2):** Glas-Laufzeit in `app/glas/` (`GlasRuntime` schreibt
   Scroll-Lage `--g-y`/`--g-edge`, `data-tabs-min`, `data-g-scrolled`; `GlasTabBar` legt Glas, Linse und „Tab-Leiste
   einblenden“ in Upstreams `.app-tabs`; `GlasNavGroups` gruppiert die Seitenleiste; `menuKeys` gibt Räume- und
@@ -171,8 +172,14 @@ sauber übernehmen können.
   `styles/glas/material.css` (der Wächter prüft, dass alle Blöcke dieselbe Liste tragen); eine Fläche setzt nur Lage,
   Größe, Radius und `--g-surface-*`. Nie `opacity`, `filter`, `mask`, `clip-path` oder `backdrop-filter` auf Vorfahren
   einer Glasfläche (sonst sieht das Glas die Seite nicht mehr); `!important` nur für die 200-ms-Überblendungen bei
-  reduzierter Bewegung (K38). Nächste Etappen 3–7 (Sheets und Gesten, Übersicht, übrige Seiten, NVR, Feinschliff) nach
-  `docs/GLAS-PLAN.md` §3.
+  reduzierter Bewegung (K38). **Fenster (Etappe 3a):** jedes `Modal` ist in Glas unter 900 px ein Sheet (mittel/groß,
+  Griff, Ziehen), ab 900 px ein Glas-Dialog, ein Fenster aus einem Fenster eine Seite darauf; Laufzeit in
+  `components/glas/sheet/` (`useGlasSheet` im `Modal`-Fork, `sheetHost` = Stapel mit `inert`, ein Esc, `data-g-sheets` als
+  Scroll-Sperre; `origin` = Auslöser, aus dem das Fenster wächst; `ghost` = Schließen-Bewegung ohne Rolle), CSS in
+  `styles/glas/{sheets,sheet-content}.css`. In Glas setzt die Laufzeit Fokus, Esc und Scroll-Sperre, Klassisch bleibt
+  beim Upstream-`Modal`. Prüfungen `glas-shots.cjs checks --part sheets` (Szenen `win-…` in
+  `scripts/glas-checks-sheets.cjs`). Nächste Etappen 3b (Kontextmenü, Wisch-Zeilen, Inspector), 4–7 (Übersicht, übrige
+  Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

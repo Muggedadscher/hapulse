@@ -1,0 +1,427 @@
+/* [fork] Glas — windows (docs/GLAS-DESIGN.md §7.18 sheet, §7.19 desktop dialog, §7.29 buttons; plan
+   docs/glas/PLAN-ETAPPE-3.md §3.2–3.7, K48, K50, K52, K53, K63, K64, K66, K67).
+
+   Every Modal is a Glas window: components/glas/sheet/useGlasSheet.ts decides the presentation in the layout phase and
+   writes it as attributes, read here only:
+   - backdrop `data-g-pres` = sheet | dialog | page (and `--g-kb`, the height the iOS keyboard covers);
+   - panel `data-g-sheet` = medium | large | dialog | page, `data-g-mat` = glass | solid (glass panels are in the
+     material list of material.css), `data-g-pushed` while a page lies on it.
+   This file only describes resting states; every movement with measured rectangles (morph, detent, page, hand-over,
+   closing ghost) runs as a Web Animation in the runtime (K69). Upstream's panel and backdrop animations are switched
+   off here: their fill would hold transform and opacity over the runtime's inline styles. */
+
+/* ---- Backdrop: no colour, blur, animation or padding of its own — it must not become the backdrop root of the
+   panel's glass (GLAS-DESIGN §3.7). The scrim darkens instead; clicks pass through it to the backdrop (closes). ---- */
+:root[data-style='glas'] .modal-backdrop {
+  padding: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation: none;
+}
+
+:root[data-style='glas'] .g-sheet-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--g-scrim);
+  pointer-events: none;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .g-sheet-scrim {
+  background: var(--g-scrim-desktop);
+}
+
+/* a page lies on its window; the window's scrim stays */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='page'] > .g-sheet-scrim {
+  display: none;
+}
+
+/* While a modal window is open the page does not scroll (K63: by CSS, never an inline style). */
+:root[data-style='glas'][data-g-sheets] body {
+  overflow: hidden;
+}
+
+/* ---- Panel, every presentation ---- */
+:root[data-style='glas'] .modal-backdrop > .modal-panel {
+  border: 0;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  /* the runtime's transforms are computed for the top left corner */
+  transform-origin: 0 0;
+  animation: none;
+}
+
+/* Text directly on glass reads glassLabel2 instead of label2 (GLAS-DESIGN §7.18). */
+:root[data-style='glas'] .modal-backdrop > .modal-panel[data-g-mat='glass'] {
+  --text-dim: var(--g-glass-label-2);
+  --text-faint: var(--g-glass-label-2);
+}
+
+/* Solid: large sheet and page (sheetSolid, no filter, K50/K48). Glass panels get the material from material.css. */
+:root[data-style='glas'] .modal-backdrop > .modal-panel[data-g-mat='solid'] {
+  background: var(--g-sheet-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* ---- Sheet (below 900 px) ---- */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='sheet'] > .modal-panel {
+  /* sheet material for the medium detent (GLAS-DESIGN §3.4); the large one is solid (above) */
+  --g-surface-tint: var(--g-tint-sheet-medium);
+  --g-surface-fill: var(--g-sheet-fill);
+  --g-surface-filter: var(--g-sheet-filter);
+  --g-surface-solid: var(--g-sheet-solid);
+  position: fixed;
+  top: auto;
+  /* at most 560 wide, centred (K50, like the tab bar K33); a fixed box: no transform for centring */
+  left: max(8px, calc(50% - 280px));
+  right: max(8px, calc(50% - 280px));
+  bottom: calc(8px + max(env(safe-area-inset-bottom, 0px), var(--g-kb, 0px)));
+  width: auto;
+  max-width: none;
+  max-height: max(160px, calc(100dvh - 144px - var(--g-kb, 0px)));
+  margin: 0;
+  border-radius: 40px;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='sheet'] > .modal-panel[data-g-sheet='large'] {
+  left: max(0px, calc(50% - 280px));
+  right: max(0px, calc(50% - 280px));
+  bottom: var(--g-kb, 0px);
+  height: calc(100dvh - 52px - var(--g-kb, 0px));
+  max-height: none;
+  padding-bottom: max(0px, calc(env(safe-area-inset-bottom, 0px) - var(--g-kb, 0px)));
+  border-radius: 40px 40px 0 0;
+  box-shadow: var(--g-shadow-sheet-large);
+}
+
+/* ---- Desktop dialog (from 900 px, K52) ---- */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] {
+  align-items: center;
+  justify-content: center;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel {
+  --g-surface-tint: var(--g-tint-dialog-desktop);
+  --g-surface-shadow: var(--g-shadow-dialog);
+  --g-surface-solid: var(--g-sheet-solid);
+  position: relative;
+  max-height: min(calc(100dvh - 64px), 900px);
+  border-radius: 34px;
+}
+
+/* Widths by content like upstream's own :has() rules (GLAS-DESIGN §7.19); every other window keeps its upstream width
+   (480, --wide 760, detail 34rem, entities 800, manual pump 420). */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.people-modal__list),
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.waste-modal) {
+  max-width: 440px;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.doors-modal),
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.alarm-modal__content) {
+  max-width: 460px;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.weather-modal__content),
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.media-modal) {
+  max-width: 500px;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.garage-list),
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.locks-list) {
+  max-width: 560px;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.all-modal__grid > .climate-card) {
+  max-width: 760px;
+}
+
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.all-modal__grid > .cover-card) {
+  max-width: 780px;
+}
+
+/* ---- Page in a window (K48): the runtime places it on the outermost window's rectangle ---- */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='page'] > .modal-panel {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+
+/* The window under a page: its content moves a quarter to the left and darkens (iOS push); the page covers it. */
+:root[data-style='glas'] .modal-backdrop > .modal-panel[data-g-pushed] > :not(.g-sheet-grabber) {
+  transform: translateX(-25%);
+  filter: brightness(0.86);
+}
+
+/* ---- Head (K53): close left, title in the middle; "‹ Zurück" on a page ---- */
+:root[data-style='glas'] .g-sheet-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 16px 14px 6px;
+}
+
+:root[data-style='glas'] .g-sheet-header--page {
+  grid-template-columns: 1fr minmax(0, max-content) 1fr;
+}
+
+:root[data-style='glas'] .g-sheet-header__close,
+:root[data-style='glas'] .g-sheet-header__back {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  margin: 0;
+  border: 0;
+  background: none;
+  font-family: var(--g-font);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-sheet-header__close {
+  justify-content: center;
+  width: 44px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .g-sheet-header__close-circle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  transition: background-color 150ms ease;
+}
+
+:root[data-style='glas'] .g-sheet-header__close:hover .g-sheet-header__close-circle {
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .g-sheet-header__close:focus-visible {
+  outline: none;
+}
+
+:root[data-style='glas'] .g-sheet-header__close:focus-visible .g-sheet-header__close-circle {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .g-sheet-header__back {
+  justify-self: start;
+  gap: 2px;
+  padding: 0 10px 0 2px;
+  border-radius: 22px;
+  color: var(--g-accent-ink);
+  font-size: 17px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-sheet-header__back:hover {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .g-sheet-header__back:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .g-sheet-header__titles {
+  min-width: 0;
+  text-align: center;
+}
+
+:root[data-style='glas'] .g-sheet-header__line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-sheet-header__icon {
+  display: flex;
+  flex: none;
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .g-sheet-header__icon > svg {
+  width: 20px;
+  height: 20px;
+}
+
+:root[data-style='glas'] .g-sheet-header__title {
+  display: -webkit-box;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  /* a long title ("Kameras den Räumen zuordnen") takes a second line instead of losing its end */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+:root[data-style='glas'] .g-sheet-header__subtitle {
+  margin: 0;
+  overflow: hidden;
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .modal-panel[data-g-mat='glass'] .g-sheet-header__subtitle {
+  color: var(--g-glass-label-2);
+}
+
+:root[data-style='glas'] .g-sheet-header__end {
+  width: 44px;
+}
+
+/* ---- Grabber (K50, K51): hit area 120 × 30 at the top, visible 36 × 5 six from the top; sheets only ---- */
+:root[data-style='glas'] .g-sheet-grabber {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 60px);
+  z-index: 1;
+  width: 120px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-sheet-grabber::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 42px;
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--g-grabber);
+}
+
+:root[data-style='glas'] .g-sheet-grabber:focus-visible {
+  outline: none;
+}
+
+:root[data-style='glas'] .g-sheet-grabber:focus-visible::before {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 3px;
+}
+
+:root[data-style='glas'] .modal-panel[data-g-sheet='dialog'] > .g-sheet-grabber {
+  display: none;
+}
+
+/* dragging starts on the grabber and the head (not on its buttons): no browser panning there */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='sheet'] .g-sheet-header {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---- Body and foot (§3.7, §3.8) ---- */
+:root[data-style='glas'] .modal-backdrop > .modal-panel > .modal-body {
+  padding: 8px 16px 28px;
+  scrollbar-color: var(--g-sep-strong) transparent;
+}
+
+:root[data-style='glas'] .modal-backdrop > .modal-panel > .modal-footer {
+  padding: 8px 16px 16px;
+  border-top: 0;
+}
+
+/* Buttons in a foot (§7.29, K67): one row of equal capsules 50 high — primary prominent, destructive actDel with
+   white, the others grey fill. A row that does not fit wraps, each button then takes the full width. */
+:root[data-style='glas']
+  .modal-footer
+  :is(
+    .lock-confirm__actions,
+    .garage-confirm__actions,
+    .global-admin__actions,
+    .nvr-setup__actions,
+    .pool-editor__footer,
+    .g-confirm__actions
+  ) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: stretch;
+  gap: 10px;
+}
+
+:root[data-style='glas'] .modal-footer .btn {
+  flex: 1 1 0;
+  min-width: max-content;
+  min-height: 50px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 25px;
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-footer :is(.btn--secondary, .btn--ghost) {
+  background: var(--g-fill);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-footer :is(.btn--secondary, .btn--ghost):hover:not(:disabled) {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-footer .btn--danger {
+  background: var(--g-act-del);
+  color: var(--g-on-badge);
+}
+
+:root[data-style='glas'] .modal-footer .btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Desktop: head 12 12 6 with the symbol, content 8 20 22 (§3.7) ---- */
+@media (min-width: 900px) {
+  :root[data-style='glas'] .g-sheet-header {
+    padding: 12px 12px 6px;
+  }
+
+  :root[data-style='glas'] .modal-backdrop > .modal-panel > .modal-body {
+    padding: 8px 20px 22px;
+  }
+
+  :root[data-style='glas'] .modal-backdrop > .modal-panel > .modal-footer {
+    padding: 8px 20px 20px;
+  }
+}
+
+/* the symbol only on the desktop (K53) */
+@media (max-width: 899px) {
+  :root[data-style='glas'] .g-sheet-header__icon {
+    display: none;
+  }
+}

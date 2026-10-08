@@ -302,6 +302,32 @@ export const GLAS_SHADOWS = {
   chip: '0 1px 3px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08)',
 } as const;
 
+export type GlasWindowShadow = 'dialog' | 'inspector' | 'sheetLarge' | 'pushedScreen' | 'liftContext' | 'liftContextDesktop';
+
+/**
+ * Shadows of windows and gestures (stage 3, plan docs/glas/PLAN-ETAPPE-3.md §5.1; glas-tokens.json → elevation, verbatim):
+ * desktop dialog, inspector, large sheet, the page pushed over a sheet and the lifted card of the context menu. Dark
+ * overrides `sheetLarge` and both lifts; the others are the same in both modes.
+ */
+export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, string>> = {
+  light: {
+    dialog: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 30px 80px rgba(0,0,0,.28)',
+    inspector: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.06), 0 24px 70px rgba(0,0,0,.20)',
+    sheetLarge: '0 -10px 40px rgba(0,0,0,.14)',
+    pushedScreen: '-12px 0 32px rgba(0,0,0,.14)',
+    liftContext: '0 18px 50px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.08)',
+    liftContextDesktop: '0 18px 50px rgba(0,0,0,.28)',
+  },
+  dark: {
+    dialog: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.08), 0 30px 80px rgba(0,0,0,.28)',
+    inspector: 'var(--g-glass-inner), 0 2px 6px rgba(0,0,0,.06), 0 24px 70px rgba(0,0,0,.20)',
+    sheetLarge: '0 -10px 40px rgba(0,0,0,.6)',
+    pushedScreen: '-12px 0 32px rgba(0,0,0,.14)',
+    liftContext: '0 18px 50px rgba(0,0,0,.6)',
+    liftContextDesktop: '0 18px 50px rgba(0,0,0,.6)',
+  },
+};
+
 const CLEAR = {
   fill: 'rgba(0,0,0,.20)',
   filter: 'blur(4px) saturate(160%)',
@@ -492,14 +518,15 @@ function inkFor(start: string, mode: GlasMode, against: readonly string[], darke
 
 /**
  * Opaque surfaces the accent ink sits on: GLAS-DESIGN §2.3 step 2 names only `bg` (light) / `card` (dark); the ink
- * is also checked against the other surfaces it is used on (grouped rows, fills, the selected pill = accentSoft),
- * because user hues otherwise fall below 4.5:1 there (measured: down to 3.3:1). The default orange is unaffected.
+ * is also checked against the other surfaces it is used on (grouped rows, fills, the selected pill = accentSoft — in
+ * dark mode also on a sheet's lighter `group`, stage 3), because user hues otherwise fall below 4.5:1 there (measured:
+ * down to 3.3:1). The default orange is unaffected.
  */
 function inkSurfaces(mode: GlasMode, accentSoft: string): string[] {
   const c = GLAS_COLORS[mode];
   return mode === 'light'
     ? [c.bg, compositeOver(c.fill, c.card), compositeOver(c.fill, c.bg), compositeOver(accentSoft, c.card)]
-    : [c.card, c.card2, compositeOver(c.fill, c.card), compositeOver(accentSoft, c.card)];
+    : [c.card, c.card2, compositeOver(c.fill, c.card), compositeOver(accentSoft, c.card), compositeOver(accentSoft, c.group)];
 }
 
 /** Accent family for the user's hue (HAPulse accent slider); without a hue the iOS orange of the sketch. */
@@ -645,6 +672,10 @@ export function glasCssVars(input: GlasInput): Record<string, string> {
   out['--g-sheet-fill'] = SHEET[input.mode].fill;
   out['--g-sheet-filter'] = SHEET[input.mode].filter;
   for (const name of Object.keys(GLAS_SHADOWS) as (keyof typeof GLAS_SHADOWS)[]) out[`--g-shadow-${name}`] = GLAS_SHADOWS[name];
+  // Windows and gestures (plan Etappe 3 §5.1)
+  const windowShadows = GLAS_WINDOW_SHADOWS[input.mode];
+  for (const name of Object.keys(windowShadows) as GlasWindowShadow[]) out[`--g-shadow-${kebab(name)}`] = windowShadows[name];
+  out['--g-pill-open-ink'] = openPillInk(input.mode, c);
 
   for (const name of ['smooth', 'snappy', 'bouncy'] as const) {
     const s = GLAS_SPRINGS[name];
@@ -702,7 +733,47 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
       pairs.push({ name: `glassLabel2 on glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
     }
   }
-  return [...pairs, ...frameContrastPairs(input, c, a)];
+  return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a)];
+}
+
+/** Text of the "open" status pill (redSoft) in a window's group: dark, redInk on redSoft over the lighter group is
+ * 3.85:1 (the sketch's value), so the text is `label` there; the red dot stays (plan Etappe 3 K71). */
+function openPillInk(mode: GlasMode, c: Record<GlasColorKey, string>): string {
+  return mode === 'light' ? c.redInk : c.label;
+}
+
+/**
+ * Windows (plan Etappe 3 §6.1): text in the opaque groups of sheets and dialogs, the status pills there, white on the
+ * action colours (swipe actions, destructive buttons), the play glyph (3:1, non-text) and the desktop dialog's and
+ * inspector's glass with its own minimum tint. The medium sheet's material is covered by the frame's pairs.
+ */
+function windowContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
+  const pairs: ContrastPair[] = [];
+  for (const fg of ['label', 'label2', 'redInk', 'greenInk', 'tealInk', 'blueInk', 'yellowInk', 'orangeInk'] as const) {
+    pairs.push({ name: `${fg} on group`, fg: c[fg], bg: c.group, min: 4.5 });
+  }
+  pairs.push({ name: 'accent ink on group', fg: a.accentInk, bg: c.group, min: 4.5 });
+  pairs.push({ name: 'accent ink on accentSoft over group (alarm mode)', fg: a.accentInk, bg: compositeOver(a.accentSoft, c.group), min: 4.5 });
+  pairs.push({ name: 'label on accentSoft over group (alarm mode)', fg: c.label, bg: compositeOver(a.accentSoft, c.group), min: 4.5 });
+  pairs.push({ name: '"open" pill text on redSoft over group', fg: openPillInk(input.mode, c), bg: compositeOver(c.redSoft, c.group), min: 4.5 });
+  pairs.push({ name: 'label2 on fill over group ("closed" pill)', fg: c.label2, bg: compositeOver(c.fill, c.group), min: 4.5 });
+  pairs.push({ name: 'label on fill over group (secondary button)', fg: c.label, bg: compositeOver(c.fill, c.group), min: 4.5 });
+  for (const act of ['actDel', 'actOk', 'actNeutral'] as const) {
+    pairs.push({ name: `white on ${act}`, fg: '#FFFFFF', bg: c[act], min: 4.5 });
+  }
+  pairs.push({ name: 'white play glyph on blue', fg: '#FFFFFF', bg: c.blue, min: 3 });
+  if (input.strength !== 'opaque') {
+    const backs = input.mode === 'light' ? ['#FFFFFF', '#F2F2F7', '#808080'] : ['#000000', '#1C1C1E', '#2C2C2E'];
+    for (const surface of ['dialogDesktop', 'inspector'] as const) {
+      const tint = GLAS_SURFACE_TINT[surface][input.strength];
+      for (const back of backs) {
+        const g = glassOver(back, input.mode, tint);
+        pairs.push({ name: `label on ${surface} glass over ${back}`, fg: c.label, bg: g, min: 4.5 });
+        pairs.push({ name: `glassLabel2 on ${surface} glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
+      }
+    }
+  }
+  return pairs;
 }
 
 /**

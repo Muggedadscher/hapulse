@@ -1768,6 +1768,14 @@ console.log('\n── glas tokens ──');
     assertEqual(GLAS_SHADOWS[name], json.elevation.light[key], `--g-shadow-${name} = elevation.${key}`);
     assertEqual(glasCssVars({ mode: 'dark', strength: 'clear' })[`--g-shadow-${name}`], GLAS_SHADOWS[name], `--g-shadow-${name} written`);
   }
+  // windows and gestures (docs/glas/PLAN-ETAPPE-3.md §5.1): per mode, dark falls back to light where the json has no value
+  const windowShadows = { dialog: 'dialog', inspector: 'inspector', 'sheet-large': 'sheetLarge', 'pushed-screen': 'pushedScreen', 'lift-context': 'liftContext', 'lift-context-desktop': 'liftContextDesktop' };
+  for (const m of modes) {
+    const w = glasCssVars({ mode: m, strength: 'clear' });
+    for (const [name, key] of Object.entries(windowShadows)) {
+      assertEqual(w[`--g-shadow-${name}`], json.elevation[m][key] ?? json.elevation.light[key], `--g-shadow-${name} ${m} = elevation.${key}`);
+    }
+  }
   assertEqual(resolveMix('color-mix(in srgb, #FFCC00 26%, #FFFFFF)'), '#FFF2BD', 'color-mix of the reconnecting banner');
   assertEqual(resolveMix('#1C1C1E'), '#1C1C1E', 'resolveMix: plain colour unchanged');
 

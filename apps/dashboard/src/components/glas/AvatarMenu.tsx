@@ -2,26 +2,24 @@
  * [fork] Glas frame (stage 2) — the phone's avatar with its menu (GLAS-DESIGN §7.4, plan docs/glas/PLAN-ETAPPE-2.md
  * §3.2, §3.3). `PageHeaderActions` renders it in Glas instead of bell and avatar; fixed at the top right.
  *
- * Menu: notifications (opens upstream's notifications panel as a glass popover, K25), edit (only where the page
- * offers it, K23), settings — and a host-supplied account menu (SaaS) below a separator. `role="menu"`, focus on the
- * first item, arrows/Home/End, Esc, Tab and outside click close it and the focus returns to the avatar.
+ * Menu: notifications (the notifications sheet, docs/glas/PLAN-ETAPPE-3.md K57), edit (only where the page offers
+ * it, K23), settings — and a host-supplied account menu (SaaS) below a separator. `role="menu"`, focus on the first
+ * item, arrows/Home/End, Esc, Tab and outside click close it and the focus returns to the avatar.
  */
 
 import { useCallback, useContext, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocation, useNavigate } from 'react-router';
 import { Bell, Check, Pencil, Settings, UserRound } from 'lucide-react';
-import { Panel, useNotifications } from '../notifications/NotificationsPanel';
+import { useNotifications } from '../notifications/NotificationsPanel';
+import { NotificationsSheet } from './NotificationsSheet';
 import { UserMenuContext, DashboardNavContext } from '../../app/userMenuContext';
 import { useCanEditHere } from '../../app/glas/shellStore';
 import { nextMenuIndex } from '../../app/glas/menuKeys';
-import { callService } from '../../ha/service';
 import { useCurrentUserAvatar } from '../../ha/hooks';
 import { useUIStore } from '../../stores/uiStore';
 import { useT } from '../../i18n/useT';
 
-/** Panels below the avatar: `top 58` + safe area, 16 from the sides (GLAS-DESIGN §7.4). */
-const PANEL_STYLE = { position: 'fixed', top: 'calc(58px + env(safe-area-inset-top, 0px))', left: 16, right: 16 } as const;
 /** Longest closing animation (280 ms, reduced 200 ms) plus a margin, in case `animationend` never comes. */
 const CLOSE_FALLBACK_MS = 400;
 const FOCUSABLE = '[role="menuitem"], a[href], button:not([disabled])';
@@ -39,10 +37,9 @@ export function AvatarMenu() {
   const editMode = useUIStore((s) => s.editMode);
   const toggleEditMode = useUIStore((s) => s.toggleEditMode);
   const [phase, setPhase] = useState<Phase>('closed');
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   /** Which item gets the focus once the menu is open: first or last. */
   const focusEnd = useRef<'first' | 'last'>('first');
   const count = notifications.length;
@@ -52,11 +49,6 @@ export function AvatarMenu() {
 
   const closeMenu = useCallback((focusAvatar: boolean) => {
     setPhase((p) => (p === 'open' ? 'closing' : p));
-    if (focusAvatar) btnRef.current?.focus();
-  }, []);
-
-  const closePanel = useCallback((focusAvatar: boolean) => {
-    setPanelOpen(false);
     if (focusAvatar) btnRef.current?.focus();
   }, []);
 
@@ -77,7 +69,7 @@ export function AvatarMenu() {
   // a new route closes everything
   useEffect(() => {
     setPhase((p) => (p === 'open' ? 'closing' : p));
-    setPanelOpen(false);
+    setSheetOpen(false);
   }, [pathname]);
 
   // outside click (also on the dim layer) and Escape — menu
@@ -91,31 +83,7 @@ export function AvatarMenu() {
     return () => document.removeEventListener('pointerdown', onDown);
   }, [open, closeMenu]);
 
-  // notifications panel: focus inside, outside click and Escape close it, the focus returns to the avatar
-  useEffect(() => {
-    if (!panelOpen) return undefined;
-    const first = panelRef.current?.querySelector<HTMLElement>('button');
-    (first ?? btnRef.current)?.focus();
-    const onDown = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (!panelRef.current?.contains(target) && !btnRef.current?.contains(target)) closePanel(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closePanel(true);
-    };
-    document.addEventListener('pointerdown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [panelOpen, closePanel]);
-
   const toggle = () => {
-    if (panelOpen) {
-      closePanel(false);
-      return;
-    }
     focusEnd.current = 'first';
     setPhase((p) => (p === 'open' ? 'closing' : 'open'));
   };
@@ -128,7 +96,6 @@ export function AvatarMenu() {
       const list = items();
       (e.key === 'ArrowUp' ? list[list.length - 1] : list[0])?.focus();
     } else {
-      setPanelOpen(false);
       setPhase('open');
     }
   };
@@ -145,6 +112,9 @@ export function AvatarMenu() {
     e.preventDefault();
     list[next]!.focus();
   };
+
+  const closeSheet = useCallback(() => setSheetOpen(false), []);
+  const avatarButton = useCallback(() => btnRef.current, []);
 
   const run = (action: () => void) => {
     closeMenu(false);
@@ -205,7 +175,7 @@ export function AvatarMenu() {
                   type="button"
                   role="menuitem"
                   className="g-avatar-menu__item"
-                  onClick={() => run(() => setPanelOpen(true))}
+                  onClick={() => run(() => setSheetOpen(true))}
                 >
                   <span className="g-avatar-menu__text">
                     {count > 0 ? t('glas.avatar.notificationsCount', { count }) : t('glas.avatar.notifications')}
@@ -250,18 +220,12 @@ export function AvatarMenu() {
           document.body,
         )}
 
-      {panelOpen && (
-        <Panel
-          panelRef={panelRef}
-          style={PANEL_STYLE}
-          notifications={notifications}
-          onDismiss={(id) => void callService('persistent_notification', 'dismiss', { notification_id: id })}
-          onDismissAll={() => {
-            void callService('persistent_notification', 'dismiss_all', {});
-            closePanel(true);
-          }}
-        />
-      )}
+      <NotificationsSheet
+        open={sheetOpen}
+        onClose={closeSheet}
+        notifications={notifications}
+        returnFocus={avatarButton}
+      />
     </div>
   );
 }

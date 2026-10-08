@@ -1359,5 +1359,17 @@
   "glas.avatar.editDone": "Avsluta redigering",
   "glas.avatar.menuLabel": "Kontomeny",
   "glas.edit.label": "Redigera",
-  "glas.edit.done": "Klar"
+  "glas.edit.done": "Klar",
+  "glas.sheet.grow": "Förstora bladet",
+  "glas.sheet.shrink": "Förminska bladet",
+  "glas.sheet.cancel": "Avbryt",
+  "glas.notifications.unread.one": "{count} oläst",
+  "glas.notifications.unread.other": "{count} olästa",
+  "glas.notifications.none": "Inget nytt",
+  "glas.notifications.count.one": "{count} avisering",
+  "glas.notifications.count.other": "{count} aviseringar",
+  "glas.notifications.dismissAll": "Avfärda alla",
+  "glas.notifications.dismissOne": "Avfärda: {title}",
+  "glas.notifications.emptyHint": "Nya meddelanden från Home Assistant visas här.",
+  "glas.pool.restartAction": "Starta om"
 }

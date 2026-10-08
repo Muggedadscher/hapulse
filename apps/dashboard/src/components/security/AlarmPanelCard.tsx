@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react'; // [fork] useRef
 import ReactDOM from 'react-dom';
 import { Shield, ShieldCheck, ShieldAlert, ShieldOff, Delete } from 'lucide-react';
 import { callService } from '../../ha/service';
@@ -7,6 +7,9 @@ import type { TKey } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity } from '@hapulse/core';
 import { isAlarmActionDisabled, isAlarmActionSupported, type AlarmAction } from './alarmLogic'; // [fork]
+import { Modal } from '../ui/Modal'; // [fork] Glas: the keypad is a window (docs/glas/PLAN-ETAPPE-3.md K56)
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork]
+import { shake } from '../glas/sheet/shake'; // [fork]
 import './AlarmPanelCard.css';
 
 // ---------------------------------------------------------------------------
@@ -43,6 +46,8 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
   const t = useT();
   const [digits, setDigits] = useState('');
   const [sending, setSending] = useState(false);
+  const glas = useIsGlas(); // [fork]
+  const dotsRef = useRef<HTMLDivElement>(null); // [fork] Glas: a wrong code shakes the dots
 
   const addDigit = useCallback((d: string) => {
     setDigits((prev) => (prev.length >= 8 ? prev : prev + d));
@@ -60,22 +65,23 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
       if (!ok) {
         setDigits('');
         setSending(false);
+        shake(dotsRef.current); // [fork] Glas only
       }
     });
   }, [digits, onConfirm, sending]);
 
   const KEYS = ['1','2','3','4','5','6','7','8','9'];
 
-  return (
-    <div className="numpad-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label={t('security.alarmPanel.numpad.dialogAria')}>
-      <div className="numpad-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="numpad-modal__title">{actionLabel}</h3>
+  // [fork] the pad's content, the same in both styles
+  const pad = (
+    <>{/* [fork] */}
         <p className="numpad-modal__subtitle">{t('security.alarmPanel.numpad.subtitle')}</p>
 
         {/* Pin dots display */}
         <div
           className="numpad-modal__display"
           aria-label={t('security.alarmPanel.numpad.digitsEntered', { count: digits.length })}
+          ref={dotsRef} // [fork]
         >
           {Array.from({ length: Math.max(4, digits.length) }, (_, i) => (
             <span
@@ -127,6 +133,24 @@ function NumpadModal({ actionLabel, onConfirm, onCancel }: NumpadModalProps) {
         <button type="button" className="numpad-modal__cancel" onClick={onCancel}>
           {t('security.alarmPanel.numpad.cancel')}
         </button>
+    </> // [fork]
+  );
+
+  // [fork] Glas: a window with the action as its title — a page in the alarm window, elsewhere a sheet of its own,
+  // with Esc and focus; it never closes by dragging (K51, K56)
+  if (glas) {
+    return (
+      <Modal open onClose={onCancel} title={actionLabel} swipeToClose={false}>
+        <div className="numpad-modal">{pad}</div>
+      </Modal>
+    );
+  }
+
+  return ( // [fork] moved below the Glas window, as on main otherwise
+    <div className="numpad-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label={t('security.alarmPanel.numpad.dialogAria')}>{/* [fork] moved */}
+      <div className="numpad-modal" onClick={(e) => e.stopPropagation()}>{/* [fork] moved */}
+        <h3 className="numpad-modal__title">{actionLabel}</h3>{/* [fork] moved */}
+        {pad}{/* [fork] */}
       </div>
     </div>
   );

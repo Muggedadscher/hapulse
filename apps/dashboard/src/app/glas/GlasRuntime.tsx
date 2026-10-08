@@ -10,6 +10,8 @@
  * - "Fertig" on the phone, on every route while editing (K24); on the desktop the header capsule shows it.
  * - Arrow keys, Home and End in the upstream rooms and More menus (K42).
  * - Sheen: where a glass surface is pressed (`--gx`/`--gy`).
+ * - Windows (stage 3): the pressed control as the origin a window grows out of, and the one Esc listener of all
+ *   windows (plan docs/glas/PLAN-ETAPPE-3.md §3.3, K72).
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -30,6 +32,8 @@ import {
 } from './glasScroll';
 import { nextMenuIndex } from './menuKeys';
 import { DoneCapsule } from '../../components/glas/DoneCapsule';
+import { forgetOrigin, noteOrigin, peekOrigin } from '../../components/glas/sheet/origin';
+import { installEscape } from '../../components/glas/sheet/sheetHost';
 import { useRooms } from '../../ha/hooks';
 import { useUIStore } from '../../stores/uiStore';
 import { useT, type TKey } from '../../i18n/useT';
@@ -248,6 +252,37 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
         el.style.removeProperty('--gx');
         el.style.removeProperty('--gy');
       }
+    };
+  }, []);
+
+  // Windows: the Esc listener before later ones (the package's camera page listens too), and the origin of every press
+  // and every Enter/Space. Capture phase: the upstream menus stop events on their way up. A window opens in the task of
+  // its click (React commits a click's update before the task ends), so the origin is forgotten one task after the
+  // click: a window that opens later from an effect or a reply does not grow out of an unrelated button.
+  useLayoutEffect(() => {
+    installEscape();
+    const onDown = (e: PointerEvent) => noteOrigin(e.target);
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) noteOrigin(e.target);
+    };
+    const timers = new Set<number>();
+    const onClick = () => {
+      const o = peekOrigin();
+      if (!o) return;
+      const id = window.setTimeout(() => {
+        timers.delete(id);
+        forgetOrigin(o);
+      }, 0);
+      timers.add(id);
+    };
+    document.addEventListener('pointerdown', onDown, { capture: true, passive: true });
+    document.addEventListener('keydown', onKey, { capture: true });
+    document.addEventListener('click', onClick, { capture: true, passive: true });
+    return () => {
+      document.removeEventListener('pointerdown', onDown, { capture: true });
+      document.removeEventListener('keydown', onKey, { capture: true });
+      document.removeEventListener('click', onClick, { capture: true });
+      for (const id of timers) window.clearTimeout(id);
     };
   }, []);
 
