@@ -2,7 +2,7 @@
  * ScenesCard — favorited scenes as quick-activate tiles.
  * Shows up to 4 in a 2×2 grid; scrolls horizontally when more than 4 are favorited.
  */
-import React, { useCallback, useId } from 'react'; // [fork] useId
+import React, { useCallback, useId, useState } from 'react'; // [fork] useId, useState
 import { useNavigate } from 'react-router';
 import {
   Sparkles, Sun, Moon, Coffee, Tv, Music2, Sunset, PartyPopper, BookOpen, ChevronRight, Star,
@@ -12,6 +12,9 @@ import { Card } from '../ui/Card';
 import type { HassEntityMap } from '@hapulse/core';
 import { activeSceneIds, sceneMembers } from '@hapulse/core'; // [fork] active scene (Glas Etappe 4, K77)
 import { GlasMenuTarget } from '../glas/GlasMenuTarget'; // [fork] Glas context menu (K81)
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas tiles (K83)
+import { glasSceneTone } from '../glas/home/sceneTone'; // [fork]
+import { SceneRing } from '../glas/home/SceneRing'; // [fork]
 import { callService } from '../../ha/service';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useT } from '../../i18n/useT';
@@ -51,8 +54,12 @@ export function ScenesCard({ entities }: ScenesCardProps) {
     .filter((e) => e.entity_id.startsWith('scene.') && favorites.includes(e.entity_id));
   const active = activeSceneIds(scenes, entities, Date.now()); // [fork]
   const uid = useId(); // [fork] subtitle ids
+  const isGlas = useIsGlas(); // [fork]
+  // [fork] Glas: the scene tapped last pulses and sweeps its ring; a/b restarts the animation on every tap
+  const [tap, setTap] = useState<{ id: string; n: number } | null>(null);
 
   const handleActivate = useCallback((entityId: string) => {
+    setTap((t) => ({ id: entityId, n: (t?.n ?? 0) + 1 })); // [fork]
     void callService('scene', 'turn_on', {}, { entity_id: entityId });
   }, []);
 
@@ -95,14 +102,17 @@ export function ScenesCard({ entities }: ScenesCardProps) {
                 aria-label={t('home.scenes.activateAria', { name })}
                 aria-describedby={isActive || members > 0 ? subId : undefined /* [fork] */}
                 data-active={isActive || undefined /* [fork] */}
+                data-tone={isGlas ? glasSceneTone(sceneIcon(name), i) : undefined /* [fork] */}
+                data-swept={isGlas && tap?.id === scene.entity_id ? (tap.n % 2 ? 'a' : 'b') : undefined /* [fork] */}
                 type="button"
               >
                 <span
                   className="scene-tile__icon"
-                  style={{ background: palette.bg, color: palette.color }}
+                  style={isGlas ? undefined : { background: palette.bg, color: palette.color } /* [fork] Glas: CSS */}
                   aria-hidden="true"
                 >
                   {sceneIcon(name)}
+                  {isGlas && isActive && <SceneRing />}{/* [fork] */}
                 </span>
                 <span className="scene-tile__name">{name}</span>
                 {(isActive || members > 0) && ( // [fork] subtitle: "Aktiv" or "5 Geräte"

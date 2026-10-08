@@ -284,3 +284,5 @@ export {
 export type { GlasEnergyPeriod, GlasEnergyWindow, GlasEnergyBar, GlasEnergyAxis } from './glasEnergy.js';
 export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './sizePresets.js';
 export type { SizePreset, SectionSize } from './sizePresets.js';
+export { roomGlances, lightPercent, climateTone } from './roomGlance.js';
+export type { RoomGlance, ClimateTone } from './roomGlance.js';

@@ -149,6 +149,9 @@ import {
   sizeOfPreset,
   tallKey,
   withTall,
+  roomGlances,
+  lightPercent,
+  climateTone,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2025,6 +2028,30 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
   assertEqual(tallKey('home', 'energy'), 'home:energy', 'size: tall key');
   assertEqual(withTall(['home:a', 'home:b'], 'home:a', true).join(','), 'home:b,home:a', 'size: withTall no duplicate');
   assertEqual(withTall(['home:a', 'home:b'], 'home:a', false).join(','), 'home:b', 'size: withTall removes');
+
+  // main-room glances and light levels (Glas, K83)
+  const glRoom = (domains) => ({ id: 'r', name: 'R', entityIds: Object.values(domains).flat(), domains });
+  const glStates = {
+    'sensor.t_bad': ent('sensor.t_bad', 'unknown', { device_class: 'temperature' }),
+    'sensor.t': ent('sensor.t', '21.5', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.t2': ent('sensor.t2', '19', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.h': ent('sensor.h', '48', { device_class: 'humidity', unit_of_measurement: '%' }),
+    'climate.a': ent('climate.a', 'heat', { current_temperature: 20.4 }),
+    'climate.b': ent('climate.b', 'heat', { current_temperature: 18 }),
+  };
+  const glance = (domains) => roomGlances(glRoom(domains), glStates).map((g) => `${g.kind}:${g.entityId}=${g.value}${g.unit ?? ''}`).join(' ');
+  assertEqual(glance({ sensor: ['sensor.t_bad', 'sensor.t', 'sensor.t2', 'sensor.h'], climate: ['climate.a'] }), 'temperature:sensor.t=21.5°C humidity:sensor.h=48%', 'glance: first numeric sensors, climate not needed');
+  assertEqual(glance({ sensor: ['sensor.h'], climate: ['climate.gone', 'climate.a', 'climate.b'] }), 'temperature:climate.a=20.4 humidity:sensor.h=48%', 'glance: climate fallback = first existing climate, no unit');
+  assertEqual(glance({ light: ['light.x'] }), '', 'glance: nothing to show');
+  assertEqual(lightPercent(ent('light.x', 'on', { brightness: 204 })), 80, 'light: 204/255 → 80 %');
+  assertEqual(lightPercent(ent('light.x', 'on', { brightness: 1 })), 1, 'light: a glimmer still shows 1 %');
+  assertEqual(lightPercent(ent('light.x', 'off', { brightness: 204 })), null, 'light: off → no level');
+  assertEqual(lightPercent(ent('light.x', 'on', {})), null, 'light: not dimmable → no level');
+  assertEqual(climateTone(ent('climate.x', 'heat', { hvac_action: 'heating' })), 'heat', 'climate tone: heating');
+  assertEqual(climateTone(ent('climate.x', 'cool', { hvac_action: 'cooling' })), 'cool', 'climate tone: cooling');
+  assertEqual(climateTone(ent('climate.x', 'heat_cool', { hvac_action: 'idle' })), 'auto', 'climate tone: idle in heat_cool → auto');
+  assertEqual(climateTone(ent('climate.x', 'heat', { hvac_action: 'idle' })), 'idle', 'climate tone: idle');
+  assertEqual(climateTone(ent('climate.x', 'off', {})), 'idle', 'climate tone: off → idle');
 
   // demo scenes (K77): members everywhere, none active at start, active right after scene.turn_on
   const demoScenes = Object.values(DEMO_ENTITIES).filter((e) => e.entity_id.startsWith('scene.'));
