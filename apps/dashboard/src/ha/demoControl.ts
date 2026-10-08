@@ -6,11 +6,14 @@
  * changed. `patch(id, null)` removes the entity again. `patchArea(id, { picture })` sets or clears a room picture
  * (the demo itself has none), so a check can see that Glas keeps the main room card plain (E8).
  * `placeEntity(id, areaId)` puts an entity into a room (a registry entry is added when the demo has none), so a check
- * can give a card more rooms than the demo has (climate, blinds). Outside demo mode the object does not exist.
+ * can give a card more rooms than the demo has (climate, blinds). `openDetail(id)` opens an entity's detail the way a
+ * tap does, so a check can reach the detail of an entity without a card for it (a light's brightness control).
+ * Outside demo mode the object does not exist.
  */
 
 import type { AreaRegistryEntry, EntityRegistryEntry, HassEntity, HassEntityAttributes } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
+import { useUIStore } from '../stores/uiStore';
 
 export interface DemoPatch {
   state?: string;
@@ -23,6 +26,7 @@ interface DemoControl {
   patch: (id: string, patch: DemoPatch | null) => HassEntity | null;
   patchArea: (id: string, patch: { picture?: string | null }) => AreaRegistryEntry | null;
   placeEntity: (id: string, areaId: string | null) => EntityRegistryEntry | null;
+  openDetail: (id: string) => void;
 }
 
 type DemoWindow = Window & { __hapulseDemo?: DemoControl };
@@ -72,6 +76,9 @@ export function startDemoControl(): void {
         : [...registries.entities, next];
       setRegistries({ ...registries, entities });
       return next;
+    },
+    openDetail(id) {
+      useUIStore.getState().openEntityDetail(id);
     },
   };
 }

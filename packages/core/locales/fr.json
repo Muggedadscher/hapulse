@@ -1435,6 +1435,8 @@
   "glas.blinds.openAll": "Tout ouvrir",
   "glas.blinds.closeAll": "Tout fermer",
   "glas.nvr.live": "En direct",
+  "glas.light.onSince": "Allumée depuis {time}",
+  "glas.light.offSince": "Éteinte depuis {time}",
   "hints.title": "Alertes",
   "hints.empty": "Rien d'inhabituel pour le moment.",
   "hints.alarm": "Alarme : {state}",

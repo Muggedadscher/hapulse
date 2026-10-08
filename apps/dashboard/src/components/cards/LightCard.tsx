@@ -13,9 +13,12 @@ const COLOR_MODES = ['hs', 'rgb', 'rgbw', 'rgbww', 'xy'];
 interface LightCardProps {
   entity: HassEntity;
   name: string;
+  /** [fork] Glas detail: only colour temperature and colour under its own brightness control — no head, the card
+   *  itself does not switch, nothing while the light is off (docs/glas/PLAN-ETAPPE-4.md K79). */
+  colorOnly?: boolean;
 }
 
-export function LightCard({ entity, name }: LightCardProps) {
+export function LightCard({ entity, name, colorOnly }: LightCardProps) { // [fork] colorOnly
   const t = useT();
   const isOn = entity.state === 'on';
   const brightness = entity.attributes.brightness as number | undefined;
@@ -110,14 +113,17 @@ export function LightCard({ entity, name }: LightCardProps) {
   const brightnessRatio = localBrightness / 255;
   const colorTempRatio = (localColorTemp - minKelvin) / (maxKelvin - minKelvin);
 
+  if (colorOnly && !(isOn && (supportsColorTemp || supportsColor))) return null; // [fork]
+
   return (
     <Card
       active={isOn}
       className="light-card"
-      onClick={handleToggle}
-      role="button"
-      tabIndex={0}
+      onClick={colorOnly ? undefined : handleToggle} // [fork] colorOnly
+      role={colorOnly ? undefined : 'button'} // [fork]
+      tabIndex={colorOnly ? undefined : 0} // [fork]
       onKeyDown={(e) => {
+        if (colorOnly) return; // [fork]
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handleToggle(e);
@@ -125,6 +131,7 @@ export function LightCard({ entity, name }: LightCardProps) {
       }}
     >
       {/* ── Header row ── */}
+      {!colorOnly && ( // [fork]
       <div className="light-card__header">
         {/* Icon chip */}
         <div className={`icon-chip light-card__chip${isOn ? ' light-card__chip--on' : ''}`}>
@@ -156,11 +163,12 @@ export function LightCard({ entity, name }: LightCardProps) {
           </span>
         </label>
       </div>
+      )}{/* [fork] */}
 
       {/* ── Sliders (brightness + color temp + color) ── */}
-      {isOn && (supportsBrightness || supportsColorTemp || supportsColor) && (
+      {isOn && ((supportsBrightness && !colorOnly) || supportsColorTemp || supportsColor) && ( // [fork] colorOnly
         <div className="light-card__sliders" onClick={(e) => e.stopPropagation()}>
-          {supportsBrightness && (
+          {supportsBrightness && !colorOnly && ( // [fork] colorOnly
             <div className="light-card__slider-row">
               <span className="light-card__slider-label">{t('cards.light.brightness')}</span>
               <div className="light-card__track">

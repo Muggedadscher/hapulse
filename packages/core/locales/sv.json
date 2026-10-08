@@ -1435,6 +1435,8 @@
   "glas.blinds.openAll": "Öppna alla",
   "glas.blinds.closeAll": "Stäng alla",
   "glas.nvr.live": "Live",
+  "glas.light.onSince": "På sedan {time}",
+  "glas.light.offSince": "Av sedan {time}",
   "hints.title": "Observera",
   "hints.empty": "Just nu är allt som vanligt.",
   "hints.alarm": "Larm: {state}",

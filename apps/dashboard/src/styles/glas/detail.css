@@ -1,0 +1,974 @@
+/* [fork] Glas — the entity detail (docs/GLAS-DESIGN.md §7.20 inspector, §7.21 detail, §7.22 light control; plan
+   docs/glas/PLAN-ETAPPE-4.md K79, K80).
+
+   The content of Klassisch (inventory F) in Glas: name, room, state tile and star sit in the window's head
+   (SheetHeader `lead`/`trailing`), the content starts with the state line (components/glas/detail/GlasDetailHead.tsx);
+   a light gets the vertical brightness control (LightBrightnessControl.tsx) with its card's colour temperature and
+   colour (LightCard `colorOnly`) beside the capsule, other devices keep their control card as a group; then history
+   with the segment 24H/7D/30D, activity, members and attributes in groups. Phone = sheet; from 900 px the desktop
+   sizes (dialog 900–1099, inspector from 1100). */
+
+/* ---- Head (K79): the state tile before name and room, the star in the end column ---- */
+:root[data-style='glas'] .g-sheet-header--lead .g-sheet-header__titles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: left;
+}
+
+:root[data-style='glas'] .g-sheet-header__lead {
+  display: flex;
+  flex: none;
+}
+
+:root[data-style='glas'] .g-sheet-header__text {
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-sheet-header__trail {
+  display: flex;
+  justify-content: center;
+}
+
+:root[data-style='glas'] .g-sheet-header--page > .g-sheet-header__trail {
+  justify-content: flex-end;
+}
+
+/* State tile 40, radius 12: a device that is on in its colour (the devices card's), off grey, other entities the
+   soft accent of the classic chip, unavailable faint. */
+:root[data-style='glas'] .g-detail-tile {
+  --g-tile: var(--g-yellow);
+  --g-tile-glyph: var(--g-glyph-dark);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .g-detail-tile[data-tone='teal'] {
+  --g-tile: var(--g-teal);
+}
+
+:root[data-style='glas'] .g-detail-tile[data-tone='green'] {
+  --g-tile: var(--g-green);
+}
+
+:root[data-style='glas'] .g-detail-tile[data-tone='blue'] {
+  --g-tile: var(--g-blue);
+  --g-tile-glyph: var(--g-on-badge);
+}
+
+:root[data-style='glas'] .g-detail-tile[data-look='lit'] {
+  background: var(--g-tile);
+  color: var(--g-tile-glyph);
+}
+
+:root[data-style='glas'] .g-detail-tile:is([data-look='off'], [data-look='gone']) {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .g-detail-tile[data-look='gone'] {
+  color: var(--g-label-3);
+}
+
+/* The star (FavoriteToggle): hit area 44, circle 32 `fill` (the background only fills the content box), a favourite
+   filled in yellowInk. */
+:root[data-style='glas'] .g-sheet-header__trail .entity-detail__fav {
+  width: 44px;
+  height: 44px;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--g-fill) content-box;
+  color: var(--g-label-2);
+  transition: background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-sheet-header__trail .entity-detail__fav:hover {
+  background: var(--g-fill-2) content-box;
+}
+
+:root[data-style='glas'] .g-sheet-header__trail .entity-detail__fav--on {
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .g-sheet-header__trail .entity-detail__fav:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -4px;
+}
+
+/* Inspector (§7.20): tile, name and room on the left, star and close on the right; head 14 14 10 18, content 4 18 24. */
+:root[data-style='glas'] .modal-panel[data-g-sheet='inspector'] > .g-sheet-header--lead {
+  grid-template-columns: minmax(0, 1fr) auto 44px;
+  padding: 14px 14px 10px 18px;
+}
+
+:root[data-style='glas'] .modal-panel[data-g-sheet='inspector'] > .g-sheet-header--lead > .g-sheet-header__titles {
+  grid-area: 1 / 1;
+  justify-content: flex-start;
+}
+
+:root[data-style='glas'] .modal-panel[data-g-sheet='inspector'] > .g-sheet-header--lead > .g-sheet-header__trail {
+  grid-area: 1 / 2;
+}
+
+:root[data-style='glas'] .modal-panel[data-g-sheet='inspector'] > .g-sheet-header--lead > .g-sheet-header__end {
+  display: none;
+}
+
+:root[data-style='glas'] .modal-panel[data-g-sheet='inspector'] > .g-sheet-header--lead > .g-sheet-header__close {
+  grid-area: 1 / 3;
+}
+
+:root[data-style='glas'] .modal-panel[data-g-sheet='inspector'] > .modal-body {
+  padding: 4px 18px 24px;
+}
+
+/* ---- Content ---- */
+:root[data-style='glas'] .entity-detail {
+  gap: 24px;
+}
+
+/* State line: the state 22/28 700 (desktop 28/34), when it last changed 13 on the right. */
+:root[data-style='glas'] .g-detail-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 4px 4px 0;
+}
+
+:root[data-style='glas'] .g-detail-state__value {
+  min-width: 0;
+  color: var(--g-label);
+  font: 700 22px / 28px var(--g-font);
+  letter-spacing: 0.35px;
+  overflow-wrap: anywhere;
+}
+
+:root[data-style='glas'] .g-detail-state__when {
+  color: var(--text-dim);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* ---- Light control (§7.22): phone = capsule 120 × 280 on the left; percentage, since and the colour row (colour
+   temperature and colour of the light's card) on the right; the round switch under the capsule. Desktop = a group
+   with capsule 104 × 232, the switch as a capsule with its label and the colour row under both. A light that cannot
+   be dimmed has only the switch and the line. ---- */
+:root[data-style='glas'] .g-light {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-areas:
+    'cap pct'
+    'cap since'
+    'cap extra'
+    'power .';
+  column-gap: 20px;
+  align-items: start;
+}
+
+:root[data-style='glas'] .g-light:not([data-dimmable]) {
+  grid-template-columns: 60px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'power since'
+    'extra extra';
+  column-gap: 16px;
+  align-items: center;
+}
+
+:root[data-style='glas'] .g-light__cap {
+  grid-area: cap;
+  position: relative;
+  width: 120px;
+  height: 280px;
+  overflow: hidden;
+  border-radius: 32px;
+  background: var(--g-fill-2);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: scale var(--g-d-smooth) var(--g-spring-smooth);
+}
+
+:root[data-style='glas'] .g-light[data-dragging] .g-light__cap {
+  scale: 1.04;
+}
+
+:root[data-style='glas'] .g-light__cap:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 3px;
+}
+
+/* focused by a tap or a click (for the keys that may follow): no ring until a key is pressed */
+:root[data-style='glas'] .g-light__cap[data-pointer]:focus-visible {
+  outline: none;
+}
+
+/* the fill is the capsule's full height, moved down by what is missing; a tap springs there, a drag follows */
+:root[data-style='glas'] .g-light__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--g-yellow);
+  transform: translateY(calc((100 - var(--g-level, 0)) * 1%));
+  transition: transform var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] .g-light[data-dragging] .g-light__fill {
+  transition: none;
+}
+
+:root[data-style='glas'] .g-light__sun {
+  position: absolute;
+  bottom: 20px;
+  left: calc(50% - 10px);
+  color: var(--g-label-2);
+  transition: color 150ms ease;
+}
+
+:root[data-style='glas'] .g-light__cap[data-lit] .g-light__sun {
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .g-light__pct {
+  grid-area: pct;
+  color: var(--g-label);
+  font: 700 34px / 41px var(--g-font);
+  letter-spacing: 0.37px;
+}
+
+:root[data-style='glas'] .g-light__since {
+  grid-area: since;
+  margin-top: 2px;
+  color: var(--text-dim);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-light__power {
+  grid-area: power;
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 30px;
+  background: none;
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-light:not([data-dimmable]) .g-light__power {
+  margin: 0;
+}
+
+:root[data-style='glas'] .g-light__power-circle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    scale var(--g-d-smooth) var(--g-spring-smooth);
+}
+
+:root[data-style='glas'] .g-light[data-on] .g-light__power-circle {
+  background: var(--g-yellow);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .g-light__power:active .g-light__power-circle {
+  scale: 0.94;
+}
+
+:root[data-style='glas'] .g-light__power:focus-visible {
+  outline: none;
+}
+
+:root[data-style='glas'] .g-light__power:focus-visible .g-light__power-circle {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 3px;
+}
+
+:root[data-style='glas'] .g-light__power-text {
+  display: none;
+}
+
+/* The colour row: the light's own card (`colorOnly`) without its surface — labels 13 600 `label2`, tracks 32. It is
+   empty while the light is off or has no colour. */
+:root[data-style='glas'] .g-light__extra {
+  grid-area: extra;
+  min-width: 0;
+  margin-top: 20px;
+}
+
+:root[data-style='glas'] .g-light__extra:empty {
+  display: none;
+}
+
+:root[data-style='glas'] .g-light__extra > .light-card,
+:root[data-style='glas'] .g-light__extra > .light-card:is(:hover, :active) {
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  cursor: default;
+}
+
+:root[data-style='glas'] .g-light__extra .light-card__sliders {
+  gap: 14px;
+}
+
+:root[data-style='glas'] .g-light__extra .light-card__slider-row {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .g-light__extra .light-card__slider-label {
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .g-light__extra :is(.light-card__track, .light-card__hue-range) {
+  height: 32px;
+  border-radius: 16px;
+}
+
+:root[data-style='glas'] .g-light__extra .light-card__fill {
+  border-radius: 16px;
+}
+
+:root[data-style='glas'] .g-light__extra :is(.light-card__range, .light-card__hue-range):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* Other devices keep their control card (inventory F), as a group like the sections below; a card that switches
+   on a tap shows its hover like a row. */
+:root[data-style='glas'] .entity-detail__control > .card,
+:root[data-style='glas'] .entity-detail__control > .card:hover {
+  --text-dim: var(--g-label-2);
+  --text-faint: var(--g-label-2);
+  border: 0;
+  border-radius: 22px;
+  background-color: var(--g-group);
+  box-shadow: none;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .entity-detail__control > .card[role='button']:hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
+}
+
+/* Its toggle is the iOS switch (§7.28, K80): 51 × 31, knob 27 white with its shadow, on = green. */
+:root[data-style='glas'] .entity-detail__control .pill-toggle__track {
+  width: 51px;
+  height: 31px;
+  border-radius: 16px;
+  background: var(--g-switch-off);
+  transition: background-color 250ms ease;
+}
+
+:root[data-style='glas'] .entity-detail__control .pill-toggle input:checked + .pill-toggle__track {
+  background: var(--g-switch-on);
+}
+
+:root[data-style='glas'] .entity-detail__control .pill-toggle__knob,
+:root[data-style='glas'] .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob {
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  transition: transform var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob {
+  transform: translateX(20px);
+}
+
+/* ---- Sections: title 20/25 600 (desktop 17/22), no rule above ---- */
+:root[data-style='glas'] .entity-detail__section {
+  padding-top: 0;
+  border-top: 0;
+}
+
+:root[data-style='glas'] .entity-detail__section-head {
+  align-items: center;
+  min-height: 44px;
+  margin: 0 0 6px;
+  padding: 0 4px;
+}
+
+:root[data-style='glas'] .entity-detail__section-title {
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* the group members' title has no head row around it */
+:root[data-style='glas'] .entity-detail__section > .entity-detail__section-title {
+  margin: 0 4px 10px;
+}
+
+:root[data-style='glas'] .entity-detail__section-action {
+  min-height: 44px;
+  padding: 0 4px;
+  color: var(--g-accent-ink);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__section-action:hover {
+  text-decoration: none;
+  opacity: 0.75;
+}
+
+:root[data-style='glas'] .entity-detail__section-action:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+
+/* Segment 24H / 7D / 30D (§7.27): 168 wide, visible 36 (desktop 32) in a hit area of 44, lens 54 × 30; the chosen
+   option label, the others label2. */
+:root[data-style='glas'] .g-seg--detail {
+  --g-seg-h: 44px;
+  --g-seg-inset: 4px;
+  --g-seg-pad: 3px;
+  flex: none;
+  width: 168px;
+}
+
+:root[data-style='glas'] .g-seg--detail .g-seg__opt {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .g-seg--detail .g-seg__opt[aria-checked='true'] {
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .g-seg--detail .g-seg__opt:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -4px;
+}
+
+/* ---- History: the chart in a group (radius 22, 14 14 10) ---- */
+:root[data-style='glas'] .entity-detail__history-view {
+  --g-chart: var(--g-accent);
+  --g-chart-ink: var(--g-accent-ink);
+  padding: 14px 14px 10px;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+:root[data-style='glas'] .entity-detail__history-view[data-g-tone='orange'] {
+  --g-chart: var(--g-orange);
+  --g-chart-ink: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .entity-detail__history-view[data-g-tone='blue'] {
+  --g-chart: var(--g-blue);
+  --g-chart-ink: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] :is(.entity-detail__placeholder, .entity-detail__attr-empty) {
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: var(--g-group);
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* Value chart: area .22 and a 2.5 line in the colour of what it measures (the line in its ink, ≥ 3:1). */
+:root[data-style='glas'] .entity-detail__chart {
+  height: 120px;
+  border-radius: 0;
+  background: none;
+}
+
+:root[data-style='glas'] .entity-detail__chart-area {
+  fill: var(--g-chart);
+  fill-opacity: 0.22;
+}
+
+:root[data-style='glas'] .entity-detail__chart-line {
+  stroke: var(--g-chart-ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+:root[data-style='glas'] :is(.entity-detail__chart-max, .entity-detail__chart-min) {
+  right: 2px;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__chart-max {
+  top: 0;
+}
+
+:root[data-style='glas'] .entity-detail__chart-min {
+  bottom: 0;
+}
+
+/* On/off band 36 high (desktop 34), radius 10: on yellow with dark text, off `fill` with label2. */
+:root[data-style='glas'] .entity-detail__timeline {
+  height: 36px;
+  border-radius: 10px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .entity-detail__timeline-seg--active {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .entity-detail__timeline-seg--neutral {
+  background: none;
+}
+
+:root[data-style='glas'] .entity-detail__timeline-seg--unavailable {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    var(--g-fill-2) 4px,
+    var(--g-fill-2) 6px
+  );
+}
+
+:root[data-style='glas'] .entity-detail__timeline-label {
+  font: 600 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__timeline-seg--active .entity-detail__timeline-label {
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .entity-detail__timeline-seg--neutral .entity-detail__timeline-label {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .entity-detail__ticks {
+  margin-top: 8px;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+/* ---- Activity (§7.21): day heads 13/18 600, rows in a group, 44 high, dot 8 (on yellow, otherwise label3) ---- */
+:root[data-style='glas'] .entity-detail__activity {
+  gap: 14px;
+}
+
+:root[data-style='glas'] .entity-detail__activity-day {
+  margin: 0 4px 6px;
+  color: var(--text-dim);
+  font: 600 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__activity-list {
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+:root[data-style='glas'] .entity-detail__activity-row {
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  background-repeat: no-repeat;
+  background-position: 36px 0;
+  background-size: calc(100% - 36px) 0.5px;
+}
+
+:root[data-style='glas'] .entity-detail__activity-row + .entity-detail__activity-row {
+  border-top: 0;
+  background-image: linear-gradient(var(--g-sep), var(--g-sep));
+}
+
+:root[data-style='glas'] .entity-detail__activity-dot--active {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .entity-detail__activity-dot--neutral {
+  background: var(--g-label-3);
+}
+
+:root[data-style='glas'] .entity-detail__activity-dot--unavailable {
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .entity-detail__activity-state {
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__activity-time {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- Group members: rows 52 in a group, symbol 28 ---- */
+:root[data-style='glas'] .entity-detail__members {
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+:root[data-style='glas'] .entity-detail__member-row {
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 0;
+  color: var(--g-label);
+  background-repeat: no-repeat;
+  background-position: 56px 0;
+  background-size: calc(100% - 56px) 0.5px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .entity-detail__member-row + .entity-detail__member-row {
+  background-image: linear-gradient(var(--g-sep), var(--g-sep));
+}
+
+:root[data-style='glas'] .entity-detail__member-row:hover {
+  background-color: var(--g-hover);
+}
+
+:root[data-style='glas'] .entity-detail__member-row:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .entity-detail__member-icon {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .entity-detail__member-name {
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__member-state {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__member-chevron {
+  color: var(--g-label-3);
+}
+
+/* ---- Attributes: a row 52 (desktop 44) that opens the list below it, chevron on the right ---- */
+:root[data-style='glas'] .entity-detail__section:has(> .entity-detail__attrs-toggle) {
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+:root[data-style='glas'] .entity-detail__attrs-toggle {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  padding: 0 16px;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+  letter-spacing: 0;
+  text-transform: capitalize;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .entity-detail__attrs-toggle:hover {
+  color: var(--g-label);
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .entity-detail__attrs-toggle:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .entity-detail__attrs-toggle > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .entity-detail__attr-list {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 16px 0 / calc(100% - 16px) 0.5px;
+}
+
+:root[data-style='glas'] .entity-detail__attr-row {
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-bottom: 0;
+  background-repeat: no-repeat;
+  background-position: 16px 0;
+  background-size: calc(100% - 16px) 0.5px;
+}
+
+:root[data-style='glas'] .entity-detail__attr-row + .entity-detail__attr-row {
+  background-image: linear-gradient(var(--g-sep), var(--g-sep));
+}
+
+:root[data-style='glas'] .entity-detail__attr-key {
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .entity-detail__attr-value {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* the empty text sits in the attributes' group, under the row */
+:root[data-style='glas'] .entity-detail__section > .entity-detail__attr-empty {
+  border-radius: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 16px 0 / calc(100% - 16px) 0.5px;
+}
+
+/* ---- Camera ---- */
+:root[data-style='glas'] .entity-detail__camera {
+  border-radius: 22px;
+  background: var(--g-media-bg);
+}
+
+/* ---- Desktop: dialog and inspector (§7.20, §7.21) ---- */
+@media (min-width: 900px) {
+  :root[data-style='glas'] .entity-detail {
+    gap: 20px;
+  }
+
+  :root[data-style='glas'] .g-detail-state__value {
+    font-size: 28px;
+    line-height: 34px;
+    letter-spacing: 0.36px;
+  }
+
+  :root[data-style='glas'] .g-light {
+    grid-template-columns: 104px minmax(0, 1fr);
+    grid-template-rows: 1fr auto auto auto 1fr auto;
+    grid-template-areas:
+      'cap .'
+      'cap pct'
+      'cap power'
+      'cap since'
+      'cap .'
+      'extra extra';
+    column-gap: 24px;
+    align-items: center;
+    padding: 18px;
+    border-radius: 22px;
+    background: var(--g-group);
+  }
+
+  :root[data-style='glas'] .g-light:not([data-dimmable]) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      'power'
+      'since'
+      'extra';
+    row-gap: 8px;
+    align-items: start;
+  }
+
+  :root[data-style='glas'] .g-light__extra {
+    margin-top: 18px;
+  }
+
+  :root[data-style='glas'] .g-light__cap {
+    width: 104px;
+    height: 232px;
+    border-radius: 28px;
+  }
+
+  :root[data-style='glas'] .g-light__since {
+    margin-top: 0;
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  :root[data-style='glas'] .g-light__power {
+    justify-self: start;
+    gap: 10px;
+    height: 52px;
+    margin: 10px 0 8px;
+    padding: 0 18px 0 7px;
+    border-radius: 26px;
+    background: var(--g-fill);
+    transition: background-color 150ms ease;
+  }
+
+  :root[data-style='glas'] .g-light:not([data-dimmable]) .g-light__power {
+    margin: 0;
+  }
+
+  :root[data-style='glas'] .g-light__power:hover {
+    background: var(--g-fill-2);
+  }
+
+  :root[data-style='glas'] .g-light__power-circle {
+    width: 38px;
+    height: 38px;
+    background: var(--g-fill-2);
+  }
+
+  :root[data-style='glas'] .g-light__power-circle > svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  :root[data-style='glas'] .g-light__power:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
+  :root[data-style='glas'] .g-light__power:focus-visible .g-light__power-circle {
+    outline: none;
+  }
+
+  :root[data-style='glas'] .g-light__power-text {
+    display: inline;
+  }
+
+  :root[data-style='glas'] .entity-detail__control > .card {
+    border-radius: 20px;
+  }
+
+  :root[data-style='glas'] .entity-detail__section-title {
+    font-size: 17px;
+    line-height: 22px;
+  }
+
+  :root[data-style='glas'] .g-seg--detail {
+    --g-seg-inset: 6px;
+    --g-seg-pad: 2px;
+  }
+
+  :root[data-style='glas'] .entity-detail__history-view {
+    border-radius: 20px;
+  }
+
+  :root[data-style='glas'] .entity-detail__chart {
+    height: 140px;
+  }
+
+  :root[data-style='glas'] .entity-detail__timeline {
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  :root[data-style='glas'] :is(.entity-detail__activity-list, .entity-detail__members) {
+    border-radius: 18px;
+  }
+
+  :root[data-style='glas'] .entity-detail__activity-row {
+    min-height: 42px;
+  }
+
+  :root[data-style='glas'] .entity-detail__activity-time {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  :root[data-style='glas'] .entity-detail__section:has(> .entity-detail__attrs-toggle) {
+    border-radius: 18px;
+  }
+
+  :root[data-style='glas'] .entity-detail__attrs-toggle {
+    min-height: 44px;
+    font-size: 15px;
+    line-height: 20px;
+  }
+}
+
+/* ---- Reduced motion: the fill and the capsule do not spring, the switch does not press in ---- */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .g-light__fill {
+    transition-duration: 200ms !important;
+    transition-timing-function: ease !important;
+  }
+
+  :root[data-style='glas'] .g-light[data-dragging] .g-light__cap,
+  :root[data-style='glas'] .g-light__power:active .g-light__power-circle {
+    scale: none;
+  }
+}
+
+/* ---- Forced colours: the capsule, its fill and the switch keep an outline ---- */
+@media (forced-colors: active) {
+  :root[data-style='glas'] .g-light__cap {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .g-light__fill {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] .g-light__power-circle {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] .entity-detail__timeline-seg--active {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] .entity-detail__timeline-seg--active .entity-detail__timeline-label {
+    color: HighlightText;
+  }
+
+  :root[data-style='glas'] .g-light__extra :is(.light-card__track, .light-card__hue-range),
+  :root[data-style='glas'] .entity-detail__timeline {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .entity-detail__control .pill-toggle__track {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText;
+    background: Canvas;
+  }
+
+  :root[data-style='glas'] .entity-detail__control .pill-toggle__knob,
+  :root[data-style='glas'] .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob {
+    top: 1px;
+    left: 1px;
+    background: ButtonText;
+    box-shadow: none;
+  }
+
+  :root[data-style='glas'] .entity-detail__control .pill-toggle input:checked + .pill-toggle__track {
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob {
+    background: HighlightText;
+  }
+}

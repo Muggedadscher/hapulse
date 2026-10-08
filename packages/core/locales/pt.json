@@ -1435,6 +1435,8 @@
   "glas.blinds.openAll": "Abrir tudo",
   "glas.blinds.closeAll": "Fechar tudo",
   "glas.nvr.live": "Ao vivo",
+  "glas.light.onSince": "Ligada desde {time}",
+  "glas.light.offSince": "Desligada desde {time}",
   "hints.title": "Avisos",
   "hints.empty": "De momento não há nada fora do normal.",
   "hints.alarm": "Alarme: {state}",
