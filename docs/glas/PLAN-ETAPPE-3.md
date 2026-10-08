@@ -414,7 +414,7 @@ Grundlage für „gleiches DOM je Fenster“, die Aufnahmen und die Abnahme. Dem
 | 10 | Klima alle | `…/ClimateAllModal.tsx` | Start → Klima-Karte „Alle anzeigen“ | kein Weg ins Detail |
 | 11 | Rollläden alle | `…/BlindsAllModal.tsx` | Start → Rollläden-Karte „Alle anzeigen“ | kein Weg ins Detail |
 | 12 | Müll | `waste/WasteBinModal.tsx` | Start → Müll-Karte → Tonne | |
-| 13 | Detail | `home/EntityDetailModal.tsx` | Tipp auf eine Sensor-Kachel; Langdruck auf eine Licht-Kachel | in `AppLayout` gerendert, also nie Seite; Inhaltstausch K70 |
+| 13 | Detail | `home/EntityDetailModal.tsx` | Tipp auf eine Sensor-Kachel; Langdruck auf eine Licht-Kachel (in Glas seit 3b: Kontextmenü → „Details“) | in `AppLayout` gerendert, also nie Seite; Inhaltstausch K70 |
 | 14 | Dauerwahl | `pool/PumpManualModal.tsx` | Pool-Sheet → „Manuell“ (Übergabe K49); Poolseite → Manuell-Karte | |
 | 15 | Zeitplan | `pool/ScheduleEditorModal.tsx` | Poolseite → Zeitplan bearbeiten | |
 | 16 | Was ist neu | `changelog/ForkChangelogModal.tsx` | Einstellungen → „Was ist neu“; beim Start mit ungesehenen Einträgen (Effekt, ohne Geste) | `data-autofocus` „Verstanden“ |
