@@ -692,9 +692,11 @@ laufenden Sentinel; alle Gesten in WebKit.
 - `checks --part sheets`: alle Blöcke grün (Klassisch-DOM, Geometrie, Ziehen, Morph, wachsender Inhalt, Seiten samt
   Ziffernblock und Bestätigung im Detail, Übergabe, Tab-Leiste und Glas-Regeln, Benachrichtigungen, Felder und
   reduzierte Bewegung, Stilwechsel, Schließen auf jedem Weg inklusive Routenwechsel und gescrollter Liste, Fenster per
-  Effekt, Mehr/Räume, Wiederöffnen, alle Fenster); dieselben Fenster-Proben auch gegen den Vite-Entwicklungsserver
-  (StrictMode): kein Geist, wo ein Fenster bleibt. `--part frame` und `--part stage1` grün; die Linsen-Probe schaut
-  jetzt mehrmals statt einmal.
+  Effekt, Mehr/Räume, Wiederöffnen, alle Fenster, Geist-Kopie); dieselben Fenster-Proben auch gegen den
+  Vite-Entwicklungsserver (StrictMode): kein Geist, wo ein Fenster bleibt. Die Geist-Kopie prüft, dass jeder Text, der
+  in einem Scroll-Bereich zu sehen war, im Geist an derselben Stelle steht, auch in der Teilkopie (Entitätenliste mit
+  offener, gescrollter Gruppe: 435 statt 2121 Elemente). `--part frame` und `--part stage1` grün; die Linsen-Probe
+  schaut jetzt mehrmals statt einmal.
 - K63 nachgestellt: (a) ja — ein Esc schließt beide verschachtelten Fenster; (b) ja — nach dem Routenwechsel bleibt
   `body.style.overflow` auf `hidden`; (c) in der Demo nicht messbar.
 - Klassisch: 284 Aufnahmen (Seiten und Rahmen 136, Fenster 148; Handy, iPad, Desktop, hell und dunkel) gleichen dem
@@ -703,4 +705,10 @@ laufenden Sentinel; alle Gesten in WebKit.
   Playwright wiederholte den Klick, solange Karten noch einliefen, und scrollte dabei jedes Mal anders; jetzt holt die
   Szene den Auslöser vorher in die Mitte (`reach`).
 - Klick-Fuzz: FUZZ_ERGEBNIS
-- Leistung (4-fache CPU-Drosselung, Chromium): LEISTUNG_ERGEBNIS
+- Leistung (Bericht; Chromium ohne GPU, zwei Läufe): bei voller Geschwindigkeit verwirft das Öffnen 0–3 Bilder, das
+  Schließen 0–1; der Geist arbeitet 1–3 ms. Bei 4-facher CPU-Drosselung verwirft das Öffnen von Licht 3–5,
+  Entitätenliste 11–13 und Detail 3–4 Bilder (Klassisch 3, 8–12 und 1–4), das Schließen 0–5 (Klassisch 0); der Geist
+  arbeitet 6–10 ms (vor U7 und U8 bei der Entitätenliste 177 ms). Jedes Umschalten von `data-g-sheets` berechnete
+  zudem die ganze Seite neu (658 Elemente); seit die Tab-Leiste nur ihre benannten Kinder ausblendet, sind es 79. Das
+  Ziel ≤ 2 (GLAS-PLAN §5.5) verfehlt bei 4-facher Drosselung auch Klassisch, hier rechnet die CPU jede Unschärfe
+  selbst; maßgeblich ist die Messung am iPad im Labor (§11).
