@@ -17,6 +17,8 @@ import { setPoolMode } from '../../../ha/pool';
 import { POOL_ENTITIES, poolModeTone } from '../../pool/poolConfig';
 import { usePoolTimer, formatCountdown } from '../../pool/usePoolTimer';
 import { PumpManualModal } from '../../pool/PumpManualModal';
+import { useIsGlas } from '../../../app/glas/useUiStyle';
+import { POOL_SEGMENT_MAX, PoolModeSegment } from '../../glas/PoolModeSegment';
 import './PoolModal.css';
 
 interface PoolModalProps {
@@ -45,6 +47,8 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
 
   // Manuell asks for the run length first (like the pump hero); the chip modal closes so dialogs don't stack
   const [manualOpen, setManualOpen] = useState(false);
+  const glas = useIsGlas(); // Glas: the mode as a segment with a lens (plan docs/glas/PLAN-ETAPPE-5.md K92)
+  const segment = glas && options.length > 0 && options.length <= POOL_SEGMENT_MAX;
 
   const handleOpenPool = useCallback(() => {
     onClose();
@@ -80,7 +84,16 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
           </div>
         </div>
 
-        {options.length > 0 && (
+        {segment && (
+          <PoolModeSegment
+            options={options}
+            value={activeOption}
+            label={t('pool.mode.title')}
+            onManual={() => { onClose(); setManualOpen(true); }}
+          />
+        )}
+
+        {options.length > 0 && !segment && (
           <div className="pool-modal__mode" role="group" aria-label={t('pool.mode.title')}>
             {options.map((opt) => {
               const isActive = opt === activeOption;

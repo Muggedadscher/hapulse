@@ -849,8 +849,10 @@ function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Cont
 /**
  * The other pages (plan Etappe 5 §3, K93/K94): the text of a field and its placeholder on `fill` over the card and
  * over the page; the chosen choice pill (`accentInk` on `accentSoft` over the card); the yellow of a warning (motion,
- * an open window, a system warning) as text on the card and on its soft tone over the card. Steppers and play draw
- * `label` on `fill`, the playing state white on blue (window pairs).
+ * an open window, a system warning) as text on the card and on its soft tone over the card; the segment's lens with
+ * `label` (pool mode, on/off of a switch point); the pool's schedule editor: the hours of an on window `glyphDark` on
+ * `teal`, the time at the dragged handle `group` on `label`. Steppers and play draw `label` on `fill`, the playing state
+ * white on blue (window pairs).
  */
 function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
   const pairs: ContrastPair[] = [];
@@ -862,6 +864,9 @@ function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Con
   pairs.push({ name: 'chosen pill (accentInk on accentSoft over card)', fg: a.accentInk, bg: compositeOver(a.accentSoft, c.card), min: 4.5 });
   pairs.push({ name: 'warnInk on card', fg: c.warnInk, bg: c.card, min: 4.5 });
   pairs.push({ name: 'warnInk on warnSoft over card (motion pill)', fg: c.warnInk, bg: compositeOver(c.warnSoft, c.card), min: 4.5 });
+  pairs.push({ name: 'label on seg (segment lens)', fg: c.label, bg: c.seg, min: 4.5 });
+  pairs.push({ name: 'glyphDark on teal (hours of an on window, pool schedule editor)', fg: c.glyphDark, bg: c.teal, min: 4.5 });
+  pairs.push({ name: 'group on label (time at the dragged handle)', fg: c.group, bg: c.label, min: 4.5 });
   return pairs;
 }
 

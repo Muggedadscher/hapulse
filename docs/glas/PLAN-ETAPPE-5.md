@@ -325,3 +325,49 @@ und übernommen, außer wo anders vermerkt.
   Anzahl, Esc und Bestätigung, „Alle verriegeln“ ohne Frage, Garage „Alle öffnen“ fragt und „Alle schließen“ schließt,
   Badge, Personen und Sensor-Listen) und `pagesEmpty` (Seite ohne Sicherheits-Entitäten). Die Bewegungs-Salve der Demo
   schreibt nach 3 s ihren alten Stand zurück; die Prüfung nimmt den Flur-Sensor vorher heraus.
+
+### 7.10 Pool (K1–K10, K92, K93, K94, K99)
+
+- Neue Datei `pool.css`. **Hero:** Kreis 56 in `fill`, läuft die Pumpe, Teal mit Glyphe `glyphDark`; Name 13/18
+  `label2`, Zustand 22/28 700, „Läuft“ in `tealInk`; die Laufzeit als Kapsel 32 in `fill`.
+- **Modus (K92):** `PoolModeSegment` auf der Seite und im Pool-Fenster, über eine Weiche in `PumpHeroCard` und
+  `PoolModal`; die Optionen des `input_select` als Text, manuelle Aktivierung, „Manuell“ öffnet die Dauerwahl bei jedem
+  Tipp. **Abweichung:** Die klassischen Knöpfe zeigen ein Symbol neben dem Text, das Segment nur Text (ein Segment
+  mischt nie, §7.27). Mehr als fünf Optionen behalten die klassischen Knöpfe, in Glas als Kapsel-Reihe 44.
+  `Segment` lernt dafür die **Etikett-Anpassung:** Passt ein Etikett nicht, wird das ganze Segment eng (`data-tight`:
+  13 px, Innenabstand 2), gemessen bei jeder Größenänderung und nach dem Laden der Schrift; am Handy steht
+  „Ausgeschalten“ so ganz da (360–430: eng, Desktop: normal; bei 320 endet es noch mit „…“).
+- **Ringe (K99):** Spur `fill2`, Solar Gelb bzw. über der Schwelle Grün, Manuell Teal, die Zahl in der Ink des Rings.
+  Gesteuert über lokale Tokens an den Ring-Teilen (`--accent`, `--positive`, `--info`), `PoolGauge` bleibt unverändert.
+  `accent.css` führt Ringe, Balken, Zeitleiste und Ein/Aus nicht mehr.
+- **Solar:** Pille 28 (über der Schwelle `greenSoft`/`greenInk`, sonst `fill`/`label2`), Stepper rund 44 (§7.2).
+  **Manuell:** Stoppen „plain“ 44, Starten prominent 48, die Siri-Zeile mit Trennlinie 0,5 und Stepper.
+  **Zeitplan:** Titel mit Schalter in der Fläche (§7.7), Wochentage als Kapseln 28 (gewählt `accentSoft`/`accentInk`),
+  Fenster als `tealSoft`-Kapsel mit `tealInk`, Bearbeiten „plain“ 44.
+- **Kennzahlen (K94):** Liste über die Fläche, Zeilen 52, Trennlinie ab dem Text, Wert `label2`, Chevron `label3`; eine
+  Zeile öffnet das Detail (ab 1100 der Inspector). **Diagramm:** Balken Teal mit `tealInk`-Kante (im Hellen nötig wie
+  beim Solar-Gelb), die übrigen Tage mit Deckkraft .35 wie bei der Info-Blase der Energie, der gezeigte Tag voll.
+  **Admin:** Schalter-Zeilen 52, Neustart `actDel` mit Weiß; er fragt weiter (Etappe 3).
+- **Zeitplan-Editor (K99):** Wochentage 44 hoch über die Breite, am Handy Kreise (gewählt `accentSoft`, Ring 2 px,
+  `accentInk`), Zeitleiste mit Ein-Abschnitten in Teal (Uhrzeit `glyphDark`), Fugen in `group`, Griffe weiß 8 × 30 mit
+  dem Schalter-Schatten (beim Ziehen 1,12, die Zeit darüber als Kapsel `label` mit `group`). Schaltpunkte: Feld (§7.3)
+  und das feste 00:00 gleich breit. **Abweichung:** 144 statt wachsend wie Klassisch, damit die Ein/Aus-Kapseln
+  untereinander stehen; 144 fasst eine 12-Stunden-Zeit mit Uhr-Symbol („12:00 PM“, Chrome braucht 141). Ein/Aus als
+  Kapsel mit Linse, Löschen rund 44 mit `redInk`, „Zeit hinzufügen“ „plain“ 44, Speichern prominent im Fuß des
+  Fensters. 5-min-Schritte, Grenzpunkte und Inhalt wie Klassisch.
+- Reduzierte Bewegung: der Griff wächst nicht, Balken und Griffe ohne Übergang. Erzwungene Farben: Ringe, Balken und
+  Ein-Abschnitte in `Highlight`, Kapseln und Kreise mit Rand.
+- Kontrastpaare: Linse des Segments mit `label`, `glyphDark` auf Teal (Uhrzeiten der Ein-Abschnitte), `group` auf
+  `label` (Zeit am gezogenen Griff).
+- **Demo-Aufrufe:** Die Demo wendet `input_select`, `input_number`, `scheduler` und `button` nicht an. `ha/demoCalls.ts`
+  merkt sich deshalb im Demo-Modus jeden Dienstaufruf (die neuesten 100), `__hapulseDemo.calls()` und `clearCalls()`
+  lesen bzw. leeren die Liste; dafür eine `[fork]`-Zeile in `service.ts`.
+- Prüfungen: neu `pagesSegments` (Seite und Fenster, Desktop hell und Handy dunkel: „Automatik“ sendet denselben Aufruf
+  wie der klassische Knopf, Pfeile bewegen nur den Fokus, die Leertaste wählt, „Manuell“ fragt bei anderem Modus und
+  zweimal als Modus, sendet nichts, das Fenster schließt dabei, die Linse bleibt beim echten Modus; Handy-Seite eng ohne
+  „…“, Desktop nicht eng; sechs Optionen = klassische Knöpfe), `pagesKeep` Pool (Farben von Zustand und Ringen, Stepper
+  schreibt 450, Stoppen → „Automatik“, Griff 12:00 → 12:05 und Speichern = `scheduler.edit` mit Schaltpunkt 12:05 Ein,
+  Kennzahl → Detail, Neustart fragt, Esc sendet nichts, Bestätigen drückt) und `pagesEmpty` Pool (ohne Modus und
+  Pumpe); `pagesFields` prüft das Zeitfeld des Editors (Pfeil hoch stellt die Stunde). `pagesCardTitles` kennt jetzt
+  Karten, deren Körper eine Liste über die ganze Fläche ist (Personen, Türen/Fenster/Bewegung, Kennzahlen, Admin): sie
+  beginnt an der Oberkante der Fläche statt 16 darunter (die Prüfung war seit den Listen der Sicherheit zu streng).

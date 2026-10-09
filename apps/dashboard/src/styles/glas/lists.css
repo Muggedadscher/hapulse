@@ -9,11 +9,12 @@
   padding-right: 7px;
 }
 
-/* ---- Fields (K94, GLAS-DESIGN §7.30): `fill`, radius 10, 36 visible in a hit area of 44, text 17 (below 16 px iOS
-   zooms into the field), placeholder `label2`, the focus ring inside the field. A field on its own draws its 36 inside
-   a transparent border of 4 above and below (corners 10 / 14, which leaves 10 at the visible edge). In a search the
-   bar is 36 and its input reaches 4 above and below it; the magnifier is `label2`. ---- */
-:root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input) {
+/* ---- Fields (K94, GLAS-DESIGN §7.30; also the switch points of the pool's schedule editor): `fill`, radius 10, 36
+   visible in a hit area of 44, text 17 (below 16 px iOS zooms into the field), placeholder `label2`, the focus ring
+   inside the field. A field on its own draws its 36 inside a transparent border of 4 above and below (corners 10 / 14,
+   which leaves 10 at the visible edge). In a search the bar is 36 and its input reaches 4 above and below it; the
+   magnifier is `label2`. ---- */
+:root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input, .pool-time-input) {
   height: 44px;
   min-height: 44px;
   padding-block: 0;
@@ -29,7 +30,7 @@
   line-height: 22px;
 }
 
-:root[data-style='glas'] :is(.settings-text-input, .onboarding__input) {
+:root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .pool-time-input) {
   padding-left: 12px;
 }
 
@@ -66,14 +67,14 @@
   color: var(--g-label-2);
 }
 
-:root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input):focus,
+:root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input, .pool-time-input):focus,
 :root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search):focus-within {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--g-focus);
 }
 
 @media (forced-colors: active) {
-  :root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input) {
+  :root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input, .pool-time-input) {
     height: 36px;
     min-height: 36px;
     margin-block: 4px;
@@ -86,7 +87,7 @@
   }
 
   /* forced colours drop the inset ring */
-  :root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input):focus,
+  :root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .library-card__search-input, .pool-time-input):focus,
   :root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search):focus-within {
     outline: 2px solid Highlight;
     outline-offset: 2px;

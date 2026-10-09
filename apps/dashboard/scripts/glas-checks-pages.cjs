@@ -3,8 +3,9 @@
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
 // pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles, pagesCardTitles and pagesFrame (K89, K90,
-// K85), pagesEdit (K96), pagesKeep and pagesEmpty (§3.1); edit, keep and empty grow page by page as the pages come in.
-// The plan's other blocks (segments, menus) come with their steps.
+// K85), pagesEdit (K96), pagesSegments (K92), pagesKeep and pagesEmpty (§3.1); segments, edit, keep and empty grow page
+// by page as the pages come in. The plan's last block (menus) comes with its step. Service calls the demo does not apply
+// (the pool's mode, threshold, schedule, restart) are read from the demo's call log (`__hapulseDemo.calls()`).
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
@@ -328,7 +329,8 @@ module.exports = function pages(h) {
     });
 
     // ---- K94 fields: fill, 36 visible in a hit area of 44, text 17; a click 2 px inside the hit area but outside the
-    //      visible field still focuses it, and typing still reaches it. Glas only. ----
+    //      visible field still focuses it, and typing still reaches it (the pool editor's time field: the arrow up moves
+    //      its hour). Glas only. ----
     await block('pagesFields', async () => {
       const res = {};
       const FIELDS = [
@@ -336,11 +338,13 @@ module.exports = function pages(h) {
         ['automations', '/automations', '.automations-toolbar__search-input', '.automations-toolbar__search'],
         ['settings', '/settings', '.settings-text-input', null],
         ['library', '/music', '.library-card__search-input', null],
+        ['poolTime', '/pool', '[role="dialog"] .pool-time-input', null, (page) => click(page, '.pool-schedule__edit')],
       ];
       for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        for (const [name, p, input, bar] of FIELDS) {
+        for (const [name, p, input, bar, opener] of FIELDS) {
           const { page, close } = await open(device, 'glas', p, { mode });
           try {
+            if (opener) await opener(page);
             const field = page.locator(input).filter({ visible: true }).first();
             if (!(await field.count())) throw new Error('not visible: ' + input);
             await field.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
@@ -363,9 +367,13 @@ module.exports = function pages(h) {
             await page.mouse.click(a.x, a.visTop - 2);
             await sleep(100);
             const focused = await ev(page, (sel) => document.activeElement && document.activeElement.matches(sel), input);
-            await page.keyboard.type('ab');
+            const before = await field.inputValue();
+            if (name === 'poolTime') await page.keyboard.press('ArrowUp');
+            else await page.keyboard.type('ab');
+            await sleep(100);
             const typed = await field.inputValue();
-            const ok = Math.abs(a.hit - 44) < 0.6 && Math.abs(a.visible - 36) < 0.6 && a.bg === a.fill && a.font === '17px' && focused && typed.endsWith('ab');
+            const reached = name === 'poolTime' ? typed !== before : typed.endsWith('ab');
+            const ok = Math.abs(a.hit - 44) < 0.6 && Math.abs(a.visible - 36) < 0.6 && a.bg === a.fill && a.font === '17px' && focused && reached;
             res[`${device}-${name}`] = { ok, hit: a.hit, visible: a.visible, bg: a.bg, font: a.font, focused, typed };
           } catch (e) {
             res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
@@ -433,17 +441,19 @@ module.exports = function pages(h) {
     //      is only its head (pool schedule, the music page, water with one meter). Glas only. ----
     await block('pagesCardTitles', async () => {
       const res = {};
-      // [page, card, title, chip, where]
+      // [page, card, title, chip, where, list]: `list` = the body is an inset list (K94) that fills the surface from its
+      // top edge; any other body starts at least 16 below it
       const CARDS = [
-        ['/security', '.people-list-card', '.people-list-card__title', '.people-list-card__icon-chip', 'above'],
+        ['/security', '.people-list-card', '.people-list-card__title', '.people-list-card__icon-chip', 'above', true],
         ['/security', '.locks-section-card', '.locks-section-card__title', '.locks-section-card__icon-chip', 'above'],
         ['/security', '.garage-section-card', '.garage-section-card__title', '.garage-section-card__icon-chip', 'above'],
-        ['/security', '.sensor-section-card', '.sensor-section-card__title', '.sensor-section-card__icon-chip', 'above'],
+        ['/security', '.sensor-section-card', '.sensor-section-card__title', '.sensor-section-card__icon-chip', 'above', true],
         ['/energy', '.energy-sources', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-devices', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-solar', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'inside'],
-        ['/pool', '.pool-card:not(.pool-schedule)', '.pool-card__title', '.pool-card__icon', 'above'],
+        ['/pool', '.pool-card:not(.pool-schedule, .pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
+        ['/pool', ':is(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above', true],
         ['/pool', '.pool-schedule', '.pool-card__title', '.pool-card__icon', 'inside'],
         ['/music', '.other-players-card', '.other-players-card__title', '.other-players-card__icon-chip', 'inside'],
         ['/music', '.zones-card', '.zones-card__title', '.zones-card__icon-chip', 'inside'],
@@ -468,7 +478,7 @@ module.exports = function pages(h) {
               document.body.appendChild(d);
               const label = getComputedStyle(d).color;
               d.remove();
-              return specs.flatMap(([, sel, titleSel, chipSel, where]) => {
+              return specs.flatMap(([, sel, titleSel, chipSel, where, list]) => {
                 const els = [...document.querySelectorAll(`.page ${sel}`)].filter((e) => e.getClientRects().length);
                 if (!els.length) return [{ sel, missing: true }];
                 return els.map((card) => {
@@ -488,7 +498,8 @@ module.exports = function pages(h) {
                   }
                   return { ...base, ok: getComputedStyle(card).backgroundColor === 'rgba(0, 0, 0, 0)'
                     && before.content !== 'none' && before.backgroundColor !== 'rgba(0, 0, 0, 0)'
-                    && tr.bottom <= surface + 0.5 && !!body && body.top >= surface + 16 - 0.5 };
+                    && tr.bottom <= surface + 0.5 && !!body
+                    && (list ? body.top >= surface - 0.5 && body.top <= surface + 1.5 : body.top >= surface + 16 - 0.5) };
                 });
               });
             }, CARDS.filter((c) => c[0] === p));
@@ -935,6 +946,137 @@ module.exports = function pages(h) {
       out.pagesEditOk = Object.values(res).every((r) => r.ok);
     });
 
+    // ---- K92: the segments with the lens write what Klassisch writes. The pool's mode, on the page and in the chip's
+    //      window: "Automatik" sends the call of the classic button; manual activation (the arrows only move the focus,
+    //      Space chooses); "Manuell" asks for the run length on every tap, also when it is the mode, and sends nothing;
+    //      long labels turn the segment tight on the phone and are never cut; six options keep the classic buttons. ----
+    await block('pagesSegments', async () => {
+      const res = {};
+      const MODE = 'input_select.modus_poolpumpe';
+      const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+      const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+      const setMode = (page, state, options) => ev(page, ([i, st, o]) => window.__hapulseDemo.patch(i, { state: st, ...(o ? { attributes: { options: o } } : {}) }), [MODE, state, options]);
+      /** The pool's window from the chip row (a JS click: on the phone the chip may sit outside the scrolled row; the
+       *  aria-label names the chip in both styles, `data-chip` exists in Glas only). */
+      const openChip = async (page) => {
+        await ev(page, () => document.querySelector('.summary-chip[aria-label^="pool:"]').click());
+        await sleep(400);
+        await settleAnimations(page);
+      };
+      const ROOT = { page: '.pool-hero', sheet: '[role="dialog"]:has(.pool-modal)' };
+      const CLASSIC = { page: '.pool-hero .pool-mode__btn', sheet: '[role="dialog"] .pool-modal__mode-btn' };
+
+      // Klassisch: the call of the "Automatik" button on the page and in the window
+      const classic = {};
+      for (const where of ['page', 'sheet']) {
+        const { page, close } = await open('desktop', 'classic', where === 'page' ? '/pool' : '/');
+        try {
+          if (where === 'sheet') await openChip(page);
+          await clear(page);
+          await page.locator(CLASSIC[where], { hasText: 'Automatik' }).first().click();
+          await sleep(200);
+          classic[where] = await calls(page);
+        } catch (e) {
+          classic[where] = { error: String(e.message).slice(0, 160) };
+        }
+        await close();
+      }
+
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        for (const where of ['page', 'sheet']) {
+          const { page, close } = await open(device, 'glas', where === 'page' ? '/pool' : '/', { mode });
+          try {
+            const reopen = async () => {
+              if (where === 'sheet' && !(await page.locator(ROOT.sheet).count())) await openChip(page);
+            };
+            await reopen();
+            const seg = page.locator(`${ROOT[where]} .g-seg--pool`).first();
+            const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
+            const state = () => seg.evaluate((el) => ({
+              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => o.dataset.value),
+              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+              tight: el.hasAttribute('data-tight'),
+              cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+            }));
+            const look = await state();
+            const picker = () => page.locator('.pool-manual-modal').filter({ visible: true }).count();
+            const closePicker = async () => {
+              await page.keyboard.press('Escape');
+              await sleep(300);
+              await settleAnimations(page);
+            };
+
+            // "Automatik" with a tap: the classic call
+            await clear(page);
+            await opt('Automatik').click();
+            await sleep(200);
+            const tap = await calls(page);
+
+            // manual activation: from "Ausgeschalten" the arrow moves the focus only, Space chooses
+            await reopen();
+            await setMode(page, 'Ausgeschalten');
+            await sleep(200);
+            await clear(page);
+            await opt('Ausgeschalten').focus();
+            await page.keyboard.press('ArrowRight');
+            await sleep(150);
+            const arrow = { ...(await state()), calls: (await calls(page)).length };
+            await page.keyboard.press('Space');
+            await sleep(200);
+            const space = await calls(page);
+
+            // "Manuell": asks while another mode is set and when it is the mode (twice), the mode stays, nothing is sent
+            await reopen();
+            await setMode(page, 'Automatik');
+            await sleep(200);
+            await clear(page);
+            const manual = [];
+            for (const [st, n] of [['Automatik', 1], ['Manuell', 2]]) {
+              await reopen();
+              await setMode(page, st);
+              await sleep(200);
+              for (let k = 0; k < n; k++) {
+                await reopen();
+                await opt('Manuell').click();
+                await sleep(400);
+                await settleAnimations(page);
+                const m = { mode: st, asked: await picker(), sheetClosed: where === 'sheet' ? (await page.locator(ROOT.sheet).count()) === 0 : null };
+                await closePicker();
+                await reopen();
+                m.checked = (await state()).checked;
+                manual.push(m);
+              }
+            }
+            await reopen();
+            const after = { calls: (await calls(page)).length, checked: (await state()).checked };
+
+            // six options: the classic buttons
+            await setMode(page, 'Automatik', ['Ausgeschalten', 'Automatik', 'Manuell', 'Eco', 'Boost', 'Urlaub']);
+            await sleep(300);
+            await reopen();
+            const six = { segments: await page.locator(`${ROOT[where]} .g-seg--pool`).count(), buttons: await page.locator(CLASSIC[where]).count() };
+
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const ok = same(look.options, ['Ausgeschalten', 'Automatik', 'Manuell']) && look.checked === 'Manuell' && look.cut.length === 0
+              && (device === 'desktop' ? !look.tight : where === 'sheet' || look.tight)
+              && Array.isArray(classic[where]) && classic[where].length === 1 && same(tap, classic[where])
+              && arrow.calls === 0 && arrow.checked === 'Ausgeschalten' && arrow.focus === 'Automatik'
+              && space.length === 1 && space[0].data.option === 'Automatik' && space[0].target.entity_id === MODE
+              && manual.length === 3 && manual.every((m) => m.asked === 1 && m.sheetClosed !== false && m.checked === m.mode)
+              && after.calls === 0 && after.checked === 'Manuell'
+              && six.segments === 0 && six.buttons === 6;
+            res[`${device}-${where}`] = { ok, look, tap, classic: classic[where], arrow, space, manual, after, six };
+          } catch (e) {
+            res[`${device}-${where}`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+      out.pagesSegments = res;
+      out.pagesSegmentsOk = Object.values(res).every((r) => r.ok);
+    });
+
     // ---- §3.1 "Nicht verlieren" (pagesKeep) page by page: what a page could do in Klassisch it still does in Glas.
     //      Service calls are counted on the entity's last_updated (the demo stamps it on every call it applies).
     //      Glas only; where a comparison with Klassisch is named, Klassisch is opened too. ----
@@ -1334,10 +1476,170 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // Pool K: the hero's word and the rings in their Glas colours (K99); the solar stepper writes the threshold,
+        // "Stopp" the automatic mode; the schedule: a handle moved by 5 min and saved sends scheduler.edit with the new
+        // switch point; a figure opens its detail; the restart asks first (Escape: nothing is sent, the danger button
+        // presses). The demo applies none of these calls: they are read from its call log (demoCalls.ts).
+        {
+          const { page, close } = await open(device, 'glas', '/pool', { mode });
+          try {
+            const calls = () => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+            const clear = () => ev(page, () => window.__hapulseDemo.clearCalls());
+            const tok = (n) => ev(page, (name) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${name})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            }, n);
+            const look = await ev(page, () => {
+              const cs = (sel, prop) => {
+                const e = document.querySelector(sel);
+                return e ? getComputedStyle(e)[prop] : null;
+              };
+              return {
+                running: !!document.querySelector('.pool-hero--running'),
+                status: cs('.pool-hero__status', 'color'),
+                track: cs('.pool-solar .pool-gauge__track', 'stroke'),
+                manualTrack: cs('.pool-manual .pool-gauge__track', 'stroke'),
+                solar: cs('.pool-solar .pool-gauge__value', 'stroke'),
+                solarText: cs('.pool-solar .pool-gauge__primary', 'color'),
+                exceeded: !!document.querySelector('.pool-solar .pool-chip--positive'),
+                manual: cs('.pool-manual .pool-gauge__value', 'stroke'),
+                manualText: cs('.pool-manual .pool-gauge__primary', 'color'),
+              };
+            });
+            const [tealInk, fill2, green, greenInk, teal] = [await tok('--g-teal-ink'), await tok('--g-fill-2'), await tok('--g-green'),
+              await tok('--g-green-ink'), await tok('--g-teal')];
+            const colours = look.running && look.status === tealInk && look.track === fill2 && look.manualTrack === fill2 && look.exceeded
+              && look.solar === green && look.solarText === greenInk && look.manual === teal && look.manualText === tealInk;
+
+            // the solar stepper: + writes threshold + step
+            await clear();
+            const plus = page.locator('.pool-solar .pool-stepper__btn').nth(1);
+            await plus.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await plus.click();
+            await sleep(200);
+            const stepper = await calls();
+            const stepperOk = stepper.length === 1 && stepper[0].domain === 'input_number' && stepper[0].service === 'set_value'
+              && stepper[0].data.value === 450 && stepper[0].target.entity_id === 'input_number.schwellwert_poolpumpe_solarleistung';
+
+            // "Stopp" while the manual run is on: back to Automatik
+            await clear();
+            await page.locator('.pool-manual .pool-manual__action').click();
+            await sleep(200);
+            const stop = await calls();
+            const stopOk = stop.length === 1 && stop[0].domain === 'input_select' && stop[0].service === 'select_option'
+              && stop[0].data.option === 'Automatik' && stop[0].target.entity_id === 'input_select.modus_poolpumpe';
+
+            // the schedule: the handle at 12:00 moved to 12:05 and saved
+            await page.locator('.pool-schedule__edit').click();
+            await sleep(400);
+            await settleAnimations(page);
+            const handle = page.locator('[role="dialog"] .pool-timeline__handle').first();
+            await handle.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const h0 = Number(await handle.getAttribute('aria-valuenow'));
+            const bar = await page.locator('[role="dialog"] .pool-timeline__bar').boundingBox();
+            const hb = await handle.boundingBox();
+            await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+            await page.mouse.down();
+            const tx = bar.x + (bar.width * (h0 + 5)) / 1440;
+            for (let k = 1; k <= 4; k++) await page.mouse.move(hb.x + hb.width / 2 + (tx - hb.x - hb.width / 2) * (k / 4), hb.y + hb.height / 2);
+            await page.mouse.up();
+            await sleep(200);
+            const moved = { now: Number(await handle.getAttribute('aria-valuenow')), time: (await handle.locator('.pool-timeline__handle-time').textContent()).trim() };
+            await clear();
+            await page.locator('[role="dialog"] .pool-editor__footer .btn--primary').click();
+            await sleep(500);
+            await settleAnimations(page);
+            const saved = await calls();
+            const edit = saved[0];
+            const slot = edit && Array.isArray(edit.data.timeslots) ? edit.data.timeslots.find((s) => s.start === '12:05') : null;
+            const scheduleOk = h0 === 720 && moved.now === 725 && moved.time === '12:05' && saved.length === 1
+              && edit.domain === 'scheduler' && edit.service === 'edit' && edit.data.entity_id === 'switch.schedule_zeitplan_poolpumpe'
+              && !!slot && slot.actions[0].service === 'input_boolean.turn_on' && Array.isArray(edit.data.weekdays) && edit.data.weekdays.length > 0
+              && (await page.locator('[role="dialog"] .pool-editor').count()) === 0;
+
+            // a figure opens its detail (the inspector from 1100 px, the sheet on the phone)
+            const tile = page.locator('.pool-data .pool-tile--clickable').first();
+            await tile.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await tile.click();
+            await sleep(400);
+            await settleAnimations(page);
+            const detail = await ev(page, () => {
+              const p = [...document.querySelectorAll('[role="dialog"]')].find((d) => !d.closest('.g-sheet-ghost'));
+              const hd = p && p.querySelector('.g-sheet-header');
+              return hd ? { pres: p.parentElement.getAttribute('data-g-pres'), title: (hd.querySelector('.g-sheet-header__title') || {}).textContent } : null;
+            });
+            const detailOk = !!detail && detail.title === 'Laufzeit Poolpumpe Heute' && detail.pres === (device === 'desktop' ? 'inspector' : 'sheet');
+            await page.keyboard.press('Escape');
+            await sleep(400);
+            await settleAnimations(page);
+
+            // the restart: asks, Escape sends nothing, the danger button presses
+            await clear();
+            const restart = page.locator('.pool-admin__restart');
+            await restart.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await restart.click();
+            await sleep(300);
+            await settleAnimations(page);
+            const question = await ev(page, () => document.querySelector('[role="dialog"] .g-confirm__text')?.textContent.trim());
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const afterEsc = { calls: (await calls()).length, open: await page.locator('.g-confirm__text').count() };
+            await restart.click();
+            await sleep(300);
+            await settleAnimations(page);
+            await page.locator('[role="dialog"] .g-confirm__actions .btn--danger').click();
+            await sleep(300);
+            const pressed = await calls();
+            const restartOk = question === DE['pool.admin.restartConfirm'] && afterEsc.calls === 0 && afterEsc.open === 0 && pressed.length === 1
+              && pressed[0].domain === 'button' && pressed[0].service === 'press' && pressed[0].target.entity_id === 'button.poolpumpe_esppoolpumpe_geraeteneustart';
+
+            const ok = colours && stepperOk && stopOk && scheduleOk && detailOk && restartOk;
+            res[`${device}-pool`] = { ok, colours: colours ? 'ok' : look, stepper: stepperOk || stepper, stop: stopOk || stop,
+              schedule: scheduleOk || { h0, moved, saved }, detail, restart: restartOk || { question, afterEsc, pressed } };
+          } catch (e) {
+            res[`${device}-pool`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
     });
+
+    /** The look of a page's empty state (§7.31): circle 56 `fill` with the glyph in `label2`, title 17/22 600 `label`,
+     *  text 15/20 `label2`. */
+    const emptyLook = (page, sel) => ev(page, (s) => {
+      const tok = (n, prop = 'color') => {
+        const d = document.createElement('div');
+        d.style[prop] = `var(${n})`;
+        document.body.appendChild(d);
+        const v = getComputedStyle(d)[prop];
+        d.remove();
+        return v;
+      };
+      const box = document.querySelector(s);
+      if (!box) return null;
+      const icon = box.querySelector('.empty-state__icon');
+      const title = box.querySelector('.empty-state__title');
+      const desc = box.querySelector('.empty-state__description');
+      const ic = getComputedStyle(icon);
+      const t = getComputedStyle(title);
+      const dd = getComputedStyle(desc);
+      const b = icon.getBoundingClientRect();
+      return { text: title.textContent.trim(), circle: Math.round(b.width) === 56 && Math.round(b.height) === 56 && ic.borderRadius === '50%',
+        fill: ic.backgroundColor === tok('--g-fill', 'backgroundColor'),
+        glyph: ic.color === tok('--g-label-2'), title: `${t.fontWeight} ${t.fontSize}/${t.lineHeight}`, titleColor: t.color === tok('--g-label'),
+        desc: `${dd.fontSize}/${dd.lineHeight}`, descColor: dd.color === tok('--g-label-2') };
+    }, sel);
+    const emptyOk = (got, key) => !!got && got.text === DE[key] && got.circle && got.fill && got.glyph && got.title === '600 17px/22px'
+      && got.titleColor && got.desc === '15px/20px' && got.descColor;
 
     // ---- Empty states (pagesEmpty, §7.31): what the demo can show, page by page. Glas only. ----
     await block('pagesEmpty', async () => {
@@ -1394,34 +1696,26 @@ module.exports = function pages(h) {
             await drop();
             await sleep(400);
             await settleAnimations(page);
-            const got = await ev(page, () => {
-              const tok = (n, prop = 'color') => {
-                const d = document.createElement('div');
-                d.style[prop] = `var(${n})`;
-                document.body.appendChild(d);
-                const v = getComputedStyle(d)[prop];
-                d.remove();
-                return v;
-              };
-              const box = document.querySelector('.security-page > .empty-state');
-              if (!box) return null;
-              const icon = box.querySelector('.empty-state__icon');
-              const title = box.querySelector('.empty-state__title');
-              const desc = box.querySelector('.empty-state__description');
-              const ic = getComputedStyle(icon);
-              const t = getComputedStyle(title);
-              const dd = getComputedStyle(desc);
-              const b = icon.getBoundingClientRect();
-              return { text: title.textContent.trim(), circle: Math.round(b.width) === 56 && Math.round(b.height) === 56 && ic.borderRadius === '50%',
-                fill: ic.backgroundColor === tok('--g-fill', 'backgroundColor'),
-                glyph: ic.color === tok('--g-label-2'), title: `${t.fontWeight} ${t.fontSize}/${t.lineHeight}`, titleColor: t.color === tok('--g-label'),
-                desc: `${dd.fontSize}/${dd.lineHeight}`, descColor: dd.color === tok('--g-label-2') };
-            });
-            const ok = !!got && got.text === DE['security.empty.title'] && got.circle && got.fill && got.glyph && got.title === '600 17px/22px'
-              && got.titleColor && got.desc === '15px/20px' && got.descColor;
+            const got = await emptyLook(page, '.security-page > .empty-state');
+            const ok = emptyOk(got, 'security.empty.title');
             res[`${device}-security-empty`] = { ok, removed: ids.length, ...got };
           } catch (e) {
             res[`${device}-security-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // pool: without the mode and the pump the page shows "not set up" in the same look
+        {
+          const { page, close } = await open(device, 'glas', '/pool', { mode });
+          try {
+            await ev(page, () => ['input_select.modus_poolpumpe', 'switch.esppoolpumpe_poolpumpe'].forEach((i) => window.__hapulseDemo.patch(i, null)));
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await emptyLook(page, '.pool-page > .empty-state');
+            res[`${device}-pool-empty`] = { ok: emptyOk(got, 'pool.notConfigured.title'), ...got };
+          } catch (e) {
+            res[`${device}-pool-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
           }
           await close();
         }

@@ -81,6 +81,33 @@
   flex: none;
 }
 
+/* Pool mode on the page and in the window (§7.27 table, K92): track 44, lens 38, text 15/20 — the chosen one 600
+   label, the others 400 label2. */
+:root[data-style='glas'] .g-seg--pool {
+  --g-seg-h: 44px;
+  --g-seg-inset: 0px;
+  --g-seg-pad: 3px;
+}
+
+:root[data-style='glas'] .g-seg--pool .g-seg__opt {
+  padding: 0 8px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-seg--pool .g-seg__opt[aria-checked='true'] {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+/* A label that does not fit (Segment.tsx measures it, e.g. "Ausgeschalten" on a phone): the whole segment 13/18 with
+   2 px padding; what still does not fit ends in "…". */
+:root[data-style='glas'] .g-seg[data-tight] .g-seg__opt {
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
 /* ---- Switch (GLAS-DESIGN §7.28): 51 × 31 capsule, knob 27 white with its shadow, on = iOS green and the knob 20 to
    the right. Only in list rows and card heads; on a tile the tile itself switches (K91). The Glas rows of the overview
    draw it as `.g-switch`, the button around it is the hit area (`role="switch"`, `aria-checked`). ---- */

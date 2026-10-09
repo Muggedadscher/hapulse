@@ -12,9 +12,23 @@
  * views (period, grid/list). With `activation="manual"` the keys only move the focus and Space/Enter choose — for
  * segments that write something (settings, the pool mode), so that arrowing across does not set every option on the
  * way. Choosing the chosen option again calls `onReselect` (the pool's "Manuell" reopens its duration picker).
+ *
+ * Long labels (an input_select's own options, another language) that do not fit at the segment's size turn the whole
+ * segment tight (`data-tight`: 13 px, less padding; controls.css), so a phone shows "Ausgeschalten" whole. On every
+ * resize the widest label is measured at the normal size with the chosen weight: the segment stays tight exactly as
+ * long as it does not fit. Still too long, a label ends in "…".
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+
+/** Width of `text` in `font` (one canvas for all segments; 0 where there is no canvas). */
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+function textWidth(text: string, font: string): number {
+  if (measureCtx === undefined) measureCtx = document.createElement('canvas').getContext('2d');
+  if (!measureCtx) return 0;
+  measureCtx.font = font;
+  return measureCtx.measureText(text).width;
+}
 
 export interface SegmentOption<V extends string> {
   value: V;
@@ -55,6 +69,36 @@ export function Segment<V extends string>({
   const found = options.findIndex((o) => o.value === value);
   const index = Math.max(0, found);
   const stop = cursor !== null && cursor < n ? cursor : index;
+  const labels = options.map((o) => (o.icon ? '' : o.label)).join('\n');
+
+  // tight when a label does not fit (see above); data-tight is set here only, never by the render
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !labels.trim()) return;
+    let alive = true;
+    const fit = () => {
+      // measure at the normal size: without the attribute for the moment of reading (the group's size stays)
+      el.removeAttribute('data-tight');
+      const opts = [...el.querySelectorAll<HTMLElement>('.g-seg__opt:not(.g-seg__opt--icon)')];
+      const cs = opts[0] ? getComputedStyle(opts[0]) : null;
+      if (!opts[0] || !cs) return;
+      const font = `600 ${cs.fontSize} ${cs.fontFamily}`;
+      const need = Math.max(...opts.map((o) => textWidth(o.textContent ?? '', font)));
+      const room = opts[0].getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      el.toggleAttribute('data-tight', need + 1 > room); // 1 px slack: the canvas and the text may round apart
+    };
+    fit();
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fit);
+    ro?.observe(el);
+    // a web font that arrives later changes the widths
+    void document.fonts?.ready.then(() => {
+      if (alive) fit();
+    });
+    return () => {
+      alive = false;
+      ro?.disconnect();
+    };
+  }, [labels]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     const from = activation === 'manual' ? stop : found;

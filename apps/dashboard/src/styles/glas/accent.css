@@ -38,11 +38,6 @@
 :root[data-style='glas'] .devices-loading__bar-fill,
 :root[data-style='glas'] .device-card__dot,
 :root[data-style='glas'] .onboarding__connect-btn:not(.onboarding__connect-btn--secondary),
-:root[data-style='glas'] .pool-bar__fill--active,
-:root[data-style='glas'] .pool-timeline__handle--active .pool-timeline__handle-grip,
-:root[data-style='glas'] .pool-timeline__seg--on,
-:root[data-style='glas'] .pool-slotaction__btn--on,
-:root[data-style='glas'] .pool-gauge__value,
 /* the app logo (PulseLogo paints its square with the accent, inline) */
 :root[data-style='glas'] .app-sidebar__header,
 :root[data-style='glas'] .dash-boot__mark,
@@ -76,7 +71,8 @@
 
 /* Focus rings keep the ink on the orange areas above (global :focus-visible and the switch tracks draw them with
    var(--accent)). Where the ring is a box-shadow around the area, the area turns ink while focused. Since stage 5 the
-   sliders and the play buttons of the media cards no longer use the accent (controls.css, K93). */
+   sliders and the play buttons of the media cards no longer use the accent (controls.css, K93), and the pool's bars,
+   timeline, on/off and rings have their own colours and focus rings (pool.css, K99). */
 :root[data-style='glas'] :is(
     .btn--primary,
     .changelog-modal__done,
@@ -89,7 +85,6 @@
     .edit-badge__btn--eye-hidden,
     .icon-btn--accent,
     .onboarding__connect-btn,
-    .pool-slotaction__btn--on,
     .nvr-btn--primary,
     .nvr-dt__d--sel,
     .nvr-mute,
@@ -97,9 +92,4 @@
   ):focus-visible,
 :root[data-style='glas'] .pill-toggle input:focus-visible + .pill-toggle__track {
   outline-color: var(--g-focus);
-}
-
-:root[data-style='glas'] .pool-bar:focus-visible .pool-bar__fill,
-:root[data-style='glas'] .pool-timeline__handle:focus-visible .pool-timeline__handle-grip {
-  --accent: var(--g-focus);
 }

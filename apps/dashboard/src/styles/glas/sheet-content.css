@@ -821,7 +821,8 @@
   outline-offset: 2px;
 }
 
-/* ---- Pool: status 22/28 700 tealInk, modes as a capsule row 44 (the lens follows in stage 5), figures as a list ---- */
+/* ---- Pool: status 22/28 700 tealInk, the modes as the segment with its lens (stage 5, PoolModeSegment; with more than
+   five modes the classic buttons as a capsule row 44), figures as a list ---- */
 :root[data-style='glas'] .modal-body .pool-modal {
   gap: 12px;
 }
