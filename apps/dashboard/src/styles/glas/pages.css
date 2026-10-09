@@ -1,6 +1,6 @@
-/* [fork] Glas — the frame of the other pages (docs/GLAS-DESIGN.md §2.13, plan docs/glas/PLAN-ETAPPE-5.md K89, K90):
-   so far the section titles and the card titles above the surface on the security page; the other pages, the columns
-   and the heroes follow. */
+/* [fork] Glas — the frame of the other pages (docs/GLAS-DESIGN.md §2.13, §5.1, plan docs/glas/PLAN-ETAPPE-5.md K89,
+   K90): section titles without capitals, card titles above the surface, columns by content width, the heroes. The
+   contents of the cards (lists, controls) follow per page. */
 
 /* ---- Section titles (K89): no capitals. In a room a title 20/25 600 like the card titles on the overview, in the
    settings a group title 15/20 600 in `label2` above its list. The hairline beside them falls away. ---- */
@@ -36,24 +36,41 @@
 }
 
 /* ---- Card titles above the surface (K89, like the overview §2.13): the title row leaves the surface, the surface
-   becomes a ::before below it. So far the security page; the other pages join this list with their steps, home.css
-   keeps the overview's own list. The garage card has no header wrapper, its title row is the head. ---- */
+   becomes a ::before below it, the parts of the body keep the classic flex column with a 12 gap (a part pinned to the
+   bottom with margin-top: auto stays there). home.css keeps the overview's own list until every page is in (plan §7.6).
+   The garage card has no header wrapper, its title row is the head; the system monitor's head and the pool cards' head
+   hold symbol and title directly. A card whose head carries a control keeps its title in the surface (further below):
+   the pool schedule (switch), the zones (view switch), the queue and the library (player choice); on the music page the
+   players' card joins them, so its column starts flush with Now Playing. The headless alarm panel stays a card as it
+   is. ---- */
 :root[data-style='glas']
-  .security-page
-  :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card) {
+  :is(
+    .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
+    .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
+    .automations-page :is(.auto-feed-card, .auto-cat-card),
+    .scenes-page :is(.scene-feed-card, .scene-room-card)
+  ) {
   --g-card-head: 44px;
   --g-card-gap: 6px;
   position: relative;
   isolation: isolate;
-  row-gap: 0;
+  row-gap: 12px;
   padding: 0 16px 16px;
   background: none;
   box-shadow: none;
 }
 
 :root[data-style='glas']
-  .security-page
-  :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card)::before {
+  :is(
+    .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
+    .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
+    .automations-page :is(.auto-feed-card, .auto-cat-card),
+    .scenes-page :is(.scene-feed-card, .scene-room-card)
+  )::before {
   content: '';
   position: absolute;
   inset: calc(var(--g-card-head) + var(--g-card-gap)) 0 0;
@@ -64,36 +81,98 @@
   pointer-events: none;
 }
 
-/* the classic gap between the parts of a multi-part body (buttons, divider, list) */
+/* the head: 44 high, as wide as the card; below it the gap to the surface and the surface's 16 (with the card's 12) */
 :root[data-style='glas']
-  .security-page
-  :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card)
-  > :nth-child(n + 3) {
-  margin-top: 12px;
-}
-
-:root[data-style='glas']
-  .security-page
   :is(
-    .people-list-card__header,
-    .locks-section-card__header,
-    .garage-section-card__title-row,
-    .sensor-section-card__header
+    .security-page
+      :is(
+        .people-list-card__header,
+        .locks-section-card__header,
+        .garage-section-card__title-row,
+        .sensor-section-card__header
+      ),
+    .energy-page
+      :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list)))
+      > .energy-card__header,
+    .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))) > .pool-card__head,
+    .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
+    .automations-page :is(.auto-feed-card__header, .auto-cat-card__header),
+    .scenes-page :is(.scene-feed-card__header, .scene-room-card__header)
   ) {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
+  gap: 8px;
   min-height: var(--g-card-head);
-  margin: 0 -16px calc(var(--g-card-gap) + 16px);
+  margin: 0 -16px calc(var(--g-card-gap) + 4px);
   padding: 0;
 }
 
+@media (min-width: 900px) {
+  :root[data-style='glas']
+    :is(
+      .security-page
+        :is(
+          .people-list-card__header,
+          .locks-section-card__header,
+          .garage-section-card__title-row,
+          .sensor-section-card__header
+        ),
+      .energy-page
+        :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list)))
+        > .energy-card__header,
+      .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))) > .pool-card__head,
+        .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
+      .automations-page :is(.auto-feed-card__header, .auto-cat-card__header),
+      .scenes-page :is(.scene-feed-card__header, .scene-room-card__header)
+    ) {
+    padding-left: 4px;
+  }
+}
+
+/* ---- Title in the surface: the head carries a control, or the card is only its head (water with one meter, gas: a
+   title above an empty surface would read as a gap). Like a capped card on the overview: the 44 row at the top of the
+   surface, 8 below it. ---- */
 :root[data-style='glas']
-  .security-page
   :is(
-    .people-list-card__title-row,
-    .locks-section-card__title-row,
-    .garage-section-card__title-row,
-    .sensor-section-card__title-row
+    .energy-page :is(.energy-water:where(:not(:has(> .energy-kv-list))), .energy-gas),
+    .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)),
+    .music-page :is(.other-players-card, .zones-card, .queue-card, .library-card)
+  ) {
+  row-gap: 12px;
+  padding: 6px 16px 16px;
+}
+
+:root[data-style='glas']
+  :is(
+    .energy-page :is(.energy-water:where(:not(:has(> .energy-kv-list))), .energy-gas) > .energy-card__header,
+    .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)) > .pool-card__head,
+    .music-page :is(.other-players-card__header, .zones-card__header, .queue-card__header, .library-card__header)
+  ) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 0 -4px;
+  padding: 0;
+}
+
+/* ---- The title row, its symbol, title and count, in and above the surface ---- */
+:root[data-style='glas']
+  :is(
+    .security-page
+      :is(
+        .people-list-card__title-row,
+        .locks-section-card__title-row,
+        .garage-section-card__title-row,
+        .sensor-section-card__title-row
+      ),
+    .energy-page .energy-card__header > .energy-card__title-row,
+    .music-page
+      :is(.other-players-card__title-row, .zones-card__title-row, .queue-card__title-wrap, .library-card__title-wrap),
+    .system-page :is(.batteries-card__title-row, .activity-card__title-row),
+    .automations-page :is(.auto-feed-card__title-row, .auto-cat-card__title-row),
+    .scenes-page :is(.scene-feed-card__title-row, .scene-room-card__title-row)
   ) {
   gap: 8px;
   min-width: 0;
@@ -101,20 +180,42 @@
 
 /* inside a header the row spans it (the garage's row is the card's own flex item and must not grow) */
 :root[data-style='glas']
-  .security-page
-  :is(.people-list-card__title-row, .locks-section-card__title-row, .sensor-section-card__title-row) {
+  :is(
+    .security-page :is(.people-list-card__title-row, .locks-section-card__title-row, .sensor-section-card__title-row),
+    .energy-page .energy-card__header > .energy-card__title-row,
+    .music-page
+      :is(.other-players-card__title-row, .zones-card__title-row, .queue-card__title-wrap, .library-card__title-wrap),
+    .system-page :is(.batteries-card__title-row, .activity-card__title-row),
+    .automations-page :is(.auto-feed-card__title-row, .auto-cat-card__title-row),
+    .scenes-page :is(.scene-feed-card__title-row, .scene-room-card__title-row)
+  ) {
   flex: 1;
 }
 
 /* the tinted icon chip becomes the bare 18-px symbol in label2, as on the overview */
 :root[data-style='glas']
-  .security-page
   :is(
-    .people-list-card__icon-chip,
-    .locks-section-card__icon-chip,
-    .garage-section-card__icon-chip,
-    .sensor-section-card__icon-chip
+    .security-page
+      :is(
+        .people-list-card__icon-chip,
+        .locks-section-card__icon-chip,
+        .garage-section-card__icon-chip,
+        .sensor-section-card__icon-chip
+      ),
+    .energy-page .energy-card__header .energy-card__icon-chip,
+    .pool-layout .pool-card__icon,
+    .music-page
+      :is(
+        .other-players-card__icon-chip,
+        .zones-card__icon-chip,
+        .queue-card__title-icon,
+        .library-card__title-icon
+      ),
+    .system-page :is(.sys-monitor-card__icon-chip, .batteries-card__icon-chip, .activity-card__icon-chip),
+    .automations-page :is(.auto-feed-card__icon-chip, .auto-cat-card__icon-chip),
+    .scenes-page :is(.scene-feed-card__icon-chip, .scene-room-card__icon-chip)
   ) {
+  flex: none;
   width: auto;
   height: auto;
   border-radius: 0;
@@ -123,12 +224,26 @@
 }
 
 :root[data-style='glas']
-  .security-page
   :is(
-    .people-list-card__icon-chip,
-    .locks-section-card__icon-chip,
-    .garage-section-card__icon-chip,
-    .sensor-section-card__icon-chip
+    .security-page
+      :is(
+        .people-list-card__icon-chip,
+        .locks-section-card__icon-chip,
+        .garage-section-card__icon-chip,
+        .sensor-section-card__icon-chip
+      ),
+    .energy-page .energy-card__header .energy-card__icon-chip,
+    .pool-layout .pool-card__icon,
+    .music-page
+      :is(
+        .other-players-card__icon-chip,
+        .zones-card__icon-chip,
+        .queue-card__title-icon,
+        .library-card__title-icon
+      ),
+    .system-page :is(.sys-monitor-card__icon-chip, .batteries-card__icon-chip, .activity-card__icon-chip),
+    .automations-page :is(.auto-feed-card__icon-chip, .auto-cat-card__icon-chip),
+    .scenes-page :is(.scene-feed-card__icon-chip, .scene-room-card__icon-chip)
   )
   > svg {
   width: 18px;
@@ -137,14 +252,23 @@
 }
 
 :root[data-style='glas']
-  .security-page
   :is(
-    .people-list-card__title,
-    .locks-section-card__title,
-    .garage-section-card__title,
-    .sensor-section-card__title
+    .security-page
+      :is(
+        .people-list-card__title,
+        .locks-section-card__title,
+        .garage-section-card__title,
+        .sensor-section-card__title
+      ),
+    .energy-page .energy-card__header .energy-card__title,
+    .pool-layout .pool-card__title,
+    .music-page :is(.other-players-card__title, .zones-card__title, .queue-card__title, .library-card__title),
+    .system-page :is(.sys-monitor-card__title, .batteries-card__title, .activity-card__title),
+    .automations-page :is(.auto-feed-card__title, .auto-cat-card__title),
+    .scenes-page :is(.scene-feed-card__title, .scene-room-card__title)
   ) {
   min-width: 0;
+  margin: 0;
   overflow: hidden;
   color: var(--g-label);
   font: 600 20px / 25px var(--g-font);
@@ -155,15 +279,404 @@
 
 /* the count stays at the end of the row, in label2 like the overview's links */
 :root[data-style='glas']
-  .security-page
   :is(
-    .people-list-card__count,
-    .locks-section-card__count,
-    .garage-section-card__count,
-    .sensor-section-card__count
+    .security-page
+      :is(
+        .people-list-card__count,
+        .locks-section-card__count,
+        .garage-section-card__count,
+        .sensor-section-card__count
+      ),
+    .energy-page .energy-card__header .energy-card__sub,
+    .music-page :is(.other-players-card__count, .zones-card__count),
+    .automations-page :is(.auto-feed-card__sub, .auto-cat-card__count),
+    .scenes-page :is(.scene-feed-card__sub, .scene-room-card__count)
   ) {
   flex: none;
   color: var(--g-label-2);
   font: 400 15px / 20px var(--g-font);
   white-space: nowrap;
+}
+
+/* the sources' legend above the chart: Footnote in label2 */
+:root[data-style='glas'] .energy-page .energy-card__header .energy-legend__item {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* ---- Capped card without its own scroll body (Page.css "Fallback", grid pages): the whole card scrolls under a
+   sticky title, so the title stays in the surface as on the overview ---- */
+:root[data-style='glas']
+  .overview-grid__cell[class*='section-h-']
+  :is(
+    .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
+    .automations-page :is(.auto-feed-card, .auto-cat-card),
+    .scenes-page :is(.scene-feed-card, .scene-room-card)
+  ):not(:has(.card-scroll-body)) {
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-style='glas']
+  .overview-grid__cell[class*='section-h-']
+  :is(
+    .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
+    .automations-page :is(.auto-feed-card, .auto-cat-card),
+    .scenes-page :is(.scene-feed-card, .scene-room-card)
+  ):not(:has(.card-scroll-body))::before {
+  content: none;
+}
+
+/* Page.css pins this first child (sticky, card background); it spans the surface so nothing peeks beside it */
+:root[data-style='glas']
+  .overview-grid__cell[class*='section-h-']
+  :is(
+    .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
+    .automations-page :is(.auto-feed-card, .auto-cat-card),
+    .scenes-page :is(.scene-feed-card, .scene-room-card)
+  ):not(:has(.card-scroll-body))
+  > :first-child {
+  margin: 0 -16px -4px;
+  padding: 6px 16px 0;
+  background: var(--bg-card);
+}
+
+/* ---- Columns by content width on the pages with a grid (K85, as on the overview): ≥ 1180 → 4, ≥ 900 → 3, < 480 → 1,
+   else 2; below 900 px the classic rules apply. The size container binds fixed descendants to the page, so only from
+   900 px (the windows and menus are portaled; pagesFrame checks that nothing fixed moves). ---- */
+:root[data-style='glas']
+  :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+  > .overview-grid {
+  row-gap: 20px;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page) {
+    container: g-page / inline-size;
+  }
+
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 20px;
+  }
+
+  /* a span wider than the grid takes the row */
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid
+    > .overview-grid__cell--span-3 {
+    grid-column: 1 / -1;
+  }
+}
+
+@container g-page (min-width: 900px) {
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container g-page (min-width: 1180px) {
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid
+    > .overview-grid__cell--span-3 {
+    grid-column: span 3;
+  }
+}
+
+/* A grid whose cards all span two columns or more (the system page; automations filtered to one category) would leave a
+   third of every row empty in three columns: there it takes four, as Klassisch does on a wide screen. */
+@container g-page (min-width: 900px) {
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid:not(:has(> .overview-grid__cell:not([class*='overview-grid__cell--span-']))) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid:not(:has(> .overview-grid__cell:not([class*='overview-grid__cell--span-'])))
+    > .overview-grid__cell--span-3 {
+    grid-column: span 3;
+  }
+}
+
+@container g-page (max-width: 479px) {
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :root[data-style='glas']
+    :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
+    > .overview-grid
+    > :is(.overview-grid__cell--span-2, .overview-grid__cell--span-3) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* A card without a title above (hero, alarm) next to cards with one: from three columns on (where a hero shares its
+   row) its surface starts on the line of theirs; the lane above it stays free like a row's title lane (44 + 6). A card
+   that takes the whole row keeps its place: span 3 does in three columns, span 4 always. */
+@container g-page (min-width: 900px) {
+  :root[data-style='glas']
+    .overview-grid__cell:not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    :is(
+      .security-page .security-hero-card,
+      .security-page .alarm-panel-card,
+      .energy-page .energy-hero,
+      .system-page .system-hero-card,
+      .automations-page .auto-hero-card,
+      .scenes-page .scene-hero-card
+    ) {
+    margin-top: 50px;
+  }
+}
+
+@container g-page (min-width: 1180px) {
+  :root[data-style='glas']
+    .overview-grid__cell--span-3
+    :is(
+      .security-page .security-hero-card,
+      .security-page .alarm-panel-card,
+      .energy-page .energy-hero,
+      .system-page .system-hero-card,
+      .automations-page .auto-hero-card,
+      .scenes-page .scene-hero-card
+    ) {
+    margin-top: 50px;
+  }
+}
+
+/* ---- Pool: its cards flow in their own grid (auto-fit, at least 300 wide) with the gaps of the grids above. From two
+   columns on the schedule card (title in the surface) starts on the line of its neighbours' surfaces. The page has no
+   fixed descendants (its windows are portaled), so the container may hold at every width. ---- */
+:root[data-style='glas'] .pool-layout {
+  container: g-pool / inline-size;
+  gap: 20px;
+}
+
+:root[data-style='glas'] .pool-layout > .pool-grid {
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .pool-layout {
+    gap: 26px;
+  }
+
+  :root[data-style='glas'] .pool-layout > .pool-grid {
+    gap: 26px 20px;
+  }
+}
+
+@container g-pool (min-width: 620px) {
+  :root[data-style='glas'] .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)) {
+    margin-top: 50px;
+  }
+}
+
+/* ---- Heroes (K90). With a state, it stays as colour: a quiet wash from its soft tone, word and symbol in its ink
+   (security by alarm state, system by health; armed = green as in the alarm window, triggered and pending = red).
+   Without a state (energy, devices, automations, scenes) a plain card like the main room. No capitals. ---- */
+:root[data-style='glas'] :is(.security-page .security-hero-card, .system-page .system-hero-card) {
+  --g-hero-soft: transparent;
+  --g-hero-ink: var(--g-label);
+  --g-hero-icon-bg: var(--g-fill);
+  --g-hero-icon: var(--g-label-2);
+  --hero-grad: linear-gradient(135deg, var(--g-hero-soft) 0%, transparent 65%);
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(.security-hero-card--armed-home, .security-hero-card--armed-night, .security-hero-card--armed-away),
+:root[data-style='glas'] .system-page .system-hero-card--healthy {
+  --g-hero-soft: var(--g-green-soft);
+  --g-hero-ink: var(--g-green-ink);
+  --g-hero-icon-bg: var(--g-green-soft);
+  --g-hero-icon: var(--g-green-ink);
+}
+
+:root[data-style='glas'] .system-page .system-hero-card--warning {
+  --g-hero-soft: var(--g-warn-soft);
+  --g-hero-ink: var(--g-warn-ink);
+  --g-hero-icon-bg: var(--g-warn-soft);
+  --g-hero-icon: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .security-page .security-hero-card--triggered,
+:root[data-style='glas'] .system-page .system-hero-card--critical {
+  --g-hero-soft: var(--g-red-soft);
+  --g-hero-ink: var(--g-red-ink);
+  --g-hero-icon-bg: var(--g-red-soft);
+  --g-hero-icon: var(--g-red-ink);
+}
+
+/* the symbol in a circle 56 like the alarm window's head */
+:root[data-style='glas'] :is(.security-page .security-hero-card__alarm-icon, .system-page .system-hero-card__icon) {
+  border-radius: 50%;
+  background: var(--g-hero-icon-bg);
+  color: var(--g-hero-icon);
+}
+
+:root[data-style='glas']
+  :is(.security-page .security-hero-card__alarm-icon, .system-page .system-hero-card__icon)
+  > svg {
+  width: 28px;
+  height: 28px;
+}
+
+:root[data-style='glas'] :is(.security-page .security-hero-card__alarm-name, .system-page .system-hero-card__label) {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas']
+  :is(.security-page .security-hero-card__alarm-state, .system-page .system-hero-card__status) {
+  color: var(--g-hero-ink);
+  font: 700 22px / 28px var(--g-font);
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .security-page .security-hero-card__people-label {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* Chips like the status chips (§7.5, colours K87), here on the card: a capsule 32 in fill, colour only at the symbol —
+   open locks and garages redInk, open doors, open windows, motion and faults warnInk, the text then 600 label;
+   closed, locked and quiet in label2. The system's values follow the same rule (no symbol: the value). */
+:root[data-style='glas'] :is(.security-page .security-hero-chip, .system-page .system-hero-chip) {
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .security-hero-chip > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] :is(.security-page .security-hero-chip--danger, .security-page .security-hero-chip--warn) {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .security-page .security-hero-chip--danger > svg {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(.security-hero-chip--warn, .security-hero-chip--danger:has(> .lucide-door-open))
+  > svg {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip {
+  padding: 0 12px;
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip__key {
+  opacity: 1;
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip__val {
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip--warn .system-hero-chip__val {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip--critical .system-hero-chip__val {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip--muted .system-hero-chip__val {
+  color: var(--g-label-2);
+}
+
+/* without a state: the plain card */
+:root[data-style='glas'] :is(.energy-page .energy-hero, .devices-page .devices-hero) {
+  --hero-grad: none;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__bg, .scenes-page .scene-hero-card__bg) {
+  display: none;
+}
+
+/* their eyebrow like the head line of the main room: symbol 18 label2, text 15/20 label2; the energy hero's title row
+   carries the period choice and stays a title in the surface (20/25 600) */
+:root[data-style='glas']
+  :is(
+    .automations-page .auto-hero-card__icon-chip,
+    .scenes-page .scene-hero-card__icon-chip,
+    .energy-page .energy-hero__header .energy-card__icon-chip
+  ) {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas']
+  :is(
+    .automations-page .auto-hero-card__icon-chip,
+    .scenes-page .scene-hero-card__icon-chip,
+    .energy-page .energy-hero__header .energy-card__icon-chip
+  )
+  > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__eyebrow, .scenes-page .scene-hero-card__eyebrow) {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__header .energy-card__title {
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+  letter-spacing: normal;
+}
+
+:root[data-style='glas']
+  :is(.automations-page .auto-hero-card__last-ran-label, .scenes-page .scene-hero-card__last-used-label) {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
 }

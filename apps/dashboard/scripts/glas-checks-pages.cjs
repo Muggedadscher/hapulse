@@ -2,8 +2,8 @@
 // `checks --part pages`. glas-shots.cjs loads this file with its helpers; it is not run on its own.
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
-// pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles and pagesCardTitles (K89). The plan's other
-// blocks (frame, segments, edit, keep, empty, menus) come with their steps.
+// pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles, pagesCardTitles and pagesFrame (K89, K90,
+// K85). The plan's other blocks (segments, edit, keep, empty, menus) come with their steps.
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
@@ -76,8 +76,8 @@ module.exports = function pages(h) {
     /** A real-time document of the demo in Glas (or Klassisch). */
     const open = async (device, style, p, extra = {}) => {
       const ctx = await browser.newContext({
-        ...DEVICES[device], locale: 'de-DE', timezoneId: 'Europe/Berlin', colorScheme: extra.mode || 'light',
-        reducedMotion: 'no-preference',
+        ...DEVICES[device], ...(extra.viewport ? { viewport: extra.viewport } : {}), locale: 'de-DE',
+        timezoneId: 'Europe/Berlin', colorScheme: extra.mode || 'light', reducedMotion: 'no-preference',
       });
       await ctx.route((u) => !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(u.href), (r) => r.abort());
       await ctx.addInitScript(seedScript({ demo: true, mode: extra.mode || 'light', style, strength: 'clear', customization: extra.customization }));
@@ -417,54 +417,329 @@ module.exports = function pages(h) {
       out.pagesTitlesOk = Object.values(res).every((r) => r.ok);
     });
 
-    // ---- K89 card titles above the surface on the security page: the card itself has no background, its ::before
-    //      surface starts below the 44-px head + 6-px gap, the title (20, label) sits above it, the first body part
-    //      16 px inside it, the icon chip is a bare symbol. Glas only. ----
+    // ---- K89 card titles on every page: above the surface (the card itself has no background, its ::before surface
+    //      starts below the 44-px head + 6-px gap, the title (20, label) sits above it, the first body part 16 px
+    //      inside it, the icon chip is a bare symbol), or in the surface where the head carries a control or the card
+    //      is only its head (pool schedule, the music page, water with one meter). Glas only. ----
     await block('pagesCardTitles', async () => {
       const res = {};
-      const CARDS = ['people-list-card', 'locks-section-card', 'garage-section-card', 'sensor-section-card'];
+      // [page, card, title, chip, where]
+      const CARDS = [
+        ['/security', '.people-list-card', '.people-list-card__title', '.people-list-card__icon-chip', 'above'],
+        ['/security', '.locks-section-card', '.locks-section-card__title', '.locks-section-card__icon-chip', 'above'],
+        ['/security', '.garage-section-card', '.garage-section-card__title', '.garage-section-card__icon-chip', 'above'],
+        ['/security', '.sensor-section-card', '.sensor-section-card__title', '.sensor-section-card__icon-chip', 'above'],
+        ['/energy', '.energy-sources', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-devices', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-solar', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'inside'],
+        ['/pool', '.pool-card:not(.pool-schedule)', '.pool-card__title', '.pool-card__icon', 'above'],
+        ['/pool', '.pool-schedule', '.pool-card__title', '.pool-card__icon', 'inside'],
+        ['/music', '.other-players-card', '.other-players-card__title', '.other-players-card__icon-chip', 'inside'],
+        ['/music', '.zones-card', '.zones-card__title', '.zones-card__icon-chip', 'inside'],
+        ['/music', '.queue-card', '.queue-card__title', '.queue-card__title-icon', 'inside'],
+        ['/music', '.library-card', '.library-card__title', '.library-card__title-icon', 'inside'],
+        ['/system', '.sys-monitor-card', '.sys-monitor-card__title', '.sys-monitor-card__icon-chip', 'above'],
+        ['/system', '.batteries-card', '.batteries-card__title', '.batteries-card__icon-chip', 'above'],
+        ['/system', '.activity-card', '.activity-card__title', '.activity-card__icon-chip', 'above'],
+        ['/automations', '.auto-feed-card', '.auto-feed-card__title', '.auto-feed-card__icon-chip', 'above'],
+        ['/automations', '.auto-cat-card', '.auto-cat-card__title', '.auto-cat-card__icon-chip', 'above'],
+        ['/scenes', '.scene-feed-card', '.scene-feed-card__title', '.scene-feed-card__icon-chip', 'above'],
+        ['/scenes', '.scene-room-card', '.scene-room-card__title', '.scene-room-card__icon-chip', 'above'],
+      ];
+      const PAGES = [...new Set(CARDS.map((c) => c[0]))];
       for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        const { page, close } = await open(device, 'glas', '/security', { mode });
-        try {
-          const cards = await ev(page, (names) => {
-            const d = document.createElement('div');
-            d.style.color = 'var(--g-label)';
-            document.body.appendChild(d);
-            const label = getComputedStyle(d).color;
-            d.remove();
-            return names.map((n) => {
-              const card = document.querySelector(`.security-page .${n}`);
-              if (!card) return { n, missing: true };
-              const r = card.getBoundingClientRect();
-              const surface = r.top + 44 + 6;
-              const title = card.querySelector(`.${n}__title`);
-              const tr = title.getBoundingClientRect();
-              const tcs = getComputedStyle(title);
-              const body = card.children[1]?.getBoundingClientRect();
-              const before = getComputedStyle(card, '::before');
-              const chip = card.querySelector(`.${n}__icon-chip`);
-              return {
-                n,
-                bg: getComputedStyle(card).backgroundColor,
-                surface: before.content !== 'none' && before.backgroundColor !== 'rgba(0, 0, 0, 0)',
-                above: tr.bottom <= surface + 0.5,
-                size: tcs.fontSize,
-                label: tcs.color === label,
-                inside: !!body && body.top >= surface + 16 - 0.5,
-                chip: !chip || getComputedStyle(chip).backgroundColor === 'rgba(0, 0, 0, 0)',
-              };
-            });
-          }, CARDS);
-          const ok = cards.every((c) => !c.missing && c.bg === 'rgba(0, 0, 0, 0)' && c.surface && c.above
-            && c.size === '20px' && c.label && c.inside && c.chip);
-          res[device] = { ok, cards: ok ? cards.length : cards };
-        } catch (e) {
-          res[device] = { ok: false, error: String(e.message).slice(0, 160) };
+        for (const p of PAGES) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const cards = await ev(page, (specs) => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label)';
+              document.body.appendChild(d);
+              const label = getComputedStyle(d).color;
+              d.remove();
+              return specs.flatMap(([, sel, titleSel, chipSel, where]) => {
+                const els = [...document.querySelectorAll(`.page ${sel}`)].filter((e) => e.getClientRects().length);
+                if (!els.length) return [{ sel, missing: true }];
+                return els.map((card) => {
+                  const r = card.getBoundingClientRect();
+                  const surface = r.top + 44 + 6;
+                  const title = card.querySelector(titleSel);
+                  const tr = title.getBoundingClientRect();
+                  const tcs = getComputedStyle(title);
+                  const body = card.children[1]?.getBoundingClientRect();
+                  const before = getComputedStyle(card, '::before');
+                  const chip = card.querySelector(chipSel);
+                  const base = { sel, where, size: tcs.fontSize, label: tcs.color === label,
+                    chip: !chip || getComputedStyle(chip).backgroundColor === 'rgba(0, 0, 0, 0)' };
+                  if (where === 'inside') {
+                    return { ...base, ok: getComputedStyle(card).backgroundColor !== 'rgba(0, 0, 0, 0)'
+                      && before.content === 'none' && tr.top >= r.top - 0.5 && tr.bottom <= surface + 0.5 };
+                  }
+                  return { ...base, ok: getComputedStyle(card).backgroundColor === 'rgba(0, 0, 0, 0)'
+                    && before.content !== 'none' && before.backgroundColor !== 'rgba(0, 0, 0, 0)'
+                    && tr.bottom <= surface + 0.5 && !!body && body.top >= surface + 16 - 0.5 };
+                });
+              });
+            }, CARDS.filter((c) => c[0] === p));
+            const bad = cards.filter((c) => c.missing || !c.ok || c.size !== '20px' || !c.label || !c.chip);
+            res[`${device}${p}`] = { ok: bad.length === 0, cards: cards.length, ...(bad.length ? { bad: bad.slice(0, 3) } : {}) };
+          } catch (e) {
+            res[`${device}${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
         }
-        await close();
       }
       out.pagesCardTitles = res;
       out.pagesCardTitlesOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K89/K90/K85 the frame. Columns by content width (1920/1440/1100/900: 4/3/2/2; a grid whose cards all span
+    //      two columns takes four from 900 px of content), no page wider than the window; a card without a title above
+    //      (hero, alarm panel, pool schedule) starts its surface on the line of its neighbours' surfaces; heroes keep
+    //      their state as colour (security disarmed/armed/triggered, system healthy) with the symbol in a circle,
+    //      chips 32 in `fill`, no capitals; the stateless heroes lose their gradient; the camera section has neither
+    //      head nor surface; no element of a page that became a size container is fixed (windows and menus are
+    //      portaled: open ones included), the notifications panel still hangs below its bell. Glas only. ----
+    await block('pagesFrame', async () => {
+      const res = {};
+      const GRID = ['/security', '/energy', '/system', '/automations', '/scenes'];
+      const tokens = (page) => ev(page, () => {
+        const out = {};
+        const d = document.createElement('div');
+        document.body.appendChild(d);
+        for (const t of ['--g-label', '--g-label-2', '--g-fill', '--g-green-ink', '--g-green-soft', '--g-red-ink', '--g-warn-ink']) {
+          d.style.color = `var(${t})`;
+          out[t] = getComputedStyle(d).color;
+        }
+        d.remove();
+        return out;
+      });
+
+      // columns and alignment
+      const WANT = { 1920: [4, 4], 1440: [3, 4], 1100: [2, 2], 900: [2, 2] };
+      for (const w of [1920, 1440, 1100, 900]) {
+        for (const p of [...GRID, '/pool']) {
+          const { page, close } = await open('desktop', 'glas', p, { viewport: { width: w, height: 1000 } });
+          try {
+            const got = await ev(page, () => {
+              const grid = document.querySelector('.page > .overview-grid');
+              const cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
+              const wide = !!grid && ![...grid.children].some((c) => c.classList.contains('overview-grid__cell')
+                && ![...c.classList].some((k) => k.startsWith('overview-grid__cell--span-')));
+              // a headless card next to a card with a title above: same row = cells start on the same line
+              const HEADLESS = '.security-hero-card, .alarm-panel-card, .energy-hero, .system-hero-card, .auto-hero-card, .scene-hero-card, .pool-schedule';
+              const titled = [...document.querySelectorAll('.page .card')].filter((c) => getComputedStyle(c, '::before').content !== 'none'
+                && getComputedStyle(c).backgroundColor === 'rgba(0, 0, 0, 0)' && c.getClientRects().length);
+              const pairs = [];
+              // the grid item and the top of its grid area (a pool card is the item itself: less its own margin)
+              const item = (el) => el.closest('.overview-grid__cell, .pool-grid > *') || el;
+              const rowTop = (el) => {
+                const it = item(el);
+                return it.getBoundingClientRect().top - (it === el ? parseFloat(getComputedStyle(el).marginTop) || 0 : 0);
+              };
+              for (const h of document.querySelectorAll(`.page :is(${HEADLESS})`)) {
+                if (!h.getClientRects().length) continue;
+                const hr = item(h).getBoundingClientRect();
+                const top = rowTop(h);
+                const mate = titled.find((t) => Math.abs(rowTop(t) - top) < 1 && item(t).getBoundingClientRect().left !== hr.left);
+                const full = Math.abs(hr.width - item(h).parentElement.getBoundingClientRect().width) < 1;
+                pairs.push({ h: h.classList[1] || h.classList[0], mate: !!mate, full,
+                  d: mate ? Math.round(h.getBoundingClientRect().top - (mate.getBoundingClientRect().top + 50)) : null,
+                  top: Math.round(h.getBoundingClientRect().top - top) });
+              }
+              return { cols, wide, overflow: document.documentElement.scrollWidth > innerWidth + 0.5, pairs };
+            });
+            const want = p === '/pool' ? null : WANT[w][got.wide ? 1 : 0];
+            // with a mate the surface sits on its line; alone in its row (or full width) it keeps its place
+            const pairOk = got.pairs.every((x) => (x.mate ? Math.abs(x.d) <= 1 : x.top === 0 || !x.full));
+            const ok = (want === null || got.cols === want) && !got.overflow && pairOk;
+            const aligned = got.pairs.filter((x) => x.mate).map((x) => x.h);
+            res[`cols-${w}${p}`] = { ok, cols: got.cols, ...(got.wide ? { wide: true } : {}), aligned, ...(ok ? {} : got) };
+          } catch (e) {
+            res[`cols-${w}${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+
+      // heroes
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // security: disarmed, armed (green), triggered (red); chips; no capitals; the camera section
+        {
+          const { page, close } = await open(device, 'glas', '/security', { mode });
+          try {
+            const tk = await tokens(page);
+            const read = () => ev(page, () => {
+              const card = document.querySelector('.security-hero-card');
+              const icon = card.querySelector('.security-hero-card__alarm-icon');
+              const ir = icon.getBoundingClientRect();
+              const state = getComputedStyle(card.querySelector('.security-hero-card__alarm-state'));
+              const name = getComputedStyle(card.querySelector('.security-hero-card__alarm-name'));
+              const chips = [...card.querySelectorAll('.security-hero-chip')].map((c) => {
+                const cs = getComputedStyle(c);
+                return { h: c.getBoundingClientRect().height, r: parseFloat(cs.borderTopLeftRadius), bg: cs.backgroundColor,
+                  border: parseFloat(cs.borderTopWidth), warn: c.classList.contains('security-hero-chip--warn'),
+                  svg: c.querySelector('svg') ? getComputedStyle(c.querySelector('svg')).color : null };
+              });
+              const cam = document.querySelector('.security-page__camera-section');
+              return {
+                cls: card.className, grad: getComputedStyle(card).backgroundImage,
+                icon: { w: Math.round(ir.width), h: Math.round(ir.height), round: getComputedStyle(icon).borderTopLeftRadius === '50%'
+                  || parseFloat(getComputedStyle(icon).borderTopLeftRadius) >= ir.width / 2 - 0.5, color: getComputedStyle(icon).color },
+                state: { color: state.color, size: state.fontSize, weight: state.fontWeight },
+                name: { caps: name.textTransform, size: name.fontSize },
+                chips,
+                cam: cam ? { before: getComputedStyle(cam, '::before').content, bg: getComputedStyle(cam).backgroundColor,
+                  title: !!cam.querySelector('h2, h3, [class*="title"]:not([class*="camera"])') } : null,
+              };
+            });
+            const runs = { disarmed: await read() };
+            for (const [st, key] of [['armed_home', 'armed'], ['triggered', 'triggered']]) {
+              await ev(page, (s2) => window.__hapulseDemo.patch('alarm_control_panel.home', { state: s2 }), st);
+              await sleep(200);
+              runs[key] = await read();
+            }
+            await ev(page, () => window.__hapulseDemo.patch('alarm_control_panel.home', { state: 'disarmed' }));
+            const d = runs.disarmed;
+            const chipsOk = d.chips.length > 0 && d.chips.every((c) => c.h >= 32 - 0.5 && c.r >= 16 && c.bg === tk['--g-fill']
+              && c.border === 0 && (!c.warn || c.svg === tk['--g-warn-ink']));
+            const ok = d.icon.round && Math.abs(d.icon.w - 56) <= 1 && d.state.color === tk['--g-label'] && d.state.size === '22px'
+              && d.name.caps === 'none' && d.name.size === '13px'
+              && runs.armed.state.color === tk['--g-green-ink'] && runs.armed.icon.color === tk['--g-green-ink']
+              && /gradient/.test(runs.armed.grad)
+              && runs.triggered.state.color === tk['--g-red-ink'] && runs.triggered.icon.color === tk['--g-red-ink']
+              && chipsOk && !!d.cam && d.cam.before === 'none' && d.cam.bg === 'rgba(0, 0, 0, 0)' && !d.cam.title;
+            res[`hero-${device}/security`] = { ok, ...(ok ? {} : { runs }) };
+          } catch (e) {
+            res[`hero-${device}/security`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        // system: healthy = green; chips; no capitals
+        {
+          const { page, close } = await open(device, 'glas', '/system', { mode });
+          try {
+            const tk = await tokens(page);
+            const got = await ev(page, () => {
+              const card = document.querySelector('.system-hero-card');
+              const icon = card.querySelector('.system-hero-card__icon');
+              const status = getComputedStyle(card.querySelector('.system-hero-card__status'));
+              const label = getComputedStyle(card.querySelector('.system-hero-card__label'));
+              return {
+                cls: card.className,
+                icon: { w: Math.round(icon.getBoundingClientRect().width), color: getComputedStyle(icon).color },
+                status: status.color, size: status.fontSize, caps: label.textTransform,
+                chips: [...card.querySelectorAll('.system-hero-chip')].map((c) => ({
+                  h: c.getBoundingClientRect().height, bg: getComputedStyle(c).backgroundColor,
+                  r: parseFloat(getComputedStyle(c).borderTopLeftRadius) })),
+              };
+            });
+            const healthy = /system-hero-card--healthy/.test(got.cls);
+            const ok = (!healthy || (got.status === tk['--g-green-ink'] && got.icon.color === tk['--g-green-ink']))
+              && Math.abs(got.icon.w - 56) <= 1 && got.size === '22px' && got.caps === 'none' && got.chips.length > 0
+              && got.chips.every((c) => c.h >= 32 - 0.5 && c.bg === tk['--g-fill'] && c.r >= 16);
+            res[`hero-${device}/system`] = { ok, healthy, ...(ok ? {} : { got }) };
+          } catch (e) {
+            res[`hero-${device}/system`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        // the stateless heroes: plain card, eyebrow 15 label2 without capitals
+        for (const [p, sel, bg, eyebrow] of [
+          ['/energy', '.energy-hero', null, null],
+          ['/automations', '.auto-hero-card', '.auto-hero-card__bg', '.auto-hero-card__eyebrow'],
+          ['/scenes', '.scene-hero-card', '.scene-hero-card__bg', '.scene-hero-card__eyebrow'],
+        ]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const tk = await tokens(page);
+            const got = await ev(page, ([s1, s2, s3]) => {
+              const card = document.querySelector(s1);
+              const b = s2 ? card.querySelector(s2) : null;
+              const e = s3 ? getComputedStyle(card.querySelector(s3)) : null;
+              return { grad: getComputedStyle(card).backgroundImage, bg: b ? getComputedStyle(b).display : 'none',
+                eyebrow: e ? { caps: e.textTransform, size: e.fontSize, color: e.color } : null };
+            }, [sel, bg, eyebrow]);
+            const ok = !/gradient/.test(got.grad) && got.bg === 'none'
+              && (!got.eyebrow || (got.eyebrow.caps === 'none' && got.eyebrow.size === '15px' && got.eyebrow.color === tk['--g-label-2']));
+            res[`hero-${device}${p}`] = { ok, ...(ok ? {} : { got }) };
+          } catch (e) {
+            res[`hero-${device}${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+
+      // nothing fixed inside a page that became a size container, also with its windows and menus open
+      for (const p of [...GRID, '/pool']) {
+        const { page, close } = await open('desktop', 'glas', p);
+        try {
+          const fixedIn = () => ev(page, () => [...document.querySelectorAll('.page *')]
+            .filter((e) => getComputedStyle(e).position === 'fixed').map((e) => e.className && String(e.className).slice(0, 40)));
+          const container = await ev(page, () => getComputedStyle(document.querySelector('.pool-layout') || document.querySelector('.page')).containerType);
+          const found = [...(await fixedIn())];
+          let opened = 'none';
+          if (p === '/security') {
+            // arming asks for the code: in Glas the pad is a window (portaled), whole inside the browser window
+            await click(page, '.alarm-btn:not(:disabled)');
+            const pad = await ev(page, () => {
+              const o = document.querySelector('.numpad-modal')?.closest('[role="dialog"]');
+              if (!o) return null;
+              const r = o.getBoundingClientRect();
+              return { inPage: !!o.closest('.page'), inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 0.5
+                && r.bottom <= innerHeight + 0.5, w: Math.round(r.width) };
+            });
+            opened = pad ? 'numpad' : 'no numpad';
+            found.push(...(await fixedIn()));
+            if (!pad || pad.inPage || !pad.inside) found.push('numpad: ' + JSON.stringify(pad));
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+          }
+          if (p === '/system' || p === '/energy') {
+            // an entity's detail as a tap opens it (the inspector from 1100 px), outside the page
+            await ev(page, () => window.__hapulseDemo.openDetail('light.living_room_ceiling'));
+            await sleep(400);
+            await settleAnimations(page);
+            const win = await ev(page, () => {
+              const d = [...document.querySelectorAll('[role="dialog"], [role="complementary"]')].find((e) => e.getClientRects().length);
+              if (!d) return null;
+              const r = d.getBoundingClientRect();
+              return { inPage: !!d.closest('.page'), inside: r.left >= -0.5 && r.right <= innerWidth + 0.5 && r.top >= -0.5 };
+            });
+            opened = win ? 'detail' : 'no detail';
+            found.push(...(await fixedIn()));
+            if (!win || win.inPage || !win.inside) found.push('detail: ' + JSON.stringify(win));
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+          }
+          const bell = page.locator('.header-cluster .notifications-trigger').filter({ visible: true }).first();
+          let panel = null;
+          if (await bell.count()) {
+            await bell.click();
+            await sleep(250);
+            await settleAnimations(page);
+            panel = await ev(page, () => {
+              const pn = document.querySelector('.notifications-panel');
+              const b = document.querySelector('.header-cluster .notifications-trigger').getBoundingClientRect();
+              if (!pn) return null;
+              const r = pn.getBoundingClientRect();
+              return { gap: Math.round(r.top - b.bottom), inPage: !!pn.closest('.page'), right: Math.round(innerWidth - r.right) };
+            });
+            found.push(...(await fixedIn()));
+            await page.keyboard.press('Escape');
+          }
+          const ok = container !== 'normal' && found.length === 0 && !!panel && !panel.inPage && panel.gap >= 0 && panel.gap <= 24;
+          res[`fixed${p}`] = { ok, container, opened, panel, ...(found.length ? { found: found.slice(0, 4) } : {}) };
+        } catch (e) {
+          res[`fixed${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+        }
+        await close();
+      }
+      out.pagesFrame = res;
+      out.pagesFrameOk = Object.values(res).every((r) => r.ok);
     });
 
     out.pagesPageErrors = pageErrors;

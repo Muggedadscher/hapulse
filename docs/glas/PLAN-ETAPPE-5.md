@@ -216,3 +216,35 @@ und übernommen, außer wo anders vermerkt.
   übrigen Seiten kommen mit ihren Schritten dazu; erst wenn alle drin sind, wird die Übersicht in dieselbe Liste
   gezogen (ein Vergleich der Übersicht mit 0 Pixeln deckt das ab).
 - Prüfung `pagesCardTitles` (Desktop hell, Handy dunkel); auf dem Stand davor ist sie rot.
+
+### 7.7 Rahmen der übrigen Seiten (K89, K90, K85)
+
+- **Titel über der Fläche** auf allen Seiten aus K89 (`pages.css`, eine Liste). Den Titel **in der Fläche** behalten:
+  Pool-Zeitplan (Schalter im Kopf), auf der Musikseite Zonen (Ansicht), Warteschlange und Bibliothek (Player-Wahl).
+  **Abweichungen:** (1) Auch die Player-Karte der Musikseite behält ihn, damit die rechte Spalte bündig mit Now Playing
+  beginnt; sonst trüge auf der Seite nur sie den Titel über der Fläche. (2) Karten, die nur aus dem Kopf bestehen
+  (Wasser mit einem Zähler, Gas), behalten ihn ebenfalls; darunter stünde sonst eine leere Fläche.
+- Die Übersicht behält ihre Liste in `home.css` (Abweichung von §7.6): Ihre Karten haben im Körper eigene Abstände
+  (0 bzw. 12 je Karte), die Seiten einheitlich 12. Ein Zusammenlegen hätte die Übersicht verschoben und bringt nichts.
+- **Spalten (K85)** auf Sicherheit, Energie, System, Automationen und Szenen: die Seite ist ab 900 px ein
+  Größen-Container (`g-page`), Inhalt ≥ 1180 → 4, ≥ 900 → 3, darunter 2 bzw. 1. **Abweichung:** Ein Raster, dessen
+  Karten alle mindestens zwei Spalten breit sind (System; Automationen mit Kategorie-Filter), nimmt im Bereich der drei
+  Spalten vier, sonst bliebe in jeder Zeile ein Drittel leer (Klassisch zeigt dort auf breiten Schirmen ebenfalls
+  Paare). Bei 1440 hat System deshalb 4 Spalten, die übrigen Seiten 3.
+- **Bündig:** Ab drei Spalten beginnt die Fläche einer Karte ohne Titel (Hero, Alarm-Panel) auf der Linie der
+  Nachbar-Flächen (50 = Kopf 44 + Abstand 6 frei darüber); eine Karte über die ganze Zeile behält ihren Platz.
+- **Pool:** eigenes Raster (`auto-fit`, mindestens 300) mit den Abständen der übrigen Seiten (20, ab 900 px 26/20).
+  `.pool-layout` ist bei jeder Breite Container (`g-pool`), die Seite hat keine fixierten Nachfahren (ihre Fenster
+  sind portaliert); ab zwei Spalten steht der Zeitplan bündig mit den Nachbarn.
+- **Heroes (K90):** Sicherheit nach Alarmzustand (scharf grün wie im Alarm-Fenster, ausgelöst/verzögert rot,
+  unscharf ohne Ton), System nach Gesundheit (grün, Warnung gelb, kritisch rot): leiser Verlauf aus dem Soft-Ton,
+  Zustandswort 22/28 700 und Symbol im Kreis 56 in seiner Ink, Name 13/18 `label2` ohne Versalien. Die Chips im
+  Sicherheits-Hero sind Kapseln 32 in `fill` (sie sind keine Knöpfe, deshalb nicht 44 wie die Status-Chips), Farbe nur
+  am Symbol nach K87 (offene Tür `warnInk`), der Text dann 600 `label`; im System-Hero trägt der Wert die Farbe.
+  Energie, Automationen und Szenen verlieren den Verlauf; ihre Zeile über der Zahl wird 15/20 `label2` mit Symbol 18,
+  der Energie-Hero behält seinen Titel 20/25 600 in der Fläche (er trägt die Zeitraum-Wahl).
+- Die Alarm-Modi (K93), Kamera-Kacheln (Radius 18, Badge „Bewegung“) und Listen (K94) kommen mit den Seiten.
+- Prüfungen: `pagesCardTitles` jetzt für alle Seiten (über bzw. in der Fläche), neu `pagesFrame`: Spalten bei
+  1920/1440/1100/900, nichts breiter als das Fenster, bündige Flächen, Heroes in drei Zuständen, Kamera-Sektion ohne
+  Kopf und Fläche, kein fixiertes Element in einer Container-Seite (auch mit offenem Ziffernfeld, Detail und
+  Benachrichtigungen; das Panel hängt weiter unter seiner Glocke).
