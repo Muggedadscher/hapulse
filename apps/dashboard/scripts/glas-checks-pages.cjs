@@ -3,8 +3,8 @@
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
 // pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles, pagesCardTitles and pagesFrame (K89, K90,
-// K85), pagesKeep and pagesEmpty (§3.1, page by page as the pages come in). The plan's other blocks (segments, edit,
-// menus) come with their steps.
+// K85), pagesEdit (K96), pagesKeep and pagesEmpty (§3.1); edit, keep and empty grow page by page as the pages come in.
+// The plan's other blocks (segments, menus) come with their steps.
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
@@ -752,6 +752,189 @@ module.exports = function pages(h) {
       out.pagesFrameOk = Object.values(res).every((r) => r.ok);
     });
 
+    // ---- K96 edit bar on the pages with a card grid (pagesEdit): S / M / L write the fields Klassisch reads (span,
+    //      height, `tallSections` `<page>:<id>`), "⋯" sets columns and a cap, ‹ › keep the focus, the eye and the phone
+    //      toggle; the bar covers nothing (desktop, iPad, phone); after a switch to Klassisch the same order, spans and
+    //      hidden cards. One page after the other as they come in. ----
+    const EDIT_PAGES = [
+      { page: 'security', path: '/security', root: '.security-page', spans: 'securitySectionSpans', heights: 'securitySectionHeights',
+        hidden: 'hiddenSecuritySections', mobile: 'mobileHiddenSecuritySections', card: 'people' },
+    ];
+    /** Edit mode: the header capsule, on a phone in Glas the avatar menu. */
+    const enterEdit = async (page) => {
+      if (await page.locator('.g-edit-capsule:visible, .edit-toggle:visible').count()) await click(page, '.g-edit-capsule, .edit-toggle');
+      else {
+        await click(page, '.g-avatar__btn');
+        await click(page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.edit']}")`);
+      }
+      await sleep(300);
+      await settleAnimations(page);
+    };
+    /** Per card in edit mode: what of its contents a visible part of its bar covers (text, controls). */
+    const barCovers = (page, root) => ev(page, (r) => {
+      const hits = [];
+      for (const cell of document.querySelectorAll(`${r} .overview-grid__cell--editing`)) {
+        const parts = [...cell.querySelectorAll(':scope > .g-size-bar > *')].filter((e) => e.getClientRects().length
+          && getComputedStyle(e).visibility !== 'hidden' && !e.classList.contains('g-size-bar__space'))
+          .map((e) => {
+            const b = e.getBoundingClientRect();
+            const inset = e.classList.contains('g-size-bar__btn') ? 4 : 0; // the circles are 36 in a 44 hit area
+            return { l: b.left + inset, t: b.top + inset, r: b.right - inset, b: b.bottom - inset };
+          });
+        const content = [...cell.querySelectorAll('.edit-section-outline *')].filter((e) => {
+          if (!e.getClientRects().length || getComputedStyle(e).visibility === 'hidden') return false;
+          if (e.matches('button, a, input, [role="button"], svg')) return true;
+          return [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+        });
+        for (const e of content) {
+          const b = e.getBoundingClientRect();
+          if (b.width < 1 || b.height < 1) continue;
+          if (parts.some((p) => p.l < b.right - 1 && p.r > b.left + 1 && p.t < b.bottom - 1 && p.b > b.top + 1)) {
+            hits.push(`${cell.dataset.section}:${(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className) || e.tagName}`);
+          }
+        }
+      }
+      return hits;
+    }, root);
+
+    await block('pagesEdit', async () => {
+      const res = {};
+      for (const cfg of EDIT_PAGES) {
+        // S / M / L, "⋯", ‹ ›, eye and phone on the desktop; then the switch to Klassisch
+        {
+          const { page, close } = await open('desktop', 'glas', cfg.path);
+          try {
+            const r = {};
+            const settle = async (ms = 250) => {
+              await sleep(ms);
+              await settleAnimations(page);
+            };
+            const bar = (id) => `${cfg.root} [data-section="${id}"] > .g-size-bar`;
+            const order = () => ev(page, (root) => [...document.querySelectorAll(`${root} .overview-grid [data-section]`)].map((e) => e.dataset.section), cfg.root);
+            const cust = () => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state?.customization || {});
+            const A = cfg.card;
+            const isTall = (c) => (c.tallSections || []).includes(`${cfg.page}:${A}`);
+            const focusOn = () => ev(page, () => {
+              const a = document.activeElement;
+              const sec = a && a.closest('[data-section]');
+              return a ? `${a.dataset.move || a.getAttribute('aria-haspopup') || ''}|${sec ? sec.dataset.section : ''}` : '';
+            });
+            await enterEdit(page);
+            const o1 = await order();
+            r.name = await ev(page, (sel) => document.querySelector(sel)?.getAttribute('aria-label'), bar(A));
+
+            await page.click(`${bar(A)} [role="radio"]:has-text("L")`);
+            await settle();
+            let c = await cust();
+            r.L = { span: (c[cfg.spans] || {})[A], tall: isTall(c), height: (c[cfg.heights] || {})[A] || 0,
+              cell: await ev(page, (sel) => Math.round(document.querySelector(sel).getBoundingClientRect().height), `${cfg.root} [data-section="${A}"]`) };
+            await page.click(`${bar(A)} [role="radio"]:has-text("S")`);
+            await settle();
+            c = await cust();
+            r.S = { span: c[cfg.spans][A], tall: isTall(c) };
+
+            await page.click(`${bar(A)} [aria-haspopup="dialog"]`);
+            await settle(450);
+            r.sheetTitle = await ev(page, () => [...document.querySelectorAll('[role="dialog"]')].map((d) => d.textContent.slice(0, 80)).join('|'));
+            await page.click('[role="dialog"] [role="radiogroup"] >> nth=0 >> [role="radio"]:has-text("3")');
+            await settle();
+            c = await cust();
+            r.cols = { span: c[cfg.spans][A], none: await ev(page, (sel) => document.querySelector(sel + ' .g-seg').hasAttribute('data-none'), bar(A)) };
+            await page.click('[role="dialog"] [role="radiogroup"] >> nth=1 >> [role="radio"]:has-text("280")');
+            await settle();
+            r.cap = ((await cust())[cfg.heights] || {})[A];
+            await page.click('[role="dialog"] [role="radiogroup"] >> nth=1 >> [role="radio"] >> nth=0');
+            await settle();
+            r.capOff = ((await cust())[cfg.heights] || {})[A];
+            await page.keyboard.press('Escape');
+            await settle(450);
+            r.focusBack = await focusOn();
+
+            const second = o1[1];
+            await page.focus(`${bar(second)} [data-move="1"]`);
+            await page.keyboard.press('Enter');
+            await settle(400);
+            r.move = { order: await order(), focus: await focusOn() };
+            await page.focus(`${bar(second)} [data-move="-1"]`);
+            await page.keyboard.press('Enter');
+            await settle(400);
+            r.moveBack = await order();
+
+            const toggle = async (nth, field) => {
+              const btn = page.locator(`${bar(A)} [aria-pressed]`).nth(nth);
+              await btn.click();
+              await settle(300);
+              const on = { stored: ((await cust())[field] || []).includes(A), pressed: await btn.getAttribute('aria-pressed') };
+              await btn.click();
+              await settle(300);
+              return { ...on, back: ((await cust())[field] || []).includes(A) };
+            };
+            r.eye = await toggle(0, cfg.hidden);
+            r.phone = await toggle(1, cfg.mobile);
+
+            // the same layout after the switch to Klassisch (L reads as M there): A is L, the second card hidden
+            await page.click(`${bar(A)} [role="radio"]:has-text("L")`);
+            await settle();
+            await page.locator(`${bar(second)} [aria-pressed]`).nth(0).click();
+            await settle(300);
+            const layout = () => ev(page, (root) => [...document.querySelectorAll(`${root} .overview-grid [data-section]`)].map((e) => {
+              const m = `${e.parentElement.className} ${e.className}`.match(/span-(\d)/);
+              return `${e.dataset.section}:${m ? m[1] : 1}:${e.classList.contains('overview-grid__cell--hidden') ? 'h' : ''}`;
+            }).join(','), cfg.root);
+            r.glas = await layout();
+            await ev(page, () => {
+              const st = JSON.parse(localStorage.getItem('hapulse:settings'));
+              st.state.customization.uiStyle = 'classic';
+              localStorage.setItem('hapulse:settings', JSON.stringify(st));
+            });
+            await page.reload({ waitUntil: 'load' });
+            await page.waitForFunction(() => document.querySelector('#root > *'));
+            await settle(900);
+            await enterEdit(page);
+            r.classic = await layout();
+            r.classicStyle = await ev(page, () => document.documentElement.getAttribute('data-style'));
+            r.classicGlas = await ev(page, () => document.querySelectorAll('.g-tall, .g-size-bar').length);
+
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const ok = !!r.name && r.L.span === 2 && r.L.tall && !r.L.height && r.L.cell >= 470 + 38
+              && r.S.span === 1 && !r.S.tall && r.sheetTitle.includes(r.name)
+              && r.cols.span === 3 && r.cols.none && r.cap === 2 && !r.capOff && r.focusBack === `dialog|${A}`
+              && r.move.order[2] === second && r.move.focus === `1|${second}` && same(r.moveBack, o1)
+              && r.eye.stored && r.eye.pressed === 'true' && !r.eye.back
+              && r.phone.stored && r.phone.pressed === 'true' && !r.phone.back
+              && r.glas === r.classic && r.classicStyle !== 'glas' && r.classicGlas === 0;
+            res[`${cfg.page}-desktop`] = { ok, order: o1, ...r };
+          } catch (e) {
+            res[`${cfg.page}-desktop`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // the bar covers nothing: default sizes, then with a capped titled card, an L card and a hero sharing a row
+        for (const device of ['desktop', 'ipad', 'phone']) {
+          for (const [variant, extra] of [['default', {}], ['sized', { [cfg.heights]: { [cfg.card]: 1 }, tallSections: [`${cfg.page}:${cfg.card}`] }]]) {
+            const { page, close } = await open(device, 'glas', cfg.path, { customization: extra });
+            try {
+              await enterEdit(page);
+              await page.evaluate(() => window.scrollTo(0, 0));
+              await settleAnimations(page);
+              const bars = await ev(page, (root) => document.querySelectorAll(`${root} .overview-grid__cell--editing > .g-size-bar`).length, cfg.root);
+              const cells = await ev(page, (root) => document.querySelectorAll(`${root} .overview-grid__cell--editing`).length, cfg.root);
+              const hits = await barCovers(page, cfg.root);
+              const classic = await ev(page, (root) => [...document.querySelectorAll(`${root} .overview-grid__cell--editing > :is(.edit-badge, .overview-span-dots, .overview-resize-handle, .section-height-dots, .section-height-handle)`)]
+                .filter((e) => e.getClientRects().length).length, cfg.root);
+              res[`${cfg.page}-${device}-${variant}`] = { ok: bars > 0 && bars === cells && hits.length === 0 && classic === 0, bars, cells, hits: hits.slice(0, 6), classic };
+            } catch (e) {
+              res[`${cfg.page}-${device}-${variant}`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+      }
+      out.pagesEdit = res;
+      out.pagesEditOk = Object.values(res).every((r) => r.ok);
+    });
+
     // ---- §3.1 "Nicht verlieren" (pagesKeep) page by page: what a page could do in Klassisch it still does in Glas.
     //      Service calls are counted on the entity's last_updated (the demo stamps it on every call it applies).
     //      Glas only; where a comparison with Klassisch is named, Klassisch is opened too. ----
@@ -1002,6 +1185,155 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // Security H: the hero by alarm state (demo control), the triggered alarm card's ring; a mode reaches the code
+        // pad (Escape leaves the state), without a code one tap switches; "unlock all" asks with the count, "lock all"
+        // locks; the garage's "open all" asks, "close all" closes; the camera badge, people, doors, windows and motion
+        {
+          const { page, close } = await open(device, 'glas', '/security', { mode });
+          try {
+            const ALARM = 'alarm_control_panel.home';
+            const patch = (id, v) => ev(page, ([i, x]) => window.__hapulseDemo.patch(i, x), [id, v]);
+            const waitFor = (fn, a, timeout = 3000) => page.waitForFunction(fn, a, { timeout }).then(() => true, () => false);
+            const tok = (n) => ev(page, (name) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${name})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            }, n);
+            const [label, green, red, redRing, actDel, onBadge] = [await tok('--g-label'), await tok('--g-green-ink'),
+              await tok('--g-red-ink'), await tok('--g-red'), await tok('--g-act-del'), await tok('--g-on-badge')];
+            // the demo's hallway motion burst writes its snapshot back after 3 s and would undo a patch made meanwhile:
+            // without the sensor there is no burst (drop, wait a pending one out, drop again; it returns for the badge)
+            const HALL = 'binary_sensor.hallway_motion';
+            const hall = await entity(page, HALL);
+            await patch(HALL, null);
+            await sleep(3200);
+            await patch(HALL, null);
+
+            // the hero's word in the colour of its state
+            const hero = {};
+            for (const [st, want] of [['disarmed', label], ['armed_home', green], ['armed_away', green], ['armed_night', green],
+              ['armed_vacation', green], ['arming', label], ['pending', red], ['triggered', red]]) {
+              await patch(ALARM, { state: st });
+              await sleep(200);
+              hero[st] = (await ev(page, () => {
+                const e = document.querySelector('.security-page .security-hero-card__alarm-state');
+                return e && getComputedStyle(e).color;
+              })) === want;
+            }
+            const ring = await ev(page, () => {
+              const cs = getComputedStyle(document.querySelector('.security-page .alarm-panel-card'));
+              return `${cs.outlineStyle} ${cs.outlineWidth} ${cs.outlineColor} ${cs.outlineOffset}`;
+            });
+            const ringOk = ring === `solid 2px ${redRing} -2px`;
+            await patch(ALARM, { state: 'disarmed' });
+            await sleep(200);
+
+            // a mode with a code: the pad, its dots, Escape changes nothing
+            const modeBtn = (key) => page.locator('.security-page .alarm-btn', { hasText: DE[key] }).first();
+            await modeBtn('security.alarmPanel.action.armAway').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const pad = await ev(page, () => {
+              const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => x.querySelector('.numpad-modal'));
+              return d ? { keys: d.querySelectorAll('.numpad-key').length, text: d.textContent.slice(0, 60) } : null;
+            });
+            for (const k of ['1', '2', '3']) await page.locator('.numpad-modal .numpad-key', { hasText: k }).first().click();
+            const dots = await ev(page, () => document.querySelectorAll('.numpad-modal .numpad-modal__dot--filled').length);
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const padLeft = { state: (await entity(page, ALARM)).state, open: await page.locator('.numpad-modal').count() };
+            // without a code one tap arms
+            await patch(ALARM, { attributes: { code_format: null } });
+            await sleep(200);
+            const aw = await watchCalls(page, ALARM);
+            await modeBtn('security.alarmPanel.action.armHome').click();
+            await sleep(400);
+            const direct = { calls: await aw.stop(), state: (await entity(page, ALARM)).state };
+            const alarmOk = !!pad && pad.keys === 12 && pad.text.includes(DE['security.alarmPanel.action.armAway']) && dots === 3
+              && padLeft.state === 'disarmed' && padLeft.open === 0 && direct.calls === 1 && direct.state === 'armed_home';
+
+            // locks: a second one, "unlock all" asks with the count; Escape keeps both locked, the danger button unlocks
+            // both; "lock all" locks them without a question
+            await patch('lock.back_door', { state: 'locked', attributes: { friendly_name: 'Back Door Lock' } });
+            await sleep(300);
+            const lockStates = async () => [(await entity(page, 'lock.front_door')).state, (await entity(page, 'lock.back_door')).state].join();
+            await page.locator('.security-page .locks-section-card__ctrl-btn--unlock').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const question = await ev(page, () => document.querySelector('.lock-confirm__text')?.textContent.trim());
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const l1 = await lockStates();
+            await page.locator('.security-page .locks-section-card__ctrl-btn--unlock').click();
+            await sleep(300);
+            await settleAnimations(page);
+            await page.locator('[role="dialog"] .lock-confirm__actions .btn--danger').click();
+            await sleep(500);
+            await settleAnimations(page);
+            const l2 = await lockStates();
+            await page.locator('.security-page .locks-section-card__ctrl-btn--lock').click();
+            await sleep(500);
+            const l3 = { states: await lockStates(), asked: await page.locator('.lock-confirm__text').count() };
+            const locksOk = question === DE['security.locks.confirmUnlockAll.other'].replace('{count}', '2')
+              && l1 === 'locked,locked' && l2 === 'unlocked,unlocked' && l3.states === 'locked,locked' && l3.asked === 0;
+
+            // garage: "open all" asks (Escape keeps it closed), "close all" closes an open door at once
+            await page.locator('.security-page .garage-section-card__ctrl-btn--open').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const gAsked = await page.locator('.garage-confirm__text').filter({ visible: true }).count();
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const g1 = (await entity(page, 'cover.garage_door')).state;
+            await patch('cover.garage_door', { state: 'open', attributes: { current_position: 100 } });
+            await sleep(300);
+            await page.locator('.security-page .garage-section-card__ctrl-btn--close').click();
+            await sleep(400);
+            const g2 = (await entity(page, 'cover.garage_door')).state;
+            const garageOk = gAsked === 1 && g1 === 'closed' && g2 === 'closed';
+
+            // the camera badge: a capsule in actDel with the badge colour, sentence case
+            await patch(HALL, { state: 'on', attributes: hall.attributes });
+            const shown = await waitFor(() => !!document.querySelector('.security-page .camera-tile__motion-badge'));
+            const badge = shown ? await ev(page, () => {
+              const b = document.querySelector('.security-page .camera-tile__motion-badge');
+              const cs = getComputedStyle(b);
+              return { text: b.innerText.trim(), bg: cs.backgroundColor, color: cs.color, radius: parseFloat(cs.borderRadius) };
+            }) : null;
+            const want = DE['security.sensor.motion'];
+            const badgeOk = !!badge && badge.bg === actDel && badge.color === onBadge && badge.radius >= 10
+              && badge.text === want.charAt(0).toUpperCase() + want.slice(1);
+
+            // people, doors, windows and motion with their rows
+            const lists = await ev(page, () => {
+              const names = (sel) => [...document.querySelectorAll(sel)].filter((e) => e.getClientRects().length).map((e) => e.textContent.trim());
+              return {
+                people: names('.security-page .people-list__name'),
+                sensors: [...document.querySelectorAll('.security-page .sensor-section-card')].map((c) => ({
+                  title: c.querySelector('.sensor-section-card__title')?.textContent.trim(),
+                  rows: [...c.querySelectorAll('.motion-list__row')].map((r) => `${r.querySelector('.motion-list__name')?.textContent.trim()}|${r.querySelector('.motion-list__pill')?.textContent.trim()}`),
+                })),
+              };
+            });
+            const titles = lists.sensors.map((x) => x.title);
+            const listsOk = lists.people.length >= 2 && ['doors', 'windows', 'motion'].every((k) => titles.includes(DE[`security.section.label.${k}`]))
+              && lists.sensors.every((x) => x.rows.length >= 1 && x.rows.every((r) => !r.endsWith('|') && !r.startsWith('|')));
+
+            const ok = Object.values(hero).every(Boolean) && ringOk && alarmOk && locksOk && garageOk && badgeOk && listsOk;
+            res[`${device}-security`] = { ok, hero, ring: ringOk ? 'ok' : ring, pad, dots, padLeft, direct, question, locks: [l1, l2, l3],
+              garage: [gAsked, g1, g2], badge, lists };
+          } catch (e) {
+            res[`${device}-security`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
@@ -1041,6 +1373,55 @@ module.exports = function pages(h) {
             res[`${device}-${name}`] = { ok, ...got };
           } catch (e) {
             res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // security: without alarm, cameras, people, locks, garage doors and door, window and motion sensors (the demo's,
+        // read from the core build) the page's empty state in the window's look (§7.31)
+        {
+          const { page, close } = await open(device, 'glas', '/security', { mode });
+          try {
+            const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+            const SENSOR = new Set(['door', 'garage_door', 'window', 'opening', 'motion', 'occupancy', 'presence']);
+            const ids = Object.entries(DEMO_ENTITIES).filter(([id, e]) => /^(camera|person|lock|alarm_control_panel)\./.test(id)
+              || (id.startsWith('cover.') && ['garage', 'gate'].includes(e.attributes.device_class))
+              || (id.startsWith('binary_sensor.') && SENSOR.has(e.attributes.device_class))).map(([id]) => id);
+            const drop = () => ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            // a motion burst of the demo writes its snapshot back after 3 s: drop, wait it out, drop again
+            await drop();
+            await sleep(3300);
+            await drop();
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await ev(page, () => {
+              const tok = (n, prop = 'color') => {
+                const d = document.createElement('div');
+                d.style[prop] = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d)[prop];
+                d.remove();
+                return v;
+              };
+              const box = document.querySelector('.security-page > .empty-state');
+              if (!box) return null;
+              const icon = box.querySelector('.empty-state__icon');
+              const title = box.querySelector('.empty-state__title');
+              const desc = box.querySelector('.empty-state__description');
+              const ic = getComputedStyle(icon);
+              const t = getComputedStyle(title);
+              const dd = getComputedStyle(desc);
+              const b = icon.getBoundingClientRect();
+              return { text: title.textContent.trim(), circle: Math.round(b.width) === 56 && Math.round(b.height) === 56 && ic.borderRadius === '50%',
+                fill: ic.backgroundColor === tok('--g-fill', 'backgroundColor'),
+                glyph: ic.color === tok('--g-label-2'), title: `${t.fontWeight} ${t.fontSize}/${t.lineHeight}`, titleColor: t.color === tok('--g-label'),
+                desc: `${dd.fontSize}/${dd.lineHeight}`, descColor: dd.color === tok('--g-label-2') };
+            });
+            const ok = !!got && got.text === DE['security.empty.title'] && got.circle && got.fill && got.glyph && got.title === '600 17px/22px'
+              && got.titleColor && got.desc === '15px/20px' && got.descColor;
+            res[`${device}-security-empty`] = { ok, removed: ids.length, ...got };
+          } catch (e) {
+            res[`${device}-security-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
           }
           await close();
         }

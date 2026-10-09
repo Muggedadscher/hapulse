@@ -1,6 +1,6 @@
-/* [fork] Glas — the frame of the other pages (docs/GLAS-DESIGN.md §2.13, §5.1, plan docs/glas/PLAN-ETAPPE-5.md K89,
-   K90): section titles without capitals, card titles above the surface, columns by content width, the heroes. The
-   contents of the cards (lists, controls) follow per page. */
+/* [fork] Glas — the frame of the other pages (docs/GLAS-DESIGN.md §2.13, §5.1, §7.31, plan docs/glas/PLAN-ETAPPE-5.md
+   K89, K90): section titles without capitals, card titles above the surface, columns by content width, the heroes, the
+   pages' empty states. The contents of the cards (lists, controls) follow per page. */
 
 /* ---- Section titles (K89): no capitals. In a room a title 20/25 600 like the card titles on the overview, in the
    settings a group title 15/20 600 in `label2` above its list. The hairline beside them falls away. ---- */
@@ -401,17 +401,18 @@
 }
 
 /* A grid whose cards all span two columns or more (the system page; automations filtered to one category) would leave a
-   third of every row empty in three columns: there it takes four, as Klassisch does on a wide screen. */
+   third of every row empty in three columns: there it takes four, as Klassisch does on a wide screen. The grid's
+   children are the cells, in edit mode their sortable wrappers (which carry the span then). */
 @container g-page (min-width: 900px) {
   :root[data-style='glas']
     :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
-    > .overview-grid:not(:has(> .overview-grid__cell:not([class*='overview-grid__cell--span-']))) {
+    > .overview-grid:not(:has(> :not([class*='overview-grid__cell--span-']))) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   :root[data-style='glas']
     :is(.security-page, .energy-page, .system-page, .automations-page, .scenes-page)
-    > .overview-grid:not(:has(> .overview-grid__cell:not([class*='overview-grid__cell--span-'])))
+    > .overview-grid:not(:has(> :not([class*='overview-grid__cell--span-'])))
     > .overview-grid__cell--span-3 {
     grid-column: span 3;
   }
@@ -434,10 +435,15 @@
 
 /* A card without a title above (hero, alarm) next to cards with one: from three columns on (where a hero shares its
    row) its surface starts on the line of theirs; the lane above it stays free like a row's title lane (44 + 6). A card
-   that takes the whole row keeps its place: span 3 does in three columns, span 4 always. */
+   that takes the whole row keeps its place: span 3 does in three columns, span 4 always. In edit mode the span sits on
+   the cell's wrapper; edit.css draws the lane there (with the bar in it). */
 @container g-page (min-width: 900px) {
   :root[data-style='glas']
-    .overview-grid__cell:not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    .overview-grid__cell:not(
+      .overview-grid__cell--editing,
+      .overview-grid__cell--span-3,
+      .overview-grid__cell--span-4
+    )
     :is(
       .security-page .security-hero-card,
       .security-page .alarm-panel-card,
@@ -452,7 +458,7 @@
 
 @container g-page (min-width: 1180px) {
   :root[data-style='glas']
-    .overview-grid__cell--span-3
+    .overview-grid__cell.overview-grid__cell--span-3
     :is(
       .security-page .security-hero-card,
       .security-page .alarm-panel-card,
@@ -679,4 +685,45 @@
   font: 400 13px / 18px var(--g-font);
   letter-spacing: normal;
   text-transform: none;
+}
+
+/* ---- A page with nothing to show (§7.31; security, devices, pool, music): the window's empty state — the symbol in a
+   circle 56 `fill`, title 17/22 600 (its text as in Klassisch, from the locales), explanation 15/20 `label2`. The page
+   keeps the classic room around it. ---- */
+:root[data-style='glas'] .page > .empty-state {
+  gap: 0;
+}
+
+:root[data-style='glas'] .page > .empty-state > .empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 0 12px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  opacity: 1;
+}
+
+:root[data-style='glas'] .page > .empty-state > .empty-state__icon > svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.75;
+}
+
+:root[data-style='glas'] .page > .empty-state > .empty-state__title {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .page > .empty-state > .empty-state__description {
+  max-width: 36ch;
+  margin-top: 4px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .page > .empty-state > .empty-state__action {
+  margin-top: 16px;
 }

@@ -92,3 +92,206 @@
     outline-offset: 2px;
   }
 }
+
+/* ---- Security page (K94, §7.30): each card's list reaches its surface's edges and clips at its rounded corners;
+   rows with their own inset 16, separators 0.5 px from the text start, none after the last row. People, doors,
+   windows and motion are the whole surface below the title; the rows of the locks and garage doors are the windows'
+   (sheet-content.css) below the "all" buttons. ---- */
+:root[data-style='glas'] .security-page :is(.people-list-card__list, .sensor-section-card__body) {
+  margin: -16px -16px -16px;
+  border-radius: var(--radius-card);
+}
+
+:root[data-style='glas'] .security-page :is(.locks-section-card .locks-list, .garage-section-card .garage-list) {
+  margin: 0 -16px -16px;
+  border: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: none;
+  box-shadow: none;
+}
+
+:root[data-style='glas'] .security-page :is(.locks-row, .garage-row) {
+  --g-row-sep: 68px;
+  padding-inline: 16px;
+}
+
+/* People: rows 62, avatar 40 (at home in the accent's soft tone) with the zone dot 12 on its lower right edge, the
+   zone greenInk 600 at home, the time 13 label2 */
+:root[data-style='glas'] .security-page .people-list__row {
+  gap: 12px;
+  min-height: 62px;
+  padding: 0 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .security-page .people-list__row + .people-list__row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 68px 0 / calc(100% - 68px) 0.5px;
+}
+
+:root[data-style='glas'] .security-page .people-list__avatar {
+  width: 40px;
+  height: 40px;
+}
+
+:root[data-style='glas'] .security-page :is(.people-list__avatar-img, .people-list__avatar-fallback) {
+  width: 40px;
+  height: 40px;
+  border: 0;
+}
+
+:root[data-style='glas'] .security-page .people-list__avatar-fallback {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .people-list__row:has(.people-list__location--home) .people-list__avatar-fallback {
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .security-page .people-list__status-dot {
+  right: -1px;
+  bottom: -1px;
+  width: 12px;
+  height: 12px;
+  border: 0;
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+:root[data-style='glas'] .security-page .people-list__status-dot--home {
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .security-page .people-list__status-dot--away {
+  background: var(--g-label-3);
+}
+
+:root[data-style='glas'] .security-page .people-list__info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .security-page .people-list__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .people-list__location {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .people-list__location--home {
+  color: var(--g-green-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .security-page .people-list__time {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* Doors, windows, motion: rows 62, circle 36 (an open door red, an open window and motion yellow, as in Klassisch),
+   name 17/600 and room 13; on the right the state as a pill 26 — open and motion in the soft tone with the dot, closed
+   and quiet in `fill` with a green dot — and the time below it */
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__row {
+  gap: 12px;
+  min-height: 62px;
+  padding: 8px 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__row + .motion-list__row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 64px 0 / calc(100% - 64px) 0.5px;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__icon--active {
+  background: var(--g-warn-soft);
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__icon--danger {
+  background: var(--g-red-soft);
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__name-col {
+  gap: 0;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__room {
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__right {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill {
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  font: 400 13px / 18px var(--g-font);
+  text-transform: capitalize;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--clear {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+/* the quiet pill has no dot in the markup: a green one, as in the doors window */
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--clear::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--active {
+  background: var(--g-warn-soft);
+  color: var(--g-warn-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--danger {
+  background: var(--g-red-soft);
+  color: var(--g-red-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__dot {
+  width: 7px;
+  height: 7px;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__time {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill {
+    border: 1px solid CanvasText;
+  }
+}

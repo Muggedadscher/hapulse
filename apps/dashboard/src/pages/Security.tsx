@@ -25,6 +25,7 @@ import { useNvrConfigured } from '../nvr/config'; // [fork]
 import { useCameraSource } from '../nvr/cameraSource'; // [fork]
 import { GarageSectionCard } from '../components/garage/GarageSectionCard'; // [fork]
 import { withDefaultSlot } from '../lib/defaultSlot'; // [fork]
+import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K96)
 import type { HassEntity } from '@hapulse/core';
 import './Page.css';
 import './Security.css';
@@ -112,6 +113,21 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     hideMobile: 'security.section.hideMobile.motion',
     showMobile: 'security.section.showMobile.motion',
   },
+};
+
+// [fork] Glas edit bar (K96): the card's name for the bar's group and the size window — the cards' titles, the same
+// words as the hide labels above (the hero is their "Overview")
+const SECTION_NAME_KEYS: Record<SectionId, TKey> = {
+  security_hero: 'nav.overview',
+  alarm_panel: 'security.alarmPanel.fallbackName',
+  cameras: 'home.security.camerasLabel',
+  nvr: 'glas.edit.card.nvr',
+  people: 'security.people.title',
+  locks: 'security.locks.title',
+  garage: 'garage.title',
+  doors: 'security.section.label.doors',
+  windows: 'security.section.label.windows',
+  motion: 'security.section.label.motion',
 };
 
 const MAX_COLS = 4;
@@ -334,6 +350,19 @@ export function Security() {
     updateCustomization({ securitySectionOrder: newOrder });
   }, [updateCustomization]);
 
+  // [fork] Glas edit bar (plan docs/glas/PLAN-ETAPPE-5.md K96): S / M / L, ‹ › and "⋯" as on the overview
+  const glasEdit = useGlasSectionEdit({
+    page: 'security',
+    spansField: 'securitySectionSpans',
+    heightsField: 'securitySectionHeights',
+    visibleIds,
+    onReorder: handleReorder,
+    spanOf: (id) => getSpan(id, securitySectionSpans),
+    heightOf: (id) => getHeightLevel(id, securitySectionHeights),
+    onSpan: handleSpanChange,
+    nameOf: (id) => t(SECTION_NAME_KEYS[id as SectionId]),
+  });
+
   // Empty state
   if (totalEntities === 0 && !hasNvr) { // [fork] an NVR alone is enough for the page
     return (
@@ -442,6 +471,7 @@ export function Security() {
           const sc          = spanClass(currentSpan);
           const currentHeight = getHeightLevel(id, securitySectionHeights);
           const hc            = heightClass(currentHeight);
+          const tall          = glasEdit.isTall(id); // [fork] Glas L: taller from 900 px (K96); a height cap wins
           const widget      = renderWidget(id);
 
           if (!widget) return null;
@@ -450,7 +480,7 @@ export function Security() {
             return (
               <div
                 key={id}
-                className={['overview-grid__cell', sc, hc, isHidden ? 'overview-grid__cell--hidden' : '', isMobileHidden ? 'section-mobile-hidden' : ''].filter(Boolean).join(' ')}
+                className={['overview-grid__cell', sc, hc, isHidden ? 'overview-grid__cell--hidden' : '', isMobileHidden ? 'section-mobile-hidden' : '', tall ? 'g-tall' : '' /* [fork] */].filter(Boolean).join(' ')}
                 data-section={id}
               >
                 {widget}
@@ -459,7 +489,7 @@ export function Security() {
           }
 
           return (
-            <SortableItem key={id} id={id} editMode={editMode} className={sc}>
+            <SortableItem key={id} id={id} editMode={editMode} className={tall ? `${sc} g-tall` : sc}>{/* [fork] g-tall */}
               <div
                 className={['overview-grid__cell', 'overview-grid__cell--editing', hc, isHidden ? 'overview-grid__cell--hidden' : ''].filter(Boolean).join(' ')}
                 data-section={id}
@@ -479,11 +509,20 @@ export function Security() {
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />
                 <HeightDots level={currentHeight} />
                 <HeightHandle id={id} level={currentHeight} onCommit={handleHeightChange} />
+                {glasEdit.renderBar(id, { // [fork] Glas: one bar instead of the badges and handles above (K96)
+                  hidden: isHidden,
+                  hideLabel: t(SECTION_TOGGLE_KEYS[id].hide),
+                  onToggleHidden: () => handleToggleHidden(id),
+                  mobileHidden: isMobileHidden,
+                  mobileLabel: t(SECTION_TOGGLE_KEYS[id].hideMobile),
+                  onToggleMobileHidden: () => handleToggleMobileHidden(id),
+                })}
               </div>
             </SortableItem>
           );
         })}
       </SortableGrid>
+      {glasEdit.sheet}{/* [fork] Glas "⋯": the classic values of one card (K96) */}
     </div>
   );
 }

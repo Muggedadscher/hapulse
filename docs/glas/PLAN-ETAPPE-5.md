@@ -274,8 +274,7 @@ und übernommen, außer wo anders vermerkt.
   Handy 2 statt 3 Spalten, Nebenbefund 19).
 - **Szenen** wie auf der Übersicht (gemeinsame Regeln in `home-cards.css`, Ton aus `glasSceneTone` in `Room.tsx`), am
   Handy in zwei Spalten. Der Raum kann ohne `ScenesCard.css` geladen werden (eigener Chunk); die Glas-Kachel bringt ihre
-  Grundregeln deshalb selbst mit (Klassisch: Nebenbefund 17). **Abweichung:** kein „Aktiv“ im Raum (Klassisch zeigt es
-  dort auch nicht).
+  Grundregeln deshalb selbst mit (Klassisch: Nebenbefund 17). Kein „Aktiv“ im Raum (K88).
 - **Medien:** Cover-Fläche im Ton Blau, während es spielt; Play und Lautstärke wie §7.2. **Kamera:** Platzhalter in
   `fill`.
 - **Bearbeiten:** kein gestrichelter Umriss; Griff als Kreis 32 `fill` (Treffer 44), Breiten-Punkte 14 × 6, Ziehgriff
@@ -292,3 +291,37 @@ und übernommen, außer wo anders vermerkt.
   gedimmt, Rollladen auf/Stopp/zu mit Mini-Rollo, Tor fragt beim Öffnen, Schloss mit Code bis zur Eingabe, Kamera,
   Knopf, Sauger) und `pagesEmpty` (Raum nicht gefunden, Raum ohne Geräte). Der Selektor-Wächter kennt `cards.css` und
   das Ventilator-Symbol als Marker.
+
+### 7.9 Sicherheit (H1–H13, K93, K94, K96)
+
+- Neue Datei `security.css`: Alarm-Karte, „Alle …“-Knöpfe und Kamera-Kacheln. Kopf und Modi der Alarm-Karte sowie die
+  Zeilen der Schlösser und Tore teilen sich die Regeln mit den Fenstern (`sheet-content.css`, `:is(.modal-body,
+  .security-page)`), die Listen stehen in `lists.css`.
+- **Alarm-Karte:** Kopf wie im Alarm-Fenster (Kreis 56, Name 13 `label2`, Zustand 22/28 700), Modi in zwei Spalten
+  52 hoch, Radius 18, auf der Karte in `fill`, der gewählte `accentSoft` mit Ring 2 px. **Abweichung:** Ausgelöst trägt
+  die Karte einen roten Ring 2 px (Klassisch will das und zeigt es nicht, Nebenbefund 6). Der Ring ist eine Kontur
+  innen an der Kante, kein Schatten: eine Schattenliste mit `var(--shadow-card)` ist im Dunkeln ungültig (dort `none`).
+- **„Alle verriegeln/entriegeln“, „Alle schließen/öffnen“:** „plain“ 44 in `fill`, 15/20 600; die Trennlinie darunter
+  entfällt (die Zeilen haben ihre eigenen ab dem Text). Die Bestätigung aus Etappe 3 bleibt. Die Schloss-Zeile hat wie
+  im Fenster einen Knopf.
+- **Listen (K94):** Personen (Avatar 40, zu Hause im Akzent-Soft-Ton mit Punkt 12, Zone `greenInk` 600), Türen, Fenster
+  und Bewegung (Zeilen 62, Kreis 36; offene Tür rot, offenes Fenster und Bewegung gelb wie in Klassisch; Zustand als
+  Pille 26: offen und Bewegung im Soft-Ton mit Punkt, zu und frei in `fill` mit grünem Punkt). **Abweichung:** Die
+  Pillen beginnen groß („Geschlossen“; Klassisch klein aus den Locales).
+- **Kamera-Kacheln:** Radius 18, ohne Rahmenlinie, Name 15/20 600, Raum 13 `label2`, Platzhalter in `fill`; „Bewegung“
+  als Kapsel `actDel` mit Weiß, Satzanfang groß (Klassisch: Weiß auf `--danger`, 2,6–4,2:1, Nebenbefund 20).
+- **Bearbeiten (K96):** dieselbe Leiste wie auf der Übersicht (S/M/L, ‹ ›, Auge, Handy, „⋯“) über `useGlasSectionEdit`
+  in `Security.tsx`; Namen aus den Kartentiteln (Hero „Übersicht“, NVR `glas.edit.card.nvr`). `edit.css` gilt für
+  `:is(.home-page, .security-page)`. Karten ohne Titel (Hero, Alarm, Kameras, NVR) tragen die Leiste über der Fläche;
+  ab 900 px auf der Linie der Nachbar-Leisten, wenn sie eine Zeile mit einer Titel-Karte teilen. **Rahmen:** Die
+  Vier-Spalten-Regel und die bündigen Flächen (§7.7) kennen die Hüllen des Bearbeitens (sonst sprang das Raster beim
+  Einstieg von 3 auf 4 Spalten).
+- **Leerzustand der Seite (§7.31):** wie im Fenster (Kreis 56 `fill`, Symbol 28 `label2`, Titel 17/22 600, Text 15/20
+  `label2`); dieselbe Regel gilt für Geräte, Pool und Musik (`.page > .empty-state`).
+- Kontrastpaare: `warnInk` auf der Karte und auf `warnSoft` über der Karte (Bewegung, offenes Fenster, Warnungen).
+- Prüfungen: `pagesEdit` (Name, S/L, „⋯“ mit Spalten und Höhe, Fokus zurück, ‹ › mit Enter, Auge und Handy, Wechsel nach
+  Klassisch mit gleichem Raster; die Leiste deckt bei Desktop/iPad/Handy nichts zu, auch mit Höhe und L), `pagesKeep`
+  (Hero je Alarmzustand, Ring, Ziffernfeld bis zum Code und Esc ohne Folgen, ohne Code ein Tipp, „Alle entriegeln“ mit
+  Anzahl, Esc und Bestätigung, „Alle verriegeln“ ohne Frage, Garage „Alle öffnen“ fragt und „Alle schließen“ schließt,
+  Badge, Personen und Sensor-Listen) und `pagesEmpty` (Seite ohne Sicherheits-Entitäten). Die Bewegungs-Salve der Demo
+  schreibt nach 3 s ihren alten Stand zurück; die Prüfung nimmt den Flur-Sensor vorher heraus.

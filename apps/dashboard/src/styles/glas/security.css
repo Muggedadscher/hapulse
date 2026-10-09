@@ -1,0 +1,162 @@
+/* [fork] Glas — the security page's own parts (docs/GLAS-DESIGN.md §7.29, plan docs/glas/PLAN-ETAPPE-5.md K90, K93):
+   the alarm card, the "all" buttons of the locks and garage doors and the camera tiles. The card titles and the hero
+   are the frame (pages.css); the alarm card's head and modes and the rows of the locks and garage doors are the
+   window's (sheet-content.css, shared since stage 5); the lists sit in lists.css. */
+
+/* ---- Alarm card (K93): the head like the alarm window (circle 56, name 13 label2, state 22/28 700), the modes in two
+   columns, 52 high, radius 18 — on the card in `fill`, the chosen one accentSoft with a 2 px accent ring. A triggered
+   alarm rings the card in red (Klassisch means to and does not show it, side finding 6). ---- */
+:root[data-style='glas'] .security-page .alarm-panel-card {
+  --g-alarm-mode: var(--g-fill);
+  padding: 16px;
+}
+
+/* The ring is an outline inside the edge: a shadow list with var(--shadow-card) is void in the dark, where that token
+   is `none`. */
+:root[data-style='glas'] .security-page .alarm-panel-card--triggered {
+  border-color: transparent;
+  box-shadow: var(--shadow-card);
+  outline: 2px solid var(--g-red);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .security-page .alarm-panel-card__inner {
+  gap: 16px;
+}
+
+:root[data-style='glas'] .security-page .alarm-panel-card__state-section {
+  gap: 14px;
+}
+
+/* ---- "Alle verriegeln / entriegeln", "Alle schließen / öffnen" (K93): plain 44 — fill, label, 15/20 600. The
+   confirmation of stage 3 stays. The classic line below them falls away: the rows' own separators start at the
+   text. ---- */
+:root[data-style='glas'] .security-page :is(.locks-section-card__controls, .garage-section-card__controls) {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .security-page :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn) {
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  transition:
+    background-color 150ms ease,
+    opacity 150ms ease,
+    transform 100ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .security-page :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn) > svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn):hover:not(:disabled) {
+  border: 0;
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .security-page :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn):disabled {
+  opacity: 0.4;
+}
+
+:root[data-style='glas']
+  .security-page
+  :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .security-page :is(.locks-section-card__divider, .garage-section-card__divider) {
+  display: none;
+}
+
+/* ---- Camera tiles (K90): radius 18, no frame line, the name 15/20 600 under the picture, the room 13 label2; the
+   placeholder in `fill`. "Bewegung" is a capsule in actDel with white text (Klassisch: white on --danger, 2.8:1 in
+   the dark), sentence case. ---- */
+:root[data-style='glas'] .security-page .camera-tile {
+  border-radius: 18px;
+}
+
+:root[data-style='glas'] .security-page :is(.camera-tile__frame, .camera-tile__placeholder) {
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .security-page .camera-tile__placeholder {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .security-page .camera-tile__footer {
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-top: 0;
+}
+
+:root[data-style='glas'] .security-page .camera-tile__name {
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .camera-tile__room {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .camera-tile__motion-badge {
+  top: 10px;
+  right: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--g-act-del);
+  color: var(--g-on-badge);
+  font: 600 13px / 18px var(--g-font);
+  letter-spacing: normal;
+  text-transform: capitalize;
+}
+
+:root[data-style='glas'] .security-page .camera-tile--pressable {
+  transition: transform var(--g-d-snappy) var(--g-spring-snappy);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .security-page .camera-tile--pressable:active {
+  transform: scale(0.98);
+}
+
+:root[data-style='glas'] .security-page .camera-tile--pressable:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* Forced colours (GLAS-DESIGN §3.7): the buttons whose only edge is their fill get one; the chosen mode, the badge and
+   the triggered alarm's ring keep a Highlight edge. */
+@media (forced-colors: active) {
+  :root[data-style='glas']
+    .security-page
+    :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn, .alarm-btn:not(.alarm-btn--active)) {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] .security-page .alarm-btn.alarm-btn--active {
+    border: 2px solid Highlight;
+  }
+
+  :root[data-style='glas'] .security-page .camera-tile__motion-badge {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .security-page .alarm-panel-card--triggered {
+    outline-color: Highlight;
+  }
+}

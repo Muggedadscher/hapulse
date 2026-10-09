@@ -1,5 +1,5 @@
-/* [fork] Glas — edit mode of the overview (plan docs/glas/PLAN-ETAPPE-4.md K78, GLAS-DESIGN §7.32, sketch
-   glas/screens/g5d-bearbeiten). The other pages keep the classic badges and handles until stage 5.
+/* [fork] Glas — edit mode of the overview and the pages with a card grid (plans docs/glas/PLAN-ETAPPE-4.md K78,
+   PLAN-ETAPPE-5.md K96, GLAS-DESIGN §7.32, sketch glas/screens/g5d-bearbeiten).
 
    One bar per card (components/glas/edit/SizeBar.tsx) instead of the classic badges, dots and handles, which stay in
    the DOM and are switched off here. No dashed outline, no extra margins; a hidden card is drawn at .4, its bar not.
@@ -11,6 +11,8 @@
      and above the hints while they are a row of capsules.
    - below 900 px only the eye and the phone, at the right end of the title row (the link is hidden in edit mode);
      the main room has its title inside the card there, so its bar sits above it.
+   - above a card without a title (the security hero, alarm, cameras and NVR) — from 900 px, where such a card keeps
+     the lane of its titled neighbours (pages.css), in that lane on the line of their bars.
    L ("taller", core sizePresets.ts) = a minimum height of 470 px for the cell from 900 px; Klassisch and the phone
    ignore it. */
 
@@ -23,32 +25,46 @@
 
 /* ---- classic affordances off, the cell without its margins and outline ---- */
 
-:root[data-style='glas'] .home-page .overview-grid__cell--editing {
+:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing {
   margin: 0;
 }
 
 :root[data-style='glas']
-  .home-page
+  :is(.home-page, .security-page)
   .overview-grid__cell--editing
   > :is(.edit-badge, .overview-span-dots, .overview-resize-handle, .section-height-dots, .section-height-handle) {
   display: none;
 }
 
-:root[data-style='glas'] .home-page .overview-grid__cell--editing .edit-section-outline {
+:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing .edit-section-outline {
   outline: none;
 }
 
-:root[data-style='glas'] .home-page .overview-grid__cell--editing.overview-grid__cell--hidden {
+:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing.overview-grid__cell--hidden {
   opacity: 1;
 }
 
-:root[data-style='glas'] .home-page .overview-grid__cell--editing.overview-grid__cell--hidden > .edit-section-outline {
+:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing.overview-grid__cell--hidden > .edit-section-outline {
   opacity: 0.4;
+}
+
+/* a security card without a title (hero, alarm, cameras, NVR): the bar above it — from 900 px in a shared row it moves
+   into the card's lane instead (below) */
+:root[data-style='glas']
+  .security-page
+  .overview-grid__cell--editing:is(
+    [data-section='security_hero'],
+    [data-section='alarm_panel'],
+    [data-section='cameras'],
+    [data-section='nvr']
+  )
+  > .edit-section-outline {
+  margin-top: 48px;
 }
 
 /* links in the card heads are hidden while editing (§7.32) */
 :root[data-style='glas']
-  .home-page
+  :is(.home-page, .security-page)
   .overview-grid__cell--editing
   :is(
     .scenes-card__link,
@@ -187,7 +203,16 @@
       .hints-card__header,
       .g-card-head
     ),
-  :root[data-style='glas'] .home-page .overview-grid__cell--editing .rooms-quick-section > .section-label {
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing .rooms-quick-section > .section-label,
+  :root[data-style='glas']
+    .security-page
+    .overview-grid__cell--editing
+    :is(
+      .people-list-card__header,
+      .locks-section-card__header,
+      .garage-section-card__title-row,
+      .sensor-section-card__header
+    ) {
     padding-right: 88px;
   }
 
@@ -196,18 +221,22 @@
     margin-top: 48px;
   }
 
-  /* a capped card without its own scroll body has the title inside the surface: the bar at its padding */
+  /* a capped card without its own scroll body has the title inside the surface: the bar at its padding (the security
+     cards have no scroll body; there only the titled ones, the others keep the bar above) */
+  :root[data-style='glas'] .home-page .overview-grid__cell--editing[class*='section-h-']:not(:has(.card-scroll-body)) > .g-size-bar,
   :root[data-style='glas']
-    .home-page
-    .overview-grid__cell--editing[class*='section-h-']:not(:has(.card-scroll-body))
+    .security-page
+    .overview-grid__cell--editing[class*='section-h-']:has(
+      > .edit-section-outline > :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card)
+    )
     > .g-size-bar {
     top: 6px;
     right: 12px;
   }
 
-  /* its pinned title row (home.css) keeps clear of the bar: 12 + 88 */
+  /* its pinned title row (home.css, pages.css) keeps clear of the bar: 12 + 88 */
   :root[data-style='glas']
-    .home-page
+    :is(.home-page, .security-page)
     .overview-grid__cell--editing[class*='section-h-']
     :is(
       .scenes-card,
@@ -218,7 +247,11 @@
       .waste-card,
       .activity-card,
       .nvr-home,
-      .hints-card
+      .hints-card,
+      .people-list-card,
+      .locks-section-card,
+      .garage-section-card,
+      .sensor-section-card
     ):not(:has(.card-scroll-body))
     > :first-child {
     padding-right: 100px;
@@ -261,6 +294,13 @@
     --g-card-gap: 44px;
   }
 
+  :root[data-style='glas']
+    .security-page
+    .overview-grid__cell--editing
+    :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card) {
+    --g-card-gap: 44px;
+  }
+
   :root[data-style='glas'] .home-page .overview-grid__cell--editing .g-energy > .g-card-head {
     margin-bottom: 44px;
   }
@@ -276,12 +316,23 @@
     inset: 88px 0 0;
   }
 
-  /* title inside the surface (capped, no own scroll body) or the hints as a row of capsules: the bar above */
+  /* title inside the surface (capped, no own scroll body), the hints as a row of capsules or no title at all: the bar
+     above */
   :root[data-style='glas']
     .home-page
     .overview-grid__cell--editing:is(
       [class*='section-h-']:not(:has(.card-scroll-body)),
       :has(.hints-card__list)
+    )
+    > .g-size-bar,
+  :root[data-style='glas']
+    .security-page
+    .overview-grid__cell--editing:is(
+      [class*='section-h-'],
+      [data-section='security_hero'],
+      [data-section='alarm_panel'],
+      [data-section='cameras'],
+      [data-section='nvr']
     )
     > .g-size-bar {
     top: 0;
@@ -293,7 +344,8 @@
       [class*='section-h-']:not(:has(.card-scroll-body)),
       :has(.hints-card__list)
     )
-    > .edit-section-outline {
+    > .edit-section-outline,
+  :root[data-style='glas'] .security-page .overview-grid__cell--editing[class*='section-h-'] > .edit-section-outline {
     margin-top: 48px;
   }
 
@@ -316,18 +368,22 @@
 
   /* L: taller (the bar's 38 on top while editing). The cards' classic 400-px cap goes; a scrolling list fills the
      height instead of pushing it (flex basis 0). */
-  :root[data-style='glas'] .home-page .overview-grid__cell.g-tall {
+  :root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell.g-tall {
     min-height: 470px;
   }
 
-  :root[data-style='glas'] .home-page .overview-grid > .g-tall > .overview-grid__cell--editing {
+  :root[data-style='glas'] :is(.home-page, .security-page) .overview-grid > .g-tall > .overview-grid__cell--editing {
     min-height: calc(470px + 38px);
   }
 
   :root[data-style='glas']
     .home-page
     .g-tall
-    :is(.devices-card, .activity-card, .climate-card, .blinds-card, .waste-card, .nvr-home) {
+    :is(.devices-card, .activity-card, .climate-card, .blinds-card, .waste-card, .nvr-home),
+  :root[data-style='glas']
+    .security-page
+    .g-tall
+    :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card) {
     max-height: none;
   }
 
@@ -335,6 +391,76 @@
     flex: 1 1 0;
     min-height: 0;
     max-height: none;
+  }
+}
+
+/* A security card without a title that keeps the lane of its titled neighbours (pages.css; in edit mode the span sits on
+   the wrapper): the bar in the lane on the line of their bars, the surface on the line of theirs (title 44 + gap 44). */
+@container g-page (min-width: 900px) {
+  :root[data-style='glas']
+    .security-page
+    .overview-grid
+    > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    > .overview-grid__cell--editing:is([data-section='security_hero'], [data-section='alarm_panel']):not(
+      [class*='section-h-']
+    )
+    > .g-size-bar {
+    top: 38px;
+  }
+
+  :root[data-style='glas']
+    .security-page
+    .overview-grid
+    > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    > .overview-grid__cell--editing:is([data-section='security_hero'], [data-section='alarm_panel']):not(
+      [class*='section-h-']
+    )
+    > .edit-section-outline {
+    margin-top: 0;
+  }
+
+  :root[data-style='glas']
+    .security-page
+    .overview-grid
+    > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    > .overview-grid__cell--editing:not([class*='section-h-'])
+    > .edit-section-outline
+    > :is(.security-hero-card, .alarm-panel-card) {
+    margin-top: 88px;
+  }
+}
+
+@container g-page (min-width: 1180px) {
+  :root[data-style='glas']
+    .security-page
+    .overview-grid
+    > .overview-grid__cell--span-3
+    > .overview-grid__cell--editing:is([data-section='security_hero'], [data-section='alarm_panel']):not(
+      [class*='section-h-']
+    )
+    > .g-size-bar {
+    top: 38px;
+  }
+
+  :root[data-style='glas']
+    .security-page
+    .overview-grid
+    > .overview-grid__cell--span-3
+    > .overview-grid__cell--editing:is([data-section='security_hero'], [data-section='alarm_panel']):not(
+      [class*='section-h-']
+    )
+    > .edit-section-outline {
+    margin-top: 0;
+  }
+
+  :root[data-style='glas']
+    .security-page
+    .overview-grid
+    > .overview-grid__cell--span-3
+    > .overview-grid__cell--editing:not([class*='section-h-'])
+    > .edit-section-outline
+    > :is(.security-hero-card, .alarm-panel-card) {
+    margin-top: 88px;
   }
 }
 
