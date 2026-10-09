@@ -8,8 +8,10 @@
 // (the pool's mode, threshold, schedule, restart) are read from the demo's call log (`__hapulseDemo.calls()`).
 
 module.exports = function pages(h) {
-  const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
+  const { DE, DEVICES, ABORTED, settleAnimations, seedScript, run, isGlas } = h;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  // the energy checks' date (as `shoot`: 2026-10-06 12:30 Berlin): the demo's figures depend on the hour
+  const ENERGY_AT = Date.parse('2026-10-06T10:30:00Z');
 
   /**
    * The classic switches that Glas draws as the iOS switch (K91), where the demo shows them. `box` is the control a tap
@@ -83,6 +85,8 @@ module.exports = function pages(h) {
       });
       await ctx.route((u) => !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(u.href), (r) => r.abort());
       await ctx.addInitScript(seedScript({ demo: true, mode: extra.mode || 'light', style, strength: 'clear', customization: extra.customization }));
+      // a fixed date (timers keep running): the demo's energy figures depend on the hour, two documents must agree
+      if (extra.fixedTime) await ctx.clock.setFixedTime(extra.fixedTime);
       const page = await ctx.newPage();
       const errors = [];
       page.on('pageerror', (e) => errors.push('exc: ' + String(e.message).slice(0, 200)));
@@ -437,12 +441,14 @@ module.exports = function pages(h) {
 
     // ---- K89 card titles on every page: above the surface (the card itself has no background, its ::before surface
     //      starts below the 44-px head + 6-px gap, the title (20, label) sits above it, the first body part 16 px
-    //      inside it, the icon chip is a bare symbol), or in the surface where the head carries a control or the card
-    //      is only its head (pool schedule, the music page, water with one meter). Glas only. ----
+    //      inside it, the icon chip is a bare symbol), or in the surface where the head carries a control (pool
+    //      schedule, the music page). Water with one meter and gas carry their figure in the surface. Glas only. ----
     await block('pagesCardTitles', async () => {
       const res = {};
-      // [page, card, title, chip, where, list]: `list` = the body is an inset list (K94) that fills the surface from its
-      // top edge; any other body starts at least 16 below it
+      // [page, card, title, chip, where, list, body]: `list` = the body is an inset list (K94) that fills the surface from
+      // its top edge; any other body starts at least 16 below it. `body` = selectors tried in turn for the body when it
+      // is not the card's second child (water and gas: the list of meters, or with one meter its figure, whose header
+      // is `display: contents`)
       const CARDS = [
         ['/security', '.people-list-card', '.people-list-card__title', '.people-list-card__icon-chip', 'above', true],
         ['/security', '.locks-section-card', '.locks-section-card__title', '.locks-section-card__icon-chip', 'above'],
@@ -451,7 +457,7 @@ module.exports = function pages(h) {
         ['/energy', '.energy-sources', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-devices', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-solar', '.energy-card__title', '.energy-card__icon-chip', 'above'],
-        ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'inside'],
+        ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'above', false, ['.energy-kv-list', '.energy-card__sub']],
         ['/pool', '.pool-card:not(.pool-schedule, .pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
         ['/pool', ':is(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above', true],
         ['/pool', '.pool-schedule', '.pool-card__title', '.pool-card__icon', 'inside'],
@@ -478,7 +484,7 @@ module.exports = function pages(h) {
               document.body.appendChild(d);
               const label = getComputedStyle(d).color;
               d.remove();
-              return specs.flatMap(([, sel, titleSel, chipSel, where, list]) => {
+              return specs.flatMap(([, sel, titleSel, chipSel, where, list, bodySels]) => {
                 const els = [...document.querySelectorAll(`.page ${sel}`)].filter((e) => e.getClientRects().length);
                 if (!els.length) return [{ sel, missing: true }];
                 return els.map((card) => {
@@ -487,7 +493,8 @@ module.exports = function pages(h) {
                   const title = card.querySelector(titleSel);
                   const tr = title.getBoundingClientRect();
                   const tcs = getComputedStyle(title);
-                  const body = card.children[1]?.getBoundingClientRect();
+                  const bodyEl = bodySels ? bodySels.map((b) => card.querySelector(b)).find(Boolean) : card.children[1];
+                  const body = bodyEl?.getBoundingClientRect();
                   const before = getComputedStyle(card, '::before');
                   const chip = card.querySelector(chipSel);
                   const base = { sel, where, size: tcs.fontSize, label: tcs.color === label,
@@ -770,6 +777,8 @@ module.exports = function pages(h) {
     const EDIT_PAGES = [
       { page: 'security', path: '/security', root: '.security-page', spans: 'securitySectionSpans', heights: 'securitySectionHeights',
         hidden: 'hiddenSecuritySections', mobile: 'mobileHiddenSecuritySections', card: 'people' },
+      { page: 'energy', path: '/energy', root: '.energy-page', spans: 'energySectionSpans', heights: 'energySectionHeights',
+        hidden: 'hiddenEnergySections', mobile: 'mobileHiddenEnergySections', card: 'devices' },
     ];
     /** Edit mode: the header capsule, on a phone in Glas the avatar menu. */
     const enterEdit = async (page) => {
@@ -1072,6 +1081,99 @@ module.exports = function pages(h) {
           }
           await close();
         }
+      }
+      // The energy period: a view, so a tap and the arrows choose at once; the hero shows the figure of Klassisch's tab.
+      // While a period loads (the demo holds its statistics: energyHold) Klassisch swaps the page for its loading line
+      // and the focus is gone; Glas keeps the cards and dims them (`data-g-stale`, .5, the hero's head stays), so the
+      // segment keeps the focus and the arrows can go on.
+      const LABEL = { today: DE['energy.period.today'], week: DE['energy.period.week'], month: DE['energy.period.month'], year: DE['energy.period.year'] };
+      const figure = (page) => ev(page, () => document.querySelector('.energy-hero__primary-value')?.textContent.trim() ?? null);
+      const classicEnergy = {};
+      {
+        const { page, close } = await open('desktop', 'classic', '/energy', { fixedTime: ENERGY_AT });
+        try {
+          for (const p of ['week', 'month', 'year', 'today']) {
+            await page.locator('.energy-period__btn', { hasText: LABEL[p] }).click();
+            await sleep(300);
+            await page.waitForFunction((l) => document.querySelector('.energy-period__btn--active')?.textContent.trim() === l
+              && !document.querySelector('.energy-page__loading'), LABEL[p], { timeout: 5000 });
+            classicEnergy[p] = await figure(page);
+          }
+          // a held load: the loading line instead of the cards, the focus falls back to the page
+          await ev(page, () => window.__hapulseDemo.energyHold(true));
+          await page.locator('.energy-period__btn', { hasText: LABEL.month }).focus();
+          await page.keyboard.press('Enter');
+          await sleep(300);
+          classicEnergy.held = await ev(page, () => ({ loading: !!document.querySelector('.energy-page__loading'),
+            hero: !!document.querySelector('.energy-hero'), focus: document.activeElement === document.body }));
+          await ev(page, () => window.__hapulseDemo.energyHold(false));
+        } catch (e) {
+          classicEnergy.error = String(e.message).slice(0, 160);
+        }
+        await close();
+      }
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        const { page, close } = await open(device, 'glas', '/energy', { mode, fixedTime: ENERGY_AT });
+        try {
+          const seg = page.locator('.energy-hero .g-seg--energy');
+          const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
+          const state = async () => ({ figure: await figure(page), ...(await seg.evaluate((el) => {
+            const cell = document.querySelector('.energy-page .overview-grid__cell:not([data-section="hero"]) > *');
+            return {
+              role: el.getAttribute('role'),
+              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.textContent.trim()}`),
+              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+              cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+              h: Math.round(el.getBoundingClientRect().height),
+              stale: document.querySelector('.energy-page')?.hasAttribute('data-g-stale') ?? null,
+              loading: !!document.querySelector('.energy-page__loading'),
+              dim: { card: cell && getComputedStyle(cell).opacity,
+                stats: getComputedStyle(document.querySelector('.energy-hero__stats')).opacity,
+                head: getComputedStyle(document.querySelector('.energy-hero__header')).opacity },
+            };
+          })) });
+          const waitFigure = (want) => page.waitForFunction((w) => document.querySelector('.energy-hero__primary-value')?.textContent.trim() === w
+            && !document.querySelector('.energy-page[data-g-stale]'), want, { timeout: 5000 }).catch(() => {});
+          const look = await state();
+          // a tap on "Woche"
+          await opt('week').click();
+          await waitFigure(classicEnergy.week);
+          await sleep(300);
+          const tap = await state();
+          // the arrow from "Woche" while the load is held: "Monat" is chosen, the cards stay dimmed, the focus stays
+          await ev(page, () => window.__hapulseDemo.energyHold(true));
+          await page.keyboard.press('ArrowRight');
+          await sleep(400);
+          const held = await state();
+          await ev(page, () => window.__hapulseDemo.energyHold(false));
+          await waitFigure(classicEnergy.month);
+          await sleep(300);
+          const loaded = await state();
+          // and on: End chooses "Jahr", Home "Heute"
+          await page.keyboard.press('End');
+          await waitFigure(classicEnergy.year);
+          const end = await state();
+          await page.keyboard.press('Home');
+          await waitFigure(classicEnergy.today);
+          const home = await state();
+          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+          const plain = (st) => st.stale === false && !st.loading && st.dim.card === '1' && st.dim.stats === '1' && st.dim.head === '1';
+          const ok = !classicEnergy.error && look.role === 'radiogroup'
+            && same(look.options, ['today', 'week', 'month', 'year'].map((v) => `${v}:${LABEL[v]}`))
+            && look.checked === 'today' && look.figure === classicEnergy.today && look.cut.length === 0 && look.h === 44 && plain(look)
+            && tap.checked === 'week' && tap.figure === classicEnergy.week && plain(tap)
+            && held.checked === 'month' && held.focus === 'month' && held.stale === true && !held.loading
+            && held.figure === classicEnergy.week && held.dim.card === '0.5' && held.dim.stats === '0.5' && held.dim.head === '1'
+            && loaded.checked === 'month' && loaded.focus === 'month' && loaded.figure === classicEnergy.month && plain(loaded)
+            && end.checked === 'year' && end.focus === 'year' && end.figure === classicEnergy.year
+            && home.checked === 'today' && home.focus === 'today' && home.figure === classicEnergy.today
+            && new Set([classicEnergy.today, classicEnergy.week, classicEnergy.month, classicEnergy.year]).size === 4;
+          res[`${device}-energy`] = { ok, classic: classicEnergy, look, tap, held, loaded, end: [end.checked, end.figure], home: [home.checked, home.figure] };
+        } catch (e) {
+          res[`${device}-energy`] = { ok: false, error: String(e.message).slice(0, 200) };
+        }
+        await close();
       }
       out.pagesSegments = res;
       out.pagesSegmentsOk = Object.values(res).every((r) => r.ok);
@@ -1608,6 +1710,119 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // Energy N: on the same date as Klassisch the same figures, tiles, legend, totals, bars (their heights), solar
+        // rows and meter, devices (their bars) and water; the chart grey and yellow, its stacks 14 wide for 13 bars, the
+        // device bars orange, the solar meter yellow; every card in the picture, no value cut, the page no wider than the
+        // window; the hero does not tint under the pointer (desktop); the loading line 15/20 label2.
+        {
+          const texts = (page) => ev(page, () => {
+            const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+            const all = (sel) => [...document.querySelectorAll(sel)].map(txt);
+            const styles = (sel) => [...document.querySelectorAll(sel)].map((e) => e.getAttribute('style'));
+            return {
+              figure: txt(document.querySelector('.energy-hero__primary-value')),
+              label: txt(document.querySelector('.energy-hero__primary-label')),
+              stats: all('.energy-stat'),
+              legend: all('.energy-legend__item'),
+              totals: all('.energy-total'),
+              bars: [...document.querySelectorAll('.energy-chart__col')].map((c) => [...c.querySelectorAll('.energy-chart__seg')]
+                .map((g) => g.getAttribute('style')).join('|')),
+              solar: all('.energy-solar .energy-kv').concat(all('.energy-solar__meter-label')),
+              solarFill: styles('.energy-solar__meter-fill'),
+              devices: all('.energy-device'),
+              deviceBars: styles('.energy-device__bar'),
+              heads: all('.energy-card__sub'),
+              sections: [...document.querySelectorAll('.energy-page .overview-grid [data-section]')].map((e) => e.dataset.section),
+            };
+          });
+          let classicTexts;
+          {
+            const { page, close } = await open(device, 'classic', '/energy', { mode, fixedTime: ENERGY_AT });
+            try {
+              classicTexts = await texts(page);
+            } catch (e) {
+              classicTexts = { error: String(e.message).slice(0, 160) };
+            }
+            await close();
+          }
+          const { page, close } = await open(device, 'glas', '/energy', { mode, fixedTime: ENERGY_AT });
+          try {
+            const glasTexts = await texts(page);
+            const look = await ev(page, () => {
+              const tok = (n, prop = 'backgroundColor') => {
+                const d = document.createElement('div');
+                d.style[prop === 'color' ? 'color' : 'background'] = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d)[prop];
+                d.remove();
+                return v;
+              };
+              const bg = (e) => getComputedStyle(e).backgroundColor;
+              const each = (sel, fn) => [...document.querySelectorAll(sel)].every(fn);
+              const stacks = [...document.querySelectorAll('.energy-chart__stack')];
+              const fig = getComputedStyle(document.querySelector('.energy-hero__primary-value'));
+              // values: a block that clips (ellipsis) must not; an inline value must stay inside its card
+              const cut = [...document.querySelectorAll('.energy-page :is(.energy-hero__primary-value, .energy-stat__value, .energy-total__value, .energy-kv__value, .energy-device__value, .energy-card__sub, .energy-legend__item)')]
+                .filter((e) => {
+                  const card = e.closest('.card') || e.closest('[data-section]');
+                  const r = e.getBoundingClientRect();
+                  const c = card.getBoundingClientRect();
+                  const clipped = getComputedStyle(e).display !== 'inline' && e.scrollWidth > e.clientWidth + 0.5;
+                  return clipped || r.right > c.right + 0.5 || r.left < c.left - 0.5;
+                }).map((e) => e.className);
+              const out = [...document.querySelectorAll('.energy-page .overview-grid [data-section]')]
+                .filter((e) => { const r = e.getBoundingClientRect(); return r.width < 1 || r.left < -0.5 || r.right > innerWidth + 0.5; })
+                .map((e) => e.dataset.section);
+              // the loading line (the first load only, a moment): its rule, read on a copy
+              const box = document.createElement('div');
+              box.className = 'page energy-page';
+              box.innerHTML = '<p class="energy-page__loading">x</p>';
+              document.body.appendChild(box);
+              const ld = getComputedStyle(box.firstChild);
+              const loading = `${ld.fontSize}/${ld.lineHeight}` === '15px/20px' && ld.color === tok('--g-label-2', 'color');
+              box.remove();
+              return {
+                grid: each('.energy-chart__seg--grid', (e) => bg(e) === tok('--g-chart-netz')),
+                solar: each('.energy-chart__seg--solar', (e) => bg(e) === tok('--g-chart-solar')),
+                legend: bg(document.querySelector('.energy-legend__swatch--grid')) === tok('--g-chart-netz')
+                  && bg(document.querySelector('.energy-legend__swatch--solar')) === tok('--g-chart-solar'),
+                stacks: stacks.length, widths: [...new Set(stacks.map((e) => Math.round(e.getBoundingClientRect().width)))],
+                deviceBars: each('.energy-device__bar', (e) => bg(e) === tok('--g-prominent')),
+                meter: bg(document.querySelector('.energy-solar__meter-fill')) === tok('--g-chart-solar'),
+                figure: `${fig.fontWeight} ${fig.fontSize}/${fig.lineHeight}`, figureColor: fig.color === tok('--g-label', 'color'),
+                tiles: each('.energy-stat', (e) => bg(e) === tok('--g-fill') && getComputedStyle(e).borderRadius === '12px'),
+                icons: each('.energy-stat__icon', (e) => Math.round(e.getBoundingClientRect().width) === 32 && getComputedStyle(e).borderRadius === '50%'),
+                cut, out, wide: document.documentElement.scrollWidth > innerWidth, loading,
+              };
+            });
+            let hover = null;
+            if (device === 'desktop') {
+              const hero = page.locator('.energy-hero');
+              const b = await hero.boundingBox();
+              await page.mouse.move(b.x + b.width - 30, b.y + b.height - 12);
+              await sleep(300);
+              hover = await ev(page, () => {
+                const d = document.createElement('div');
+                d.style.background = 'var(--bg-card)';
+                document.body.appendChild(d);
+                const want = getComputedStyle(d).backgroundColor;
+                d.remove();
+                return getComputedStyle(document.querySelector('.energy-hero')).backgroundColor === want;
+              });
+              await page.mouse.move(0, 0);
+            }
+            const same = JSON.stringify(glasTexts) === JSON.stringify(classicTexts);
+            const ok = same && glasTexts.sections.join() === 'hero,usage,solar,devices,water' && glasTexts.bars.length === 13
+              && look.grid && look.solar && look.legend && look.stacks === 13 && look.widths.length === 1 && look.widths[0] === 14
+              && look.deviceBars && look.meter && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
+              && look.cut.length === 0 && look.out.length === 0 && !look.wide && look.loading && hover !== false;
+            res[`${device}-energy`] = { ok, same, ...(same ? {} : { glas: glasTexts, classic: classicTexts }), look, hover };
+          } catch (e) {
+            res[`${device}-energy`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
@@ -1719,6 +1934,60 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // energy: HA's energy not set up (a demo switch; the demo also gets an HA address, it has none): a card in the
+        // empty state's look, its link opens HA's energy settings in a new tab, prominent 48
+        {
+          const { page, close } = await open(device, 'glas', '/', { mode });
+          try {
+            await ev(page, () => {
+              window.__hapulseDemo.energyConfigured(false);
+              window.__hapulseDemo.setUrl('http://192.0.2.10:8123/');
+              history.pushState({}, '', '/energy');
+              dispatchEvent(new PopStateEvent('popstate'));
+            });
+            await page.waitForSelector('.energy-empty-state', { timeout: 5000 });
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await ev(page, () => {
+              const tok = (n, prop = 'color') => {
+                const d = document.createElement('div');
+                d.style[prop] = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d)[prop];
+                d.remove();
+                return v;
+              };
+              const card = document.querySelector('.energy-empty-state');
+              const icon = card.querySelector('.energy-empty-state__icon');
+              const title = card.querySelector('.energy-empty-state__title');
+              const desc = card.querySelector('.energy-empty-state__desc');
+              const btn = card.querySelector('.energy-empty-state__btn');
+              const [ic, t, dd, bc] = [icon, title, desc, btn].map((e) => getComputedStyle(e));
+              const ib = icon.getBoundingClientRect();
+              const bb = btn ? btn.getBoundingClientRect() : null;
+              return {
+                text: title.textContent.trim(),
+                card: getComputedStyle(card).backgroundColor === tok('--bg-card', 'backgroundColor') && getComputedStyle(card, '::before').content === 'none',
+                circle: Math.round(ib.width) === 56 && Math.round(ib.height) === 56 && ic.borderRadius === '50%',
+                fill: ic.backgroundColor === tok('--g-fill', 'backgroundColor'), glyph: ic.color === tok('--g-label-2'),
+                title: `${t.fontWeight} ${t.fontSize}/${t.lineHeight}`, titleColor: t.color === tok('--g-label'),
+                desc: `${dd.fontSize}/${dd.lineHeight}`, descColor: dd.color === tok('--g-label-2'),
+                btn: bb && { href: btn.getAttribute('href'), target: btn.getAttribute('target'), rel: btn.getAttribute('rel'),
+                  h: Math.round(bb.height), w: Math.round(bb.width), bg: bc.backgroundColor === tok('--g-prominent', 'backgroundColor'),
+                  ink: bc.color === tok('--g-on-prominent'), text: btn.textContent.trim() },
+              };
+            });
+            const ok = !!got && got.text === DE['energy.notConfigured.title'] && got.card && got.circle && got.fill && got.glyph
+              && got.title === '600 17px/22px' && got.titleColor && got.desc === '15px/20px' && got.descColor && !!got.btn
+              && got.btn.href === 'http://192.0.2.10:8123/config/energy' && got.btn.target === '_blank' && /\bnoopener\b/.test(got.btn.rel)
+              && got.btn.h === 48 && got.btn.w >= 44 && got.btn.bg && got.btn.ink && got.btn.text === DE['energy.notConfigured.openSettings'];
+            res[`${device}-energy-empty`] = { ok, ...got };
+          } catch (e) {
+            res[`${device}-energy-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
       out.pagesEmpty = res;
       out.pagesEmptyOk = Object.values(res).every((r) => r.ok);
@@ -1728,5 +1997,33 @@ module.exports = function pages(h) {
     return ran.every((k) => out[k + 'Ok']) && pageErrors.length === 0;
   }
 
-  return { pagesChecks };
+  // ---- Scenes for `shoot` (its paused clock: only `run` moves time): a page in edit mode, Glas with its bars and
+  //      Klassisch with its badges, so that `compare` also holds Klassisch's edit mode pixel-identical (as `home-edit`
+  //      does on the overview). On a phone Glas enters edit mode from the avatar menu. ----
+  const editScene = (p) => ({ path: p, act: async (page) => {
+    const press = async (sel, text) => {
+      const done = await page.evaluate(([s, t]) => {
+        const b = [...document.querySelectorAll(s)].find((e) => e.getClientRects().length && (!t || e.textContent.includes(t)));
+        if (b) b.click();
+        return !!b;
+      }, [sel, text]);
+      await run(page, 200);
+      await settleAnimations(page);
+      return done;
+    };
+    const phoneGlas = page.viewportSize().width < 900 && (await isGlas(page));
+    const done = phoneGlas
+      ? (await press('.g-avatar__btn')) && (await press('.g-avatar-menu__item', DE['glas.avatar.edit']))
+      : await press('.g-edit-capsule, .edit-toggle');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await run(page, 100);
+    await settleAnimations(page);
+    return done ? '' : 'no edit toggle';
+  } });
+  const scenes = {
+    'security-edit': editScene('/security'),
+    'energy-edit': editScene('/energy'),
+  };
+
+  return { pagesChecks, scenes };
 };

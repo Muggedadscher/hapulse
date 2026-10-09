@@ -11,8 +11,9 @@
      and above the hints while they are a row of capsules.
    - below 900 px only the eye and the phone, at the right end of the title row (the link is hidden in edit mode);
      the main room has its title inside the card there, so its bar sits above it.
-   - above a card without a title (the security hero, alarm, cameras and NVR) — from 900 px, where such a card keeps
-     the lane of its titled neighbours (pages.css), in that lane on the line of their bars.
+   - above a card without a title (the security hero, alarm, cameras and NVR) and above the energy hero (its title is
+     inside the surface, with the period) — from 900 px, where such a card keeps the lane of its titled neighbours
+     (pages.css), in that lane on the line of their bars.
    L ("taller", core sizePresets.ts) = a minimum height of 470 px for the cell from 900 px; Klassisch and the phone
    ignore it. */
 
@@ -25,31 +26,34 @@
 
 /* ---- classic affordances off, the cell without its margins and outline ---- */
 
-:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing {
+:root[data-style='glas'] :is(.home-page, .security-page, .energy-page) .overview-grid__cell--editing {
   margin: 0;
 }
 
 :root[data-style='glas']
-  :is(.home-page, .security-page)
+  :is(.home-page, .security-page, .energy-page)
   .overview-grid__cell--editing
   > :is(.edit-badge, .overview-span-dots, .overview-resize-handle, .section-height-dots, .section-height-handle) {
   display: none;
 }
 
-:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing .edit-section-outline {
+:root[data-style='glas'] :is(.home-page, .security-page, .energy-page) .overview-grid__cell--editing .edit-section-outline {
   outline: none;
 }
 
-:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing.overview-grid__cell--hidden {
+:root[data-style='glas'] :is(.home-page, .security-page, .energy-page) .overview-grid__cell--editing.overview-grid__cell--hidden {
   opacity: 1;
 }
 
-:root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell--editing.overview-grid__cell--hidden > .edit-section-outline {
+:root[data-style='glas']
+  :is(.home-page, .security-page, .energy-page)
+  .overview-grid__cell--editing.overview-grid__cell--hidden
+  > .edit-section-outline {
   opacity: 0.4;
 }
 
-/* a security card without a title (hero, alarm, cameras, NVR): the bar above it — from 900 px in a shared row it moves
-   into the card's lane instead (below) */
+/* a security card without a title (hero, alarm, cameras, NVR) and the energy hero (its title is inside the surface):
+   the bar above it — from 900 px in a shared row it moves into the card's lane instead (below) */
 :root[data-style='glas']
   .security-page
   .overview-grid__cell--editing:is(
@@ -58,6 +62,10 @@
     [data-section='cameras'],
     [data-section='nvr']
   )
+  > .edit-section-outline,
+:root[data-style='glas']
+  .energy-page
+  .overview-grid__cell--editing:has(> .edit-section-outline > .energy-hero)
   > .edit-section-outline {
   margin-top: 48px;
 }
@@ -212,7 +220,18 @@
       .locks-section-card__header,
       .garage-section-card__title-row,
       .sensor-section-card__header
-    ) {
+    ),
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid__cell--editing
+    :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas)
+    > .energy-card__header,
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid__cell--editing
+    :is(.energy-water:not(:has(> .energy-kv-list)), .energy-gas)
+    > .energy-card__header
+    > .energy-card__title-row {
     padding-right: 88px;
   }
 
@@ -229,6 +248,13 @@
     .overview-grid__cell--editing[class*='section-h-']:has(
       > .edit-section-outline > :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card)
     )
+    > .g-size-bar,
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid__cell--editing[class*='section-h-']:has(
+      > .edit-section-outline
+        > :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas)
+    )
     > .g-size-bar {
     top: 6px;
     right: 12px;
@@ -236,7 +262,7 @@
 
   /* its pinned title row (home.css, pages.css) keeps clear of the bar: 12 + 88 */
   :root[data-style='glas']
-    :is(.home-page, .security-page)
+    :is(.home-page, .security-page, .energy-page)
     .overview-grid__cell--editing[class*='section-h-']
     :is(
       .scenes-card,
@@ -251,7 +277,12 @@
       .people-list-card,
       .locks-section-card,
       .garage-section-card,
-      .sensor-section-card
+      .sensor-section-card,
+      .energy-sources,
+      .energy-devices,
+      .energy-solar,
+      .energy-water,
+      .energy-gas
     ):not(:has(.card-scroll-body))
     > :first-child {
     padding-right: 100px;
@@ -297,7 +328,11 @@
   :root[data-style='glas']
     .security-page
     .overview-grid__cell--editing
-    :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card) {
+    :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid__cell--editing
+    :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas) {
     --g-card-gap: 44px;
   }
 
@@ -334,6 +369,13 @@
       [data-section='cameras'],
       [data-section='nvr']
     )
+    > .g-size-bar,
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid__cell--editing:is(
+      [class*='section-h-'],
+      :has(> .edit-section-outline > .energy-hero)
+    )
     > .g-size-bar {
     top: 0;
   }
@@ -345,7 +387,10 @@
       :has(.hints-card__list)
     )
     > .edit-section-outline,
-  :root[data-style='glas'] .security-page .overview-grid__cell--editing[class*='section-h-'] > .edit-section-outline {
+  :root[data-style='glas']
+    :is(.security-page, .energy-page)
+    .overview-grid__cell--editing[class*='section-h-']
+    > .edit-section-outline {
     margin-top: 48px;
   }
 
@@ -368,11 +413,15 @@
 
   /* L: taller (the bar's 38 on top while editing). The cards' classic 400-px cap goes; a scrolling list fills the
      height instead of pushing it (flex basis 0). */
-  :root[data-style='glas'] :is(.home-page, .security-page) .overview-grid__cell.g-tall {
+  :root[data-style='glas'] :is(.home-page, .security-page, .energy-page) .overview-grid__cell.g-tall {
     min-height: 470px;
   }
 
-  :root[data-style='glas'] :is(.home-page, .security-page) .overview-grid > .g-tall > .overview-grid__cell--editing {
+  :root[data-style='glas']
+    :is(.home-page, .security-page, .energy-page)
+    .overview-grid
+    > .g-tall
+    > .overview-grid__cell--editing {
     min-height: calc(470px + 38px);
   }
 
@@ -460,6 +509,67 @@
     > .overview-grid__cell--editing:not([class*='section-h-'])
     > .edit-section-outline
     > :is(.security-hero-card, .alarm-panel-card) {
+    margin-top: 88px;
+  }
+}
+
+/* The same for the energy hero. */
+@container g-page (min-width: 900px) {
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid
+    > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    > .overview-grid__cell--editing:has(> .edit-section-outline > .energy-hero):not([class*='section-h-'])
+    > .g-size-bar {
+    top: 38px;
+  }
+
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid
+    > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    > .overview-grid__cell--editing:has(> .edit-section-outline > .energy-hero):not([class*='section-h-'])
+    > .edit-section-outline {
+    margin-top: 0;
+  }
+
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid
+    > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
+    > .overview-grid__cell--editing:not([class*='section-h-'])
+    > .edit-section-outline
+    > .energy-hero {
+    margin-top: 88px;
+  }
+}
+
+@container g-page (min-width: 1180px) {
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid
+    > .overview-grid__cell--span-3
+    > .overview-grid__cell--editing:has(> .edit-section-outline > .energy-hero):not([class*='section-h-'])
+    > .g-size-bar {
+    top: 38px;
+  }
+
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid
+    > .overview-grid__cell--span-3
+    > .overview-grid__cell--editing:has(> .edit-section-outline > .energy-hero):not([class*='section-h-'])
+    > .edit-section-outline {
+    margin-top: 0;
+  }
+
+  :root[data-style='glas']
+    .energy-page
+    .overview-grid
+    > .overview-grid__cell--span-3
+    > .overview-grid__cell--editing:not([class*='section-h-'])
+    > .edit-section-outline
+    > .energy-hero {
     margin-top: 88px;
   }
 }

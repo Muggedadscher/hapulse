@@ -852,7 +852,9 @@ function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Cont
  * an open window, a system warning) as text on the card and on its soft tone over the card; the segment's lens with
  * `label` (pool mode, on/off of a switch point); the pool's schedule editor: the hours of an on window `glyphDark` on
  * `teal`, the time at the dragged handle `group` on `label`. Steppers and play draw `label` on `fill`, the playing state
- * white on blue (window pairs).
+ * white on blue (window pairs). The energy page's tiles: their text is `label`/`label2` on `fill` over the card (the
+ * field pairs), the glyph in its circle the tone's ink on its soft tone over that (3:1, non-text); the neutral circle is
+ * the card with `label2`.
  */
 function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
   const pairs: ContrastPair[] = [];
@@ -867,6 +869,10 @@ function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Con
   pairs.push({ name: 'label on seg (segment lens)', fg: c.label, bg: c.seg, min: 4.5 });
   pairs.push({ name: 'glyphDark on teal (hours of an on window, pool schedule editor)', fg: c.glyphDark, bg: c.teal, min: 4.5 });
   pairs.push({ name: 'group on label (time at the dragged handle)', fg: c.group, bg: c.label, min: 4.5 });
+  const tile = compositeOver(c.fill, c.card);
+  for (const [ink, soft] of [['blueInk', 'blueSoft'], ['greenInk', 'greenSoft'], ['yellowInk', 'yellowSoft'], ['redInk', 'redSoft']] as const) {
+    pairs.push({ name: `${ink} glyph on ${soft} over fill over card (energy tile)`, fg: c[ink], bg: compositeOver(c[soft], tile), min: 3 });
+  }
   return pairs;
 }
 

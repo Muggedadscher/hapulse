@@ -380,7 +380,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
       teardown();
       useEntityStore.getState().setRegistries(DEMO_REGISTRIES);
       useEntityStore.getState().setEntities(DEMO_ENTITIES);
-      startDemoControl(); // [fork]
+      startDemoControl({ setUrl: (url) => set({ url }) }); // [fork] setUrl: the energy page's setup link in the lab checks
 
       _stopDemoTicker = createDemoTicker(
         (entities) => {

@@ -222,8 +222,9 @@ und übernommen, außer wo anders vermerkt.
 - **Titel über der Fläche** auf allen Seiten aus K89 (`pages.css`, eine Liste). Den Titel **in der Fläche** behalten:
   Pool-Zeitplan (Schalter im Kopf), auf der Musikseite Zonen (Ansicht), Warteschlange und Bibliothek (Player-Wahl).
   **Abweichungen:** (1) Auch die Player-Karte der Musikseite behält ihn, damit die rechte Spalte bündig mit Now Playing
-  beginnt; sonst trüge auf der Seite nur sie den Titel über der Fläche. (2) Karten, die nur aus dem Kopf bestehen
-  (Wasser mit einem Zähler, Gas), behalten ihn ebenfalls; darunter stünde sonst eine leere Fläche.
+  beginnt; sonst trüge auf der Seite nur sie den Titel über der Fläche. (2) Wasser mit einem Zähler und Gas bestehen
+  in Klassisch nur aus dem Kopf; in Glas steht ihr Titel ebenfalls über der Fläche, der Wert darin als Zahl (§7.11).
+  Der erste Entwurf ließ beide Titel in der Fläche; allein in einer Zeile sah die Lücke darüber wie ein Fehler aus.
 - Die Übersicht behält ihre Liste in `home.css` (Abweichung von §7.6): Ihre Karten haben im Körper eigene Abstände
   (0 bzw. 12 je Karte), die Seiten einheitlich 12. Ein Zusammenlegen hätte die Übersicht verschoben und bringt nichts.
 - **Spalten (K85)** auf Sicherheit, Energie, System, Automationen und Szenen: die Seite ist ab 900 px ein
@@ -371,3 +372,39 @@ und übernommen, außer wo anders vermerkt.
   Pumpe); `pagesFields` prüft das Zeitfeld des Editors (Pfeil hoch stellt die Stunde). `pagesCardTitles` kennt jetzt
   Karten, deren Körper eine Liste über die ganze Fläche ist (Personen, Türen/Fenster/Bewegung, Kennzahlen, Admin): sie
   beginnt an der Oberkante der Fläche statt 16 darunter (die Prüfung war seit den Listen der Sicherheit zu streng).
+
+### 7.11 Energie (N1–N9, K90, K92, K96)
+
+- Neue Datei `energy.css`. **Zeitraum (K92):** `Segment` über eine `[fork]`-Weiche in `EnergyCards.tsx`
+  (`g-seg--energy` wie auf der Übersicht: 44 Trefferfläche, 32 sichtbar, Linse 28, 13/18 600), `radiogroup`, die
+  Pfeile wählen (eine Ansicht). Ab 900 px neben dem Titel (240–300 breit), darunter in eigener Zeile über die ganze
+  Breite. **Laden:** Lädt ein anderer Zeitraum, bleiben in Glas die Karten stehen und werden blass (.5, der Kopf des
+  Heroes bleibt; `data-g-stale` in `Energy.tsx`) statt der Ladezeile; so behält das Segment den Fokus und die Pfeile
+  gehen weiter. Klassisch tauscht die Seite wie bisher gegen die Ladezeile.
+- **Hero (K90):** schlicht `card` ohne Hover-Ton; Zeile über der Zahl 15/20 `label2` mit Symbol 18, Zahl 34/41 600,
+  „kWh“ 17/22 600 `label2`. Kacheln in `fill` ohne Rand, Radius 12, Kreis 32 im Soft-Ton mit der Ink (Solar Gelb wie
+  sein Diagramm-Teil, die übrigen in den klassischen Tönen; Batterie neutral = Karte mit `label2`), Name 12/16
+  `label2` (bricht um), Wert 17/22 600, Einheit 13/18 600 `label2`.
+- **Quellen:** Netz grau, Solar gelb mit Kante wie die Energie-Karte der Übersicht (§2.4), 1,5 dazwischen, nur oben
+  rund, auf einer festen Grundlinie; Breite nach Zahl der Balken (bis 12: 26, bis 24: 14, darüber 10), sie wachsen aus
+  der Grundlinie (reduzierte Bewegung: 200 ms einblenden). Legende als Punkte 8, Summen 15/20 mit Haarlinie darüber.
+  `accent.css` führt die Solar-Teile der Seite nicht mehr (sie waren orange).
+- **Solar:** Zeilen 15/20, Messbalken 6 hoch auf `fill` in Solar-Gelb, Zeile darunter 13/18 `label2`. **Geräte:** Name
+  15/20, Balken 6 hoch in Orange auf `fill`, Wert 13/18 600 `label2`; lange Namen enden wie in Klassisch mit „…“.
+- **Wasser und Gas:** Titel über der Fläche (§7.7), mit einem Zähler der Wert als Zahl 22/28 600 in der Fläche (der
+  Kopf der Karte fällt dafür weg: `display: contents`), mit mehreren die Liste und der Wert im Kopf wie bei Geräten.
+- **Bearbeiten (K96):** die Leiste aus Etappe 4 über `useGlasSectionEdit` (`energy:<id>`); Namen aus den Titeln der
+  Karten, der Hero heißt „Übersicht“. Am Hero steht die Leiste über der Karte, an den übrigen zwischen Titel und Fläche.
+- **Nicht eingerichtet (§7.31):** Kreis 56 `fill` mit `label2`, Titel 17/22 600, Text 15/20 `label2`, der Weg zu Home
+  Assistant prominent 48.
+- **Demo-Schalter** (`ha/demoEnergy.ts`, je eine `[fork]`-Zeile in `energy.ts`): `energyConfigured(false)` (nicht
+  eingerichtet), `energyHold(true)` (ein Zeitraum lädt, bis `energyHold(false)`), `setUrl(url)` (die Demo hat keine
+  HA-Adresse, der Einrichtungs-Knopf braucht eine).
+- Kontrastpaare: die Symbole der Kacheln in ihrer Ink auf dem Soft-Ton über `fill` über der Karte (3:1).
+- Prüfungen (Datum fest wie bei `shoot`, die Demo-Zahlen hängen an der Stunde): `pagesSegments` Energie (Zahl wie im
+  klassischen Reiter für alle vier Zeiträume, Tippen, Pfeil, Ende, Anfang; beim gehaltenen Laden blass, Fokus bleibt,
+  keine Ladezeile), `pagesKeep` Energie (alle Texte, Balkenhöhen und Messwerte wie Klassisch, Farben, Balkenbreite 14
+  bei 13 Balken, nichts abgeschnitten oder breiter als das Fenster, kein Hover-Ton, Ladezeile 15/20), `pagesEdit`
+  Energie, `pagesEmpty` Energie (Aussehen, Link `…/config/energy` in neuem Tab, 48 hoch), `pagesCardTitles` mit Wasser
+  über der Fläche. Neu in `shoot`: die Szenen `security-edit` und `energy-edit` (Seite im Bearbeiten-Modus, auch für
+  den Klassisch-Vergleich).

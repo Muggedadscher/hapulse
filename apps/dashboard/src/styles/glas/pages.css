@@ -46,7 +46,7 @@
 :root[data-style='glas']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
     .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
@@ -65,7 +65,7 @@
 :root[data-style='glas']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
     .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
@@ -130,12 +130,10 @@
   }
 }
 
-/* ---- Title in the surface: the head carries a control, or the card is only its head (water with one meter, gas: a
-   title above an empty surface would read as a gap). Like a capped card on the overview: the 44 row at the top of the
-   surface, 8 below it. ---- */
+/* ---- Title in the surface: the head carries a control. Like a capped card on the overview: the 44 row at the top of
+   the surface, 8 below it. ---- */
 :root[data-style='glas']
   :is(
-    .energy-page :is(.energy-water:where(:not(:has(> .energy-kv-list))), .energy-gas),
     .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)),
     .music-page :is(.other-players-card, .zones-card, .queue-card, .library-card)
   ) {
@@ -145,7 +143,6 @@
 
 :root[data-style='glas']
   :is(
-    .energy-page :is(.energy-water:where(:not(:has(> .energy-kv-list))), .energy-gas) > .energy-card__header,
     .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)) > .pool-card__head,
     .music-page :is(.other-players-card__header, .zones-card__header, .queue-card__header, .library-card__header)
   ) {
@@ -310,7 +307,7 @@
   .overview-grid__cell[class*='section-h-']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)
@@ -323,7 +320,7 @@
   .overview-grid__cell[class*='section-h-']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)
@@ -336,7 +333,7 @@
   .overview-grid__cell[class*='section-h-']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list))),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)

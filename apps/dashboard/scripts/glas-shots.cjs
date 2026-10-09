@@ -16,7 +16,8 @@
 //   the gesture scenes of stage 3b (ctx-card, ctx-card-off, swipe-lights, swipe-notes, glas-checks-gestures.cjs) a
 //   context menu or a swipe row, the overview scenes of stage 4 (home-hints, home-edit, energy-bubble, detail-light,
 //   glas-checks-home.cjs) the hints card, edit mode, a picked energy bar or a light's detail; all are taken at viewport
-//   size and are not part of the default list.
+//   size and are not part of the default list. The edit scenes of stage 5 (security-edit, energy-edit, …,
+//   glas-checks-pages.cjs) take a page in edit mode at full length; they are not in the default list either.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
 //   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
@@ -267,8 +268,9 @@ Object.assign(SCENES, GESTURES.scenes);
 // stage 4: the overview's content — scenes home-hints, home-edit, energy-bubble, detail-light and `checks --part home`
 const HOME = require('./glas-checks-home.cjs')({ DE, DEVICES, ABORTED, run, settleAnimations, isGlas, seedScript });
 Object.assign(SCENES, HOME.scenes);
-// stage 5: the other pages — `checks --part pages`
-const PAGES = require('./glas-checks-pages.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript });
+// stage 5: the other pages — scenes security-edit, energy-edit, … and `checks --part pages`
+const PAGES = require('./glas-checks-pages.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, run, isGlas });
+Object.assign(SCENES, PAGES.scenes);
 
 /** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
 async function tap(page, sel) {

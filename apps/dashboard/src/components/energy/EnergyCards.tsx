@@ -19,6 +19,8 @@ import {
 import { Card } from '../ui/Card';
 import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
 import { formatNumber } from '@hapulse/core'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas period segment (K92)
+import { Segment } from '../glas/Segment'; // [fork]
 import type { TKey } from '../../i18n/useT';
 import type { EnergyDashboard, EnergyPeriod } from '@hapulse/core';
 import './EnergyCards.css';
@@ -68,6 +70,20 @@ function PeriodSelector({
   onChange: (p: EnergyPeriod) => void;
 }) {
   const t = useT();
+  const isGlas = useIsGlas(); // [fork]
+  // [fork] Glas: the segment with the lens (plan docs/glas/PLAN-ETAPPE-5.md K92), a radiogroup like the overview's
+  // energy card; a view, so the arrows choose (the page keeps the cards while the period loads, Energy.tsx)
+  if (isGlas) {
+    return (
+      <Segment
+        className="g-seg--energy"
+        label={t('energy.period.ariaLabel')}
+        value={period}
+        onChange={onChange}
+        options={PERIODS.map((p) => ({ value: p.id, label: t(p.labelKey) }))}
+      />
+    );
+  }
   return (
     <div className="energy-period" role="tablist" aria-label={t('energy.period.ariaLabel')}>
       {PERIODS.map((p) => (

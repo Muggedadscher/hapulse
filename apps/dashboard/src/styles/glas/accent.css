@@ -13,11 +13,8 @@
 :root[data-style='glas'] .toggle-switch input:checked + .toggle-switch__track,
 :root[data-style='glas'] .vacuum-card__btn--start:hover,
 :root[data-style='glas'] .changelog-modal__done,
-:root[data-style='glas'] .energy-legend__swatch--solar,
-:root[data-style='glas'] .energy-chart__seg--solar,
-:root[data-style='glas'] .energy-total__dot--solar,
+/* the energy page's solar parts take the chart's yellow instead (energy.css, §2.4) */
 :root[data-style='glas'] .energy-device__bar,
-:root[data-style='glas'] .energy-solar__meter-fill,
 :root[data-style='glas'] .energy-empty-state__btn,
 :root[data-style='glas'] .energy-widget__bar,
 :root[data-style='glas'] .entity-detail__timeline-seg--active,
