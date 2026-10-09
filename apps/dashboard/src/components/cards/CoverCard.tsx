@@ -5,6 +5,7 @@ import { callService } from '../../ha/service';
 import { useT, useStateLabel } from '../../i18n/useT';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: the symbol is a little blind at its position (K97)
 
 interface CoverCardProps {
   entity: HassEntity;
@@ -28,6 +29,9 @@ export function CoverCard({ entity, name }: CoverCardProps) {
   const position = entity.attributes.current_position as number | undefined;
   const deviceClass = entity.attributes.device_class as string | undefined;
   const isOpen = entity.state === 'open';
+  const glas = useIsGlas(); // [fork]
+  // [fork] Glas: how far it is open (0–100) for the little blind in styles/glas/cards.css; without a position by state
+  const openPct = position ?? (entity.state === 'closed' ? 0 : 100);
 
   const handleOpen = useCallback(() => {
     void callService('cover', 'open_cover', {}, { entity_id: entityId });
@@ -45,7 +49,10 @@ export function CoverCard({ entity, name }: CoverCardProps) {
     <Card className="cover-card">
       {/* Header: chip + name/position */}
       <div className="cover-card__header">
-        <div className={`icon-chip cover-card__chip${isOpen ? ' cover-card__chip--open' : ''}`}>
+        <div
+          className={`icon-chip cover-card__chip${isOpen ? ' cover-card__chip--open' : ''}`}
+          style={glas ? ({ '--g-pos': openPct } as React.CSSProperties) : undefined /* [fork] */}
+        >
           {coverIcon(deviceClass)}
         </div>
         <div className="cover-card__info">

@@ -10,7 +10,6 @@
 
 :root[data-style='glas'] .btn--primary,
 :root[data-style='glas'] .entities-modal-progress::after,
-:root[data-style='glas'] .pill-toggle input:checked + .pill-toggle__track,
 :root[data-style='glas'] .toggle-switch input:checked + .toggle-switch__track,
 :root[data-style='glas'] .vacuum-card__btn--start:hover,
 :root[data-style='glas'] .changelog-modal__done,
@@ -69,9 +68,8 @@
 }
 
 /* Switch knobs on the orange track are white in both modes (GLAS-DESIGN §7.28, token knob). Classic paints them with
-   --on-accent, which the re-scope above turns dark. Since stage 5 the switches in list rows are the iOS switch
-   (controls.css, K91); what is left here is the pill on tiles (until the room, K95) and the legacy switch. */
-:root[data-style='glas'] .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob,
+   --on-accent, which the re-scope above turns dark. Since stage 5 the switches in list rows and in the detail are the
+   iOS switch (controls.css, K91) and the tiles have none (cards.css, K95); what is left here is the legacy switch. */
 :root[data-style='glas'] .toggle-switch input:checked ~ .toggle-switch__knob {
   background: var(--g-knob);
 }

@@ -1,0 +1,862 @@
+/* [fork] Glas — the entity cards (plan docs/glas/PLAN-ETAPPE-5.md K95, K97, K91, K93; GLAS-DESIGN §7.10–§7.12, §7.28,
+   §7.29, §7.31).
+
+   The EntityCard family (components/cards/*, classic cards.css) wherever it stands: the room's tiles, the cards of
+   "Klima alle" / "Rollläden alle" (.all-modal__grid) and the control card in the detail (.entity-detail__control,
+   whose surface stays detail.css's group). The symbol sits in a circle 36 in the colour of its state like the device
+   tiles (§7.10: lights and switches yellow, fans teal, vacuums green, climate in what it does; locks, gates and binary
+   sensors in their soft tone as in the windows), the name 15/20 600, the state 13/18 `label2` under it. Climate and
+   blinds follow "Klima alle" / "Rollläden alle" (K97): the target in a capsule 40 with − / +, the mode pills 36
+   (controls.css); a little blind 40 with its slats down to the position (`--g-pos` from CoverCard), the position
+   15/20 600, buttons 40. Sliders and play are the shared ones (controls.css).
+
+   Only in the room: the tiles are opaque `card` without a border, radius 22; the light and switch tiles switch as a
+   whole (tap, Enter, Space), their pill stays in the DOM and is hidden, the line under the name says the state
+   (LightCard, ToggleCard: K91). A tile that does something on a tap gives under the finger (0.97) and rises a little
+   under the pointer. Scene tiles look like the overview's (home-cards.css). Half/full width and dragging stay as in
+   Klassisch (K95); the grips, the width dots, the handle and the badges get the Glas look, the dashed outline falls
+   away like on the overview. */
+
+/* ---- Sections: title row 44 (type in pages.css), 6 to the tiles, 20 between sections (from 900 px 26 / 20) ---- */
+
+:root[data-style='glas'] .room-page__sections {
+  --radius-card: 22px;
+  gap: 20px;
+}
+
+:root[data-style='glas'] .room-page__section {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .room-page__section > .section-label,
+:root[data-style='glas'] .room-section__label-row {
+  min-height: 44px;
+}
+
+:root[data-style='glas'] :is(.room-page__card-grid, .room-page__wide-card-grid, .room-page__sensor-grid, .room-page__scene-grid) {
+  gap: 10px;
+}
+
+/* the sensors a little wider than in Klassisch (130): a word like "Geschlossen" fits its tile */
+:root[data-style='glas'] .room-page__sensor-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+@media (max-width: 899px) {
+  /* the scenes in two columns like on the overview */
+  :root[data-style='glas'] .room-page__scene-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .room-page__sections {
+    gap: 26px 20px;
+  }
+}
+
+/* ---- The tile ---- */
+
+:root[data-style='glas'] .room-page .entity-card-press > .card {
+  transition:
+    background-color 180ms ease,
+    box-shadow 350ms ease,
+    translate var(--g-d-smooth) var(--g-spring-smooth),
+    transform var(--g-d-smooth) var(--g-spring-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* no tint under the pointer (the tile rises instead, below) */
+:root[data-style='glas'] .room-page .entity-card-press > .card:hover {
+  background: var(--bg-card);
+}
+
+:root[data-style='glas'] .room-page .entity-card-press > .card:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* lifted by the context menu (gestures.css): the lift takes the press and the hover over */
+:root[data-style='glas'] .room-page .entity-card-press > .card[data-g-lifted] {
+  translate: none;
+  transition-property: background-color, box-shadow;
+}
+
+/* a control inside (slider, button) is pressed, not the tile */
+:root[data-style='glas']
+  .room-page
+  .entity-card-press
+  > .card:active:has(:is(input, button, select, textarea, a, label, [role='slider']):active) {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* the tiles that do something on a tap (switch, open the detail) give under the finger; not while editing */
+  :root[data-style='glas']
+    .room-page
+    :is(.entity-card-press--tappable > .card, .entity-card-press > :is(.light-card, .toggle-card)):not(
+      .edit-item-outline *
+    ):active:not([data-g-lifted], :has(:is(input, button, select, textarea, a, label, [role='slider']):active)) {
+    transform: scale(0.97);
+    transition-duration: 120ms;
+  }
+}
+
+@media (min-width: 900px) and (hover: hover) {
+  :root[data-style='glas']
+    .room-page
+    :is(.entity-card-press--tappable > .card, .entity-card-press > :is(.light-card, .toggle-card)):not(
+      .edit-item-outline *
+    ):hover:not([data-g-lifted]) {
+    box-shadow: var(--g-shadow-card-hover);
+  }
+}
+
+@media (min-width: 900px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas']
+    .room-page
+    :is(.entity-card-press--tappable > .card, .entity-card-press > :is(.light-card, .toggle-card)):not(
+      .edit-item-outline *
+    ):hover:not([data-g-lifted]) {
+    translate: 0 -1px;
+  }
+}
+
+/* no switch on a tile (§7.28): the tile switches, the state is the circle and the line under the name */
+:root[data-style='glas'] .room-page .entity-card-press .pill-toggle {
+  display: none;
+}
+
+/* in the detail the switch stands beside the name and says it */
+:root[data-style='glas'] .entity-detail__control .g-tile-state {
+  display: none;
+}
+
+/* ---- The circle 36 (§7.10): `fill` with the glyph in `label2`; a state sets --g-chip / --g-chip-glyph ---- */
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .icon-chip {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--g-chip, var(--g-fill));
+  box-shadow: none;
+  color: var(--g-chip-glyph, var(--g-label-2));
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .icon-chip > svg {
+  width: 20px;
+  height: 20px;
+}
+
+:root[data-style='glas'] :is(.light-card__chip--on, .toggle-card__chip--on) {
+  --g-chip: var(--g-yellow);
+  --g-chip-glyph: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .toggle-card__chip--on:has(> .lucide-fan) {
+  --g-chip: var(--g-teal);
+}
+
+:root[data-style='glas'] .vacuum-card__chip--active {
+  --g-chip: var(--g-green);
+  --g-chip-glyph: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .climate-card__chip {
+  --g-chip: var(--g-climate, var(--g-fill));
+  --g-chip-glyph: var(--g-climate-glyph, var(--g-label-2));
+}
+
+/* locks, gates, sensors: their soft tone as in the windows (sheet-content.css) */
+:root[data-style='glas'] :is(.lock-card__chip--locked, .garage-card .icon-chip.garage--closed, .button-card__chip--flash),
+:root[data-style='glas'] .sensor-tile__chip--binary-positive {
+  --g-chip: var(--g-green-soft);
+  --g-chip-glyph: var(--g-green-ink);
+}
+
+:root[data-style='glas'] :is(.lock-card__chip--unlocked, .garage-card .icon-chip.garage--open),
+:root[data-style='glas'] .sensor-tile__chip--binary-danger {
+  --g-chip: var(--g-red-soft);
+  --g-chip-glyph: var(--g-red-ink);
+}
+
+/* doors, windows, motion: attention, not alarm (K87) */
+:root[data-style='glas'] :is(.garage-card .icon-chip.garage--unavailable, .sensor-tile__chip--binary-info) {
+  --g-chip: var(--g-warn-soft);
+  --g-chip-glyph: var(--g-warn-ink);
+}
+
+/* a sensor without a class: blue (the accent is never a state, §2.3) */
+:root[data-style='glas'] .sensor-tile__chip--binary-accent {
+  --g-chip: var(--g-blue-soft);
+  --g-chip-glyph: var(--g-blue-ink);
+}
+
+/* ---- Names and states ---- */
+
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(
+    .light-card__name,
+    .toggle-card__name,
+    .climate-card__name,
+    .cover-card__name,
+    .lock-card__name,
+    .garage-card__name,
+    .button-card__name,
+    .vacuum-card__name,
+    .media-card__title
+  ) {
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  letter-spacing: 0;
+}
+
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(.light-card__subtitle, .g-tile-state, .lock-card__state, .garage-card__state, .vacuum-card__state, .media-card__artist) {
+  overflow: hidden;
+  margin-top: 0;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* only a deviation gets a colour (§7.13): open lock or gate, a vacuum's error red, a gate out of reach yellow */
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(.lock-card__state--unlocked, .garage-text--open, .vacuum-card__state--error) {
+  color: var(--g-red-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .garage-text--unavailable {
+  color: var(--g-warn-ink);
+  font-weight: 600;
+}
+
+/* ---- Plain buttons (§7.29): `fill`, text `label` 15/20 600, capsule 44; the lock and the gate keep their dialog ---- */
+
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn),
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn):hover:not(:disabled) {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    transform 160ms ease-out;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas']
+    :is(.room-page, .all-modal__grid, .entity-detail__control)
+    :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn):not(.vacuum-card__btn--start):hover:not(
+      :disabled
+    ) {
+    background: var(--g-fill-2);
+  }
+}
+
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn):disabled {
+  opacity: 0.4;
+}
+
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* the button card flashes green while it presses */
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  .button-card__btn:is(:active, .button-card__btn--flash) {
+  background: var(--g-green-soft);
+  color: var(--g-green-ink);
+}
+
+/* "Starten" is the prominent action (§7.29) */
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .vacuum-card__btn--start,
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .vacuum-card__btn--start:hover {
+  background: var(--g-prominent);
+  color: var(--g-on-prominent);
+}
+
+/* ---- Rows: switch, lock, gate, button (one line, 70 high). A card too narrow for symbol, name and button (below
+   about 290) gives the button a line of its own across the card instead of squeezing the name: the name grows 999 times
+   as fast as the button, so the button only takes the space when it is alone on its line ---- */
+
+:root[data-style='glas'] .room-page .entity-card-press > :is(.lock-card, .garage-card, .button-card) {
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 70px;
+  padding: 13px 13px 13px 16px;
+}
+
+:root[data-style='glas']
+  .room-page
+  .entity-card-press
+  > .card
+  > :is(.lock-card__info, .garage-card__info, .button-card__name) {
+  flex: 999 1 96px;
+  min-width: 96px;
+}
+
+:root[data-style='glas'] .room-page .entity-card-press > .card > :is(.lock-card__btn, .garage-card__btn, .button-card__btn) {
+  flex: 1 0 auto;
+}
+
+:root[data-style='glas'] .room-page .entity-card-press > .toggle-card {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-content: center;
+  min-height: 70px;
+  padding: 16px;
+}
+
+:root[data-style='glas'] .room-page .entity-card-press > .toggle-card > .toggle-card__chip {
+  grid-row: 1 / span 2;
+}
+
+:root[data-style='glas'] .room-page .entity-card-press > .toggle-card > :is(.toggle-card__name, .g-tile-state) {
+  grid-column: 2;
+}
+
+:root[data-style='glas'] :is(.lock-card__info, .garage-card__info, .vacuum-card__info, .media-card__info) {
+  min-width: 0;
+}
+
+:root[data-style='glas'] .room-page .lock-card__info,
+:root[data-style='glas'] .room-page .garage-card__info,
+:root[data-style='glas'] .room-page .vacuum-card__info {
+  gap: 0;
+}
+
+/* ---- Light (room): the head, then the sliders while it is on (K93) ---- */
+
+:root[data-style='glas'] .room-page .light-card {
+  gap: 14px;
+  padding: 16px;
+}
+
+:root[data-style='glas'] .room-page .light-card__header {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .room-page .light-card__text {
+  gap: 0;
+}
+
+:root[data-style='glas'] .room-page .light-card__sliders {
+  gap: 10px;
+}
+
+:root[data-style='glas'] .room-page .light-card__slider-row {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .room-page .light-card__slider-label {
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---- Climate (§7.11, K97): the circle in the colour of what it does, the action in its ink, "Ist" 22/28 700, the
+   target in a capsule 40 with − / + (each 40, hit area 44), the modes as pills 36 (controls.css). The overview's
+   steppers stay round 44 (controls.css). ---- */
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card[data-tone='heat'] {
+  --g-climate: var(--g-orange);
+  --g-climate-ink: var(--g-orange-ink);
+  --g-climate-glyph: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card[data-tone='cool'] {
+  --g-climate: var(--g-blue);
+  --g-climate-ink: var(--g-blue-ink);
+  --g-climate-glyph: var(--g-on-badge);
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card[data-tone='auto'] {
+  --g-climate: var(--g-green);
+  --g-climate-ink: var(--g-green-ink);
+  --g-climate-glyph: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card {
+  gap: 14px;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card__header {
+  gap: 12px;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card__action {
+  margin-top: 0;
+  color: var(--g-climate-ink, var(--g-label-2));
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  .climate-card:is([data-tone='heat'], [data-tone='cool'], [data-tone='auto'])
+  .climate-card__action {
+  font-weight: 600;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card__temps {
+  align-items: flex-end;
+  gap: 12px;
+}
+
+:root[data-style='glas']
+  :is(.room-page, .all-modal__grid, .entity-detail__control)
+  :is(.climate-card__current-label, .climate-card__target-label) {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card__current-value {
+  color: var(--g-label);
+  font: 700 22px / 28px var(--g-font);
+  letter-spacing: 0;
+}
+
+:root[data-style='glas'] .climate-card__target-control {
+  gap: 0;
+  height: 40px;
+  margin-top: 4px;
+  border-radius: 20px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn {
+  position: relative;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  background: transparent;
+  font: 400 20px / 1 var(--g-font);
+  transition:
+    background-color 200ms ease,
+    scale var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+/* hit area 44 around the visible 40 */
+:root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn:hover:not(:disabled) {
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn:active {
+  transform: none;
+  scale: 0.9;
+}
+
+:root[data-style='glas'] .climate-card__target-control > .climate-card__target-value {
+  min-width: 56px;
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .climate-card__modes {
+  gap: 8px;
+}
+
+/* ---- Blinds (§7.12, K97): a little blind 40 (radius 12) with its slats down to the position, the position 15/20
+   600, the buttons 40 (hit area 44); a narrow card shows them as symbols (their names stay as aria-label) ---- */
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card {
+  container: g-cover / inline-size;
+  gap: 14px;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__header {
+  gap: 12px;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .icon-chip.cover-card__chip {
+  position: relative;
+  overflow: hidden;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__chip > svg {
+  display: none;
+}
+
+/* the closed share from the top: slats in `label3` with their bottom rail */
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__chip::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: max(4px, calc((100 - var(--g-pos, 100)) * 1%));
+  border-bottom: 2px solid var(--g-label-2);
+  background: repeating-linear-gradient(to bottom, var(--g-label-3) 0 2px, transparent 2px 5px);
+  transition: height 400ms ease;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__position {
+  margin-top: 0;
+  color: var(--g-label-2);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__buttons {
+  gap: 8px;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn,
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn:hover {
+  position: relative;
+  min-width: max-content;
+  min-height: 40px;
+  padding: 0 12px;
+  gap: 6px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  transition:
+    background-color 200ms ease,
+    transform 160ms ease-out;
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn::after {
+  content: '';
+  position: absolute;
+  inset: -2px 0;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn:hover {
+    background: var(--g-fill-2);
+  }
+}
+
+:root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@container g-cover (max-width: 359px) {
+  :root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn,
+  :root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn:hover {
+    min-width: 0;
+    gap: 0;
+    font-size: 0;
+  }
+}
+
+/* ---- Media (room and detail): the artwork 44 (radius 12) like the media window, without a picture `fill` with the
+   glyph in `label2`, blue while it plays; play and volume in controls.css ---- */
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .media-card {
+  gap: 14px;
+  padding: 16px;
+}
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) :is(.media-card__top, .media-card__controls) {
+  gap: 12px;
+}
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .media-card__art {
+  border-radius: 12px;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .media-card__art img {
+  border-radius: 12px;
+}
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .media-card.card--active .media-card__art {
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+}
+
+/* ---- Vacuum ---- */
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .vacuum-card {
+  gap: 14px;
+}
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .vacuum-card__header {
+  gap: 12px;
+}
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .vacuum-card__battery {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] :is(.room-page, .entity-detail__control) .vacuum-card__controls {
+  gap: 8px;
+}
+
+/* ---- Sensors (room): circle, value 20/25 600 (a word, i.e. a tile without a fill bar, 17/22 on the same line), name
+   13/18; a value too wide for its tile ends in an ellipsis; a binary sensor that is on reads its value in its ink ---- */
+
+:root[data-style='glas'] .room-page .entity-card-press > .sensor-tile {
+  gap: 0;
+  padding: 14px;
+}
+
+:root[data-style='glas'] .room-page .sensor-tile__value {
+  min-width: 0;
+  margin-top: 8px;
+  overflow: hidden;
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .room-page .sensor-tile:not(:has(> .sensor-tile__bar)) > .sensor-tile__value {
+  margin-top: 11px;
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] .room-page .sensor-tile__value--binary-danger {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .room-page .sensor-tile__value--binary-positive {
+  color: var(--g-green-ink);
+}
+
+:root[data-style='glas'] .room-page .sensor-tile__value--binary-info {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .room-page .sensor-tile__value--binary-accent {
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] .room-page .sensor-tile__name {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* ---- Cameras (room): radius 22 from the section, the placeholder in `fill` ---- */
+
+:root[data-style='glas'] .room-page .camera-card__placeholder {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .room-page .camera-card__placeholder-name {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* ---- Empty and not found (§7.31): title 17/22 600, the way back as a link in `accentInk` ---- */
+
+:root[data-style='glas'] .room-page__not-found-title {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .room-page__not-found-link {
+  color: var(--g-accent-ink);
+  font: 400 15px / 20px var(--g-font);
+  text-decoration: none;
+}
+
+:root[data-style='glas'] .room-page__not-found-link:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* ---- Edit mode (room): grips, dots, handle and badges in Glas; no dashed outline ---- */
+
+:root[data-style='glas'] .room-page .edit-item-outline {
+  outline: none;
+}
+
+/* a scene tile keeps its width when the edit wrapper takes it out of the grid (a button only fits its content); on the
+   phone its name ends before the badges */
+:root[data-style='glas'] .room-page .edit-item-outline > .scene-tile {
+  width: 100%;
+}
+
+@media (max-width: 899px) {
+  :root[data-style='glas'] .room-page .edit-item-outline > .scene-tile {
+    padding-right: 32px;
+  }
+}
+
+:root[data-style='glas'] .room-section__label-row {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .room-section__grip {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+/* hit area 44 */
+:root[data-style='glas'] .room-section__grip::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .room-section__grip:hover {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .room-section__grip:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* the width (half / full) on the title row's line */
+:root[data-style='glas'] .room-section__span-dots {
+  top: 19px;
+  right: 4px;
+  gap: 4px;
+}
+
+:root[data-style='glas'] .room-section__span-dot {
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .room-section__span-dot--filled {
+  background: var(--accent);
+}
+
+:root[data-style='glas'] .room-section__resize-handle,
+:root[data-style='glas'] .room-section__resize-handle:hover {
+  width: 28px;
+  height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--g-fill-solid);
+  box-shadow: var(--g-shadow-knob);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .room-section__resize-handle:hover {
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .room-section__resize-handle:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* the badges of a card: circles 30 (hit area 44) on an opaque fill with the knob's shadow; hidden = inverted like the
+   overview's bar (edit.css), a favourite's star in `yellowInk` */
+:root[data-style='glas'] .room-page .edit-badge {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .room-page .edit-badge__btn,
+:root[data-style='glas'] .room-page .edit-badge__btn:hover {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: var(--g-fill-solid);
+  box-shadow: var(--g-shadow-knob);
+  color: var(--g-label);
+  opacity: 1;
+}
+
+:root[data-style='glas'] .room-page .edit-badge__btn::after {
+  inset: -7px;
+}
+
+:root[data-style='glas'] .room-page .edit-badge__btn--eye-hidden,
+:root[data-style='glas'] .room-page .edit-badge__btn--eye-hidden:hover {
+  background: var(--g-label);
+  color: var(--bg);
+}
+
+:root[data-style='glas'] .room-page .edit-badge__btn--star-active,
+:root[data-style='glas'] .room-page .edit-badge__btn--star-active:hover {
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .room-page .edit-badge__btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Reduced motion and forced colours ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn:active {
+    scale: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* a circle that is on keeps an outline (its colour is gone), the little blind its slats in the text colour */
+  :root[data-style='glas'] :is(.light-card__chip--on, .toggle-card__chip--on, .vacuum-card__chip--active),
+  :root[data-style='glas'] .climate-card:is([data-tone='heat'], [data-tone='cool'], [data-tone='auto']) .climate-card__chip {
+    outline: 2px solid Highlight;
+  }
+
+  :root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__chip::before {
+    forced-color-adjust: none;
+    border-bottom-color: CanvasText;
+    background: repeating-linear-gradient(to bottom, CanvasText 0 2px, transparent 2px 5px);
+  }
+
+  :root[data-style='glas']
+    :is(.room-page, .all-modal__grid, .entity-detail__control)
+    :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn, .cover-card__btn),
+  :root[data-style='glas'] .climate-card__target-control,
+  :root[data-style='glas'] :is(.room-section__grip, .room-section__resize-handle),
+  :root[data-style='glas'] .room-page .edit-badge__btn {
+    border: 1px solid ButtonText;
+  }
+}

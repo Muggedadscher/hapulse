@@ -119,7 +119,7 @@
 /* The classic switches keep their markup and get the same look (K91): the control card of the detail, the automations,
    the pool, the lights sheet, the device detail and the settings. The capsule is the track or, for the admin and the
    device switch, the button itself; the knob is its child (the lights sheet: the track's ::after). The on rules list
-   the classic on selectors, so they outrank them. On a tile the pill stays as it is until the room (stage 5, K95). */
+   the classic on selectors, so they outrank them. A tile has no switch: the room hides its pill (cards.css, K95). */
 :root[data-style='glas'] :is(
     .entity-detail__control .pill-toggle__track,
     .auto-row-toggle__track,
@@ -214,7 +214,7 @@
 
 /* The pill of a switch card is only a picture (ToggleCard: aria-hidden, no tab stop, "the card switches"); its label
    stops the click, so a tap right on it did nothing. Here the tap goes through to the card, which switches as a whole
-   (K91) — in the detail's control card and, until the room hides the pill (K95), on tiles. */
+   (K91) — in the detail's control card (on the room's tiles the pill is hidden, cards.css). */
 :root[data-style='glas'] .toggle-card .pill-toggle {
   pointer-events: none;
 }
@@ -415,7 +415,7 @@
 
 /* ---- Steppers (K93, GLAS-DESIGN §7.29): − and + round 44 in `fill` with the glyph in `label`, a touch darker under
    the pointer. The pressed scale and the disabled look stay classic. The window of the pool's manual run has its own
-   rule with the same look (sheet-content.css). ---- */
+   rule with the same look (sheet-content.css); the climate card puts its two in the target capsule (cards.css, K97). ---- */
 :root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn) {
   width: 44px;
   min-width: 44px;

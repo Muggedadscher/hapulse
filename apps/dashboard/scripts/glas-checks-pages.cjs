@@ -3,7 +3,8 @@
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
 // pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles, pagesCardTitles and pagesFrame (K89, K90,
-// K85). The plan's other blocks (segments, edit, keep, empty, menus) come with their steps.
+// K85), pagesKeep and pagesEmpty (§3.1, page by page as the pages come in). The plan's other blocks (segments, edit,
+// menus) come with their steps.
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript } = h;
@@ -210,7 +211,8 @@ module.exports = function pages(h) {
       out.pagesSwitchesOk = Object.values(res).every((r) => r.ok);
     });
 
-    // ---- K93 building blocks: steppers round 44 in fill, choice pills 36 (chosen = accentSoft), sliders in Glas
+    // ---- K93 building blocks: steppers round 44 in fill (the climate card's setpoint is a capsule 40 in fill with
+    //      − / + 40 inside and a hit area of 44, §7.11, K97), choice pills 36 (chosen = accentSoft), sliders in Glas
     //      colours (track fill2, brightness yellow, volume label2), gradient knobs 24, play 44 / 56 (playing = blue).
     //      A click on +, on a pill and on play still does what it did. Glas only. ----
     await block('pagesControls', async () => {
@@ -227,6 +229,11 @@ module.exports = function pages(h) {
         const vis = (sel) => [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
         const box = (e) => e && { w: Math.round(e.getBoundingClientRect().width * 10) / 10, h: Math.round(e.getBoundingClientRect().height * 10) / 10, bg: getComputedStyle(e).backgroundColor, r: getComputedStyle(e).borderRadius };
         const step = vis('.climate-card__step-btn');
+        const capsule = vis('.climate-card__target-control');
+        capsule?.scrollIntoView({ block: 'center', behavior: 'instant' });
+        const cr = capsule && capsule.getBoundingClientRect();
+        // 1 px outside the capsule, beside − : still the button (its hit area reaches 2 px beyond the visible 40)
+        const hit = cr && document.elementFromPoint(cr.left - 1, cr.top + cr.height / 2)?.closest('.climate-card__step-btn');
         const pills = [...document.querySelectorAll('.climate-card__mode-pill')].filter((e) => e.getClientRects().length);
         const active = pills.find((e) => e.classList.contains('climate-card__mode-pill--active'));
         const fill = vis('.light-card__fill:not(.light-card__fill--temp)');
@@ -239,7 +246,8 @@ module.exports = function pages(h) {
         return {
           fill: tok('--g-fill'), fill2: tok('--g-fill-2'), yellow: tok('--g-yellow'), blue: tok('--g-blue'),
           soft: tok('--g-accent-soft'),
-          step: box(step), pills: pills.map((p) => box(p).h), active: box(active),
+          step: box(step), capsule: box(capsule), stepHit: !!hit && hit === capsule.firstElementChild,
+          pills: pills.map((p) => box(p).h), active: box(active),
           light: fill && { fill: getComputedStyle(fill).backgroundColor, track: getComputedStyle(fill.parentElement).backgroundColor },
           tempKnob: temp && parseFloat(getComputedStyle(temp, '::after').width),
           play: play && { ...box(play), playing: !!play.closest('.card--active') },
@@ -278,12 +286,14 @@ module.exports = function pages(h) {
             await settleAnimations(page);
             const b = await probe(page);
             const playOk = (p) => p && Math.abs(p.w - 44) < 0.6 && p.bg === (p.playing ? a.blue : a.fill);
-            const ok = round44(a.step) && a.step.bg === a.fill && v1 !== v0
+            const ok = a.capsule && Math.abs(a.capsule.h - 40) < 0.6 && a.capsule.r === '20px' && a.capsule.bg === a.fill
+              && Math.abs(a.step.w - 40) < 0.6 && Math.abs(a.step.h - 40) < 0.6 && a.step.bg === 'rgba(0, 0, 0, 0)' && a.stepHit
+              && v1 !== v0
               && a.pills.length > 1 && a.pills.every((h) => Math.abs(h - 36) < 0.6) && a.active && a.active.bg === a.soft
               && nowActive === otherText
               && a.light && a.light.fill === a.yellow && a.light.track === a.fill2 && (a.tempKnob == null || a.tempKnob === 24)
               && playOk(a.play) && playOk(b.play) && a.play.playing !== b.play.playing;
-            res[`${device}-room`] = { ok, step: a.step, values: [v0, v1], pills: a.pills, active: a.active, mode: [otherText, nowActive], light: a.light, tempKnob: a.tempKnob, play: [a.play, b.play] };
+            res[`${device}-room`] = { ok, capsule: a.capsule, step: a.step, stepHit: a.stepHit, values: [v0, v1], pills: a.pills, active: a.active, mode: [otherText, nowActive], light: a.light, tempKnob: a.tempKnob, play: [a.play, b.play] };
           } catch (e) {
             res[`${device}-room`] = { ok: false, error: String(e.message).slice(0, 160) };
           }
@@ -740,6 +750,303 @@ module.exports = function pages(h) {
       }
       out.pagesFrame = res;
       out.pagesFrameOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- §3.1 "Nicht verlieren" (pagesKeep) page by page: what a page could do in Klassisch it still does in Glas.
+    //      Service calls are counted on the entity's last_updated (the demo stamps it on every call it applies).
+    //      Glas only; where a comparison with Klassisch is named, Klassisch is opened too. ----
+    /** A watch on the calls that reach `id`; `count()` = calls so far, `stop()` ends it and returns the count. */
+    const watchCalls = async (page, id) => {
+      await ev(page, (i) => {
+        const w = { n: 0, last: window.__hapulseDemo.entity(i)?.last_updated };
+        w.t = setInterval(() => {
+          const v = window.__hapulseDemo.entity(i)?.last_updated;
+          if (v !== w.last) { w.n += 1; w.last = v; }
+        }, 4);
+        window.__gKeepWatch = w;
+      }, id);
+      return {
+        count: () => ev(page, () => window.__gKeepWatch.n),
+        stop: () => ev(page, () => { clearInterval(window.__gKeepWatch.t); return window.__gKeepWatch.n; }),
+      };
+    };
+    const entity = (page, id) => ev(page, (i) => window.__hapulseDemo.entity(i), id);
+    const customization = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state?.customization || {});
+    /** Drag a range from `from` to `to` (fractions of its width): calls while the pointer is down and after the release. */
+    const dragRange = async (page, loc, id, from, to) => {
+      await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      await settleAnimations(page);
+      const b = await loc.boundingBox();
+      const y = b.y + b.height / 2;
+      const w = await watchCalls(page, id);
+      await page.mouse.move(b.x + b.width * from, y);
+      await page.mouse.down();
+      for (let k = 1; k <= 6; k++) await page.mouse.move(b.x + b.width * (from + ((to - from) * k) / 6), y);
+      await sleep(250);
+      const during = await w.count();
+      await page.mouse.up();
+      await sleep(400);
+      return { during, after: (await w.stop()) - during };
+    };
+    /** Section titles of a room in their order. */
+    const roomSections = (page) => ev(page, () => [...document.querySelectorAll('.room-page__section')]
+      .filter((e) => e.getClientRects().length)
+      .map((e) => e.querySelector('.section-label')?.textContent.trim()));
+
+    await block('pagesKeep', async () => {
+      const res = {};
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // Room G: sections in Klassisch's order; half/full writes the same field as Klassisch (desktop: the handle
+        // is dragged by one column)
+        {
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/room/living_room', { mode });
+            try {
+              got[style] = { order: await roomSections(page) };
+              if (device === 'desktop') {
+                await page.locator('.g-edit-capsule:visible, .edit-toggle:visible').first().click();
+                await sleep(300);
+                await settleAnimations(page);
+                const handle = page.locator('.room-page__section:has(.light-card) .room-section__resize-handle').first();
+                await handle.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+                await settleAnimations(page);
+                const hb = await handle.boundingBox();
+                const gw = await ev(page, () => document.querySelector('.room-page__sections').getBoundingClientRect().width);
+                await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+                await page.mouse.down();
+                for (let k = 1; k <= 5; k++) await page.mouse.move(hb.x + hb.width / 2 - (gw / 2) * (k / 5), hb.y + hb.height / 2);
+                await page.mouse.up();
+                await sleep(300);
+                got[style].spans = (await customization(page)).roomSectionSpans || {};
+                got[style].half = await ev(page, () => document.querySelector('.room-page__section:has(.light-card)').classList.contains('room-page__section--span-1'));
+              }
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 160) };
+            }
+            await close();
+          }
+          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+          const ok = !got.classic.error && !got.glas.error && got.glas.order.length > 3 && same(got.classic.order, got.glas.order)
+            && (device !== 'desktop' || (same(got.classic.spans, got.glas.spans) && Object.values(got.glas.spans).includes(1) && got.glas.half));
+          res[`${device}-room-sections`] = { ok, ...got };
+        }
+
+        // Entity cards E: sliders send once on release, the tile switches by click and Space, volume, a scene tile, the
+        // sensors' fill bars and wording, "unavailable" dimmed
+        {
+          const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
+          try {
+            const ceiling = page.locator('.room-page .light-card', { hasText: 'Ceiling Light' }).first();
+            const before = await entity(page, 'light.living_room_ceiling');
+            const bright = await dragRange(page, ceiling.locator('.light-card__range').first(), 'light.living_room_ceiling', 0.2, 0.6);
+            const afterBright = await entity(page, 'light.living_room_ceiling');
+            const temp = await dragRange(page, ceiling.locator('.light-card__range').nth(1), 'light.living_room_ceiling', 0.7, 0.3);
+            const hue = await dragRange(page, ceiling.locator('.light-card__hue-range').first(), 'light.living_room_ceiling', 0.3, 0.6);
+            const sliders = [bright, temp, hue].every((x) => x.during === 0 && x.after === 1)
+              && afterBright.attributes.brightness !== before.attributes.brightness;
+
+            // the tile switches: a click on its name, then Space on the focused tile
+            const floor = page.locator('.room-page .light-card', { hasText: 'Floor Lamp' }).first();
+            const s0 = (await entity(page, 'light.living_room_floor_lamp')).state;
+            await floor.locator('.light-card__name').click();
+            await sleep(200);
+            const s1 = (await entity(page, 'light.living_room_floor_lamp')).state;
+            await floor.focus();
+            await page.keyboard.press('Space');
+            await sleep(200);
+            const s2 = (await entity(page, 'light.living_room_floor_lamp')).state;
+            const tile = s1 !== s0 && s2 === s0;
+
+            // volume by keyboard (the slider throttles while it moves)
+            const v0 = (await entity(page, 'media_player.living_room_tv')).attributes.volume_level;
+            const vol = page.locator('.room-page .media-card__volume-input').first();
+            await vol.focus();
+            for (let k = 0; k < 4; k++) await page.keyboard.press('ArrowRight');
+            await sleep(700);
+            const v1 = (await entity(page, 'media_player.living_room_tv')).attributes.volume_level;
+
+            // a scene tile activates its scene
+            const sw = await watchCalls(page, 'scene.living_room_movie');
+            await page.locator('.room-page .scene-tile', { hasText: 'Movie Night' }).first().click();
+            await sleep(300);
+            const scene = (await sw.stop()) === 1;
+
+            // sensors: numeric tiles keep their fill bar, the motion tile its wording
+            const sensors = await ev(page, () => {
+              const tiles = [...document.querySelectorAll('.room-page .sensor-tile')].filter((e) => e.getClientRects().length);
+              const bars = tiles.filter((t) => t.classList.contains('sensor-tile--numeric'))
+                .map((t) => t.querySelector('.sensor-tile__bar')?.getBoundingClientRect().width || 0);
+              const binary = tiles.filter((t) => t.classList.contains('sensor-tile--binary'))
+                .map((t) => t.querySelector('.sensor-tile__value').textContent.trim());
+              return { n: tiles.length, bars, binary };
+            });
+            const sensorsOk = sensors.n >= 3 && sensors.bars.length >= 2 && sensors.bars.every((w) => w > 0)
+              && sensors.binary.length >= 1 && sensors.binary.every((t) => ['Erkannt', 'Frei'].includes(t));
+
+            // "unavailable": the card stays, dimmed and out of reach
+            await ev(page, () => window.__hapulseDemo.patch('light.living_room_shelf', { state: 'unavailable' }));
+            await sleep(300);
+            const unavailable = await ev(page, () => {
+              const wrap = [...document.querySelectorAll('.room-page .entity-unavailable')].find((e) => e.textContent.includes('Shelf Light'));
+              return wrap ? { opacity: parseFloat(getComputedStyle(wrap).opacity), events: getComputedStyle(wrap).pointerEvents } : null;
+            });
+            const unavailableOk = !!unavailable && unavailable.opacity < 0.5 && unavailable.events === 'none';
+
+            const ok = sliders && tile && v1 !== v0 && scene && sensorsOk && unavailableOk;
+            res[`${device}-room-cards`] = { ok, bright, temp, hue, brightness: [before.attributes.brightness, afterBright.attributes.brightness],
+              tile: [s0, s1, s2], volume: [v0, v1], scene, sensors, unavailable };
+          } catch (e) {
+            res[`${device}-room-cards`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // blinds: close, stop, open (the narrow card shows symbols, its buttons keep their names)
+        {
+          const { page, close } = await open(device, 'glas', '/room/bedroom', { mode });
+          try {
+            const card = page.locator('.room-page .cover-card').first();
+            await card.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            const st = async () => (await entity(page, 'cover.bedroom_blinds')).state;
+            // the little blind follows the position (§7.12): open = a 4 px rail, closed = slats over the whole 40
+            const slats = () => card.evaluate((c) => parseFloat(getComputedStyle(c.querySelector('.cover-card__chip'), '::before').height));
+            const s0 = await st();
+            const h0 = await slats();
+            const press = async (key) => {
+              await card.getByRole('button', { name: DE[key], exact: true }).click();
+              await sleep(500);
+              return st();
+            };
+            const states = [s0, await press('cards.cover.open')];
+            const h1 = await slats();
+            states.push(await press('cards.cover.stop'), await press('cards.cover.close'));
+            const ok = states.join() === 'closed,open,stopped,closed' && Math.abs(h0 - 40) < 0.6 && Math.abs(h1 - 4) < 0.6;
+            res[`${device}-room-blinds`] = { ok, states, slats: [h0, h1] };
+          } catch (e) {
+            res[`${device}-room-blinds`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // garage: opening asks first (Escape leaves the door as it is)
+        {
+          const { page, close } = await open(device, 'glas', '/room/garage', { mode });
+          try {
+            const s0 = (await entity(page, 'cover.garage_door')).state;
+            await page.locator('.room-page .garage-card__btn').first().click();
+            await sleep(300);
+            await settleAnimations(page);
+            const asked = await page.locator('.garage-confirm__text').filter({ visible: true }).count();
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            const s1 = (await entity(page, 'cover.garage_door')).state;
+            const ok = s0 === 'closed' && asked === 1 && s1 === s0;
+            res[`${device}-room-garage`] = { ok, states: [s0, s1], asked };
+          } catch (e) {
+            res[`${device}-room-garage`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // hallway: a lock with a code reaches the code entry (Escape leaves it locked); the camera card is there
+        {
+          const { page, close } = await open(device, 'glas', '/room/hallway', { mode });
+          try {
+            await ev(page, () => window.__hapulseDemo.patch('lock.front_door', { attributes: { code_format: '^\\d{4}$' } }));
+            await sleep(200);
+            await page.locator('.room-page .lock-card__btn').first().click();
+            await sleep(300);
+            await settleAnimations(page);
+            const code = await page.locator('.lock-confirm__code').filter({ visible: true }).count();
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            const s1 = (await entity(page, 'lock.front_door')).state;
+            const camera = await page.locator('.room-page .camera-card').filter({ visible: true }).count();
+            const ok = code === 1 && s1 === 'locked' && camera >= 1;
+            res[`${device}-room-hallway`] = { ok, code, lock: s1, camera };
+          } catch (e) {
+            res[`${device}-room-hallway`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // button and vacuum (the demo has none: two are placed in the living room)
+        {
+          const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
+          try {
+            await ev(page, () => {
+              const d = window.__hapulseDemo;
+              d.patch('button.doorbell', { state: 'unknown', attributes: { friendly_name: 'Doorbell' } });
+              d.patch('vacuum.robo', { state: 'docked', attributes: { friendly_name: 'Robo', battery_level: 80 } });
+              d.placeEntity('button.doorbell', 'living_room');
+              d.placeEntity('vacuum.robo', 'living_room');
+            });
+            await sleep(400);
+            const btn = page.locator('.room-page .button-card__btn').first();
+            await btn.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await btn.click();
+            await sleep(100);
+            const flash = await page.locator('.room-page .button-card__chip--flash').count();
+            const vac = await ev(page, () => {
+              const card = document.querySelector('.room-page .vacuum-card');
+              return card && { state: card.querySelector('.vacuum-card__state')?.textContent.trim(),
+                buttons: [...card.querySelectorAll('.vacuum-card__btn')].map((b) => b.getAttribute('aria-label')) };
+            });
+            await page.locator('.room-page .vacuum-card__btn--start').first().click();
+            await sleep(200);
+            const ok = flash === 1 && !!vac && !!vac.state && vac.buttons.length >= 1 && vac.buttons.every(Boolean);
+            res[`${device}-room-button-vacuum`] = { ok, flash, vacuum: vac };
+          } catch (e) {
+            res[`${device}-room-button-vacuum`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesKeep = res;
+      out.pagesKeepOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- Empty states (pagesEmpty, §7.31): what the demo can show, page by page. Glas only. ----
+    await block('pagesEmpty', async () => {
+      const res = {};
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // room: "not found" and "no entities" (the garage door moves to the hallway), title label 600 17, the way back
+        // in accentInk
+        for (const [name, p, key] of [['room-notFound', '/room/nowhere', 'room.notFound.title'], ['room-empty', '/room/garage', 'room.empty.title']]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            if (name === 'room-empty') {
+              await ev(page, () => window.__hapulseDemo.placeEntity('cover.garage_door', 'hallway'));
+              await sleep(400);
+            }
+            const got = await ev(page, () => {
+              const tok = (n) => {
+                const d = document.createElement('div');
+                d.style.color = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d).color;
+                d.remove();
+                return v;
+              };
+              const title = document.querySelector('.room-page__not-found-title');
+              const link = document.querySelector('.room-page__not-found-link');
+              if (!title || !link) return null;
+              const t = getComputedStyle(title);
+              const l = getComputedStyle(link);
+              return { text: title.textContent.trim(), color: t.color === tok('--g-label'), font: `${t.fontWeight} ${t.fontSize}`,
+                link: l.color === tok('--g-accent-ink'), linkH: link.getBoundingClientRect().height };
+            });
+            const ok = !!got && got.text === DE[key] && got.color && got.font === '600 17px' && got.link && got.linkH >= 44;
+            res[`${device}-${name}`] = { ok, ...got };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesEmpty = res;
+      out.pagesEmptyOk = Object.values(res).every((r) => r.ok);
     });
 
     out.pagesPageErrors = pageErrors;

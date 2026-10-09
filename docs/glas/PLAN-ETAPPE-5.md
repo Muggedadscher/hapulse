@@ -248,3 +248,47 @@ und übernommen, außer wo anders vermerkt.
   1920/1440/1100/900, nichts breiter als das Fenster, bündige Flächen, Heroes in drei Zuständen, Kamera-Sektion ohne
   Kopf und Fläche, kein fixiertes Element in einer Container-Seite (auch mit offenem Ziffernfeld, Detail und
   Benachrichtigungen; das Panel hängt weiter unter seiner Glocke).
+
+### 7.8 Raum (K95, mit §7.10–§7.12 aus K97)
+
+- Neue Datei `cards.css` für die `EntityCard`-Familie, wo sie steht: Kacheln im Raum, Karten in „Klima alle“ und
+  „Rollläden alle“ (`.all-modal__grid`, ihre Fläche folgt mit K97) und die Steuerkarte im Detail. Kreis 36 in der
+  Zustandsfarbe wie die Geräte-Kacheln (Licht und Schalter Gelb, ein Schalter mit Ventilator-Symbol Türkis, Sauger Grün,
+  Klima nach dem, was es tut: heizt Orange, kühlt Blau, Automatik Grün; Schloss, Tor und Binärsensoren im Soft-Ton wie
+  in den Fenstern), Name 15/20 600, Zustand 13/18 `label2`, Abweichungen 600 in ihrer Ink.
+- **Kacheln im Raum:** deckend `card`, ohne Rand, Radius 22; Licht- und Schalter-Kachel schalten als Ganzes, die Pille
+  bleibt im DOM und ist ausgeblendet (`accent.css` führt sie nicht mehr). Die Zeile unter dem Namen nennt den Zustand:
+  Licht „An · 78 %“ (`LightCard`, nur Glas), Schalter „An“/„Aus“ (`ToggleCard`, `g-tile-state`). Unter dem Finger 0,97,
+  unter dem Zeiger 1 px höher (ab 900 px); eine vom Kontextmenü gehobene Kachel bewegt sich nicht zusätzlich.
+- **Klima (§7.11):** Soll in einer Kapsel 40 `fill` mit − / + 40 darin (Treffer 44), Wert 17/22 600; die runden
+  Stepper 44 aus §7.2 bleiben für den Pool. Die Zeile unter dem Namen in der Ink des Tons (`data-tone` an der
+  `ClimateCard`, nur Glas). Aktuell 22/28 700, Beschriftungen 13/18 ohne Versalien.
+- **Rollladen (§7.12):** Mini-Rollo 40 (Radius 12) mit Lamellen bis zur Position (`--g-pos` aus `CoverCard`; ohne
+  Position nach Zustand: zu 0, sonst 100), Position 15/20 600, Knöpfe 40 (Treffer 44). Eine Karte unter 360 zeigt die
+  Knöpfe nur als Symbol (die Namen bleiben `aria-label`).
+- **Zeilen** (Schloss, Tor, Knopf): eine Zeile 70 hoch, Knopf „plain“ 44. **Abweichung:** Unter etwa 290 Breite
+  (Desktop, iPad) bekommt der Knopf eine eigene Zeile über die ganze Karte; Klassisch quetscht dort den Namen auf einen
+  Buchstaben (Nebenbefund 18).
+- **Sensoren:** Wert 20/25 600, ein Wort (Kachel ohne Füllbalken) 17/22 auf derselben Linie, zu Langes endet mit „…“;
+  der Füllbalken bleibt. **Abweichung:** Das Raster ist mindestens 150 statt 130 breit, damit „Geschlossen“ passt (am
+  Handy 2 statt 3 Spalten, Nebenbefund 19).
+- **Szenen** wie auf der Übersicht (gemeinsame Regeln in `home-cards.css`, Ton aus `glasSceneTone` in `Room.tsx`), am
+  Handy in zwei Spalten. Der Raum kann ohne `ScenesCard.css` geladen werden (eigener Chunk); die Glas-Kachel bringt ihre
+  Grundregeln deshalb selbst mit (Klassisch: Nebenbefund 17). **Abweichung:** kein „Aktiv“ im Raum (Klassisch zeigt es
+  dort auch nicht).
+- **Medien:** Cover-Fläche im Ton Blau, während es spielt; Play und Lautstärke wie §7.2. **Kamera:** Platzhalter in
+  `fill`.
+- **Bearbeiten:** kein gestrichelter Umriss; Griff als Kreis 32 `fill` (Treffer 44), Breiten-Punkte 14 × 6, Ziehgriff
+  28 × 44 wie ein Knopf, Abzeichen 30 in `fillSolid` mit Schatten (ausgeblendet invertiert, Stern gelb). Halb/Voll und
+  Ziehen wie Klassisch. Eine Szenen-Kachel behält im Bearbeiten-Modus ihre Breite, am Handy endet ihr Name vor den
+  Abzeichen.
+- **Leer und nicht gefunden (§7.31):** Titel 17/22 600 `label` (Text wie Klassisch klein aus den Locales), der Weg
+  zurück als Link in `accentInk` ohne Unterstrich, Treffer 44.
+- Erzwungene Farben: Kreise im An-Zustand mit `Highlight`-Umriss, Lamellen `CanvasText`, Knöpfe, Kapsel, Griffe und
+  Abzeichen mit Rand.
+- Prüfungen: `pagesControls` (Raum) prüft die Kapsel; neu `pagesKeep` (Raum: Sektionen in Klassischs Reihenfolge,
+  Halb/Voll schreibt dasselbe `roomSectionSpans` wie Klassisch, Helligkeit, Farbtemperatur und Farbton senden je einmal
+  beim Loslassen, Kachel per Klick und Leertaste, Lautstärke, Szene, Füllbalken und Binär-Wortlaut, „nicht verfügbar“
+  gedimmt, Rollladen auf/Stopp/zu mit Mini-Rollo, Tor fragt beim Öffnen, Schloss mit Code bis zur Eingabe, Kamera,
+  Knopf, Sauger) und `pagesEmpty` (Raum nicht gefunden, Raum ohne Geräte). Der Selektor-Wächter kennt `cards.css` und
+  das Ventilator-Symbol als Marker.
