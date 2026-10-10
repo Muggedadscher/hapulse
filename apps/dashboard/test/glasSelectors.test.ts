@@ -140,7 +140,8 @@ describe('Glas stylesheets', () => {
       'styles/glas/home.css', 'styles/glas/index.css', 'styles/glas/lists.css', 'styles/glas/material.css', 'styles/glas/menus.css',
       'styles/glas/motion.css', 'styles/glas/music.css', 'styles/glas/nvr.css', 'styles/glas/pages.css', 'styles/glas/pool.css',
       'styles/glas/security.css',
-      'styles/glas/sheet-content.css', 'styles/glas/sheets.css', 'styles/glas/shell.css', 'styles/glas/tabbar.css',
+      'styles/glas/sheet-content.css', 'styles/glas/sheets.css', 'styles/glas/shell.css', 'styles/glas/system.css',
+      'styles/glas/tabbar.css',
       'styles/glas/titles.css',
     ]);
   });

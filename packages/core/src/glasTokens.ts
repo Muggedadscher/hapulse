@@ -890,6 +890,21 @@ function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Con
   for (const ink of ['greenInk', 'blueInk', 'tealInk'] as const) {
     pairs.push({ name: `${ink} glyph on fill over card (hero stats)`, fg: c[ink], bg: compositeOver(c.fill, c.card), min: 3 });
   }
+  // The system page (plan Etappe 5 §7.16): a battery's symbol in its ink in the grey circle; the chips of the
+  // security and system heroes lie in the hero's wash (at most half its soft tone): their secondary text `label2`, the
+  // dot of a value over its threshold and an alert's symbol in `warnInk` or `redInk`.
+  // The percentages (`orangeInk`, `redInk` on the card) and the count of low batteries (`orangeInk` on `orangeSoft`
+  // over the card) are general pairs.
+  for (const ink of ['orangeInk', 'redInk'] as const) {
+    pairs.push({ name: `${ink} glyph on fill over card (battery symbol)`, fg: c[ink], bg: compositeOver(c.fill, c.card), min: 3 });
+  }
+  for (const soft of ['greenSoft', 'warnSoft', 'redSoft'] as const) {
+    const chip = compositeOver(c.fill, compositeOver(atAlpha(c[soft], mustParse(c[soft]).a / 2), c.card));
+    pairs.push({ name: `label2 on fill over the ${soft} wash (hero chip)`, fg: c.label2, bg: chip, min: 4.5 });
+    for (const ink of ['warnInk', 'redInk'] as const) {
+      pairs.push({ name: `${ink} glyph on fill over the ${soft} wash (hero chip dot or symbol)`, fg: c[ink], bg: chip, min: 3 });
+    }
+  }
   return pairs;
 }
 

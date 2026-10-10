@@ -793,6 +793,8 @@ module.exports = function pages(h) {
         heights: 'automationSectionHeights', hidden: 'hiddenAutomationSections', mobile: 'mobileHiddenAutomationSections', card: 'cat_comfort' },
       { page: 'scenes', path: '/scenes', root: '.scenes-page', spans: 'sceneSectionSpans', heights: 'sceneSectionHeights',
         hidden: 'hiddenSceneSections', mobile: 'mobileHiddenSceneSections', card: 'room_kitchen' },
+      { page: 'system', path: '/system', root: '.system-page', spans: 'systemSectionSpans', heights: 'systemSectionHeights',
+        hidden: 'hiddenSystemSections', mobile: 'mobileHiddenSystemSections', card: 'batteries' },
     ];
     /** Edit mode: the header capsule, on a phone in Glas the avatar menu. */
     const enterEdit = async (page) => {
@@ -2808,6 +2810,234 @@ module.exports = function pages(h) {
           res[`${device}-scenes`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
             errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look, wide };
         }
+
+        // System R1–R5, the same content in Klassisch and Glas under the same values: the hero's state and chips with
+        // the alerts (low batteries, unavailable), the monitor's groups, values and bar bands, the batteries with their
+        // bands and the count of low ones. Glas alone: the alerts' symbol in the state's ink, the text 600 `label`; the
+        // monitor's group titles 600 15/20 `label2` without a symbol, tiles in `fill` radius 12 without a border, bars 6
+        // high in green / yellow / red, the groups scrolling 400 high up to the surface's edges; the batteries as an inset
+        // list (rows 52, circle 32 in `fill`, text and separators from 60, none above the first, bands green / yellow /
+        // orange / red, the symbol green, from 25 % orange, at 10 % red, the percentage low orangeInk, critical redInk,
+        // the badge in the orange's soft tone); the activity looks like the overview's.
+        if (keepPart('system')) {
+          const PATCHES = [
+            ['sensor.front_door_lock_battery', { state: '5' }],
+            ['sensor.hallway_motion_battery', { state: '18' }],
+            ['sensor.bedroom_sensor_battery', { state: '40' }],
+            ['sensor.garden_sensor_battery', { state: '80', attributes: { device_class: 'battery', unit_of_measurement: '%',
+              state_class: 'measurement', friendly_name: 'Garden Sensor Battery' } }],
+            ['sensor.processor_use', { state: '82' }],
+            ['sensor.memory_use_percent', { state: '93' }],
+            ['light.living_room_shelf', { state: 'unavailable' }],
+          ];
+          // the demo's hallway motion burst writes its snapshot back after 3 s and would undo a patch made meanwhile
+          const prep = async (page) => {
+            const HALL = 'binary_sensor.hallway_motion';
+            await ev(page, (h) => window.__hapulseDemo.patch(h, null), HALL);
+            await sleep(3200);
+            await ev(page, ([h, list]) => {
+              window.__hapulseDemo.patch(h, null);
+              list.forEach(([i, x]) => window.__hapulseDemo.patch(i, x));
+            }, [HALL, PATCHES]);
+            await sleep(500);
+            await settleAnimations(page);
+          };
+          const content = (page) => ev(page, () => {
+            const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+            const cls = (e, base) => (e ? ([...e.classList].find((c) => c.startsWith(`${base}--`)) || '').slice(base.length + 2) : '');
+            return {
+              status: txt(document.querySelector('.system-page .system-hero-card__status')),
+              chips: [...document.querySelectorAll('.system-page .system-hero-chip')].map((c) => `${cls(c, 'system-hero-chip')}:${txt(c)}`),
+              groups: [...document.querySelectorAll('.system-page .sys-monitor-group')].map((g) => [txt(g.querySelector('.sys-monitor-group__label')),
+                ...[...g.querySelectorAll('.sys-metric-tile')].map((t) => {
+                  const f = t.querySelector('.sys-metric-bar__fill');
+                  return `${txt(t.querySelector('.sys-metric-tile__name'))}|${txt(t.querySelector('.sys-metric-tile__value'))}`
+                    + (f ? `|${cls(f, 'sys-metric-bar__fill')} ${f.style.width}` : '');
+                })].join(' / ')),
+              batteries: [...document.querySelectorAll('.system-page .bat-row')].map((r) => {
+                const f = r.querySelector('.bat-row__bar-fill');
+                return [txt(r.querySelector('.bat-row__name')), txt(r.querySelector('.bat-row__pct')), `${cls(f, 'bat-row__bar-fill')} ${f.style.width}`,
+                  cls(r.querySelector('.bat-row__icon'), 'bat-row__icon'), cls(r.querySelector('.bat-row__pct'), 'bat-row__pct')].join('|');
+              }),
+              badge: txt(document.querySelector('.system-page .batteries-card__low-badge')),
+              activity: document.querySelectorAll('.system-page .activity-row').length,
+            };
+          });
+          const systemLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const bg = (n) => tok(n, 'backgroundColor');
+            const bw = (el, side) => parseFloat(getComputedStyle(el)[`border${side}Width`]);
+            const font = (el) => {
+              const c = getComputedStyle(el);
+              return `${c.fontWeight} ${c.fontSize}/${c.lineHeight}`;
+            };
+            /** left, right and bottom edge of a body to its card, and whether its top is the surface's top */
+            const edges = (body, card) => {
+              const cb = card.getBoundingClientRect();
+              const b = body.getBoundingClientRect();
+              return { edges: [b.left - cb.left - bw(card, 'Left'), cb.right - b.right - bw(card, 'Right'), cb.bottom - b.bottom - bw(card, 'Bottom')]
+                .map(Math.round).join(), top: Math.round(b.top - cb.top - bw(card, 'Top')) === Math.round(parseFloat(getComputedStyle(card, '::before').top)) };
+            };
+            const chips = [...document.querySelectorAll('.system-page .system-hero-chip')];
+            const alert = (kind, ink) => {
+              const c = chips.find((x) => x.classList.contains(`system-hero-chip--${kind}`) && x.querySelector('svg'));
+              if (!c) return null;
+              const s = c.querySelector('svg');
+              const sb = s.getBoundingClientRect();
+              const span = getComputedStyle(c.querySelector('span'));
+              return `${getComputedStyle(s).color === tok(ink)} ${Math.round(sb.width)}x${Math.round(sb.height)} ${span.color === tok('--g-label')} ${span.fontWeight}`;
+            };
+            const mon = document.querySelector('.system-page .sys-monitor-card');
+            const groups = mon.querySelector('.sys-monitor-card__groups');
+            const label = groups.querySelector('.sys-monitor-group__label');
+            const tile = groups.querySelector('.sys-metric-tile');
+            const tcs = getComputedStyle(tile);
+            const tname = tile.querySelector('.sys-metric-tile__name');
+            const tval = tile.querySelector('.sys-metric-tile__value');
+            const bar = groups.querySelector('.sys-metric-bar');
+            const BAND = { ok: bg('--g-green'), warn: bg('--g-yellow'), critical: bg('--g-red') };
+            const band = (f, base) => ['ok', 'medium', 'low', 'warn', 'critical'].find((k) => f.classList.contains(`${base}--${k}`));
+            const fills = [...groups.querySelectorAll('.sys-metric-bar__fill')];
+            const bat = document.querySelector('.system-page .batteries-card');
+            const list = bat.querySelector('.bat-list');
+            const rows = [...list.querySelectorAll('.bat-row')];
+            const row = (n) => rows.find((r) => r.querySelector('.bat-row__name').textContent.trim() === n);
+            const ic = rows[0].querySelector('.bat-row__icon');
+            const icb = ic.getBoundingClientRect();
+            const name0 = rows[0].querySelector('.bat-row__name');
+            const BAT = { 'Front Door Lock': ['--g-red-ink', '--g-red', '--g-red-ink', '600'], 'Hallway Motion': ['--g-orange-ink', '--g-orange', '--g-orange-ink', '600'],
+              'Bedroom Sensor': ['--g-green-ink', '--g-yellow', '--g-label-2', '400'], 'Garden Sensor': ['--g-green-ink', '--g-green', '--g-label-2', '400'] };
+            const bbar = rows[0].querySelector('.bat-row__bar');
+            const pct = getComputedStyle(row('Garden Sensor').querySelector('.bat-row__pct'));
+            const badge = bat.querySelector('.batteries-card__low-badge');
+            const bcs = getComputedStyle(badge);
+            /** a value chip (no symbol): its dot before the key and the value's colour and weight */
+            const value = (kind, ink) => {
+              const c = chips.find((x) => x.classList.contains(`system-hero-chip--${kind}`) && !x.querySelector('svg'));
+              if (!c) return null;
+              const d = getComputedStyle(c, '::before');
+              const v = getComputedStyle(c.querySelector('.system-hero-chip__val'));
+              return `${ink ? d.backgroundColor === bg(ink) : d.content} ${d.width}x${d.height} ${v.color === tok('--g-label')} ${v.fontWeight}`;
+            };
+            return {
+              warn: alert('warn', '--g-warn-ink'), critical: alert('critical', '--g-red-ink'),
+              dots: [value('warn', '--g-warn-ink'), value('critical', '--g-red-ink'), value('ok', null)],
+              label: `${font(label)} ${getComputedStyle(label).color === tok('--g-label-2')} ${getComputedStyle(label).textTransform}`,
+              symbol: getComputedStyle(label.querySelector('[aria-hidden="true"]')).display,
+              tile: `${tcs.borderTopLeftRadius} ${tcs.borderTopWidth} ${tcs.backgroundColor === bg('--g-fill')}`,
+              tname: `${font(tname)} ${getComputedStyle(tname).color === tok('--g-label-2')}`,
+              tval: `${font(tval)} ${getComputedStyle(tval).color === tok('--g-label')} ${getComputedStyle(tval).fontVariantNumeric}`,
+              bar: `${Math.round(bar.getBoundingClientRect().height)} ${getComputedStyle(bar).backgroundColor === bg('--g-fill')}`,
+              bands: fills.every((f) => getComputedStyle(f).backgroundColor === BAND[band(f, 'sys-metric-bar__fill')]),
+              bandSet: [...new Set(fills.map((f) => band(f, 'sys-metric-bar__fill')))].sort().join(),
+              groups: { ...edges(groups, mon), h: Math.round(groups.getBoundingClientRect().height), scrolls: groups.scrollHeight > groups.clientHeight,
+                gap: getComputedStyle(groups).rowGap },
+              rows: Math.round(Math.min(...rows.map((r) => r.getBoundingClientRect().height))),
+              circle: `${Math.round(icb.width)}x${Math.round(icb.height)} ${getComputedStyle(ic).borderRadius} ${getComputedStyle(ic).backgroundColor === bg('--g-fill')}`,
+              textStart: Math.round(name0.getBoundingClientRect().left - rows[0].getBoundingClientRect().left),
+              name: `${font(name0)} ${getComputedStyle(name0).color === tok('--g-label')}`,
+              sep: `${getComputedStyle(rows[1]).backgroundImage.slice(0, 15)} ${getComputedStyle(rows[1]).backgroundPosition}`,
+              firstSep: getComputedStyle(rows[0]).backgroundImage, borders: rows.every((r) => getComputedStyle(r).borderBottomWidth === '0px'),
+              list: edges(list, bat),
+              states: Object.entries(BAT).map(([n, [icon, fill, text, weight]]) => {
+                const r = row(n);
+                if (!r) return `${n}: missing`;
+                const p = getComputedStyle(r.querySelector('.bat-row__pct'));
+                return [getComputedStyle(r.querySelector('.bat-row__icon')).color === tok(icon),
+                  getComputedStyle(r.querySelector('.bat-row__bar-fill')).backgroundColor === bg(fill), p.color === tok(text), p.fontWeight === weight].join();
+              }),
+              bbar: `${Math.round(bbar.getBoundingClientRect().height)} ${getComputedStyle(bbar).backgroundColor === bg('--g-fill')}`,
+              pct: `${font(row('Garden Sensor').querySelector('.bat-row__pct'))} ${pct.fontVariantNumeric}`,
+              badge: `${bcs.backgroundColor === bg('--g-orange-soft')} ${bcs.color === tok('--g-orange-ink')} ${font(badge)} ${Math.round(badge.getBoundingClientRect().height)} ${bcs.borderTopLeftRadius}`,
+            };
+          });
+          /** The activity card's look, without what depends on the card's width. */
+          const activityLook = (page, root) => ev(page, (r) => {
+            const card = document.querySelector(`${r} .activity-card`);
+            const list = card.querySelector('.activity-card__list');
+            const rows = [...list.querySelectorAll('.activity-row')];
+            const f = (el) => {
+              const c = getComputedStyle(el);
+              return `${c.fontWeight} ${c.fontSize}/${c.lineHeight} ${c.color} ${c.fontVariantNumeric}`;
+            };
+            const sep = (el) => {
+              const c = getComputedStyle(el);
+              const b = getComputedStyle(el, '::before');
+              return `${c.borderTopWidth} ${c.borderTopColor} ${b.content} ${b.left} ${b.height} ${b.backgroundColor}`;
+            };
+            const ic = rows[0].querySelector('.activity-row__icon');
+            const cb = card.getBoundingClientRect();
+            const lb = list.getBoundingClientRect();
+            return {
+              rows: Math.round(Math.min(...rows.map((x) => x.getBoundingClientRect().height))),
+              icon: getComputedStyle(ic).display === 'none' ? 'none' : `${Math.round(ic.getBoundingClientRect().width)} ${getComputedStyle(ic).color}`,
+              name: f(rows[0].querySelector('.activity-row__name')), desc: f(rows[0].querySelector('.activity-row__desc')),
+              time: f(rows[0].querySelector('.activity-row__time')),
+              textStart: Math.round(rows[0].querySelector('.activity-row__info').getBoundingClientRect().left - cb.left),
+              first: sep(rows[0]), second: sep(rows[1]),
+              rowEdges: [rows[0].getBoundingClientRect().left - cb.left, cb.right - rows[0].getBoundingClientRect().right].map(Math.round).join(),
+              listTop: Math.round(lb.top - cb.top) - Math.round(parseFloat(getComputedStyle(card, '::before').top)),
+            };
+          }, root);
+          const got = {};
+          let look = null;
+          let act = null;
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/system', { mode });
+            try {
+              await prep(page);
+              got[style] = await content(page);
+              if (style === 'glas') {
+                look = await systemLook(page);
+                act = { system: await activityLook(page, '.system-page') };
+              }
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          {
+            const { page, close } = await open(device, 'glas', '/', { mode });
+            try {
+              act = { ...act, home: await activityLook(page, '.home-page') };
+            } catch (e) {
+              act = { ...act, home: { error: String(e.message).slice(0, 200) } };
+            }
+            await close();
+          }
+          const g = got.glas || {};
+          const same = !!got.classic && !got.classic.error && !g.error && JSON.stringify(got.classic) === JSON.stringify(g);
+          const fine = same && g.status === DE['system.hero.status.critical']
+            && g.chips.join() === ['warn:CPU82%', 'critical:RAM93%', 'ok:Speicher61%', `warn:${DE['system.hero.lowBatteryCount.other'].replace('{count}', '2')}`,
+              `critical:${DE['system.hero.unavailableCount.one'].replace('{count}', '1')}`].join()
+            && g.groups[0] === `${DE['system.monitor.group.processor']} / Processor use|82 %|warn 82% / Processor temperature|47 °C`
+            && g.groups[1].startsWith(`${DE['system.monitor.group.memory']} / Memory use|93 %|critical 93% / `)
+            && g.groups[2].startsWith(`${DE['system.monitor.group.disk']} / Disk use (/)|61 %|ok 61% / `)
+            && g.batteries.join(' // ') === ['Front Door Lock|5%|critical 5%|warn|critical', 'Hallway Motion|18%|low 18%|warn|low',
+              'Bedroom Sensor|40%|medium 40%|ok|', 'Garden Sensor|80%|ok 80%|ok|'].join(' // ')
+            && g.badge === DE['system.batteries.lowCount.other'].replace('{count}', '2') && g.activity > 1;
+          const L = look || {};
+          const measured = !!look && !look.error && L.warn === 'true 16x16 true 600' && L.critical === 'true 16x16 true 600'
+            && L.dots.join() === ['true 8pxx8px true 600', 'true 8pxx8px true 600', 'none autoxauto true 600'].join()
+            && L.label === '600 15px/20px true none' && L.symbol === 'none' && L.tile === '12px 0px true' && L.tname === '400 15px/20px true'
+            && L.tval === '600 15px/20px true tabular-nums' && L.bar === '6 true' && L.bands && L.bandSet === 'critical,ok,warn'
+            && L.groups.edges === '0,0,0' && L.groups.top && L.groups.h === 432 && L.groups.scrolls && L.groups.gap === '16px'
+            && L.rows === 52 && L.circle === '32x32 50% true' && L.textStart === 60 && L.name === '400 17px/22px true'
+            && L.sep === 'linear-gradient 60px 0px' && L.firstSep === 'none' && L.borders && L.list.edges === '0,0,0' && L.list.top
+            && L.states.every((s) => s === 'true,true,true,true') && L.bbar === '6 true' && L.pct === '400 15px/20px tabular-nums'
+            && L.badge === 'true true 600 13px/18px 26 999px';
+          const likeHome = !!act && !!act.system && !!act.home && !act.system.error && !act.home.error
+            && JSON.stringify(act.system) === JSON.stringify(act.home);
+          res[`${device}-system`] = { ok: fine && measured && likeHome, same, glas: g, ...(same ? {} : { classic: got.classic }), look, likeHome,
+            ...(likeHome ? {} : { act }) };
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
@@ -3129,6 +3359,7 @@ module.exports = function pages(h) {
     'music-edit': editScene('/music'),
     'automations-edit': editScene('/automations'),
     'scenes-edit': editScene('/scenes'),
+    'system-edit': editScene('/system'),
   };
 
   return { pagesChecks, scenes };

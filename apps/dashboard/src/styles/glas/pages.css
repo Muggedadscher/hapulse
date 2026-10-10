@@ -122,7 +122,7 @@
         :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list)))
         > .energy-card__header,
       .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))) > .pool-card__head,
-        .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
+      .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
       .automations-page :is(.auto-feed-card__header, .auto-cat-card__header),
       .scenes-page :is(.scene-feed-card__header, .scene-room-card__header)
     ) {
@@ -539,13 +539,15 @@
 
 /* ---- Heroes (K90). With a state, it stays as colour: a quiet wash from its soft tone, word and symbol in its ink
    (security by alarm state, system by health; armed = green as in the alarm window, triggered and pending = red).
-   Without a state (energy, devices, automations, scenes) a plain card like the main room. No capitals. ---- */
+   The wash is half the soft tone: the chips lie in it, and their `label2` on `fill` keeps 4.5:1 there in dark mode
+   (over the full yellow tone 3.8:1). Without a state (energy, devices, automations, scenes) a plain card like the
+   main room. No capitals. ---- */
 :root[data-style='glas'] :is(.security-page .security-hero-card, .system-page .system-hero-card) {
   --g-hero-soft: transparent;
   --g-hero-ink: var(--g-label);
   --g-hero-icon-bg: var(--g-fill);
   --g-hero-icon: var(--g-label-2);
-  --hero-grad: linear-gradient(135deg, var(--g-hero-soft) 0%, transparent 65%);
+  --hero-grad: linear-gradient(135deg, color-mix(in srgb, var(--g-hero-soft) 50%, transparent) 0%, transparent 65%);
 }
 
 :root[data-style='glas']
@@ -608,7 +610,8 @@
 
 /* Chips like the status chips (§7.5, colours K87), here on the card: a capsule 32 in fill, colour only at the symbol —
    open locks and garages redInk, open doors, open windows, motion and faults warnInk, the text then 600 label;
-   closed, locked and quiet in label2. The system's values follow the same rule (no symbol: the value). */
+   closed, locked and quiet in label2. The system's values follow the same rule: their symbol is a dot before the key
+   (redInk as text on the fill over the wash stays below 4.5:1). */
 :root[data-style='glas'] :is(.security-page .security-hero-chip, .system-page .system-hero-chip) {
   gap: 6px;
   min-height: 32px;
@@ -657,16 +660,45 @@
   font-weight: 600;
 }
 
-:root[data-style='glas'] .system-page .system-hero-chip--warn .system-hero-chip__val {
-  color: var(--g-warn-ink);
+/* a value over its threshold: a dot 8 in warnInk or redInk before the key, the value stays 600 label */
+:root[data-style='glas'] .system-page :is(.system-hero-chip--warn, .system-hero-chip--critical):not(:has(> svg))::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g-warn-ink);
 }
 
-:root[data-style='glas'] .system-page .system-hero-chip--critical .system-hero-chip__val {
-  color: var(--g-red-ink);
+:root[data-style='glas'] .system-page .system-hero-chip--critical:not(:has(> svg))::before {
+  background: var(--g-red-ink);
 }
 
 :root[data-style='glas'] .system-page .system-hero-chip--muted .system-hero-chip__val {
   color: var(--g-label-2);
+}
+
+/* the alerts (low batteries, unavailable devices) carry a symbol: like the security chips, the colour at the symbol
+   (warnInk, redInk) and the text 600 label */
+:root[data-style='glas'] .system-page .system-hero-chip:has(> svg) {
+  padding: 0 12px 0 10px;
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip--warn > svg {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .system-page .system-hero-chip--critical > svg {
+  color: var(--g-red-ink);
 }
 
 /* without a state: the plain card */

@@ -239,10 +239,11 @@ und übernommen, außer wo anders vermerkt.
   `.pool-layout` ist bei jeder Breite Container (`g-pool`), die Seite hat keine fixierten Nachfahren (ihre Fenster
   sind portaliert); ab zwei Spalten steht der Zeitplan bündig mit den Nachbarn.
 - **Heroes (K90):** Sicherheit nach Alarmzustand (scharf grün wie im Alarm-Fenster, ausgelöst/verzögert rot,
-  unscharf ohne Ton), System nach Gesundheit (grün, Warnung gelb, kritisch rot): leiser Verlauf aus dem Soft-Ton,
-  Zustandswort 22/28 700 und Symbol im Kreis 56 in seiner Ink, Name 13/18 `label2` ohne Versalien. Die Chips im
-  Sicherheits-Hero sind Kapseln 32 in `fill` (sie sind keine Knöpfe, deshalb nicht 44 wie die Status-Chips), Farbe nur
-  am Symbol nach K87 (offene Tür `warnInk`), der Text dann 600 `label`; im System-Hero trägt der Wert die Farbe.
+  unscharf ohne Ton), System nach Gesundheit (grün, Warnung gelb, kritisch rot): leiser Verlauf aus dem halben
+  Soft-Ton (§7.16), Zustandswort 22/28 700 und Symbol im Kreis 56 in seiner Ink, Name 13/18 `label2` ohne Versalien.
+  Die Chips im Sicherheits-Hero sind Kapseln 32 in `fill` (sie sind keine Knöpfe, deshalb nicht 44 wie die
+  Status-Chips), Farbe nur am Symbol nach K87 (offene Tür `warnInk`), der Text dann 600 `label`; im System-Hero ebenso,
+  ein Wert über seiner Schwelle bekommt einen Punkt vor dem Namen (§7.16).
   Energie, Automationen und Szenen verlieren den Verlauf; ihre Zeile über der Zahl wird 15/20 `label2` mit Symbol 18,
   der Energie-Hero behält seinen Titel 20/25 600 in der Fläche (er trägt die Zeitraum-Wahl).
 - Die Alarm-Modi (K93), Kamera-Kacheln (Radius 18, Badge „Bewegung“) und Listen (K94) kommen mit den Seiten.
@@ -577,3 +578,40 @@ und übernommen, außer wo anders vermerkt.
   statt fest 250 ms: der Pfeil rollt am Handy erst weich (Tastatur-Sensor von dnd-kit), und erst danach liegt die Karte
   dort. Seit dem Energie-Schritt ließ die Prüfung am Handy zu früh los (vermutlich rollt es etwas langsamer, nicht
   gemessen); das Ziehen selbst war nie kaputt (dieselben Schritte mit Wartezeit schieben die Karte).
+
+### 7.16 System (R1–R5, K90, K94, K96)
+
+- **Abweichung:** eine eigene Datei `system.css` (§2 sah für System keine vor) für Monitor, Batterien und die
+  Abstände der Aktivität; der Hero in `pages.css`, Bearbeiten in `edit.css`, die Aktivität selbst in `home-lists.css`
+  (deren Regeln gelten jetzt auch für `.system-page`); `[fork]`-Zeilen in `System.tsx` (Leiste, K96).
+- **Hero (R1, K90):** Die Hinweise „N schwache Batterien“ und „N nicht verfügbar“ tragen ihr Symbol: wie im
+  Sicherheits-Hero die Farbe am Symbol (`warnInk`, `redInk`), der Text 600 `label`. **Nachbesserung der Heroes aus
+  §7.7:** (1) Ein Wert über seiner Schwelle (CPU über 75, RAM und Speicher über 80, alle über 90 kritisch) bekam die
+  Farbe als Text; `redInk` auf `fill` über dem roten Verlauf erreicht nur 4,0–4,4:1. Jetzt steht ein Punkt 8 in
+  `warnInk` bzw. `redInk` vor dem Namen, der Wert bleibt 600 `label`. (2) Der Verlauf beider Heroes ist der halbe
+  Soft-Ton: über dem vollen gelben Ton fiel `label2` der Chips im Dunkeln auf 3,8:1. Neue Kontrastpaare dazu.
+- **Aktivität (R2):** dieselbe Karte wie auf der Übersicht, auch die Abstände zwischen Kopf und Liste (der Kopf der
+  Seiten-Karten hätte sonst gewonnen); die Prüfung vergleicht beide Karten Maß für Maß.
+- **Monitor (R3):** Gruppentitel 15/20 600 `label2` ohne Symbol und Versalien, Kacheln in `fill` ohne Rand mit Radius
+  12, Name 15/20 `label2`, Wert 15/20 600; Balken 6 hoch auf `fill`. Die Schwellen bleiben (über 75 gelb, über 90
+  rot), die Balken in den vollen Farben grün, gelb, rot. Die Gruppen scrollen wie in Klassisch (400), aber bis an die
+  Kanten der Fläche und an ihren runden Ecken beschnitten (432 mit den Einzügen). **Abweichung:** die Kacheln sind
+  mindestens 220 breit (Klassisch 180; die Schrift ist größer) und füllen ihre Zeile (`auto-fit`): in Klassisch blieb
+  auf dem iPad die rechte Hälfte leer, während die Namen gekürzt wurden (Nebenbefund 29). Eine einzelne Kachel nimmt
+  die ganze Zeile.
+- **Batterien (R4, K94):** eingerückte Liste über die ganze Fläche, Zeilen 52, Symbol im Kreis 32 (`fill`; grün, ab
+  25 % orange, ab 10 % rot), Name 17/22, Balken 6, Prozent 15/20 `label2` (schwach `orangeInk`, kritisch `redInk`,
+  beide 600); Trennlinien ab 60, nach der letzten keine. Die Bänder bleiben (bis 10, 25, 50 %), jedes in seiner Farbe:
+  rot, orange, gelb, grün; das Band bis 50 % ist in Klassisch der Akzent und wird gelb (der Akzent ist in Glas keine
+  Zustandsfarbe, GLAS-DESIGN §2.3). Die Liste scrollt wie in Klassisch, 432 hoch wie der Monitor daneben. Die Zahl der
+  schwachen neben dem Titel als Kapsel 26 im weichen Orange.
+- **Bearbeiten (R5, K96):** die Leiste wie auf den Szenen; die Namen: der Hero „Übersicht“, sonst die Titel. Gedeckelte
+  Batterien (ohne eigenen Scroll-Körper) behalten den Titel in der Fläche, die Leiste steht dort oben rechts; Monitor
+  und Aktivität scrollen in ihrem Körper, ihr Titel bleibt darüber.
+- Kontrastpaare: Symbole der Batterien (`orangeInk`, `redInk`) auf `fill` über der Karte (3:1); in den Hero-Chips
+  `label2` auf `fill` über dem halben Verlauf (grün, gelb, rot; 4,5:1) und Punkt bzw. Symbol in `warnInk`/`redInk`
+  darauf (3:1). Prozente und die Kapsel der schwachen sind allgemeine Paare.
+- Prüfungen: `pagesKeep` System (derselbe Inhalt in Klassisch und Glas bei denselben Werten: Hero mit Hinweisen,
+  Monitor mit Werten und Bändern, Batterien mit Bändern und Zahl der schwachen; in Glas die Maße und Farben von
+  Punkten, Symbolen, Gruppen, Kacheln, Balken, Zeilen, Linien, Listenkanten und der Kapsel; die Aktivität wie auf der
+  Übersicht), `pagesEdit` System, Szene `system-edit` für den Klassisch-Vergleich.
