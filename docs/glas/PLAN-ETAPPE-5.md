@@ -772,3 +772,14 @@ Drei unabhängige Prüfungen (CSS in zwei Teilen, Logik), keine Blocker. Behoben
 **Offen für Etappe 7:** die übrigen Hover-Tönungen, auch älterer Etappen (rund 100 Regeln), unter `(hover: hover)`,
 mit einer Prüfung „nach einem Tipp zeigt jedes Bedienelement seinen Ruhezustand“; Kacheln in Fenstern ohne Rand in
 Hochkontrast (etwa die Player-Kachel).
+
+## 9. Gesamtlauf vor dem Merge (2026-10-10)
+
+- `checks` aller Teile: 75 von 75 Blöcken grün. Zwei Blöcke waren im ersten Durchgang rot, beide durch die Prüfskripte:
+  `gesturesInspector` drückte Enter, bevor das Kontextmenü den Fokus hatte (jetzt wartet die Probe darauf), und
+  `pagesCardTitles` erwartete in den System-Karten noch einen Körper unter der Fläche, obwohl sie seit K94 Listen sind
+  (die Aktivitäten liegen wie auf der Übersicht 6 px tiefer). Danach liefen nur diese Teile erneut.
+- Klassisch gegen `main`: 338 Bilder von 66 Szenen (Handy, iPad, Desktop, hell und dunkel), 326 gleich, 12 nur in den
+  Einstellungen (Versionszeile) und unter „Was ist neu“ durch F38.
+- Klick-Fuzz mit einem Hinweis: acht Läufe (Glas und Klassisch, Handy und Desktop, mit und ohne Bearbeiten), 3632 Klicks
+  auf je 13 Seiten, keine JS-Fehler, keine Fehlerkarte, kein HTTP ≥ 400.
