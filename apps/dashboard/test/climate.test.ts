@@ -72,6 +72,11 @@ describe('temperature unit of Home Assistant', () => {
     stopTemperatureUnit();
     expect(unsubscribed).toBe(1);
     expect(getTemperatureUnit()).toBeNull();
+    push?.({ unit_system: { temperature: '°F' } }); // a late delivery after unsubscribing changes nothing
+    expect(getTemperatureUnit()).toBeNull();
+    startDemoTemperatureUnit();
+    push?.({ unit_system: { temperature: '°F' } }); // nor once the demo took over
+    expect(getTemperatureUnit()).toBe('°C');
   });
   it('demo data is in °C', () => {
     startDemoTemperatureUnit();

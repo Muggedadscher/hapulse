@@ -23,26 +23,34 @@ export function parseTemperatureUnit(value: unknown): TemperatureUnit | null {
 const useUnitStore = create<{ unit: TemperatureUnit | null }>()(() => ({ unit: null }));
 
 let _unsub: UnsubscribeFunc | null = null;
+/** Bumped by every start/stop: the library may still deliver a stored config once after unsubscribing. */
+let _gen = 0;
 
-/** Follow the unit of a live connection. */
+function setUnit(unit: TemperatureUnit | null): void {
+  if (useUnitStore.getState().unit !== unit) useUnitStore.setState({ unit });
+}
+
+/** Follow the unit of a live connection (the callback also runs on every `component_loaded`). */
 export function startTemperatureUnit(conn: Pick<HAConnection, 'subscribeConfig'>): void {
   stopTemperatureUnit();
+  const gen = _gen;
   _unsub = conn.subscribeConfig((config) => {
-    useUnitStore.setState({ unit: parseTemperatureUnit(config.unit_system?.temperature) });
+    if (gen === _gen) setUnit(parseTemperatureUnit(config.unit_system?.temperature));
   });
 }
 
 /** Demo mode: the demo entities are in °C. */
 export function startDemoTemperatureUnit(): void {
   stopTemperatureUnit();
-  useUnitStore.setState({ unit: '°C' });
+  setUnit('°C');
 }
 
 /** Connection torn down: unknown until the next one reports its unit. */
 export function stopTemperatureUnit(): void {
+  _gen++;
   _unsub?.();
   _unsub = null;
-  useUnitStore.setState({ unit: null });
+  setUnit(null);
 }
 
 export function getTemperatureUnit(): TemperatureUnit | null {

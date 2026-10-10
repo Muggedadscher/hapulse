@@ -8,7 +8,7 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 ## F37 — 2026-10-10
 
-**Klima in Celsius** · _Climate in Celsius_
+**Klima: richtige Temperatureinheit** · _Climate: the right temperature unit_
 
 ### Behoben / Fixed
 

@@ -746,6 +746,7 @@ console.log('\n── frontend/user_data methods ──');
 assert(typeof HAConnection.prototype.getUserData === 'function', 'HAConnection.prototype.getUserData exported as function');
 assert(typeof HAConnection.prototype.setUserData === 'function', 'HAConnection.prototype.setUserData exported as function');
 assert(typeof HAConnection.prototype.subscribeUserData === 'function', 'HAConnection.prototype.subscribeUserData exported as function');
+assert(typeof HAConnection.prototype.subscribeConfig === 'function', 'HAConnection.prototype.subscribeConfig exported as function'); // [fork]
 
 // ---------------------------------------------------------------------------
 // i18n — translate()

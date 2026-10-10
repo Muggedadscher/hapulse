@@ -507,7 +507,8 @@ export class HAConnection {
 
   /**
    * [fork] Home Assistant's core config (`get_config`: unit system, language, …), the way HA's own frontend reads it:
-   * `cb` runs once it is loaded, again after `core_config_updated` (e.g. a changed unit system) and after a reconnect.
+   * `cb` runs once it is loaded, again after `core_config_updated` (e.g. a changed unit system), after every
+   * `component_loaded` and after a reconnect.
    */
   subscribeConfig(cb: (config: HassConfig) => void): UnsubscribeFunc {
     return libSubscribeConfig(this.#conn, cb);

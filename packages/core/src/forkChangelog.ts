@@ -40,7 +40,7 @@ export const FORK_RELEASES: ForkRelease[] = [
   {
     version: 37,
     date: '2026-10-10',
-    title: { de: 'Klima in Celsius', en: 'Climate in Celsius' },
+    title: { de: 'Klima: richtige Temperatureinheit', en: 'Climate: the right temperature unit' },
     sections: [
       {
         kind: 'fixed',
