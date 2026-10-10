@@ -1,0 +1,611 @@
+/* [fork] Glas — the devices page and a device's window (plan docs/glas/PLAN-ETAPPE-5.md K90–K94, §7.13; GLAS-DESIGN
+   §5.3, §7.27–§7.31): the loading line, the hero's figures and its state, the toolbar's choices, the devices as tiles
+   and as an inset list, and in the window the chips, the groups of entities and their controls. Only presentation:
+   the contents O1–O7 stay. The hero is the frame's plain card (pages.css), grid | list is `g-seg--view`
+   (controls.css), its markup the [fork] switch in components/devices/DevicesToolbar.tsx; the search is lists.css, the
+   rows' switches controls.css (K91), the page's empty state pages.css. */
+
+/* ---- Loading (O1): the label 15/20, the percentage 13/18 `label2`, the line 6 on `fill` in the prominent colour
+   (accent.css), the hint 13/18 `label2`. ---- */
+:root[data-style='glas'] .devices-loading__label {
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .devices-loading__pct {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .devices-loading__bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .devices-loading__hint {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .devices-empty-filter {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- Hero (O2, K90): the plain card; the title 20/25 600 in the surface, the counts 15/20 `label2`; the state as a
+   chip 32 in `fill` like the security hero's, its symbol a filled circle in the state's colour with a dark glyph as
+   in the sidebar's status pill (shell.css). The figures as tiles in `fill` without a border, radius 12, like the
+   energy hero's: the symbol in a circle 32 on the card's colour in `label2` (a count has no state), value 22/28 600,
+   label 12/16 `label2`. ---- */
+:root[data-style='glas'] .devices-page .devices-hero {
+  gap: 16px;
+  padding: 14px 16px 16px;
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__head {
+  align-items: center;
+  gap: 8px 12px;
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__title {
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__subtitle {
+  margin-top: 2px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__status {
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px 0 4px;
+  border-radius: 999px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__status > svg {
+  box-sizing: content-box;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  padding: 5px;
+  border-radius: 50%;
+  color: var(--g-glyph-dark);
+}
+
+/* the symbols' own circle outline is hidden (the circle is the background) */
+:root[data-style='glas'] .devices-page .devices-hero__status > svg circle {
+  display: none;
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__status--healthy > svg {
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__status--warning > svg {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__status--critical > svg {
+  background: var(--g-red);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__status--unknown > svg {
+  background: var(--g-gray);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__stats {
+  gap: 10px;
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__stat {
+  gap: 10px;
+  min-height: 60px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__stat-icon > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__stat-value {
+  color: var(--g-label);
+  font: 600 22px / 28px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .devices-page .devices-hero__stat-label {
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+/* ---- Toolbar (O3): the search and the room and integration choices are lists.css (fields and toolbar choices), grid |
+   list the segment 88 × 44 (controls.css). On a phone the choices and the segment wrap as in Klassisch. ---- */
+
+/* ---- Devices as tiles (O4): opaque `card` without a border, radius 22, the symbol in a circle 36 (`fill` with
+   `label2`; something on: yellow with the dark glyph like a device that is on, §7.10), name 15/20 600 and room 13/18
+   `label2` like the room's tiles; below a hairline the number of entities 13/18 `label2` and the chevron `label3`.
+   The classic dot beside the number falls away: the circle says it. A tile opens the window: it gives under the
+   finger and rises a little under the pointer like the room's tiles (cards.css). ---- */
+:root[data-style='glas'] .devices-results--grid {
+  gap: 10px;
+}
+
+:root[data-style='glas'] .device-card {
+  gap: 12px;
+  padding: 12px 14px 12px 12px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--bg-card);
+  color: var(--g-label);
+  font-family: var(--g-font);
+  transition:
+    box-shadow 350ms ease,
+    translate var(--g-d-smooth) var(--g-spring-smooth),
+    transform var(--g-d-smooth) var(--g-spring-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .device-card:hover {
+  border: 0;
+  background: var(--bg-card);
+}
+
+:root[data-style='glas'] .device-card:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .device-card:active {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .device-card:active {
+    transform: scale(0.97);
+    transition-duration: 120ms;
+  }
+}
+
+@media (min-width: 900px) and (hover: hover) {
+  :root[data-style='glas'] .device-card--grid:hover {
+    box-shadow: var(--g-shadow-card-hover);
+  }
+}
+
+@media (min-width: 900px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .device-card--grid:hover {
+    translate: 0 -1px;
+  }
+}
+
+:root[data-style='glas'] .device-card__head {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .device-card__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+
+:root[data-style='glas'] .device-card__icon > svg {
+  width: 20px;
+  height: 20px;
+}
+
+:root[data-style='glas'] .device-card__icon--active {
+  background: var(--g-yellow);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .device-card__body {
+  gap: 0;
+}
+
+:root[data-style='glas'] .device-card__name {
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .device-card__room {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .device-card__meta {
+  gap: 4px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .device-card__count {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .device-card__dot {
+  display: none;
+}
+
+:root[data-style='glas'] .device-card__chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .device-card--grid {
+  gap: 10px;
+  min-height: 0;
+}
+
+:root[data-style='glas'] .device-card--grid .device-card__meta {
+  padding-top: 10px;
+  border-top: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 0 0 / 100% 0.5px;
+}
+
+/* ---- Devices as an inset list (O4, K94): one surface, radius 22, clipped at its corners; rows 60 with the circle 36,
+   name 17/22 and room 13/18 `label2`, the number 15/20 `label2` and the chevron `label3` on the right; separators
+   0.5 px from the text start (64), none after the last row. A row answers the pointer with `hover`. ---- */
+:root[data-style='glas'] .devices-results--list {
+  gap: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--bg-card);
+}
+
+:root[data-style='glas'] .devices-results--list > .device-card {
+  min-height: 60px;
+  padding: 0 14px 0 16px;
+  border-radius: 0;
+  background: transparent;
+}
+
+:root[data-style='glas'] .devices-results--list > .device-card + .device-card {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 64px 0 / calc(100% - 64px) 0.5px;
+}
+
+:root[data-style='glas'] .devices-results--list > .device-card:hover {
+  background-color: var(--g-hover);
+}
+
+:root[data-style='glas'] .devices-results--list > .device-card:focus-visible {
+  outline-offset: -2px;
+}
+
+/* a row is pressed in place (no scale: the list would tear) */
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .devices-results--list > .device-card:active {
+    transform: none;
+    background-color: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .devices-results--list > .device-card .device-card__name {
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .devices-results--list > .device-card .device-card__count {
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- The window (O5): chips 28 in `fill` 13/18 `label2`; "hide all" plain 44; a group's title 15/20 600 `label2`
+   in sentence case with its number on the right; the entities as a group (`group`, radius 22) with the window's rows
+   (sheet-content.css): at least 52 high, the symbol in a circle 32 `fill`, name 17/22, separators from the text start.
+   A control that does not fit beside the name gets the next line (the name never shrinks below 120). ---- */
+:root[data-style='glas'] .modal-body .device-modal {
+  gap: 20px;
+}
+
+:root[data-style='glas'] .modal-body .device-modal__meta {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .modal-body .device-modal__chip {
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .modal-body .device-modal__chip > svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+:root[data-style='glas'] .modal-body .device-modal__hide-all {
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .modal-body .device-modal__hide-all:hover {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-body .device-modal__hide-all > svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
+}
+
+:root[data-style='glas'] .modal-body .device-modal__section {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .modal-body .device-modal__section-label {
+  justify-content: space-between;
+  margin: 0 4px;
+  color: var(--g-label-2);
+  font: 600 15px / 20px var(--g-font);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .modal-body .device-modal__section-count {
+  padding: 0;
+  background: none;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .modal-body .device-modal__list {
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+:root[data-style='glas'] .modal-body .device-entity-row {
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  min-height: 52px;
+  padding: 4px 14px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .modal-body .device-entity-row + .device-entity-row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 58px 0 / calc(100% - 58px) 0.5px;
+}
+
+:root[data-style='glas'] .modal-body .device-entity-row__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .device-entity-row__name {
+  flex: 1 1 120px;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+/* on its own line the control stands at the right edge, under the name */
+:root[data-style='glas'] .modal-body .device-entity-row__control {
+  gap: 8px;
+  margin-left: auto;
+}
+
+:root[data-style='glas'] .modal-body .device-entity-row__value {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+/* hidden while editing: the content dims, the star and the eye stay legible (like a hidden card, cards.css) */
+:root[data-style='glas'] .modal-body .device-entity-row--hidden {
+  opacity: 1;
+}
+
+:root[data-style='glas']
+  .modal-body
+  .device-entity-row--hidden
+  :is(.device-entity-row__icon, .device-entity-row__name, .device-entity-row__control > :not(.device-entity-row__edit)) {
+  opacity: 0.4;
+}
+
+:root[data-style='glas'] .modal-body .device-entity-row__edit {
+  gap: 8px;
+  padding-left: 8px;
+  border-left: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 0 50% / 0.5px 28px;
+}
+
+/* the controls (K93): round 36 in `fill` with the glyph in `label` inside a hit area of 44, 8 apart (the hit areas
+   touch); a stepper's value 15/20 600 between them; the favourite on = `yellowSoft` with the filled star in
+   `yellowInk`, the eye of a hidden entity inverted (like the edit badges, cards.css) */
+:root[data-style='glas'] .modal-body .device-icon-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+  transition:
+    background-color 150ms ease,
+    opacity 150ms ease,
+    transform 100ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .modal-body .device-icon-btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .modal-body .device-icon-btn > svg {
+  width: 17px;
+  height: 17px;
+}
+
+:root[data-style='glas'] .modal-body .device-icon-btn:hover:not(:disabled) {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-body .device-icon-btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .device-icon-btn:disabled {
+  background: var(--g-fill);
+  color: var(--g-label);
+  opacity: 0.4;
+}
+
+:root[data-style='glas'] .modal-body .device-icon-btn:active:not(:disabled) {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .modal-body .device-icon-btn:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+}
+
+:root[data-style='glas'] .modal-body :is(.device-stepper, .device-transport) {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .modal-body .device-stepper__value {
+  min-width: 52px;
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .modal-body :is(.device-row-fav--on, .device-row-fav--on:hover) {
+  background: var(--g-yellow-soft);
+  color: var(--g-yellow-ink);
+}
+
+/* the eye is the edit area's last button (the star comes first) */
+:root[data-style='glas'] .modal-body .device-entity-row__edit > .device-icon-btn:last-child[aria-pressed='true'],
+:root[data-style='glas'] .modal-body .device-entity-row__edit > .device-icon-btn:last-child[aria-pressed='true']:hover {
+  background: var(--g-label);
+  color: var(--bg);
+}
+
+/* press, activate, run: plain 36 (inside a hit area of 44) — `fill`, `label`, 15/20 600 */
+:root[data-style='glas'] .modal-body .device-row-action {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-block: 4px solid transparent;
+  border-radius: 18px / 22px;
+  background: var(--g-fill);
+  background-clip: padding-box;
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .modal-body .device-row-action:hover {
+  border-color: transparent;
+  background: var(--g-fill-2);
+  background-clip: padding-box;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-body .device-row-action:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+/* a select: the capsule 36 of the page's choices */
+:root[data-style='glas'] .modal-body .device-row-select select {
+  max-width: 11rem;
+  min-height: 44px;
+  padding: 0 32px 0 12px;
+  border: 0;
+  border-block: 4px solid transparent;
+  border-radius: 18px / 22px;
+  background: var(--g-fill);
+  background-clip: padding-box;
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .modal-body .device-row-select select:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .modal-body .device-row-select__chevron {
+  right: 12px;
+  width: 14px;
+  height: 14px;
+  color: var(--g-label-2);
+}
+
+/* ---- Forced colours: the surfaces' colours are gone, the tiles, the list, the window's choices and the controls keep an
+   edge; the choices drop their transparent hit borders like the fields (lists.css, also the toolbar's choices) ---- */
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.device-card--grid, .devices-results--list, .devices-hero__stat) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .devices-results--list > .device-card {
+    border: 0;
+  }
+
+  :root[data-style='glas'] :is(.modal-body .device-row-select select, .modal-body .device-row-action) {
+    min-height: 36px;
+    margin-block: 4px;
+    border: 1px solid ButtonText;
+    border-radius: 18px;
+  }
+
+  :root[data-style='glas'] .modal-body :is(.device-icon-btn, .device-modal__hide-all, .device-modal__chip) {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] .device-card__icon--active {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

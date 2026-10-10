@@ -134,6 +134,7 @@ describe('Glas stylesheets', () => {
   it('exist', () => {
     expect(glasCss.map((f) => f.name).sort()).toEqual([
       'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/cards.css', 'styles/glas/controls.css', 'styles/glas/detail.css',
+      'styles/glas/devices.css',
       'styles/glas/edit.css', 'styles/glas/energy.css', 'styles/glas/feedback.css', 'styles/glas/gestures.css', 'styles/glas/home-cards.css',
       'styles/glas/home-lists.css',
       'styles/glas/home.css', 'styles/glas/index.css', 'styles/glas/lists.css', 'styles/glas/material.css', 'styles/glas/menus.css',

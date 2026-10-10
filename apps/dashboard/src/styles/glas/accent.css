@@ -31,7 +31,6 @@
 :root[data-style='glas'] .overview-span-dot--filled,
 :root[data-style='glas'] .room-section__span-dot--filled,
 :root[data-style='glas'] .devices-loading__bar-fill,
-:root[data-style='glas'] .device-card__dot,
 :root[data-style='glas'] .onboarding__connect-btn:not(.onboarding__connect-btn--secondary),
 /* the app logo (PulseLogo paints its square with the accent, inline) */
 :root[data-style='glas'] .app-sidebar__header,

@@ -65,8 +65,12 @@ module.exports = function pages(h) {
   async function pagesChecks(browser, url, out, opts = {}) {
     const pageErrors = [];
     const ran = [];
+    // --only names blocks (`pagesKeep`) or parts of one (`pagesKeep:devices`, the parts of a block with several pages):
+    // after a fix only the affected checks run (plan §3)
+    const onlyBlocks = (opts.only || []).map((o) => o.split(':')[0]);
+    const onlyParts = (name) => (opts.only || []).filter((o) => o.startsWith(`${name}:`)).map((o) => o.slice(name.length + 1));
     const block = async (name, fn) => {
-      if (opts.only && opts.only.length && !opts.only.includes(name)) return;
+      if (onlyBlocks.length && !onlyBlocks.includes(name)) return;
       ran.push(name);
       try {
         await fn();
@@ -1337,6 +1341,70 @@ module.exports = function pages(h) {
         }
         await close();
       }
+
+      // Devices: grid | list is the same segment of two symbols instead of Klassisch's two buttons; a view, so the
+      // arrows choose; either view lists the devices Klassisch lists in it
+      let classicDevices;
+      {
+        const { page, close } = await open('desktop', 'classic', '/devices');
+        try {
+          const names = () => ev(page, () => [...document.querySelectorAll('.devices-results .device-card__name')].map((e) => e.textContent.trim()));
+          const grid = await names();
+          await page.locator('.devices-view-toggle__btn').nth(0).click();
+          await sleep(300);
+          classicDevices = { grid, list: await names() };
+        } catch (e) {
+          classicDevices = { error: String(e.message).slice(0, 160) };
+        }
+        await close();
+      }
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        const { page, close } = await open(device, 'glas', '/devices', { mode });
+        try {
+          const seg = page.locator('.devices-toolbar .g-seg--view');
+          await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+          await settleAnimations(page);
+          const state = () => seg.evaluate((el) => {
+            const b = el.getBoundingClientRect();
+            const names = (v) => [...document.querySelectorAll(`.devices-results--${v} .device-card__name`)].map((e) => e.textContent.trim());
+            return {
+              role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
+              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
+              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+              h: Math.round(b.height), w: Math.round(b.width),
+              grid: names('grid'), list: names('list'),
+              buttons: document.querySelectorAll('.devices-view-toggle__btn').length,
+            };
+          });
+          const look = await state();
+          await seg.locator('.g-seg__opt[data-value="list"]').click();
+          await sleep(300);
+          const tap = await state();
+          const keys = {};
+          for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
+            await page.keyboard.press(key);
+            await sleep(300);
+            const st = await state();
+            keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st[st.checked].length };
+          }
+          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+          const cg = classicDevices.grid || [];
+          const ok = !classicDevices.error && cg.length > 0 && same(classicDevices.list, cg) && look.role === 'radiogroup'
+            && look.label === DE['devices.toolbar.viewModeAria']
+            && same(look.options, [`list:${DE['devices.toolbar.listViewAria']}`, `grid:${DE['devices.toolbar.gridViewAria']}`])
+            && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
+            && same(look.grid, cg) && look.list.length === 0
+            && tap.checked === 'list' && tap.focus === 'list' && same(tap.list, classicDevices.list) && tap.grid.length === 0
+            && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
+              ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.length}`));
+          res[`${device}-devices`] = { ok, classic: classicDevices.error || classicDevices.grid.length, look: { ...look, grid: look.grid.length },
+            tap: [tap.checked, tap.focus, tap.list.length], keys };
+        } catch (e) {
+          res[`${device}-devices`] = { ok: false, error: String(e.message).slice(0, 200) };
+        }
+        await close();
+      }
       out.pagesSegments = res;
       out.pagesSegmentsOk = Object.values(res).every((r) => r.ok);
     });
@@ -1384,10 +1452,11 @@ module.exports = function pages(h) {
 
     await block('pagesKeep', async () => {
       const res = {};
+      const keepPart = (name) => !onlyParts('pagesKeep').length || onlyParts('pagesKeep').includes(name);
       for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
         // Room G: sections in Klassisch's order; half/full writes the same field as Klassisch (desktop: the handle
         // is dragged by one column)
-        {
+        if (keepPart('room')) {
           const got = {};
           for (const style of ['classic', 'glas']) {
             const { page, close } = await open(device, style, '/room/living_room', { mode });
@@ -1423,7 +1492,7 @@ module.exports = function pages(h) {
 
         // Entity cards E: sliders send once on release, the tile switches by click and Space, volume, a scene tile, the
         // sensors' fill bars and wording, "unavailable" dimmed
-        {
+        if (keepPart('room')) {
           const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
           try {
             const ceiling = page.locator('.room-page .light-card', { hasText: 'Ceiling Light' }).first();
@@ -1492,7 +1561,7 @@ module.exports = function pages(h) {
         }
 
         // blinds: close, stop, open (the narrow card shows symbols, its buttons keep their names)
-        {
+        if (keepPart('room')) {
           const { page, close } = await open(device, 'glas', '/room/bedroom', { mode });
           try {
             const card = page.locator('.room-page .cover-card').first();
@@ -1519,7 +1588,7 @@ module.exports = function pages(h) {
         }
 
         // garage: opening asks first (Escape leaves the door as it is)
-        {
+        if (keepPart('room')) {
           const { page, close } = await open(device, 'glas', '/room/garage', { mode });
           try {
             const s0 = (await entity(page, 'cover.garage_door')).state;
@@ -1539,7 +1608,7 @@ module.exports = function pages(h) {
         }
 
         // hallway: a lock with a code reaches the code entry (Escape leaves it locked); the camera card is there
-        {
+        if (keepPart('room')) {
           const { page, close } = await open(device, 'glas', '/room/hallway', { mode });
           try {
             await ev(page, () => window.__hapulseDemo.patch('lock.front_door', { attributes: { code_format: '^\\d{4}$' } }));
@@ -1561,7 +1630,7 @@ module.exports = function pages(h) {
         }
 
         // button and vacuum (the demo has none: two are placed in the living room)
-        {
+        if (keepPart('room')) {
           const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
           try {
             await ev(page, () => {
@@ -1595,7 +1664,7 @@ module.exports = function pages(h) {
         // Security H: the hero by alarm state (demo control), the triggered alarm card's ring; a mode reaches the code
         // pad (Escape leaves the state), without a code one tap switches; "unlock all" asks with the count, "lock all"
         // locks; the garage's "open all" asks, "close all" closes; the camera badge, people, doors, windows and motion
-        {
+        if (keepPart('security')) {
           const { page, close } = await open(device, 'glas', '/security', { mode });
           try {
             const ALARM = 'alarm_control_panel.home';
@@ -1745,7 +1814,7 @@ module.exports = function pages(h) {
         // "Stopp" the automatic mode; the schedule: a handle moved by 5 min and saved sends scheduler.edit with the new
         // switch point; a figure opens its detail; the restart asks first (Escape: nothing is sent, the danger button
         // presses). The demo applies none of these calls: they are read from its call log (demoCalls.ts).
-        {
+        if (keepPart('pool')) {
           const { page, close } = await open(device, 'glas', '/pool', { mode });
           try {
             const calls = () => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
@@ -1877,7 +1946,7 @@ module.exports = function pages(h) {
         // rows and meter, devices (their bars) and water; the chart grey and yellow, its stacks 14 wide for 13 bars, the
         // device bars orange, the solar meter yellow; every card in the picture, no value cut, the page no wider than the
         // window; the hero does not tint under the pointer (desktop); the loading line 15/20 label2.
-        {
+        if (keepPart('energy')) {
           const texts = (page) => ev(page, () => {
             const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
             const all = (sel) => [...document.querySelectorAll(sel)].map(txt);
@@ -1992,7 +2061,7 @@ module.exports = function pages(h) {
         // and dragging a track, moving the queue; the library's media types, favourites, search, item menu (Escape as
         // in Klassisch) and play. Glas then drags seek (one call, on release), volume and a zone's volume (calls while
         // dragging).
-        {
+        if (keepPart('music')) {
           const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
           const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
           const texts = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length)
@@ -2192,6 +2261,227 @@ module.exports = function pages(h) {
             errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean),
             fallbacks: { classic: got.classic && got.classic.fallbacks, glas: got.glas && got.glas.fallbacks }, drags };
         }
+
+        // Devices O1–O7, the same steps in Klassisch and Glas: search (also without a match), room and integration,
+        // grid | list, a device's window with its switch, star, eye and "hide all" (Escape closes it as in Klassisch),
+        // a thermostat's stepper, a TV's transport, blinds, the lock (unlocking asks first) and the garage door
+        // (opening asks first). Glas alone: tiles, rows and controls in their measures (K93, K94).
+        if (keepPart('devices')) {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const texts = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length)
+            .map((e) => e.textContent.replace(/\s+/g, ' ').trim()), sel);
+          const runDevices = async (page, style) => {
+            const steps = {};
+            const tap = async (sel, o = {}) => {
+              const loc = (o.text ? page.locator(sel, { hasText: o.text }) : page.locator(sel)).filter({ visible: true }).nth(o.nth || 0);
+              await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              await loc.click({ timeout: 2500 });
+              await sleep(250);
+              await settleAnimations(page);
+            };
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              const before = await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => {
+                const data = {};
+                for (const [k, v] of Object.entries(c.data || {})) {
+                  data[k] = typeof v === 'number' && typeof before === 'number' ? Math.round((v - before) * 1000) / 1000 : v;
+                }
+                return `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(data)}`;
+              });
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const names = () => texts(page, '.devices-results .device-card__name');
+            const search = (q) => page.locator('.devices-toolbar__search-input').fill(q).then(() => sleep(250));
+            const choose = (nth, label) => page.locator('.devices-select__native').nth(nth).selectOption({ label }).then(() => sleep(250));
+            const win = () => ev(page, () => {
+              const el = document.querySelector('.modal-body .device-modal');
+              if (!el) return null;
+              const panel = el.closest('[role="dialog"]');
+              return {
+                // the classic header or the Glas sheet head: the dialog's label either way
+                title: document.getElementById(panel?.getAttribute('aria-labelledby') || '')?.textContent.trim(),
+                chips: [...el.querySelectorAll('.device-modal__chip')].map((c) => c.textContent.trim()),
+                sections: [...el.querySelectorAll('.device-modal__section-label')].map((s) => s.textContent.replace(/\s+/g, ' ').trim()),
+                rows: [...el.querySelectorAll('.device-entity-row')].map((r) => [r.querySelector('.device-entity-row__name').textContent.trim(),
+                  r.classList.contains('device-entity-row--hidden') ? 'hidden' : 'shown',
+                  r.querySelector('.device-row-fav')?.getAttribute('aria-pressed') === 'true' ? 'fav' : '-',
+                  r.querySelector('.device-entity-row__value')?.textContent.trim() || r.querySelector('.device-stepper__value')?.textContent.trim() || ''].join('|')),
+                hideAll: el.querySelector('.device-modal__hide-all')?.textContent.trim(),
+              };
+            });
+            const dialogs = () => ev(page, () => document.querySelectorAll('[role="dialog"]').length);
+            const stored = async () => {
+              const c = await customization(page);
+              return { favorites: (c.favorites || []).filter((i) => /bedroom/.test(i)), hidden: (c.hiddenEntities || []).filter((i) => /bedroom/.test(i)).sort() };
+            };
+            const window_ = (name) => tap('.device-card', { text: name });
+            const close_ = async () => {
+              await page.keyboard.press('Escape');
+              await sleep(300);
+              await settleAnimations(page);
+            };
+            const label = (key) => `[role="dialog"] .device-modal [aria-label="${DE[key]}"]`;
+
+            await step('start', async () => {}, async () => {
+              const all = await names();
+              return { n: all.length, first: all.slice(0, 3), sub: (await texts(page, '.devices-hero__subtitle'))[0], status: (await texts(page, '.devices-hero__status'))[0] };
+            });
+            await step('search', () => search('kitchen'), names);
+            await step('searchNone', () => search('zzzz'), () => texts(page, '.devices-empty-filter'));
+            await step('searchOff', () => search(''), async () => (await names()).length);
+            await step('room', () => choose(0, 'Bedroom'), names);
+            await step('integration', async () => { await choose(0, DE['devices.toolbar.allRooms']); await choose(1, 'Z-Wave'); }, names);
+            await step('filtersOff', () => choose(1, DE['devices.toolbar.allIntegrations']), async () => (await names()).length);
+            await step('list', () => (style === 'glas' ? tap('.devices-toolbar .g-seg__opt[data-value="list"]') : tap('.devices-view-toggle__btn', { nth: 0 })),
+              async () => ({ names: (await texts(page, '.devices-results--list .device-card__name')).length, counts: (await texts(page, '.devices-results--list .device-card__count')).slice(0, 4) }));
+            await step('grid', () => (style === 'glas' ? tap('.devices-toolbar .g-seg__opt[data-value="grid"]') : tap('.devices-view-toggle__btn', { nth: 1 })),
+              async () => (await texts(page, '.devices-results--grid .device-card__name')).length);
+            await step('open', () => window_('Bedroom Lights'), win);
+            await step('toggle', () => tap('[role="dialog"] .device-toggle'), win);
+            await step('fav', () => tap('[role="dialog"] .device-row-fav'), async () => ({ win: await win(), stored: await stored() }));
+            await step('favOff', () => tap('[role="dialog"] .device-row-fav'), async () => ({ win: await win(), stored: await stored() }));
+            await step('hide', () => tap('[role="dialog"] .device-entity-row__edit > .device-icon-btn:last-child'), async () => ({ win: await win(), stored: await stored() }));
+            await step('unhide', () => tap('[role="dialog"] .device-entity-row__edit > .device-icon-btn:last-child'), async () => ({ win: await win(), stored: await stored() }));
+            await step('hideAll', () => tap('[role="dialog"] .device-modal__hide-all'), async () => ({ win: await win(), stored: await stored() }));
+            await step('showAll', () => tap('[role="dialog"] .device-modal__hide-all'), async () => ({ win: await win(), stored: await stored() }));
+            await step('escape', close_, dialogs);
+            await step('thermostat', async () => {
+              await window_('Living Room Thermostat');
+              const before = (await entity(page, 'climate.living_room')).attributes.temperature;
+              await tap(label('devices.row.increaseAria'));
+              return before;
+            }, win);
+            await step('thermostatDown', async () => {
+              const before = (await entity(page, 'climate.living_room')).attributes.temperature;
+              await tap(label('devices.row.decreaseAria'));
+              return before;
+            }, win);
+            await close_();
+            await step('media', async () => {
+              await window_('Living Room TV');
+              await tap(label('devices.row.previousAria'));
+              await tap(`${label('devices.row.pauseAria')}, ${label('devices.row.playAria')}`);
+              await tap(label('devices.row.nextAria'));
+            });
+            await close_();
+            await step('blinds', async () => {
+              await window_('Bedroom Blinds');
+              for (const key of ['devices.row.openAria', 'devices.row.stopAria', 'devices.row.closeAria']) await tap(label(key));
+            });
+            await close_();
+            await step('lockAsk', async () => {
+              await window_('Front Door Lock');
+              await tap('[role="dialog"] .device-modal .device-toggle');
+            }, () => texts(page, '.lock-confirm__text'));
+            await step('lockConfirm', () => tap('.lock-confirm__actions .btn--danger'), async () => ({ ask: await texts(page, '.lock-confirm__text'), win: await win() }));
+            await step('lockAgain', () => tap('[role="dialog"] .device-modal .device-toggle'), () => texts(page, '.lock-confirm__text'));
+            await close_();
+            await step('garageAsk', async () => {
+              await window_('Garage Door');
+              await tap(label('devices.row.openAria'));
+            }, () => texts(page, '.garage-confirm__text'));
+            await step('garageConfirm', () => tap('.garage-confirm__actions .btn--danger'), async () => ({ ask: await texts(page, '.garage-confirm__text'), dialogs: await dialogs() }));
+            await close_();
+            return { steps };
+          };
+          /** Glas: the tiles, list rows, choices and the window's controls in their measures — a hit area of 44 around
+           *  a capsule or circle of 36 (a point 3 px beside the visible edge still reaches it). */
+          const devicesLook = async (page) => {
+            const grid = await ev(page, () => {
+              const tile = document.querySelector('.devices-results--grid .device-card');
+              const cs = getComputedStyle(tile);
+              const icon = tile.querySelector('.device-card__icon').getBoundingClientRect();
+              const name = getComputedStyle(tile.querySelector('.device-card__name'));
+              const sel = document.querySelector('.devices-select__native');
+              const sb = sel.getBoundingClientRect();
+              const scs = getComputedStyle(sel);
+              return { radius: cs.borderTopLeftRadius, border: cs.borderTopWidth, icon: `${Math.round(icon.width)}x${Math.round(icon.height)}`,
+                name: `${name.fontWeight} ${name.fontSize}/${name.lineHeight}`, select: Math.round(sb.height), selectVisible: Math.round(sb.height - parseFloat(scs.borderTopWidth) - parseFloat(scs.borderBottomWidth)) };
+            });
+            await page.locator('.devices-toolbar .g-seg__opt[data-value="list"]').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const list = await ev(page, () => {
+              const box = document.querySelector('.devices-results--list');
+              const rows = [...box.querySelectorAll('.device-card')];
+              return { radius: getComputedStyle(box).borderTopLeftRadius, rows: rows.length, minH: Math.round(Math.min(...rows.map((r) => r.getBoundingClientRect().height))) };
+            });
+            await page.locator('.devices-toolbar .g-seg__opt[data-value="grid"]').click();
+            await sleep(300);
+            await page.locator('.device-card', { hasText: 'Living Room Thermostat' }).first().click();
+            await sleep(500);
+            await settleAnimations(page);
+            const win = await ev(page, () => {
+              const el = document.querySelector('.modal-body .device-modal');
+              const btns = [...el.querySelectorAll('.device-icon-btn')].filter((b) => b.getClientRects().length);
+              const hits = btns.map((b) => {
+                const r = b.getBoundingClientRect();
+                const at = document.elementFromPoint(r.right + 3, r.top + r.height / 2);
+                return { size: `${Math.round(r.width)}x${Math.round(r.height)}`, hit: !!at && (at === b || b.contains(at)) };
+              });
+              const rows = [...el.querySelectorAll('.device-entity-row')].map((r) => Math.round(r.getBoundingClientRect().height));
+              const label = getComputedStyle(el.querySelector('.device-modal__section-label'));
+              return { buttons: hits, rows, section: `${label.fontWeight} ${label.fontSize} ${label.textTransform}`,
+                hideAll: Math.round(el.querySelector('.device-modal__hide-all').getBoundingClientRect().height) };
+            });
+            return { grid, list, win };
+          };
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/devices', { mode });
+            try {
+              got[style] = await runDevices(page, style);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let look = null;
+          {
+            const { page, close } = await open(device, 'glas', '/devices', { mode });
+            try {
+              look = await devicesLook(page);
+            } catch (e) {
+              look = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const one = (k, want) => !!g[k] && g[k].sent.length === 1 && g[k].sent[0].startsWith(want);
+          const st = g.start ? g.start.dom : {};
+          const fine = same && st.n > 10
+            && g.search.dom.length > 0 && g.search.dom.length < st.n && g.searchNone.dom.join() === DE['devices.emptyFilter'] && g.searchOff.dom === st.n
+            && g.room.dom.length > 0 && g.room.dom.length < st.n && g.integration.dom.length > 0 && g.integration.dom.length < st.n && g.filtersOff.dom === st.n
+            && g.list.dom.names === st.n && g.grid.dom === st.n
+            && g.open.dom.title === 'Bedroom Lights' && g.open.dom.rows.length === 2
+            && one('toggle', 'light.toggle')
+            && g.fav.dom.stored.favorites.length === 1 && g.fav.dom.win.rows[0].includes('|fav|') && g.favOff.dom.stored.favorites.length === 0
+            && g.hide.dom.stored.hidden.length === 1 && g.hide.dom.win.rows[0].includes('|hidden|') && g.unhide.dom.stored.hidden.length === 0
+            && g.hideAll.dom.stored.hidden.length === 2 && g.hideAll.dom.win.rows.every((r) => r.includes('|hidden|'))
+            && g.hideAll.dom.win.hideAll === DE['devices.modal.showAllEntities']
+            && g.showAll.dom.stored.hidden.length === 0 && g.showAll.dom.win.hideAll === DE['devices.modal.hideAllEntities']
+            && g.escape.dom === 0
+            && g.thermostat.sent.join() === 'climate.set_temperature {"entity_id":"climate.living_room"} {"temperature":0.5}'
+            && g.thermostatDown.sent.join() === 'climate.set_temperature {"entity_id":"climate.living_room"} {"temperature":-0.5}'
+            && g.media.sent.map((c) => c.split(' ')[0]).join() === 'media_player.media_previous_track,media_player.media_pause,media_player.media_next_track'
+            && g.blinds.sent.map((c) => c.split(' ')[0]).join() === 'cover.open_cover,cover.stop_cover,cover.close_cover'
+            && g.lockAsk.sent.length === 0 && g.lockAsk.dom.length === 1 && one('lockConfirm', 'lock.unlock') && g.lockConfirm.dom.ask.length === 0
+            && one('lockAgain', 'lock.lock') && g.lockAgain.dom.length === 0
+            && g.garageAsk.sent.length === 0 && g.garageAsk.dom.length === 1 && one('garageConfirm', 'cover.open_cover') && g.garageConfirm.dom.ask.length === 0;
+          const measured = !!look && !look.error && look.grid.radius === '22px' && look.grid.border === '0px' && look.grid.icon === '36x36'
+            && look.grid.name === '600 15px/20px' && look.grid.select === 44 && look.grid.selectVisible === 36
+            && look.list.radius === '22px' && look.list.rows === st.n && look.list.minH >= 60
+            && look.win.buttons.length >= 4 && look.win.buttons.every((b) => b.size === '36x36' && b.hit)
+            && look.win.rows.every((h) => h >= 52) && look.win.section === '600 15px none' && look.win.hideAll === 44;
+          res[`${device}-devices`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look };
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
@@ -2371,6 +2661,45 @@ module.exports = function pages(h) {
             res[`${device}-music-empty`] = { ok: ids.length === 3 && emptyOk(got, 'music.empty.title'), removed: ids.length, ...got };
           } catch (e) {
             res[`${device}-music-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // devices: with every entity hidden and editing off no device is left, the page's empty state in the same look;
+        // a search without a match says so in 15/20 `label2`
+        {
+          const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+          const { page, close } = await open(device, 'glas', '/devices',
+            { mode, customization: { editingEnabled: false, hiddenEntities: Object.keys(DEMO_ENTITIES) } });
+          try {
+            await sleep(500);
+            await settleAnimations(page);
+            const got = await emptyLook(page, '.devices-page > .empty-state');
+            res[`${device}-devices-empty`] = { ok: emptyOk(got, 'devices.empty.title'), ...got };
+          } catch (e) {
+            res[`${device}-devices-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+        {
+          const { page, close } = await open(device, 'glas', '/devices', { mode });
+          try {
+            await page.locator('.devices-toolbar__search-input').fill('zzzz');
+            await sleep(300);
+            const got = await ev(page, () => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label-2)';
+              document.body.appendChild(d);
+              const want = getComputedStyle(d).color;
+              d.remove();
+              const e = document.querySelector('.devices-empty-filter');
+              const cs = getComputedStyle(e);
+              return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
+                cards: document.querySelectorAll('.device-card').length };
+            });
+            res[`${device}-devices-noMatch`] = { ok: got.text === DE['devices.emptyFilter'] && got.font === '15px/20px' && got.color && got.cards === 0, ...got };
+          } catch (e) {
+            res[`${device}-devices-noMatch`] = { ok: false, error: String(e.message).slice(0, 200) };
           }
           await close();
         }

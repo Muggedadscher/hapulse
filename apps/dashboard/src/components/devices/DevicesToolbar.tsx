@@ -5,6 +5,8 @@
 import React from 'react';
 import { Search, List, LayoutGrid, ChevronDown } from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: grid | list as a segment (K92)
+import { Segment } from '../glas/Segment'; // [fork]
 
 export interface FilterOption {
   value: string;
@@ -56,6 +58,7 @@ export function DevicesToolbar({
   view, onViewChange,
 }: DevicesToolbarProps) {
   const t = useT();
+  const isGlas = useIsGlas(); // [fork]
   return (
     <div className="devices-toolbar">
       <div className="devices-toolbar__search">
@@ -84,6 +87,19 @@ export function DevicesToolbar({
           options={[{ value: '', label: t('devices.toolbar.allIntegrations') }, ...integrations]}
         />
 
+        {/* [fork] Glas: the segment with symbol options (plan docs/glas/PLAN-ETAPPE-5.md K92); a view, so the arrows choose */}
+        {isGlas ? (
+          <Segment
+            className="g-seg--view"
+            label={t('devices.toolbar.viewModeAria')}
+            value={view}
+            onChange={onViewChange}
+            options={[
+              { value: 'list', label: t('devices.toolbar.listViewAria'), icon: <List size={18} strokeWidth={2} /> },
+              { value: 'grid', label: t('devices.toolbar.gridViewAria'), icon: <LayoutGrid size={18} strokeWidth={2} /> },
+            ]}
+          />
+        ) : ( // [fork] Klassisch: its buttons
         <div className="devices-view-toggle" role="group" aria-label={t('devices.toolbar.viewModeAria')}>
           <button
             type="button"
@@ -104,6 +120,7 @@ export function DevicesToolbar({
             <LayoutGrid size={16} strokeWidth={2} />
           </button>
         </div>
+        )}{/* [fork] */}
       </div>
     </div>
   );

@@ -477,3 +477,46 @@ und übernommen, außer wo anders vermerkt.
   iPad und Handy nichts; Auge und Handy schreiben `hiddenMusicSections` und `mobileHiddenMusicSections`, Inhalt blass,
   Auge invertiert, nach dem Wechsel zu Klassisch dieselben Karten ausgeblendet), `pagesEmpty` Musik (ohne Player).
   Neu in `shoot`: die Szene `music-edit`.
+
+### 7.13 Geräte (O1–O7, K90–K94)
+
+- Neue Datei `devices.css`; die `[fork]`-Weiche für das Segment in `DevicesToolbar.tsx`.
+- **Laden (O1):** die Linie 6 auf `fill` in der prominenten Farbe (accent.css), Text 15/20, Prozent und Hinweis 13/18
+  `label2`.
+- **Hero (O2, K90):** schlichte Karte (pages.css), Titel 20/25 600, Zählung 15/20 `label2`. Der Zustand als Chip 32 in
+  `fill`, sein Symbol ein voller Kreis in der Zustandsfarbe mit dunklem Glyph wie die Status-Pille der Seitenleiste.
+  Kennzahlen als Kacheln in `fill` ohne Rand, Radius 12, wie im Energie-Hero: das Symbol im Kreis 32 auf der
+  Kartenfarbe in `label2` (eine Zahl hat keinen Zustand), Wert 22/28 600, Bezeichnung 12/16 `label2`.
+- **Werkzeugleiste (O3, K92, K94):** die Suche aus lists.css; Raum und Integration als Kapsel 36 in `fill` in einer
+  Trefferfläche 44 wie die Player-Wahl der Musik (lists.css, dieselbe Regel für die Wahlen der Automationen); Raster |
+  Liste das Segment mit zwei Symbolen (`g-seg--view`, 88 × 44, `radiogroup`, die Pfeile wählen). Am Handy brechen Wahlen
+  und Segment um wie in Klassisch.
+- **Kacheln (O4):** deckend `card` ohne Rand, Radius 22; das Symbol im Kreis 36 (`fill`, `label2`; etwas an: Gelb mit
+  dunklem Glyph wie ein eingeschaltetes Gerät, §7.10), Name 15/20 600 und Raum 13/18 `label2` wie die Kacheln im Raum,
+  unter einer Haarlinie die Anzahl 13/18 `label2` und der Chevron `label3`. Ein Tipp gibt nach, ab 900 px hebt sich
+  die Kachel unter dem Zeiger wie im Raum. **Abweichung:** der Punkt neben der Anzahl entfällt, der Kreis sagt es
+  (`accent.css` führt ihn nicht mehr). Ein ausgeblendetes Gerät (beim Bearbeiten) bleibt blass wie in Klassisch (.5).
+- **Liste (O4, K94):** eine Fläche, Radius 22; Zeilen 60 mit dem Kreis 36, Name 17/22, Raum 13/18 `label2`, rechts die
+  Zahl 15/20 `label2` und der Chevron `label3`; Trennlinien ab dem Textanfang, nach der letzten keine.
+- **Gerätefenster (O5–O7):** Chips 28 in `fill`, 13/18 `label2`; „Alle Entitäten ausblenden“ plain 44; Gruppentitel
+  15/20 600 `label2` ohne Versalien, die Anzahl rechts; die Entitäten als Gruppe (`group`, Radius 22), Zeilen ab 52,
+  das Symbol im Kreis 32, Name 17/22, Trennlinien ab dem Text. Was neben dem Namen keinen Platz hat (am Handy mit Stern
+  und Auge), steht rechtsbündig in einer zweiten Zeile; der Name wird dafür nicht unter 120 gekürzt. Schalter aus
+  controls.css (K91). Stern an: `yellowSoft` mit `yellowInk`; das Auge einer ausgeblendeten Entität invertiert, ihr
+  Inhalt blass (.4), Stern und Auge nicht. Werte 15/20 `label2` (die Großschreibung wie in Klassisch, Nebenbefund 27).
+  Auswahl als Kapsel 36 und Aktionen (Drücken, Aktivieren, Ausführen) plain 36, beide in einer Trefferfläche 44; die
+  Demo hat solche Zeilen nicht, geprüft an Bildern mit eingesetzten Zeilen.
+- **Abweichung von K93:** Stepper, Transport, Stern und Auge im Fenster sind Kreise 36 in `fill` in einer Trefferfläche
+  44 (8 auseinander, die Flächen berühren sich), nicht 44 sichtbar: in Zeilen ab 52 stießen Kreise 44 an die
+  Trennlinien. Ebenso die Knöpfe in den Zeilen der Musik (§7.12).
+- **Erzwungene Farben:** Kanten an Kacheln, Liste, Kennzahlen, Wahlen und Knöpfen; Eingeschaltetes in der
+  Systemhervorhebung.
+- Kontrastpaare: der Stern an auf `yellowSoft` über `group`, das invertierte Auge, die Kreise des Hero-Chips (die Paare
+  der Status-Pille).
+- Prüfungen: `pagesSegments` Geräte (Rolle, Namen, 88 × 44, Raster vorgewählt, Tippen auf Liste, Pfeile; dieselben
+  Geräte wie in Klassisch in beiden Ansichten), `pagesKeep` Geräte (dieselben Schritte in Klassisch und Glas senden
+  dieselben Aufrufe und ändern Seite und Speicher gleich: Suche auch ohne Treffer, Raum, Integration, Raster und Liste,
+  das Fenster mit Schalter, Stern, Auge, „alle ausblenden“ und Esc; Thermostat ±, TV-Transport, Rollo, Schloss mit
+  Rückfrage beim Entriegeln, Garagentor mit Rückfrage beim Öffnen; in Glas zusätzlich die Maße: Kachel, Liste, Kapseln
+  36 in 44, Knöpfe 36 mit Treffer 3 px neben dem Kreis, Zeilen ab 52, Gruppentitel), `pagesEmpty` Geräte (keine
+  Geräte; eine Suche ohne Treffer).

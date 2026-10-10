@@ -883,6 +883,9 @@ function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Con
   pairs.push({ name: 'label glyph on fillSolid (library item more)', fg: c.label, bg: c.fillSolid, min: 3 });
   pairs.push({ name: 'yellowInk glyph on fillSolid (library favourite star)', fg: c.yellowInk, bg: c.fillSolid, min: 3 });
   pairs.push({ name: 'glyphDark on knob (library play)', fg: c.glyphDark, bg: c.knob, min: 3 });
+  // The devices page (plan Etappe 5 §7.13): a favourite in the device window, the inverted eye of a hidden entity.
+  pairs.push({ name: 'yellowInk glyph on yellowSoft over group (device window favourite)', fg: c.yellowInk, bg: compositeOver(c.yellowSoft, c.group), min: 3 });
+  pairs.push({ name: 'bg glyph on label (eye of a hidden entity or card)', fg: c.bg, bg: c.label, min: 3 });
   return pairs;
 }
 
@@ -949,7 +952,7 @@ function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a
   pairs.push({ name: 'banner text on lost', fg: c.label, bg: resolveMix(c.bannerLost), min: 4.5 });
   pairs.push({ name: 'onBadge on badge', fg: c.onBadge, bg: c.badge, min: 4.5 });
   for (const s of ['green', 'yellow', 'red', 'gray'] as const) {
-    pairs.push({ name: `glyphDark on ${s} (status pill)`, fg: c.glyphDark, bg: c[s], min: 4.5 });
+    pairs.push({ name: `glyphDark on ${s} (status pill, devices hero)`, fg: c.glyphDark, bg: c[s], min: 4.5 });
   }
   return pairs;
 }
