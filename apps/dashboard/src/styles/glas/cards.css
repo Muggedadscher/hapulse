@@ -71,7 +71,8 @@
   background: var(--bg-card);
 }
 
-:root[data-style='glas'] .room-page .entity-card-press > .card:focus-visible {
+/* not the quiet focus the context menu gives back after a finger (gestures.css): its ring waits for a key */
+:root[data-style='glas'] .room-page .entity-card-press > .card:focus-visible:not([data-g-quiet-focus]) {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
 }

@@ -7,7 +7,7 @@ import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import type { HassEntity } from '@hapulse/core';
 import { useT } from '../../../i18n/useT';
-import { useChipSubtitle } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
+import { useChipWindow } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
 import './chipmodals.css';
 
 const DOOR_CLASSES = new Set(['door', 'garage_door', 'opening']);
@@ -77,7 +77,7 @@ function Section({ icon, label, openCount, total, sensors }: SectionProps) {
 
 export function DoorsModal({ open, onClose }: DoorsModalProps) {
   const t = useT();
-  const subtitle = useChipSubtitle('doors', open); // [fork]
+  const { subtitle, windowClass } = useChipWindow('doors', open); // [fork]
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -115,7 +115,7 @@ export function DoorsModal({ open, onClose }: DoorsModalProps) {
       onClose={onClose}
       title={t('home.chipmodals.doors.title')}
       subtitle={subtitle} // [fork]
-      className="g-chip-window" // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
+      className={windowClass} // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<DoorOpen size={20} strokeWidth={1.75} />}
     >
       {sensors.length === 0 ? (

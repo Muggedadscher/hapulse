@@ -17,7 +17,8 @@ sauber übernehmen können.
 - `@hapulse/core` bleibt React-/DOM-frei (HA-Logik dort, Components sind dünn).
 - **Zwei Stile (Klassisch und Glas):** Jede neue Fork-Funktion in beiden Stilen prüfen (`apps/dashboard/scripts/glas-shots.cjs`,
   Klick-Fuzz auch mit `glas`); neue Settings-Felder auch für Glas durchdenken (Scope-Tabelle, Darstellung). Glas-CSS nur in
-  `apps/dashboard/src/styles/glas/` und nur unter `:root[data-style='glas']` — Klassisch bleibt pixelgleich.
+  `apps/dashboard/src/styles/glas/` und nur unter `:root[data-style='glas']`. Glas geht vor (User, 2026-10-10): keine Umwege,
+  nur um Klassisch pixelgleich zu halten; beabsichtigte Klassisch-Änderungen einzeln im PR (`docs/GLAS-PLAN.md` §3).
 - Vor jedem Push: `npm run typecheck && npm run build && npm test -w @hapulse/core`.
 - **Changelog:** Jede für Nutzer sichtbare Fork-Änderung bekommt im selben PR einen Eintrag in
   `packages/core/src/forkChangelog.ts` (DE + EN, neuer Release `F<n+1>` mit Merge-Datum oder der neueste, solange er

@@ -13,7 +13,7 @@ import { useSettingsStore } from '../../../stores/settingsStore';
 import { callService } from '../../../ha/service';
 import { applyStoredOrder } from '../../../lib/order';
 import { useT } from '../../../i18n/useT';
-import { useChipSubtitle } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
+import { useChipWindow } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
 import { useIsGlas } from '../../../app/glas/useUiStyle'; // [fork] Glas: "turn all off" prominent (docs/glas/PLAN-ETAPPE-3.md K67)
 import { SwipeRow } from '../../glas/SwipeRow'; // [fork] Glas: swipe a light off (K59)
 import './chipmodals.css';
@@ -25,7 +25,7 @@ interface LightsModalProps {
 
 export function LightsModal({ open, onClose }: LightsModalProps) {
   const t = useT();
-  const subtitle = useChipSubtitle('lights', open); // [fork]
+  const { subtitle, windowClass } = useChipWindow('lights', open); // [fork]
   const glas = useIsGlas(); // [fork]
   const rooms = useEntityStore((s) => s.rooms);
   const entities = useEntityStore(
@@ -103,7 +103,7 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
       onClose={onClose}
       title={t('home.chipmodals.lights.title')}
       subtitle={subtitle} // [fork]
-      className="g-chip-window" // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
+      className={windowClass} // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<Lightbulb size={20} strokeWidth={1.75} />}
     >
       {allLights.length === 0 ? (

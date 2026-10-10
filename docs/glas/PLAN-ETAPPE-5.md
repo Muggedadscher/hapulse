@@ -700,3 +700,39 @@ und übernommen, außer wo anders vermerkt.
   abgelehnte Verbindung zeigt erst den Ladebildschirm, dann den Fehler (T3, T5); die Demo startet (T4). In Glas die
   Maße: Karte ohne Rand, genau ein Knopf in `prominent`, drei Kapseln 50, Felder 44/36, Warnung, Fehler, „Erweitert“,
   Haarlinien. Klassisch der Anmeldung gegen `main`: gleich.
+
+### 7.19 Chip-Fenster, Mehr- und Räume-Menü, „Klima/Rollläden alle“ (K97)
+
+- **Eine Zählung:** Core `chipCounts.ts` zählt für alle acht Chips (Personen, Licht, Türen/Fenster, Alarm, Medien, Pool,
+  Garage, Schlösser), `components/home/chipLabels.ts` macht daraus die Texte der Chips. `SummaryChips` nutzt beides in
+  beiden Stilen (Klassisch gleich). Ausgeblendete Entitäten zählen nicht.
+- **Untertitel der Chip-Fenster (nur Glas):** derselbe Text wie der Chip („5 an“, „alle geschlossen“), auch wenn das
+  Fenster aus „Hinweise“ geöffnet wird, und live. Gerechnet wird nur, solange das Fenster offen ist
+  (`useChipWindow(id, open)`, das auch die Klasse liefert; Klassisch behält sein DOM). Klassisch zeigt keinen Untertitel.
+- **Großbuchstabe am Anfang:** Titel und Untertitel der Chip-Fenster stehen in den Locales klein („licht“, „alle aus“);
+  Glas hebt den ersten Buchstaben per `::first-letter` (Klasse `g-chip-window`, wie §7.4), ebenso am Knopf „alle
+  ausschalten“ im Licht-Fenster. **Abweichung:** nur in den Chip-Fenstern. Andere Fenster tragen Namen, die Leute
+  vergeben haben („iPhone Lampe“, ein Raum); die bleiben, wie sie geschrieben sind (geprüft).
+- **Mehr-Menü (Handy):** rechts in der Zeile Energie heute („8,4 kWh“, dieselbe Zahl wie die Energie-Karte), die Zahl
+  der Szenen (wie der Hero der Szenen-Seite) und das System in einem Wort („Normal“, „Ausgelastet“, „Kritisch“; Zählungen
+  wie die Status-Pille, etwa „1 nicht verfügbar“); unter der Liste „Version … · F…“, für Vorleser verborgen (die Version
+  steht in den Einstellungen). Das Menü bleibt eingehängt, deshalb rechnet es vor dem ersten Öffnen nichts, und die
+  Energie lädt nur, solange es offen ist (`useEnergyWindow(…, enabled)`); eine gemerkte Zahl erscheint sofort. Zahl
+  und Name stehen mittig auf einer Linie, der Wert in `glassLabel2`, 17/22.
+- **Räume-Menü:** der Zustand je Raum wie auf den Raumkacheln (`roomTone.ts`, gemeinsam mit `GlasRoomTile`: Offenes,
+  Wasser und Rauch vor Licht an), am Handy als Kreis 32 mit Symbol im Soft-Ton, am Desktop als Farbe des Symbols; der
+  Vorleser hört „Name, Zustand“. Klassisch unverändert.
+- **„Klima alle“ und „Rollläden alle“:** die Karten je Gerät im Look von §7.8 (Kapsel 40 mit − / +, Pillen 36;
+  Mini-Rollo 40, Position 15/20 600, Knöpfe 40).
+- **Demo:** `demoEnergy.ts` zählt die Statistik-Abrufe (`__hapulseDemo.energyLoads()`), damit die Prüfung „lädt nur,
+  solange offen“ messen kann.
+- Prüfungen: neu `pagesMenus` mit den Teilen `chips` (alle acht Untertitel gleich dem Chip, Großbuchstabe, live, aus
+  „Hinweise“, ausgeblendete Entität, Name im Detail unverändert, Klassisch ohne Untertitel), `more` (keine Abrufe vor
+  dem Öffnen und nach dem Schließen, neue Stunde lädt beim nächsten Öffnen, Werte wie Energie-Karte und Szenen-Hero,
+  System bei einer nicht verfügbaren Entität, Fuß), `rooms` (Ton und Text je Raum, Kreis bzw. Farbe, gleiches Symbol wie
+  die Kachel, live; Klassisch ohne Zustand) und `all` (Maße der Karten in beiden Fenstern).
+- Changelog: F38 (geplant als F37, siehe §2).
+- **Nachtrag (Entscheid des Users 2026-10-10, „Glas geht vor“, GLAS-PLAN §3):** `::first-letter` und `text-transform:
+  capitalize` sind Umwege, weil die Texte in den Locales klein stehen; sie heben nur den ersten Buchstaben („Türen &
+  fenster“), andere Stellen bleiben klein („zu hause“, „poolseite öffnen“). Der nächste PR schreibt die Texte selbst
+  richtig (eigene Textdatei des Forks, alle 7 Sprachen, beide Stile) und entfernt diese Regeln samt `g-chip-window`.

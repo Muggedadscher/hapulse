@@ -42,6 +42,8 @@ module.exports = function sheets(h) {
     return '';
   };
   const glasOnly = (step) => async (page) => ((await isGlas(page)) ? step(page) : 'Glas only');
+  /** "Manuell" in the pool window: the classic button, in Glas the option of the mode segment (plan Etappe 5 K92). */
+  const POOL_MANUAL = '.modal-body .pool-modal__mode-btn--manual, .modal-body .g-seg--pool .g-seg__opt[data-value="Manuell"]';
   const NVR = { customization: { scryptedUrl: 'https://192.0.2.10/endpoint/@local/sentinel-nvr/public/', scryptedToken: 'demo' } };
 
   const scenes = {
@@ -58,7 +60,7 @@ module.exports = function sheets(h) {
     'win-blinds': { customization: { hiddenSections: [] }, act: sel('.blinds-card__link') },
     'win-waste': { act: sel('.waste-hero, .g-waste__row') }, // Glas: the first row of its list (stage 4)
     'win-detail': { path: '/room/living_room', act: (page, tile = '.sensor-tile') => reach(page, tile) },
-    'win-manual': { act: seq(chip('pool'), sel('.modal-body .pool-modal__mode-btn--manual')) },
+    'win-manual': { act: seq(chip('pool'), sel(POOL_MANUAL)) },
     'win-schedule': { path: '/pool', act: sel(`.pool-card .btn:has-text("${DE['pool.schedule.edit']}")`) },
     'win-whatsnew': { path: '/settings', act: sel('.about-card__link--button') },
     'win-device': { path: '/devices', act: sel('.device-card') },
@@ -544,7 +546,7 @@ module.exports = function sheets(h) {
     await block('sheetsHandoff', async () => {
       const w = await open('phone', 'glas', '/');
       await openWin(w.page, 'win-pool');
-      await tap(w.page, '.modal-body .pool-modal__mode-btn--manual');
+      await tap(w.page, POOL_MANUAL);
       await sleep(100);
       const mid = await ev(w.page, () => ({ panels: __s.panels().length, ghosts: document.querySelectorAll('.g-sheet-ghost').length }));
       await settleAnimations(w.page);

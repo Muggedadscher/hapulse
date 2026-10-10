@@ -8,7 +8,7 @@ import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import { sortAlarmPanels } from '@hapulse/core';
 import { useT } from '../../../i18n/useT';
-import { useChipSubtitle } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
+import { useChipWindow } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
 
 interface AlarmModalProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface AlarmModalProps {
 
 export function AlarmModal({ open, onClose }: AlarmModalProps) {
   const t = useT();
-  const subtitle = useChipSubtitle('alarm', open); // [fork]
+  const { subtitle, windowClass } = useChipWindow('alarm', open); // [fork]
   // All visible panels, most severe first — a home can have a master plus
   // per-area panels (Alarmo), and a hidden panel must not appear here.
   const hiddenEntities = useSettingsStore(
@@ -37,7 +37,7 @@ export function AlarmModal({ open, onClose }: AlarmModalProps) {
       onClose={onClose}
       title={t('home.chipmodals.alarm.title')}
       subtitle={subtitle} // [fork]
-      className="g-chip-window" // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
+      className={windowClass} // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<ShieldAlert size={20} strokeWidth={1.75} />}
     >
       {panels.length === 0 ? (

@@ -13,7 +13,7 @@ import { Modal } from '../../ui/Modal';
 import { formatEntityState, formatNumber } from '@hapulse/core';
 import { useEntity } from '../../../ha/hooks';
 import { useLocale, useT } from '../../../i18n/useT';
-import { useChipSubtitle } from '../chipLabels';
+import { useChipWindow } from '../chipLabels';
 import { setPoolMode } from '../../../ha/pool';
 import { POOL_ENTITIES, poolModeTone } from '../../pool/poolConfig';
 import { usePoolTimer, formatCountdown } from '../../pool/usePoolTimer';
@@ -29,7 +29,7 @@ interface PoolModalProps {
 
 export function PoolModal({ open, onClose }: PoolModalProps) {
   const t = useT();
-  const subtitle = useChipSubtitle('pool', open);
+  const { subtitle, windowClass } = useChipWindow('pool', open);
   const locale = useLocale();
   const navigate = useNavigate();
 
@@ -71,7 +71,7 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
       onClose={onClose}
       title={t('pool.title')}
       subtitle={subtitle}
-      className="g-chip-window"
+      className={windowClass}
       icon={<Waves size={20} strokeWidth={1.75} />}
       footer={footer}
     >
