@@ -7,7 +7,9 @@
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
 //   --devices phone,ipad,desktop  --scenes home,room,…  --contrast  --forced-colors  --engine chromium|webkit
-//   --suffix <text> (appended to every file name)
+//   --suffix <text> (appended to every file name)  --lang en|de|es|fr|it|pt|sv (the app's language and the browser's
+//   locale, appended to the file names; the scenes click and insert that language's texts. Without it German, as the
+//   checks)
 //   Frame scenes of stage 2 (docs/glas/PLAN-ETAPPE-2.md §6.3) open a menu, scroll or insert a banner/toast and are taken
 //   at viewport size (fixed layers); a scene that does not exist in a style or at a width is listed as skipped.
 //   --elements <css> (also one picture per matching element, named after its first line of text, e.g.
@@ -101,8 +103,16 @@ const SCENES = {
 const FRAME_SCENES = ['scrolled', 'minimized', 'avatar', 'notifications', 'more', 'rooms', 'edit', 'collapsed', 'banner',
   'banner-lost', 'toast'];
 const DEFAULT_SCENES = Object.keys(SCENES).filter((s) => s !== 'material' && !FRAME_SCENES.includes(s));
-// German texts of the injected banner/toast markup and of the controls the scenes click (locale de-DE)
-const DE = require(path.join(__dirname, '../../../packages/core/locales/de.json'));
+/** The browser locale of each language. */
+const LANG_LOCALES = { en: 'en-US', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', sv: 'sv-SE' };
+/** A language's texts with the fork's spelling laid over them, as the app shows them (docs/glas/PLAN-TEXTE.md). */
+const textsOf = (lang) => ({
+  ...require(path.join(__dirname, `../../../packages/core/locales/${lang}.json`)),
+  ...require(path.join(__dirname, `../../../packages/core/locales/case/${lang}.json`)),
+});
+// German texts of the injected banner/toast markup and of the controls the scenes and checks click (locale de-DE);
+// `shoot --lang` lays another language over them for its run
+const DE = textsOf('de');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
@@ -169,7 +179,7 @@ function seedScript({ demo, mode, style, strength, reduce, customization: extra,
 
 async function newContext(browser, device, opts) {
   const ctx = await browser.newContext({
-    ...DEVICES[device], locale: 'de-DE', timezoneId: 'Europe/Berlin',
+    ...DEVICES[device], locale: opts.locale || 'de-DE', timezoneId: 'Europe/Berlin',
     colorScheme: opts.mode === 'dark' ? 'dark' : 'light', reducedMotion: opts.reducedMotion || 'no-preference',
     forcedColors: opts.forcedColors ? 'active' : 'none', contrast: opts.contrast ? 'more' : 'no-preference',
   });
@@ -351,6 +361,9 @@ async function shoot() {
   const forcedColors = flag('forced-colors');
   const suffix = arg('suffix', '');
   const elements = arg('elements', '');
+  const lang = arg('lang', '');
+  if (lang && !LANG_LOCALES[lang]) throw new Error('unknown language ' + lang);
+  if (lang) Object.assign(DE, textsOf(lang));
   const pw = loadPlaywright();
   const browser = await pw[arg('engine', 'chromium')].launch();
   const report = [];
@@ -360,7 +373,7 @@ async function shoot() {
         const sc = SCENES[scene];
         if (!sc) throw new Error('unknown scene ' + scene);
         const ctx = await newContext(browser, device, { demo: sc.demo !== false, mode, style, strength, reduce, contrast, forcedColors,
-          customization: sc.customization });
+          customization: sc.customization, ...(lang ? { locale: LANG_LOCALES[lang], state: { language: lang } } : {}) });
         const { page, errors } = await openPage(ctx, url + sc.path);
         let note = '';
         if (sc.click) {
@@ -375,7 +388,8 @@ async function shoot() {
         if (sc.act) note = (await sc.act(page)) || '';
         if (sc.material) { await page.evaluate(MATERIAL_PROBE); await page.waitForTimeout(100); }
         const name = [style, mode, device, scene].join('-') + (style === 'glas' && strength !== 'clear' ? '-' + strength : '')
-          + (reduce ? '-reduce' : '') + (contrast ? '-contrast' : '') + (forcedColors ? '-forced' : '') + (suffix ? '-' + suffix : '');
+          + (reduce ? '-reduce' : '') + (contrast ? '-contrast' : '') + (forcedColors ? '-forced' : '') + (lang ? '-' + lang : '')
+          + (suffix ? '-' + suffix : '');
         if (note) { report.push({ name, skipped: note }); await ctx.close(); continue; }
         await settleAnimations(page);
         await page.mouse.move(0, 0);

@@ -45,19 +45,17 @@ function withoutHidden(entities: HassEntityMap, hidden: readonly string[]): Hass
 }
 
 /**
- * Glas: a chip window's subtitle — the chip's label over the same entities as the chip bar (hidden ones left out) —
- * and its class `g-chip-window` (sheets.css raises the first letter of the lower-case texts, "Alle aus"). Both undefined
- * in Klassisch, which keeps its DOM; the subtitle also while the window is closed, so a closed window re-renders on no
+ * Glas: a chip window's subtitle — the chip's label over the same entities as the chip bar (hidden ones left out).
+ * Undefined in Klassisch, which keeps its DOM, and while the window is closed, so a closed window re-renders on no
  * entity change.
  */
-export function useChipWindow(id: ChipId, open: boolean): { subtitle: string | undefined; windowClass: string | undefined } {
+export function useChipWindow(id: ChipId, open: boolean): string | undefined {
   const glas = useIsGlas();
   const t = useT();
   const sl = useStateLabel();
   const hidden = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
-  const subtitle = useEntityStore((s) => {
+  return useEntityStore((s) => {
     if (!glas || !open) return undefined;
     return chipLabels(summaryCounts(withoutHidden(s.entities, hidden)), t, sl)[id];
   });
-  return { subtitle, windowClass: glas ? 'g-chip-window' : undefined };
 }

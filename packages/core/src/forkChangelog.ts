@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 39,
+    date: '2026-10-10',
+    title: { de: 'Texte richtig geschrieben', en: 'Texts written properly' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Texte beginnen groß, Nomen und Namen sind richtig geschrieben (etwa „Türen & Fenster“, „Niemand zu Hause“, „Home Assistant“), in beiden Stilen und allen sieben Sprachen; vorher zeigte Glas nur den ersten Buchstaben groß und Klassisch viele Texte klein',
+            en: 'Texts start with a capital and names are spelled right (for example “Doors & windows”, “Home Assistant”), in both styles and all seven languages; before, Glass only raised the first letter and Classic showed many texts in lower case',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 38,
     date: '2026-10-10',
     title: { de: 'Vorschau Glas: übrige Seiten und Menüs', en: 'Glass preview: the other pages and menus' },

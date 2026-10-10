@@ -148,13 +148,15 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/scripts/glas-checks-home.cjs` | Übersichts-Szenen (`home-hints`, `home-edit`, `energy-bubble`, `detail-light`) und `checks --part home` für `glas-shots.cjs` |
 | `apps/dashboard/scripts/glas-checks-pages.cjs` | Etappe 5 (übrige Seiten): `checks --part pages` für `glas-shots.cjs` (Schalter, Regler/Stepper/Pillen/Play, Felder, Abschnitts- und Kartentitel, Rahmen, Bearbeiten S/M/L, Segmente, das Verhalten jeder Seite `pagesKeep`, Leerzustände, Menüs `pagesMenus`) und die Szenen `<seite>-edit` für den Klassisch-Vergleich |
 | `packages/core/src/chipCounts.ts` | Etappe 5 (K97, DOM-frei, Test in `smoke.mjs`): die Zählung der Home-Chips (Personen, Licht, Türen/Fenster, Alarm, Medien, Pool, Garagen, Schlösser) für die Chips in beiden Stilen und die Untertitel ihrer Fenster |
-| `apps/dashboard/src/components/home/chipLabels.ts` | Texte der Chips aus `chipCounts` (beide Stile); `useChipWindow` = Untertitel der Chip-Fenster (nur solange offen) und ihre Klasse `g-chip-window`, beides nur in Glas |
+| `apps/dashboard/src/components/home/chipLabels.ts` | Texte der Chips aus `chipCounts` (beide Stile); `useChipWindow` = Untertitel der Chip-Fenster (nur solange offen), nur in Glas |
+| `packages/core/locales/case/*.json`, `packages/core/src/textCase.ts` | Schreibweise der Upstream-Texte (`docs/glas/PLAN-TEXTE.md`): je Sprache nur die Schlüssel, deren Text Upstream klein beginnt, einen Satz oder (Deutsch) ein Nomen klein schreibt oder einen Namen falsch schreibt, gleicher Text bis auf große Buchstaben; `withCase` legt sie über das Wörterbuch (beide Stile) |
+| `apps/dashboard/test/{textCase.test.ts,keep-lower.json}` | Wächter der Schreibweise: Überlagerung ändert nur Groß/Klein und Platzhalter nicht; mit ihr beginnt kein Text und kein Satz klein, Namen stehen richtig; Ausnahmen mit Sprache und Grund in `keep-lower.json` |
 | `apps/dashboard/src/components/glas/{MoreValue.tsx,roomsMenuStatus.ts}`, `components/glas/home/roomTone.ts` | Glas-Menüs (Etappe 5, K97): Werte und Fuß im Mehr-Menü (Energie heute, Szenen, Systemzustand), Zustand je Raum im Räume-Menü; beide lesen nur bei offenem Menü und behalten beim Schließen den letzten Text; Ton- und Textregel gemeinsam mit den Raumkacheln (`GlasRoomTile`) |
 | `apps/dashboard/src/components/glas/{PoolModeSegment.tsx,keepInCard.ts}` | Glas (Etappe 5): Pool-Modus als Segment (Seite und Fenster; „Manuell“ fragt bei jedem Tipp nach der Dauer); Popover der Musik öffnen zur anderen Seite, wenn sie die Karte verließen (`data-g-flip`) |
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
-| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`) und 5 (`docs/glas/PLAN-ETAPPE-5.md`) |
+| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`) und 5 (`docs/glas/PLAN-ETAPPE-5.md`), Schreibweise der Texte (`docs/glas/PLAN-TEXTE.md`) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -178,7 +180,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Room.tsx` | Sektion `nvrCameras`, keine HA-Kameras bei Kameraquelle Sentinel |
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
-| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls; seit Etappe 4 `locks`, `hints`, `activeScene`, `glasEnergy`, `sizePresets`, `roomGlance`; seit Etappe 5 `chipCounts` |
+| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls; seit Etappe 4 `locks`, `hints`, `activeScene`, `glasEnergy`, `sizePresets`, `roomGlance`; seit Etappe 5 `chipCounts`; `textCase` (`withCase`) |
 | `apps/dashboard/src/components/ui/Modal.{tsx,css}` | Anfangsfokus auf ein Element mit `data-autofocus` (sonst das Panel); kein Fokusrahmen um das Panel selbst |
 | `apps/dashboard/src/components/changelog/ChangelogModal.{tsx,css}` | `ReleaseEntry` exportiert (+ optionales `badge`), Stile für Abzeichen und Kompaktliste |
 | `apps/dashboard/src/app/AppLayout.tsx`, `pages/Settings.tsx` | `ForkChangelogModal` statt `ChangelogModal`; Auslöser auch bei neuen Fork-Releases; Über: „Version 1.3.2 · F11“ |
@@ -212,7 +214,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/scenes/SceneRoomCard.tsx`, `pages/Room.tsx` | Stil Glas (Etappe 5): Szenen-Kacheln im Look der Übersicht (`data-tone`, Farben per CSS statt inline) |
 | `apps/dashboard/src/pages/{Security,Energy,Automations,Scenes,System}.tsx` | Stil Glas (Etappe 5): Bearbeiten-Leiste über `useGlasSectionEdit` (S/M/L, ‹ ›, „⋯“, Klasse `g-tall`), wie die Übersicht; Energie dimmt beim Wechsel des Zeitraums die Karten, statt sie durch die Ladezeile zu ersetzen (`data-g-stale`) |
 | `apps/dashboard/src/components/home/SummaryChips.tsx` | Etappe 5 (K97): Zählung und Texte aus `chipCounts`/`chipLabels` (beide Stile; Klassisch zeigt dasselbe) |
-| `apps/dashboard/src/components/home/chipmodals/{People,Lights,Doors,Alarm,Media}Modal.tsx` | Stil Glas (Etappe 5, K97): Untertitel und Klasse `g-chip-window` aus `useChipWindow`, nur in Glas (der klein geschriebene Titel beginnt groß) |
+| `apps/dashboard/src/components/home/chipmodals/{People,Lights,Doors,Alarm,Media}Modal.tsx` | Stil Glas (Etappe 5, K97): Untertitel aus `useChipWindow`, nur in Glas |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 5, K97): Werte und Fuß im Mehr-Menü (`GlasMoreValue`, `GlasMoreFoot`) |
 | `apps/dashboard/src/components/nav/RoomsMenu.tsx` | Stil Glas (Etappe 5, K97): Zustand je Raum (Symbol wie die Raumkachel, `data-tone`, der Zustand im `aria-label`); Klassisch unverändert |
 | `apps/dashboard/src/ha/{energy,service}.ts`, `stores/connectionStore.ts` | Nur Demo (Etappe 5, für die Prüfungen): Energie-Einstellungen und -Abrufe über `demoEnergy.ts`, Dienstaufrufe ins Protokoll `demoCalls.ts`, `setUrl` an die Demo-Steuerung |
@@ -223,7 +225,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/energy/EnergyCards.tsx`, `components/home/EnergyWidget.tsx` | `fmtEnergy`/`fmtCost` mit Sprache (Währung per `Intl`) |
 | `apps/dashboard/src/components/{cards,home}/ClimateCard.tsx`, `components/home/RoomCard.tsx`, `components/home/{WeatherHero,chipmodals/WeatherModal}.tsx`, `app/AppLayout.tsx`, `components/home/EntityDetailModal.tsx`, `components/system/SystemMonitorCard.tsx`, `components/devices/DeviceEntityRow.tsx` | Anzeige-Zahlen über `formatNumber` (Sprache) |
 | `packages/core/src/demo.ts` | Demo-Pool-Entities (`demoPoolEntities`, IDs wie `poolConfig.ts`) — Pool-Seite in Demo/Labor |
-| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“, „glas tokens“; seit Etappe 4 Hinweise, Schlösser, aktive Szenen, Glas-Energie, Größen, Hauptraum; seit Etappe 5 die Zählung der Chips |
+| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“, „glas tokens“; seit Etappe 4 Hinweise, Schlösser, aktive Szenen, Glas-Energie, Größen, Hauptraum; seit Etappe 5 die Zählung der Chips; seit PLAN-TEXTE der Block „text case“ (`withCase`, Case-Dateien nennen nur Schlüssel ihrer Sprache) |
 | `apps/dashboard/src/components/home/SummaryChips.tsx`, `SummaryChipsBar.tsx`, `chipmodals/index.ts` | Chips Pool, Garage, Schlösser in der Home-Leiste (+ Fenster, Standardplatz) |
 | `apps/dashboard/src/components/home/SecurityCard.tsx`, `components/security/SecurityHeroCard.tsx` | Garagen-Zeile/-Chip; Schlösser nach gemeinsamer Regel (`lockSummary`: offen rot, blockiert/nicht erreichbar gelb) |
 | `apps/dashboard/src/components/security/{LockConfirm,lockLogic}.*` | Bestätigung beim Entriegeln, Code-Feld, Klick-Stopp im Portal; `lockSummary`/`lockTone`/`lockSummaryText` |
@@ -233,6 +235,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `docs/DESIGN.md` | Verweis auf den zweiten Stil „Glas“ (`docs/GLAS-DESIGN.md`) |
 | `apps/dashboard/src/app/Router.tsx` | Routen `/nvr/*`, `/pool` |
 | `apps/dashboard/src/app/AppLayout.tsx` | Nav-Einträge „NVR" + „Pool" (`nav.nvr`, `nav.pool`), direkt nach „Räume" |
+| `apps/dashboard/src/i18n/I18nProvider.tsx` | Schreibweise: jedes Wörterbuch mit seiner Überlagerung `locales/case/<lang>.json` (`withCase`), auch der englische Rückfall |
 | `packages/core/locales/*.json` | i18n-Keys `nav.nvr`, `nav.pool`, `history.error/empty`, `nvr.*`, `pool.*`, `waste.*`, `globalSettings.*`, `garage.*`, `locks.*`, `glas.*`, `hints.*`, `home.scenes.{active,members.*}`, `home.energy.solarProduced`, `home.summaryChips.locksAllLocked`, `home.section.*.{waste,nvr,hints}`, `security.section.*.nvr` in **allen** Sprachen (en/de/es/fr/it/pt/sv) |
 
 > Hinweis: `SensorTile.tsx` und die `.sensor-tile--clickable`-CSS-Regel sind seit
@@ -246,6 +249,16 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 > **Wichtig:** Der Parity-Test (`packages/core/scripts/smoke.mjs`) verlangt
 > **identische Keys in allen Sprachen**. Neue Fork-Strings also immer in *jede*
 > `locales/*.json` eintragen, sonst wird `npm test` rot.
+>
+> **Schreibweise:** Upstreams Texte bleiben in `locales/*.json` unverändert, auch wo sie klein beginnen
+> („türen & fenster“). Die richtige Schreibweise steht je Sprache in `locales/case/<lang>.json` und wird in
+> `I18nProvider.tsx` darübergelegt (beide Stile). Fork-Texte werden direkt in `locales/*.json` richtig geschrieben,
+> die `nvr.*`-Texte gehören dem Kamera-Paket und bleiben, wie sie sind. Nach einem Upstream-Merge meldet
+> `npm test -w @hapulse/dashboard` (`test/textCase.test.ts`) jeden neuen oder geänderten Upstream-Text, der klein
+> beginnt, und jeden Eintrag der Überlagerung, dessen Original sich geändert hat oder weggefallen ist: in der
+> Überlagerung der Sprache korrigieren, oder, wenn klein dort richtig ist (Fortsetzung eines Satzes, Einheit,
+> Beispiel-Adresse), mit Sprachen und Grund in `apps/dashboard/test/keep-lower.json` eintragen. Die Glas-CSS hebt
+> keine Buchstaben an (kein `::first-letter`, kein `text-transform: capitalize`).
 
 ### Gelöschte Upstream-Dateien
 
@@ -320,7 +333,7 @@ State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.
 ## Feature: Stil Glas
 
 Zweiter Stil neben Klassisch, nur Aussehen und Bewegung (Plan `docs/GLAS-PLAN.md`, Design `docs/GLAS-DESIGN.md`, Stand
-und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md`, `docs/glas/PLAN-ETAPPE-4.md` und `docs/glas/PLAN-ETAPPE-5.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
+und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md`, `docs/glas/PLAN-ETAPPE-4.md`, `docs/glas/PLAN-ETAPPE-5.md` und `docs/glas/PLAN-TEXTE.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
 `<html data-style="glas">` gesetzt ist, und jede Regel in `styles/glas/` beginnt mit `:root[data-style='glas']`.
 
 Nach jedem Upstream-Merge:
@@ -381,3 +394,6 @@ Nach jedem Upstream-Merge:
     Upstream, was `SummaryChips.tsx` zählt, gehört das dorthin (sonst weichen Chip und Fenster-Untertitel ab). Das
     Mehr-Menü (`renderMoreRow` in `AppLayout.tsx`) und das Räume-Menü (`RoomsMenu.tsx`) tragen Glas-Werte; ändert
     Upstream ihre Zeilen, `checks --part pages --only pagesMenus` laufen lassen.
+11. Schreibweise der Texte: `npm test -w @hapulse/dashboard` (`test/textCase.test.ts`) meldet neue oder geänderte
+    Upstream-Texte, die klein beginnen; korrigiert werden sie in `packages/core/locales/case/<lang>.json` (Hinweis
+    „Schreibweise“ im Inventar oben, Plan `docs/glas/PLAN-TEXTE.md`).

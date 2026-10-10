@@ -672,7 +672,7 @@
   color: var(--g-label);
   font: 400 17px / 22px var(--g-font);
   letter-spacing: 0;
-  text-transform: capitalize;
+  text-transform: none;
   -webkit-tap-highlight-color: transparent;
 }
 

@@ -198,7 +198,8 @@ und übernommen, außer wo anders vermerkt.
 - Neue Datei `pages.css`: `SectionLabel` im Raum (auch im Bearbeiten-Modus) als Titel 20/25 600 `label`, in den
   Einstellungen als Gruppentitel 15/20 600 `label2`; ohne Versalien und ohne die Linie daneben.
 - Abweichung: Die Einstellungs-Titel stehen in den Locales klein („verbindung“), Klassisch zeigt sie in Versalien.
-  Glas setzt nur den ersten Buchstaben groß (Satzanfang, `::first-letter`), statt der Versalien.
+  Glas setzt nur den ersten Buchstaben groß (Satzanfang, `::first-letter`), statt der Versalien. **Ersetzt** durch
+  [PLAN-TEXTE](PLAN-TEXTE.md): die Texte sind selbst richtig geschrieben, die Regel ist weg.
 - Prüfung `pagesTitles`. Kartentitel über der Fläche, Heroes und Spalten folgen.
 
 ### 7.5 Kontrastpaare (§3)
@@ -654,7 +655,8 @@ und übernommen, außer wo anders vermerkt.
   eigenen Zeile „Version | 1.3.2 · F…“: Sie ist ein Text, Teilen hieße neues Markup, und Klassisch zeigt denselben.
 - **Abweichungen:** (1) Texte der Locales in Kleinschrift (Abzeichen, Status, Demo-Hinweis, Version, Erklärungen,
   „zurücksetzen“) bekommen in Glas nur den ersten Buchstaben groß (`::first-letter`); im Satz bleibt „Demo-zuhause“,
-  „räume“, „home assistant“. Die Texte selbst ändern sich nicht (Klassisch zeigt sie so). (2) Der Fokus wechselt beim
+  „räume“, „home assistant“. Die Texte selbst ändern sich nicht (Klassisch zeigt sie so). **Ersetzt** durch
+  [PLAN-TEXTE](PLAN-TEXTE.md): die Texte sind selbst richtig geschrieben, die Regeln sind weg. (2) Der Fokus wechselt beim
   Stilwechsel in beide Richtungen auf die Wahl des neuen Stils (K92 nannte nur Glas → Klassisch); ist ein Fenster
   offen, bleibt er dort. (3) Ein gesperrter Schalter („Zugänge teilen“ ohne echte Verbindung) steht in Glas auf 0,4,
   Klassisch zeigt ihn unverändert. (4) Der Knopf „Meine Einstellungen für alle übernehmen“ darf am Handy zweizeilig sein.
@@ -712,7 +714,8 @@ und übernommen, außer wo anders vermerkt.
 - **Großbuchstabe am Anfang:** Titel und Untertitel der Chip-Fenster stehen in den Locales klein („licht“, „alle aus“);
   Glas hebt den ersten Buchstaben per `::first-letter` (Klasse `g-chip-window`, wie §7.4), ebenso am Knopf „alle
   ausschalten“ im Licht-Fenster. **Abweichung:** nur in den Chip-Fenstern. Andere Fenster tragen Namen, die Leute
-  vergeben haben („iPhone Lampe“, ein Raum); die bleiben, wie sie geschrieben sind (geprüft).
+  vergeben haben („iPhone Lampe“, ein Raum); die bleiben, wie sie geschrieben sind (geprüft). **Ersetzt** durch
+  [PLAN-TEXTE](PLAN-TEXTE.md): die Texte sind selbst richtig geschrieben, Regel und Klasse `g-chip-window` sind weg.
 - **Mehr-Menü (Handy):** rechts in der Zeile Energie heute („8,4 kWh“, dieselbe Zahl wie die Energie-Karte), die Zahl
   der Szenen (wie der Hero der Szenen-Seite) und das System in einem Wort („Normal“, „Ausgelastet“, „Kritisch“; Zählungen
   wie die Status-Pille, etwa „1 nicht verfügbar“); unter der Liste „Version … · F…“, für Vorleser verborgen (die Version
@@ -737,6 +740,7 @@ und übernommen, außer wo anders vermerkt.
   capitalize` sind Umwege, weil die Texte in den Locales klein stehen; sie heben nur den ersten Buchstaben („Türen &
   fenster“), andere Stellen bleiben klein („zu hause“, „poolseite öffnen“). Der nächste PR schreibt die Texte selbst
   richtig (eigene Textdatei des Forks, alle 7 Sprachen, beide Stile) und entfernt diese Regeln samt `g-chip-window`.
+  Umgesetzt nach [PLAN-TEXTE](PLAN-TEXTE.md) (F39).
 
 ## 8. Review des Codes (2026-10-10)
 

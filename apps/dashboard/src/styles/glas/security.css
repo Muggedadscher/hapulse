@@ -123,7 +123,7 @@
   color: var(--g-on-badge);
   font: 600 13px / 18px var(--g-font);
   letter-spacing: normal;
-  text-transform: capitalize;
+  text-transform: none;
 }
 
 :root[data-style='glas'] .security-page .camera-tile--pressable {

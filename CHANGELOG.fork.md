@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F39 — 2026-10-10
+
+**Texte richtig geschrieben** · _Texts written properly_
+
+### Behoben / Fixed
+
+- Texte beginnen groß, Nomen und Namen sind richtig geschrieben (etwa „Türen & Fenster“, „Niemand zu Hause“, „Home Assistant“), in beiden Stilen und allen sieben Sprachen; vorher zeigte Glas nur den ersten Buchstaben groß und Klassisch viele Texte klein  
+  _Texts start with a capital and names are spelled right (for example “Doors & windows”, “Home Assistant”), in both styles and all seven languages; before, Glass only raised the first letter and Classic showed many texts in lower case_
+
 ## F38 — 2026-10-10
 
 **Vorschau Glas: übrige Seiten und Menüs** · _Glass preview: the other pages and menus_

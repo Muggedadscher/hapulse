@@ -1,0 +1,115 @@
+{
+  "onboarding.urlPlaceholder": {
+    "langs": "all",
+    "reason": "an address, written as it is typed"
+  },
+  "settings.backup.error.invalidAccentHue": {
+    "langs": "all",
+    "reason": "starts with the name of a setting (accentHue)"
+  },
+  "settings.backup.error.invalidRoomOrder": {
+    "langs": "all",
+    "reason": "starts with the name of a setting (customization.roomOrder)"
+  },
+  "settings.backup.error.invalidHiddenRooms": {
+    "langs": "all",
+    "reason": "starts with the name of a setting (customization.hiddenRooms)"
+  },
+  "settings.backup.error.invalidHiddenEntities": {
+    "langs": "all",
+    "reason": "starts with the name of a setting (customization.hiddenEntities)"
+  },
+  "settings.backup.error.invalidEntityOverrides": {
+    "langs": "all",
+    "reason": "starts with the name of a setting (customization.entityOverrides)"
+  },
+  "settings.connection.rooms": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "a unit after its number in the same line (\"7 rooms · 101 entities\"); German capitalises the noun"
+  },
+  "settings.connection.entities": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "a unit after its number in the same line (\"7 rooms · 101 entities\"); German capitalises the noun"
+  },
+  "editBadge.entityDefault": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "a stand-in name, only put into screen-reader texts (\"Favorite entity\"); German capitalises the noun"
+  },
+  "sectionResize.noLimit": {
+    "langs": "all",
+    "reason": "only put into the resize handle’s label and tooltip, after “currently” or in parentheses (SectionResize.tsx); German keeps the noun capital"
+  },
+  "pool.manual.leftMinutes": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "starts with the unit (min) below the number in the ring; German writes \"Min.\""
+  },
+  "pool.manual.leftHours": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "starts with the unit (h, tim) below the number in the ring; German writes \"Std.\""
+  },
+  "pool.schedule.turnsOn": {
+    "langs": "all",
+    "reason": "follows the time on the same line (\"08:00 turns on\")"
+  },
+  "pool.schedule.turnsOff": {
+    "langs": "all",
+    "reason": "follows the time on the same line (\"08:00 turns off\")"
+  },
+  "glas.energy.consumption": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "follows the unit (\"8.4 kWh used\"); German capitalises the noun"
+  },
+  "glas.energy.chartAriaStacked": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "put after a comma into the chart's description; German capitalises the noun"
+  }
+}

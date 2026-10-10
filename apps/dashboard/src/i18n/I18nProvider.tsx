@@ -6,7 +6,7 @@
  */
 
 import { createContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { resolveLanguage, type Dict, type Locale, type StateTranslations } from '@hapulse/core';
+import { resolveLanguage, withCase, type Dict, type Locale, type StateTranslations } from '@hapulse/core'; // [fork] withCase
 import { useSettingsStore } from '../stores/settingsStore';
 import { useConnectionStore } from '../stores/connectionStore';
 import { getLanguage, getEntityStateTranslations } from '../ha/config';
@@ -17,6 +17,17 @@ import fr from '@hapulse/core/locales/fr.json';
 import it from '@hapulse/core/locales/it.json';
 import pt from '@hapulse/core/locales/pt.json';
 import sv from '@hapulse/core/locales/sv.json';
+// [fork] The fork's spelling of upstream texts, laid over each dictionary (docs/glas/PLAN-TEXTE.md)
+import enCase from '@hapulse/core/locales/case/en.json';
+import deCase from '@hapulse/core/locales/case/de.json';
+import esCase from '@hapulse/core/locales/case/es.json';
+import frCase from '@hapulse/core/locales/case/fr.json';
+import itCase from '@hapulse/core/locales/case/it.json';
+import ptCase from '@hapulse/core/locales/case/pt.json';
+import svCase from '@hapulse/core/locales/case/sv.json';
+
+/** [fork] English with the fork's spelling: the default and the fallback dictionary. */
+const EN: Dict = withCase(en, enCase);
 
 export interface I18nValue {
   locale: Locale;
@@ -29,13 +40,22 @@ export interface I18nValue {
 
 export const I18nContext = createContext<I18nValue>({
   locale: 'en',
-  dict: en,
-  fallback: en,
+  dict: EN, // [fork]
+  fallback: EN, // [fork]
   states: {},
 });
 
 /** Dictionaries by locale. */
-const DICTS: Record<Locale, Dict> = { en, de, es, fr, it, pt, sv };
+const DICTS: Record<Locale, Dict> = {
+  // [fork] each with the fork's spelling
+  en: EN,
+  de: withCase(de, deCase),
+  es: withCase(es, esCase),
+  fr: withCase(fr, frCase),
+  it: withCase(it, itCase),
+  pt: withCase(pt, ptCase),
+  sv: withCase(sv, svCase),
+};
 
 /** Entity-state translations, cached per locale for the session: the payload
  *  covers every loaded integration, and HA's state vocabulary does not change
@@ -107,7 +127,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [locale, connectionStatus]);
 
   const value = useMemo<I18nValue>(
-    () => ({ locale, dict: DICTS[locale] ?? en, fallback: en, states }),
+    () => ({ locale, dict: DICTS[locale] ?? EN, fallback: EN, states }), // [fork] EN
     [locale, states],
   );
 

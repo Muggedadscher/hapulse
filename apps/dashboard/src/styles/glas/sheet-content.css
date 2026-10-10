@@ -249,7 +249,7 @@
   margin: 0 0 18px;
 }
 
-/* a block (one line of text) so that the first letter can be raised: "alle ausschalten" comes in lower case (K97) */
+/* a full-width prominent button in the lights window (K97) */
 :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn {
   display: block;
   width: 100%;
@@ -264,10 +264,6 @@
   font-size: 17px;
   line-height: 22px;
   font-weight: 600;
-}
-
-:root[data-style='glas'] .modal-body .lights-modal__header-action > .btn::first-letter {
-  text-transform: uppercase;
 }
 
 :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn:hover {
