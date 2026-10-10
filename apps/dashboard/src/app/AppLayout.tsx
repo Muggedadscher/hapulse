@@ -68,6 +68,7 @@ import { useGlasUiStore } from '../stores/glasUiStore'; // [fork] Glas: the came
 import { weatherIcon } from '../components/glas/weatherIcon'; // [fork]
 import { weatherTemp } from '../components/glas/WeatherLine'; // [fork]
 import { GlasMoreFoot, GlasMoreValue } from '../components/glas/MoreValue'; // [fork] Glas: More menu values and foot (K97)
+import { glasLinkClick } from './glas/glasNavigate'; // [fork] Glas: page changes as view transitions (K107)
 import './AppLayout.css';
 
 /* =========================================================
@@ -324,6 +325,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { status } = useConnectionStatus();
   const showBanner = status === 'reconnecting' || status === 'disconnected';
   const location = useLocation();
+  const navigate = useNavigate(); // [fork] Glas: page changes as view transitions (docs/glas/PLAN-ETAPPE-7.md K107)
 
   // Separate selectors — no object/array literal that would need useShallow
   const navOrder   = useSettingsStore(useShallow((s) => s.customization.navOrder));
@@ -510,6 +512,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               ['sidebar-nav__item', navActive ? 'sidebar-nav__item--active' : ''].filter(Boolean).join(' ')
             }
             title={sidebarCollapsed ? label : undefined}
+            onClick={(e) => glasLinkClick(e, navigate, item.to!, location.pathname)} // [fork] Glas (K107)
           >
             <span className="sidebar-nav__icon" aria-hidden="true">{icon}</span>
             <span className="sidebar-nav__label">{label}</span>
@@ -596,6 +599,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         className={({ isActive: navActive }) =>
           ['app-tabs__item', navActive ? 'app-tabs__item--active' : ''].filter(Boolean).join(' ')
         }
+        onClick={(e) => glasLinkClick(e, navigate, item.to!, location.pathname)} // [fork] Glas (K107)
       >
         {item.icon}
         <span className="app-tabs__label">{label}</span>
@@ -643,7 +647,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         className={({ isActive: navActive }) =>
           ['app-more-menu__row', navActive ? 'app-more-menu__row--active' : ''].filter(Boolean).join(' ')
         }
-        onClick={handleMoreClose}
+        onClick={(e) => { // [fork] Glas: closing the menu, then the page transition (K107)
+          handleMoreClose();
+          glasLinkClick(e, navigate, item.to!, location.pathname);
+        }}
       >
         <span className="app-more-menu__row-icon" aria-hidden="true">{item.icon}</span>
         <span className="app-more-menu__row-name">{label}</span>

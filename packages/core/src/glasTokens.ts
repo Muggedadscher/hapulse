@@ -100,7 +100,7 @@ const LIGHT = {
   chartAvg: '#000000',
   seg: '#FFFFFF',
   segShadow: '0 3px 8px rgba(0,0,0,.12), 0 .5px 0 rgba(0,0,0,.04)',
-  lens: 'rgba(120,120,128,.16)',
+  lens: '#E6E6E9',
   hover: 'rgba(120,120,128,.08)',
   scrim: 'rgba(0,0,0,.25)',
   scrimDesktop: 'rgba(0,0,0,.22)',
@@ -197,7 +197,7 @@ const DARK: Record<GlasColorKey, string> = {
   chartAvg: '#FFFFFF',
   seg: '#636366',
   segShadow: '0 3px 8px rgba(0,0,0,.30)',
-  lens: 'rgba(255,255,255,.14)',
+  lens: '#3C3C3D',
   hover: 'rgba(255,255,255,.06)',
   scrim: 'rgba(0,0,0,.45)',
   scrimDesktop: 'rgba(0,0,0,.45)',
@@ -271,15 +271,18 @@ const MATERIAL: Record<GlasMode, MaterialSet> = {
 };
 
 /**
- * Sheet material (GLAS-DESIGN §3.4, glas-tokens.json → glass.sheet, verbatim): medium sheets and the phone menus
- * (avatar menu, More and Rooms). `bottom`/`bright` = the gradient's weaker stop and the filter's brightness, for the
- * contrast tests. Opaque uses the colour `sheetSolid` without a filter.
+ * Sheet material (GLAS-DESIGN §3.4, glas-tokens.json → glass.sheet, verbatim): medium sheets, the fill of the desktop
+ * dialogs (since Etappe 7: a window reads the same in both presentations) and the phone menus (avatar menu, More and
+ * Rooms, context menu). `bottom`/`bright` = the gradient's weaker stop and the filter's brightness, for the contrast
+ * tests. Opaque uses the colour `sheetSolid` without a filter.
  */
 const SHEET: Record<GlasMode, { fill: string; filter: string; bottom: string; bright: number }> = {
+  // Light: white enough that coloured text keeps 4.5:1 over the scrimmed page (Etappe 7, K109; was
+  // rgba(246,246,250,.86) → rgba(242,242,247,.80), the inks fell to 3.9:1 over the dimmed page)
   light: {
-    fill: 'linear-gradient(180deg, rgba(246,246,250,.86), rgba(242,242,247,.80))',
+    fill: 'linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.82))',
     filter: 'blur(28px) saturate(190%) brightness(1.04)',
-    bottom: 'rgba(242,242,247,.80)', bright: 1.04,
+    bottom: 'rgba(255,255,255,.82)', bright: 1.04,
   },
   dark: {
     fill: 'linear-gradient(180deg, rgba(36,36,40,.86), rgba(28,28,30,.80))',
@@ -354,6 +357,9 @@ export const GLAS_WINDOW_SHADOWS: Record<GlasMode, Record<GlasWindowShadow, stri
 
 const CLEAR = {
   fill: 'rgba(0,0,0,.20)',
+  // Text on clear glass over a picture (the camera tiles' names, the NVR card's pill): white 15 px keeps 4.5:1 over a
+  // white picture together with the tile's top shade (GLAS-DESIGN §2.5 rule 5; Etappe 7, K109: .20 gave 1.4:1 over sky)
+  textFill: 'rgba(0,0,0,.50)',
   filter: 'blur(4px) saturate(160%)',
   rim: 'linear-gradient(135deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.2) 24%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.18) 76%, rgba(255,255,255,.52) 100%)',
   shadow: 'inset 1.5px 1.5px 1px -1px rgba(255,255,255,.35), inset 0 1px 1px rgba(255,255,255,.28), inset 0 0 12px rgba(255,255,255,.08), 0 0 0 .5px rgba(0,0,0,.25), 0 6px 20px rgba(0,0,0,.25)',
@@ -469,6 +475,15 @@ export function sheetOver(backdrop: string, mode: GlasMode): string {
   return compositeOver(s.bottom, toHex({ r: b.r * s.bright, g: b.g * s.bright, b: b.b * s.bright }));
 }
 
+/**
+ * The resting ground of a window (sheet, desktop dialog, the phone's context menu): the sheet material over the page
+ * under the window's scrim (Etappe 7, K109 — the pairs before left the scrim out). The dialog's own filter is a little
+ * brighter (1.06); the sheet's 1.04 is the safer value.
+ */
+export function windowGround(mode: GlasMode, scrim: string, page: string): string {
+  return sheetOver(compositeOver(scrim, page), mode);
+}
+
 /** `color-mix(in srgb, A p%, B)` of two opaque colours → hex (the banner surfaces); a plain colour is returned as is. */
 export function resolveMix(input: string): string {
   const m = /^color-mix\(in srgb,\s*([^,]+?)\s+([\d.]+)%,\s*([^,]+?)\s*\)$/.exec(input.trim());
@@ -504,25 +519,6 @@ export interface GlasAccent {
 }
 
 const NEUTRAL_DARK = '#1C1C1E';
-const LENS: Record<GlasMode, string> = { light: '#E6E6E9', dark: '#3C3C3D' };
-
-/**
- * Where the lens (active tab / sidebar entry, `lens` over glass) ends up, as opaque colours: the sketch's lens colour
- * plus, in dark mode, the lens over the tab bar and the sidebar over a card at both strengths — lighter than the
- * sketch value, so a user hue's tab ink fell to 4.3:1 there (plan Etappe 2 §6.3). In light mode the glass brightens
- * its backdrop, the lens gets lighter, the dark ink only gains.
- */
-function lensBacks(mode: GlasMode): string[] {
-  if (mode === 'light') return [LENS.light];
-  const c = GLAS_COLORS.dark;
-  const out = [LENS.dark];
-  for (const surface of ['tabBar', 'sidebar'] as const) {
-    for (const strength of ['clear', 'tinted'] as const) {
-      out.push(compositeOver(c.lens, glassOver(c.card, mode, GLAS_SURFACE_TINT[surface][strength])));
-    }
-  }
-  return out;
-}
 
 /** Default accents from the sketch, verbatim (glas-tokens.json → accent.default). */
 const DEFAULT_ACCENT: Record<GlasMode, Omit<GlasAccent, 'onAccentInk'>> = {
@@ -554,9 +550,11 @@ function inkFor(start: string, mode: GlasMode, against: readonly string[], darke
  */
 function inkSurfaces(mode: GlasMode, accentSoft: string): string[] {
   const c = GLAS_COLORS[mode];
+  // a window over the scrimmed page (sheet and dialog, Etappe 7, K109): links, labels and the selected chip there
+  const win = windowGround(mode, c.scrim, c.bg);
   return mode === 'light'
-    ? [c.bg, compositeOver(c.fill, c.card), compositeOver(c.fill, c.bg), compositeOver(accentSoft, c.card)]
-    : [c.card, c.card2, compositeOver(c.fill, c.card), compositeOver(accentSoft, c.card), compositeOver(accentSoft, c.group)];
+    ? [c.bg, compositeOver(c.fill, c.card), compositeOver(c.fill, c.bg), compositeOver(accentSoft, c.card), win, compositeOver(accentSoft, win)]
+    : [c.card, c.card2, compositeOver(c.fill, c.card), compositeOver(accentSoft, c.card), compositeOver(accentSoft, c.group), win, compositeOver(accentSoft, win)];
 }
 
 /** Accent family for the user's hue (HAPulse accent slider); without a hue the iOS orange of the sketch. */
@@ -569,13 +567,25 @@ export function glasAccent(hue: number | undefined, mode: GlasMode): GlasAccent 
   const a = mustParse(accent);
   const accentSoft = `rgba(${a.r},${a.g},${a.b},${mode === 'light' ? '.16' : '.26'})`;
   const accentInk = inkFor(accent, mode, inkSurfaces(mode, accentSoft), 0.9, 0.12);
-  const tabInk = inkFor(accentInk, mode, lensBacks(mode), 0.93, 0.1);
+  // the lens is opaque (Etappe 7, K109): the active tab's ink reads the same over whatever scrolls behind the bar
+  const tabInk = inkFor(accentInk, mode, [GLAS_COLORS[mode].lens], 0.93, 0.1);
   let prominent = accent, onProminent = NEUTRAL_DARK;
   if (contrastRatio(NEUTRAL_DARK, accent) < 4.5) {
     if (contrastRatio('#FFFFFF', accent) >= 4.5) onProminent = '#FFFFFF';
     else { prominent = accentInk; onProminent = bestOn(accentInk); }
   }
   return { accent, accentInk, tabInk, accentSoft, prominent, onProminent, onAccentInk: bestOn(accentInk), focus: accentInk };
+}
+
+/**
+ * The third tone of a focus ring on a picture (GLAS-DESIGN §2.5 rule 7, WCAG technique C40): two tones ≥ 9:1 apart make
+ * sure that one of them stands out ≥ 3:1 against any picture. The focus colour and the card colour inside it are that
+ * far apart in dark mode (orange 9.54:1), not in light mode (5.79:1): there a band in the card's counter-tone follows
+ * inside. `transparent` when the two are enough.
+ */
+export function focusPair(focus: string, card: string): string {
+  if (contrastRatio(focus, card) >= 9) return 'transparent';
+  return contrastRatio('#000000', card) >= contrastRatio('#FFFFFF', card) ? '#000000' : '#FFFFFF';
 }
 
 // ---------------------------------------------------------------------------
@@ -671,6 +681,7 @@ export function glasCssVars(input: GlasInput): Record<string, string> {
   out['--g-prominent'] = a.prominent;
   out['--g-on-prominent'] = a.onProminent;
   out['--g-focus'] = a.focus;
+  out['--g-focus-pair'] = focusPair(a.focus, c.card);
 
   const m = MATERIAL[input.mode];
   const light = input.mode === 'light';
@@ -684,6 +695,7 @@ export function glasCssVars(input: GlasInput): Record<string, string> {
   out['--g-glass-inner'] = m.inner;
   out['--g-glass-shadow'] = `${m.inner}, ${m.outer}`;
   out['--g-glass-clear-fill'] = CLEAR.fill;
+  out['--g-glass-clear-text-fill'] = CLEAR.textFill;
   out['--g-glass-clear-filter'] = CLEAR.filter;
   out['--g-glass-clear-rim'] = CLEAR.rim;
   out['--g-glass-clear-shadow'] = CLEAR.shadow;
@@ -751,8 +763,16 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
   }
   pairs.push({ name: 'onAccent on accent (classic names)', fg: t.onAccent, bg: t.accent, min: 4.5 });
   pairs.push({ name: 'onProminent on prominent', fg: a.onProminent, bg: a.prominent, min: 4.5 });
-  pairs.push({ name: 'tabInk on lens', fg: a.tabInk, bg: LENS[input.mode], min: 4.5 });
+  pairs.push({ name: 'tabInk on lens (opaque, also the active symbol of the sidebar)', fg: a.tabInk, bg: c.lens, min: 4.5 });
   pairs.push({ name: 'accent ink on accentSoft over card', fg: a.accentInk, bg: compositeOver(a.accentSoft, c.card), min: 4.5 });
+  // A focus ring on a picture (Etappe 7, K109): the focus colour at the edge, the card's colour inside it and, where those
+  // two are less than 9:1 apart, a band in the card's counter-tone (`focusPair`). Two of the tones are ≥ 9:1 apart, so
+  // one of them stands out ≥ 3:1 against any picture (WCAG technique C40), and the focus colour against the card.
+  pairs.push({ name: 'focus ring beside its inner tone on a picture (the card colour)', fg: a.focus, bg: c.card, min: 3 });
+  const pair = focusPair(a.focus, c.card);
+  pairs.push(pair === 'transparent'
+    ? { name: 'ring on a picture: focus colour and card colour (C40)', fg: a.focus, bg: c.card, min: 9 }
+    : { name: 'ring on a picture: card colour and its counter-tone (C40)', fg: pair, bg: c.card, min: 9 });
   // Glas in rest (GLAS-DESIGN §2.5 rules 2 and 4), weakest tint of the strength: light over white, #F2F2F7 and
   // #808080; dark over what lies behind it in rest (page background, cards).
   if (input.strength !== 'opaque') {
@@ -765,11 +785,23 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
   }
   return [
     ...pairs,
+    ...mediaContrastPairs(),
     ...frameContrastPairs(input, c, a),
     ...windowContrastPairs(input, c, a),
     ...homeContrastPairs(c, a),
     ...pagesContrastPairs(c, a),
   ];
+}
+
+/**
+ * Text over a picture (GLAS-DESIGN §2.5 rule 5, §3.6; Etappe 7, K109): the camera tiles' names and the NVR card's pill
+ * are clear capsules 32 high, 12 from the top, white 15/20; at the glyphs' bottom (38 px) the tile's top shade (.35 →
+ * 0 over 76 px) is half — over a white picture the capsule's text fill carries the rest.
+ */
+function mediaContrastPairs(): ContrastPair[] {
+  const shade = 0.35 * (1 - 38 / 76);
+  const white = compositeOver(`rgba(0,0,0,${shade})`, '#FFFFFF');
+  return [{ name: 'camera name on clear text glass over a white picture under the top shade', fg: '#FFFFFF', bg: compositeOver(CLEAR.textFill, white), min: 4.5 }];
 }
 
 /** Text of the "open" status pill (redSoft) in a window's group: dark, redInk on redSoft over the lighter group is
@@ -799,13 +831,31 @@ function windowContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, 
   }
   pairs.push({ name: 'white play glyph on blue', fg: '#FFFFFF', bg: c.blue, min: 3 });
   if (input.strength !== 'opaque') {
-    const backs = input.mode === 'light' ? ['#FFFFFF', '#F2F2F7', '#808080'] : ['#000000', '#1C1C1E', '#2C2C2E'];
-    for (const surface of ['dialogDesktop', 'inspector'] as const) {
-      const tint = GLAS_SURFACE_TINT[surface][input.strength];
+    const light = input.mode === 'light';
+    const backs = light ? ['#FFFFFF', '#F2F2F7', '#808080'] : ['#000000', '#1C1C1E', '#2C2C2E'];
+    const tint = GLAS_SURFACE_TINT.inspector[input.strength];
+    for (const back of backs) {
+      const g = glassOver(back, input.mode, tint);
+      pairs.push({ name: `label on inspector glass over ${back}`, fg: c.label, bg: g, min: 4.5 });
+      pairs.push({ name: `glassLabel2 on inspector glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
+    }
+    // Windows over the scrimmed page (Etappe 7, K109): the sheet on the phone, the dialog from 900 px (the sheet's fill
+    // since then) and the phone's context menu. Black/white text against the realistic worst page (rule 4), coloured
+    // text and the selected chip (accentSoft) in rest (rule 3).
+    const windows = [['sheet', c.scrim], ['dialog', c.scrimDesktop], ['context menu', c.ctxDim]] as const;
+    for (const [win, scrim] of windows) {
       for (const back of backs) {
-        const g = glassOver(back, input.mode, tint);
-        pairs.push({ name: `label on ${surface} glass over ${back}`, fg: c.label, bg: g, min: 4.5 });
-        pairs.push({ name: `glassLabel2 on ${surface} glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
+        const g = windowGround(input.mode, scrim, back);
+        pairs.push({ name: `label on the ${win} over the scrimmed ${back}`, fg: c.label, bg: g, min: 4.5 });
+        pairs.push({ name: `glassLabel2 on the ${win} over the scrimmed ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
+      }
+      for (const back of light ? ['#FFFFFF', '#F2F2F7'] : ['#000000', '#1C1C1E']) {
+        const g = windowGround(input.mode, scrim, back);
+        for (const ink of ['redInk', 'greenInk', 'tealInk', 'blueInk', 'yellowInk', 'orangeInk', 'warnInk', 'purpleInk', 'indigoInk'] as const) {
+          pairs.push({ name: `${ink} on the ${win} over the scrimmed ${back}`, fg: c[ink], bg: g, min: 4.5 });
+        }
+        pairs.push({ name: `accent ink on the ${win} over the scrimmed ${back}`, fg: a.accentInk, bg: g, min: 4.5 });
+        pairs.push({ name: `accent ink on accentSoft (selected chip) on the ${win} over the scrimmed ${back}`, fg: a.accentInk, bg: compositeOver(a.accentSoft, g), min: 4.5 });
       }
     }
   }
@@ -913,7 +963,7 @@ function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Con
  * The frame's pairs (plan Etappe 2 §6.3): each surface with its own minimum tint. Black/white text against the
  * realistic worst backdrops in rest (GLAS-DESIGN §2.5 rule 4); coloured text and glyphs only against what lies
  * behind the surface in rest (rule 3). "Deckend" has no glass: its surfaces are `cardSolid`/`sheetSolid` = card/bg,
- * covered above, plus the lens on `cardSolid`.
+ * covered above. The lens is opaque in every strength (Etappe 7, K109); its pair is in the base list.
  */
 function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
   const light = input.mode === 'light';
@@ -938,13 +988,9 @@ function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a
       pairs.push({ name: `label on desktop toast over ${back}`, fg: c.label, bg: toast, min: 4.5 });
     }
     for (const back of rest) {
-      const tab = glassOver(back, mode, t('tabBar'));
-      const side = glassOver(back, mode, t('sidebar'));
       const menu = glassOver(back, mode, t('menu'));
-      pairs.push({ name: `tabInk on lens over tab bar over ${back}`, fg: a.tabInk, bg: compositeOver(c.lens, tab), min: 4.5 });
-      pairs.push({ name: `tabInk (active symbol) on lens over sidebar over ${back}`, fg: a.tabInk, bg: compositeOver(c.lens, side), min: 4.5 });
       pairs.push({ name: `accent ink ("dismiss all") on menu glass over ${back}`, fg: a.accentInk, bg: menu, min: 4.5 });
-      pairs.push({ name: `accent ink (current row, "on" symbol) on sheet over ${back}`, fg: a.accentInk, bg: sheetOver(back, mode), min: 4.5 });
+      pairs.push({ name: `accent ink (current row, "on" symbol) on the phone menu over the scrimmed ${back}`, fg: a.accentInk, bg: windowGround(mode, c.scrim, back), min: 4.5 });
       pairs.push({ name: `redInk on desktop toast over ${back}`, fg: c.redInk, bg: glassOver(back, mode, t('toastDesktop')), min: 4.5 });
       pairs.push({ name: `focus ring on glass over ${back}`, fg: a.focus, bg: glassOver(back, mode, GLAS_TINT[strength]), min: 3 });
       // The context menu (stage 3b, GLAS-DESIGN §7.23) lies over the dimmed page: sheet material on the phone, menu glass
@@ -961,8 +1007,6 @@ function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a
       pairs.push({ name: `menu text on sheet over ${back}`, fg: c.label, bg: sheetOver(back, mode), min: 4.5 });
       pairs.push({ name: `glassLabel2 on sheet over ${back}`, fg: c.glassLabel2, bg: sheetOver(back, mode), min: 4.5 });
     }
-  } else {
-    pairs.push({ name: 'tabInk on lens over cardSolid', fg: a.tabInk, bg: compositeOver(c.lens, c.cardSolid), min: 4.5 });
   }
   // Phone toast: dark tinted surface over anything
   for (const back of ['#FFFFFF', '#808080', '#000000']) {

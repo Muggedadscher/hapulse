@@ -51,10 +51,12 @@
   animation: none;
 }
 
-/* Text directly on glass reads glassLabel2 instead of label2 (GLAS-DESIGN §7.18). */
+/* Text directly on glass reads glassLabel2 instead of label2 (GLAS-DESIGN §2.5 rule 1, §7.18) — the classic names and,
+   since Etappe 7 (K109), the Glas parts' own label2 too, so a window's secondary text is one colour. */
 :root[data-style='glas'] .modal-backdrop > .modal-panel[data-g-mat='glass'] {
   --text-dim: var(--g-glass-label-2);
   --text-faint: var(--g-glass-label-2);
+  --g-label-2: var(--g-glass-label-2);
 }
 
 /* Solid: large sheet and page (sheetSolid, no filter, K50/K48). Glass panels get the material from material.css. */
@@ -103,7 +105,10 @@
 }
 
 :root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel {
+  /* the window's fill like the sheet's, over the scrim (Etappe 7, K109: on the regular glass the coloured text fell to
+     3.9:1); its own, smaller blur stays (6 + 10 × tint) */
   --g-surface-tint: var(--g-tint-dialog-desktop);
+  --g-surface-fill: var(--g-sheet-fill);
   --g-surface-shadow: var(--g-shadow-dialog);
   --g-surface-solid: var(--g-sheet-solid);
   position: relative;
@@ -202,8 +207,10 @@
   transition: background-color 150ms ease;
 }
 
-:root[data-style='glas'] .g-sheet-header__close:hover .g-sheet-header__close-circle {
-  background: var(--g-fill-2);
+@media (hover: hover) {
+  :root[data-style='glas'] .g-sheet-header__close:hover .g-sheet-header__close-circle {
+    background: var(--g-fill-2);
+  }
 }
 
 :root[data-style='glas'] .g-sheet-header__close:focus-visible {
@@ -226,8 +233,10 @@
   white-space: nowrap;
 }
 
-:root[data-style='glas'] .g-sheet-header__back:hover {
-  background: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .g-sheet-header__back:hover {
+    background: var(--g-hover);
+  }
 }
 
 :root[data-style='glas'] .g-sheet-header__back:focus-visible {
@@ -389,9 +398,11 @@
   color: var(--g-label);
 }
 
-:root[data-style='glas'] .modal-footer :is(.btn--secondary, .btn--ghost):hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-footer :is(.btn--secondary, .btn--ghost):hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .modal-footer .btn--danger {
@@ -423,5 +434,13 @@
 @media (max-width: 899px) {
   :root[data-style='glas'] .g-sheet-header__icon {
     display: none;
+  }
+}
+
+/* Forced colours (GLAS-DESIGN §3.7, K108): the capsules of a foot differ from the window only by their fill, which
+   forced colours take away; each keeps a frame. */
+@media (forced-colors: active) {
+  :root[data-style='glas'] .modal-footer :is(.btn, .changelog-modal__done) {
+    border: 1px solid ButtonText;
   }
 }

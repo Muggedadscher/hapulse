@@ -293,8 +293,10 @@
   background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 64px 0 / calc(100% - 64px) 0.5px;
 }
 
-:root[data-style='glas'] .devices-results--list > .device-card:hover {
-  background-color: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .devices-results--list > .device-card:hover {
+    background-color: var(--g-hover);
+  }
 }
 
 :root[data-style='glas'] .devices-results--list > .device-card:focus-visible {
@@ -357,9 +359,11 @@
   font: 600 15px / 20px var(--g-font);
 }
 
-:root[data-style='glas'] .modal-body .device-modal__hide-all:hover {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .device-modal__hide-all:hover {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .modal-body .device-modal__hide-all > svg {
@@ -481,9 +485,11 @@
   height: 17px;
 }
 
-:root[data-style='glas'] .modal-body .device-icon-btn:hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .device-icon-btn:hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .modal-body .device-icon-btn:focus-visible {
@@ -545,9 +551,14 @@
 
 :root[data-style='glas'] .modal-body .device-row-action:hover {
   border-color: transparent;
-  background: var(--g-fill-2);
-  background-clip: padding-box;
-  color: var(--g-label);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .device-row-action:hover {
+    background: var(--g-fill-2);
+    background-clip: padding-box;
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .modal-body .device-row-action:focus-visible {

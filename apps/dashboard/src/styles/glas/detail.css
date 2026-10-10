@@ -89,8 +89,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-:root[data-style='glas'] .g-sheet-header__trail .entity-detail__fav:hover {
-  background: var(--g-fill-2) content-box;
+@media (hover: hover) {
+  :root[data-style='glas'] .g-sheet-header__trail .entity-detail__fav:hover {
+    background: var(--g-fill-2) content-box;
+  }
 }
 
 :root[data-style='glas'] .g-sheet-header__trail .entity-detail__fav--on {
@@ -417,7 +419,12 @@
 
 :root[data-style='glas'] .entity-detail__section-action:hover {
   text-decoration: none;
-  opacity: 0.75;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .entity-detail__section-action:hover {
+    opacity: 0.75;
+  }
 }
 
 :root[data-style='glas'] .entity-detail__section-action:focus-visible {
@@ -628,8 +635,10 @@
   background-image: linear-gradient(var(--g-sep), var(--g-sep));
 }
 
-:root[data-style='glas'] .entity-detail__member-row:hover {
-  background-color: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .entity-detail__member-row:hover {
+    background-color: var(--g-hover);
+  }
 }
 
 :root[data-style='glas'] .entity-detail__member-row:focus-visible {
@@ -676,14 +685,24 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-:root[data-style='glas'] .entity-detail__attrs-toggle:hover {
-  color: var(--g-label);
-  background: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .entity-detail__attrs-toggle:hover {
+    color: var(--g-label);
+    background: var(--g-hover);
+  }
 }
 
+/* the ring lies inside the group (it clips) and follows its corners: all four while the list is closed, the top two
+   while it is open (Etappe 7, K109) */
 :root[data-style='glas'] .entity-detail__attrs-toggle:focus-visible {
+  border-radius: inherit;
   outline: 2px solid var(--g-focus);
   outline-offset: -2px;
+}
+
+:root[data-style='glas'] .entity-detail__attrs-toggle[aria-expanded='true']:focus-visible {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 :root[data-style='glas'] .entity-detail__attrs-toggle > svg {
@@ -803,8 +822,10 @@
     margin: 0;
   }
 
-  :root[data-style='glas'] .g-light__power:hover {
-    background: var(--g-fill-2);
+  @media (hover: hover) {
+    :root[data-style='glas'] .g-light__power:hover {
+      background: var(--g-fill-2);
+    }
   }
 
   :root[data-style='glas'] .g-light__power-circle {
@@ -921,6 +942,18 @@
 
   :root[data-style='glas'] .g-light__extra :is(.light-card__track, .light-card__hue-range),
   :root[data-style='glas'] .entity-detail__timeline {
+    border: 1px solid CanvasText;
+  }
+
+  /* the groups differ from the window only by their fill (K108) */
+  :root[data-style='glas'] :is(
+      .entity-detail__history-view,
+      .entity-detail__activity-list,
+      .entity-detail__members,
+      .entity-detail__placeholder,
+      .entity-detail__attr-empty
+    ),
+  :root[data-style='glas'] .entity-detail__section:has(> .entity-detail__attrs-toggle) {
     border: 1px solid CanvasText;
   }
 }

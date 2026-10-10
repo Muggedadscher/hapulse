@@ -133,8 +133,11 @@
     transform: none;
   }
 
+  /* the bar's glass shows what scrolls under it (over a camera picture the focus colour had 2.5:1): like a control on
+     a picture (GLAS-DESIGN §2.5 rule 7) the ring takes the entry's text colour, the label on the glass, the tab ink on
+     the lens (Etappe 7, K109) */
   :root[data-style='glas'] .app-tabs__item:focus-visible {
-    outline: 2px solid var(--g-focus);
+    outline: 2px solid currentColor;
     outline-offset: -2px;
     border-radius: 27px;
   }
@@ -265,9 +268,10 @@
     pointer-events: auto;
   }
 
+  /* inside, on the circle's glass, in its text colour like the entries' ring: outside it would lie on the page */
   :root[data-style='glas'] .g-tabs__expand:focus-visible {
-    outline: 2px solid var(--g-focus);
-    outline-offset: 2px;
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
   }
 
   /* the chevron only when no entry belongs to the route (nothing else to show in the circle) */

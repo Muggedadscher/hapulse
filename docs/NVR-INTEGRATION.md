@@ -120,10 +120,11 @@ Sentinels UI eine eigenständige App ist:
 | Telemetrie | `b:<build-id>` | `b:hapulse` (so sind Zeilen der Integration im Sentinel-Serverlog unterscheidbar), Nutzlast unter `d:` wie bei Sentinel |
 | Nicht übernommen | Anmeldeseite, iOS-Homescreen-Meta, `/status`-Route, Theme-Schalter, Uhr, Embed-Modus | (HAPulse liefert das selbst; Menschen öffnen Sentinels UI über „Sentinel öffnen“) |
 
-## Glas-Stil (Etappe 1 und 6, Oktober 2026)
+## Glas-Stil (Etappe 1, 6 und 7, Oktober 2026)
 
 Im zweiten HAPulse-Stil „Glas“ (`docs/GLAS-DESIGN.md`) bleiben alle NVR-Ansichten Paket-Code mit demselben Verhalten wie
-in Klassisch und in Sentinels eigener UI. Plan, Abweichungen und Messwerte: `docs/glas/PLAN-ETAPPE-6.md`.
+in Klassisch und in Sentinels eigener UI. Plan, Abweichungen und Messwerte: `docs/glas/PLAN-ETAPPE-6.md`, der Übergang
+beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
 
 - **Kameraseite (Paket ≥ 0.18.0):** `NvrCameraPage` rendert `CameraPage` in Glas mit `appearance="immersive"` (README des
   Pakets, „Immersive appearance“), in Klassisch im Standard wie bisher. Unter 900 px gehört der Seite der Bildschirm: sie
@@ -145,6 +146,13 @@ in Klassisch und in Sentinels eigener UI. Plan, Abweichungen und Messwerte: `doc
   Übersicht sind in Glas Kreise 44 (`NvrOverviewPage.tsx`, Name auch als Tooltip, in beiden Stilen), und Token/Konto der
   Einrichtung ist in Glas ein `Segment` (`NvrSetup.tsx`). Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper
   (`NvrHomeGlas.tsx`).
+- **Kamera öffnen (Etappe 7):** In Glas wächst das Bild der gedrückten Kachel in das Standbild der Kameraseite (View
+  Transition mit dem Namen `g-cam`, `app/glas/glasNavigate.ts`), ausgelöst von `nav.openCamera` ohne Zeitpunkt
+  (`nvr/ui.tsx`) und den Kacheln der Home-Karte (`NvrHomeGlas.tsx`); das NVR-Chunk lädt beim Drücken. Ziel ist das
+  Standbild des Pakets (`.nvr-stage__freeze[data-src]`, nicht `.nvr-stage`: darin liegt die Steuerkapsel mit Glas);
+  zeichnet die Seite es nicht binnen 300 ms, blendet der Übergang nur über. Ereignisse (mit `at`/`ev`) und Zurück
+  morphen nicht, Zurück blendet über. Klassisch und Browser ohne `document.startViewTransition` öffnen wie bisher.
+  `test/glasNavigate.test.ts` prüft, dass das installierte Paket die Klasse des Standbilds noch hat.
 - **Wächter und Prüfungen:** Der Selektor-Wächter (`test/glasSelectors.test.ts`) prüft die Paket-Klassen gegen die
   `ui.css` des installierten Pakets; benennt ein Paket-Update eine davon um, wird `npm test -w @hapulse/dashboard` rot.
   Das Abzeichen „Aufnahme hängt“ einer Kachel erkennt Glas am Symbol `lucide-video-off` (`MARKER_ICONS` dort).

@@ -157,7 +157,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0–6 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (fertig seit Etappe 7; die Stil-Zeile sehen alle, ändern dürfen sie nur Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -218,7 +218,17 @@ sauber übernehmen können.
   die Werte der Paket-Hooks (`--nvr-ctl-*`, `--nvr-float-*`, …) und der Look der übrigen NVR-Ansichten stehen in
   `styles/glas/nvr.css`. Prüfungen `checks --part nvr` (`scripts/glas-checks-nvr.cjs`, nachgestelltes Sentinel, braucht
   ffmpeg), gegen ein echtes Sentinel `scripts/nvr-sweep-test.cjs … glas`; Details `docs/NVR-INTEGRATION.md` → „Glas-Stil“.
-  Nächste Etappe 7 (Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  **Feinschliff (Etappe 7, `docs/glas/PLAN-ETAPPE-7.md`):** Seitenwechsel als View Transition nur in Glas
+  (`app/glas/glasNavigate.ts`, `routeChunks.ts`, `motion.css`; Tab-Leiste, Seitenleiste, Mehr-Menü, Kamerakacheln mit
+  Morph `g-cam` ins Standbild, Zurück der Kameraseite; alles andere navigiert wie Klassisch), Hover nur mit Zeiger
+  (Glas-Hover unter `@media (hover: hover)`, Ruhe-Regeln unter `(hover: none)`, Wächter `styleRules` in
+  `test/glasSelectors.test.ts`), Kontrast am Bildschirm (Regeln GLAS-DESIGN §2.5; Fenster über der Kameraseite dunkel,
+  `IMMERSIVE_FLOATING` in `glasAppearance.ts`). Sentinel-Übersicht in Glas: ruhiger Kopf `nvr/NvrHeroGlas.tsx`,
+  Aktionen hinter „⋯“ (`components/glas/HeaderMenu.tsx`; Tasten, Fokus und Schließen teilt es mit dem Avatar-Menü über
+  `app/glas/useGlasMenu.ts`). Prüfungen `checks --part polish` (`scripts/glas-checks-polish.cjs`:
+  Übergänge, Hover, Kontrast, Leistung, Stil-Zeile, reduzierte Bewegung); `--engine webkit` für Playwright-WebKit im
+  Labor (Blöcke mit CDP werden übersprungen und gelistet). Glas ist nicht Standard; ob es das für alle wird, entscheidet
+  der User.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

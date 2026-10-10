@@ -318,18 +318,20 @@
     font-weight: 500;
   }
 
-  :root[data-style='glas']
-    .home-page
-    :is(
-      .scenes-card__link,
-      .devices-card__all-link,
-      .climate-card__link,
-      .blinds-card__link,
-      .security-card__view-link,
-      .activity-card__see-all,
-      .nvr-home__link
-    ):hover {
-    background: var(--g-hover);
+  @media (hover: hover) {
+    :root[data-style='glas']
+      .home-page
+      :is(
+        .scenes-card__link,
+        .devices-card__all-link,
+        .climate-card__link,
+        .blinds-card__link,
+        .security-card__view-link,
+        .activity-card__see-all,
+        .nvr-home__link
+      ):hover {
+      background: var(--g-hover);
+    }
   }
 }
 

@@ -24,3 +24,15 @@
 :root[data-style='glas'] body::after {
   display: none;
 }
+
+/* Hover only with a pointer (plan docs/glas/PLAN-ETAPPE-7.md K108): the classic accent buttons dim or brighten under
+   the pointer; under a finger they keep their resting look after a tap. */
+@media (hover: none) {
+  :root[data-style='glas'] :is(.btn--primary, .icon-btn--accent):hover:not(:disabled) {
+    opacity: 1;
+  }
+
+  :root[data-style='glas'] .changelog-modal__done:hover {
+    filter: none;
+  }
+}

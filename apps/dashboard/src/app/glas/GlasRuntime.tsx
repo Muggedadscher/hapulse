@@ -13,6 +13,8 @@
  * - Windows (stage 3): the pressed control as the origin a window grows out of, and the one Esc listener of all
  *   windows (plan docs/glas/PLAN-ETAPPE-3.md §3.3, K72).
  * - Gestures (stage 3b): the context menu of the entity cards (K58); a route change closes the inspector (K60).
+ * - Page changes (stage 7): the commit a view transition waits for and the scroll evaluation it runs at once
+ *   (glasNavigate.ts, plan docs/glas/PLAN-ETAPPE-7.md K107).
  * - Camera page (stage 6, E13): `data-g-immersive` on the root while the page says it is shown (glasUiStore
  *   `immersive`, plan docs/glas/PLAN-ETAPPE-6.md K104) — shell.css takes the frame away on the phone — and the
  *   browser colour of the dark page (K103).
@@ -35,6 +37,7 @@ import {
   type TabsMinState,
 } from './glasScroll';
 import { nextMenuIndex } from './menuKeys';
+import { noteRouteCommit, setScrollFlush } from './glasNavigate';
 import { ContextMenu } from '../../components/glas/ContextMenu';
 import { DoneCapsule } from '../../components/glas/DoneCapsule';
 import { forgetOrigin, noteOrigin, peekOrigin } from '../../components/glas/sheet/origin';
@@ -151,6 +154,11 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
       if (!raf) raf = requestAnimationFrame(update);
     };
     scheduleRef.current = schedule;
+    // a page change as a view transition evaluates at once: requestAnimationFrame waits until it is shown (K107)
+    setScrollFlush(() => {
+      cancelAnimationFrame(raf);
+      update();
+    });
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule, { passive: true });
     schedule();
@@ -158,6 +166,7 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
     return () => {
       cancelAnimationFrame(raf);
       scheduleRef.current = () => {};
+      setScrollFlush(null);
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
       root.removeAttribute('data-g-scrolled');
@@ -209,6 +218,10 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
     if (content) ro.observe(content, { box: 'border-box' });
     return () => ro.disconnect();
   }, [pathname]);
+
+  // A page change as a view transition waits for this commit (glasNavigate.ts, K107) — after the title above was
+  // measured, so the scroll evaluation it runs then sees the new page.
+  useLayoutEffect(() => noteRouteCommit(pathname), [pathname]);
 
   // The camera page (E13, K104): its own flag on the root before the first paint, so its frame never shows.
   const immersive = useGlasUiStore((s) => s.immersive);

@@ -126,6 +126,12 @@ module.exports = function gestures(h) {
       try {
         await fn();
       } catch (e) {
+        // WebKit has no CDP (Etappe 7, K112): a block that needs it is skipped and listed, never counted as green
+        if (/CDP session is only available in Chromium/.test(String(e && e.message))) {
+          ran.splice(ran.indexOf(name), 1);
+          (out.skippedNoCdp = out.skippedNoCdp || []).push(name);
+          return;
+        }
         out[name + 'Error'] = String(e && e.message).split('\n')[0].slice(0, 300);
         out[name + 'Ok'] = false;
       }
@@ -496,7 +502,7 @@ module.exports = function gestures(h) {
       await page.keyboard.press('Tab');
       res.tab = { gone: await menuGone(page), focus: await ev(page, (id) => __x.focusOn(id), LIGHT_ON) };
       // the context-menu key on the focused card: the focus on the first item
-      await ev(page, (id) => __x.card(id).querySelector('[tabindex]:not([tabindex="-1"]), button').focus(), LIGHT_ON);
+      await ev(page, (id) => __x.card(id).querySelector('[tabindex]:not([tabindex="-1"]), button').focus({ preventScroll: true }), LIGHT_ON);
       await page.keyboard.press('ContextMenu');
       await menuOpen(page);
       await until(page, () => !!document.activeElement?.closest('.g-ctx__menu'), null, 3000);
@@ -854,7 +860,9 @@ module.exports = function gestures(h) {
     //    slides out; asked for from the keyboard (the context-menu key, "Details") by one card and then by another, its
     //    Esc gives the focus to the card that asked last; a route change closes it; a chip's dialog lies
     //    above it and makes it inert, and a request for the detail (a press on a tile) then brings it up on top, whose
-    //    Esc gives the focus to the chip's dialog; the confirmation from the card in it is a page in it.
+    //    Esc gives the focus to the chip's dialog; the confirmation from the card in it is a page in it. On an iPad in
+    //    landscape (1180) the head row beside it keeps its capsules whole and clear of the panel; the weather pill gives
+    //    way (shell.css, g-head-row).
     await block('gesturesInspector', async () => {
       const res = {};
       const w = await open('desktop', 'glas', '/room/living_room');
@@ -906,7 +914,10 @@ module.exports = function gestures(h) {
       res.closed = await ev(page, () => __x.windows());
       // the keyboard's way to the detail, from one card and then from another: Esc in it gives the focus to the second
       const keyDetail = async (id) => {
-        await ev(page, (e) => __x.card(e).querySelector('[tabindex]:not([tabindex="-1"]), button').focus(), id);
+        // the card in view first and the focus without a scroll: the app scrolls smoothly (global.css), and a scroll that
+        // still runs when the menu shows closes it, as any scroll does
+        await bring(page, id);
+        await ev(page, (e) => __x.card(e).querySelector('[tabindex]:not([tabindex="-1"]), button').focus({ preventScroll: true }), id);
         await page.keyboard.press('ContextMenu');
         await menuOpen(page);
         // the menu takes the focus in an effect after it shows: Enter only once it is there
@@ -979,6 +990,21 @@ module.exports = function gestures(h) {
       await escape(g.page);
       await until(g.page, () => !__s.panels().length);
       await g.close();
+
+      // the iPad in landscape: the head row beside the panel
+      const ip = await open('ipad', 'glas', '/room/living_room');
+      const si = await bring(ip.page, SENSOR);
+      await ip.page.mouse.click(si.x + si.w / 2, si.y + si.h / 2);
+      await until(ip.page, () => !!__s.panel());
+      await settleAnimations(ip.page);
+      res.ipad = await ev(ip.page, () => {
+        const shown = (el) => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+        const boxes = [...document.querySelectorAll('.header-cluster-wrapper > .g-head-back, .header-cluster > *')].filter(shown)
+          .map((el) => { const r = el.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; });
+        return { boxes, panel: Math.round(__s.panel().getBoundingClientRect().left), weather: shown(document.querySelector('.header-cluster__weather')),
+          inspector: document.documentElement.hasAttribute('data-g-inspector') };
+      });
+      await ip.close();
       out.gesturesInspector = res;
       const insp = (x) => x.pres === 'inspector' && x.sheet === 'inspector' && x.modal === 'false' && x.z === '400' && !x.inert
         && near(x.rect.x, 1008) && near(x.rect.y, 12) && near(x.rect.w, 420) && near(x.rect.h, 976) && x.radius === '30px' && x.glass
@@ -1006,7 +1032,9 @@ module.exports = function gestures(h) {
         && res.confirm.list.length === 2 && res.confirm.list[1].pres === 'page' && res.confirm.list[1].back
         && near(res.confirm.list[1].rect.x, 1008) && near(res.confirm.list[1].rect.w, 420) && res.confirm.list[0].pushed
         && res.confirm.list[0].inert
-        && res.confirmEsc.list.length === 1 && insp(res.confirmEsc.list[0]) && /garage-card__btn/.test(res.confirmEsc.focus);
+        && res.confirmEsc.list.length === 1 && insp(res.confirmEsc.list[0]) && /garage-card__btn/.test(res.confirmEsc.focus)
+        && res.ipad.inspector && !res.ipad.weather && res.ipad.boxes.length === 4
+        && res.ipad.boxes.every((b, i, a) => i === 0 || a[i - 1][1] <= b[0]) && res.ipad.boxes[3][1] <= res.ipad.panel - 12;
     });
 
     // 8. Widths: 900–1099 the detail is a dialog, below 900 a sheet; a window that changes its width while the detail is

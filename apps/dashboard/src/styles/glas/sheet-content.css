@@ -269,7 +269,12 @@
 :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn:hover {
   background: var(--g-prominent);
   color: var(--g-on-prominent);
-  filter: brightness(1.04);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn:hover {
+    filter: brightness(1.04);
+  }
 }
 
 :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn:focus-visible {
@@ -293,8 +298,17 @@
   transition: background-color 150ms ease;
 }
 
-:root[data-style='glas'] .modal-body .lights-modal__row:hover {
-  background-color: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .lights-modal__row:hover {
+    background-color: var(--g-hover);
+  }
+}
+
+/* under a finger the row keeps its resting look after a tap (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .modal-body .lights-modal__row:hover {
+    background-color: transparent;
+  }
 }
 
 :root[data-style='glas'] .modal-body .lights-modal__row:active {
@@ -766,7 +780,12 @@
 
 :root[data-style='glas'] .modal-body .numpad-key:hover:not(:disabled) {
   background: var(--g-group);
-  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .numpad-key:hover:not(:disabled) {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
 }
 
 :root[data-style='glas'] .modal-body .numpad-key:active:not(:disabled) {
@@ -816,9 +835,11 @@
   font-weight: 400;
 }
 
-:root[data-style='glas'] .modal-body .numpad-modal__cancel:hover {
-  background: var(--g-hover);
-  color: var(--g-accent-ink);
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .numpad-modal__cancel:hover {
+    background: var(--g-hover);
+    color: var(--g-accent-ink);
+  }
 }
 
 :root[data-style='glas'] .modal-body .numpad-modal__cancel:focus-visible {
@@ -965,8 +986,13 @@
 }
 
 :root[data-style='glas'] .modal-footer :is(.pool-modal__footer-link, .media-modal__footer-link):hover {
-  background: var(--g-hover);
   opacity: 1;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-footer :is(.pool-modal__footer-link, .media-modal__footer-link):hover {
+    background: var(--g-hover);
+  }
 }
 
 :root[data-style='glas'] .modal-footer :is(.pool-modal__footer-link, .media-modal__footer-link):focus-visible {
@@ -1017,7 +1043,12 @@
 
 :root[data-style='glas'] .modal-body .pool-manual__preset:hover {
   background: var(--g-group);
-  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .pool-manual__preset:hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
 }
 
 :root[data-style='glas'] .modal-body .pool-manual__preset.pool-manual__preset--active {
@@ -1060,8 +1091,10 @@
   cursor: not-allowed;
 }
 
-:root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:hover:not(:disabled) {
-  background: var(--g-fill-2);
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:hover:not(:disabled) {
+    background: var(--g-fill-2);
+  }
 }
 
 :root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn:focus-visible {
@@ -1537,8 +1570,10 @@
   cursor: pointer;
 }
 
-:root[data-style='glas'] .modal-body .g-notes__dismiss:hover {
-  background: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .g-notes__dismiss:hover {
+    background: var(--g-hover);
+  }
 }
 
 :root[data-style='glas'] .modal-body :is(.g-notes__all, .g-notes__dismiss):focus-visible {
@@ -1635,5 +1670,44 @@
     font-size: 26px;
     line-height: 30px;
     font-weight: 500;
+  }
+}
+
+/* ---- Forced colours (GLAS-DESIGN §3.7, K108): forced colours take the fills away, so the groups and the buttons
+   that differ from their ground only by their fill keep a frame, the chosen preset a Highlight ring (its inset ring
+   is a shadow, which forced colours drop). ---- */
+@media (forced-colors: active) {
+  :root[data-style='glas']
+    .modal-body
+    :is(
+      .people-modal__list,
+      .lights-modal__list,
+      .doors-modal__list,
+      .garage-list,
+      .locks-list,
+      .alarm-panel-card__state-section,
+      .pool-modal__status,
+      .pool-modal__glances,
+      .pool-manual__custom,
+      .player-tile,
+      .weather-modal__hero,
+      .weather-modal__stat,
+      .weather-modal__forecast-list,
+      .waste-modal__next,
+      .waste-modal__list,
+      .g-notes__list
+    ) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn,
+  :root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn),
+  :root[data-style='glas'] .modal-body .pool-manual__preset,
+  :root[data-style='glas'] .modal-body .pool-manual__custom .pool-stepper__btn {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] .modal-body .pool-manual__preset.pool-manual__preset--active {
+    border: 2px solid Highlight;
   }
 }

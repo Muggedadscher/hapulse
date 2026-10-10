@@ -509,10 +509,11 @@
   transition: background-color 200ms ease, transform 160ms ease-out;
 }
 
-/* the pool page's classic hover is as specific as the rule above and may load after it: a touch's sticky hover keeps
-   the resting fill, the tint only with a pointer that hovers */
+/* the pool page's classic hover is as specific as the rule above and may load after it, the overview card's classic
+   hover dims the button: a touch's sticky hover keeps the resting look, the tint only with a pointer that hovers */
 :root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn):hover:not(:disabled) {
   background: var(--g-fill);
+  opacity: 1;
 }
 
 @media (hover: hover) {

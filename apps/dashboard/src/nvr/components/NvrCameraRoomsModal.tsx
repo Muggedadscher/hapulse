@@ -14,7 +14,13 @@ import { useT } from '../../i18n/useT';
 import { suggestArea } from '../cameraSource';
 import '../nvr.css';
 
-export function NvrCameraRoomsModal({ open, onClose, cameras }: { open: boolean; onClose: () => void; cameras: SentinelCamera[] }) {
+/** `returnFocus`: where the focus goes when the window closes (Glas: the head's "⋯", whose menu item is gone by then). */
+export function NvrCameraRoomsModal({ open, onClose, cameras, returnFocus }: {
+  open: boolean;
+  onClose: () => void;
+  cameras: SentinelCamera[];
+  returnFocus?: (() => HTMLElement | null) | undefined;
+}) {
   const t = useT();
   const rooms = useRooms();
   const stored = useSettingsStore((s) => s.customization.nvrCameraRooms);
@@ -43,6 +49,7 @@ export function NvrCameraRoomsModal({ open, onClose, cameras }: { open: boolean;
     <Modal
       open={open}
       onClose={onClose}
+      returnFocus={returnFocus}
       title={t('cameraSource.rooms.title')}
       icon={<MapPin size={18} strokeWidth={1.75} />}
       footer={(

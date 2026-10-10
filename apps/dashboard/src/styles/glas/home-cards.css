@@ -99,8 +99,10 @@
     font-weight: 500;
   }
 
-  :root[data-style='glas'] .g-card-head__link:hover {
-    background: var(--g-hover);
+  @media (hover: hover) {
+    :root[data-style='glas'] .g-card-head__link:hover {
+      background: var(--g-hover);
+    }
   }
 }
 
@@ -1223,11 +1225,14 @@
   width: 44px;
   min-width: 44px;
   padding: 0;
-  animation: g-rise 300ms var(--g-spring-smooth) backwards;
 }
 
-:root[data-style='glas'] .hero-room-card .hero-pill--media {
+/* the media pill rises in when something starts to play; a tap or the pointer leaves its colour and does not start
+   the rise again (K108) */
+:root[data-style='glas'] .hero-room-card .hero-pill--media,
+:root[data-style='glas'] .hero-room-card .hero-pill--media:hover {
   color: var(--g-blue-ink);
+  animation: g-rise 300ms var(--g-spring-smooth) backwards;
 }
 
 :root[data-style='glas'] .hero-pill--media > span:not(.g-hero-pill__circle) {
@@ -1236,7 +1241,6 @@
 
 :root[data-style='glas'] .hero-room-card .hero-pill--nav {
   margin-left: 0;
-  animation: none;
 }
 
 :root[data-style='glas'] .hero-pill--nav > svg {

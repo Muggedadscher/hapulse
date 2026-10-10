@@ -6,6 +6,31 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F41 — 2026-10-10
+
+**Stil Glas** · _Glass style_
+
+### Geändert / Changed
+
+- Glas ist fertig: der Stil heißt nur noch „Glas“, nicht mehr „Glas (Vorschau)“; die Stil-Zeile sehen alle, ändern dürfen Stil, Stärke und „Transparenz reduzieren“ nur Admins  
+  _Glass is done: the style is just called “Glass”, no longer “Glass (preview)”; everybody sees the style row, only admins change the style, the strength and “Reduce transparency”_
+- Glas: Seitenwechsel über Tab-Leiste, Seitenleiste und Mehr-Menü blenden weich über, die neue Seite steigt leicht auf; eine Kamera öffnet sich aus ihrer Kachel heraus; bei reduzierter Bewegung nur eine kurze Überblendung  
+  _Glass: page changes from the tab bar, the sidebar and the More menu cross-fade while the new page rises a little; a camera opens out of its tile; with reduced motion only a short cross-fade_
+- Glas auf Handy und iPad: nach einem Tipp bleibt keine Hover-Tönung mehr stehen  
+  _Glass on the phone and the iPad: no hover tint stays behind after a tap_
+- Glas besser lesbar: Fenster im hellen Modus weiß, der aktive Tab auf einer deckenden Linse, Kameranamen auf einer dunkleren Kapsel, Fenster über der Kameraseite dunkel, Fokusringe auch auf Bildern und farbigen Flächen deutlich  
+  _Glass easier to read: windows white in light mode, the active tab on an opaque lens, camera names on a darker capsule, windows over the camera page dark, focus rings clear also on pictures and coloured surfaces_
+- Glas am Handy: die Kameraseite ist auch unter der Statusleiste dunkel, oben schimmert nichts Helles mehr über dem Bild  
+  _Glass on the phone: the camera page is dark under the status bar too, no light shimmer above the picture any more_
+- Glas: die Sentinel-Übersicht beginnt mit einem ruhigen Kopf (Zustand groß, Werte als Kapseln), „Ereignisse“ und „Kameras“ tragen ihr Symbol im Titel, der Speicherhinweis steht als Fußnote; „Sentinel öffnen“, „Räume“ und „Einrichtung“ liegen im Menü „⋯“  
+  _Glass: the Sentinel overview starts with a calm header (the state large, the values as capsules), “Events” and “Cameras” carry their symbol in the title, the storage notice is a footnote; “Open Sentinel”, “Rooms” and “Setup” are in the “⋯” menu_
+- Glas: „Clip herunterladen“ ist eine schwebende Glasleiste über dem Bild mit „Von“ und „Bis“ als Segment und rundem Schließen-Knopf; am Handy bleibt das Bild randlos  
+  _Glass: “Download clip” is a floating glass bar over the picture with “From” and “To” as a segment and a round close button; on the phone the picture stays edge to edge_
+- Clip-Leiste in beiden Stilen: das × bleibt in seiner Zeile, auch bei breiten Uhrzeiten (12-Stunden-Uhr)  
+  _Clip bar in both styles: the × stays on its line, also with wide times (12-hour clock)_
+- Glas am iPad quer: neben dem offenen Detail bleiben die Knöpfe oben ganz, die Wetteranzeige wird kürzer oder weicht, die Chip-Leiste zeigt keine angeschnittenen Chips  
+  _Glass on the iPad in landscape: beside the open detail the buttons at the top stay whole, the weather pill gets shorter or gives way, the chip strip shows no cut-off chips_
+
 ## F40 — 2026-10-10
 
 **Vorschau Glas: Kameras** · _Glass preview: cameras_

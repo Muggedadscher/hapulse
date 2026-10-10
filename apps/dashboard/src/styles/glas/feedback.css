@@ -249,9 +249,11 @@
     color: var(--g-label-2);
   }
 
-  :root[data-style='glas'] .toaster__close:hover {
-    background: radial-gradient(circle, var(--g-fill-2) 13.5px, transparent 14px);
-    color: var(--g-label);
+  @media (hover: hover) {
+    :root[data-style='glas'] .toaster__close:hover {
+      background: radial-gradient(circle, var(--g-fill-2) 13.5px, transparent 14px);
+      color: var(--g-label);
+    }
   }
 }
 

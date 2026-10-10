@@ -25,13 +25,17 @@
   color: var(--g-label);
 }
 
-:root[data-style='glas'] .onboarding__connect-btn--secondary:hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .onboarding__connect-btn--secondary:hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
-:root[data-style='glas'] .onboarding__demo-btn:hover:not(:disabled) {
-  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+@media (hover: hover) {
+  :root[data-style='glas'] .onboarding__demo-btn:hover:not(:disabled) {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
 }
 
 :root[data-style='glas'] :is(.onboarding__demo-btn, .onboarding__advanced-toggle):focus-visible {
@@ -58,7 +62,12 @@
 
 :root[data-style='glas'] .onboarding__advanced-toggle:hover {
   background: none;
-  color: var(--g-label);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .onboarding__advanced-toggle:hover {
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .onboarding__advanced-chevron {

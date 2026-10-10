@@ -22,6 +22,7 @@
     .g-tabs__glass,
     .app-sidebar,
     .g-avatar__glass,
+    .g-hmenu__glass,
     .g-back,
     .header-cluster .notifications-wrap,
     .g-edit-capsule:not([aria-pressed='true']),
@@ -30,6 +31,7 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
+    .g-hmenu__menu,
     .toaster__item,
     .modal-panel[data-g-mat='glass'],
     .nvr-camtile__name
@@ -64,6 +66,7 @@
     .g-tabs__glass,
     .app-sidebar,
     .g-avatar__glass,
+    .g-hmenu__glass,
     .g-back,
     .header-cluster .notifications-wrap,
     .g-edit-capsule:not([aria-pressed='true']),
@@ -72,6 +75,7 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
+    .g-hmenu__menu,
     .toaster__item,
     .modal-panel[data-g-mat='glass'],
     .nvr-camtile__name
@@ -96,6 +100,7 @@
     .g-tabs__glass,
     .app-sidebar,
     .g-avatar__glass,
+    .g-hmenu__glass,
     .g-back,
     .header-cluster .notifications-wrap,
     .g-edit-capsule:not([aria-pressed='true']),
@@ -104,6 +109,7 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
+    .g-hmenu__menu,
     .toaster__item,
     .modal-panel[data-g-mat='glass'],
     .nvr-camtile__name
@@ -122,6 +128,7 @@
 :root[data-style='glas'] .g-glass.g-flex:active::after,
 :root[data-style='glas'] .app-tabs:active > .g-tabs__glass::after,
 :root[data-style='glas'] .g-avatar__btn:active .g-avatar__glass::after,
+:root[data-style='glas'] .g-hmenu__btn:active .g-hmenu__glass::after,
 :root[data-style='glas'] .g-back:active::after,
 :root[data-style='glas'] .header-cluster .notifications-wrap:active::after,
 :root[data-style='glas'] .g-edit-capsule:not([aria-pressed='true']):active::after {
@@ -141,6 +148,12 @@
   text-shadow: var(--g-glass-clear-text-shadow);
 }
 
+/* text on clear glass (the camera tiles' names, the NVR card's pill): the clear fill dims more, so the white text keeps
+   4.5:1 over a white picture together with the tile's top shade (GLAS-DESIGN §2.5 rule 5; Etappe 7, K109) */
+:root[data-style='glas'] :is(.nvr-camtile__name, .g-nvr__pill) {
+  --g-glass-fill: var(--g-glass-clear-text-fill);
+}
+
 /* opaque ("Deckend", "Transparenz reduzieren", more contrast): solid fill, no filter, no rim (§3.4). */
 :root[data-style='glas'][data-glass='opaque']
   :where(
@@ -148,6 +161,7 @@
     .g-tabs__glass,
     .app-sidebar,
     .g-avatar__glass,
+    .g-hmenu__glass,
     .g-back,
     .header-cluster .notifications-wrap,
     .g-edit-capsule:not([aria-pressed='true']),
@@ -156,6 +170,7 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
+    .g-hmenu__menu,
     .toaster__item,
     .modal-panel[data-g-mat='glass'],
     .nvr-camtile__name
@@ -178,6 +193,7 @@
     .g-tabs__glass,
     .app-sidebar,
     .g-avatar__glass,
+    .g-hmenu__glass,
     .g-back,
     .header-cluster .notifications-wrap,
     .g-edit-capsule:not([aria-pressed='true']),
@@ -186,6 +202,7 @@
     .rooms-menu,
     .app-more-menu,
     .g-avatar-menu,
+    .g-hmenu__menu,
     .toaster__item,
     .modal-panel[data-g-mat='glass'],
     .nvr-camtile__name
@@ -201,6 +218,7 @@
       .g-tabs__glass,
       .app-sidebar,
       .g-avatar__glass,
+      .g-hmenu__glass,
       .g-back,
       .header-cluster .notifications-wrap,
       .g-edit-capsule:not([aria-pressed='true']),
@@ -209,6 +227,7 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
+      .g-hmenu__menu,
       .toaster__item,
       .modal-panel[data-g-mat='glass'],
       .nvr-camtile__name
@@ -229,6 +248,7 @@
       .g-tabs__glass,
       .app-sidebar,
       .g-avatar__glass,
+      .g-hmenu__glass,
       .g-back,
       .header-cluster .notifications-wrap,
       .g-edit-capsule:not([aria-pressed='true']),
@@ -237,6 +257,7 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
+      .g-hmenu__menu,
       .toaster__item,
       .modal-panel[data-g-mat='glass'],
       .nvr-camtile__name
@@ -253,6 +274,7 @@
       .g-tabs__glass,
       .app-sidebar,
       .g-avatar__glass,
+      .g-hmenu__glass,
       .g-back,
       .header-cluster .notifications-wrap,
       .g-edit-capsule:not([aria-pressed='true']),
@@ -261,6 +283,7 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
+      .g-hmenu__menu,
       .toaster__item,
       .modal-panel[data-g-mat='glass'],
       .nvr-camtile__name
@@ -278,6 +301,7 @@
       .g-tabs__glass,
       .app-sidebar,
       .g-avatar__glass,
+      .g-hmenu__glass,
       .g-back,
       .header-cluster .notifications-wrap,
       .g-edit-capsule:not([aria-pressed='true']),
@@ -286,6 +310,7 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
+      .g-hmenu__menu,
       .toaster__item,
       .modal-panel[data-g-mat='glass'],
       .nvr-camtile__name
@@ -296,6 +321,7 @@
       .g-tabs__glass,
       .app-sidebar,
       .g-avatar__glass,
+      .g-hmenu__glass,
       .g-back,
       .header-cluster .notifications-wrap,
       .g-edit-capsule:not([aria-pressed='true']),
@@ -304,6 +330,7 @@
       .rooms-menu,
       .app-more-menu,
       .g-avatar-menu,
+      .g-hmenu__menu,
       .toaster__item,
       .modal-panel[data-g-mat='glass'],
       .nvr-camtile__name

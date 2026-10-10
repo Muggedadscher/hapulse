@@ -122,6 +122,12 @@ module.exports = function home(h) {
       try {
         await fn();
       } catch (e) {
+        // WebKit has no CDP (Etappe 7, K112): a block that needs it is skipped and listed, never counted as green
+        if (/CDP session is only available in Chromium/.test(String(e && e.message))) {
+          ran.splice(ran.indexOf(name), 1);
+          (out.skippedNoCdp = out.skippedNoCdp || []).push(name);
+          return;
+        }
         out[name + 'Error'] = String(e && e.message).split('\n')[0].slice(0, 300);
         out[name + 'Ok'] = false;
       }

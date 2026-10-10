@@ -96,8 +96,10 @@
   background-size: calc(100% - 16px) 0.5px;
 }
 
-:root[data-style='glas'] .g-ctx__item:hover {
-  background-color: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .g-ctx__item:hover {
+    background-color: var(--g-hover);
+  }
 }
 
 :root[data-style='glas'] .g-ctx__item:active {

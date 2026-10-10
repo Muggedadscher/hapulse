@@ -71,6 +71,12 @@
   background: var(--bg-card);
 }
 
+/* the cards of "Klima alle" / "Rollläden alle" are content, not controls (GLAS-DESIGN §6.3): no tint, neither under
+   the pointer nor after a tap (K108); their buttons answer */
+:root[data-style='glas'] .all-modal__grid > .card:hover {
+  background-color: var(--bg-card);
+}
+
 /* not the quiet focus the context menu gives back after a finger (gestures.css): its ring waits for a key */
 :root[data-style='glas'] .room-page .entity-card-press > .card:focus-visible:not([data-g-quiet-focus]) {
   outline: 2px solid var(--g-focus);
@@ -474,8 +480,17 @@
   border-radius: 50%;
 }
 
-:root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn:hover:not(:disabled) {
-  background: var(--g-fill);
+@media (hover: hover) {
+  :root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn:hover:not(:disabled) {
+    background: var(--g-fill);
+  }
+}
+
+/* under a finger the capsule's buttons stay clear after a tap (the steppers' rule in controls.css fills them; K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn:hover:not(:disabled) {
+    background: transparent;
+  }
 }
 
 :root[data-style='glas'] .climate-card__target-control > .climate-card__step-btn:active {
@@ -815,15 +830,16 @@
   outline-offset: 2px;
 }
 
-/* the badges of a card (also of the music page's sections, K96): circles 30 (hit area 44) on an opaque fill with the
-   knob's shadow; hidden (everywhere or on the phone) = inverted like the overview's bar (edit.css), a favourite's star
-   in `yellowInk` */
-:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge {
+/* the badges of a card (also of the music page's sections, K96, and of every page with an edit bar since Etappe 7,
+   K108 — security, energy, automations, scenes, system, the sidebar's and the overview's own): circles 30 (hit area
+   44) on an opaque fill with the knob's shadow; hidden (everywhere or on the phone) = inverted like the overview's bar
+   (edit.css), a favourite's star in `yellowInk` */
+:root[data-style='glas'] .app-layout .edit-badge {
   gap: 6px;
 }
 
-:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn,
-:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn:hover {
+:root[data-style='glas'] .app-layout .edit-badge__btn,
+:root[data-style='glas'] .app-layout .edit-badge__btn:hover {
   width: 30px;
   height: 30px;
   border: 0;
@@ -833,15 +849,15 @@
   opacity: 1;
 }
 
-:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn::after {
+:root[data-style='glas'] .app-layout .edit-badge__btn::after {
   inset: -7px;
 }
 
 :root[data-style='glas']
-  :is(.room-page, .music-page)
+  .app-layout
   :is(.edit-badge__btn--eye-hidden, .edit-badge__btn--mobile-hidden),
 :root[data-style='glas']
-  :is(.room-page, .music-page)
+  .app-layout
   :is(.edit-badge__btn--eye-hidden, .edit-badge__btn--mobile-hidden):hover {
   background: var(--g-label);
   color: var(--bg);
@@ -852,7 +868,7 @@
   color: var(--g-yellow-ink);
 }
 
-:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn:focus-visible {
+:root[data-style='glas'] .app-layout .edit-badge__btn:focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
 }
@@ -886,8 +902,8 @@
   :root[data-style='glas'] .climate-card__target-control,
   :root[data-style='glas'] :is(.room-section__grip, .room-section__resize-handle),
   :root[data-style='glas'] .room-section__resize-handle:hover,
-  :root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn,
-  :root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn:hover {
+  :root[data-style='glas'] .app-layout .edit-badge__btn,
+  :root[data-style='glas'] .app-layout .edit-badge__btn:hover {
     border: 1px solid ButtonText;
   }
 }
