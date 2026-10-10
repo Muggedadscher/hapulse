@@ -499,6 +499,7 @@ module.exports = function gestures(h) {
       await ev(page, (id) => __x.card(id).querySelector('[tabindex]:not([tabindex="-1"]), button').focus(), LIGHT_ON);
       await page.keyboard.press('ContextMenu');
       await menuOpen(page);
+      await until(page, () => !!document.activeElement?.closest('.g-ctx__menu'), null, 3000);
       res.key = await ev(page, () => __x.menu().focus);
       await escape(page);
       await menuGone(page);
@@ -908,6 +909,8 @@ module.exports = function gestures(h) {
         await ev(page, (e) => __x.card(e).querySelector('[tabindex]:not([tabindex="-1"]), button').focus(), id);
         await page.keyboard.press('ContextMenu');
         await menuOpen(page);
+        // the menu takes the focus in an effect after it shows: Enter only once it is there
+        await until(page, () => !!document.activeElement?.closest('.g-ctx__menu'), null, 3000);
         await page.keyboard.press('Enter');
         await menuGone(page);
         await until(page, () => !!__s.panel());
