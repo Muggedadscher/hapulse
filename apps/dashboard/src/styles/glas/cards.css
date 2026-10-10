@@ -706,10 +706,27 @@
   border-radius: 10px;
 }
 
-/* ---- Edit mode (room): grips, dots, handle and badges in Glas; no dashed outline ---- */
+/* ---- Edit mode (room): grips, dots, handle and badges in Glas; no dashed outline (badges and outline also on the
+   music page, K96) ---- */
 
-:root[data-style='glas'] .room-page .edit-item-outline {
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-item-outline {
   outline: none;
+}
+
+/* a hidden or unavailable card is drawn dimmed, its badges not (like the overview's bar, edit.css): the inverted eye
+   says the card is hidden and has to stay legible */
+:root[data-style='glas'] :is(.room-page, .music-page) :is(.edit-entity-wrap--hidden, .edit-entity-wrap--unavailable) {
+  opacity: 1;
+  filter: none;
+}
+
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-entity-wrap--unavailable > .edit-item-outline {
+  opacity: 0.5;
+  filter: saturate(0.25);
+}
+
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-entity-wrap--hidden > .edit-item-outline {
+  opacity: 0.4;
 }
 
 /* a scene tile keeps its width when the edit wrapper takes it out of the grid (a button only fits its content); on the
@@ -793,14 +810,15 @@
   outline-offset: 2px;
 }
 
-/* the badges of a card: circles 30 (hit area 44) on an opaque fill with the knob's shadow; hidden = inverted like the
-   overview's bar (edit.css), a favourite's star in `yellowInk` */
-:root[data-style='glas'] .room-page .edit-badge {
+/* the badges of a card (also of the music page's sections, K96): circles 30 (hit area 44) on an opaque fill with the
+   knob's shadow; hidden (everywhere or on the phone) = inverted like the overview's bar (edit.css), a favourite's star
+   in `yellowInk` */
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge {
   gap: 6px;
 }
 
-:root[data-style='glas'] .room-page .edit-badge__btn,
-:root[data-style='glas'] .room-page .edit-badge__btn:hover {
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn,
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn:hover {
   width: 30px;
   height: 30px;
   border: 0;
@@ -810,12 +828,16 @@
   opacity: 1;
 }
 
-:root[data-style='glas'] .room-page .edit-badge__btn::after {
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn::after {
   inset: -7px;
 }
 
-:root[data-style='glas'] .room-page .edit-badge__btn--eye-hidden,
-:root[data-style='glas'] .room-page .edit-badge__btn--eye-hidden:hover {
+:root[data-style='glas']
+  :is(.room-page, .music-page)
+  :is(.edit-badge__btn--eye-hidden, .edit-badge__btn--mobile-hidden),
+:root[data-style='glas']
+  :is(.room-page, .music-page)
+  :is(.edit-badge__btn--eye-hidden, .edit-badge__btn--mobile-hidden):hover {
   background: var(--g-label);
   color: var(--bg);
 }
@@ -825,7 +847,7 @@
   color: var(--g-yellow-ink);
 }
 
-:root[data-style='glas'] .room-page .edit-badge__btn:focus-visible {
+:root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn:focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
 }
@@ -856,7 +878,7 @@
     :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn, .cover-card__btn),
   :root[data-style='glas'] .climate-card__target-control,
   :root[data-style='glas'] :is(.room-section__grip, .room-section__resize-handle),
-  :root[data-style='glas'] .room-page .edit-badge__btn {
+  :root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn {
     border: 1px solid ButtonText;
   }
 }

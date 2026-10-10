@@ -20,9 +20,7 @@
 :root[data-style='glas'] .entity-detail__timeline-seg--active,
 :root[data-style='glas'] .entity-detail__activity-dot--active,
 :root[data-style='glas'] .hero-pill--lights-on,
-:root[data-style='glas'] .library-tile__play,
 :root[data-style='glas'] .queue-card__connect-save,
-:root[data-style='glas'] .group-menu__check--on,
 :root[data-style='glas'] .numpad-modal__dot--filled,
 :root[data-style='glas'] .numpad-key--confirm,
 :root[data-style='glas'] .global-confirm__share input,
@@ -68,14 +66,14 @@
 
 /* Focus rings keep the ink on the orange areas above (global :focus-visible and the switch tracks draw them with
    var(--accent)). Where the ring is a box-shadow around the area, the area turns ink while focused. Since stage 5 the
-   sliders and the play buttons of the media cards no longer use the accent (controls.css, K93), and the pool's bars,
-   timeline, on/off and rings have their own colours and focus rings (pool.css, K99). */
+   sliders and the play buttons of the media cards no longer use the accent (controls.css, K93), the pool's bars,
+   timeline, on/off and rings have their own colours and focus rings (pool.css, K99), and the library's play button
+   and the group menu's check have their own look (music.css). */
 :root[data-style='glas'] :is(
     .btn--primary,
     .changelog-modal__done,
     .energy-empty-state__btn,
     .hero-pill--lights-on,
-    .library-tile__play,
     .queue-card__connect-save,
     .numpad-key--confirm,
     .global-confirm__share input,

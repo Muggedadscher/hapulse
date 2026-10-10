@@ -854,7 +854,12 @@ function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Cont
  * `teal`, the time at the dragged handle `group` on `label`. Steppers and play draw `label` on `fill`, the playing state
  * white on blue (window pairs). The energy page's tiles: their text is `label`/`label2` on `fill` over the card (the
  * field pairs), the glyph in its circle the tone's ink on its soft tone over that (3:1, non-text); the neutral circle is
- * the card with `label2`.
+ * the card with `label2`. The music page: a playing zone tile's badge `blueInk` on `blueSoft` over the card (the card
+ * lies under it: over the tile's `fill` it would be 4.2:1 in light mode); a chosen player's row `label` on
+ * `accentSoft`, also its state (`label2` would fall below 4.5:1 for some accents in dark mode); over a library tile's
+ * art the more glyph `label` and a favourite's star `yellowInk` on `fillSolid`, the play glyph `glyphDark` on the white
+ * knob (3:1, non-text). The playing blue (`blueInk` on `blueSoft`) on the card and the popovers' text on `group` are
+ * covered by the general and the window pairs.
  */
 function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
   const pairs: ContrastPair[] = [];
@@ -873,6 +878,11 @@ function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Con
   for (const [ink, soft] of [['blueInk', 'blueSoft'], ['greenInk', 'greenSoft'], ['yellowInk', 'yellowSoft'], ['redInk', 'redSoft']] as const) {
     pairs.push({ name: `${ink} glyph on ${soft} over fill over card (energy tile)`, fg: c[ink], bg: compositeOver(c[soft], tile), min: 3 });
   }
+  pairs.push({ name: 'blueInk on blueSoft over card (playing zone tile badge, the card under it)', fg: c.blueInk, bg: compositeOver(c.blueSoft, c.card), min: 4.5 });
+  pairs.push({ name: 'label on accentSoft over card (chosen player: name and state)', fg: c.label, bg: compositeOver(a.accentSoft, c.card), min: 4.5 });
+  pairs.push({ name: 'label glyph on fillSolid (library item more)', fg: c.label, bg: c.fillSolid, min: 3 });
+  pairs.push({ name: 'yellowInk glyph on fillSolid (library favourite star)', fg: c.yellowInk, bg: c.fillSolid, min: 3 });
+  pairs.push({ name: 'glyphDark on knob (library play)', fg: c.glyphDark, bg: c.knob, min: 3 });
   return pairs;
 }
 

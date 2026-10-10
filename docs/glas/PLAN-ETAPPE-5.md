@@ -408,3 +408,72 @@ und übernommen, außer wo anders vermerkt.
   Energie, `pagesEmpty` Energie (Aussehen, Link `…/config/energy` in neuem Tab, 48 hoch), `pagesCardTitles` mit Wasser
   über der Fläche. Neu in `shoot`: die Szenen `security-edit` und `energy-edit` (Seite im Bearbeiten-Modus, auch für
   den Klassisch-Vergleich).
+
+### 7.12 Musik (M1–M11, K90, K92–K94, K96)
+
+- Neue Dateien `music.css` und `components/glas/keepInCard.ts`. **Abstände** wie die übrigen Seiten (20, ab 900 px
+  Zeilen 26); die Bibliothek liegt in der Spalte der Seite (Abstand 24), ihr Rand gleicht aus (−4, ab 900 px +2).
+- **Now Playing (K90):** schlichte Karte ohne Tönung, das unscharfe Albumbild hinter einem laufenden Titel bleibt
+  (§3.6). Bild Radius 16, Platzhalter `fill` mit der Note in `label2`, blau, solange es spielt. Playername 13/18
+  `label2` ohne Versalien, Titel 22/28 700, Künstler 15/20 `label2`. Transport rund 44 ohne Fläche, Play 56
+  (controls.css), Shuffle/Repeat an = `accentSoft` mit `accentInk`. Lautstärke: Stumm 44, die Linie zwischen zwei
+  Symbolen. Quelle und die Player-Wahl von Warteschlange und Bibliothek: Kapsel 36 in `fill` in einer Trefferfläche 44,
+  15/20 `label`.
+- **Regler (K93):** die dünnen Linien behalten ihre Stärke (Now Playing 6, Zonen-Zeilen 5, Zonen-Kacheln 4) und
+  bekommen eine Trefferfläche 28 (§5.3); Farben und das Wachsen unter dem Finger aus controls.css.
+- **Zonen (K92):** Raster | Liste als Segment mit zwei Symbolen (`g-seg--view`, 88 × 44, `radiogroup`, die Pfeile
+  wählen, eine Ansicht; `[fork]`-Weiche in `ZonesCard.tsx`). Kacheln in `fill` ohne Rand, Radius 18; Zeilen 64 als
+  eingerückte Liste. **Abweichungen:** (1) eine Zone, die nicht spielt, wird nicht blass (.45 fiele unter das
+  Kontrastminimum), sie sagt es in `label2`; die spielende zeigt ihr Symbol blau und die Lautstärke. (2) Das kleine
+  Raumsymbol neben dem Namen fällt weg, das Bild zeigt den Raum. (3) Die Spalten des Rasters dürfen schrumpfen
+  (`minmax(0, 1fr)`; Klassisch: Nebenbefund 21). (4) Das Abzeichen mit der Zahl spielender Player liegt auf der
+  Kartenfarbe: `blueInk` auf `blueSoft` über `fill` bliebe hell unter 4,5:1.
+- **Andere Player (K94):** eingerückte Liste über die Breite der Fläche (scrollt in ihrer Spalte), Zeilen 60, Bild 40
+  Radius 10, Name 17/22 600, Zustand 13/18 `label2`. Der gewählte (er füllt Now Playing) `accentSoft`, sein Zustand in
+  `label` (`label2` auf `accentSoft` fällt dunkel für manche Akzente unter 4,5:1). Spielend: Punkt am Bild und
+  Play-Knopf blau. Play/Pause 32 in einer Trefferfläche 44.
+- **Warteschlange (K94):** der Kopf bricht um, bevor der Titel abgeschnitten wird (am Handy bekommt die Player-Wahl
+  eine eigene Zeile). Volle Liste von Rand zu Rand (scrollt wie in Klassisch), Zeilen 60: Griff 44 `label3`, Bild 40,
+  Titel 17/22 mit Künstler 13/18 `label2`, Länge 15/20 `label2`, Entfernen 44 (`label3`, unter dem Zeiger `redInk`);
+  der laufende Titel `blueInk` 600, die gezogene Zeile hebt sich als Karte. Ohne volle Liste „Läuft gerade“ und „Als
+  Nächstes“ als Zeilen (die Demo zeigt immer die volle Liste: geprüft an Bildern mit eingesetzten Zeilen). Darunter
+  Anzahl und Knöpfe mit Haarlinie: Shuffle, Repeat und Übertragen als Kreise 36 in `fill` (an = `accentSoft`), der
+  Lautsprecher-Knopf eine Kapsel 36 (gruppiert blau).
+- **Popover** (Übertragen, Zusammen abspielen, Menü eines Bibliothekselements): deckend `group`, Radius 22, Innenrand
+  6, Schatten „lifted“, Titel 13/18 600 `label2` ohne Versalien, Einträge 44 (Radius 14, 17/22 `label`), so breit wie
+  ihre Einträge (höchstens 280). Gruppierte Lautsprecher tragen einen Haken in `accentInk` ohne Kästchen. Kein neues
+  `backdrop-filter` auf den Seiten (§5). **Abweichungen:** (1) das Gruppenmenü öffnet an den Aktionen des Kopfs (an
+  ihrem rechten Rand), nicht am 44-px-Knopf. (2) Ein Popover, das die Karte verlassen würde (oder näher als 8 an ihren
+  Rand käme), öffnet von der anderen Seite: `keepInCard` misst als Ref-Callback einmal beim Einhängen (vor dem ersten
+  Bild) und setzt `data-g-flip`; je eine `[fork]`-Zeile nur für Glas in `LibraryCard.tsx` (Elementmenü) und
+  `SpeakerGroupMenu.tsx`. In Klassisch ragt das Gruppenmenü am Handy links aus dem Bild (Nebenbefund 25).
+- **Music Assistant verbinden:** Haarlinie, die Aufforderung als Link in `accentInk` mindestens 44 hoch (am Handy bricht
+  sie um, das Symbol bleibt in der ersten Zeile), die Felder wie lists.css, Speichern prominent 48.
+- **Bibliothek:** Medienarten als Auswahl-Pillen (controls.css) in einer Zeile, die scrollt; sie behalten ihre Breite
+  (Klassisch: Nebenbefund 24), die Zeile läuft bis zum Kartenrand und lässt Platz für den Fokusring. Favoriten ein
+  Kreis 36 (an: `yellowSoft` mit gefülltem Stern in `yellowInk`), die Suche füllt den Rest der Zeile bis 320, Blättern
+  Kreise 36. Kacheln: Bild Radius 12 (Künstler rund) auf `fill`, Name 15/20, darunter 13/18 `label2`. Über dem Bild
+  Play als weißer Kreis 36 mit dunklem Symbol und dem Schatten des Knopfs, Mehr ein Kreis 32 in `fillSolid`, der Stern
+  eines Favoriten 22 in `fillSolid` mit `yellowInk`; sie erscheinen wie in Klassisch (unter dem Zeiger, bei Touch immer).
+  Das Bild schneidet nicht mehr ab: das Menü zeigt sich ganz (Klassisch: Nebenbefund 23).
+- **Spielen ist blau** wie im Medienfenster (sheet-content.css), der Akzent markiert nur eine Wahl (§2.3); `accent.css`
+  führt Play der Bibliothek und den Gruppen-Haken nicht mehr.
+- **Bearbeiten (K96):** nur Auge und Handy wie in Klassisch an der Ecke der Karte (cards.css, gemeinsam mit dem Raum):
+  Kreise 30 (Trefferfläche 44) auf `fillSolid` mit dem Schatten des Knopfs, ausgeblendet invertiert. Der Kopf einer
+  Karte hält im Bearbeiten rechts 14 frei, damit Anzahl, Segment und Player-Wahl frei bleiben. **Abweichung:** eine
+  ausgeblendete (oder nicht verfügbare) Karte wird nur in ihrem Inhalt blass (.4, nicht verfügbar .5 und entsättigt),
+  nicht ihre Knöpfe; das invertierte Auge muss lesbar bleiben. Gilt auch im Raum.
+- **Erzwungene Farben:** Kanten an den Knöpfen; die Player-Wahl verliert ihre transparenten Trefferränder wie die
+  Felder; Gewähltes und Eingeschaltetes in der Systemhervorhebung.
+- Kontrastpaare: Abzeichen der Zonenkachel auf der Karte, gewählter Player (Name und Zustand), über dem Bild Mehr und
+  Stern auf `fillSolid` und Play auf dem Knopf (3:1).
+- Prüfungen: `pagesSegments` Musik (Rolle, Namen, 88 × 44, Raster vorgewählt, Tippen auf Liste, Pfeil, Anfang, Ende,
+  Pfeil am Ende springt um; dieselben Räume wie in Klassisch in beiden Ansichten), `pagesKeep` Musik (dieselben Schritte
+  in Klassisch und Glas senden dieselben Aufrufe und ändern die Seite gleich: Transport, Stumm, Quelle, Seek und
+  Lautstärke per Tasten, anderer Player Play/Pause und Wählen, Zone stumm und Lautstärke, Shuffle, Repeat,
+  Gruppieren, Titel entfernen und ziehen, Übertragen, Medienarten, Favoriten, Suche, Elementmenü mit Esc wie in
+  Klassisch, „Warteschlange ersetzen“, Abspielen; in Glas zusätzlich gezogen: Seek mit einem Aufruf beim Loslassen,
+  Lautstärke und Zonen-Lautstärke mit Aufrufen beim Ziehen), `pagesEdit` Musik (die Knöpfe verdecken auf Desktop,
+  iPad und Handy nichts; Auge und Handy schreiben `hiddenMusicSections` und `mobileHiddenMusicSections`, Inhalt blass,
+  Auge invertiert, nach dem Wechsel zu Klassisch dieselben Karten ausgeblendet), `pagesEmpty` Musik (ohne Player).
+  Neu in `shoot`: die Szene `music-edit`.

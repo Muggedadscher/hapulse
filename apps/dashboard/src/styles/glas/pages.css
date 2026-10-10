@@ -154,6 +154,23 @@
   padding: 0;
 }
 
+/* ---- A card that is its own surface (title in the surface, a hero, the alarm panel, the music page's cards) does not
+   tint under the pointer: it is content, not a control (GLAS-DESIGN §6.3: rows, links and tiles answer the pointer).
+   The classic `.card:hover` would paint `cardHover` on it. A card with its title above the surface has no background
+   of its own (above). ---- */
+:root[data-style='glas']
+  :is(
+    .security-page :is(.security-hero-card, .alarm-panel-card),
+    .system-page .system-hero-card,
+    .devices-page .devices-hero,
+    .automations-page .auto-hero-card,
+    .scenes-page .scene-hero-card,
+    .pool-layout :is(.pool-hero, .pool-card:where(:has(> .pool-card__head > .pool-switch))),
+    .music-page .card
+  ):where(.card):hover {
+  background-color: var(--bg-card);
+}
+
 /* ---- The title row, its symbol, title and count, in and above the surface ---- */
 :root[data-style='glas']
   :is(

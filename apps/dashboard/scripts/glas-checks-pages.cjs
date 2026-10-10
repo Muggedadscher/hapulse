@@ -951,6 +951,103 @@ module.exports = function pages(h) {
           }
         }
       }
+      // Music (K96, no card grid): the eye and the phone stand at each card's corner as in Klassisch and cover nothing
+      // of a card (text, controls); they write the fields Klassisch reads; a hidden card dims its content, not its
+      // badges (the eye inverted); after the switch to Klassisch the same cards are hidden
+      const MUSIC_CARDS = ['now-playing-card', 'zones-card', 'queue-card', 'other-players-card', 'library-card'];
+      const musicCust = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state?.customization || {});
+      const musicLayout = (page) => ev(page, (cards) => [...document.querySelectorAll('.music-page .edit-entity-wrap--editing')].map((w) => {
+        const card = cards.find((c) => w.querySelector(`.edit-item-outline > .${c}`)) || '?';
+        return `${card}:${w.classList.contains('edit-entity-wrap--hidden') ? 'h' : ''}${w.querySelector('.edit-badge__btn--mobile-hidden') ? 'm' : ''}`;
+      }).join(','), MUSIC_CARDS);
+      for (const [device, mode] of [['desktop', 'light'], ['ipad', 'light'], ['phone', 'dark']]) {
+        const { page, close } = await open(device, 'glas', '/music', { mode });
+        try {
+          const settle = async (ms = 300) => {
+            await sleep(ms);
+            await settleAnimations(page);
+          };
+          await enterEdit(page);
+          await page.evaluate(() => window.scrollTo(0, 0));
+          await settleAnimations(page);
+          const covers = () => ev(page, () => {
+            const hits = [];
+            const wraps = [...document.querySelectorAll('.music-page .edit-entity-wrap--editing')];
+            for (const w of wraps) {
+              const btns = [...w.querySelectorAll(':scope > .edit-badge .edit-badge__btn')].filter((e) => e.getClientRects().length)
+                .map((e) => e.getBoundingClientRect());
+              const content = [...w.querySelectorAll('.edit-item-outline *')].filter((e) => {
+                if (!e.getClientRects().length || getComputedStyle(e).visibility === 'hidden') return false;
+                if (e.matches('button, a, input, select, [role="button"], [role="radio"], svg')) return true;
+                return [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+              });
+              for (const e of content) {
+                const b = e.getBoundingClientRect();
+                if (b.width < 1 || b.height < 1) continue;
+                if (btns.some((p) => p.left < b.right - 1 && p.right > b.left + 1 && p.top < b.bottom - 1 && p.bottom > b.top + 1)) {
+                  const c = e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className;
+                  hits.push(`${(w.querySelector('.edit-item-outline > *') || {}).className}:${c || e.tagName}`);
+                }
+              }
+            }
+            return { wraps: wraps.length, badges: wraps.filter((w) => w.querySelectorAll(':scope > .edit-badge .edit-badge__btn').length === 2).length, hits };
+          });
+          const look = await covers();
+          const r = { look };
+          if (device === 'desktop') {
+            // eye and phone on the zones card: the field Klassisch reads, the look of a hidden card, and back
+            const wrap = page.locator('.music-page .edit-entity-wrap--editing', { has: page.locator('.zones-card') });
+            const eye = wrap.locator(':scope > .edit-badge .edit-badge__btn--eye');
+            const phone = wrap.locator(':scope > .edit-badge .edit-badge__btn--mobile');
+            await eye.click();
+            await settle();
+            r.eye = { stored: ((await musicCust(page)).hiddenMusicSections || []).includes('zones'), ...(await wrap.evaluate((w) => {
+              const tok = (n) => {
+                const d = document.createElement('div');
+                d.style.background = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d).backgroundColor;
+                d.remove();
+                return v;
+              };
+              const btn = w.querySelector(':scope > .edit-badge .edit-badge__btn--eye');
+              return { wrap: getComputedStyle(w).opacity, content: getComputedStyle(w.querySelector(':scope > .edit-item-outline')).opacity,
+                badge: getComputedStyle(w.querySelector(':scope > .edit-badge')).opacity, inverted: getComputedStyle(btn).backgroundColor === tok('--g-label') };
+            })) };
+            await phone.click();
+            await settle();
+            r.phone = { stored: ((await musicCust(page)).mobileHiddenMusicSections || []).includes('zones'), pressed: await phone.getAttribute('aria-pressed') };
+            r.glas = await musicLayout(page);
+            // the switch to Klassisch: the same cards hidden there
+            await ev(page, () => {
+              const st = JSON.parse(localStorage.getItem('hapulse:settings'));
+              st.state.customization.uiStyle = 'classic';
+              localStorage.setItem('hapulse:settings', JSON.stringify(st));
+            });
+            await page.reload({ waitUntil: 'load' });
+            await page.waitForFunction(() => document.querySelector('#root > *'));
+            await settle(900);
+            await enterEdit(page);
+            r.classic = await musicLayout(page);
+            r.classicStyle = await ev(page, () => document.documentElement.getAttribute('data-style'));
+            // and back: both toggles off
+            await page.locator('.music-page .edit-entity-wrap--editing', { has: page.locator('.zones-card') }).locator(':scope > .edit-badge .edit-badge__btn--eye').click();
+            await settle();
+            await page.locator('.music-page .edit-entity-wrap--editing', { has: page.locator('.zones-card') }).locator(':scope > .edit-badge .edit-badge__btn--mobile').click();
+            await settle();
+            const c = await musicCust(page);
+            r.back = (c.hiddenMusicSections || []).includes('zones') || (c.mobileHiddenMusicSections || []).includes('zones');
+          }
+          const ok = look.wraps === 5 && look.badges === 5 && look.hits.length === 0
+            && (device !== 'desktop' || (r.eye.stored && r.eye.wrap === '1' && r.eye.content === '0.4' && r.eye.badge === '1' && r.eye.inverted
+              && r.phone.stored && r.phone.pressed === 'true' && r.glas.includes('zones-card:hm') && r.glas === r.classic
+              && r.classicStyle !== 'glas' && r.back === false));
+          res[`music-${device}`] = { ok, ...r, look: { ...look, hits: look.hits.slice(0, 6) } };
+        } catch (e) {
+          res[`music-${device}`] = { ok: false, error: String(e.message).slice(0, 200) };
+        }
+        await close();
+      }
       out.pagesEdit = res;
       out.pagesEditOk = Object.values(res).every((r) => r.ok);
     });
@@ -1172,6 +1269,71 @@ module.exports = function pages(h) {
           res[`${device}-energy`] = { ok, classic: classicEnergy, look, tap, held, loaded, end: [end.checked, end.figure], home: [home.checked, home.figure] };
         } catch (e) {
           res[`${device}-energy`] = { ok: false, error: String(e.message).slice(0, 200) };
+        }
+        await close();
+      }
+
+      // Music: the zones' view is a segment of two symbols (list, grid) instead of Klassisch's two buttons; a view, so
+      // the arrows choose; either view shows the rooms Klassisch shows in it
+      let classicZones;
+      {
+        const { page, close } = await open('desktop', 'classic', '/music');
+        try {
+          const names = () => ev(page, () => ({ tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
+            rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()) }));
+          const grid = await names();
+          await page.locator('.zones-card__view-btn').nth(0).click();
+          await sleep(200);
+          classicZones = { grid, list: await names() };
+        } catch (e) {
+          classicZones = { error: String(e.message).slice(0, 160) };
+        }
+        await close();
+      }
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        const { page, close } = await open(device, 'glas', '/music', { mode });
+        try {
+          const seg = page.locator('.zones-card .g-seg--view');
+          await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+          await settleAnimations(page);
+          const state = () => seg.evaluate((el) => {
+            const b = el.getBoundingClientRect();
+            return {
+              role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
+              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
+              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+              h: Math.round(b.height), w: Math.round(b.width),
+              tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
+              rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()),
+              buttons: document.querySelectorAll('.zones-card__view-btn').length,
+            };
+          });
+          const look = await state();
+          await seg.locator('.g-seg__opt[data-value="list"]').click();
+          await sleep(300);
+          const tap = await state();
+          const keys = {};
+          for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
+            await page.keyboard.press(key);
+            await sleep(300);
+            const st = await state();
+            keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st.checked === 'grid' ? st.tiles.length : st.rows.length };
+          }
+          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+          const cg = classicZones.grid || {};
+          const cl = classicZones.list || {};
+          const ok = !classicZones.error && (cg.tiles || []).length > 0 && same(cl.rows, cg.tiles) && look.role === 'radiogroup'
+            && look.label === DE['music.zones.viewModeAria']
+            && same(look.options, [`list:${DE['music.zones.listView']}`, `grid:${DE['music.zones.gridView']}`])
+            && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
+            && same(look.tiles, cg.tiles) && look.rows.length === 0
+            && tap.checked === 'list' && tap.focus === 'list' && same(tap.rows, cl.rows) && tap.tiles.length === 0
+            && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
+              ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.tiles.length}`));
+          res[`${device}-music`] = { ok, classic: classicZones, look, tap: [tap.checked, tap.focus, tap.rows.length], keys };
+        } catch (e) {
+          res[`${device}-music`] = { ok: false, error: String(e.message).slice(0, 200) };
         }
         await close();
       }
@@ -1823,6 +1985,213 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // Music: the same steps in Klassisch and Glas send the same calls (a range's numbers as the change from its value
+        // before) and change the page alike — Now Playing's transport, mute, source, seek and volume (keys); another
+        // player's play/pause and choosing it; a zone's mute and volume; the queue's shuffle, repeat, group, removing
+        // and dragging a track, moving the queue; the library's media types, favourites, search, item menu (Escape as
+        // in Klassisch) and play. Glas then drags seek (one call, on release), volume and a zone's volume (calls while
+        // dragging).
+        {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const texts = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length)
+            .map((e) => e.textContent.replace(/\s+/g, ' ').trim()), sel);
+          const runMusic = async (page, style) => {
+            const steps = {};
+            const fallbacks = [];
+            /** A real tap on the visible match (scrolled to the middle); Klassisch falls back to a JS click where its own
+             *  layout keeps the control from the pointer (NEBENBEFUNDE: its item menu clipped by the art). */
+            const tap = async (sel, o = {}) => {
+              const loc = (o.text ? page.locator(sel, { hasText: o.text }) : page.locator(sel)).filter({ visible: true }).nth(o.nth || 0);
+              await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              try {
+                await loc.click({ timeout: 2500 });
+              } catch (e) {
+                if (style !== 'classic') throw e;
+                fallbacks.push(sel);
+                await loc.evaluate((el) => el.click());
+              }
+              await sleep(250);
+              await settleAnimations(page);
+            };
+            /** A range moved by `n` arrow keys; returns its value before. */
+            const keys = async (sel, n) => {
+              const loc = page.locator(sel).filter({ visible: true }).first();
+              await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              const before = Number(await loc.inputValue());
+              await loc.focus();
+              for (let k = 0; k < n; k++) {
+                await page.keyboard.press('ArrowRight');
+                await sleep(60);
+              }
+              await sleep(350);
+              return before;
+            };
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              const before = await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => {
+                const data = {};
+                for (const [k, v] of Object.entries(c.data || {})) {
+                  data[k] = typeof v === 'number' && typeof before === 'number' ? Math.round((v - before) * 1000) / 1000 : v;
+                }
+                return `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(data)}`;
+              });
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const np = '.now-playing-card';
+            const hero = () => ev(page, () => ({ room: document.querySelector('.now-playing-card__room-label')?.textContent.trim(),
+              title: document.querySelector('.now-playing-card__title')?.textContent.trim() }));
+            const target = async () => {
+              const id = await page.locator('.library-card__player-native').inputValue();
+              return { id, title: ((await entity(page, id)) || { attributes: {} }).attributes.media_title };
+            };
+            const tiles = () => texts(page, '.library-tile__name');
+
+            await step('start', async () => {}, async () => {
+              const queue = await texts(page, '.full-queue__name');
+              return { hero: await hero(), tiles: await tiles(), queue: queue.slice(0, 3), queueN: queue.length };
+            });
+            await step('previous', () => tap(`${np} [aria-label="${DE['music.control.previous']}"]`));
+            await step('pause', () => tap(`${np} .now-playing-card__play-btn`), () => page.locator(`${np} .now-playing-card__play-btn`).getAttribute('aria-label'));
+            await step('next', () => tap(`${np} [aria-label="${DE['music.control.next']}"]`));
+            await step('mute', () => tap(`${np} .now-playing-card__mute-btn`));
+            await step('source', async () => {
+              const sel = page.locator(`${np} .now-playing-card__source-select`);
+              await sel.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await sel.selectOption('YouTube');
+            }, () => page.locator(`${np} .now-playing-card__source-select`).inputValue());
+            await step('seek', () => keys(`${np} .now-playing-card__progress`, 2));
+            await step('volume', () => keys(`${np} .now-playing-card__volume-slider`, 2));
+            await step('playerPp', () => tap('.other-player-row__pp'), () => hero());
+            // The first other player becomes the one shown above (playing it paused nothing, the hero may have moved).
+            let picked = null;
+            await step('playerSelect', async () => {
+              picked = (await texts(page, '.other-player-row__name'))[0];
+              await tap('.other-player-row__name');
+            }, async () => ({ picked, hero: await hero(), others: await texts(page, '.other-player-row__name') }));
+            await step('zoneMute', () => tap('.zone-grid-card__mute'));
+            await step('zoneVolume', () => keys('.zone-grid-card__slider', 2));
+            await step('queueShuffle', () => tap('.queue-card__ctl', { nth: 0 }));
+            await step('queueRepeat', () => tap('.queue-card__ctl', { nth: 1 }));
+            await step('group', () => tap('.group-menu__btn'), () => texts(page, '.group-menu__row'));
+            await step('groupRow', () => tap('.group-menu__row'), () => texts(page, '.group-menu__btn'));
+            await step('groupEscape', () => page.keyboard.press('Escape'), () => page.locator('.group-menu__pop').count());
+            await step('queueDelete', () => tap('.full-queue__delete'), async () => {
+              const names = await texts(page, '.full-queue__name');
+              return { first: names.slice(0, 2), n: names.length };
+            });
+            // the first track dragged by its grip onto the second (the pointer sensor starts after 6 px)
+            await step('queueMove', async () => {
+              const grip = page.locator('.full-queue__grip').filter({ visible: true }).first();
+              await grip.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              const g = await grip.boundingBox();
+              const second = await page.locator('.full-queue__row').nth(1).boundingBox();
+              const [x, y] = [g.x + g.width / 2, g.y + g.height / 2];
+              const ty = second.y + second.height * 0.75;
+              await page.mouse.move(x, y);
+              await page.mouse.down();
+              for (let k = 1; k <= 8; k++) {
+                await page.mouse.move(x, y + ((ty - y) * k) / 8);
+                await sleep(30);
+              }
+              await sleep(150);
+              await page.mouse.up();
+              await sleep(400);
+            }, async () => (await texts(page, '.full-queue__name')).slice(0, 3));
+            await step('albums', () => tap('.library-card__tab', { text: DE['music.library.type.album'] }), tiles);
+            await step('favourites', () => tap('.library-card__fav-toggle'), tiles);
+            await step('favouritesOff', () => tap('.library-card__fav-toggle'), async () => (await tiles()).length);
+            await step('search', async () => {
+              await page.locator('.library-card__search-input').fill('night');
+              await sleep(500);
+            }, tiles);
+            await step('searchOff', async () => {
+              await page.locator('.library-card__search-input').fill('');
+              await sleep(500);
+            }, async () => (await tiles()).length);
+            await step('menu', () => tap('.library-tile__more'), () => texts(page, '.library-tile__menu-item'));
+            await step('menuEscape', () => page.keyboard.press('Escape'), () => page.locator('.library-tile__menu').count());
+            await step('replace', () => tap('.library-tile__menu-item', { text: DE['music.library.replaceQueue'] }), target);
+            await step('tilePlay', () => tap('.library-tile__play', { nth: 1 }), target);
+            await step('transfer', () => tap('.queue-card__transfer .queue-card__ctl'), () => texts(page, '.queue-card__transfer-row'));
+            await step('transferRow', () => tap('.queue-card__transfer-row'), () => page.locator('.queue-card__player-native').inputValue());
+            return { steps, fallbacks };
+          };
+          /** A range dragged from `from` to `to` (fractions of its width) with the mouse: calls while it is down, after
+           *  the release, and the last one. */
+          const dragCalls = async (page, sel, from, to) => {
+            const loc = page.locator(sel).filter({ visible: true }).first();
+            await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const b = await loc.boundingBox();
+            const y = b.y + b.height / 2;
+            await clear(page);
+            await page.mouse.move(b.x + b.width * from, y);
+            await page.mouse.down();
+            for (let k = 1; k <= 6; k++) await page.mouse.move(b.x + b.width * (from + ((to - from) * k) / 6), y);
+            await sleep(250);
+            const during = (await calls(page)).length;
+            await page.mouse.up();
+            await sleep(400);
+            const all = await calls(page);
+            return { during, after: all.length - during, last: all.length ? all[all.length - 1].data : null, max: Number(await loc.getAttribute('max')) };
+          };
+
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/music', { mode });
+            try {
+              got[style] = await runMusic(page, style);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let drags = null;
+          {
+            const { page, close } = await open(device, 'glas', '/music', { mode });
+            try {
+              drags = {
+                seek: await dragCalls(page, '.now-playing-card__progress', 0.2, 0.6),
+                volume: await dragCalls(page, '.now-playing-card__volume-slider', 0.2, 0.7),
+                zone: await dragCalls(page, '.zone-grid-card__slider', 0.2, 0.7),
+              };
+            } catch (e) {
+              drags = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const sends = ['previous', 'pause', 'next', 'mute', 'source', 'playerPp', 'zoneMute', 'queueShuffle', 'queueRepeat', 'groupRow', 'transferRow']
+            .filter((k) => !(g[k] && g[k].sent.length === 1));
+          const twice = ['seek', 'volume'].filter((k) => !(g[k] && g[k].sent.length === 2));
+          const st = g.start ? g.start.dom : {};
+          const fine = same && sends.length === 0 && twice.length === 0 && (g.zoneVolume?.sent.length || 0) >= 2
+            && g.playerSelect.dom.hero.room === g.playerSelect.dom.picked && g.playerSelect.dom.picked !== g.playerPp.dom.room
+            && !g.playerSelect.dom.others.includes(g.playerSelect.dom.picked)
+            && g.queueDelete.dom.first[0] === st.queue[1] && g.queueDelete.dom.n === st.queueN - 1
+            && g.queueMove.dom[0] === g.queueDelete.dom.first[1] && g.queueMove.dom[1] === g.queueDelete.dom.first[0]
+            && g.albums.dom.length > 0 && g.albums.dom[0] !== st.tiles[0]
+            && g.favourites.dom.length > 0 && g.favourites.dom.length < g.albums.dom.length && g.favouritesOff.dom === g.albums.dom.length
+            && g.search.dom.join() === 'Midnight Frequencies' && g.searchOff.dom === g.albums.dom.length
+            && JSON.stringify(g.menu.dom) === JSON.stringify([DE['music.library.playNext'], DE['music.library.addQueue'], DE['music.library.replaceQueue']])
+            && g.replace.dom.title === g.albums.dom[0] && g.tilePlay.dom.title === g.albums.dom[1]
+            && g.transfer.dom.length > 0 && g.transferRow.dom !== g.replace.dom.id && g.group.dom.length > 0;
+          const dragged = !!drags && !drags.error && drags.seek.during === 0 && drags.seek.after === 1
+            && drags.seek.last.seek_position / drags.seek.max > 0.5 && drags.seek.last.seek_position / drags.seek.max < 0.7
+            && drags.volume.during >= 1 && drags.volume.last.volume_level > 0.55 && drags.volume.last.volume_level < 0.8
+            && drags.zone.during >= 1;
+          res[`${device}-music`] = { ok: fine && dragged, same, sends, twice, glas: g, ...(same ? {} : { classic: got.classic && got.classic.steps }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean),
+            fallbacks: { classic: got.classic && got.classic.fallbacks, glas: got.glas && got.glas.fallbacks }, drags };
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
@@ -1988,6 +2357,23 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // music: without media players the page's empty state in the same look
+        {
+          const { page, close } = await open(device, 'glas', '/music', { mode });
+          try {
+            const ids = await ev(page, () => ['media_player.living_room_tv', 'media_player.bedroom_speaker', 'media_player.kitchen_speaker']
+              .filter((i) => window.__hapulseDemo.entity(i)));
+            await ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await emptyLook(page, '.music-page > .empty-state');
+            res[`${device}-music-empty`] = { ok: ids.length === 3 && emptyOk(got, 'music.empty.title'), removed: ids.length, ...got };
+          } catch (e) {
+            res[`${device}-music-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
       out.pagesEmpty = res;
       out.pagesEmptyOk = Object.values(res).every((r) => r.ok);
@@ -2023,6 +2409,7 @@ module.exports = function pages(h) {
   const scenes = {
     'security-edit': editScene('/security'),
     'energy-edit': editScene('/energy'),
+    'music-edit': editScene('/music'),
   };
 
   return { pagesChecks, scenes };

@@ -13,6 +13,8 @@ import { RoomIcon } from '../ui/RoomIcon';
 import type { HassEntity, Room } from '@hapulse/core';
 import './ZonesCard.css';
 import { useCommitRange } from '../ui/useCommitRange'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas view segment (K92)
+import { Segment } from '../glas/Segment'; // [fork]
 
 const FEATURE_VOLUME_SET = 4;
 
@@ -272,6 +274,7 @@ export function ZonesCard({ zones }: ZonesCardProps) {
   const t = useT();
   const { url } = useConnectionStore(useShallow((s) => ({ url: s.url })));
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const isGlas = useIsGlas(); // [fork]
 
   const activeCount = zones.filter((z) => z.players.some((p) => p.state === 'playing')).length;
 
@@ -289,6 +292,19 @@ export function ZonesCard({ zones }: ZonesCardProps) {
           <span className="zones-card__count">
             {t('music.zones.count', { active: activeCount, total: zones.length })}
           </span>
+          {/* [fork] Glas: the segment with symbol options (plan docs/glas/PLAN-ETAPPE-5.md K92); a view, so the arrows choose */}
+          {isGlas ? (
+            <Segment
+              className="g-seg--view"
+              label={t('music.zones.viewModeAria')}
+              value={viewMode}
+              onChange={setViewMode}
+              options={[
+                { value: 'list', label: t('music.zones.listView'), icon: <LayoutList size={18} strokeWidth={2} /> },
+                { value: 'grid', label: t('music.zones.gridView'), icon: <LayoutGrid size={18} strokeWidth={2} /> },
+              ]}
+            />
+          ) : (
           <div className="zones-card__view-toggle" role="group" aria-label={t('music.zones.viewModeAria')}>
             <button
               type="button"
@@ -309,6 +325,7 @@ export function ZonesCard({ zones }: ZonesCardProps) {
               <LayoutGrid size={14} strokeWidth={1.75} />
             </button>
           </div>
+          )}
         </div>
       </div>
 
