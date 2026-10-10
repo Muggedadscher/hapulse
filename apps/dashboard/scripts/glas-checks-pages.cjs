@@ -458,7 +458,9 @@ module.exports = function pages(h) {
     await block('pagesCardTitles', async () => {
       const res = {};
       // [page, card, title, chip, where, list, body, byDevice]: `list` = the body is an inset list (K94) that fills the
-      // surface from its top edge; any other body starts at least 16 below it. `body` = selectors tried in turn for the
+      // surface from its top edge (a number: it starts up to that many px below the edge — the activity card on the
+      // system page, 6 below it on the desktop as on the overview; pagesKeep System compares both cards measure for
+      // measure); any other body starts at least 16 below it. `body` = selectors tried in turn for the
       // body when it is not the card's second child (water and gas: the list of meters, or with one meter its figure,
       // whose header is `display: contents`). `byDevice` = another `where` on a device: `bare` = no surface at all, the
       // body 6 below the 44 head (the scenes' rooms on the phone, like the overview's scenes)
@@ -478,9 +480,9 @@ module.exports = function pages(h) {
         ['/music', '.zones-card', '.zones-card__title', '.zones-card__icon-chip', 'inside'],
         ['/music', '.queue-card', '.queue-card__title', '.queue-card__title-icon', 'inside'],
         ['/music', '.library-card', '.library-card__title', '.library-card__title-icon', 'inside'],
-        ['/system', '.sys-monitor-card', '.sys-monitor-card__title', '.sys-monitor-card__icon-chip', 'above'],
-        ['/system', '.batteries-card', '.batteries-card__title', '.batteries-card__icon-chip', 'above'],
-        ['/system', '.activity-card', '.activity-card__title', '.activity-card__icon-chip', 'above'],
+        ['/system', '.sys-monitor-card', '.sys-monitor-card__title', '.sys-monitor-card__icon-chip', 'above', true],
+        ['/system', '.batteries-card', '.batteries-card__title', '.batteries-card__icon-chip', 'above', true],
+        ['/system', '.activity-card', '.activity-card__title', '.activity-card__icon-chip', 'above', 6],
         ['/automations', '.auto-feed-card', '.auto-feed-card__title', '.auto-feed-card__icon-chip', 'above', true],
         ['/automations', '.auto-cat-card', '.auto-cat-card__title', '.auto-cat-card__icon-chip', 'above', true],
         ['/scenes', '.scene-feed-card', '.scene-feed-card__title', '.scene-feed-card__icon-chip', 'above', true],
@@ -524,7 +526,9 @@ module.exports = function pages(h) {
                   return { ...base, ok: getComputedStyle(card).backgroundColor === 'rgba(0, 0, 0, 0)'
                     && before.content !== 'none' && before.backgroundColor !== 'rgba(0, 0, 0, 0)'
                     && tr.bottom <= surface + 0.5 && !!body
-                    && (list ? body.top >= surface - 0.5 && body.top <= surface + 1.5 : body.top >= surface + 16 - 0.5) };
+                    && (list
+                      ? body.top >= surface - 0.5 && body.top <= surface + (list === true ? 0 : list) + 1.5
+                      : body.top >= surface + 16 - 0.5) };
                 });
               });
             }, CARDS.filter((c) => c[0] === p).map((c) => (c[7] && c[7][device] ? [...c.slice(0, 4), c[7][device], ...c.slice(5, 7)] : c.slice(0, 7))));
