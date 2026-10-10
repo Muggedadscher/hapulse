@@ -113,3 +113,8 @@ Kontext-Standard, F39; T1 sagt, dass Klassisch sich für alle ändert. Die Über
   deutsch „Auf Mobilgeräten Ausblenden umschalten“, Satzanfänge auch nach Anführungszeichen oder Klammer
   (`. „…`, `?) …`), die Einträge in `KEEP_LOWER` müssen in ihren Sprachen wirklich klein beginnen (veraltete fallen
   auf), zwei veraltete CSS-Kommentare, Wortlaut in `docs/SYNC.md`.
+- Gesamtlauf vor dem Merge: alle Prüfungsteile grün (`pages` nach dem Nachziehen der Erwartungen an Automationen und
+  Szenen), Klick-Fuzz in beiden Stilen (Desktop und Handy, je mit und ohne Bearbeiten) ohne Fehler, `main` neu
+  aufgenommen gegen die Bilder des Etappe-5-Laufs 338 von 338 gleich. Klassisch gegen `main`: 24 Bilder gleich, 314
+  anders; ein Abgleich der sichtbaren Texte, Vorlese-Texte und Platzhalter aller 56 Klassisch-Szenen (hell, drei
+  Geräte) zeigt nur Groß/Klein, dazu „Was ist neu“ mit F39 und die Versionszeile „Version 1.3.2 · F39“.
