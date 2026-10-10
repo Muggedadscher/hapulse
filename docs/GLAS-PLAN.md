@@ -14,6 +14,7 @@
 | `docs/glas/PLAN-ETAPPE-3.md` | Umsetzung von Etappe 3 (Fenster, Gesten, Inspector): Festlegungen K46–K73, Review des Plans, Umsetzung von 3a und 3b und ihre Reviews (Stand 2026-10-08) |
 | `docs/glas/PLAN-ETAPPE-4.md` | Umsetzung von Etappe 4 (Übersicht): Festlegungen K74–K87, Abweichungen der Umsetzung, Code-Prüfung (Stand 2026-10-08) |
 | `docs/glas/PLAN-ETAPPE-5.md` | Umsetzung von Etappe 5 (übrige Seiten): Festlegungen K88–K99, Prüfungen je Seite, Abweichungen und Nachträge beim Bau (Stand 2026-10-10) |
+| `docs/glas/PLAN-ETAPPE-6.md` | Umsetzung von Etappe 6 (NVR): Festlegungen K100–K106, Prüfteil `nvr` mit nachgestelltem Sentinel, Abweichungen und Nachträge beim Bau (Stand 2026-10-10) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
@@ -775,6 +776,16 @@ Klick-Fuzz:
 
 ### Etappe 6 — NVR (separat, siehe §4)
 
+**Stand 2026-10-10: umgesetzt (Paket `@sentinel-nvr/web` 0.18.0 und ein HAPulse-PR).** Plan, Festlegungen K100–K106,
+Abweichungen und Nachträge beim Bau: [`glas/PLAN-ETAPPE-6.md`](glas/PLAN-ETAPPE-6.md). Die Kameraseite ist in Glas das
+Paket mit `appearance="immersive"`: unter 900 px ohne Tab- und Chip-Leiste, immer dunkel, Kopf, Steuerkapsel und Ton als
+klares Glas über dem Bild, Segment Zeitleiste/Ereignisse, Datum-Chip und Zoom als Glas über der Zeitleiste. Übersicht,
+Sicherheits-Sektion, Raum-Kameras, Einrichtung und das Fenster Datum/Uhrzeit haben den Glas-Look per CSS. Geprüft mit
+`glas-shots.cjs checks --part nvr` (Blöcke `nvrImmersive`, `nvrKeep`, `nvrPages`, `nvrReducedMotion`,
+`nvrForcedColors`, `nvrOpaque`) gegen ein nachgestelltes Sentinel. Klassisch ändert sich gewollt an zwei Stellen: die
+Kopfaktionen der NVR-Übersicht nennen ihren Namen auch als Tooltip, und das Paket gruppiert die Zahl der Segmente und
+der Ereignisse von heute in der UI-Sprache („48.210“). Der Morph „Kamera öffnen“ (K106) gehört zu Etappe 7.
+
 ### Etappe 7 — Feinschliff und Freigabe
 
 - Leistung auf dem Wandtablet (§5.5), Kontrast-Audit aller Seiten, reduzierte Bewegung, Safari/iPad-Test durch den User.
@@ -784,6 +795,9 @@ Klick-Fuzz:
 ---
 
 ## 4. NVR und das Paket `@sentinel-nvr/web`
+
+> **Stand 2026-10-10:** umgesetzt mit Paket 0.18.0 und Etappe 6; Hook-Namen und Abweichungen von der Tabelle unten in
+> [`glas/PLAN-ETAPPE-6.md`](glas/PLAN-ETAPPE-6.md) (K100–K102, §7.1).
 
 Ausgangslage: Das Paket liest schon die HAPulse-Tokens (`--text`, `--bg-card`, `--accent`, `--font-display`,
 `--font-data`, `--radius-*`, …) — Farben und Schrift folgen Glas also **automatisch**, sobald Etappe 1 die Tokens

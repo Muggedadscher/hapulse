@@ -2,7 +2,7 @@
 //
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
-//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home|pages]
+//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home|pages|nvr]
 //     [--dom-out <file>] [--only <block>,…]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
@@ -19,14 +19,19 @@
 //   context menu or a swipe row, the overview scenes of stage 4 (home-hints, home-edit, energy-bubble, detail-light,
 //   glas-checks-home.cjs) the hints card, edit mode, a picked energy bar or a light's detail; all are taken at viewport
 //   size and are not part of the default list. The edit scenes of stage 5 (security-edit, energy-edit, …,
-//   glas-checks-pages.cjs) take a page in edit mode at full length; they are not in the default list either.
+//   glas-checks-pages.cjs) take a page in edit mode at full length; they are not in the default list either. The NVR
+//   scenes of stage 6 (nvr-overview, nvr-cam, nvr-cam-night, nvr-cam-events, nvr-cam-date, nvr-cam-rec, nvr-security,
+//   nvr-room, nvr-error, nvr-trouble, nvr-setup, nvr-setup-login, nvr-setup-window, nvr-rooms; glas-checks-nvr.cjs)
+//   answer Sentinel's routes with a stand-in (pictures made with ffmpeg; without it they are skipped); all but
+//   nvr-cam-rec (the playing time moves) are in the default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
 //   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
-//   (glas-checks-gestures.cjs), the overview's content of stage 4 (PLAN-ETAPPE-4.md §3, glas-checks-home.cjs) and the
-//   other pages of stage 5 (PLAN-ETAPPE-5.md §3, glas-checks-pages.cjs); --part runs one. --dom-out: the Klassisch
-//   DOM of every window as JSON, to compare a build with main's. --only runs some blocks of the window, gesture,
-//   overview or page checks (e.g. sheetsDrag, gesturesInspector, homeHints, pagesSwitches).
+//   (glas-checks-gestures.cjs), the overview's content of stage 4 (PLAN-ETAPPE-4.md §3, glas-checks-home.cjs), the
+//   other pages of stage 5 (PLAN-ETAPPE-5.md §3, glas-checks-pages.cjs) and the NVR views of stage 6
+//   (PLAN-ETAPPE-6.md §3, glas-checks-nvr.cjs); --part runs one. --dom-out: the Klassisch DOM of every window as JSON,
+//   to compare a build with main's. --only runs some blocks of the window, gesture, overview, page or NVR checks
+//   (e.g. sheetsDrag, gesturesInspector, homeHints, pagesSwitches, nvrImmersive).
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
@@ -102,7 +107,10 @@ const SCENES = {
 };
 const FRAME_SCENES = ['scrolled', 'minimized', 'avatar', 'notifications', 'more', 'rooms', 'edit', 'collapsed', 'banner',
   'banner-lost', 'toast'];
-const DEFAULT_SCENES = Object.keys(SCENES).filter((s) => s !== 'material' && !FRAME_SCENES.includes(s));
+const DEFAULT_SCENES = Object.keys(SCENES).filter((s) => s !== 'material' && !FRAME_SCENES.includes(s))
+  // stage 6 (added below): the NVR views with the Sentinel stand-in, without the recording (its time moves)
+  .concat(['nvr-overview', 'nvr-cam', 'nvr-cam-night', 'nvr-cam-events', 'nvr-cam-date', 'nvr-security', 'nvr-room',
+    'nvr-error', 'nvr-trouble', 'nvr-setup', 'nvr-setup-login', 'nvr-setup-window', 'nvr-rooms']);
 /** The browser locale of each language. */
 const LANG_LOCALES = { en: 'en-US', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', sv: 'sv-SE' };
 /** A language's texts with the fork's spelling laid over them, as the app shows them (docs/glas/PLAN-TEXTE.md). */
@@ -211,8 +219,9 @@ async function gotoPage(page, url) {
 }
 
 /** The console line of a request the context aborted on purpose (only local requests, see newContext; the NVR window
- * scenes point Sentinel at a documentation address). */
-const ABORTED = /^Failed to load resource: net::ERR_FAILED$/;
+ * scenes point Sentinel at a documentation address), or one the Sentinel stand-in refuses on purpose (glas-checks-nvr:
+ * 503 for an offline camera's snapshot, 401 for the error state). The demo itself never gets these. */
+const ABORTED = /^Failed to load resource: (net::ERR_FAILED|the server responded with a status of (401 \(Unauthorized\)|503 \(Service Unavailable\)))$/;
 
 /** Load a path with the clock paused, let it settle deterministically. */
 async function openPage(ctx, url, extraRun = 0) {
@@ -285,6 +294,9 @@ Object.assign(SCENES, HOME.scenes);
 // stage 5: the other pages — scenes security-edit, energy-edit, … and `checks --part pages`
 const PAGES = require('./glas-checks-pages.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, run, isGlas });
 Object.assign(SCENES, PAGES.scenes);
+// stage 6: the NVR views with a Sentinel stand-in — scenes nvr-… and `checks --part nvr`
+const NVR = require('./glas-checks-nvr.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, run, FIXED, pageHelpers });
+Object.assign(SCENES, NVR.scenes);
 
 /** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
 async function tap(page, sel) {
@@ -374,6 +386,12 @@ async function shoot() {
         if (!sc) throw new Error('unknown scene ' + scene);
         const ctx = await newContext(browser, device, { demo: sc.demo !== false, mode, style, strength, reduce, contrast, forcedColors,
           customization: sc.customization, ...(lang ? { locale: LANG_LOCALES[lang], state: { language: lang } } : {}) });
+        if (sc.media && !NVR.haveMedia()) {
+          report.push({ name: [style, mode, device, scene].join('-'), skipped: 'needs ffmpeg: ' + NVR.media().error });
+          await ctx.close();
+          continue;
+        }
+        if (sc.prepare) await sc.prepare(ctx); // e.g. the Sentinel stand-in (routes registered after newContext's win)
         const { page, errors } = await openPage(ctx, url + sc.path);
         let note = '';
         if (sc.click) {
@@ -1450,6 +1468,7 @@ async function checks() {
   if (part === 'all' || part === 'gestures') ok = (await GESTURES.gesturesChecks(browser, url, out, { only: list('only', '') })) && ok;
   if (part === 'all' || part === 'home') ok = (await HOME.homeChecks(browser, url, out, { only: list('only', '') })) && ok;
   if (part === 'all' || part === 'pages') ok = (await PAGES.pagesChecks(browser, url, out, { only: list('only', '') })) && ok;
+  if (part === 'all' || part === 'nvr') ok = (await NVR.nvrChecks(browser, url, out, { only: list('only', '') })) && ok;
   await browser.close();
   if (srv) srv.close();
   console.log(JSON.stringify({ ok, ...out }, null, 1));

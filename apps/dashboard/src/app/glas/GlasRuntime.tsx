@@ -13,6 +13,9 @@
  * - Windows (stage 3): the pressed control as the origin a window grows out of, and the one Esc listener of all
  *   windows (plan docs/glas/PLAN-ETAPPE-3.md §3.3, K72).
  * - Gestures (stage 3b): the context menu of the entity cards (K58); a route change closes the inspector (K60).
+ * - Camera page (stage 6, E13): `data-g-immersive` on the root while the page says it is shown (glasUiStore
+ *   `immersive`, plan docs/glas/PLAN-ETAPPE-6.md K104) — shell.css takes the frame away on the phone — and the
+ *   browser colour of the dark page (K103).
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -38,6 +41,8 @@ import { forgetOrigin, noteOrigin, peekOrigin } from '../../components/glas/shee
 import { hasInspector, installEscape } from '../../components/glas/sheet/sheetHost';
 import { useRooms } from '../../ha/hooks';
 import { useUIStore } from '../../stores/uiStore';
+import { useGlasUiStore } from '../../stores/glasUiStore';
+import { setImmersiveThemeColor } from '../../theme/glasAppearance';
 import { useT, type TKey } from '../../i18n/useT';
 
 export interface GlasNavItem {
@@ -204,6 +209,17 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
     if (content) ro.observe(content, { box: 'border-box' });
     return () => ro.disconnect();
   }, [pathname]);
+
+  // The camera page (E13, K104): its own flag on the root before the first paint, so its frame never shows.
+  const immersive = useGlasUiStore((s) => s.immersive);
+  useLayoutEffect(() => {
+    setFlag(document.documentElement, 'data-g-immersive', immersive);
+    setImmersiveThemeColor(immersive);
+  }, [immersive]);
+  useEffect(() => () => {
+    document.documentElement.removeAttribute('data-g-immersive');
+    setImmersiveThemeColor(false);
+  }, []);
 
   // The inspector belongs to the page beside it: another route closes it (K60). Modal windows stay as in Klassisch.
   const routeRef = useRef(pathname);

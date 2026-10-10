@@ -31,7 +31,8 @@
     .app-more-menu,
     .g-avatar-menu,
     .toaster__item,
-    .modal-panel[data-g-mat='glass']
+    .modal-panel[data-g-mat='glass'],
+    .nvr-camtile__name
   ) {
   --g-surface-tint: 0;
   --g-t: max(var(--g-surface-tint), var(--g-glass-tint));
@@ -72,7 +73,8 @@
     .app-more-menu,
     .g-avatar-menu,
     .toaster__item,
-    .modal-panel[data-g-mat='glass']
+    .modal-panel[data-g-mat='glass'],
+    .nvr-camtile__name
   )::before {
   content: '';
   position: absolute;
@@ -103,7 +105,8 @@
     .app-more-menu,
     .g-avatar-menu,
     .toaster__item,
-    .modal-panel[data-g-mat='glass']
+    .modal-panel[data-g-mat='glass'],
+    .nvr-camtile__name
   )::after {
   content: '';
   position: absolute;
@@ -126,8 +129,10 @@
   transition-duration: 120ms;
 }
 
-/* clear: only over a camera image or video — white glyphs (§3.2). */
-:root[data-style='glas'] .g-glass--clear {
+/* clear: only over a camera image or video — white glyphs (§3.2); also the name on the Sentinel camera tiles (nvr.css,
+   K105), whose markup comes from the package. */
+:root[data-style='glas'] .g-glass--clear,
+:root[data-style='glas'] .nvr-camtile__name {
   --g-glass-fill: var(--g-glass-clear-fill);
   --g-glass-filter: var(--g-glass-clear-filter);
   --g-surface-rim: var(--g-glass-clear-rim);
@@ -152,7 +157,8 @@
     .app-more-menu,
     .g-avatar-menu,
     .toaster__item,
-    .modal-panel[data-g-mat='glass']
+    .modal-panel[data-g-mat='glass'],
+    .nvr-camtile__name
   ) {
   --g-surface-bg: var(--g-surface-solid);
   -webkit-backdrop-filter: none;
@@ -160,7 +166,8 @@
   box-shadow: var(--g-glass-opaque-shadow);
 }
 
-:root[data-style='glas'][data-glass='opaque'] .g-glass--clear {
+:root[data-style='glas'][data-glass='opaque'] .g-glass--clear,
+:root[data-style='glas'][data-glass='opaque'] .nvr-camtile__name {
   --g-surface-bg: var(--g-glass-opaque-clear-fill);
   box-shadow: var(--g-glass-opaque-clear-shadow);
 }
@@ -180,7 +187,8 @@
     .app-more-menu,
     .g-avatar-menu,
     .toaster__item,
-    .modal-panel[data-g-mat='glass']
+    .modal-panel[data-g-mat='glass'],
+    .nvr-camtile__name
   )::before {
   display: none;
 }
@@ -202,13 +210,15 @@
       .app-more-menu,
       .g-avatar-menu,
       .toaster__item,
-      .modal-panel[data-g-mat='glass']
+      .modal-panel[data-g-mat='glass'],
+      .nvr-camtile__name
     ) {
     --g-surface-bg: var(--g-surface-solid);
     box-shadow: var(--g-glass-opaque-shadow);
   }
 
-  :root[data-style='glas'] .g-glass--clear {
+  :root[data-style='glas'] .g-glass--clear,
+  :root[data-style='glas'] .nvr-camtile__name {
     --g-surface-bg: var(--g-glass-opaque-clear-fill);
     box-shadow: var(--g-glass-opaque-clear-shadow);
   }
@@ -228,7 +238,8 @@
       .app-more-menu,
       .g-avatar-menu,
       .toaster__item,
-      .modal-panel[data-g-mat='glass']
+      .modal-panel[data-g-mat='glass'],
+      .nvr-camtile__name
     )::before {
     display: none;
   }
@@ -251,7 +262,8 @@
       .app-more-menu,
       .g-avatar-menu,
       .toaster__item,
-      .modal-panel[data-g-mat='glass']
+      .modal-panel[data-g-mat='glass'],
+      .nvr-camtile__name
     ) {
     --g-surface-bg: Canvas;
     color: CanvasText;
@@ -275,7 +287,8 @@
       .app-more-menu,
       .g-avatar-menu,
       .toaster__item,
-      .modal-panel[data-g-mat='glass']
+      .modal-panel[data-g-mat='glass'],
+      .nvr-camtile__name
     )::before,
   :root[data-style='glas']
     :where(
@@ -292,7 +305,8 @@
       .app-more-menu,
       .g-avatar-menu,
       .toaster__item,
-      .modal-panel[data-g-mat='glass']
+      .modal-panel[data-g-mat='glass'],
+      .nvr-camtile__name
     )::after {
     display: none;
   }

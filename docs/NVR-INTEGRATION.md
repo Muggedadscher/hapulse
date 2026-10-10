@@ -1,6 +1,7 @@
 # Sentinel NVR — native Integration in HAPulse
 
-Stand: 2026-10-06 (Paket `@sentinel-nvr/web` 0.17, Clip-Export); Grundgerüst 2026-09-26 (Paket 0.11). Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
+Stand: 2026-10-10 (Paket `@sentinel-nvr/web` 0.18, Kameraseite im Stil Glas); Clip-Export 2026-10-06 (Paket 0.17),
+Grundgerüst 2026-09-26 (Paket 0.11). Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
 auf der NVR-Seite. Die Integration ist **bewusst als abgegrenztes Modul**
 gebaut, damit sie sich (Sentinel ist in starker Entwicklung) jederzeit
 **komplett entfernen und neu aufsetzen** lässt — siehe „Rausnehmen" unten.
@@ -119,16 +120,39 @@ Sentinels UI eine eigenständige App ist:
 | Telemetrie | `b:<build-id>` | `b:hapulse` (so sind Zeilen der Integration im Sentinel-Serverlog unterscheidbar), Nutzlast unter `d:` wie bei Sentinel |
 | Nicht übernommen | Anmeldeseite, iOS-Homescreen-Meta, `/status`-Route, Theme-Schalter, Uhr, Embed-Modus | (HAPulse liefert das selbst; Menschen öffnen Sentinels UI über „Sentinel öffnen“) |
 
-## Glas-Stil (seit Etappe 1, Oktober 2026)
+## Glas-Stil (Etappe 1 und 6, Oktober 2026)
 
-Im zweiten HAPulse-Stil „Glas“ (`docs/GLAS-DESIGN.md`) bleiben Übersicht und Kameraseite Paket-Code mit unverändertem
-Layout und Verhalten, 1:1 wie Sentinels eigene UI. Sie lesen die HAPulse-Tokens und bekommen so in Glas Farben, Schrift
-und Kartenradius des Stils. HAPulses Glas-CSS (`apps/dashboard/src/styles/glas/`) berührt Paket-Klassen nur in der
-Farbe: `.nvr-card` randlos wie `.card`, neun Akzentflächen in `styles/glas/accent.css` im hellen Orange. Das Paket
-selbst ändert sich dafür nicht, und Sentinels eigene UI bekommt kein Glas. Der Selektor-Wächter
-(`test/glasSelectors.test.ts`) prüft die Paket-Klassen gegen die `ui.css` des installierten Pakets: benennt ein
-Paket-Update eine davon um, wird `npm test -w @hapulse/dashboard` rot. Die immersive Kameraseite (dunkles Vollbild,
-Glas-Kapsel über dem Video) kommt später als Paket-Option mit unverändertem Standard (`docs/GLAS-PLAN.md` §4).
+Im zweiten HAPulse-Stil „Glas“ (`docs/GLAS-DESIGN.md`) bleiben alle NVR-Ansichten Paket-Code mit demselben Verhalten wie
+in Klassisch und in Sentinels eigener UI. Plan, Abweichungen und Messwerte: `docs/glas/PLAN-ETAPPE-6.md`.
+
+- **Kameraseite (Paket ≥ 0.18.0):** `NvrCameraPage` rendert `CameraPage` in Glas mit `appearance="immersive"` (README des
+  Pakets, „Immersive appearance“), in Klassisch im Standard wie bisher. Unter 900 px gehört der Seite der Bildschirm: sie
+  meldet sich über `useGlasImmersive` (`app/glas/useGlasImmersive.ts`, Zustand `immersive` in `stores/glasUiStore.ts`),
+  `GlasRuntime` setzt daraus vor dem Zeichnen `data-g-immersive` an `:root`, und `styles/glas/shell.css` nimmt Tab-Leiste,
+  Chip-Zeile und die Ränder von `.app-content`/`.app-main` weg; das Verbindungs-Banner schwebt oben über dem Bild. Ab
+  900 px bleibt die Seitenleiste. Die Seite ist immer dunkel: solange sie offen ist, trägt die Inhaltsspalte
+  `data-glas-scheme="dark"` (`AppLayout.tsx`, `[fork]`), und `applyAppearance` hält für diesen Teilbaum die
+  Glas-Variablen des dunklen Modus bereit (`<style id="glas-dark-scope">`, `theme/glasAppearance.ts`); die Browserfarbe
+  (`theme-color`) folgt. Seitenleiste, Fenster und Menüs bleiben im Modus des Geräts. Kopfzeile: `CameraTitle` mit `live`
+  und `at` (Abzeichen LIVE bzw. Uhrzeit des Bilds) und „In Sentinel öffnen“ als runder `nvr-iconbtn`. Die Werte der
+  Paket-Hooks (`--nvr-ctl-*` über dem Bild, `--nvr-float-*` über der Zeitleiste, `--nvr-seg-*`, `--nvr-live-*`,
+  `--nvr-shade-top`/`--nvr-shade-bottom`, `--nvr-ease`/`--nvr-dur`) setzt `styles/glas/nvr.css`, deckend bei „Deckend“,
+  „Transparenz reduzieren“ und mehr Kontrast. `useFitAboveTabs` ist in Glas aus (dort gibt es auf dieser Seite keine
+  Tab-Leiste).
+- **Übrige Ansichten:** Übersicht, Sicherheits-Sektion, Raum-Kameras, Einrichtung, das Fenster Datum/Uhrzeit und der
+  Hinweis im Detail einer HA-Kamera bekommen den Glas-Look per CSS an den Klassen des Pakets und des NVR-Moduls
+  (`styles/glas/nvr.css`, Akzentflächen in `accent.css`). Markup ändert sich nur an zwei Stellen: die Kopfaktionen der
+  Übersicht sind in Glas Kreise 44 (`NvrOverviewPage.tsx`, Name auch als Tooltip, in beiden Stilen), und Token/Konto der
+  Einrichtung ist in Glas ein `Segment` (`NvrSetup.tsx`). Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper
+  (`NvrHomeGlas.tsx`).
+- **Wächter und Prüfungen:** Der Selektor-Wächter (`test/glasSelectors.test.ts`) prüft die Paket-Klassen gegen die
+  `ui.css` des installierten Pakets; benennt ein Paket-Update eine davon um, wird `npm test -w @hapulse/dashboard` rot.
+  Das Abzeichen „Aufnahme hängt“ einer Kachel erkennt Glas am Symbol `lucide-video-off` (`MARKER_ICONS` dort).
+  `node apps/dashboard/scripts/glas-shots.cjs checks --serve apps/dashboard/dist --part nvr` prüft alle NVR-Ansichten
+  beider Stile gegen ein nachgestelltes Sentinel (`scripts/glas-checks-nvr.cjs`, Adresse `192.0.2.10`, Playwright-Route;
+  die Aufnahme-Segmente erzeugt es mit ffmpeg, ohne ffmpeg meldet es diese Punkte als „Labor“). Echte Wiedergabe (Relay,
+  Scrub, Ton, WebRTC) prüft der Klick-Test gegen ein echtes Sentinel mit dem Zusatz `glas` (unten).
+- Sentinels eigene UI bekommt kein Glas; sie rendert die Kameraseite im Standard.
 
 ## Clip-Export (seit Paket 0.17.0, Oktober 2026)
 
@@ -189,8 +213,10 @@ HAPulse und Sentinel gleich aus. HAPulse liefert nur die Texte `nvr.clip.*` (27 
 | npm `@sentinel-nvr/web/player` | `PlayerController`/`WebRtcSession`/`rlog` aus dem gemeinsamen Paket (Client injiziert, Labels als i18n-Keys, `storagePrefix`/`brand` als Host-Nähte). |
 | `apps/dashboard/src/nvr/components/*` | nur noch `NvrSetup` (Karte + Modal) und `DatePickerModal` — alle übrigen Komponenten kommen aus `@sentinel-nvr/web/ui`. |
 | `apps/dashboard/src/stores/settingsSecrets.ts` | gerätelokale Tokens: Origin-Bindung beim Import, `?token=`-Migration aus der URL. |
-| `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `NvrSecuritySection.tsx`, `useFitAboveTabs.ts`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens). `NvrCameraPage` ist seit 0.4.0 nur ein Wrapper um `CameraPage` (Routing, Kopfzeile mit Sentinel-Link, Modal um die Datumswahl); die Kameraseiten-Styles kommen aus dem Paket, `nvr.css` hält nur noch Setup/Home/Security und eine Ausnahme: mobil misst `useFitAboveTabs` den Platz vom Kameraseiten-Körper bis zur Tab-Leiste (`--nvr-cam-h`), weil HAPulse über der Seite noch die Chip-Zeile zeigt und die Paket-Höhe (für Sentinels eigene Seite gerechnet) sonst unter die Tab-Leiste reicht. |
+| `apps/dashboard/src/nvr/NvrOverviewPage.tsx`, `NvrCameraPage.tsx`, `NvrHomeCard.tsx`, `NvrSecuritySection.tsx`, `useFitAboveTabs.ts`, `nvr.css` | Seiten, Home-Karte, Styles (nur Tokens; Glas-CSS in `styles/glas/nvr.css`, siehe „Glas-Stil“). `NvrCameraPage` ist seit 0.4.0 nur ein Wrapper um `CameraPage` (Routing, Kopfzeile mit Sentinel-Link, Modal um die Datumswahl); die Kameraseiten-Styles kommen aus dem Paket, `nvr.css` hält nur noch Setup/Home/Security und eine Ausnahme: mobil misst `useFitAboveTabs` den Platz vom Kameraseiten-Körper bis zur Tab-Leiste (`--nvr-cam-h`), weil HAPulse über der Seite noch die Chip-Zeile zeigt und die Paket-Höhe (für Sentinels eigene Seite gerechnet) sonst unter die Tab-Leiste reicht; in Glas aus. |
 | `apps/dashboard/src/pages/Nvr.tsx` | Routen-Einstieg `/nvr/*` (Fork-Datei, war vorher die iframe-Seite). |
+| `apps/dashboard/src/app/glas/useGlasImmersive.ts` | Glas (Etappe 6): die Kameraseite meldet sich als immersiv (`glasUiStore.immersive`); `GlasRuntime` setzt `data-g-immersive`, `AppLayout` den dunklen Teilbaum. |
+| `apps/dashboard/scripts/glas-checks-nvr.cjs` | Glas (Etappe 6): nachgestelltes Sentinel, Szenen `nvr-*` und `checks --part nvr` für `glas-shots.cjs`. |
 | `docs/NVR-INTEGRATION.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle Zeilen `[fork]`-markiert)
@@ -200,7 +226,7 @@ HAPulse und Sentinel gleich aus. HAPulse liefert nur die Texte `nvr.clip.*` (27 
 | `packages/core/src/index.ts` | nur noch ein Hinweis-Kommentar (das Modell liegt im Paket) |
 | `apps/dashboard/src/stores/settingsStore.ts` | `scryptedToken` (neben dem bestehenden `scryptedUrl`), Tokens aus Export/Sync entfernt, `keepDeviceSecrets`/`migrateUrlToken` |
 | `apps/dashboard/src/app/Router.tsx` | Route `/nvr` → `/nvr/*` |
-| `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" (bestand schon) |
+| `apps/dashboard/src/app/AppLayout.tsx` | Nav-Eintrag „NVR" (bestand schon); Glas: `data-glas-scheme="dark"` an `.app-content`, solange die Kameraseite offen ist |
 | `apps/dashboard/src/pages/Home.tsx` | Section `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Import, ID, Toggle-Keys, Span 4, Gate, Empty-State-Bedingung, `renderWidget`) |
 | `packages/core/locales/*.json` | `nvr.*`, `nav.nvr`, `home.section.*.nvr`, `security.section.*.nvr` in allen sieben Sprachen (am Dateiende) |
@@ -213,6 +239,9 @@ git grep -n "\[fork\]" -- apps/dashboard/src/pages/Home.tsx apps/dashboard/src/p
   apps/dashboard/src/app/AppLayout.tsx apps/dashboard/src/stores/settingsStore.ts \
   packages/core/src/index.ts   # NVR-Zeilen entfernen (settingsSecrets.ts bleibt: gilt auch für Music Assistant)
 # Locales: alle Keys nvr.*, nav.nvr, home.section.*.nvr, security.section.*.nvr aus packages/core/locales/*.json löschen
+# Stil Glas: styles/glas/nvr.css (+ Import in styles/glas/index.css und Eintrag im Selektor-Wächter) und
+# scripts/glas-checks-nvr.cjs (+ require und --part nvr in glas-shots.cjs) entfernen; der Wächter liest sonst die
+# ui.css des entfernten Pakets. useGlasImmersive, glasUiStore.immersive und data-glas-scheme bleiben dann ungenutzt.
 npm run typecheck && npm run build && npm test -w @hapulse/core
 ```
 
@@ -246,14 +275,16 @@ zurückspringen noch „Lädt …" zeigen.
 
 ## Klick-Test gegen ein echtes Sentinel
 
-`apps/dashboard/scripts/nvr-sweep-test.cjs <hapulse-url> <sentinel-origin> <token> [mobile]` klickt die Integration mit
+`apps/dashboard/scripts/nvr-sweep-test.cjs <hapulse-url> <sentinel-origin> <token> [mobile] [glas]` klickt die Integration mit
 echten Mausereignissen durch (HA im Demo-Modus, Kameras aus einem echten Sentinel): Home-Karte (Kamera, Ereignis),
 `/nvr` (Kachel, Ereignisleiste, Zurück), die komplette Kameraseite (Live-Sperren, ±15 s inkl. „+15 s an der Kante →
 Live“, Pause/Play, Tempo, Ton, Schnappschuss, Vollbild, Tabs, Filter, Ereignisliste, Zoom, Datumsdialog, LIVE-Chip,
 Tastatur, Clip herunterladen: Clip-Modus aus Info-Leiste und Ereignisliste, Kante per Scroll-Geste, Kante bleibt bei
 laufender Wiedergabe stehen, „Clip erstellen“ → „Speichern“ → MP4 per CDP-Download in einen Temp-Ordner, `ffprobe` falls
 vorhanden, kein hängender Download) und die Security-Sektion; rot bei JS-/Konsolenfehlern oder HTTP ≥ 400. Mit dem
-Zusatz `noexport` prüft er gegen ein Sentinel ohne `features: ["export"]`, dass der Clip-Knopf fehlt. Chromium auf Port 9222 startet
+Zusatz `noexport` prüft er gegen ein Sentinel ohne `features: ["export"]`, dass der Clip-Knopf fehlt. Mit `glas` läuft
+dasselbe im Stil Glas (Glas-Karte der Übersicht, Kameraseite immersiv, auf dem Handy ohne Tab-Leiste, die danach
+wieder da ist). Chromium auf Port 9222 startet
 Sentinels `scripts/cdp-run.sh`; im Labor (CT 213) `/root/lab/hp-nvr-sweep.sh [mobile]`.
 
 Allgemein (ohne NVR): `apps/dashboard/scripts/click-fuzz-test.cjs <hapulse-url> [mobile]` öffnet im HA-Demo-Modus jede Seite

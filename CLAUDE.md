@@ -157,7 +157,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0–5 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (Etappe 0–6 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -210,8 +210,15 @@ sauber übernehmen können.
   `Segment` (Zeitraum, Raster/Liste, Hell/Dunkel, Pool-Modus `PoolModeSegment`), die Bearbeiten-Leiste auf Sicherheit,
   Energie, Automationen, Szenen und System, die Menü-Werte (`MoreValue.tsx`, `roomsMenuStatus.ts`) und die Untertitel der
   Chip-Fenster (`chipLabels.ts`; die Zählung steht für beide Stile in Core `chipCounts.ts`). Prüfungen
-  `checks --part pages` (`scripts/glas-checks-pages.cjs`; Demo-Hilfen `demoCalls.ts`, `demoEnergy.ts`). Nächste
-  Etappen 6–7 (NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  `checks --part pages` (`scripts/glas-checks-pages.cjs`; Demo-Hilfen `demoCalls.ts`, `demoEnergy.ts`). **NVR
+  (Etappe 6, `docs/glas/PLAN-ETAPPE-6.md`):** die Kameraseite ist in Glas das Paket `@sentinel-nvr/web` ≥ 0.18.0 mit
+  `appearance="immersive"` (Klassisch: Standard); sie meldet sich über `app/glas/useGlasImmersive.ts`, `GlasRuntime`
+  setzt `data-g-immersive` (unter 900 px ohne Tab- und Chip-Leiste, `shell.css`), `AppLayout` macht die Inhaltsspalte
+  zum dunklen Teilbaum (`data-glas-scheme="dark"`, Variablen aus `applyAppearance`, `<style id="glas-dark-scope">`);
+  die Werte der Paket-Hooks (`--nvr-ctl-*`, `--nvr-float-*`, …) und der Look der übrigen NVR-Ansichten stehen in
+  `styles/glas/nvr.css`. Prüfungen `checks --part nvr` (`scripts/glas-checks-nvr.cjs`, nachgestelltes Sentinel, braucht
+  ffmpeg), gegen ein echtes Sentinel `scripts/nvr-sweep-test.cjs … glas`; Details `docs/NVR-INTEGRATION.md` → „Glas-Stil“.
+  Nächste Etappe 7 (Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

@@ -144,6 +144,15 @@
   }
 }
 
+/* Token | Konto in Sentinel's setup (stage 6, K105): the form's whole width; hit area 44, visible track 32, lens 28
+   like the settings' choices. Manual activation (NvrSetup.tsx): switching clears the connection test. */
+:root[data-style='glas'] .g-seg--nvr-auth {
+  --g-seg-h: 44px;
+  --g-seg-inset: 6px;
+  --g-seg-pad: 2px;
+  width: 100%;
+}
+
 /* A label that does not fit (Segment.tsx measures it, e.g. "Ausgeschalten" on a phone): the whole segment 13/18 with
    2 px padding; what still does not fit ends in "…". */
 :root[data-style='glas'] .g-seg[data-tight] .g-seg__opt {

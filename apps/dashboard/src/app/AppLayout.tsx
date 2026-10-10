@@ -64,6 +64,7 @@ import { GlasTabBar } from './glas/GlasTabBar'; // [fork]
 import { GlasNavGroups } from './glas/GlasNavGroups'; // [fork]
 import { useCanEditHere } from './glas/shellStore'; // [fork]
 import { useIsGlas } from './glas/useUiStyle'; // [fork]
+import { useGlasUiStore } from '../stores/glasUiStore'; // [fork] Glas: the camera page's dark column (E13)
 import { weatherIcon } from '../components/glas/weatherIcon'; // [fork]
 import { weatherTemp } from '../components/glas/WeatherLine'; // [fork]
 import { GlasMoreFoot, GlasMoreValue } from '../components/glas/MoreValue'; // [fork] Glas: More menu values and foot (K97)
@@ -336,6 +337,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const editMode = useUIStore((s) => s.editMode);
   const glas = useIsGlas(); // [fork] Glas frame
+  const immersive = useGlasUiStore((s) => s.immersive); // [fork] Glas: camera page shown (docs/glas/PLAN-ETAPPE-6.md K103)
   const detailEntityId = useUIStore((s) => s.detailEntityId);
   const closeEntityDetail = useUIStore((s) => s.closeEntityDetail);
 
@@ -744,7 +746,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <GlasRuntime nav={NAV_CONFIG} />{/* [fork] Glas: scroll edge, tab bar state, "Fertig" on the phone */}
 
       {/* ---- Content area ---- */}
-      <div className="app-content">
+      <div className="app-content" data-glas-scheme={glas && immersive ? 'dark' : undefined}>{/* [fork] Glas: dark subtree (K103) */}
         {/* Connection status banner */}
         {showBanner && (
           <div

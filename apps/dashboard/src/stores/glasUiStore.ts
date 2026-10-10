@@ -2,6 +2,8 @@
  * [fork] Glas gestures (stage 3b) — state of the Glas-only overlays, not persisted (plan docs/glas/PLAN-ETAPPE-3.md
  * §4.1). `contextMenu`: the entity card whose context menu is open (`components/glas/ContextMenu.tsx`, hosted by
  * `GlasRuntime`); opening is idempotent, because Android fires `contextmenu` on top of the long press.
+ * `immersive` (stage 6, E13): the camera page is shown — set by the page (`app/glas/useGlasImmersive.ts`), read by
+ * `GlasRuntime` (root flag) and `AppLayout` (dark content column) (plan docs/glas/PLAN-ETAPPE-6.md K103, K104).
  */
 
 import { create } from 'zustand';
@@ -24,6 +26,8 @@ interface GlasUiState {
   contextMenu: ContextMenuTarget | null;
   openContextMenu: (target: ContextMenuTarget) => void;
   closeContextMenu: () => void;
+  immersive: boolean;
+  setImmersive: (on: boolean) => void;
 }
 
 export const useGlasUiStore = create<GlasUiState>()((set) => ({
@@ -35,5 +39,11 @@ export const useGlasUiStore = create<GlasUiState>()((set) => ({
 
   closeContextMenu() {
     set((s) => (s.contextMenu ? { contextMenu: null } : s));
+  },
+
+  immersive: false,
+
+  setImmersive(on) {
+    set((s) => (s.immersive === on ? s : { immersive: on }));
   },
 }));

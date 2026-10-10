@@ -19,9 +19,12 @@ import { useT } from '../../i18n/useT';
 import { SentinelHttpError } from '../api';
 import { useNvrStore } from '../store';
 import { clientFor, storedNvrUrl } from '../config';
+import { useIsGlas } from '../../app/glas/useUiStyle';
+import { Segment } from '../../components/glas/Segment';
 
 type Probe = { state: 'idle' } | { state: 'busy' } | { state: 'ok'; cameras: number } | { state: 'fail'; status: number; step: 'login' | 'probe' };
 type AuthMode = 'token' | 'login';
+const AUTH_MODES: readonly AuthMode[] = ['token', 'login'];
 
 function useSetupForm(onSaved?: () => void) {
   const t = useT();
@@ -35,6 +38,10 @@ function useSetupForm(onSaved?: () => void) {
   const [password, setPassword] = useState('');
   const [probe, setProbe] = useState<Probe>({ state: 'idle' });
   useEffect(() => { setUrl(scryptedUrl); setToken(scryptedToken); }, [scryptedUrl, scryptedToken]);
+  const glas = useIsGlas();
+  const authLabel = t('nvr.setup.authToken') + ' / ' + t('nvr.setup.authLogin');
+  const authText = (m: AuthMode) => (m === 'token' ? t('nvr.setup.authToken') : t('nvr.setup.authLogin'));
+  const chooseMode = (m: AuthMode) => { setMode(m); setProbe({ state: 'idle' }); };
 
   const parsed = parseSentinelSetup(url);
   const typedToken = token.trim() || parsed?.token || '';
@@ -110,13 +117,25 @@ function useSetupForm(onSaved?: () => void) {
           onChange={(e) => onUrlChange(e.target.value)}
         />
       </label>
-      <div className="mode-toggle nvr-setup__mode" role="group" aria-label={t('nvr.setup.authToken') + ' / ' + t('nvr.setup.authLogin')}>
-        {(['token', 'login'] as const).map((m) => (
-          <button key={m} type="button" className={`mode-toggle__btn${mode === m ? ' mode-toggle__btn--active' : ''}`} onClick={() => { setMode(m); setProbe({ state: 'idle' }); }} aria-pressed={mode === m}>
-            {m === 'token' ? t('nvr.setup.authToken') : t('nvr.setup.authLogin')}
-          </button>
-        ))}
-      </div>
+      {glas ? (
+        // Glas: a segment (plan docs/glas/PLAN-ETAPPE-6.md K105); manual, as switching resets the probe
+        <Segment<AuthMode>
+          className="g-seg--nvr-auth"
+          label={authLabel}
+          value={mode}
+          onChange={chooseMode}
+          activation="manual"
+          options={AUTH_MODES.map((m) => ({ value: m, label: authText(m) }))}
+        />
+      ) : (
+        <div className="mode-toggle nvr-setup__mode" role="group" aria-label={authLabel}>
+          {AUTH_MODES.map((m) => (
+            <button key={m} type="button" className={`mode-toggle__btn${mode === m ? ' mode-toggle__btn--active' : ''}`} onClick={() => chooseMode(m)} aria-pressed={mode === m}>
+              {authText(m)}
+            </button>
+          ))}
+        </div>
+      )}
       {mode === 'token' ? (
         <label className="nvr-setup__field">
           <span className="nvr-setup__label"><KeyRound size={14} strokeWidth={2} />{t('nvr.setup.tokenLabel')}</span>

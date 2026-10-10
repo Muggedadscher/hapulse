@@ -6,6 +6,11 @@
  *
  * Deep link: `?at=<ms>&ev=<eventTs>` (from the events strip / Home card)
  * starts playback at `at` with the event frame as poster.
+ *
+ * Glas (docs/glas/PLAN-ETAPPE-6.md K101–K104, E13): the package's immersive appearance. The page says it is shown
+ * (`useGlasImmersive`): on the phone the frame goes and the page owns the screen, the content column turns dark
+ * (AppLayout). The header carries the name with LIVE or the picture's time and "open in Sentinel" as a round button;
+ * no bell or avatar there. Klassisch renders the page as before.
  */
 
 import React from 'react';
@@ -21,6 +26,8 @@ import { DatePickerModal } from './components/DatePickerModal';
 import { NvrUi } from './ui';
 import { NVR_ROOT } from './paths';
 import { useFitAboveTabs } from './useFitAboveTabs';
+import { useIsGlas } from '../app/glas/useUiStyle';
+import { useGlasImmersive } from '../app/glas/useGlasImmersive';
 import './nvr.css';
 
 /** Build id from vite.config.ts (`define`); undefined outside a vite build (vitest). */
@@ -39,13 +46,17 @@ export function NvrCameraPage() {
   const { cameraId: camId = '' } = useParams();
   const [q] = useSearchParams();
   const { cfg, cameras, stats } = useNvrOverview(30_000);
+  const glas = useIsGlas();
   const cam = cameras.find((c) => c.id === camId);
   const name = cam?.name || camId;
   const startAt = q.get('at') ? Number(q.get('at')) : 0;
   const posterTs = q.get('ev') ? Number(q.get('ev')) : 0;
-  // phones: the body ends above the tab bar (HAPulse's summary chips sit above the page, see useFitAboveTabs)
+  // phones: the body ends above the tab bar (HAPulse's summary chips sit above the page, see useFitAboveTabs); Glas
+  // has neither on this page — the package's immersive body is the screen
   const [pageEl, setPageEl] = React.useState<HTMLDivElement | null>(null);
-  useFitAboveTabs(pageEl);
+  useFitAboveTabs(glas ? null : pageEl);
+  // Glas: the frame goes while the camera page is shown (not for the empty state without a connection)
+  useGlasImmersive(glas && !!cfg);
 
   if (!cfg) {
     return (
@@ -65,7 +76,14 @@ export function NvrCameraPage() {
           storagePrefix="hapulse-nvr-ar-" // keep the aspect cache key this install already uses
           brand={TELEMETRY_BRAND}
           crossOrigin
-          header={(at) => (
+          appearance={glas ? 'immersive' : 'default'}
+          header={(at, info) => glas ? (
+            <CameraTitle name={name} onBack={() => navigate(NVR_ROOT)} live={info.live} at={at}>
+              <a className="nvr-iconbtn" href={openLink(at)} target="_blank" rel="noreferrer noopener" aria-label={t('nvr.open')} title={t('nvr.open')}>
+                <ExternalLink size={20} strokeWidth={1.75} aria-hidden="true" />
+              </a>
+            </CameraTitle>
+          ) : (
             <CameraTitle name={name} onBack={() => navigate(NVR_ROOT)}>
               <a className="btn btn--ghost nvr-actions__btn" href={openLink(at)} target="_blank" rel="noreferrer noopener" aria-label={t('nvr.open')} title={t('nvr.open')}>
                 <ExternalLink size={16} strokeWidth={1.75} />

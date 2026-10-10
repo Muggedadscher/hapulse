@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { THEMES, GLAS_COLORS } from '@hapulse/core';
+import { THEMES, GLAS_COLORS, glasCssVars } from '@hapulse/core';
 
 // --- a minimal <html> + <meta name="theme-color">: inline style keeps insertion order like the CSSOM -----------------
 class FakeStyle {
@@ -17,6 +17,18 @@ class FakeEl {
   getAttribute(n: string) { return this.attrs.get(n) ?? null; }
   setAttribute(n: string, v: string) { this.attrs.set(n, v); }
   removeAttribute(n: string) { this.attrs.delete(n); }
+}
+
+/** <head> with the style elements appended to it (the dark subtree, K103). */
+class FakeNode {
+  id = '';
+  textContent = '';
+  parent: FakeHead | null = null;
+  remove() { if (this.parent) this.parent.children.splice(this.parent.children.indexOf(this), 1); this.parent = null; }
+}
+class FakeHead {
+  children: FakeNode[] = [];
+  appendChild(n: FakeNode) { n.parent = this; this.children.push(n); return n; }
 }
 
 /** matchMedia with switchable answers and change listeners. */
@@ -41,15 +53,23 @@ const LESS_GLASS = '(prefers-reduced-transparency: reduce)';
 
 let root: FakeEl;
 let meta: FakeEl;
+let head: FakeHead;
 let media: ReturnType<typeof fakeMedia>;
 
 function installDom() {
   root = new FakeEl();
   meta = new FakeEl();
+  head = new FakeHead();
   meta.setAttribute('name', 'theme-color');
   meta.setAttribute('content', '#f3f4f6');
   media = fakeMedia({});
-  vi.stubGlobal('document', { documentElement: root, querySelector: (s: string) => (s === 'meta[name="theme-color"]' ? meta : null) });
+  vi.stubGlobal('document', {
+    documentElement: root,
+    head,
+    querySelector: (s: string) => (s === 'meta[name="theme-color"]' ? meta : null),
+    getElementById: (id: string) => head.children.find((n) => n.id === id) ?? null,
+    createElement: () => new FakeNode(),
+  });
   vi.stubGlobal('window', { matchMedia: media.matchMedia });
 }
 
@@ -62,7 +82,9 @@ const classic = (over: Partial<Input> = {}): Input => ({
 });
 const glas = (over: Partial<Input> = {}): Input => classic({ uiStyle: 'glas', ...over });
 const glasVars = () => root.style.entries().filter(([k]) => k.startsWith('--g-'));
-const domState = () => ({ style: root.style.entries(), attrs: [...root.attrs.entries()].sort(), themeColor: meta.getAttribute('content') });
+const domState = () => ({ style: root.style.entries(), attrs: [...root.attrs.entries()].sort(), themeColor: meta.getAttribute('content'),
+  head: head.children.map((n) => n.id) });
+const darkScope = () => head.children.find((n) => n.id === G.DARK_SCOPE_ID)?.textContent ?? null;
 
 beforeEach(installDom);
 afterEach(() => vi.unstubAllGlobals());
@@ -182,6 +204,32 @@ describe('applyAppearance', () => {
     expect(set).toHaveBeenCalled();
     expect(root.getAttribute('data-theme')).toBe('ocean');
     expect(root.style.getPropertyValue('--bg')).toBe(GLAS_COLORS.light.bg); // Glas still wins over the classic tokens
+  });
+
+  it('Glas writes the dark subtree: the variables of dark mode on [data-glas-scheme="dark"], Klassisch removes it', () => {
+    G.applyAppearance(classic(), ENV);
+    expect(darkScope()).toBeNull();
+
+    G.applyAppearance(glas({ accentHue: 200, glassStrength: 'tinted' }), ENV);
+    const css = darkScope()!;
+    expect(css.startsWith(":root[data-style='glas'] [data-glas-scheme='dark'] { color-scheme: dark; ")).toBe(true);
+    // the same input in dark mode: accent, strength and contrast follow the device's appearance
+    const dark = glasCssVars({ mode: 'dark', accentHue: 200, strength: 'tinted', contrastMore: false, supportsLinear: true });
+    expect(css).toContain(`--bg: ${dark['--bg']};`);
+    expect(css).toContain(`--g-accent: ${dark['--g-accent']};`);
+    expect(css).toContain(`--g-glass-tint: ${dark['--g-glass-tint']};`);
+    expect(dark['--bg']).toBe('#000000');
+    expect(head.children.filter((n) => n.id === G.DARK_SCOPE_ID)).toHaveLength(1);
+
+    // in dark mode the subtree holds the same values as :root
+    G.applyAppearance(glas({ mode: 'dark', accentHue: 200, glassStrength: 'tinted' }), ENV);
+    expect(darkScope()).toBe(G.darkScopeCss(dark));
+    for (const [k, v] of Object.entries(dark)) expect(root.style.getPropertyValue(k)).toBe(v);
+    expect(head.children).toHaveLength(1);
+
+    G.applyAppearance(classic(), ENV);
+    expect(darkScope()).toBeNull();
+    expect(head.children).toHaveLength(0);
   });
 
   it('"auto" follows the system colour scheme in both styles', () => {

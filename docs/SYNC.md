@@ -122,17 +122,17 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/changelog/{ForkChangelogModal.tsx,forkEntries.ts}`, `test/forkChangelog.test.ts` | Changelog-Anzeige mit Upstream- und Fork-Releases, Kompaktansicht |
 | `apps/dashboard/test/nvrLocales.test.ts` | Jeder `nvr.*`-Schlüssel des Pakets `@sentinel-nvr/web` existiert in HAPulses Locales (sonst erscheint er roh) |
 | `packages/core/src/glasTokens.ts` | Stil Glas: Farben, Akzent (`glasAccent`), Federn, Kontrast-Hilfen, Abbildung auf die 24 HAPulse-Tokens + `--g-*` (DOM-frei) |
-| `apps/dashboard/src/theme/glasAppearance.ts` | Stil Glas: `applyAppearance` (umhüllt `applyTheme`, schreibt Tokens + `--g-*` + Attribute auf `:root`), `resolveAppearance`, `readPersistedStyle` (Pre-Paint), `watchAppearance` |
+| `apps/dashboard/src/theme/glasAppearance.ts` | Stil Glas: `applyAppearance` (umhüllt `applyTheme`, schreibt Tokens + `--g-*` + Attribute auf `:root`), `resolveAppearance`, `readPersistedStyle` (Pre-Paint), `watchAppearance`; seit Etappe 6 der dunkle Teilbaum (`<style id="glas-dark-scope">` für `[data-glas-scheme='dark']`) und `setImmersiveThemeColor` |
 | `apps/dashboard/src/app/glas/useUiStyle.ts` | `useUiStyle`/`useIsGlas` für Komponenten |
 | `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`; Fenster seit Etappe 3: `sheets`, `sheet-content`; Gesten und Inspector seit Etappe 3b: `gestures`; Übersicht und Detail seit Etappe 4: `home`, `home-cards`, `home-lists`, `controls`, `detail`, `edit`, `nvr`; übrige Seiten seit Etappe 5: `pages`, `cards`, `lists`, `security`, `pool`, `energy`, `music`, `devices`, `system`, `settings`, `onboarding`); jeder Selektor beginnt mit `:root[data-style='glas']` |
-| `apps/dashboard/src/app/glas/{GlasRuntime,GlasTabBar,GlasNavGroups}.tsx`, `{glasScroll,menuKeys,navGroups,shellStore,useLens}.ts` | Glas-Rahmen (Etappe 2): Scroll-Kante und kleiner Titel, Tab-Leiste minimieren, Linse, Pfeiltasten in Räume-/Mehr-Menü, Gruppen der Seitenleiste, Bearbeiten-Angebot je Seite |
+| `apps/dashboard/src/app/glas/{GlasRuntime,GlasTabBar,GlasNavGroups}.tsx`, `{glasScroll,menuKeys,navGroups,shellStore,useLens}.ts` | Glas-Rahmen (Etappe 2): Scroll-Kante und kleiner Titel, Tab-Leiste minimieren, Linse, Pfeiltasten in Räume-/Mehr-Menü, Gruppen der Seitenleiste, Bearbeiten-Angebot je Seite; seit Etappe 6 `data-g-immersive` an `:root` und die dunkle Browserfarbe, solange die Kameraseite offen ist |
 | `apps/dashboard/src/components/glas/{AvatarMenu,DoneCapsule,WeatherLine}.tsx`, `weatherIcon.ts` | Glas am Handy: Avatar-Menü (Benachrichtigungen, Bearbeiten, Einstellungen), „Fertig“, Wetterzeile; Wettersymbol je Zustand |
 | `apps/dashboard/test/{glasScroll,menuKeys,navGroups}.test.ts` | Tests des Glas-Rahmens |
 | `apps/dashboard/src/components/glas/sheet/{useGlasSheet,sheetHost,sheetStack,sheetMath,sheetMotion,origin,ghost,shake}.ts`, `{SheetHeader,SheetGrabber}.tsx`, `SheetContext.ts` | Glas-Fenster (Etappe 3): Sheet, Dialog oder Seite je Breite und Stapel, Stapel mit `inert` und einem Esc für alle, Wachsen aus dem Auslöser und zurück (Geist), Ziehen am Griff, Übergabe an das nächste Fenster, Fokus hinein und zurück, Schütteln bei falschem Code; seit Etappe 3b der Inspector (Detail ab 1100 px rechts neben der Seite, nicht modal) |
 | `apps/dashboard/src/components/glas/{NotificationsSheet.tsx,notificationOrder.ts}` | Glas am Handy: Benachrichtigungen als Fenster (neueste zuerst, Verwerfen, „Alle verwerfen“) |
 | `apps/dashboard/test/{sheetMath,sheetStack,notificationOrder}.test.ts` | Tests der Fenster |
 | `apps/dashboard/scripts/glas-checks-sheets.cjs` | Fenster-Szenen (`win-…`) und `checks --part sheets` für `glas-shots.cjs` |
-| `apps/dashboard/src/components/glas/{ContextMenu,SwipeRow}.tsx`, `{contextActions,swipeMath}.ts`, `apps/dashboard/src/stores/glasUiStore.ts` | Glas-Gesten (Etappe 3b): Kontextmenü der Karten in den Räumen (Langdruck, Rechtsklick, Kontextmenü-Taste; Aktionen je Entität und Rechten), Wisch-Zeilen (Verwerfen, Aus, Schließen, Verriegeln; nie Öffnen oder Entriegeln) |
+| `apps/dashboard/src/components/glas/{ContextMenu,SwipeRow}.tsx`, `{contextActions,swipeMath}.ts`, `apps/dashboard/src/stores/glasUiStore.ts` | Glas-Gesten (Etappe 3b): Kontextmenü der Karten in den Räumen (Langdruck, Rechtsklick, Kontextmenü-Taste; Aktionen je Entität und Rechten), Wisch-Zeilen (Verwerfen, Aus, Schließen, Verriegeln; nie Öffnen oder Entriegeln); `glasUiStore.immersive` seit Etappe 6 (Kameraseite) |
 | `apps/dashboard/test/{contextActions,swipeMath}.test.ts` | Tests der Gesten |
 | `apps/dashboard/scripts/glas-checks-gestures.cjs` | Gesten-Szenen (`ctx-card`, `swipe-…`) und `checks --part gestures` für `glas-shots.cjs` |
 | `packages/core/src/{hints,locks,activeScene,glasEnergy,sizePresets,roomGlance}.ts` | Etappe 4 (DOM-frei, Tests in `smoke.mjs`): Hinweise, Schloss-Regel (aus `lockLogic.ts` nach Core gezogen), aktive Szene (Heuristik), Glas-Energiediagramm (Zeiträume, Balken, Achse, Ø, Vergleich), Größen S/M/L ↔ Spalten/Höhe/`tallSections`, Werte des Hauptraums und der Geräte |
@@ -147,6 +147,8 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/nvr/{NvrHomeGlas,HomeSnapshot}.tsx` | Glas-Körper der NVR-Karte der Übersicht (Kopf, Fehler und Daten bleiben in `NvrHomeCard`) |
 | `apps/dashboard/scripts/glas-checks-home.cjs` | Übersichts-Szenen (`home-hints`, `home-edit`, `energy-bubble`, `detail-light`) und `checks --part home` für `glas-shots.cjs` |
 | `apps/dashboard/scripts/glas-checks-pages.cjs` | Etappe 5 (übrige Seiten): `checks --part pages` für `glas-shots.cjs` (Schalter, Regler/Stepper/Pillen/Play, Felder, Abschnitts- und Kartentitel, Rahmen, Bearbeiten S/M/L, Segmente, das Verhalten jeder Seite `pagesKeep`, Leerzustände, Menüs `pagesMenus`) und die Szenen `<seite>-edit` für den Klassisch-Vergleich |
+| `apps/dashboard/src/app/glas/useGlasImmersive.ts` | Etappe 6 (E13): die Kameraseite meldet sich als immersiv (`glasUiStore.immersive`); daraus setzt `GlasRuntime` `data-g-immersive` an `:root` (unter 900 px ohne Rahmen, `shell.css`) und `AppLayout` den dunklen Teilbaum |
+| `apps/dashboard/scripts/glas-checks-nvr.cjs` | Etappe 6 (NVR): nachgestelltes Sentinel (`192.0.2.10`, Playwright-Route, Aufnahme-Segmente mit ffmpeg), Szenen `nvr-*` und `checks --part nvr` (`nvrImmersive`, `nvrKeep`, `nvrPages`, reduzierte Bewegung, erzwungene Farben, deckend) |
 | `packages/core/src/chipCounts.ts` | Etappe 5 (K97, DOM-frei, Test in `smoke.mjs`): die Zählung der Home-Chips (Personen, Licht, Türen/Fenster, Alarm, Medien, Pool, Garagen, Schlösser) für die Chips in beiden Stilen und die Untertitel ihrer Fenster |
 | `apps/dashboard/src/components/home/chipLabels.ts` | Texte der Chips aus `chipCounts` (beide Stile); `useChipWindow` = Untertitel der Chip-Fenster (nur solange offen), nur in Glas |
 | `packages/core/locales/case/*.json`, `packages/core/src/textCase.ts` | Schreibweise der Upstream-Texte (`docs/glas/PLAN-TEXTE.md`): je Sprache nur die Schlüssel, deren Text Upstream klein beginnt, einen Satz oder (Deutsch) ein Nomen klein schreibt oder einen Namen falsch schreibt, gleicher Text bis auf große Buchstaben; `withCase` legt sie über das Wörterbuch (beide Stile) |
@@ -156,7 +158,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
-| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`) und 5 (`docs/glas/PLAN-ETAPPE-5.md`), Schreibweise der Texte (`docs/glas/PLAN-TEXTE.md`) |
+| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`), 5 (`docs/glas/PLAN-ETAPPE-5.md`) und 6 (`docs/glas/PLAN-ETAPPE-6.md`), Schreibweise der Texte (`docs/glas/PLAN-TEXTE.md`) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -216,6 +218,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/home/SummaryChips.tsx` | Etappe 5 (K97): Zählung und Texte aus `chipCounts`/`chipLabels` (beide Stile; Klassisch zeigt dasselbe) |
 | `apps/dashboard/src/components/home/chipmodals/{People,Lights,Doors,Alarm,Media}Modal.tsx` | Stil Glas (Etappe 5, K97): Untertitel aus `useChipWindow`, nur in Glas |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 5, K97): Werte und Fuß im Mehr-Menü (`GlasMoreValue`, `GlasMoreFoot`) |
+| `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 6, K103): `data-glas-scheme="dark"` an `.app-content`, solange die Kameraseite offen ist (dunkler Teilbaum, am Desktop auch Kopf und Ränder) |
 | `apps/dashboard/src/components/nav/RoomsMenu.tsx` | Stil Glas (Etappe 5, K97): Zustand je Raum (Symbol wie die Raumkachel, `data-tone`, der Zustand im `aria-label`); Klassisch unverändert |
 | `apps/dashboard/src/ha/{energy,service}.ts`, `stores/connectionStore.ts` | Nur Demo (Etappe 5, für die Prüfungen): Energie-Einstellungen und -Abrufe über `demoEnergy.ts`, Dienstaufrufe ins Protokoll `demoCalls.ts`, `setUrl` an die Demo-Steuerung |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
@@ -333,7 +336,7 @@ State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.
 ## Feature: Stil Glas
 
 Zweiter Stil neben Klassisch, nur Aussehen und Bewegung (Plan `docs/GLAS-PLAN.md`, Design `docs/GLAS-DESIGN.md`, Stand
-und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md`, `docs/glas/PLAN-ETAPPE-4.md`, `docs/glas/PLAN-ETAPPE-5.md` und `docs/glas/PLAN-TEXTE.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
+und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md`, `docs/glas/PLAN-ETAPPE-4.md`, `docs/glas/PLAN-ETAPPE-5.md`, `docs/glas/PLAN-ETAPPE-6.md` und `docs/glas/PLAN-TEXTE.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
 `<html data-style="glas">` gesetzt ist, und jede Regel in `styles/glas/` beginnt mit `:root[data-style='glas']`.
 
 Nach jedem Upstream-Merge:
@@ -397,3 +400,12 @@ Nach jedem Upstream-Merge:
 11. Schreibweise der Texte: `npm test -w @hapulse/dashboard` (`test/textCase.test.ts`) meldet neue oder geänderte
     Upstream-Texte, die klein beginnen; korrigiert werden sie in `packages/core/locales/case/<lang>.json` (Hinweis
     „Schreibweise“ im Inventar oben, Plan `docs/glas/PLAN-TEXTE.md`).
+12. Seit Etappe 6 (NVR): die Kameraseite ist in Glas das Paket mit `appearance="immersive"`, ihre Glas-Werte setzt
+    `styles/glas/nvr.css` über die Hooks des Pakets (`--nvr-ctl-*`, `--nvr-float-*`, `--nvr-seg-*`, `--nvr-live-*`,
+    `--nvr-shade-top`/`--nvr-shade-bottom`, `--nvr-ease`/`--nvr-dur`, README des Pakets), die übrigen NVR-Ansichten
+    über die Klassen des Pakets. Nach einem Update von `@sentinel-nvr/web` meldet der Selektor-Wächter umbenannte
+    Paket-Klassen; neue Hooks im README mit `nvr.css` abgleichen. Unter 900 px nimmt `styles/glas/shell.css` bei
+    `data-g-immersive` den Rahmen weg (`.app-content`, `.app-main`, `.app-tabs`, `.app-chips-mobile`); bekommt der
+    Rahmen bei Upstream ein neues Element, die Kameraseite am Handy in Glas ansehen. Der dunkle Teilbaum
+    (`[data-glas-scheme='dark']`) nimmt dieselben `glasCssVars` und bekommt neue Tokens von selbst. Danach
+    `checks --part nvr` laufen lassen (braucht ffmpeg für die Aufnahme-Segmente des nachgestellten Sentinels).
