@@ -33,6 +33,7 @@ import type { StateTranslations } from './entityStates.js';
 import { parseHistoryStates, parseLogbookEntries } from './history.js';
 import type { HistoryPoint, LogbookEntry } from './history.js';
 import type { RawHistoryState } from './sensorHistory.js'; // [fork]
+import { subscribeConfig as libSubscribeConfig, type HassConfig } from 'home-assistant-js-websocket'; // [fork]
 
 /** Raw payload shape returned by `auth/current_user` WebSocket message. */
 interface RawCurrentUser {
@@ -502,6 +503,15 @@ export class HAConnection {
       unsub?.();
       unsub = null;
     };
+  }
+
+  /**
+   * [fork] Home Assistant's core config (`get_config`: unit system, language, …), the way HA's own frontend reads it:
+   * `cb` runs once it is loaded, again after `core_config_updated` (e.g. a changed unit system), after every
+   * `component_loaded` and after a reconnect.
+   */
+  subscribeConfig(cb: (config: HassConfig) => void): UnsubscribeFunc {
+    return libSubscribeConfig(this.#conn, cb);
   }
 
   /**

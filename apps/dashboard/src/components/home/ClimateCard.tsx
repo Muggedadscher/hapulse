@@ -12,6 +12,7 @@ import './ClimateCard.css';
 import { climateSetpoint, gaugeRange, stepSetpoint } from './climateLogic'; // [fork]
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (docs/glas/PLAN-ETAPPE-4.md K83)
 import { GlasClimateBody } from '../glas/home/GlasClimateBody'; // [fork]
+import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
 
 interface ClimateCardProps {
   entities: HassEntityMap;
@@ -25,6 +26,7 @@ interface ClimateRoomEntry {
   name: string;
   entity: HassEntity;
   currentTemp: number | null;
+  currentUnit: string | null; // [fork] the room sensor's unit; null = the thermostat's reading, in HA's unit
 }
 
 /** Map hvac_action → colour key; fall back to mode when idle/unknown */
@@ -136,6 +138,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
   const locale = useLocale(); // [fork] number formatting
   const sl = useStateLabel();
   const isGlas = useIsGlas(); // [fork]
+  const temperatureUnit = useTemperatureUnit(); // [fork] HA's unit (was guessed from max_temp)
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   // Build list of rooms that have at least one climate entity
@@ -147,11 +150,12 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
 
     // Prefer room temperature sensor; fall back to climate.current_temperature
     let currentTemp: number | null = null;
+    let currentUnit: string | null = null; // [fork]
     for (const id of room.domains['sensor'] ?? []) {
       const e = entities[id];
       if (e?.attributes.device_class === 'temperature') {
         const v = parseFloat(e.state);
-        if (!isNaN(v)) { currentTemp = v; break; }
+        if (!isNaN(v)) { currentTemp = v; currentUnit = e.attributes.unit_of_measurement || null; break; } // [fork] unit
       }
     }
     if (currentTemp === null) {
@@ -159,7 +163,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
       if (typeof cur === 'number') currentTemp = cur;
     }
 
-    return [{ name: room.name, entity, currentTemp }];
+    return [{ name: room.name, entity, currentTemp, currentUnit }]; // [fork] currentUnit
   });
 
   // All hooks must run before any conditional return (Rules of Hooks). The
@@ -179,7 +183,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
     activeRoom?.currentTemp ??
     (activeEntity?.attributes.current_temperature as number | undefined) ??
     null;
-  const sp = climateSetpoint((activeEntity?.attributes ?? {}) as Record<string, unknown>);
+  const sp = climateSetpoint((activeEntity?.attributes ?? {}) as Record<string, unknown>, temperatureUnit); // [fork] unit
   // the last value sent, synchronously (a ref: two taps before a re-render must still be two steps) + state to re-render
   const pendingRef = useRef<{ entity: string; value: number; at: number } | null>(null);
   const [, setPendingTick] = useState(0);

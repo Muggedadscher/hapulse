@@ -6,7 +6,7 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
-## F37 — 2026-10-10
+## F38 — 2026-10-10
 
 **Vorschau Glas: übrige Seiten und Menüs** · _Glass preview: the other pages and menus_
 
@@ -22,6 +22,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
   _Glass from 900 pixels wide: edit with the sizes S, M and L also on security, energy, automations, scenes and system_
 - Glas: die Fenster der Chips nennen oben, was der Chip sagt („5 an“); das Mehr-Menü zeigt den Energieverbrauch von heute, die Zahl der Szenen und den Systemzustand, das Räume-Menü den Zustand jedes Raums wie die Raumkacheln  
   _Glass: the chips’ windows say at the top what the chip says (“5 on”); the More menu shows today’s energy use, the number of scenes and the system state, the rooms menu each room’s state like the room tiles_
+
+## F37 — 2026-10-10
+
+**Klima: richtige Temperatureinheit** · _Climate: the right temperature unit_
+
+### Behoben / Fixed
+
+- Klima: HAPulse übernimmt die Temperatureinheit aus Home Assistant; Thermostate mit hohem Höchstwert (etwa 90 °C) galten vorher als Fahrenheit, in Glas stand „°F“ und der Bogen der Klima-Karte blieb in beiden Stilen leer  
+  _Climate: HAPulse takes the temperature unit from Home Assistant; thermostats with a high maximum (about 90 °C) counted as Fahrenheit before, Glass showed “°F” and the climate card’s ring stayed empty in both styles_
 
 ## F36 — 2026-10-09
 

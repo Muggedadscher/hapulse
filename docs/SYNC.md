@@ -113,6 +113,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/test/cameraSource.test.ts` | Kameraquelle, Filter, Raumzuordnung, Namensvorschlag |
 | `apps/dashboard/src/components/pool/poolFormat.ts`, `test/poolFormat.test.ts` | Pool: Ring-Restzeit (h:mm ab 1 h), „bis morgen/Wochentag“ |
 | `packages/core/src/numberFormat.ts` | `formatNumber` — sprachabhängige Zahlen (Dezimalkomma, Tausendergruppierung), Standard `'en'` |
+| `apps/dashboard/src/ha/temperatureUnit.ts`, `apps/dashboard/src/components/home/climateLogic.ts`, `apps/dashboard/test/climate.test.ts` | Klima: Temperatureinheit von HA (`unit_system.temperature` über `subscribeConfig`, live; Demo °C), Sollwert-Regeln (Schritt, Grenzen, Skala je Einheit) und Tests |
 | `packages/core/src/garage.ts`, `apps/dashboard/test/garage.test.ts` | Garagentore/Tore (`cover` garage/gate): Erkennung, Status, Aktionen, Zusammenfassung |
 | `apps/dashboard/src/components/garage/*` | Garagen-Karte, -Liste, Sicherheits-Sektion, Bestätigung, Symbole, gemeinsame Ton-/Textregel (`garageText.ts`) |
 | `apps/dashboard/src/components/home/chipmodals/{GarageModal,LocksModal}.tsx` | Fenster der Home-Chips „Garage“ und „Schlösser“ |
@@ -161,8 +162,9 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | Datei | Änderung |
 |---|---|
 | `apps/dashboard/vite.config.ts` | `define` `__HAPULSE_BUILD__` (Build-Kennung `hapulse-<sha7>` in der Sentinel-Telemetrie, `NvrCameraPage.tsx`) |
-| `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben); `getSystemDataStrict`/`setSystemData`/`subscribeSystemData` |
-| `apps/dashboard/src/stores/connectionStore.ts` | Globale Verwaltung vor dem Settings-Sync starten, beim Teardown stoppen |
+| `packages/core/src/connection.ts` | `fetchSensorHistory()` + Import (Upstreams eigenes `fetchHistory` bleibt daneben); `getSystemDataStrict`/`setSystemData`/`subscribeSystemData`; `subscribeConfig` (HA-Konfiguration, für die Temperatureinheit) |
+| `apps/dashboard/src/stores/connectionStore.ts` | Globale Verwaltung vor dem Settings-Sync starten, beim Teardown stoppen; Temperatureinheit abonnieren (Demo: °C), beim Teardown stoppen |
+| `apps/dashboard/src/components/{cards,home}/ClimateCard.tsx`, `components/home/HeroRoomCard.tsx` | Temperatureinheit von HA (`useTemperatureUnit`) statt geraten aus `max_temp`; Glas-Klima schreibt die Einheit des Raumsensors bzw. von HA |
 | `apps/dashboard/src/ha/settingsSync.ts` | Verwalteter Modus → nur `userSettingsSync`; gemeinsamer Anwende-Schutz |
 | `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Hell/Dunkel pro Gerät (`modeOverride`) auch im First Paint |
 | `apps/dashboard/src/app/DashboardApp.tsx`, `main.tsx` | Stil Glas: `applyAppearance` statt `applyTheme` (auch im First Paint aus `hapulse:settings`), `watchAppearance` statt `watchSystemMode`; `DashboardApp.tsx` importiert `styles/glas/index.css` als letztes Stylesheet (so hat auch ein Host, der `<DashboardApp />` rendert, das Glas-CSS) |

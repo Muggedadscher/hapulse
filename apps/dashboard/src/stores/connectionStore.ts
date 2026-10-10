@@ -29,6 +29,7 @@ import { startHASettingsSync, stopHASettingsSync } from '../ha/settingsSync';
 import { startGlobalSettings, stopGlobalSettings } from '../ha/globalSettings'; // [fork]
 import { startDemoControl, stopDemoControl } from '../ha/demoControl'; // [fork] lab checks, demo only
 import { isDefaultPersistenceAdapter } from '../persistence'; // [fork]
+import { startTemperatureUnit, startDemoTemperatureUnit, stopTemperatureUnit } from '../ha/temperatureUnit'; // [fork] climate unit
 
 // ---------------------------------------------------------------------------
 // Module-scope connection state (not in Zustand state — mutable references)
@@ -221,6 +222,7 @@ function teardown(): void {
 
   _unsubEntities?.();
   _unsubEntities = null;
+  stopTemperatureUnit(); // [fork]
 
   _unsubStatus?.();
   _unsubStatus = null;
@@ -246,6 +248,7 @@ async function wireConnection(
   _unsubEntities = conn.subscribeEntities((entities) => {
     scheduleEntitiesUpdate(entities);
   });
+  startTemperatureUnit(conn); // [fork] HA's unit for the climate cards (ha/temperatureUnit.ts)
 
   _unsubStatus = conn.onStatus((status) => {
     if (status === 'connected') {
@@ -381,6 +384,7 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
       useEntityStore.getState().setRegistries(DEMO_REGISTRIES);
       useEntityStore.getState().setEntities(DEMO_ENTITIES);
       startDemoControl({ setUrl: (url) => set({ url }) }); // [fork] setUrl: the energy page's setup link in the lab checks
+      startDemoTemperatureUnit(); // [fork]
 
       _stopDemoTicker = createDemoTicker(
         (entities) => {

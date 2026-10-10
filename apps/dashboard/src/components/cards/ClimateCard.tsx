@@ -8,6 +8,7 @@ import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 import { climateSetpoint, stepSetpoint } from '../home/climateLogic'; // [fork]
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: the circle in the colour of what it does (K95, K97)
+import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
 
 interface ClimateCardProps {
   entity: HassEntity;
@@ -25,6 +26,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
 export function ClimateCard({ entity, name }: ClimateCardProps) {
   const t = useT();
   const locale = useLocale(); // [fork] number formatting
+  const temperatureUnit = useTemperatureUnit(); // [fork] HA's unit: the default step when the entity has none
   const sl = useStateLabel();
   const entityId = entity.entity_id;
   const currentTemp = entity.attributes.current_temperature as number | undefined;
@@ -52,7 +54,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
   // [fork] the service call ran INSIDE the state updater (StrictMode runs updaters twice → two calls); step,
   // min/max from the entity (climateLogic), nothing sent without a single target temperature (range mode)
   const localRef = useRef(localTemp); localRef.current = localTemp;
-  const sp = climateSetpoint(entity.attributes as Record<string, unknown>);
+  const sp = climateSetpoint(entity.attributes as Record<string, unknown>, temperatureUnit); // [fork] unit
   const handleTempStep = useCallback(
     (delta: number) => {
       if (sp.value == null) return;
