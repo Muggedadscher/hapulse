@@ -190,3 +190,33 @@ Geschwister-Kombinatoren ab (mit Selbsttest), die gruppierten Zahlen sind in Deu
   klassischen Knöpfe (`onReselect`); `immersive` im Glas-Store ist gezählt (`holdImmersive`), damit zwei kurz zugleich
   eingehängte Kameraseiten den Rahmen nicht zwischendurch einblenden; Tests für die dunkle Browser-Farbe der Kameraseite
   und für mehr Kontrast im dunklen Teilbaum; Anleitung zum Entfernen der NVR-Integration um die Glas-Dateien ergänzt.
+
+## 9. Gesamtlauf (2026-10-10)
+
+Stand mit Paket 0.18.0 aus der Registry, einmal vor dem Merge:
+
+- **Pflichtbefehle:** `npm run typecheck`, `npm run build`, `npm test` (alle Workspaces), `npm run lint` grün (Core-Smoke 699, Dashboard 29 Dateien mit 321 Tests, Lint ohne Warnung).
+- **`checks`, alle sieben Teile grün:** stage1 (8 Blöcke), frame (13), sheets (21), gestures (10), home (10), pages (11),
+  nvr (6).
+- **Klassisch-Vergleich mit `main`** (416 Bilder, alle Szenen samt NVR, hell und dunkel, Handy, iPad, Desktop): 378
+  gleich. Gewollt anders: Einstellungen und „Was ist neu“ (F40, 12 Bilder) und die NVR-Szenen mit der Zahl der Segmente
+  („48210“ → „48.210“, 24 Bilder, sonst kein Pixel). Zwei weitere Bilder ohne Änderung dahinter: `nvr-setup-login` (iPad
+  dunkel, Seitenleiste in einem Bild versetzt) war bei der Wiederholung gleich; in `chip` (Handy hell) lag das Fenster in
+  den Aufnahmen von `main` zweimal 17,5 px tiefer, mit demselben Ablauf und zusätzlichen Messpunkten (Scroll-Lage,
+  sichtbarer Ausschnitt, Lage des Fensters) liefern beide Builds dasselbe Bild — ein Effekt des Aufnahmezeitpunkts.
+- **Klick-Fuzz** beider Stile (Desktop und Handy, je mit und ohne Bearbeiten, je 13 Seiten): alle acht Läufe
+  sauber, keine Seite mit Fehler, kein HTTP ≥ 400 (Klassisch 457/538/448/512 Klicks, Glas 305/633/332/425).
+- **Labor gegen das echte Sentinel** (HAPulse dieses Stands, Paket 0.18.0 aus der Registry): `nvr-sweep-test` Desktop
+  Klassisch 41/41, Handy Klassisch 41/41 (zweimal), Desktop Glas 43/43, Handy Glas im ersten Lauf 40/43, danach zweimal
+  43/43; in allen Läufen keine JS- oder Konsolenfehler, kein HTTP ≥ 400, der Clip-Download fertig (MP4 mit Bild und Ton).
+  Die drei roten Schritte des einen Laufs („play again“, „+15 s inside the recording“, „speed → 2×“) hatten eine Ursache:
+  die Relay-Sitzung mit iPhone-Kennung kam nicht zustande (der Server meldet „peer connection closed“ vor dem ICE-Aufbau,
+  danach „client connection timed out“). Dasselbe Muster an diesem Tag 3-mal in 8 Handy-Läufen mit 0.18.0, zwei davon in
+  Sentinels eigener Oberfläche (dort ist das DOM mit 0.18.0 gleich 0.17.1), 0-mal in 7 Läufen mit 0.17.1; Player,
+  API-Client und Zeitleiste sind in 0.18.0 unverändert, dieselben Meldungen stehen auch in Logs älterer Builds. Als
+  Laborrauschen gewertet, die Ursache ist offen.
+- **Glas am echten Sentinel angesehen** (Handy 390 × 844, Desktop 1440 × 900): Live (dunkle Seite, Bild randlos, Kopf,
+  Kapsel und Ton über dem Bild, am Handy ohne Tab-Leiste, am Desktop die Seitenleiste hell), Aufnahme nach einem Ereignis
+  (über das Relay, Uhrzeit statt LIVE), Zeitraffer per Scrollen, Ton an (Kreis orange), Clip-Modus — wie geplant.
+- **Nebenbefund im Paket** (nicht Glas, in Klassisch genauso): am Desktop rutscht das „×“ der Clip-Leiste in eine eigene
+  Zeile. Bleibt für eine spätere Paket-Version.
