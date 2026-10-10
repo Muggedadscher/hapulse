@@ -1,15 +1,13 @@
-import { pickAlarmPanel } from '@hapulse/core';
 import React from 'react';
 import {
   Users, Lightbulb, DoorOpen, ShieldAlert, Music2, Waves,
 } from 'lucide-react';
 import { EditBadge } from '../ui/EditBadge';
-import { POOL_ENTITIES, POOL_REQUIRED_ENTITIES } from '../pool/poolConfig'; // [fork]
-import { garageSummary, isGarageDoor } from '@hapulse/core'; // [fork]
+import { chipLabels, summaryCounts } from './chipLabels'; // [fork] the counts and labels the chips share with their windows (K97)
 import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
-import { summaryText, summaryTone } from '../garage/garageText'; // [fork]
+import { summaryTone } from '../garage/garageText'; // [fork]
 import { Lock, LockOpen } from 'lucide-react'; // [fork] locks chip
-import { lockSummary, lockSummaryText, lockTone } from '../security/lockLogic'; // [fork]
+import { lockTone } from '../security/lockLogic'; // [fork]
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork]
 import { SortableGrid } from '../ui/SortableGrid';
 import { SortableItem } from '../ui/SortableItem';
@@ -48,13 +46,13 @@ export function SummaryChips({
   const t = useT();
   const sl = useStateLabel();
   const isGlas = useIsGlas(); // [fork] Glas colours each chip's glyph by its kind (K87)
-  const allEntities = Object.values(entities);
+  // [fork] The counts come from core (chipCounts.ts, rules unchanged) so the chips' windows show the same (K97).
+  const counts = summaryCounts(entities);
+  const labels = chipLabels(counts, t, sl);
   const { url: haUrl } = useConnectionStore(useShallow((s) => ({ url: s.url })));
 
   // People home
-  const peopleHome = allEntities.filter(
-    (e) => e.entity_id.startsWith('person.') && e.state === 'home'
-  );
+  const peopleHome = counts.peopleHome; // [fork]
   const peopleAvatars = peopleHome.map((e) => {
     const name = (e.attributes.friendly_name as string | undefined) ?? e.entity_id.split('.')[1] ?? e.entity_id;
     const pic = e.attributes.entity_picture as string | null | undefined;
@@ -65,43 +63,32 @@ export function SummaryChips({
   });
 
   // Lights on
-  const lightsOn = allEntities.filter(
-    (e) => e.entity_id.startsWith('light.') && e.state === 'on'
-  ).length;
+  const lightsOn = counts.lightsOn; // [fork]
 
   // Open doors/windows
-  const openDoorWindow = allEntities.filter((e) => {
-    if (!e.entity_id.startsWith('binary_sensor.')) return false;
-    const dc = e.attributes.device_class as string | undefined;
-    return (
-      (dc === 'door' || dc === 'window' || dc === 'opening' || dc === 'garage_door') &&
-      e.state === 'on'
-    );
-  }).length;
+  const openDoorWindow = counts.openDoorWindow; // [fork]
 
   // Alarm
   // Severity-picked so the chip agrees with the security page when several
   // panels exist (issue #16) — see pickAlarmPanel in core.
-  const alarm = pickAlarmPanel(allEntities);
+  const alarm = counts.alarm; // [fork]
   const alarmState = alarm?.state ?? null;
   // [fork] Glas: armed is green, triggered red; arming, pending and the rest stay a warning (K87).
   const alarmTone = alarmState === 'triggered' ? 'triggered' : alarmState?.startsWith('armed') ? 'armed' : undefined;
 
   // Media playing
-  const mediaPlaying = allEntities.filter(
-    (e) => e.entity_id.startsWith('media_player.') && e.state === 'playing'
-  ).length;
+  const mediaPlaying = counts.mediaPlaying; // [fork]
 
   // [fork] Pool pump — chip shown only when the pool entities exist.
-  const poolPresent = POOL_REQUIRED_ENTITIES.every((id) => entities[id] != null);
-  const poolRunning = entities[POOL_ENTITIES.pump]?.state === 'on';
+  const poolPresent = counts.pool.present;
+  const poolRunning = counts.pool.running;
 
   // [fork] Garage doors / gates — chip shown only when there is at least one.
-  const garages = garageSummary(allEntities.filter(isGarageDoor));
+  const garages = counts.garages;
   const garageTone = summaryTone(garages);
 
   // [fork] Locks — chip shown only when there is at least one (hidden ones are already filtered out by the bar).
-  const locks = lockSummary(allEntities.filter((e) => e.entity_id.startsWith('lock.')));
+  const locks = counts.locks;
   const locksTone = lockTone(locks);
 
   type ChipDef = {
@@ -118,48 +105,48 @@ export function SummaryChips({
     {
       id: 'people',
       icon: <Users size={16} strokeWidth={1.75} />,
-      label: peopleHome.length > 0 ? t('home.summaryChips.peopleCount', { count: peopleHome.length }) : t('home.summaryChips.nobodyHome'),
+      label: labels.people, // [fork]
       active: peopleHome.length > 0,
       ...(peopleHome.length > 0 ? { avatars: peopleAvatars } : {}),
     },
     {
       id: 'lights',
       icon: <Lightbulb size={16} strokeWidth={1.75} />,
-      label: lightsOn > 0 ? t('home.summaryChips.lightsCount', { count: lightsOn }) : t('home.summaryChips.allOff'),
+      label: labels.lights, // [fork]
       active: lightsOn > 0,
     },
     {
       id: 'doors',
       icon: <DoorOpen size={16} strokeWidth={1.75} />,
-      label: openDoorWindow > 0 ? t('home.summaryChips.openCount', { count: openDoorWindow }) : t('home.summaryChips.allClosed'),
+      label: labels.doors, // [fork]
       active: openDoorWindow > 0,
       alert: openDoorWindow > 0,
     },
     {
       id: 'alarm',
       icon: <ShieldAlert size={16} strokeWidth={1.75} />,
-      label: alarmState ? sl('alarm_control_panel', alarmState) : t('home.summaryChips.unknown'),
+      label: labels.alarm, // [fork]
       active: alarmState != null && alarmState !== 'disarmed',
       alert: alarmState != null && alarmState !== 'disarmed',
     },
     {
       id: 'media',
       icon: <Music2 size={16} strokeWidth={1.75} />,
-      label: mediaPlaying > 0 ? t('home.summaryChips.mediaCount', { count: mediaPlaying }) : t('home.summaryChips.nothingPlaying'),
+      label: labels.media, // [fork]
       active: mediaPlaying > 0,
     },
     // [fork] Pool chip — dimmed when the pump is off, like the media chip.
     {
       id: 'pool',
       icon: <Waves size={16} strokeWidth={1.75} />,
-      label: poolRunning ? t('home.summaryChips.poolRunning') : t('home.summaryChips.poolIdle'),
+      label: labels.pool,
       active: poolRunning,
     },
     // [fork] Garage chip — red when a door is open, amber when one is unreachable.
     {
       id: 'garage',
       icon: <GarageSummaryIcon tone={garageTone} size={16} />,
-      label: summaryText(t, garages, t('home.summaryChips.allClosed')),
+      label: labels.garage,
       active: garageTone !== 'closed',
       alert: garageTone === 'unavailable',
       danger: garageTone === 'open',
@@ -168,7 +155,7 @@ export function SummaryChips({
     {
       id: 'locks',
       icon: locksTone === 'open' ? <LockOpen size={16} strokeWidth={1.75} /> : <Lock size={16} strokeWidth={1.75} />,
-      label: lockSummaryText(t, locks, t('home.summaryChips.locksAllLocked')),
+      label: labels.locks,
       active: locksTone !== 'locked',
       alert: locksTone === 'problem',
       danger: locksTone === 'open',

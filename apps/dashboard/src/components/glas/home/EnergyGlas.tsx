@@ -77,9 +77,11 @@ function formats(locale: string): Formats {
 
 /** One decimal ("1,2"). */
 const one = (v: number, locale: string) => formatNumber(v, locale, { minDecimals: 1, maxDecimals: 1 });
-/** The big figure and the PV yield: one decimal below 100, whole numbers above (sketch). */
-const figure = (v: number, locale: string) =>
+/** The big figure and the PV yield: one decimal below 100, whole numbers above (sketch). The More menu shows today's
+ *  figure the same way (MoreValue.tsx). */
+export const energyFigure = (v: number, locale: string) =>
   v >= 100 ? formatNumber(v, locale, { maxDecimals: 0 }) : one(v, locale);
+const figure = energyFigure;
 
 /** What a bar shows: data (a button), a past bucket without data (a button, "no data") or a stub (to come). */
 function kindOf(bar: GlasEnergyBar): 'data' | 'empty' | 'stub' {

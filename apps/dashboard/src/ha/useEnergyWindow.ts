@@ -9,6 +9,9 @@
  * back to a period shows it at once; while a period loads for the first time, the result on screen stays there
  * (`stale`), so the card keeps its place and the focus stays in the segment. A failed load keeps what is shown and
  * tries again after 30 s. Energy lives in long-term statistics, not in the entity store (like `useEnergy`).
+ *
+ * `enabled = false` fetches nothing and shows only what is remembered: the phone's More menu asks for today's figure
+ * only while it is open (docs/glas/PLAN-ETAPPE-5.md K97).
  */
 
 import { useEffect, useState } from 'react';
@@ -88,7 +91,7 @@ async function load(period: GlasEnergyPeriod): Promise<Result> {
   return { state: 'ready', data: { period, window: win, now: now.getTime(), dashboard, bars, change } };
 }
 
-export function useEnergyWindow(period: GlasEnergyPeriod): UseEnergyWindowResult {
+export function useEnergyWindow(period: GlasEnergyPeriod, enabled = true): UseEnergyWindowResult {
   const status = useConnectionStore((s) => s.status);
   const owner = useConnectionStore((s) => (s.demo ? 'demo' : s.url));
   const remembered = (p: GlasEnergyPeriod) => (cacheOwner === owner ? cache.get(p)?.result : undefined);
@@ -99,7 +102,7 @@ export function useEnergyWindow(period: GlasEnergyPeriod): UseEnergyWindowResult
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    if (status !== 'connected') return undefined;
+    if (status !== 'connected' || !enabled) return undefined;
     if (cacheOwner !== owner) {
       cache.clear();
       cacheOwner = owner;
@@ -137,7 +140,7 @@ export function useEnergyWindow(period: GlasEnergyPeriod): UseEnergyWindowResult
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [status, owner, period, tick]);
+  }, [status, owner, period, tick, enabled]);
 
   // The period's own result wins as soon as it exists (no frame with the previous one after switching back).
   const result = remembered(period) ?? shown.result;

@@ -15,6 +15,7 @@ import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import type { HassEntity } from '@hapulse/core';
 import { useT } from '../../../i18n/useT';
+import { useChipSubtitle } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
 import './chipmodals.css';
 
 interface MediaModalProps {
@@ -27,6 +28,7 @@ const ACTIVE_STATES = new Set(['playing', 'paused', 'buffering', 'on']);
 
 export function MediaModal({ open, onClose }: MediaModalProps) {
   const t = useT();
+  const subtitle = useChipSubtitle('media', open); // [fork]
   const navigate = useNavigate();
 
   const rooms = useEntityStore((s) => s.rooms);
@@ -104,6 +106,8 @@ export function MediaModal({ open, onClose }: MediaModalProps) {
       open={open}
       onClose={onClose}
       title={t('home.chipmodals.media.title')}
+      subtitle={subtitle} // [fork]
+      className="g-chip-window" // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<Music2 size={20} strokeWidth={1.75} />}
       footer={footer}
     >

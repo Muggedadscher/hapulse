@@ -13,7 +13,7 @@ Form. Es fehlen Kartentitel über der Fläche, ruhige Heroes, iOS-Schalter, Segm
 
 | # | Festlegung |
 |---|---|
-| K88 | **Grundsatz:** Nur Aussehen und Bewegung ändern sich (GLAS-PLAN §1), Inhalte und Reihenfolge bleiben. **Klassisch bleibt pixelgleich mit `main`** bis auf die Versionszeile F37 (Einstellungen, „Was ist neu“); Etappe 5 bringt dort keine neuen Inhalte (anders als K74). Neues Markup gibt es nur in Glas (hinter `useIsGlas`) und nur, wo ein Baustein fehlt: Segment, Bearbeiten-Leiste, Menü-Werte, Status-Kreise, Rollladen-Position. Alles andere ist CSS an den vorhandenen Klassen in `styles/glas/`. Szenen-Kacheln außerhalb der Übersicht bekommen deren Look, aber kein „Aktiv“ (K74 gilt nur für die Übersicht). |
+| K88 | **Grundsatz:** Nur Aussehen und Bewegung ändern sich (GLAS-PLAN §1), Inhalte und Reihenfolge bleiben. **Klassisch bleibt pixelgleich mit `main`** bis auf die Versionszeile F38 (Einstellungen, „Was ist neu“); Etappe 5 bringt dort keine neuen Inhalte (anders als K74). Neues Markup gibt es nur in Glas (hinter `useIsGlas`) und nur, wo ein Baustein fehlt: Segment, Bearbeiten-Leiste, Menü-Werte, Status-Kreise, Rollladen-Position. Alles andere ist CSS an den vorhandenen Klassen in `styles/glas/`. Szenen-Kacheln außerhalb der Übersicht bekommen deren Look, aber kein „Aktiv“ (K74 gilt nur für die Übersicht). |
 | K89 | **Seitenrahmen:** Der große Titel bleibt wie in Etappe 2. Die Karten tragen ihren Titel über der Fläche wie auf der Übersicht (§2.13). Die Regeln aus `home.css` werden eine gemeinsame Liste in `pages.css` mit den echten Wurzelklassen: Sicherheit `people-list-card`, `alarm-panel-card`, `locks-section-card`, `garage-section-card`, `sensor-section-card`; Energie `energy-sources`, `-devices`, `-solar`, `-water`, `-gas`; Pool `pool-card`; Musik `library-card`, `queue-card`, `zones-card`, `other-players-card`; System `sys-monitor-card`, `batteries-card`, `activity-card`; Automationen `auto-feed-card`, `auto-cat-card`; Szenen `scene-feed-card`, `scene-room-card`. Die Kamera-Sektion der Sicherheit hat weder Kopf noch Fläche, dort ändern sich nur die Kacheln (K90); kommt eine kopflose Karte in die Liste, setzt sie `--g-card-head: 0`. Den Titel in der Fläche behält eine Karte, deren Kopf ein Bedienelement trägt (Pool-Zeitplan mit Schalter), wie gedeckelte Karten auf der Übersicht. `energy-empty-state` ist ein Leerzustand (§7.31). Spalten nach Inhaltsbreite (K85) auf allen Seiten mit `overview-grid`; der Größen-Container bindet fixierte Nachfahren an sich, deshalb erst ab 900 px und je Seite geprüft (Menüs, Popover). `SectionLabel` verliert die Versalien, im Raum wird es ein Titel 20/25 600. Die Einstellungen bekommen Gruppentitel 15/20 600 `label2` über der Liste (§7.30). Die Reihenfolge Avatar, Chips, Titel am Handy (K27) bleibt. Die NVR-Sektion der Sicherheit folgt in Etappe 6. |
 | K90 | **Heroes:** Heroes mit Zustand behalten ihn als Farbe: Sicherheit nach Alarmzustand (Inventar H1, „Verlauf nach Alarmzustand“), System nach Gesundheit. In Glas wird das ein leiser Verlauf aus dem Soft-Ton des Zustands, dazu Wort und Symbol in seiner Ink. Heroes ohne Zustand (Energie, Geräte, Automationen, Szenen) verlieren den Akzent- bzw. Türkis-Verlauf und werden schlicht `card`, wie der Hauptraum (Entscheid E8). Die Chips im Sicherheits-Hero sehen aus wie die Status-Chips (§7.5, Farben K87). Kamera-Kacheln bekommen Radius 18, das Badge „Bewegung“ wird eine Kapsel `actDel` + Weiß (heute Weiß auf `--danger`, dunkel 2,8:1). Now Playing behält den Hintergrund aus dem Cover (Medien). |
 | K91 | **Schalter = iOS-Schalter** (§7.28, D25) in Listenzeilen und Kartenköpfen, nur per CSS: `auto-row-toggle`, `admin-toggle`, `pool-switch`, `lights-modal__toggle`, `device-toggle` (Zeile im Geräte-Detail) und die Schalter in `Settings`, `StyleSettings` und `GlobalSettingsAdmin`. Spur 51 × 31 in `switchOn`/`switchOff`, Knopf 27 weiß mit Schatten, Trefferfläche mindestens 44 (Desktop 64 × 44). Die Knopf-Elemente bleiben der gezeichnete Knopf. Die Regel aus dem Detail (Etappe 4, `detail.css`) wird die gemeinsame in `controls.css`. **Auf Kacheln kein Schalter** (§7.28): Licht- und Schalter-Karte im Raum schalten wie heute als Ganzes (Tipp, Enter, Leertaste). Der Symbol-Kreis 36 zeigt den Zustand (an Gelb + `glyphDark`), daneben steht der Zustandstext. Der Pill-Schalter bleibt im DOM und ist in Glas ausgeblendet. Die Karten-Variante von `device-toggle` erscheint in Glas nicht mehr (Etappe 4). Bei reduzierter Bewegung gleitet nichts. |
@@ -37,7 +37,7 @@ Form. Es fehlen Kartentitel über der Fläche, ruhige Heroes, iOS-Schalter, Segm
 | CSS | `styles/glas/pages.css` (Kartentitel, Spalten, Heroes), `cards.css` (Raum-Karten, Klima/Rollläden), `lists.css` (Listen, Felder), je Seite `security.css`, `pool.css`, `energy.css`, `music.css`, `devices.css`, `settings.css` | `styles/glas/index.css` (Importe), `controls.css` (Schalter, Regler, Stepper, Pillen, Segment-Größen), `home.css` (Kartenliste nach `pages.css`), `edit.css` (Seitenliste), `accent.css` (Schalter-Spuren, Kachel-Schalter), `detail.css` (Schalter nach `controls.css`), `sheet-content.css` (Alarm-Modi auch auf der Seite; Kommentare „bis Etappe 5“) |
 | Prüfungen | `scripts/glas-checks-pages.cjs` | `glas-shots.cjs` (`--part pages`; `knobs` zählt nur sichtbare Knöpfe), `glas-checks-sheets.cjs` (Pool-Selektoren für beide Formen) |
 
-Dazu kommen Texte in allen sieben Sprachen (nur neue Namen und Menü-Werte), Fork-Changelog F37 + `CHANGELOG.fork.md`,
+Dazu kommen Texte in allen sieben Sprachen (nur neue Namen und Menü-Werte), Fork-Changelog F38 (geplant als F37; F37 ging an die Klima-Einheit, PR #109) + `CHANGELOG.fork.md`,
 `docs/SYNC.md` (neue Dateien, `[fork]`-Stellen, Klassen), `CLAUDE.md`, GLAS-PLAN §3 Etappe 5 und der Selektor-Wächter
 für die neuen CSS-Dateien.
 
@@ -73,7 +73,7 @@ für die neuen CSS-Dateien.
 - **Bilder:** jede Seite hell/dunkel auf Handy und Desktop (Raum und Sicherheit auch iPad), Bearbeiten auf Sicherheit
   und Energie, die Sheets mit Schaltern und Segmenten neben `g5h-lights-*` und `g4h-pool-l`. Die Glas-Übersicht wird mit
   Etappe 4 verglichen (keine ungewollte Änderung durch geteilte Klassen).
-- **Klassisch:** Pixelvergleich mit `main` für alle Szenen (Seiten und Sheets), erwartet ist nur F37 (`--expect` für
+- **Klassisch:** Pixelvergleich mit `main` für alle Szenen (Seiten und Sheets), erwartet ist nur F38 (`--expect` für
   Einstellungen und „Was ist neu“). Das DOM der 49 Fenster und der Details bleibt gleich.
 - **Genau einmal vor dem Merge:** alle `checks`, der Klassisch-Vergleich, der Klick-Fuzz in beiden Stilen (Handy, Desktop,
   Bearbeiten) und die Pflichtbefehle. Nach Korrekturen aus der Code-Prüfung laufen nur die betroffenen Prüfungen.
@@ -104,7 +104,7 @@ für die neuen CSS-Dateien.
    Geräte, Automationen, Szenen, System, Einstellungen, Onboarding.
 4. K97: Zählung, Chip-Untertitel, Mehr- und Räume-Menü, Klima/Rollläden alle. Danach Klassisch-Vergleich für Chips und
    Übersicht.
-5. Ältere Prüfungen anpassen, Texte, Changelog F37, Doku. Dann Code-Prüfung, Gesamtlauf, Merge.
+5. Ältere Prüfungen anpassen, Texte, Changelog F38, Doku. Dann Code-Prüfung, Gesamtlauf, Merge.
 
 ## 5. Risiken
 
@@ -129,7 +129,7 @@ und übernommen, außer wo anders vermerkt.
 |---|---|
 | B1 Musik kann kein S/M/L | Musik raus aus S/M/L, fünf Seiten; dort nur Auge und Handy im Glas-Look (K96). |
 | S1 Segment verliert Verhalten | manuelle Aktivierung, erneutes Wählen, Fokus nach dem Stilwechsel, ab 6 Pool-Optionen klassisch (K92); Prüfung in `pagesSegments`. |
-| S2 ältere Prüfungen, „0 px“ | Abschnitt „Ältere Prüfungen anpassen“, Klassisch mit `--expect` für F37 (§3, K88). |
+| S2 ältere Prüfungen, „0 px“ | Abschnitt „Ältere Prüfungen anpassen“, Klassisch mit `--expect` für F38 (§3, K88). |
 | S3 Bearbeiten doppelt | `SizeBar`/`SizeSheet` ziehen um, Hook nur für die Glas-Wege, `edit.css` für alle Seiten, Namen und Automations-Filter (K96). |
 | S4 Regler widersprechen GLAS-DESIGN | Kapsel 28 `fill2`, Helligkeit Gelb, Lautstärke `label2`, Verläufe mit weißem Knopf, `scale(1.04)`, kein „Position“, eine Play-Regel (K93). |
 | S5 Schalter auf Kacheln | nach §7.28: die Kachel schaltet, Kreis 36, deckend (K91, K95); `accent.css` und `detail.css` in §2. |

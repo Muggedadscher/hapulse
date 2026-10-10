@@ -291,6 +291,13 @@
   color: var(--g-glass-label-2);
 }
 
+/* The chip windows' titles and subtitles come in lower case from the locales ("licht", "alle aus"): they start with a
+   capital, like the other labels of Glas (plan docs/glas/PLAN-ETAPPE-5.md §7.4, K97); the texts stay as Klassisch shows
+   them. Only there: other windows carry names people gave ("iPhone von Anna", a room), which keep their spelling. */
+:root[data-style='glas'] .g-chip-window :is(.g-sheet-header__title, .g-sheet-header__subtitle)::first-letter {
+  text-transform: uppercase;
+}
+
 :root[data-style='glas'] .g-sheet-header__end {
   width: 44px;
 }

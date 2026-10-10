@@ -149,7 +149,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0–4 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (Etappe 0–5 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -194,8 +194,16 @@ sauber übernehmen können.
   Bearbeiten ab 900 px mit `SizeBar` (S/M/L, Feld `tallSections`, „⋯“ = `SizeSheet`, beide in `components/glas/edit/`
   über den Hook `useGlasSectionEdit`), Kontextmenü auch an Szenen und Geräten (`GlasMenuTarget`). CSS in
   `styles/glas/{home,home-cards,home-lists,controls,detail,edit,nvr}.css`. Prüfungen `checks --part home`
-  (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus `ha/demoControl.ts`). Nächste
-  Etappen 5–7 (übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus `ha/demoControl.ts`). **Übrige
+  Seiten (Etappe 5, `docs/glas/PLAN-ETAPPE-5.md`):** nur Glas, fast nur CSS an den klassischen Klassen: Kartentitel über
+  der Fläche, ruhige Heroes, Spalten nach Inhaltsbreite (`pages.css`), iOS-Schalter, Stepper, Pillen, Regler und Play
+  (`controls.css`), Listen und Felder (`lists.css`), Karten im Raum und in „Klima/Rollläden alle“ (`cards.css`), je Seite
+  eine Datei (`security`, `pool`, `energy`, `music`, `devices`, `system`, `settings`, `onboarding`); neues Markup nur für
+  `Segment` (Zeitraum, Raster/Liste, Hell/Dunkel, Pool-Modus `PoolModeSegment`), die Bearbeiten-Leiste auf Sicherheit,
+  Energie, Automationen, Szenen und System, die Menü-Werte (`MoreValue.tsx`, `roomsMenuStatus.ts`) und die Untertitel der
+  Chip-Fenster (`chipLabels.ts`; die Zählung steht für beide Stile in Core `chipCounts.ts`). Prüfungen
+  `checks --part pages` (`scripts/glas-checks-pages.cjs`; Demo-Hilfen `demoCalls.ts`, `demoEnergy.ts`). Nächste
+  Etappen 6–7 (NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

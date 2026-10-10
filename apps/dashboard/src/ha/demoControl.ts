@@ -12,7 +12,8 @@
  * only after the key is let go). `calls()` returns the service calls of the demo, newest last, and `clearCalls()`
  * empties that list (demoCalls.ts), for the calls the demo does not apply (the pool's mode, threshold and schedule).
  * `energyConfigured(false)` makes the demo's energy "not set up" (demoEnergy.ts) for the pages opened after it,
- * `energyHold(true)` keeps its statistics back until `energyHold(false)` (a period that loads), and `setUrl(url)` gives
+ * `energyHold(true)` keeps its statistics back until `energyHold(false)` (a period that loads), `energyLoads()` counts
+ * its statistics requests (the More menu's figure, K97), and `setUrl(url)` gives
  * the demo connection an HA address (the demo has none), so the energy page's empty state shows its link to the HA
  * energy settings (plan docs/glas/PLAN-ETAPPE-5.md K92, §7.31).
  * Outside demo mode the object does not exist.
@@ -22,7 +23,7 @@ import type { AreaRegistryEntry, EntityRegistryEntry, HassEntity, HassEntityAttr
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
 import { clearDemoCalls, demoCalls, type DemoCall } from './demoCalls';
-import { setDemoEnergyConfigured, setDemoEnergyHold } from './demoEnergy';
+import { demoEnergyLoads, setDemoEnergyConfigured, setDemoEnergyHold } from './demoEnergy';
 
 export interface DemoPatch {
   state?: string;
@@ -41,6 +42,7 @@ interface DemoControl {
   clearCalls: () => void;
   energyConfigured: (on: boolean) => void;
   energyHold: (on: boolean) => void;
+  energyLoads: () => number;
   setUrl: (url: string) => void;
 }
 
@@ -103,6 +105,7 @@ export function startDemoControl(conn: { setUrl: (url: string) => void }): void 
     clearCalls: clearDemoCalls,
     energyConfigured: setDemoEnergyConfigured,
     energyHold: setDemoEnergyHold,
+    energyLoads: demoEnergyLoads,
     setUrl: conn.setUrl,
   };
 }

@@ -12,6 +12,7 @@ import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import { useConnectionStore } from '../../../stores/connectionStore';
 import { useT } from '../../../i18n/useT';
+import { useChipSubtitle } from '../chipLabels'; // [fork] Glas: the chip's label under the title (K97)
 import './chipmodals.css';
 
 interface PeopleModalProps {
@@ -21,6 +22,7 @@ interface PeopleModalProps {
 
 export function PeopleModal({ open, onClose }: PeopleModalProps) {
   const t = useT();
+  const subtitle = useChipSubtitle('people', open); // [fork]
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -42,6 +44,8 @@ export function PeopleModal({ open, onClose }: PeopleModalProps) {
       open={open}
       onClose={onClose}
       title={t('home.chipmodals.people.title')}
+      subtitle={subtitle} // [fork]
+      className="g-chip-window" // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<Users size={20} strokeWidth={1.75} />}
     >
       {people.length === 0 ? (

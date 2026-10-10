@@ -6,6 +6,23 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F37 — 2026-10-10
+
+**Vorschau Glas: übrige Seiten und Menüs** · _Glass preview: the other pages and menus_
+
+### Geändert / Changed
+
+- Glas: alle übrigen Seiten im Glas-Look (Raum, Sicherheit, Pool, Energie, Musik, Geräte, Automationen, Szenen, System, Einstellungen, Anmeldung) mit Kartentiteln über der Fläche, ruhigen Kopfkarten und Listen wie in den iOS-Einstellungen  
+  _Glass: all remaining pages in the glass look (room, security, pool, energy, music, devices, automations, scenes, system, settings, sign-in) with card titles above the cards, calm header cards and lists like in the iOS settings_
+- Glas: iOS-Schalter in allen Listen, Segmente für Zeitraum, Pool-Modus, Stil, Hell/Dunkel und Ansicht, dazu runde Stepper, Auswahl-Pillen, Regler und Eingabefelder im Glas-Look  
+  _Glass: iOS switches in every list, segments for the period, pool mode, style, light/dark and view, plus round steppers, choice pills, sliders and text fields in the glass look_
+- Glas im Raum: Licht- und Schalter-Kacheln schalten als Ganzes, Klima mit Soll-Kapsel − / +, Rollläden mit einem kleinen Rollo nach der Position; ebenso in den Fenstern „Klima“ und „Rollläden“  
+  _Glass in a room: light and switch tiles switch as a whole, climate with a target capsule − / +, blinds with a little blind that follows the position; the same in the “Climate” and “Blinds” windows_
+- Glas ab 900 Pixel Breite: Bearbeiten mit den Größen S, M und L auch auf Sicherheit, Energie, Automationen, Szenen und System  
+  _Glass from 900 pixels wide: edit with the sizes S, M and L also on security, energy, automations, scenes and system_
+- Glas: die Fenster der Chips nennen oben, was der Chip sagt („5 an“); das Mehr-Menü zeigt den Energieverbrauch von heute, die Zahl der Szenen und den Systemzustand, das Räume-Menü den Zustand jedes Raums wie die Raumkacheln  
+  _Glass: the chips’ windows say at the top what the chip says (“5 on”); the More menu shows today’s energy use, the number of scenes and the system state, the rooms menu each room’s state like the room tiles_
+
 ## F36 — 2026-10-09
 
 **Hinweise und aktive Szenen; Vorschau Glas: Übersicht** · _Notices and active scenes; Glass preview: overview_

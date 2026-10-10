@@ -12,6 +12,7 @@ import { EmptyState } from '../../ui/EmptyState';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useSettingsStore } from '../../../stores/settingsStore';
 import { useT } from '../../../i18n/useT';
+import { useChipSubtitle } from '../chipLabels';
 import { GarageList } from '../../garage/GarageList';
 import { GarageSummaryIcon } from '../../garage/GarageIcon';
 
@@ -26,6 +27,7 @@ const byOpenThenName = (a: HassEntity, b: HassEntity) =>
 
 export function GarageModal({ open, onClose }: GarageModalProps) {
   const t = useT();
+  const subtitle = useChipSubtitle('garage', open);
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
   const rooms = useEntityStore((s) => s.rooms);
   const garages = useEntityStore(
@@ -39,6 +41,8 @@ export function GarageModal({ open, onClose }: GarageModalProps) {
       open={open}
       onClose={onClose}
       title={t('garage.title')}
+      subtitle={subtitle}
+      className="g-chip-window"
       icon={<GarageSummaryIcon tone="closed" size={20} />}
     >
       {garages.length === 0 ? (

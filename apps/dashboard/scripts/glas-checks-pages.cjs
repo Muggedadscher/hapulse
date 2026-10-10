@@ -3,9 +3,10 @@
 //
 // The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
 // pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles, pagesCardTitles and pagesFrame (K89, K90,
-// K85), pagesEdit (K96), pagesSegments (K92), pagesKeep and pagesEmpty (§3.1); segments, edit, keep and empty grow page
-// by page as the pages come in. The plan's last block (menus) comes with its step. Service calls the demo does not apply
-// (the pool's mode, threshold, schedule, restart) are read from the demo's call log (`__hapulseDemo.calls()`).
+// K85), pagesEdit (K96), pagesSegments (K92), pagesKeep and pagesEmpty (§3.1), pagesMenus (K97: chip windows, More and
+// rooms menus, "Klima alle" / "Rollläden alle"). Service calls the demo does not apply (the pool's mode, threshold,
+// schedule, restart) are read from the demo's call log (`__hapulseDemo.calls()`), the statistics requests of the
+// energy from its counter (`__hapulseDemo.energyLoads()`).
 
 module.exports = function pages(h) {
   const { DE, DEVICES, ABORTED, settleAnimations, seedScript, run, isGlas } = h;
@@ -3971,6 +3972,403 @@ module.exports = function pages(h) {
       }
       out.pagesEmpty = res;
       out.pagesEmptyOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K97 menus. chips: each chip's window has the chip's words as its subtitle (the same count, hidden entities
+    //      left out, live while it is open, also when the hints card opens it); titles and subtitles that come in lower
+    //      case start with a capital (::first-letter), the lights' "alle ausschalten" too; Klassisch has no subtitle.
+    //      more (phone): today's energy, the scenes and the system's state on the right of their rows (the others
+    //      without a value), the foot "Version … · F…" under the list; today's energy is fetched only while the menu is
+    //      open (the demo counts its statistics requests) and equals the overview's. rooms: the menu's symbol shows the
+    //      room's state like the overview's room tiles (the same symbol; an open window or door a warning, an open gate
+    //      an alarm, before lights on), its name says it for screen readers, live; Klassisch unchanged. all: "Klima
+    //      alle" and "Rollläden alle" have the room's controls (capsule 40, pills 36, little blind 40 radius 12, position
+    //      15/20 600, buttons 40). ----
+    await block('pagesMenus', async () => {
+      const res = {};
+      const menuPart = (name) => !onlyParts('pagesMenus').length || onlyParts('pagesMenus').includes(name);
+      const say = (key, count) => DE[key].replace('{count}', String(count));
+      // the window on top: a closing window leaves its ghost copy behind for a moment
+      const head = (page) => page.waitForFunction(() => [...document.querySelectorAll('[role="dialog"]')]
+        .some((d) => !d.closest('.g-sheet-ghost') && d.querySelector('.g-sheet-header__title, .modal-header__title')), null, { timeout: 4000 })
+        .then(() => ev(page, () => {
+          const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+          const title = d.querySelector('.g-sheet-header__title, .modal-header__title');
+          const sub = d.querySelector('.g-sheet-header__subtitle');
+          const first = (e) => (e ? getComputedStyle(e, '::first-letter').textTransform : null);
+          return { title: title.textContent.trim(), subtitle: sub ? sub.textContent.trim() : null, titleCase: first(title), subCase: first(sub) };
+        }));
+      const subtitleIs = (page, want) => page.waitForFunction((w) => {
+        const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+        return d?.querySelector('.g-sheet-header__subtitle')?.textContent.trim() === w;
+      }, want, { timeout: 3000 }).then(() => true, () => false);
+      const shut = async (page) => {
+        await page.keyboard.press('Escape');
+        await page.waitForFunction(() => ![...document.querySelectorAll('[role="dialog"]')].some((d) => !d.closest('.g-sheet-ghost'))
+          && !document.querySelector('.g-sheet-ghost'), null, { timeout: 4000 }).catch(() => {});
+        await sleep(80);
+        await settleAnimations(page);
+      };
+      const chipSel = (id) => `.summary-chip[aria-label^="${id}:"]`;
+      const chipLabel = (page, id) => ev(page, (s) => [...document.querySelectorAll(s)].find((e) => e.getClientRects().length)
+        ?.querySelector('.summary-chip__count')?.textContent.trim() ?? null, chipSel(id));
+      /** Bring a control to the middle of the screen (not under the floating tab bar), then click it. */
+      const reachClick = async (page, sel, text) => {
+        const el = (text ? page.locator(sel, { hasText: text }) : page.locator(sel)).filter({ visible: true }).first();
+        if (!(await el.count())) throw new Error('not visible: ' + sel + (text ? ` "${text}"` : ''));
+        await el.evaluate((e) => e.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' }));
+        await settleAnimations(page);
+        await el.click();
+        await sleep(80);
+        await settleAnimations(page);
+      };
+      const tokens = (page, names, prop = 'color') => ev(page, ([list, p]) => Object.fromEntries(list.map((name) => {
+        const d = document.createElement('div');
+        d.style[p] = `var(${name})`;
+        document.body.appendChild(d);
+        const v = getComputedStyle(d)[p === 'background' ? 'backgroundColor' : p];
+        d.remove();
+        return [name, v];
+      })), [names, prop]);
+
+      if (menuPart('chips')) {
+        for (const [device, mode] of [['phone', 'light'], ['desktop', 'dark']]) {
+          // every chip: its window's subtitle is the chip's label; both starting with a capital in Glas
+          {
+            const { page, close } = await open(device, 'glas', '/', { mode });
+            try {
+              const rows = {};
+              for (const id of ['people', 'lights', 'doors', 'garage', 'locks', 'alarm', 'pool', 'media']) {
+                const label = await chipLabel(page, id);
+                if (label == null) {
+                  rows[id] = { ok: false, error: 'no chip' };
+                  continue;
+                }
+                await reachClick(page, chipSel(id));
+                const h = await head(page);
+                rows[id] = { ok: h.subtitle === label && h.titleCase === 'uppercase' && h.subCase === 'uppercase', label, ...h };
+                await shut(page);
+              }
+              const counts = rows.lights.label === say('home.summaryChips.lightsCount.other', 6)
+                && rows.doors.label === DE['home.summaryChips.allClosed'];
+
+              // live: a light goes off while its window is open, then on again; the button "alle ausschalten" starts
+              // with a capital
+              await reachClick(page, chipSel('lights'));
+              await head(page);
+              const action = await ev(page, () => {
+                const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+                const b = d && d.querySelector('.lights-modal__header-action > .btn');
+                return b && { text: b.textContent.trim(), first: getComputedStyle(b, '::first-letter').textTransform,
+                  h: Math.round(b.getBoundingClientRect().height * 10) / 10 };
+              });
+              await ev(page, () => window.__hapulseDemo.patch('light.kitchen_ceiling', { state: 'off' }));
+              const live = await subtitleIs(page, say('home.summaryChips.lightsCount.other', 5));
+              const liveChip = await chipLabel(page, 'lights');
+              await ev(page, () => window.__hapulseDemo.patch('light.kitchen_ceiling', { state: 'on' }));
+              const back = await subtitleIs(page, say('home.summaryChips.lightsCount.other', 6));
+              await shut(page);
+
+              // the hints card opens the doors window with the doors chip's words
+              await ev(page, () => window.__hapulseDemo.patch('binary_sensor.bedroom_window', { state: 'on' }));
+              await page.waitForFunction((w) => [...document.querySelectorAll('.hint-row__title')].some((e) => e.textContent.trim() === w),
+                DE['hints.windowOpen.one'], { timeout: 3000 });
+              const doorsChip = await chipLabel(page, 'doors');
+              await reachClick(page, '.hint-row', DE['hints.windowOpen.one']);
+              const hint = await head(page);
+              await shut(page);
+              await ev(page, () => window.__hapulseDemo.patch('binary_sensor.bedroom_window', { state: 'off' }));
+
+              // another window keeps the spelling of a name people gave (a sheet on the phone; the desktop's inspector
+              // is no dialog)
+              let named = null;
+              if (device === 'phone') {
+                await ev(page, () => {
+                  window.__hapulseDemo.patch('light.kitchen_counter', { attributes: { friendly_name: 'iPhone Lampe' } });
+                  window.__hapulseDemo.openDetail('light.kitchen_counter');
+                });
+                named = await head(page);
+                await shut(page);
+              }
+
+              const actionOk = !!action && action.text === DE['home.chipmodals.lights.turnAllOff'] && action.first === 'uppercase' && action.h >= 47.5;
+              const namedOk = device !== 'phone' || (named.title === 'iPhone Lampe' && named.titleCase === 'none' && [null, 'none'].includes(named.subCase));
+              const ok = Object.values(rows).every((r) => r.ok) && counts && actionOk && live && liveChip === say('home.summaryChips.lightsCount.other', 5)
+                && back && doorsChip === say('home.summaryChips.openCount.one', 1) && hint.subtitle === doorsChip && hint.title === DE['home.chipmodals.doors.title']
+                && namedOk;
+              res[`${device}-chips`] = { ok, rows, counts, action, live, liveChip, back, doorsChip, hint, named };
+            } catch (e) {
+              res[`${device}-chips`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+
+          // a hidden light counts neither on the chip nor in the subtitle
+          {
+            const { page, close } = await open(device, 'glas', '/', { mode, customization: { hiddenEntities: ['light.office_desk'] } });
+            try {
+              const label = await chipLabel(page, 'lights');
+              await reachClick(page, chipSel('lights'));
+              const h = await head(page);
+              await shut(page);
+              res[`${device}-chips-hidden`] = { ok: label === say('home.summaryChips.lightsCount.other', 5) && h.subtitle === label, label, subtitle: h.subtitle };
+            } catch (e) {
+              res[`${device}-chips-hidden`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+
+        // Klassisch: no subtitle, the classic head
+        {
+          const { page, close } = await open('phone', 'classic', '/');
+          try {
+            await reachClick(page, chipSel('lights'));
+            const h = await head(page);
+            const glasHead = await ev(page, () => !!document.querySelector('.g-sheet-header'));
+            await shut(page);
+            res['phone-classic-chips'] = { ok: h.subtitle === null && !glasHead && h.title === DE['home.chipmodals.lights.title'], ...h, glasHead };
+          } catch (e) {
+            res['phone-classic-chips'] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+
+      if (menuPart('more')) {
+        const { ctx, page, close } = await open('phone', 'glas', '/devices', { fixedTime: ENERGY_AT });
+        try {
+          const loads = () => ev(page, () => window.__hapulseDemo.energyLoads());
+          const moreTab = `.app-tabs__item[aria-label="${DE['nav.moreNavigation']}"]`;
+          const read = () => ev(page, () => {
+            const tok = (name) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${name})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            };
+            const label2 = tok('--g-glass-label-2');
+            const all = [...document.querySelectorAll('.app-more-menu .app-more-menu__row')];
+            const rows = all.map((r) => {
+              const v = r.querySelector('.g-more-value');
+              const name = r.querySelector('.app-more-menu__row-name').getBoundingClientRect();
+              const chev = r.querySelector('.app-more-menu__row-chevron').getBoundingClientRect();
+              const vr = v && v.getBoundingClientRect();
+              const cs = v && getComputedStyle(v);
+              return {
+                href: r.getAttribute('href'), name: r.querySelector('.app-more-menu__row-name').textContent.trim(),
+                value: v ? v.textContent.trim() : null,
+                // name, value, chevron from left to right, the value on the name's line
+                order: v ? name.right <= vr.left + 0.5 && vr.right <= chev.left + 0.5 : null,
+                mid: v ? Math.abs((vr.top + vr.bottom) / 2 - (name.top + name.bottom) / 2) < 1.5 : null,
+                color: cs ? cs.color === label2 : null, font: cs ? `${cs.fontSize}/${cs.lineHeight}` : null,
+              };
+            });
+            const foot = document.querySelector('.app-more-menu .g-more-foot');
+            const fcs = foot && getComputedStyle(foot);
+            const last = all[all.length - 1];
+            return {
+              rows,
+              foot: foot && {
+                text: foot.textContent.trim(), hidden: foot.getAttribute('aria-hidden'), first: getComputedStyle(foot, '::first-letter').textTransform,
+                color: fcs.color === label2, font: `${fcs.fontSize}/${fcs.lineHeight}`,
+                below: !!last && foot.getBoundingClientRect().top >= last.getBoundingClientRect().bottom - 0.5,
+              },
+            };
+          });
+          const valueOf = (r, href) => r.rows.find((x) => x.href && x.href.endsWith(href))?.value ?? null;
+          const VALUED = ['/energy', '/scenes', '/system'];
+
+          // never opened: nothing fetched
+          const l0 = await loads();
+          await sleep(800);
+          const l1 = await loads();
+          await click(page, moreTab);
+          await page.waitForFunction(() => document.querySelector('.app-more-menu--open .app-more-menu__row[href$="/energy"] .g-more-value'), null, { timeout: 5000 });
+          const a = await read();
+          const l2 = await loads();
+          // the system's state follows the entities while the menu is open
+          await ev(page, () => window.__hapulseDemo.patch('light.hallway', { state: 'unavailable' }));
+          const sysLive = await page.waitForFunction((w) => document.querySelector('.app-more-menu__row[href$="/system"] .g-more-value')?.textContent.trim() === w,
+            say('nav.systemStatus.unavailable.one', 1), { timeout: 3000 }).then(() => true, () => false);
+          await ev(page, () => window.__hapulseDemo.patch('light.hallway', { state: 'off' }));
+          await page.keyboard.press('Escape');
+          await page.waitForFunction(() => !document.querySelector('.app-more-menu--open'), null, { timeout: 3000 });
+          await sleep(300);
+          await settleAnimations(page);
+          const l3 = await loads();
+          // two hours later, closed: the remembered figure is out of date, still nothing is fetched
+          await ctx.clock.setFixedTime(ENERGY_AT + 2 * 3600_000);
+          await sleep(1500);
+          const l4 = await loads();
+          // open again: fetched anew
+          await click(page, moreTab);
+          const refetch = await page.waitForFunction((was) => window.__hapulseDemo.energyLoads() > was, l4, { timeout: 5000 }).then(() => true, () => false);
+          await sleep(300);
+          const b = await read();
+          // a row still leads to its page: the scenes page counts as many scenes as the menu
+          await page.locator('.app-more-menu--open .app-more-menu__row[href$="/scenes"]').click();
+          await page.waitForFunction(() => document.querySelector('.scene-hero-card__total'), null, { timeout: 5000 });
+          const scenesTotal = await ev(page, () => document.querySelector('.scene-hero-card__total').textContent.trim());
+          // the overview's energy card says the same for today
+          await page.goto(url + '/', { waitUntil: 'load' });
+          await page.waitForFunction(() => document.querySelector('.g-energy__num'), null, { timeout: 8000 });
+          const homeEnergy = await ev(page, () => `${document.querySelector('.g-energy__num').textContent.trim()} kWh`);
+
+          const rowsOk = (r) => r.rows.length >= 4 && r.rows.every((x) => (VALUED.some((v) => x.href && x.href.endsWith(v))
+            ? x.value != null && x.order && x.mid && x.color && x.font === '17px/22px' : x.value === null));
+          const footOk = (f) => !!f && /^version \d+\.\d+\.\d+ · F\d+$/.test(f.text) && f.hidden === 'true' && f.first === 'uppercase'
+            && f.color && f.font === '13px/18px' && f.below;
+          const energyRe = /^\d+(,\d)? kWh$/;
+          const ok = l0 === 0 && l1 === 0 && l2 > 0 && l3 === l2 && l4 === l3 && refetch
+            && rowsOk(a) && rowsOk(b) && footOk(a.foot)
+            && energyRe.test(valueOf(a, '/energy')) && valueOf(b, '/energy') === homeEnergy
+            && valueOf(a, '/scenes') === scenesTotal && valueOf(a, '/system') === DE['glas.more.system.healthy'] && sysLive;
+          res['phone-more'] = { ok, loads: [l0, l1, l2, l3, l4], refetch, rows: a.rows, foot: a.foot, energyLater: valueOf(b, '/energy'), homeEnergy,
+            scenesTotal, sysLive };
+        } catch (e) {
+          res['phone-more'] = { ok: false, error: String(e.message).slice(0, 200) };
+        }
+        await close();
+      }
+
+      if (menuPart('rooms')) {
+        const TONES = {
+          phone: { on: ['--g-yellow', '--g-glyph-dark'], warn: ['--g-warn-soft', '--g-warn-ink'], alarm: ['--g-red-soft', '--g-red-ink'] },
+          desktop: { on: [null, '--g-yellow-ink'], warn: [null, '--g-warn-ink'], alarm: [null, '--g-red-ink'] },
+        };
+        // the demo's lights: Living Room 2, Kitchen 1, Bedroom 1, Office 2, Bathroom and Hallway none
+        const WANT = {
+          Bedroom: ['warn', DE['hints.windowOpen.one']], Hallway: ['warn', DE['hints.doorOpen.one']], Garage: ['alarm', DE['hints.garageOpen.one']],
+          Kitchen: ['on', say('glas.hero.lightsOn.one', 1)], 'Living Room': ['on', say('glas.hero.lightsOn.other', 2)],
+          Office: ['on', say('glas.hero.lightsOn.other', 2)], Bathroom: [null, null],
+        };
+        for (const [device, style] of [['phone', 'glas'], ['desktop', 'glas'], ['phone', 'classic']]) {
+          const { page, close } = await open(device, style, '/');
+          try {
+            await ev(page, () => {
+              const d = window.__hapulseDemo;
+              d.patch('binary_sensor.bedroom_window', { state: 'on' });
+              d.patch('binary_sensor.front_door', { state: 'on' });
+              d.patch('cover.garage_door', { state: 'open' });
+            });
+            await sleep(300);
+            await settleAnimations(page);
+            // the overview's room tiles (Glas): each room's symbol
+            const tileIcon = () => ev(page, () => Object.fromEntries([...document.querySelectorAll('.g-room')]
+              .map((t) => [t.querySelector('.g-room__name').textContent.trim(), t.querySelector('.g-room__circle svg')?.innerHTML ?? null])));
+            const tiles = await tileIcon();
+            await click(page, device === 'phone' ? `.app-tabs__item[aria-label="${DE['nav.rooms']}"]` : ".sidebar-nav__item[aria-haspopup='menu']");
+            await page.waitForFunction(() => document.querySelector('.rooms-menu--open .rooms-menu__row'), null, { timeout: 3000 });
+            await sleep(200);
+            await settleAnimations(page);
+            const read = () => ev(page, () => [...document.querySelectorAll('.rooms-menu--open .rooms-menu__row')].map((r) => {
+              const icon = r.querySelector('.rooms-menu__row-icon');
+              const cs = getComputedStyle(icon);
+              const b = icon.getBoundingClientRect();
+              return { name: r.querySelector('.rooms-menu__row-name').textContent.trim(), tone: r.getAttribute('data-tone'), aria: r.getAttribute('aria-label'),
+                icon: icon.innerHTML, bg: cs.backgroundColor, color: cs.color, size: [Math.round(b.width), Math.round(b.height)] };
+            }));
+            const rows = await read();
+            const byName = Object.fromEntries(rows.map((r) => [r.name, r]));
+            let ok;
+            const detail = {};
+            if (style === 'glas') {
+              const tok = { ...(await tokens(page, ['--g-yellow', '--g-warn-soft', '--g-red-soft'], 'background')),
+                ...(await tokens(page, ['--g-glyph-dark', '--g-warn-ink', '--g-red-ink', '--g-yellow-ink'])) };
+              const each = Object.entries(WANT).map(([name, [tone, said]]) => {
+                const r = byName[name];
+                if (!r) return { name, ok: false, error: 'no row' };
+                const [bg, ink] = tone ? TONES[device][tone] : [null, null];
+                const look = !tone || ((!bg || r.bg === tok[bg]) && r.color === tok[ink]);
+                const same = tiles[name] == null || r.icon === tiles[name];
+                return { name, ok: r.tone === tone && r.aria === (said ? `${name}, ${said}` : null) && look && same, tone: r.tone, aria: r.aria, look, same };
+              });
+              const circle = device !== 'phone' || rows.every((r) => r.size[0] === 32 && r.size[1] === 32);
+              // live: the window closes while the menu is open: the bedroom is back to its own symbol, yellow
+              await ev(page, () => window.__hapulseDemo.patch('binary_sensor.bedroom_window', { state: 'off' }));
+              const live = await page.waitForFunction(() => [...document.querySelectorAll('.rooms-menu--open .rooms-menu__row')]
+                .find((r) => r.querySelector('.rooms-menu__row-name').textContent.trim() === 'Bedroom')?.getAttribute('data-tone') === 'on', null, { timeout: 3000 })
+                .then(() => true, () => false);
+              await sleep(400);
+              await settleAnimations(page);
+              const after = Object.fromEntries((await read()).map((r) => [r.name, r]));
+              const tilesAfter = await tileIcon();
+              const liveOk = live && after.Bedroom.aria === `Bedroom, ${say('glas.hero.lightsOn.one', 1)}` && after.Bedroom.icon !== byName.Bedroom.icon
+                && (tilesAfter.Bedroom == null || after.Bedroom.icon === tilesAfter.Bedroom);
+              ok = each.every((x) => x.ok) && circle && liveOk && Object.keys(tiles).length > 0;
+              Object.assign(detail, { each, circle, live, liveOk, tiles: Object.keys(tiles) });
+            } else {
+              // Klassisch: no state in the menu (the room's own symbol, no tone, no extra name)
+              ok = rows.length >= 7 && rows.every((r) => r.tone === null && r.aria === null);
+              Object.assign(detail, { rows: rows.map((r) => ({ name: r.name, tone: r.tone, aria: r.aria })) });
+            }
+            await page.keyboard.press('Escape');
+            await sleep(200);
+            res[`${device}-${style}-rooms`] = { ok, ...detail };
+          } catch (e) {
+            res[`${device}-${style}-rooms`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+
+      if (menuPart('all')) {
+        for (const [device, mode] of [['phone', 'light'], ['desktop', 'dark']]) {
+          for (const [kind, trigger, extra] of [['climate', '.climate-card__link', {}], ['blinds', '.blinds-card__link', { customization: { hiddenSections: [] } }]]) {
+            const { page, close } = await open(device, 'glas', '/', { mode, ...extra });
+            try {
+              await reachClick(page, trigger);
+              await page.waitForFunction(() => [...document.querySelectorAll('[role="dialog"]')]
+                .some((d) => !d.closest('.g-sheet-ghost') && d.querySelector('.all-modal__grid')), null, { timeout: 4000 });
+              await sleep(200);
+              await settleAnimations(page);
+              const tok = await tokens(page, ['--g-fill', '--g-accent-soft'], 'background');
+              const got = await ev(page, (k) => {
+                const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+                const grid = d.querySelector('.all-modal__grid');
+                const round = (v) => Math.round(v * 10) / 10;
+                const box = (e) => e && { w: round(e.getBoundingClientRect().width), h: round(e.getBoundingClientRect().height),
+                  bg: getComputedStyle(e).backgroundColor, r: getComputedStyle(e).borderRadius };
+                if (k === 'climate') {
+                  return {
+                    cards: grid.querySelectorAll('.climate-card').length, capsule: box(grid.querySelector('.climate-card__target-control')),
+                    step: box(grid.querySelector('.climate-card__step-btn')),
+                    pills: [...grid.querySelectorAll('.climate-card__mode-pill')].map((p) => round(p.getBoundingClientRect().height)),
+                    active: box(grid.querySelector('.climate-card__mode-pill--active')),
+                  };
+                }
+                const chip = grid.querySelector('.cover-card__chip');
+                const pos = grid.querySelector('.cover-card__position');
+                const pcs = pos && getComputedStyle(pos);
+                return {
+                  cards: grid.querySelectorAll('.cover-card').length, chip: box(chip), slats: chip && parseFloat(getComputedStyle(chip, '::before').height),
+                  pos: pcs && { font: `${pcs.fontSize}/${pcs.lineHeight}`, weight: pcs.fontWeight, text: pos.textContent.trim() },
+                  btns: [...grid.querySelectorAll('.cover-card__btn')].map((b) => round(b.getBoundingClientRect().height)),
+                };
+              }, kind);
+              await shut(page);
+              const near = (v, w) => v != null && Math.abs(v - w) < 0.6;
+              const ok = kind === 'climate'
+                ? got.cards >= 2 && !!got.capsule && near(got.capsule.h, 40) && got.capsule.r === '20px' && got.capsule.bg === tok['--g-fill']
+                  && near(got.step.w, 40) && near(got.step.h, 40) && got.step.bg === 'rgba(0, 0, 0, 0)'
+                  && got.pills.length > 1 && got.pills.every((h) => near(h, 36)) && !!got.active && got.active.bg === tok['--g-accent-soft']
+                : got.cards >= 1 && !!got.chip && near(got.chip.w, 40) && near(got.chip.h, 40) && got.chip.r === '12px' && near(got.slats, 40)
+                  && !!got.pos && got.pos.font === '15px/20px' && got.pos.weight === '600'
+                  && got.btns.length >= 3 && got.btns.every((h) => near(h, 40));
+              res[`${device}-all-${kind}`] = { ok, ...got };
+            } catch (e) {
+              res[`${device}-all-${kind}`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+      }
+
+      out.pagesMenus = res;
+      out.pagesMenusOk = Object.keys(res).length > 0 && Object.values(res).every((r) => r.ok);
     });
 
     out.pagesPageErrors = pageErrors;

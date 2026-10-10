@@ -123,7 +123,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/glasTokens.ts` | Stil Glas: Farben, Akzent (`glasAccent`), Federn, Kontrast-Hilfen, Abbildung auf die 24 HAPulse-Tokens + `--g-*` (DOM-frei) |
 | `apps/dashboard/src/theme/glasAppearance.ts` | Stil Glas: `applyAppearance` (umhüllt `applyTheme`, schreibt Tokens + `--g-*` + Attribute auf `:root`), `resolveAppearance`, `readPersistedStyle` (Pre-Paint), `watchAppearance` |
 | `apps/dashboard/src/app/glas/useUiStyle.ts` | `useUiStyle`/`useIsGlas` für Komponenten |
-| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`; Fenster seit Etappe 3: `sheets`, `sheet-content`; Gesten und Inspector seit Etappe 3b: `gestures`; Übersicht und Detail seit Etappe 4: `home`, `home-cards`, `home-lists`, `controls`, `detail`, `edit`, `nvr`); jeder Selektor beginnt mit `:root[data-style='glas']` |
+| `apps/dashboard/src/styles/glas/*.css` | Glas-CSS (`index`, `base`, `accent`, `material`, `motion`; Rahmen seit Etappe 2: `shell`, `tabbar`, `menus`, `titles`, `feedback`; Fenster seit Etappe 3: `sheets`, `sheet-content`; Gesten und Inspector seit Etappe 3b: `gestures`; Übersicht und Detail seit Etappe 4: `home`, `home-cards`, `home-lists`, `controls`, `detail`, `edit`, `nvr`; übrige Seiten seit Etappe 5: `pages`, `cards`, `lists`, `security`, `pool`, `energy`, `music`, `devices`, `system`, `settings`, `onboarding`); jeder Selektor beginnt mit `:root[data-style='glas']` |
 | `apps/dashboard/src/app/glas/{GlasRuntime,GlasTabBar,GlasNavGroups}.tsx`, `{glasScroll,menuKeys,navGroups,shellStore,useLens}.ts` | Glas-Rahmen (Etappe 2): Scroll-Kante und kleiner Titel, Tab-Leiste minimieren, Linse, Pfeiltasten in Räume-/Mehr-Menü, Gruppen der Seitenleiste, Bearbeiten-Angebot je Seite |
 | `apps/dashboard/src/components/glas/{AvatarMenu,DoneCapsule,WeatherLine}.tsx`, `weatherIcon.ts` | Glas am Handy: Avatar-Menü (Benachrichtigungen, Bearbeiten, Einstellungen), „Fertig“, Wetterzeile; Wettersymbol je Zustand |
 | `apps/dashboard/test/{glasScroll,menuKeys,navGroups}.test.ts` | Tests des Glas-Rahmens |
@@ -137,7 +137,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/{hints,locks,activeScene,glasEnergy,sizePresets,roomGlance}.ts` | Etappe 4 (DOM-frei, Tests in `smoke.mjs`): Hinweise, Schloss-Regel (aus `lockLogic.ts` nach Core gezogen), aktive Szene (Heuristik), Glas-Energiediagramm (Zeiträume, Balken, Achse, Ø, Vergleich), Größen S/M/L ↔ Spalten/Höhe/`tallSections`, Werte des Hauptraums und der Geräte |
 | `apps/dashboard/src/components/home/{HintsCard.tsx,HintsCard.css,useHints.ts}` | Karte „Hinweise“ in beiden Stilen, ihre Fenster (`HintWindows`, außerhalb des Rasters) und das Sammeln der Eingaben (Tür nach 10 min, Tonne um Mitternacht neu) |
 | `apps/dashboard/src/ha/useEnergyWindow.ts` | Glas-Energie: Zeitraum und Vergleich laden, je Zeitraum gemerkt, beim Wechsel das vorige Ergebnis gedimmt |
-| `apps/dashboard/src/ha/demoControl.ts` | Nur im Demo-Modus `window.__hapulseDemo` (`patch`, `patchArea`, `placeEntity`, `openDetail`, `entity`) für die Prüfungen |
+| `apps/dashboard/src/ha/demoControl.ts`, `{demoCalls,demoEnergy}.ts` | Nur im Demo-Modus `window.__hapulseDemo` (`patch`, `patchArea`, `placeEntity`, `openDetail`, `entity`; seit Etappe 5 `calls`/`clearCalls` = Protokoll der Dienstaufrufe, `energyConfigured`, `energyHold`, `energyLoads` = Energie nicht eingerichtet, zurückgehalten, gezählte Abrufe, `setUrl`) für die Prüfungen |
 | `apps/dashboard/src/stores/keptOffStore.ts` | Glas: in der Geräte-Karte ausgeschaltete Geräte bleiben bis zum Neuladen als „Aus“ stehen |
 | `apps/dashboard/src/components/glas/{Segment,RollingValue,GlasMenuTarget}.tsx`, `useGlasContextMenu.ts` | Glas-Bausteine (Etappe 4): Segment mit Linse (`role="radiogroup"`), rollende Zahl, Kontextmenü an beliebigen Elementen (Szenen, Geräte) |
 | `apps/dashboard/src/components/glas/home/*` | Glas-Übersicht: `EnergyGlas`, Hauptraum (`HeroLights`, `HeroGlance`), Geräte (`GlasDeviceItem`), Klima/Rollläden (`GlasClimateBody`, `GlasBlindsBody`, `GlasArc`, `GlasRoomPicker`), Räume (`GlasRoomTile`), Szenen (`SceneRing`, `sceneTone.ts`) |
@@ -145,11 +145,15 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/glas/detail/{GlasDetailHead,LightBrightnessControl}.tsx`, `lightLevel.ts`, `apps/dashboard/test/lightLevel.test.ts` | Glas-Detail: Zustands-Kachel, Zustandszeile, Diagrammfarbe, senkrechter Helligkeitsregler (gesendet beim Loslassen) |
 | `apps/dashboard/src/nvr/{NvrHomeGlas,HomeSnapshot}.tsx` | Glas-Körper der NVR-Karte der Übersicht (Kopf, Fehler und Daten bleiben in `NvrHomeCard`) |
 | `apps/dashboard/scripts/glas-checks-home.cjs` | Übersichts-Szenen (`home-hints`, `home-edit`, `energy-bubble`, `detail-light`) und `checks --part home` für `glas-shots.cjs` |
-| `apps/dashboard/scripts/glas-checks-pages.cjs` | Etappe 5 (übrige Seiten): `checks --part pages` für `glas-shots.cjs` (bisher Schalter, Regler/Stepper/Pillen/Play, Felder, Abschnitts- und Kartentitel) |
+| `apps/dashboard/scripts/glas-checks-pages.cjs` | Etappe 5 (übrige Seiten): `checks --part pages` für `glas-shots.cjs` (Schalter, Regler/Stepper/Pillen/Play, Felder, Abschnitts- und Kartentitel, Rahmen, Bearbeiten S/M/L, Segmente, das Verhalten jeder Seite `pagesKeep`, Leerzustände, Menüs `pagesMenus`) und die Szenen `<seite>-edit` für den Klassisch-Vergleich |
+| `packages/core/src/chipCounts.ts` | Etappe 5 (K97, DOM-frei, Test in `smoke.mjs`): die Zählung der Home-Chips (Personen, Licht, Türen/Fenster, Alarm, Medien, Pool, Garagen, Schlösser) für die Chips in beiden Stilen und die Untertitel ihrer Fenster |
+| `apps/dashboard/src/components/home/chipLabels.ts` | Texte der Chips aus `chipCounts` (beide Stile); `useChipSubtitle` = Untertitel der Chip-Fenster (nur Glas, nur solange offen) |
+| `apps/dashboard/src/components/glas/{MoreValue.tsx,roomsMenuStatus.ts}`, `components/glas/home/roomTone.ts` | Glas-Menüs (Etappe 5, K97): Werte und Fuß im Mehr-Menü (Energie heute, nur bei offenem Menü abgerufen), Zustand je Raum im Räume-Menü; Ton- und Textregel gemeinsam mit den Raumkacheln (`GlasRoomTile`) |
+| `apps/dashboard/src/components/glas/{PoolModeSegment.tsx,keepInCard.ts}` | Glas (Etappe 5): Pool-Modus als Segment (Seite und Fenster; „Manuell“ fragt bei jedem Tipp nach der Dauer); Popover der Musik öffnen zur anderen Seite, wenn sie die Karte verließen (`data-g-flip`) |
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
-| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`) und 4 (`docs/glas/PLAN-ETAPPE-4.md`) |
+| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`) und 5 (`docs/glas/PLAN-ETAPPE-5.md`) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -172,7 +176,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Room.tsx` | Sektion `nvrCameras`, keine HA-Kameras bei Kameraquelle Sentinel |
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
-| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls; seit Etappe 4 `locks`, `hints`, `activeScene`, `glasEnergy`, `sizePresets`, `roomGlance` |
+| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls; seit Etappe 4 `locks`, `hints`, `activeScene`, `glasEnergy`, `sizePresets`, `roomGlance`; seit Etappe 5 `chipCounts` |
 | `apps/dashboard/src/components/ui/Modal.{tsx,css}` | Anfangsfokus auf ein Element mit `data-autofocus` (sonst das Panel); kein Fokusrahmen um das Panel selbst |
 | `apps/dashboard/src/components/changelog/ChangelogModal.{tsx,css}` | `ReleaseEntry` exportiert (+ optionales `badge`), Stile für Abzeichen und Kompaktliste |
 | `apps/dashboard/src/app/AppLayout.tsx`, `pages/Settings.tsx` | `ForkChangelogModal` statt `ChangelogModal`; Auslöser auch bei neuen Fork-Releases; Über: „Version 1.3.2 · F11“ |
@@ -196,10 +200,20 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/home/EntityDetailModal.tsx` | Stil Glas (Etappe 4): Kopf im Fensterkopf (`lead`, `trailing`, Raum als `subtitle`), Licht mit `LightBrightnessControl`, Verlauf mit `Segment` |
 | `apps/dashboard/src/components/cards/LightCard.tsx` | Prop `colorOnly` (Glas-Detail: nur Farbtemperatur und Farbe, ohne Kopf, nicht klickbar) |
 | `apps/dashboard/src/components/ui/Modal.tsx` | Stil Glas (Etappe 4): Props `lead`, `trailing` für den Fensterkopf |
-| `apps/dashboard/src/components/ui/SortableItem.tsx` | Stil Glas (Etappe 4): Drücken auf die Bearbeiten-Leiste startet kein Ziehen (`withoutBarDrag`) |
+| `apps/dashboard/src/components/ui/SortableItem.tsx` | Stil Glas (Etappe 4): Drücken auf die Bearbeiten-Leiste startet kein Ziehen (`withoutBarDrag`, seit Etappe 5 aus `components/glas/edit/noDrag.ts`) |
 | `apps/dashboard/src/stores/connectionStore.ts` | Demo-Steuerung starten und stoppen (nur im Demo-Modus) |
 | `apps/dashboard/src/stores/settingsStore.ts` | Etappe 4: `hintsSectionMigrated` (+ `migrateHintsSection`), `tallSections` (GLOBAL, Glas L) |
 | `packages/core/src/demo.ts` | Etappe 4: Szenen mit Mitgliedern (`attributes.entity_id`) |
+| `apps/dashboard/src/components/cards/{ClimateCard,CoverCard,LightCard,ToggleCard}.tsx` | Stil Glas (Etappe 5): Klima mit `data-tone` (was es tut), Rollladen mit `--g-pos` (Position für das Mini-Rollo), Licht- und Schalter-Kachel mit Zustandszeile (die Pille ist ausgeblendet); Klassisch unverändert |
+| `apps/dashboard/src/components/{devices/DevicesToolbar,energy/EnergyCards,music/ZonesCard}.tsx`, `pages/Settings.tsx` | Stil Glas (Etappe 5): `Segment` statt der Knöpfe (Raster/Liste, Zeitraum, Hell/Dunkel/Auto); Inline-Größen nur noch in Klassisch |
+| `apps/dashboard/src/components/music/{LibraryCard,SpeakerGroupMenu}.tsx` | Stil Glas (Etappe 5): Popover bleiben in ihrer Karte (`keepInCard`) |
+| `apps/dashboard/src/components/scenes/SceneRoomCard.tsx`, `pages/Room.tsx` | Stil Glas (Etappe 5): Szenen-Kacheln im Look der Übersicht (`data-tone`, Farben per CSS statt inline) |
+| `apps/dashboard/src/pages/{Security,Energy,Automations,Scenes,System}.tsx` | Stil Glas (Etappe 5): Bearbeiten-Leiste über `useGlasSectionEdit` (S/M/L, ‹ ›, „⋯“, Klasse `g-tall`), wie die Übersicht; Energie dimmt beim Wechsel des Zeitraums die Karten, statt sie durch die Ladezeile zu ersetzen (`data-g-stale`) |
+| `apps/dashboard/src/components/home/SummaryChips.tsx` | Etappe 5 (K97): Zählung und Texte aus `chipCounts`/`chipLabels` (beide Stile; Klassisch zeigt dasselbe) |
+| `apps/dashboard/src/components/home/chipmodals/{People,Lights,Doors,Alarm,Media}Modal.tsx` | Stil Glas (Etappe 5, K97): Untertitel aus `useChipSubtitle`, Klasse `g-chip-window` (der klein geschriebene Titel beginnt groß) |
+| `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 5, K97): Werte und Fuß im Mehr-Menü (`GlasMoreValue`, `GlasMoreFoot`) |
+| `apps/dashboard/src/components/nav/RoomsMenu.tsx` | Stil Glas (Etappe 5, K97): Zustand je Raum (Symbol wie die Raumkachel, `data-tone`, der Zustand im `aria-label`); Klassisch unverändert |
+| `apps/dashboard/src/ha/{energy,service}.ts`, `stores/connectionStore.ts` | Nur Demo (Etappe 5, für die Prüfungen): Energie-Einstellungen und -Abrufe über `demoEnergy.ts`, Dienstaufrufe ins Protokoll `demoCalls.ts`, `setUrl` an die Demo-Steuerung |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/src/domain.ts` | `formatEntityState`: Zahl über `formatNumber` (Sprache), numerische Zustände ohne Einheit (sensor/number/input_number/counter) formatiert statt `humanizeState` (Minus ging verloren) |
@@ -207,7 +221,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/energy/EnergyCards.tsx`, `components/home/EnergyWidget.tsx` | `fmtEnergy`/`fmtCost` mit Sprache (Währung per `Intl`) |
 | `apps/dashboard/src/components/{cards,home}/ClimateCard.tsx`, `components/home/RoomCard.tsx`, `components/home/{WeatherHero,chipmodals/WeatherModal}.tsx`, `app/AppLayout.tsx`, `components/home/EntityDetailModal.tsx`, `components/system/SystemMonitorCard.tsx`, `components/devices/DeviceEntityRow.tsx` | Anzeige-Zahlen über `formatNumber` (Sprache) |
 | `packages/core/src/demo.ts` | Demo-Pool-Entities (`demoPoolEntities`, IDs wie `poolConfig.ts`) — Pool-Seite in Demo/Labor |
-| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“, „glas tokens“; seit Etappe 4 Hinweise, Schlösser, aktive Szenen, Glas-Energie, Größen, Hauptraum |
+| `packages/core/scripts/smoke.mjs` | Testblöcke „pool schedule“, „waste collection“, „sentinel nvr“, „glas tokens“; seit Etappe 4 Hinweise, Schlösser, aktive Szenen, Glas-Energie, Größen, Hauptraum; seit Etappe 5 die Zählung der Chips |
 | `apps/dashboard/src/components/home/SummaryChips.tsx`, `SummaryChipsBar.tsx`, `chipmodals/index.ts` | Chips Pool, Garage, Schlösser in der Home-Leiste (+ Fenster, Standardplatz) |
 | `apps/dashboard/src/components/home/SecurityCard.tsx`, `components/security/SecurityHeroCard.tsx` | Garagen-Zeile/-Chip; Schlösser nach gemeinsamer Regel (`lockSummary`: offen rot, blockiert/nicht erreichbar gelb) |
 | `apps/dashboard/src/components/security/{LockConfirm,lockLogic}.*` | Bestätigung beim Entriegeln, Code-Feld, Klick-Stopp im Portal; `lockSummary`/`lockTone`/`lockSummaryText` |
@@ -304,7 +318,7 @@ State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.
 ## Feature: Stil Glas
 
 Zweiter Stil neben Klassisch, nur Aussehen und Bewegung (Plan `docs/GLAS-PLAN.md`, Design `docs/GLAS-DESIGN.md`, Stand
-und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md` und `docs/glas/PLAN-ETAPPE-4.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
+und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md`, `docs/glas/PLAN-ETAPPE-4.md` und `docs/glas/PLAN-ETAPPE-5.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
 `<html data-style="glas">` gesetzt ist, und jede Regel in `styles/glas/` beginnt mit `:root[data-style='glas']`.
 
 Nach jedem Upstream-Merge:
@@ -355,7 +369,13 @@ Nach jedem Upstream-Merge:
    `NO_SIZE_PRESETS` (`pages/Home.tsx`). Upstream-Änderungen an `components/ui/SortableItem.tsx` (Listener) mit
    `components/glas/edit/noDrag.ts` abgleichen, an `Modal` mit den Props `lead`/`trailing`. Danach
    `checks --part home` laufen lassen (Hinweise, aktive Szene, „Nicht verlieren“, Energie, Bearbeiten, Licht, Menü).
-   Seit Etappe 5 (übrige Seiten, im Bau): Schalter, Regler, Stepper, Auswahl-Pillen und Play der klassischen Seiten
-   zeichnet `styles/glas/controls.css` über ihre Upstream-Klassen, Felder `lists.css`, Abschnittstitel und die
-   Kartentitel der Sicherheit `pages.css`; ändert Upstream diese Klassen, das Markup von `SectionLabel` oder den Kopf
-   der Sicherheitskarten (`*-card__header`, bei der Garage `__title-row`), `checks --part pages` laufen lassen.
+10. Seit Etappe 5 (übrige Seiten): Schalter, Regler, Stepper, Auswahl-Pillen und Play der klassischen Seiten
+    zeichnet `styles/glas/controls.css` über ihre Upstream-Klassen, Felder und Listen `lists.css`, Kartentitel, Heroes
+    und Spalten `pages.css`, die Karten der `EntityCard`-Familie `cards.css`, jede Seite ihre eigene Datei (`security`,
+    `pool`, `energy`, `music`, `devices`, `system`, `settings`, `onboarding`); ändert Upstream diese Klassen, das Markup
+    von `SectionLabel`, die Köpfe der Karten (`*-card__header`, bei der Garage `__title-row`) oder eine Seite,
+    `checks --part pages` laufen lassen. Die Knöpfe für Zeitraum, Raster/Liste, Hell/Dunkel und den Pool-Modus hat
+    Glas als `Segment`: neue Optionen dort mitziehen. Die Zählung der Home-Chips steht in Core `chipCounts.ts`; ändert
+    Upstream, was `SummaryChips.tsx` zählt, gehört das dorthin (sonst weichen Chip und Fenster-Untertitel ab). Das
+    Mehr-Menü (`renderMoreRow` in `AppLayout.tsx`) und das Räume-Menü (`RoomsMenu.tsx`) tragen Glas-Werte; ändert
+    Upstream ihre Zeilen, `checks --part pages --only pagesMenus` laufen lassen.

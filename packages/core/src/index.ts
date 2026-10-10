@@ -286,3 +286,7 @@ export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './s
 export type { SizePreset, SectionSize } from './sizePresets.js';
 export { roomGlances, lightPercent, climateTone } from './roomGlance.js';
 export type { RoomGlance, ClimateTone } from './roomGlance.js';
+
+// [fork] The summary chips' counts, shared with the subtitles of their windows (docs/glas/PLAN-ETAPPE-5.md K97)
+export { chipCounts } from './chipCounts.js';
+export type { ChipCounts, ChipCountOptions } from './chipCounts.js';
