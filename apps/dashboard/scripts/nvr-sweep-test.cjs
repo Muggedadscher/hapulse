@@ -1,13 +1,17 @@
-// [fork] nvr-sweep-test.cjs <hapulse-base> <sentinel-origin> <token> [mobile] — click-through of the native Sentinel
+// [fork] nvr-sweep-test.cjs <hapulse-base> <sentinel-origin> <token> [mobile] [glas] — click-through of the native Sentinel
 // integration with REAL mouse events, HA in demo mode, the camera data from a real Sentinel: home card (camera + event),
 // /nvr overview (tile, event strip), camera page controls (same checks as Sentinel's scripts/ui-sweep-test.js), security
 // section. Run with Chromium on :9222 (Sentinel's scripts/cdp-run.sh). Fails on JS exceptions, console errors, HTTP ≥ 400.
 // Clip download (package ≥ 0.17.0): clip mode from the info bar and from the event list, an edge set by scrolling, the
 // edge holds while the video plays, create → save → the MP4 lands in a temp folder (CDP download events, ffprobe if
 // installed), close. `noexport` as an extra argument = Sentinel without features:["export"] → the button must be absent.
+// `glas` = the same walk in the Glas style (docs/glas/PLAN-ETAPPE-6.md §3): Glas home card, and the camera page
+// immersive (package appearance, root flag; on the phone without tab bar, which comes back on the way back).
 const WS = require('ws'), http = require('http'), nodeFs = require('fs'), os = require('os'), pth = require('path'), { spawnSync } = require('child_process');
 const BASE = process.argv[2], NVR = process.argv[3], TOKEN = process.argv[4] || '', MOBILE = process.argv.includes('mobile');
 const NOEXPORT = process.argv.includes('noexport');
+const GLAS = process.argv.includes('glas');
+const HOME = GLAS ? { card: '.g-nvr', cam: '.g-nvr__cam', ev: '.g-nvr__ev' } : { card: '.nvr-home', cam: '.nvr-home__cam', ev: '.nvr-home__ev' };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = ''; r.on('data', (c) => (d += c)); r.on('end', () => { try { res(JSON.parse(d)); } catch (e) { rej(e); } }); }).on('error', rej); });
 (async () => {
@@ -45,7 +49,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const W = MOBILE ? 390 : 1280, H = MOBILE ? 844 : 900;
   await cmd('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: MOBILE ? 3 : 1, mobile: MOBILE, screenWidth: W, screenHeight: H });
   if (MOBILE) await cmd('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
-  const settings = { state: { theme: 'aurora', mode: 'light', lastSeenVersion: '99.0.0', lastSeenFork: 99, customization: { scryptedUrl: NVR, scryptedToken: TOKEN } }, version: 0 };
+  const settings = { state: { theme: 'aurora', mode: 'light', lastSeenVersion: '99.0.0', lastSeenFork: 99, customization: { scryptedUrl: NVR, scryptedToken: TOKEN, ...(GLAS ? { uiStyle: 'glas' } : {}) } }, version: 0 };
   await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',${JSON.stringify(JSON.stringify(settings))});sessionStorage.setItem('__seeded','1');}window.__dl=[];const _c=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download){window.__dl.push(this.download);if(/\\.jpe?g$/i.test(this.download))return;}return _c.call(this);};` });
   const steps = [];
   const step = (name, ok, info) => steps.push({ name, ok: !!ok, ...(info !== undefined ? { info } : {}) });
@@ -64,12 +68,12 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   try {
     // ---------- home card ----------
     await go('/'); await sleep(6000);
-    const home = await ev(`JSON.stringify({card:!!document.querySelector('.nvr-home'),cams:document.querySelectorAll('.nvr-home__cam').length,evs:document.querySelectorAll('.nvr-home__ev').length,imgs:Array.from(document.querySelectorAll('.nvr-home img')).filter(i=>i.complete&&i.naturalWidth>0).length})`).then(JSON.parse);
-    step('home: NVR card with camera, events, images', home.card && home.cams >= 1 && home.evs >= 1 && home.imgs >= 1, home);
-    await click('.nvr-home__ev');
+    const home = await ev(`JSON.stringify({style:document.documentElement.getAttribute('data-style'),card:!!document.querySelector('${HOME.card}'),cams:document.querySelectorAll('${HOME.cam}').length,evs:document.querySelectorAll('${HOME.ev}').length,imgs:Array.from(document.querySelectorAll('${HOME.card} img')).filter(i=>i.complete&&i.naturalWidth>0).length})`).then(JSON.parse);
+    step('home: NVR card with camera, events, images', home.card && home.cams >= 1 && home.evs >= 1 && home.imgs >= 1 && (home.style === 'glas') === GLAS, home);
+    await click(HOME.ev);
     step('home event → camera page plays it', await until(`location.pathname.startsWith('/nvr/')&&window.__snvr&&__snvr.state().label==='playing'&&!__snvr.state().live`, 15000), { path: await path(), st: await st() });
     await go('/'); await sleep(4000);
-    await click('.nvr-home__cam');
+    await click(HOME.cam);
     step('home camera → live', await until(`location.pathname.startsWith('/nvr/')&&window.__snvr&&__snvr.state().live&&__snvr.state().transport==='webrtc'`, 20000), await st());
 
     // ---------- /nvr overview ----------
@@ -78,8 +82,12 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     step('/nvr: tiles, event strip, images', ov.tiles >= 1 && ov.strip >= 1 && ov.imgs >= 2, ov);
     await click('.nvr-strip__item');
     step('strip event → recording', await until(`location.pathname.startsWith('/nvr/')&&window.__snvr&&__snvr.state().label==='playing'&&__snvr.state().transport==='relay'`, 15000), { path: await path() });
+    // Glas: the page is immersive (on the phone without the tab bar) and gives the frame back on the way back
+    const frame = () => ev(`JSON.stringify({flag:document.documentElement.hasAttribute('data-g-immersive'),page:!!document.querySelector('.nvr-cam[data-nvr-appearance="immersive"]'),tabs:(()=>{const e=document.querySelector('.app-tabs');return !!e&&e.getBoundingClientRect().height>0})()})`).then(JSON.parse);
+    if (GLAS) { const f = await frame(); step('glas: camera page immersive', f.flag && f.page && (!MOBILE || !f.tabs), f); }
     await click('button', '^back');
     step('back → /nvr', await until(`location.pathname==='/nvr'`, 5000), { path: await path() });
+    if (GLAS) { await sleep(300); const f = await frame(); step('glas: frame back after the camera page', !f.flag && !f.page && (!MOBILE || f.tabs), f); }
     await click('.nvr-camtile');
     step('tile → live WebRTC', await until(`window.__snvr&&__snvr.state().live&&__snvr.state().transport==='webrtc'&&__snvr.ctl.presentedFrames()>3`, 20000), await st());
 

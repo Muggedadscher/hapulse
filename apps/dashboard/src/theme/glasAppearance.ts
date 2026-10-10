@@ -10,12 +10,17 @@
  *
  * Plan: docs/glas/PLAN-ETAPPE-0-1.md §3.3. Settings fields: `customization.uiStyle`, `.glassStrength`,
  * `.reduceTransparency` (GLOBAL).
+ *
+ * Dark subtree (GLAS-PLAN §1.2 point 5, plan docs/glas/PLAN-ETAPPE-6.md K103): in Glas a `<style id="glas-dark-scope">`
+ * holds the same variables in dark mode for `[data-glas-scheme="dark"]` — while the camera page (always dark) is shown,
+ * AppLayout puts that attribute on the content column, which then gets the dark palette whatever this device's mode.
+ * Klassisch removes it. Meanwhile the browser colour is the dark page's too (`setImmersiveThemeColor`, GlasRuntime).
  */
 
 import { glasCssVars, GLAS_COLORS, GLAS_STRENGTHS } from '@hapulse/core';
 import type { GlasStrength, UiStyle } from '@hapulse/core';
 import { applyTheme, resolveMode } from './themes';
-import type { ThemeMode, ThemeName } from './themes';
+import type { ResolvedMode, ThemeMode, ThemeName } from './themes';
 import { effectiveMode } from '../stores/settingsStore';
 
 export interface AppearanceInput {
@@ -104,8 +109,38 @@ export function effectiveStrength(a: Pick<AppearanceInput, 'glassStrength' | 're
   return a.reduceTransparency || env.reducedTransparency || env.contrastMore ? 'opaque' : a.glassStrength;
 }
 
+/** Id of the style element with the dark subtree's variables. */
+export const DARK_SCOPE_ID = 'glas-dark-scope';
+
+/** Pure: the rule for the dark subtree — the Glas variables of dark mode on `[data-glas-scheme='dark']`. */
+export function darkScopeCss(vars: Readonly<Record<string, string>>): string {
+  const decls = Object.entries(vars).map(([name, value]) => `${name}: ${value};`);
+  return `:root[data-style='glas'] [data-glas-scheme='dark'] { color-scheme: dark; ${decls.join(' ')} }`;
+}
+
 /** theme-color of index.html, remembered on the first call so Klassisch gets exactly it back. */
 let classicThemeColor: string | null | undefined;
+
+/** What the last `applyAppearance` decided the browser colour from (null = not applied yet). */
+let themeColorBase: { glas: boolean; resolved: ResolvedMode } | null = null;
+/** The camera page is shown (Glas, K103): its dark page sets the browser colour meanwhile. */
+let immersiveColor = false;
+
+function syncThemeColor(): void {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (!meta || !themeColorBase) return;
+  const { glas, resolved } = themeColorBase;
+  const color = glas ? GLAS_COLORS[immersiveColor ? 'dark' : resolved].bg : classicThemeColor;
+  if (color == null) meta.removeAttribute('content');
+  else if (meta.getAttribute('content') !== color) meta.setAttribute('content', color);
+}
+
+/** Glas: while the camera page is shown, the browser colour is its dark page's (GlasRuntime; Klassisch ignores it). */
+export function setImmersiveThemeColor(on: boolean): void {
+  if (immersiveColor === on) return;
+  immersiveColor = on;
+  if (typeof document !== 'undefined') syncThemeColor();
+}
 
 function inlineGlasNames(style: CSSStyleDeclaration): string[] {
   const out: string[] = [];
@@ -156,12 +191,25 @@ export function applyAppearance(a: AppearanceInput, env: MediaEnv = readMediaEnv
   if (glas && env.contrastMore) root.setAttribute('data-contrast', 'more');
   else root.removeAttribute('data-contrast');
 
-  // 5. Browser/status-bar colour: the Glas page background, in Klassisch the original value.
-  if (meta) {
-    const color = glas ? GLAS_COLORS[resolved].bg : classicThemeColor;
-    if (color == null) meta.removeAttribute('content');
-    else if (meta.getAttribute('content') !== color) meta.setAttribute('content', color);
-  }
+  // 5. The dark subtree: the same input in dark mode (in dark mode the variables just written).
+  let scope = document.getElementById(DARK_SCOPE_ID);
+  if (glas) {
+    const dark = resolved === 'dark'
+      ? vars
+      : glasCssVars({ mode: 'dark', accentHue: a.accentHue, strength, contrastMore: env.contrastMore, supportsLinear: env.supportsLinear });
+    const css = darkScopeCss(dark);
+    if (!scope) {
+      scope = document.createElement('style');
+      scope.id = DARK_SCOPE_ID;
+      document.head.appendChild(scope);
+    }
+    if (scope.textContent !== css) scope.textContent = css;
+  } else scope?.remove();
+
+  // 6. Browser/status-bar colour: the Glas page background (the dark one while the camera page is shown), in Klassisch
+  // the original value.
+  themeColorBase = { glas, resolved };
+  syncThemeColor();
   last = { root, key };
 }
 

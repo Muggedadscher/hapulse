@@ -17,6 +17,7 @@ import { NvrCameraRoomsModal } from './components/NvrCameraRoomsModal';
 import { Hero, EventsStrip, CameraGrid, HistogramCard, StorageCard } from '@sentinel-nvr/web/ui';
 import { NvrUi } from './ui';
 import { useSettingsLocked } from '../ha/managedHooks';
+import { useIsGlas } from '../app/glas/useUiStyle';
 import './nvr.css';
 
 export function NvrOverviewPage() {
@@ -26,6 +27,8 @@ export function NvrOverviewPage() {
   const [roomsOpen, setRoomsOpen] = useState(false);
   // Under global admin management only admins (re)configure Sentinel; the others use the shared access.
   const locked = useSettingsLocked();
+  // Glas: the head's actions are filled circles 44 (plan docs/glas/PLAN-ETAPPE-6.md K105)
+  const glas = useIsGlas();
 
   const errorText = errorStatus === 401
     ? t('nvr.error.unauthorized')
@@ -43,12 +46,12 @@ export function NvrOverviewPage() {
                 <span className="nvr-actions__label">{t('nvr.open')}</span>
               </a>
               {!locked && (
-                <IconButton label={t('cameraSource.rooms.title')} variant="ghost" size={40} onClick={() => setRoomsOpen(true)}>
+                <IconButton label={t('cameraSource.rooms.title')} title={t('cameraSource.rooms.title')} variant="ghost" size={glas ? 44 : 40} onClick={() => setRoomsOpen(true)}>
                   <MapPin size={18} strokeWidth={1.75} />
                 </IconButton>
               )}
               {!locked && (
-                <IconButton label={t('nvr.setup.modalTitle')} variant="ghost" size={40} onClick={() => setSetupOpen(true)}>
+                <IconButton label={t('nvr.setup.modalTitle')} title={t('nvr.setup.modalTitle')} variant="ghost" size={glas ? 44 : 40} onClick={() => setSetupOpen(true)}>
                   <Settings2 size={18} strokeWidth={1.75} />
                 </IconButton>
               )}

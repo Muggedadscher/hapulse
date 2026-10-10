@@ -821,6 +821,35 @@
   }
 }
 
+/* ---- Camera page (E13; plan docs/glas/PLAN-ETAPPE-6.md K103, K104): GlasRuntime sets data-g-immersive while it is
+   shown and AppLayout makes the content column the dark subtree. The column is dark from top to bottom, the
+   overscroll black like the picture. On the phone the frame goes and the page owns the screen: no tab bar, no
+   summary chips, no paddings (the connection banner keeps floating, under the page's header). From 900 px the
+   sidebar and the header row stay. ---- */
+:root[data-style='glas'][data-g-immersive] {
+  background: var(--g-media-bg);
+}
+
+:root[data-style='glas'][data-g-immersive] .app-content {
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+@media (max-width: 899px) {
+  :root[data-style='glas'][data-g-immersive] :is(.app-tabs, .app-chips-mobile) {
+    display: none;
+  }
+
+  :root[data-style='glas'][data-g-immersive] .app-content,
+  :root[data-style='glas'][data-g-immersive] .app-content:has(> .app-banner) {
+    padding-top: 0;
+  }
+
+  :root[data-style='glas'][data-g-immersive] .app-main {
+    padding: 0;
+  }
+}
+
 /* More contrast and "Transparenz reduzieren": the edge without blur */
 :root[data-style='glas'][data-contrast='more'] .g-edge::before,
 :root[data-style='glas'][data-glass='opaque'] .g-edge::before {

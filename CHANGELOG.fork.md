@@ -6,6 +6,21 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F40 — 2026-10-10
+
+**Vorschau Glas: Kameras** · _Glass preview: cameras_
+
+### Geändert / Changed
+
+- Glas auf dem Handy und dem iPad hochkant: die Kameraseite füllt den Bildschirm, das Bild beginnt am oberen Rand, Zurück und Name liegen darüber, Tab- und Chip-Leiste weichen und kommen beim Zurückgehen wieder; die Seite ist dunkel, auch im hellen Modus  
+  _Glass on the phone and an upright iPad: the camera page fills the screen, the picture starts at the top edge with back and the name over it, the tab and chip bars step aside and come back when you go back; the page is dark, also in light mode_
+- Glas: Steuerkapsel, Ton, Datum, Zoom und LIVE als Glas über Bild und Zeitleiste, Zeitleiste und Ereignisse als Segment, neben dem Namen LIVE oder die Uhrzeit des Bildes; ab 900 Pixel Breite das Bild mit runden Ecken und die Zeitleiste als dunkle Fläche neben der Seitenleiste  
+  _Glass: control capsule, sound, date, zoom and LIVE as glass over the picture and the timeline, timeline and events as a segment, next to the name LIVE or the picture’s time; from 900 pixels wide the picture with round corners and the timeline as a dark surface next to the sidebar_
+- Glas: Sentinel-Übersicht, Sicherheit und Räume mit Kamera-Kacheln wie die Kamera-Karte der Übersicht, Ereignisleiste, Diagramm und Speicher im Glas-Look; die Einrichtung wählt Token oder Konto per Segment, Datum und Uhrzeit wählt man in einem Glas-Fenster  
+  _Glass: the Sentinel overview, security and rooms with camera tiles like the overview’s camera card, events strip, chart and storage in the glass look; the setup picks token or account with a segment, date and time are picked in a glass window_
+- Sentinel-Übersicht in beiden Stilen: die Zahl der Segmente und der Ereignisse von heute mit Tausenderpunkt („48.210“), die Knöpfe oben nennen ihren Namen auch beim Darüberfahren mit der Maus  
+  _Sentinel overview in both styles: the number of segments and today’s events with digit grouping (“48,210”), the buttons at the top also show their name on mouse hover_
+
 ## F39 — 2026-10-10
 
 **Texte richtig geschrieben** · _Texts written properly_

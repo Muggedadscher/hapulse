@@ -45,7 +45,6 @@
 :root[data-style='glas'] .nvr-vtl .vclip,
 :root[data-style='glas'] .nvr-dt__d--sel,
 :root[data-style='glas'] .nvr-mute[aria-pressed='true'],
-:root[data-style='glas'] .nvr-datechip--rec,
 :root[data-style='glas'] .nvr-clipbar__prog > i {
   --accent: var(--g-prominent);
   --on-accent: var(--g-on-prominent);
@@ -81,8 +80,7 @@
     .onboarding__connect-btn,
     .nvr-btn--primary,
     .nvr-dt__d--sel,
-    .nvr-mute,
-    .nvr-datechip--rec button
+    .nvr-mute
   ):focus-visible,
 :root[data-style='glas'] .pill-toggle input:focus-visible + .pill-toggle__track {
   outline-color: var(--g-focus);
