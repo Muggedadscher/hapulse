@@ -1,13 +1,6 @@
 /* [fork] Glas — lists on the pages (docs/GLAS-DESIGN.md §7.30, plan docs/glas/PLAN-ETAPPE-5.md K94): inset-grouped
    lists and fields. Only presentation of the existing markup. */
 
-/* The automations' list scrolls (classic max-height 400) and clips at its edge, where the row's switch ends: the list
-   reaches 7 px into the card's padding and pads it back, so the switch's hit area (controls.css, K91) is not cut off.
-   Nothing moves. */
-:root[data-style='glas'] .auto-cat-card__list {
-  margin-right: -7px;
-  padding-right: 7px;
-}
 
 /* ---- Fields (K94, GLAS-DESIGN §7.30; also the switch points of the pool's schedule editor and the Music Assistant
    connection below the queue): `fill`, radius 10, 36 visible in a hit area of 44, text 17 (below 16 px iOS zooms into
@@ -364,6 +357,134 @@
 
 @media (forced-colors: active) {
   :root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ---- Automations (P2, P3, K94): a category's list and the activity reach their surface's edges and scroll there as in
+   Klassisch, clipped at its rounded corners, with as many whole rows as there: the activity 5 (260, Klassisch 5 rows
+   in 220), a category 7 (420, Klassisch 400); an L card (edit.css) and a capped card set their own height. Rows with
+   their own inset 16: the symbol in a circle 32 (`fill`; `label2`, a disabled automation `label3`), separators 0.5 px
+   from the text start (60), none after the last row. A category's rows have two lines (60): the name 17/22, the last
+   run 13/18 `label2`, the switch on the right (controls.css; its hit area stays inside the row). A disabled automation
+   is not dimmed below the contrast minimum (Klassisch: .5): its name turns `label2`, the switch says it. The
+   activity's rows have one line (52): the name 17/22, beside it the category as plain text 13/18 `label2` (Klassisch:
+   a capsule; in a list it stays secondary), the time 15/20 `label2`. Where the line is short the category gives way
+   first (ellipsis), then the name. A capped card scrolls whole under its pinned title (Page.css, pages.css): there the
+   list starts below the title. ---- */
+:root[data-style='glas'] .automations-page :is(.auto-cat-card__list, .auto-feed-card__list) {
+  margin: -16px;
+  padding: 0;
+  border-radius: var(--radius-card);
+}
+
+:root[data-style='glas'] .automations-page .auto-feed-card__list {
+  max-height: 260px;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-card__list {
+  max-height: 420px;
+}
+
+:root[data-style='glas']
+  .automations-page
+  .overview-grid__cell[class*='section-h-']
+  :is(.auto-cat-card__list, .auto-feed-card__list) {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+:root[data-style='glas'] .automations-page :is(.auto-cat-row, .auto-feed-row) {
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row {
+  min-height: 60px;
+}
+
+:root[data-style='glas'] .automations-page .auto-feed-row {
+  min-height: 52px;
+}
+
+:root[data-style='glas'] .automations-page :is(.auto-cat-row + .auto-cat-row, .auto-feed-row + .auto-feed-row) {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 60px 0 / calc(100% - 60px) 0.5px;
+}
+
+:root[data-style='glas'] .automations-page :is(.auto-cat-row__icon, .auto-feed-row__icon) {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .automations-page :is(.auto-cat-row__icon--on, .auto-feed-row__icon--on) {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .automations-page :is(.auto-cat-row__icon, .auto-feed-row__icon) > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row__info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .automations-page :is(.auto-cat-row__name, .auto-feed-row__name) {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row--disabled {
+  opacity: 1;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row--disabled .auto-cat-row__name {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row__time {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .automations-page .auto-feed-row__info {
+  align-items: baseline;
+  gap: 8px;
+}
+
+:root[data-style='glas'] .automations-page .auto-feed-row__cat {
+  flex: 0 1000 auto;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+}
+
+:root[data-style='glas'] .automations-page .auto-feed-row__time {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .automations-page :is(.auto-feed-card__empty, .automations-empty-filter) {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .automations-page :is(.auto-cat-row__icon, .auto-feed-row__icon) {
     border: 1px solid CanvasText;
   }
 }

@@ -472,8 +472,8 @@ module.exports = function pages(h) {
         ['/system', '.sys-monitor-card', '.sys-monitor-card__title', '.sys-monitor-card__icon-chip', 'above'],
         ['/system', '.batteries-card', '.batteries-card__title', '.batteries-card__icon-chip', 'above'],
         ['/system', '.activity-card', '.activity-card__title', '.activity-card__icon-chip', 'above'],
-        ['/automations', '.auto-feed-card', '.auto-feed-card__title', '.auto-feed-card__icon-chip', 'above'],
-        ['/automations', '.auto-cat-card', '.auto-cat-card__title', '.auto-cat-card__icon-chip', 'above'],
+        ['/automations', '.auto-feed-card', '.auto-feed-card__title', '.auto-feed-card__icon-chip', 'above', true],
+        ['/automations', '.auto-cat-card', '.auto-cat-card__title', '.auto-cat-card__icon-chip', 'above', true],
         ['/scenes', '.scene-feed-card', '.scene-feed-card__title', '.scene-feed-card__icon-chip', 'above'],
         ['/scenes', '.scene-room-card', '.scene-room-card__title', '.scene-room-card__icon-chip', 'above'],
       ];
@@ -783,6 +783,8 @@ module.exports = function pages(h) {
         hidden: 'hiddenSecuritySections', mobile: 'mobileHiddenSecuritySections', card: 'people' },
       { page: 'energy', path: '/energy', root: '.energy-page', spans: 'energySectionSpans', heights: 'energySectionHeights',
         hidden: 'hiddenEnergySections', mobile: 'mobileHiddenEnergySections', card: 'devices' },
+      { page: 'automations', path: '/automations', root: '.automations-page', spans: 'automationSectionSpans',
+        heights: 'automationSectionHeights', hidden: 'hiddenAutomationSections', mobile: 'mobileHiddenAutomationSections', card: 'cat_comfort' },
     ];
     /** Edit mode: the header capsule, on a phone in Glas the avatar menu. */
     const enterEdit = async (page) => {
@@ -823,7 +825,9 @@ module.exports = function pages(h) {
 
     await block('pagesEdit', async () => {
       const res = {};
-      for (const cfg of EDIT_PAGES) {
+      // parts: a page of EDIT_PAGES or `music` (`--only pagesEdit:automations`)
+      const editPart = (name) => !onlyParts('pagesEdit').length || onlyParts('pagesEdit').includes(name);
+      for (const cfg of EDIT_PAGES.filter((c) => editPart(c.page))) {
         // S / M / L, "⋯", ‹ ›, eye and phone on the desktop; then the switch to Klassisch
         {
           const { page, close } = await open('desktop', 'glas', cfg.path);
@@ -964,7 +968,7 @@ module.exports = function pages(h) {
         const card = cards.find((c) => w.querySelector(`.edit-item-outline > .${c}`)) || '?';
         return `${card}:${w.classList.contains('edit-entity-wrap--hidden') ? 'h' : ''}${w.querySelector('.edit-badge__btn--mobile-hidden') ? 'm' : ''}`;
       }).join(','), MUSIC_CARDS);
-      for (const [device, mode] of [['desktop', 'light'], ['ipad', 'light'], ['phone', 'dark']]) {
+      for (const [device, mode] of editPart('music') ? [['desktop', 'light'], ['ipad', 'light'], ['phone', 'dark']] : []) {
         const { page, close } = await open(device, 'glas', '/music', { mode });
         try {
           const settle = async (ms = 300) => {
@@ -2482,6 +2486,156 @@ module.exports = function pages(h) {
           res[`${device}-devices`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
             errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look };
         }
+
+        // Automations P1–P4, the same steps in Klassisch and Glas: the hero's figures, the activity and the categories,
+        // a row's switch (a tap and Space), the search (also without a match), room (an automation placed in the
+        // living room) and category. Glas alone: rows, separators, lists to the surface's edges, the hero's stats and
+        // the choices in their measures (K94).
+        if (keepPart('automations')) {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const texts = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length)
+            .map((e) => e.textContent.replace(/\s+/g, ' ').trim()), sel);
+          const place = (page) => ev(page, () => window.__hapulseDemo.placeEntity('automation.evening_lights', 'living_room')).then(() => sleep(300));
+          const runAutomations = async (page) => {
+            const steps = {};
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(c.data || {})}`);
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const view = () => ev(page, () => {
+              const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+              const vis = (s, root = document) => [...root.querySelectorAll(s)].filter((e) => e.getClientRects().length);
+              const hero = document.querySelector('.auto-hero-card');
+              const parts = (e) => (e ? [...e.children].map(txt).filter(Boolean).join(' ') : null);
+              return {
+                hero: hero && { total: txt(hero.querySelector('.auto-hero-card__total')), sub: txt(hero.querySelector('.auto-hero-card__sub')),
+                  lastRan: parts(hero.querySelector('.auto-hero-card__last-ran')), stats: vis('.auto-hero-card__stat', hero).map(parts) },
+                feed: vis('.auto-feed-row').map((r) => ['name', 'cat', 'time'].map((k) => txt(r.querySelector(`.auto-feed-row__${k}`))).join('|')),
+                cats: vis('.auto-cat-card').map((c) => [txt(c.querySelector('.auto-cat-card__title')), txt(c.querySelector('.auto-cat-card__count')),
+                  ...[...c.querySelectorAll('.auto-cat-row')].map((r) => [txt(r.querySelector('.auto-cat-row__name')), txt(r.querySelector('.auto-cat-row__time')),
+                    r.querySelector('.auto-row-toggle input').checked ? 'on' : 'off', r.classList.contains('auto-cat-row--disabled') ? 'd' : ''].join('|'))].join(' / ')),
+              };
+            });
+            const names = () => texts(page, '.auto-cat-row__name');
+            const search = (q) => page.locator('.automations-toolbar__search-input').fill(q).then(() => sleep(250));
+            const choose = (nth, label) => page.locator('.automations-select__native').nth(nth).selectOption({ label }).then(() => sleep(250));
+            const row = (name) => page.locator('.auto-cat-row', { hasText: name }).first();
+
+            await step('start', async () => {}, view);
+            await step('tap', async () => {
+              const sw = row('Humidity Alert').locator('.auto-row-toggle');
+              await sw.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              await sw.click({ timeout: 2500 });
+            }, view);
+            await step('space', async () => {
+              const input = row('Away Mode').locator('.auto-row-toggle input');
+              await input.focus();
+              await page.keyboard.press('Space');
+            }, view);
+            await step('search', () => search('light'), names);
+            await step('searchNone', () => search('zzzz'), () => texts(page, '.automations-empty-filter'));
+            await step('searchOff', () => search(''), async () => (await names()).length);
+            await step('room', () => choose(0, 'Living Room'), names);
+            await step('category', async () => { await choose(0, DE['automations.toolbar.allRooms']); await choose(1, 'Security'); }, names);
+            await step('filtersOff', () => choose(1, DE['automations.toolbar.allCategories']), async () => (await names()).length);
+            return { steps };
+          };
+          /** Glas: a category's rows 60 and the activity's 52, the text from 60, separators from there and none above
+           *  the first row, the list from the surface's top to the card's edges (a card the grid does not stretch), the
+           *  activity 5 rows high and scrolling, a disabled automation not dimmed, the stats capsule 44 with no label
+           *  cut, the figure 34/41, the activity's name whole beside its category in plain `label2`, the choices 36 in 44. */
+          const automationsLook = (page) => ev(page, () => {
+            const tok = (n) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            };
+            const card = [...document.querySelectorAll('.auto-cat-card')].find((c) => c.textContent.includes('Alarm Notification'));
+            const list = card.querySelector('.auto-cat-card__list');
+            const rows = [...card.querySelectorAll('.auto-cat-row')];
+            const cb = card.getBoundingClientRect();
+            const lb = list.getBoundingClientRect();
+            const r0 = rows[0].getBoundingClientRect();
+            // the surface: the card's `::before`, inside its (transparent) border
+            const bw = (side) => parseFloat(getComputedStyle(card)[`border${side}Width`]);
+            const feed = document.querySelector('.auto-feed-card__list');
+            const feedRows = [...feed.querySelectorAll('.auto-feed-row')];
+            const off = card.querySelector('.auto-cat-row--disabled');
+            const stats = document.querySelector('.auto-hero-card__stats');
+            const total = getComputedStyle(document.querySelector('.auto-hero-card__total'));
+            const fname = feedRows[0].querySelector('.auto-feed-row__name');
+            const fcat = getComputedStyle(feedRows[0].querySelector('.auto-feed-row__cat'));
+            const sel = document.querySelector('.automations-select__native');
+            const scs = getComputedStyle(sel);
+            const sb = sel.getBoundingClientRect();
+            return {
+              catRows: Math.round(Math.min(...[...document.querySelectorAll('.auto-cat-row')].map((r) => r.getBoundingClientRect().height))),
+              feedRows: Math.round(Math.min(...feedRows.map((r) => r.getBoundingClientRect().height))),
+              textStart: Math.round(rows[0].querySelector('.auto-cat-row__name').getBoundingClientRect().left - r0.left),
+              feedTextStart: Math.round(fname.getBoundingClientRect().left - feedRows[0].getBoundingClientRect().left),
+              sep: `${getComputedStyle(rows[1]).backgroundImage.slice(0, 15)} ${getComputedStyle(rows[1]).backgroundPosition}`,
+              firstSep: getComputedStyle(rows[0]).backgroundImage,
+              edges: [lb.left - cb.left - bw('Left'), cb.right - lb.right - bw('Right'), cb.bottom - lb.bottom - bw('Bottom')].map(Math.round),
+              top: Math.round(lb.top - cb.top - bw('Top')) === Math.round(parseFloat(getComputedStyle(card, '::before').top)),
+              feedH: Math.round(feed.getBoundingClientRect().height), feedScrolls: feed.scrollHeight > feed.clientHeight,
+              off: !!off && getComputedStyle(off).opacity === '1' && getComputedStyle(off.querySelector('.auto-cat-row__name')).color === tok('--g-label-2'),
+              stats: `${Math.round(stats.getBoundingClientRect().height)} ${getComputedStyle(stats).borderTopLeftRadius}`,
+              statsCut: [...document.querySelectorAll('.auto-hero-card__stat-label')].filter((e) => e.scrollWidth > e.clientWidth).length,
+              total: `${total.fontWeight} ${total.fontSize}/${total.lineHeight}`,
+              feedName: fname.scrollWidth <= fname.clientWidth,
+              feedCat: `${fcat.fontSize}/${fcat.lineHeight} ${fcat.backgroundColor} ${fcat.color === tok('--g-label-2')}`,
+              select: Math.round(sb.height), selectVisible: Math.round(sb.height - parseFloat(scs.borderTopWidth) - parseFloat(scs.borderBottomWidth)),
+            };
+          });
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/automations', { mode });
+            try {
+              await place(page);
+              got[style] = await runAutomations(page);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let look = null;
+          {
+            const { page, close } = await open(device, 'glas', '/automations', { mode });
+            try {
+              look = await automationsLook(page);
+            } catch (e) {
+              look = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const st = g.start ? g.start.dom : {};
+          const stats = (v) => (v && v.hero ? v.hero.stats.join() : '');
+          const fine = same && !!st.hero && st.hero.total === '13' && st.feed.length === 8 && st.cats.length === 5
+            && stats(st) === '11 aktiv,2 deaktiviert,5 Kategorien'
+            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === '12 aktiv,1 deaktiviert,5 Kategorien'
+            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === '11 aktiv,2 deaktiviert,5 Kategorien'
+            && g.search.dom.join() === 'Evening Lights,Morning Lights' && g.searchNone.dom.join() === DE['automations.emptyFilter']
+            && g.searchOff.dom === 13 && g.room.dom.join() === 'Evening Lights'
+            && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 13;
+          const measured = !!look && !look.error && look.catRows >= 60 && look.feedRows >= 52 && look.textStart === 60 && look.feedTextStart === 60
+            && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none' && look.edges.join() === '0,0,0' && look.top
+            && look.feedH === 260 && look.feedScrolls && look.off && look.stats === '44 22px' && look.statsCut === 0
+            && look.total === '600 34px/41px' && look.feedName && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedCat)
+            && look.select === 44 && look.selectVisible === 36;
+          res[`${device}-automations`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look };
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
@@ -2703,6 +2857,39 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // automations: a search without a match, and no automation at all (the page has no empty state of its own:
+        // the hero counts 0, the activity says nothing ran yet, no category is left); both texts 15/20 `label2`
+        for (const [name, sel, key] of [['automations-noMatch', '.automations-empty-filter', 'automations.emptyFilter'],
+          ['automations-none', '.auto-feed-card__empty', 'automations.activity.empty']]) {
+          const { page, close } = await open(device, 'glas', '/automations', { mode });
+          try {
+            if (name === 'automations-noMatch') await page.locator('.automations-toolbar__search-input').fill('zzzz');
+            else {
+              const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+              const ids = Object.keys(DEMO_ENTITIES).filter((i) => i.startsWith('automation.'));
+              await ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            }
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await ev(page, (s) => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label-2)';
+              document.body.appendChild(d);
+              const want = getComputedStyle(d).color;
+              d.remove();
+              const e = document.querySelector(s);
+              const cs = getComputedStyle(e);
+              return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
+                cards: document.querySelectorAll('.auto-cat-card').length, total: document.querySelector('.auto-hero-card__total')?.textContent.trim() };
+            }, sel);
+            res[`${device}-${name}`] = { ok: got.text === DE[key] && got.font === '15px/20px' && got.color && got.cards === 0
+              && (name === 'automations-noMatch' || got.total === '0'), ...got };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
       out.pagesEmpty = res;
       out.pagesEmptyOk = Object.values(res).every((r) => r.ok);
@@ -2739,6 +2926,7 @@ module.exports = function pages(h) {
     'security-edit': editScene('/security'),
     'energy-edit': editScene('/energy'),
     'music-edit': editScene('/music'),
+    'automations-edit': editScene('/automations'),
   };
 
   return { pagesChecks, scenes };

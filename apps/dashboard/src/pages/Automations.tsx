@@ -17,6 +17,7 @@ import { useUIStore } from '../stores/uiStore';
 import { useEntityStore } from '../stores/entityStore';
 import { AutomationsToolbar, type FilterOption } from '../components/automation/AutomationsToolbar';
 import { applyStoredOrder } from '../lib/order';
+import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K96)
 import type { HassEntity } from '@hapulse/core';
 import './Page.css';
 import './Automations.css';
@@ -300,6 +301,25 @@ export function Automations() {
     [updateCustomization]
   );
 
+  // [fork] Glas edit bar (plan docs/glas/PLAN-ETAPPE-5.md K96): S / M / L, ‹ › and "⋯" as on the overview. The names:
+  // the hero is the "Overview" as on the energy page, the activity its title, a category its name.
+  const glasEdit = useGlasSectionEdit({
+    page: 'automations',
+    spansField: 'automationSectionSpans',
+    heightsField: 'automationSectionHeights',
+    visibleIds: orderedIds,
+    onReorder: handleReorder,
+    spanOf: (id) => getSpan(id, automationSectionSpans),
+    heightOf: (id) => getHeightLevel(id, automationSectionHeights),
+    onSpan: handleSpanChange,
+    nameOf: (id) =>
+      id === 'hero'
+        ? t('nav.overview')
+        : id === 'activity'
+          ? t('automations.activity.title')
+          : categoryDisplayLabel(t, idToCategory(id, categories)),
+  });
+
   function getToggleLabels(id: string) {
     const fixed = FIXED_TOGGLE_KEYS[id];
     if (fixed) {
@@ -380,6 +400,7 @@ export function Automations() {
             const sc          = spanClass(currentSpan);
             const currentHeight = getHeightLevel(id, automationSectionHeights);
             const hc            = heightClass(currentHeight);
+            const tall          = glasEdit.isTall(id); // [fork] Glas L: taller from 900 px (K96); a height cap wins
             const widget      = renderWidget(id);
 
             if (!editMode) {
@@ -389,6 +410,7 @@ export function Automations() {
                 hc,
                 isHidden ? 'overview-grid__cell--hidden' : '',
                 isMobileHidden ? 'section-mobile-hidden' : '',
+                tall ? 'g-tall' : '', // [fork]
               ].filter(Boolean).join(' ');
 
               return (
@@ -406,7 +428,7 @@ export function Automations() {
             ].filter(Boolean).join(' ');
 
             return (
-              <SortableItem key={id} id={id} editMode={editMode} className={sc}>
+              <SortableItem key={id} id={id} editMode={editMode} className={tall ? `${sc} g-tall` : sc}>{/* [fork] g-tall */}
                 <div className={cellClass} data-section={id}>
                   <div className="edit-section-outline">{widget}</div>
                   <EditBadge
@@ -423,12 +445,21 @@ export function Automations() {
                   <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />
                   <HeightDots level={currentHeight} />
                   <HeightHandle id={id} level={currentHeight} onCommit={handleHeightChange} />
+                  {glasEdit.renderBar(id, { // [fork] Glas: one bar instead of the badges and handles above (K96)
+                    hidden: isHidden,
+                    hideLabel: getToggleLabels(id).hide,
+                    onToggleHidden: () => handleToggleHidden(id),
+                    mobileHidden: isMobileHidden,
+                    mobileLabel: getToggleLabels(id).hideMobile,
+                    onToggleMobileHidden: () => handleToggleMobileHidden(id),
+                  })}
                 </div>
               </SortableItem>
             );
           })}
         </SortableGrid>
       )}
+      {glasEdit.sheet}{/* [fork] Glas "⋯": the classic values of one card (K96) */}
     </div>
   );
 }

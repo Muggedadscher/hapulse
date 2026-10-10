@@ -886,6 +886,10 @@ function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Con
   // The devices page (plan Etappe 5 §7.13): a favourite in the device window, the inverted eye of a hidden entity.
   pairs.push({ name: 'yellowInk glyph on yellowSoft over group (device window favourite)', fg: c.yellowInk, bg: compositeOver(c.yellowSoft, c.group), min: 3 });
   pairs.push({ name: 'bg glyph on label (eye of a hidden entity or card)', fg: c.bg, bg: c.label, min: 3 });
+  // Automations and scenes (plan Etappe 5 §7.14): the symbols of the hero's stats in their ink, in the capsule.
+  for (const ink of ['greenInk', 'blueInk', 'tealInk'] as const) {
+    pairs.push({ name: `${ink} glyph on fill over card (hero stats)`, fg: c[ink], bg: compositeOver(c.fill, c.card), min: 3 });
+  }
   return pairs;
 }
 

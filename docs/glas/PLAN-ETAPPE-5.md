@@ -156,8 +156,9 @@ und übernommen, außer wo anders vermerkt.
 - Die Regel gilt für alle Listen-Schalter in `controls.css`; die aus `detail.css` ist dort aufgegangen. `accent.css`
   behält nur die Pille auf Kacheln (bis zum Raum, K95) und den alten `toggle-switch`.
 - **Trefferfläche** 64 × 44 über ein durchsichtiges `::before` an Label oder Knopf, das Layout bleibt. Die
-  Automations-Liste scrollt und schnitt die Fläche rechts ab; sie reicht in Glas 7 px in den Innenabstand der Karte
-  (`lists.css`), sichtbar ändert sich nichts. Ihre Zeilen werden 4 px höher (Label 44 statt 40, innerhalb von K94).
+  Automations-Liste scrollt und schnitt die Fläche rechts ab; seit dem Automations-Schritt (§7.14) reicht die Liste bis
+  an die Kanten der Fläche und die Zeilen haben 16 Innenabstand, die Fläche bleibt in der Zeile (vorher: 7 px in den
+  Innenabstand der Karte).
 - **Pille der Schalter-Karte:** Sie ist nur ein Bild (`ToggleCard`: `aria-hidden`, kein Tab-Halt), ihr Label hält den
   Klick aber auf, deshalb tat ein Tipp genau auf die Pille nichts (auch in Klassisch, Nebenbefund 16). In Glas geht der
   Tipp zur Karte durch (`pointer-events: none`), die als Ganzes schaltet, wie K91 es für Kacheln will. Das betrifft die
@@ -520,3 +521,31 @@ und übernommen, außer wo anders vermerkt.
   Rückfrage beim Entriegeln, Garagentor mit Rückfrage beim Öffnen; in Glas zusätzlich die Maße: Kachel, Liste, Kapseln
   36 in 44, Knöpfe 36 mit Treffer 3 px neben dem Kreis, Zeilen ab 52, Gruppentitel), `pagesEmpty` Geräte (keine
   Geräte; eine Suche ohne Treffer).
+
+### 7.14 Automationen (P1–P4, K90, K94, K96)
+
+- Keine eigene Datei: Hero in `pages.css` (gemeinsam mit dem Szenen-Hero), Listen in `lists.css`, Bearbeiten in
+  `edit.css`; die `[fork]`-Zeilen für die Leiste in `Automations.tsx` (K96).
+- **Hero (P1, K90):** schlichte Karte, die Zahl 34/41 600, darunter 15/20 `label2`; rechts „Zuletzt ausgeführt“, der
+  Name 15/20 600, die Zeit 13/18 `label2`. Die Kennzahlen bleiben eine Kapsel (die Form aus Klassisch), jetzt 44 in
+  `fill` ohne Rand, die Teile durch eine Haarlinie getrennt: Symbol in seiner Ink (aktiv grün, Kategorien blau,
+  deaktiviert `label2`; 3:1), Wert 17/22 600, Bezeichnung 13/18 `label2`. **Abweichung:** die Teile teilen sich die Breite
+  nach Inhalt (Klassisch: gleiche Drittel), sonst wurden „deaktiviert“ und „Kategorien“ bei 390 px gekürzt.
+- **Kategorien (P2, K94):** die Liste reicht bis an die Kanten der Fläche, Zeilen 60 mit 16 Innenabstand: Symbol im
+  Kreis 32 (`fill`; eingeschaltet `label2`, aus `label3`), Name 17/22, die letzte Ausführung 13/18 `label2`, rechts der Schalter
+  (controls.css). Trennlinien ab dem Text (60), nach der letzten keine. Eine deaktivierte Automation wird nicht blass
+  (Klassisch .5, unter dem Kontrastminimum): ihr Name wird `label2`, der Schalter sagt es.
+- **Letzte Aktivität (P3):** Zeilen 52, Name 17/22, daneben die Kategorie als schlichter Text 13/18 `label2`
+  (**Abweichung:** in Klassisch eine Kapsel; in der Liste bleibt sie Nebensache und gibt bei Platzmangel zuerst nach),
+  rechts die Zeit 15/20 `label2`. Im Kopf gibt am Handy beim Bearbeiten „8 heute ausgeführt“ vor dem Titel nach.
+- **Höhen:** so viele ganze Zeilen wie in Klassisch: die Aktivität 5 (260, Klassisch 5 × 44 = 220), eine Kategorie 7
+  (420, Klassisch 400). Eine L-Karte und eine gedeckelte Karte setzen ihre Höhe selbst.
+- **Werkzeugleiste (P4):** Suche aus `lists.css`, Raum und Kategorie dieselben Wahlen wie in den Geräten (Kapsel 36 in
+  44); ohne Treffer der Satz 15/20 `label2`.
+- **Bearbeiten (K96):** die Leiste wie auf Sicherheit und Energie; der Hero bekommt sie darüber, ab 900 px in einer
+  geteilten Zeile in seiner Spur. Die gefilterte Ansicht gibt es nur außerhalb des Bearbeitens.
+- Kontrastpaare: die Symbole der Kennzahlen (`greenInk`, `blueInk`, `tealInk`) auf `fill` über der Karte, 3:1.
+- Prüfungen: `pagesKeep` Automationen (dieselben Schritte in Klassisch und Glas: Hero, Aktivität, Kategorien, ein
+  Schalter per Tipp und per Leertaste, Suche auch ohne Treffer, Raum, Kategorie; in Glas die Maße der Zeilen, Linien,
+  Listenkanten, Kennzahlen und Wahlen), `pagesEdit` Automationen, `pagesEmpty` Automationen (Suche ohne Treffer, gar
+  keine Automation), Szene `automations-edit` für den Klassisch-Vergleich.

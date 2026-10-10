@@ -312,6 +312,28 @@
   white-space: nowrap;
 }
 
+/* a phrase beside the title (the activities' "8 heute ausgeführt") gives way before the title where the head is short
+   (a phone in edit mode, the bar's two buttons beside it): both start from their width, the phrase shrinks first;
+   a count keeps its width */
+:root[data-style='glas']
+  :is(
+    .automations-page .auto-feed-card__header > .auto-feed-card__title-row,
+    .scenes-page .scene-feed-card__header > .scene-feed-card__title-row
+  ) {
+  flex: 1 1 auto;
+}
+
+:root[data-style='glas']
+  :is(
+    .automations-page .auto-feed-card__header .auto-feed-card__sub,
+    .scenes-page .scene-feed-card__header .scene-feed-card__sub
+  ) {
+  flex: 0 1000 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* the sources' legend above the chart: Footnote in label2 */
 :root[data-style='glas'] .energy-page .energy-card__header .energy-legend__item {
   color: var(--g-label-2);
@@ -699,6 +721,116 @@
   font: 400 13px / 18px var(--g-font);
   letter-spacing: normal;
   text-transform: none;
+}
+
+/* Automations and scenes (P1, Q1): the figure like the energy hero's — the number 34/41 600, the line below it 15/20
+   `label2`; on the right the last run (its label above it), the name 15/20 600, the time 13/18 `label2`. The stats stay
+   a capsule, now 44 in `fill` without a border, the parts apart by a hairline: the symbol in its ink (active green,
+   categories and rooms blue, used today teal, disabled `label2`; non-text, 3:1), the value 17/22 600 `label`, the label
+   13/18 `label2`. The parts share the width by their content (Klassisch: equal thirds), so at 390 px no label is cut;
+   a longer translation ends with "…". */
+:root[data-style='glas'] :is(.automations-page .auto-hero-card, .scenes-page .scene-hero-card) {
+  gap: 16px;
+  padding: 14px 16px 16px;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__content, .scenes-page .scene-hero-card__content) {
+  gap: 16px;
+}
+
+:root[data-style='glas']
+  :is(.automations-page .auto-hero-card__eyebrow-row, .scenes-page .scene-hero-card__eyebrow-row) {
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__total, .scenes-page .scene-hero-card__total) {
+  color: var(--g-label);
+  font: 600 34px / 41px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__sub, .scenes-page .scene-hero-card__sub) {
+  margin-top: 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas']
+  :is(.automations-page .auto-hero-card__last-ran-label, .scenes-page .scene-hero-card__last-used-label) {
+  margin-bottom: 2px;
+}
+
+:root[data-style='glas']
+  :is(.automations-page .auto-hero-card__last-ran-name, .scenes-page .scene-hero-card__last-used-name) {
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas']
+  :is(.automations-page .auto-hero-card__last-ran-time, .scenes-page .scene-hero-card__last-used-time) {
+  margin-top: 0;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__stats, .scenes-page .scene-hero-card__stats) {
+  min-height: 44px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__stat, .scenes-page .scene-hero-card__stat) {
+  flex: 1 1 auto;
+  gap: 6px;
+  min-width: 0;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__stat, .scenes-page .scene-hero-card__stat) > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+:root[data-style='glas'] .automations-page .auto-hero-card__stat--active > svg {
+  color: var(--g-green-ink);
+}
+
+:root[data-style='glas']
+  :is(.automations-page .auto-hero-card__stat--cats, .scenes-page .scene-hero-card__stat--rooms)
+  > svg {
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] .scenes-page .scene-hero-card__stat--activated > svg {
+  color: var(--g-teal-ink);
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__stat-value, .scenes-page .scene-hero-card__stat-value) {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-hero-card__stat-label, .scenes-page .scene-hero-card__stat-label) {
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas']
+  :is(.automations-page .auto-hero-card__stat-divider, .scenes-page .scene-hero-card__stat-divider) {
+  width: 0.5px;
+  height: 22px;
+  margin: 0 4px;
+  background: var(--g-sep);
 }
 
 /* ---- A page with nothing to show (§7.31; security, devices, pool, music): the window's empty state — the symbol in a
