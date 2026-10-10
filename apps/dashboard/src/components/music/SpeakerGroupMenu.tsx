@@ -16,6 +16,8 @@ import { joinPlayers, unjoinPlayer } from '../../ha/service';
 import type { HassEntity } from '@hapulse/core';
 import { useT } from '../../i18n/useT';
 import './SpeakerGroupMenu.css';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: the popover stays in the card
+import { keepInCard } from '../glas/keepInCard'; // [fork]
 
 const FEATURE_GROUPING = 524288;
 
@@ -36,6 +38,7 @@ interface SpeakerGroupMenuProps {
 
 export function SpeakerGroupMenu({ leader }: SpeakerGroupMenuProps) {
   const t = useT();
+  const isGlas = useIsGlas(); // [fork]
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -116,7 +119,12 @@ export function SpeakerGroupMenu({ leader }: SpeakerGroupMenuProps) {
       </button>
 
       {open && (
-        <div className="group-menu__pop" role="menu" aria-label={t('music.group.menuAria')}>
+        <div
+          className="group-menu__pop"
+          role="menu"
+          aria-label={t('music.group.menuAria')}
+          ref={isGlas ? keepInCard : undefined} // [fork] opens from the other side where it would leave the card
+        >
           <div className="group-menu__pop-title">{t('music.group.menuTitle')}</div>
           {candidates.map((candidate) => {
             const grouped = members.includes(candidate.entity_id);

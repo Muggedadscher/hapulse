@@ -15,6 +15,8 @@ import { useLocale, useT } from '../../i18n/useT';
 import { setPoolMode } from '../../ha/pool';
 import { POOL_ENTITIES, poolModeTone } from './poolConfig';
 import { PumpManualModal } from './PumpManualModal';
+import { useIsGlas } from '../../app/glas/useUiStyle';
+import { POOL_SEGMENT_MAX, PoolModeSegment } from '../glas/PoolModeSegment';
 
 function ModeIcon({ option }: { option: string }) {
   const tone = poolModeTone(option);
@@ -33,6 +35,7 @@ export function PumpHeroCard() {
   const mode = useEntity(POOL_ENTITIES.mode);
   const runtime = useEntity(POOL_ENTITIES.runtimeToday);
   const [manualOpen, setManualOpen] = useState(false);
+  const glas = useIsGlas(); // Glas: the mode as a segment with a lens (plan docs/glas/PLAN-ETAPPE-5.md K92)
 
   const running = pump?.state === 'on';
   const options = (mode?.attributes['options'] as string[] | undefined) ?? [];
@@ -59,7 +62,11 @@ export function PumpHeroCard() {
         )}
       </div>
 
-      {options.length > 0 && (
+      {options.length > 0 && glas && options.length <= POOL_SEGMENT_MAX && (
+        <PoolModeSegment options={options} value={activeOption} label={t('pool.mode.title')} onManual={() => setManualOpen(true)} />
+      )}
+
+      {options.length > 0 && !(glas && options.length <= POOL_SEGMENT_MAX) && (
         <div className="pool-mode" role="group" aria-label={t('pool.mode.title')}>
           {options.map((opt) => {
             const active = opt === activeOption;

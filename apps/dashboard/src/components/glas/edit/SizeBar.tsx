@@ -1,6 +1,7 @@
 /**
- * [fork] Glas edit mode of the overview (plan docs/glas/PLAN-ETAPPE-4.md K78, GLAS-DESIGN §7.32, sketch
- * glas/screens/g5d-bearbeiten): the bar above each card instead of the classic badges and handles. Segment S / M / L,
+ * [fork] Glas edit mode of the overview and the pages with cards (plans docs/glas/PLAN-ETAPPE-4.md K78,
+ * PLAN-ETAPPE-5.md K96, GLAS-DESIGN §7.32, sketch glas/screens/g5d-bearbeiten; wired by useGlasSectionEdit): the bar
+ * above each card instead of the classic badges and handles. Segment S / M / L,
  * a spacer, ‹ › to move, the eye, the phone and "⋯" for the classic values (columns 1–4, height cap) in a sheet.
  * Below 900 px only the eye and the phone remain (one column, a width has no effect there); the CSS hides the rest.
  * Hints and rooms have no segment. The group carries the card's name, so each button reads with its card.
@@ -19,6 +20,8 @@ import { useT, type TKey } from '../../../i18n/useT';
 const PRESET_NAME: Record<SizePreset, TKey> = { S: 'glas.edit.sizeS', M: 'glas.edit.sizeM', L: 'glas.edit.sizeL' };
 
 interface SizeBarProps {
+  /** The card's section id: `data-for`, so the page finds the bar again after a move. */
+  forId: string;
   /** The card's name; names the group. */
   name: string;
   /** Position on the page: staggers the entrance. */
@@ -40,6 +43,7 @@ interface SizeBarProps {
 }
 
 export function SizeBar({
+  forId,
   name,
   index,
   size,
@@ -69,6 +73,7 @@ export function SizeBar({
       role="group"
       aria-label={name}
       data-g-nodrag=""
+      data-for={forId}
       style={{ '--i': index } as React.CSSProperties}
     >
       {size && (
@@ -78,6 +83,7 @@ export function SizeBar({
           value={sizePresetOf(size)}
           options={SIZE_PRESETS.map((p) => ({ value: p, label: p, aria: t(PRESET_NAME[p]) }))}
           onChange={onPreset}
+          activation="manual"
         />
       )}
       <span className="g-size-bar__space" />

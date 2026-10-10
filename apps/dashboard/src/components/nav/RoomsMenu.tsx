@@ -16,6 +16,8 @@ import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
 import { roomIconName } from '@hapulse/core';
 import type { Room } from '@hapulse/core';
 import { useT, useLocale } from '../../i18n/useT';
+import { useRoomsMenuStatus } from '../glas/roomsMenuStatus'; // [fork] Glas: the room's state in its circle (K97)
+import { roomStatusText } from '../glas/home/roomTone'; // [fork]
 import './RoomsMenu.css';
 
 interface RoomsMenuProps {
@@ -58,6 +60,7 @@ export function RoomsMenu({ open, onClose, triggerRef }: RoomsMenuProps) {
   const rooms = useRooms();
   const customization = useCustomization();
   const sortedRooms = applyRoomOrder(rooms, customization.roomOrder, customization.hiddenRooms, locale);
+  const glasStatus = useRoomsMenuStatus(rooms, open); // [fork] null in Klassisch
 
   // Focus first row when open
   useEffect(() => {
@@ -137,25 +140,32 @@ export function RoomsMenu({ open, onClose, triggerRef }: RoomsMenuProps) {
             {t('rooms.empty')}
           </p>
         ) : (
-          sortedRooms.map((room, index) => (
+          sortedRooms.map((room, index) => {
+            // [fork] Glas: status symbol, tone and its words, as on the overview's room tiles (K97)
+            const g = glasStatus?.get(room.id);
+            const said = g ? (roomStatusText(t, g.iconName, g.isStatus) ?? (g.lightsOn > 0 ? t('glas.hero.lightsOn', { count: g.lightsOn }) : null)) : null;
+            return (
             <button
               key={room.id}
               ref={index === 0 ? firstRowRef : undefined}
               role="menuitem"
               className="rooms-menu__row"
+              data-tone={g?.tone} // [fork]
+              aria-label={said ? `${room.name}, ${said}` : undefined} // [fork]
               onClick={() => handleRoomClick(room.id)}
             >
               <RoomDisplayIcon
                 roomIcon={room.icon}
-                iconName={roomIconName({ name: room.name, icon: room.icon ?? null })}
-                isStatus={false}
+                iconName={g?.iconName ?? roomIconName({ name: room.name, icon: room.icon ?? null })} // [fork]
+                isStatus={g?.isStatus ?? false} // [fork]
                 size={18}
                 className="rooms-menu__row-icon"
               />
               <span className="rooms-menu__row-name">{room.name}</span>
               <ChevronRight size={16} strokeWidth={1.75} className="rooms-menu__row-chevron" />
             </button>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -152,6 +152,8 @@ import {
   roomGlances,
   lightPercent,
   climateTone,
+  // [fork] Etappe 5: the summary chips' counts
+  chipCounts,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2073,4 +2075,48 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
   // a member changed after the activation (+ grace): no longer active
   const later = { ...dimmed, 'light.living_room_shelf': { ...dimmed['light.living_room_shelf'], last_updated: new Date(Date.now() + 60_000).toISOString() } };
   assertEqual(activeSceneIds(Object.values(later).filter((e) => e.entity_id.startsWith('scene.')), later, Date.now() + 61_000).size, 0, 'demo: a changed member ends "active"');
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Summary chip counts — the chips and the subtitles of their windows (docs/glas/PLAN-ETAPPE-5.md K97)
+// ---------------------------------------------------------------------------
+console.log('\n── chip counts ──');
+{
+  const ent = (entity_id, state, attributes = {}) => ({
+    entity_id, state, attributes, last_changed: '', last_updated: '',
+    context: { id: '', parent_id: null, user_id: null },
+  });
+  const map = (...es) => Object.fromEntries(es.map((e) => [e.entity_id, e]));
+  const POOL = { poolPump: 'switch.pool_pump', poolRequired: ['switch.pool_pump', 'select.pool_mode'] };
+  const c = chipCounts(map(
+    ent('person.a', 'home'), ent('person.b', 'not_home'), ent('person.c', 'home'),
+    ent('light.a', 'on'), ent('light.b', 'off'), ent('light.c', 'on'), ent('switch.lamp', 'on'),
+    ent('binary_sensor.door', 'on', { device_class: 'door' }), ent('binary_sensor.window', 'on', { device_class: 'window' }),
+    ent('binary_sensor.opening', 'off', { device_class: 'opening' }), ent('binary_sensor.gd', 'on', { device_class: 'garage_door' }),
+    ent('binary_sensor.motion', 'on', { device_class: 'motion' }), ent('binary_sensor.plain', 'on'),
+    ent('alarm_control_panel.a', 'disarmed'), ent('alarm_control_panel.b', 'triggered'),
+    ent('media_player.a', 'playing'), ent('media_player.b', 'paused'),
+    ent('switch.pool_pump', 'on'), ent('select.pool_mode', 'auto'),
+    ent('cover.garage', 'open', { device_class: 'garage' }), ent('cover.gate', 'closed', { device_class: 'gate' }),
+    ent('cover.blind', 'open', { device_class: 'shutter' }),
+    ent('lock.a', 'locked'), ent('lock.b', 'unlocked'), ent('lock.c', 'jammed'),
+  ), POOL);
+  assertEqual(c.peopleHome.map((e) => e.entity_id).join(','), 'person.a,person.c', 'chips: people at home, in order');
+  assertEqual(c.lightsOn, 2, 'chips: lights on (light.* only)');
+  assertEqual(c.openDoorWindow, 3, 'chips: open doors, windows and garage door sensors; motion and no class do not count');
+  assertEqual(c.alarm?.entity_id, 'alarm_control_panel.b', 'chips: the most severe alarm panel');
+  assertEqual(c.mediaPlaying, 1, 'chips: media playing (paused does not count)');
+  assertEqual(JSON.stringify(c.pool), JSON.stringify({ present: true, running: true }), 'chips: pool present and running');
+  assertEqual(JSON.stringify(c.garages), JSON.stringify({ total: 2, closed: 1, open: 1, unavailable: 0, allClosed: false }), 'chips: garage doors and gates, no blinds');
+  assertEqual(JSON.stringify(c.locks), JSON.stringify({ total: 3, locked: 1, open: 1, problem: 1 }), 'chips: locks');
+
+  const none = chipCounts({}, POOL);
+  assertEqual(
+    JSON.stringify([none.peopleHome.length, none.lightsOn, none.openDoorWindow, none.alarm ?? null, none.mediaPlaying, none.pool, none.garages.total, none.locks.total]),
+    JSON.stringify([0, 0, 0, null, 0, { present: false, running: false }, 0, 0]),
+    'chips: nothing there → zero everywhere, no alarm, no pool',
+  );
+  const pumpOnly = chipCounts(map(ent('switch.pool_pump', 'on')), POOL);
+  assertEqual(JSON.stringify(pumpOnly.pool), JSON.stringify({ present: false, running: true }), 'chips: the pool needs all its entities to show');
+  assertEqual(chipCounts(map(ent('switch.pool_pump', 'off'), ent('select.pool_mode', 'auto')), POOL).pool.running, false, 'chips: pump off → not running');
 }

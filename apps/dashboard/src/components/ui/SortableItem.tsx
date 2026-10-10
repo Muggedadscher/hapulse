@@ -14,7 +14,7 @@
 import React, { useMemo } from 'react'; // [fork] useMemo
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { withoutBarDrag } from '../glas/home/noDrag'; // [fork] Glas edit bar (K78)
+import { withoutBarDrag } from '../glas/edit/noDrag'; // [fork] Glas edit bar (K78)
 
 interface SortableItemProps {
   id: string;

@@ -16,6 +16,17 @@
 @import './sheet-content.css';
 @import './gestures.css';
 @import './controls.css';
+@import './lists.css';
+@import './cards.css';
+@import './pages.css';
+@import './security.css';
+@import './pool.css';
+@import './energy.css';
+@import './music.css';
+@import './devices.css';
+@import './system.css';
+@import './settings.css';
+@import './onboarding.css';
 @import './home.css';
 @import './home-cards.css';
 @import './home-lists.css';

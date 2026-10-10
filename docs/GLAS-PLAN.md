@@ -12,6 +12,8 @@
 | `docs/glas/PLAN-ETAPPE-0-1.md` | Umsetzung von Etappe 0 und 1 am echten Code: Abweichungen K1–K19 mit Grund, Tests, Abnahme, Laborliste (Stand 2026-10-06) |
 | `docs/glas/PLAN-ETAPPE-2.md` | Umsetzung von Etappe 2 (Rahmen): Festlegungen K20–K45, Review des Plans, Abweichungen der Umsetzung U1–U13, Prüfungen, Laborpunkte (Stand 2026-10-06) |
 | `docs/glas/PLAN-ETAPPE-3.md` | Umsetzung von Etappe 3 (Fenster, Gesten, Inspector): Festlegungen K46–K73, Review des Plans, Umsetzung von 3a und 3b und ihre Reviews (Stand 2026-10-08) |
+| `docs/glas/PLAN-ETAPPE-4.md` | Umsetzung von Etappe 4 (Übersicht): Festlegungen K74–K87, Abweichungen der Umsetzung, Code-Prüfung (Stand 2026-10-08) |
+| `docs/glas/PLAN-ETAPPE-5.md` | Umsetzung von Etappe 5 (übrige Seiten): Festlegungen K88–K99, Prüfungen je Seite, Abweichungen und Nachträge beim Bau (Stand 2026-10-10) |
 | `docs/glas/` | freigegebene Skizzen `Glas5Handy.dc.html`, `Glas5Desktop.dc.html` (+ Wrapper-Artboards unter `skizze/`; `support.js` nicht eingecheckt, siehe `docs/glas/README.md`), Screenshots `screens/g5h-*.webp` / `g5d-*.webp` / `g5e-*.webp`, Checkliste `HAPULSE-INVENTORY.md`, Specs `SPEC3/4/5.md` |
 
 Die Skizzen sind **Referenz für Look und Bewegung, kein Code zum Kopieren** (eigenes Canvas-Format, Inline-Styles,
@@ -531,8 +533,13 @@ Jede Etappe = **ein Branch + ein PR** (`claude/glas-etappe-<n>-…`), CI grün, 
 `docs/glas/PLAN-ETAPPE-<n>.md` (was sich ändert, welche Dateien, welche Prüfungen), unabhängig geprüft; eine Etappe
 bleibt, wo es geht, ein PR ohne Aufteilung in a und b; jeder PR bekommt eine unabhängige Code-Prüfung. Nach
 Korrekturen laufen nur die betroffenen Prüfungen erneut; der volle Lauf (alle `checks`, Klassisch-Pixelvergleich mit
-`main`, Klick-Fuzz) läuft genau einmal, direkt vor dem Merge. Klassisch bleibt pixelgleich, gemergt wird nur bei
-grüner CI.
+`main`, Klick-Fuzz) läuft genau einmal, direkt vor dem Merge. Gemergt wird nur bei grüner CI, nach der Code-Prüfung und
+mit grünen Funktionsprüfungen.
+
+**Glas geht vor (Entscheid des Users, 2026-10-10):** Glas wird sauber gebaut, ohne Tricks oder Umwege, die nur dazu
+dienen, Klassisch pixelgleich zu halten. Ändert sich Klassisch dadurch sichtbar, steht jede solche Änderung einzeln im
+PR; Klassisch-Code wird nicht gelöscht. Der Klassisch-Pixelvergleich mit `main` läuft weiter und hält den Merge nur bei
+einem unbeabsichtigten Unterschied auf. Bis Etappe 5 galt „Klassisch bleibt pixelgleich“.
 
 Bis zur letzten Etappe heißt die Option **„Glas (Vorschau)“** (siehe E11).
 
@@ -698,36 +705,73 @@ Klick-Fuzz:
 
 ### Etappe 5 — Übrige Seiten
 
+**Stand 2026-10-10: umgesetzt (ein PR).** Plan, Festlegungen K88–K99, Abweichungen und Nachträge beim Bau:
+[`glas/PLAN-ETAPPE-5.md`](glas/PLAN-ETAPPE-5.md) (§1, §3.1, §7). Klassisch bleibt pixelgleich mit `main` bis auf die
+Versionszeile (F38). Geprüft mit `glas-shots.cjs checks --part pages` (Blöcke `pagesSwitches`, `pagesControls`,
+`pagesFields`, `pagesTitles`, `pagesCardTitles`, `pagesFrame`, `pagesEdit`, `pagesSegments`, `pagesKeep`, `pagesEmpty`,
+`pagesMenus`), den Aufnahmen beider Stile, dem Klassisch-Vergleich und dem Klick-Fuzz. Sentinel-Kameras im Raum und die
+NVR-Sektion der Sicherheit bekommen ihren Glas-Look mit Etappe 6.
+
 Umfang: Raum, Sicherheit, Pool (inkl. Zeitplan-Editor, Laufzeit-Chart), Energie, Musik, Geräte, Automationen, Szenen,
 System, Einstellungen, Onboarding (Tokens + Feinschliff). Jede Seite: Titel über den Karten, Segmente/Stepper/Schalter
 im Glas-Look, Bearbeiten mit S/M/L wo vorhanden.
 
 Abnahme je Seite: Screenshot hell/dunkel Handy/Desktop, Klick-Fuzz in Glas ohne Fehler, Kontrast-Audit grün.
+- [x] Aufnahmen hell/dunkel Handy/Desktop je Seite, dazu die Bearbeiten-Szenen `<seite>-edit` (`glas-shots.cjs shoot`)
+- [x] Klick-Fuzz in Glas (Handy, Desktop, Bearbeiten) ohne Fehler, ebenso in Klassisch (Gesamtlauf vor dem Merge)
+- [x] Kontrast der neuen Text-Paare (Felder, Auswahl-Pille, Warnung, Fehler, Heroes) in `glasTokens.ts` und `smoke.mjs`
+      (PLAN-ETAPPE-5 §7.5); das Audit aller Seiten am Bildschirm gehört zu Etappe 7
 
-Nicht verlieren (Inventar G, H, K, M–T):
-- [ ] Raum: Hero, Auto-Sektionen in Reihenfolge (inkl. Sentinel-Kameras, Garage), Namen ohne Raumpräfix,
+Nicht verlieren (Inventar G, H, K, M–T), geprüft mit `checks --part pages` (Blocknamen in Klammern), den Bildern und dem
+Klick-Fuzz:
+- [x] Raum: Hero, Auto-Sektionen in Reihenfolge (inkl. Sentinel-Kameras, Garage), Namen ohne Raumpräfix,
       Halb/Voll-Breite, Ziehen von Entitäten, Auge/Stern, „nicht gefunden“/„keine Geräte“ (G1–G10)
-- [ ] Licht-Karte: Helligkeit, **Farbtemperatur**, **Farbton**, Senden beim Loslassen (E2) · Klima-Karte mit Modus-Pillen (E3)
+      (`pagesKeep` Raum: Reihenfolge wie Klassisch, Halb/Voll schreibt dasselbe Feld, Tor; Ziehen, Auge und Stern im
+      Klick-Fuzz mit Bearbeiten; `pagesEmpty`; Hero und Namen aus denselben Komponenten wie Klassisch; die Sentinel-Kameras
+      im Raum bekommen ihren Look in Etappe 6)
+- [x] Licht-Karte: Helligkeit, **Farbtemperatur**, **Farbton**, Senden beim Loslassen (E2) · Klima-Karte mit Modus-Pillen (E3)
       · Rollladen, Garage, Medien, Toggle, Sensor (Füllbalken, Binär-Wortlaut), Schloss mit Code, Kamera, Button, Sauger,
       „nicht verfügbar“ gedimmt (E4–E13)
-- [ ] Sicherheit: Hero mit Verlauf nach Alarmzustand + Personen + Chips (H1), Alarm + Ziffernblock (H2, H3), HA-Kamera-Grid
+      (`pagesKeep` Raum: drei Regler senden je einmal beim Loslassen, Kachel per Klick und Leertaste, Zu/Stopp/Auf, Tor
+      fragt beim Öffnen, Lautstärke, Szene, Schloss mit Code bis zur Eingabe, Knopf, Sauger, Füllbalken und Wortlaut,
+      „nicht verfügbar“ gedimmt; Modus-Pille und Soll-Kapsel in `pagesControls`, „Klima alle“/„Rollläden alle“ in
+      `pagesMenus`; Kamera im Bild)
+- [x] Sicherheit: Hero mit Verlauf nach Alarmzustand + Personen + Chips (H1), Alarm + Ziffernblock (H2, H3), HA-Kamera-Grid
       mit BEWEGUNG-Badge (H4), NVR-Sektion (H5), Personen (H6), **Alle verriegeln / Alle entriegeln** mit Anzahl (H7),
       Garage **Alle schließen / Alle öffnen** (H9), Türen/Fenster/Bewegung (H10–H12), Leerzustand (H13)
-- [ ] Pool: Hero + Modus, Solar-Ring + Schwellen-Stepper, Manuell-Ring + Stopp + Siri-Dauer, **Zeitplan-Editor**
+      (`pagesKeep` Sicherheit, Heroes in drei Zuständen in `pagesFrame`, Leerzustand in `pagesEmpty`, S/M/L in
+      `pagesEdit`; die NVR-Sektion (H5) bekommt ihren Look in Etappe 6)
+- [x] Pool: Hero + Modus, Solar-Ring + Schwellen-Stepper, Manuell-Ring + Stopp + Siri-Dauer, **Zeitplan-Editor**
       (Tages-Zeitleiste, Griffe 5-min, Grenzpunkte, Speichern über `scheduler.edit`), Verbrauchskacheln → Detail,
       14-Tage-Chart, Admin-Karte mit Neustart-Bestätigung (K1–K10)
-- [ ] Musik: Now Playing (Hintergrund, Seek, Quelle, Shuffle/Repeat), Zonen Raster/Liste + Raum-Stumm/-Lautstärke, andere
+      (Modus in `pagesSegments`; `pagesKeep` Pool: Ringe, Schwelle, Stopp, Griff 12:00 → 12:05 und Speichern, Kachel →
+      Detail, Neustart fragt; Zeitfeld in `pagesFields`; `pagesEmpty`; die Siri-Dauer nutzt denselben Stepper wie die
+      Schwelle, im Bild)
+- [x] Musik: Now Playing (Hintergrund, Seek, Quelle, Shuffle/Repeat), Zonen Raster/Liste + Raum-Stumm/-Lautstärke, andere
       Player, MA-Bibliothek (Tabs, Favoriten, Suche, „Abspielen auf“, Elementmenü), Warteschlange (Übertragen, Gruppieren,
       volle Liste mit Ziehen), Lautsprecher-Gruppen (M1–M11)
-- [ ] Energie: Zeitraum-Tabs, Hero, Quellen gestapelt, Solar, Geräte, Wasser/Gas, Einrichtungs-Knopf (N1–N9)
-- [ ] Geräte: Ladefortschritt, Hero, Suche/Filter/Raster-Liste, Detail-Modal mit Gruppen, Inline-Steuerung je Domain inkl.
+      (`pagesKeep` Musik: dieselben Schritte in Klassisch und Glas senden dieselben Aufrufe; Raster/Liste in
+      `pagesSegments`; `pagesEdit`, `pagesEmpty`)
+- [x] Energie: Zeitraum-Tabs, Hero, Quellen gestapelt, Solar, Geräte, Wasser/Gas, Einrichtungs-Knopf (N1–N9)
+      (`pagesSegments` Zeitraum, `pagesKeep` Energie: Texte, Balken und Werte wie Klassisch; Einrichtungs-Knopf in
+      `pagesEmpty`; `pagesEdit`)
+- [x] Geräte: Ladefortschritt, Hero, Suche/Filter/Raster-Liste, Detail-Modal mit Gruppen, Inline-Steuerung je Domain inkl.
       Garage/Schloss-Bestätigung, Stern/Auge (O1–O7)
-- [ ] Automationen: Hero, Feed, Kategorien mit Schaltern, Suche/Filter (P1–P6) · Szenen: Hero, Feed, Raumkarten (Q1–Q4)
-- [ ] System: Hero, Monitor mit Balken/Schwellen, Batterien (R1–R5)
-- [ ] Einstellungen: Verbindungskarte, App-Name/-Symbol, Modus, Gerät-Override, Sprache, Akzent, Admin (Bearbeiten,
+      (`pagesKeep` Geräte, Raster/Liste in `pagesSegments`, `pagesEmpty`; der Ladefortschritt (O1) hat den Glas-Look,
+      ist in der Demo aber nicht zu sehen und deshalb ungeprüft: Labor)
+- [x] Automationen: Hero, Feed, Kategorien mit Schaltern, Suche/Filter (P1–P6) · Szenen: Hero, Feed, Raumkarten (Q1–Q4)
+      (`pagesKeep` Automationen und Szenen, `pagesEdit`, `pagesEmpty`)
+- [x] System: Hero, Monitor mit Balken/Schwellen, Batterien (R1–R5) (`pagesKeep` System, Hero in `pagesFrame`, `pagesEdit`)
+- [x] Einstellungen: Verbindungskarte, App-Name/-Symbol, Modus, Gerät-Override, Sprache, Akzent, Admin (Bearbeiten,
       Entitäten umbenennen/Stern/Auge, **Einstellungen für alle** inkl. Teilen von Tokens, Räume sortieren/ausblenden),
       Backup, Über „Version … · F…“ + „Was ist neu“ (S1–S16)
-- [ ] Onboarding: OAuth, Mixed-Content-Warnung, Token-Weg, Demo (T1–T6)
+      (`pagesKeep` Einstellungen S1–S15 in Klassisch und Glas mit demselben Ergebnis, Segmente in `pagesSegments`; in der
+      Demo nicht erreichbar und nur in einem Wegwerf-Build angesehen: gesperrte Zeilen unter der Verwaltung (S9), der
+      Dialog „für alle übernehmen“ (S12), „Trennen“ in Rot, Sync-Status (S16): Labor mit echtem HA)
+- [x] Onboarding: OAuth, Mixed-Content-Warnung, Token-Weg, Demo (T1–T6) (`pagesKeep` Onboarding, abgemeldet, in Klassisch
+      und Glas mit demselben Ergebnis)
+- [x] Aus Etappe 4 nachgeholt (K97): Untertitel der Chip-Fenster aus derselben Zählung wie die Chips, Werte im Mehr-Menü,
+      Zustand je Raum im Räume-Menü, „Klima alle“/„Rollläden alle“ im Look der Raum-Karten (`pagesMenus`)
 
 ### Etappe 6 — NVR (separat, siehe §4)
 
@@ -982,7 +1026,8 @@ neue Funktionen als neue Dateien, jede Änderung an Upstream-Dateien mit // [for
 
 Aufgabe: den vom User freigegebenen zweiten Stil „Glas“ umsetzen. Grundsatz: „Glas ist nur ein Stil“ — gleiche
 Komponenten, gleiche Funktionen, gleiche Informationsarchitektur; die Einstellung „Stil: Klassisch | Glas“ ändert
-nur Aussehen und Bewegung. In keinem Stil darf etwas verloren gehen; Klassisch muss pixelgleich bleiben.
+nur Aussehen und Bewegung. In keinem Stil darf etwas verloren gehen. Glas geht vor: keine Umwege, nur um Klassisch
+pixelgleich zu halten; jede beabsichtigte Klassisch-Änderung steht im PR (§3).
 
 Lies vollständig:
 1. docs/GLAS-PLAN.md — Architektur, Etappen, Abnahme, Tests, Risiken, Entscheidungen des Users (§7.3, verbindlich).

@@ -1,6 +1,6 @@
-/* [fork] Glas — controls that stage 4 introduces for the overview and the detail (plan docs/glas/PLAN-ETAPPE-4.md
-   K80): the segmented control, the switch, the pulse and the rolling value; the other pages and sheets get them in
-   stage 5.
+/* [fork] Glas — the controls (plans docs/glas/PLAN-ETAPPE-4.md K80, PLAN-ETAPPE-5.md K91–K93): the segmented control,
+   the switch, the pulse and the rolling value. Stage 4 brought them for the overview and the detail; stage 5 gives the
+   classic switches of the other pages and sheets the same look and adds steppers, choice pills, sliders and play (K93).
 
    Segmented control (GLAS-DESIGN §7.27, components/glas/Segment.tsx): track `fill`, lens `seg` + `segShadow` that
    slides with the snappy spring, equally wide options with text only. The size per use comes from a modifier
@@ -56,6 +56,23 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* A symbol option (grid/list, stage 5 K92): the symbol centred, 18 px; its name is the button's aria-label. */
+:root[data-style='glas'] .g-seg__opt--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:root[data-style='glas'] .g-seg__opt--icon > span {
+  display: inline-flex;
+}
+
+:root[data-style='glas'] .g-seg__opt--icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
 /* Energy Tag | Woche | Monat (§7.9): hit area 44, visible track 32, lens 28. */
 :root[data-style='glas'] .g-seg--energy {
   --g-seg-h: 44px;
@@ -64,8 +81,80 @@
   flex: none;
 }
 
+/* Pool mode on the page and in the window (§7.27 table, K92): track 44, lens 38, text 15/20 — the chosen one 600
+   label, the others 400 label2. */
+:root[data-style='glas'] .g-seg--pool {
+  --g-seg-h: 44px;
+  --g-seg-inset: 0px;
+  --g-seg-pad: 3px;
+}
+
+:root[data-style='glas'] .g-seg--pool .g-seg__opt {
+  padding: 0 8px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-seg--pool .g-seg__opt[aria-checked='true'] {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+/* Grid | list of the music zones (K92): symbols, each option 44 wide; hit area 44, visible track 32, lens 28 like the
+   energy period. */
+:root[data-style='glas'] .g-seg--view {
+  --g-seg-h: 44px;
+  --g-seg-inset: 6px;
+  --g-seg-pad: 2px;
+  flex: none;
+  width: calc(var(--g-seg-n) * 44px);
+}
+
+/* The settings' choices (style, strength, light/dark, this device; K92): hit area 44, visible track 32, lens 28 like
+   the energy period, at the row's end; the options equally wide as the longest label (at least 72; like the classic
+   toggle). A transparent border of 2 on each side gives the measuring in Segment.tsx its slack: an option sized to its
+   label would otherwise count as not fitting and turn the segment tight. Phones: the segment takes its own line in
+   the row's whole width. */
+:root[data-style='glas'] .g-seg--settings {
+  --g-seg-h: 44px;
+  --g-seg-inset: 6px;
+  --g-seg-pad: 2px;
+  display: inline-grid;
+  flex: none;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  margin-left: auto;
+}
+
+:root[data-style='glas'] .g-seg--settings .g-seg__opt {
+  min-width: 72px;
+  padding: 0 10px;
+  border-inline: 2px solid transparent;
+}
+
+@media (max-width: 480px) {
+  :root[data-style='glas'] .g-seg--settings {
+    flex: 1 1 100%;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+
+  :root[data-style='glas'] .g-seg--settings .g-seg__opt {
+    min-width: 0;
+    padding: 0 2px;
+  }
+}
+
+/* A label that does not fit (Segment.tsx measures it, e.g. "Ausgeschalten" on a phone): the whole segment 13/18 with
+   2 px padding; what still does not fit ends in "…". */
+:root[data-style='glas'] .g-seg[data-tight] .g-seg__opt {
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
 /* ---- Switch (GLAS-DESIGN §7.28): 51 × 31 capsule, knob 27 white with its shadow, on = iOS green and the knob 20 to
-   the right. Only in list rows; the button around it is the hit area (`role="switch"`, `aria-checked`). ---- */
+   the right. Only in list rows and card heads; on a tile the tile itself switches (K91). The Glas rows of the overview
+   draw it as `.g-switch`, the button around it is the hit area (`role="switch"`, `aria-checked`). ---- */
 
 :root[data-style='glas'] .g-switch {
   position: relative;
@@ -96,6 +185,117 @@
 
 :root[data-style='glas'] [aria-checked='true'] > .g-switch::after {
   translate: 20px 0;
+}
+
+/* The classic switches keep their markup and get the same look (K91): the control card of the detail, the automations,
+   the pool, the lights sheet, the device detail and the settings. The capsule is the track or, for the admin and the
+   device switch, the button itself; the knob is its child (the lights sheet: the track's ::after). The on rules list
+   the classic on selectors, so they outrank them. A tile has no switch: the room hides its pill (cards.css, K95). */
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle__track,
+    .auto-row-toggle__track,
+    .pool-switch__track,
+    .lights-modal__toggle,
+    .admin-toggle,
+    .device-toggle
+  ) {
+  width: 51px;
+  height: 31px;
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle__track,
+    .auto-row-toggle__track,
+    .pool-switch__track,
+    .lights-modal__toggle-track,
+    .admin-toggle,
+    .device-toggle
+  ) {
+  border: 0;
+  border-radius: 16px;
+  background: var(--g-switch-off);
+  box-shadow: none;
+  transition: background-color 250ms ease;
+}
+
+:root[data-style='glas'] .pool-switch__track {
+  padding: 2px;
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle input:checked + .pill-toggle__track,
+    .auto-row-toggle input:checked + .auto-row-toggle__track,
+    .pool-switch input:checked + .pool-switch__track,
+    .lights-modal__toggle input:checked + .lights-modal__toggle-track,
+    .admin-toggle--on,
+    .device-toggle--on
+  ) {
+  background: var(--g-switch-on);
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle__knob,
+    .auto-row-toggle__knob,
+    .pool-switch__thumb,
+    .admin-toggle__thumb,
+    .device-toggle__knob,
+    .device-toggle__thumb
+  ),
+:root[data-style='glas'] .lights-modal__toggle-track::after {
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  transition: transform var(--g-d-snappy) var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] :is(
+    .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob,
+    .auto-row-toggle input:checked + .auto-row-toggle__track .auto-row-toggle__knob,
+    .pool-switch input:checked + .pool-switch__track .pool-switch__thumb,
+    .admin-toggle--on .admin-toggle__thumb,
+    .device-toggle--on :is(.device-toggle__knob, .device-toggle__thumb)
+  ),
+:root[data-style='glas'] .lights-modal__toggle input:checked + .lights-modal__toggle-track::after {
+  background: var(--g-knob);
+  transform: translateX(20px);
+}
+
+/* Hit area 64 × 44 around the capsule (§7.28) without moving anything: a transparent ::before belongs to the label or
+   button, so a tap on it switches. The automations' label is already 44 high and only grows sideways. */
+:root[data-style='glas'] :is(.admin-toggle, .device-toggle, .lights-modal__toggle, .pool-switch)::before {
+  content: '';
+  position: absolute;
+  inset: -6.5px;
+}
+
+:root[data-style='glas'] .auto-row-toggle {
+  position: relative;
+  min-height: 44px;
+}
+
+:root[data-style='glas'] .auto-row-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0 -6.5px;
+}
+
+/* The pill of a switch card is only a picture (ToggleCard: aria-hidden, no tab stop, "the card switches"); its label
+   stops the click, so a tap right on it did nothing. Here the tap goes through to the card, which switches as a whole
+   (K91) — in the detail's control card (on the room's tiles the pill is hidden, cards.css). */
+:root[data-style='glas'] .toggle-card .pill-toggle {
+  pointer-events: none;
+}
+
+:root[data-style='glas'] :is(.admin-toggle, .device-toggle):focus-visible,
+:root[data-style='glas'] .auto-row-toggle input:focus-visible + .auto-row-toggle__track,
+:root[data-style='glas'] .pool-switch input:focus-visible + .pool-switch__track,
+:root[data-style='glas'] .lights-modal__toggle input:focus-visible + .lights-modal__toggle-track {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
 }
 
 /* ---- Pulse (GLAS-DESIGN §7.7, §7.10): a circle that switches grows to 1.12 and springs back, 700 ms. The element
@@ -221,11 +421,343 @@
     background: HighlightText;
   }
 
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle__track,
+      .auto-row-toggle__track,
+      .pool-switch__track,
+      .lights-modal__toggle-track,
+      .admin-toggle,
+      .device-toggle
+    ) {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText;
+    background: Canvas;
+  }
+
+  :root[data-style='glas'] .pool-switch__track {
+    padding: 1px;
+  }
+
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle__knob,
+      .auto-row-toggle__knob,
+      .pool-switch__thumb,
+      .admin-toggle__thumb,
+      .device-toggle__knob,
+      .device-toggle__thumb
+    ),
+  :root[data-style='glas'] .lights-modal__toggle-track::after {
+    top: 1px;
+    left: 1px;
+    background: ButtonText;
+    box-shadow: none;
+  }
+
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle input:checked + .pill-toggle__track,
+      .auto-row-toggle input:checked + .auto-row-toggle__track,
+      .pool-switch input:checked + .pool-switch__track,
+      .lights-modal__toggle input:checked + .lights-modal__toggle-track,
+      .admin-toggle--on,
+      .device-toggle--on
+    ) {
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] :is(
+      .entity-detail__control .pill-toggle input:checked + .pill-toggle__track .pill-toggle__knob,
+      .auto-row-toggle input:checked + .auto-row-toggle__track .auto-row-toggle__knob,
+      .pool-switch input:checked + .pool-switch__track .pool-switch__thumb,
+      .admin-toggle--on .admin-toggle__thumb,
+      .device-toggle--on :is(.device-toggle__knob, .device-toggle__thumb)
+    ),
+  :root[data-style='glas'] .lights-modal__toggle input:checked + .lights-modal__toggle-track::after {
+    background: HighlightText;
+  }
+
   :root[data-style='glas'] .g-seg__track {
     border: 1px solid CanvasText;
   }
 
   :root[data-style='glas'] .g-seg__lens {
     border: 2px solid Highlight;
+  }
+}
+
+/* ---- Steppers (K93, GLAS-DESIGN §7.29): − and + round 44 in `fill` with the glyph in `label`, a touch darker under
+   the pointer. The pressed scale and the disabled look stay classic. The window of the pool's manual run has its own
+   rule with the same look (sheet-content.css); the climate card puts its two in the target capsule (cards.css, K97). ---- */
+:root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn) {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+  transition: background-color 200ms ease, transform 160ms ease-out;
+}
+
+/* the pool page's classic hover is as specific as the rule above and may load after it: a touch's sticky hover keeps
+   the resting fill, the tint only with a pointer that hovers */
+:root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn):hover:not(:disabled) {
+  background: var(--g-fill);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn):hover:not(:disabled) {
+    background: var(--g-fill-2);
+  }
+}
+
+:root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Choice pills (K93): 36 high in `fill`; the chosen one `accentSoft` with `accentInk` and a ring of 1.5 px.
+   The accent marks the choice, never a device state (§2.3). The climate modes and the library's media types. ---- */
+:root[data-style='glas'] :is(.climate-card__mode-pill, .library-card__tab) {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font-size: 14px;
+  line-height: 18px;
+  transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .climate-card__mode-pill:not(.climate-card__mode-pill--active):hover,
+  :root[data-style='glas'] .library-card__tab:not(.library-card__tab--active):hover {
+    background: var(--g-fill);
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+    color: var(--g-label);
+  }
+}
+
+:root[data-style='glas'] .climate-card__mode-pill.climate-card__mode-pill--active,
+:root[data-style='glas'] .library-card__tab.library-card__tab--active {
+  background: var(--g-accent-soft);
+  box-shadow: inset 0 0 0 1.5px var(--g-accent);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] :is(.climate-card__mode-pill, .library-card__tab):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.climate-card__step-btn, .pool-stepper__btn, .climate-card__mode-pill, .library-card__tab) {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] .climate-card__mode-pill.climate-card__mode-pill--active,
+  :root[data-style='glas'] .library-card__tab.library-card__tab--active {
+    forced-color-adjust: none;
+    background: Highlight;
+    box-shadow: none;
+    color: HighlightText;
+  }
+}
+
+/* ---- Horizontal sliders (K93, GLAS-DESIGN §7.18, §7.29): the classic forms stay — capsules of 28 without a knob
+   (light, media card), the thin lines of the music pages — in Glas colours: track `fill2`, the brightness fills in
+   yellow (D16), volume and position in `label2`. The accent is never a state colour (§2.3). The sliders with a
+   gradient (colour temperature, hue, accent) keep it and get a white knob 24 with the switch's shadow. While a finger
+   or the pointer holds a slider it grows to 1.04 (§6.3). The value is still sent on release. ---- */
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap) {
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .light-card__fill:not(.light-card__fill--temp) {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .media-card__volume-fill {
+  background: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(
+    .now-playing-card__progress,
+    .now-playing-card__volume-slider,
+    .player-tile__volume,
+    .zone-row__slider,
+    .zone-grid-card__slider
+  ) {
+  background: linear-gradient(
+    to right,
+    var(--g-label-2) var(--progress-pct, 0%),
+    var(--g-fill-2) var(--progress-pct, 0%)
+  );
+}
+
+/* The colour temperature fills from the left like the brightness; its knob sits at the end of the fill. */
+:root[data-style='glas'] .light-card__fill--temp {
+  min-width: 28px;
+}
+
+:root[data-style='glas'] .light-card__fill--temp::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  translate: 0 -50%;
+}
+
+:root[data-style='glas'] .accent-slider {
+  height: 28px;
+  border: 0;
+  border-radius: 14px;
+}
+
+:root[data-style='glas'] .light-card__hue-range::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] .accent-slider::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] .light-card__hue-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] .accent-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+}
+
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap, .light-card__hue-range, .accent-slider, .slider) {
+  transition: transform 200ms var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap, .light-card__hue-range, .accent-slider, .slider):active {
+  transform: scale(1.04);
+}
+
+/* the range input over the capsule is invisible (opacity 0): the capsule carries its focus ring */
+:root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap):has(> :focus-visible) {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* the visible sliders (hue, accent, the music page's) keep the classic `outline: none`; Glas gives them the ring of
+   every other control */
+:root[data-style='glas'] :is(.light-card__hue-range, .accent-slider, .slider):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap, .light-card__hue-range, .accent-slider, .slider):active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.light-card__track, .media-card__volume-wrap) {
+    border: 1px solid CanvasText;
+  }
+
+  /* the fills are colours, which forced colours drop: the value shows in the system highlight */
+  :root[data-style='glas'] :is(.light-card__fill:not(.light-card__fill--temp), .media-card__volume-fill) {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] :is(
+      .now-playing-card__progress,
+      .now-playing-card__volume-slider,
+      .player-tile__volume,
+      .zone-row__slider,
+      .zone-grid-card__slider
+    ) {
+    forced-color-adjust: none;
+    background: linear-gradient(to right, Highlight var(--progress-pct, 0%), GrayText var(--progress-pct, 0%));
+  }
+
+  /* hue and accent show colours as their content: they keep their gradient and white knob, with an outline */
+  :root[data-style='glas'] :is(.light-card__hue-range, .accent-slider) {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .light-card__fill--temp::after {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText;
+    background: Canvas;
+    box-shadow: none;
+  }
+}
+
+/* ---- Play (K93): like the media window (sheet-content.css) on the pages and cards — round 44, Now Playing 56, in
+   `fill` with the glyph in `label`; while the player plays, blue with white. The cards mark it with `card--active`,
+   Now Playing only by its pause glyph. ---- */
+:root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause),
+:root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause):hover {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  opacity: 1;
+  transition: background-color 250ms ease, color 250ms ease, transform 160ms ease-out;
+}
+
+:root[data-style='glas'] .now-playing-card__play-btn,
+:root[data-style='glas'] .now-playing-card__play-btn:hover {
+  width: 56px;
+  height: 56px;
+  background: var(--g-fill);
+  box-shadow: none;
+  color: var(--g-label);
+  opacity: 1;
+  transition: background-color 250ms ease, color 250ms ease, transform 160ms ease-out;
+}
+
+:root[data-style='glas'] :is(
+    .media-card.card--active .media-card__play-btn,
+    .player-tile.card--active .player-tile__playpause,
+    .now-playing-card__play-btn:has(> .lucide-pause)
+  ) {
+  background: var(--g-blue);
+  color: var(--g-on-badge);
+}
+
+:root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause, .now-playing-card__play-btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.media-card__play-btn, .player-tile__playpause, .now-playing-card__play-btn) {
+    border: 1px solid ButtonText;
   }
 }

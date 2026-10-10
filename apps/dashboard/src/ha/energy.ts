@@ -16,11 +16,12 @@ import type {
   StatisticsPeriod,
 } from '@hapulse/core';
 import { useConnectionStore, getLiveConnection } from '../stores/connectionStore';
+import { demoEnergyPrefs, demoEnergyWait } from './demoEnergy'; // [fork] lab checks: energy off, a held load
 
 /** Fetch the Energy dashboard preferences (demo or live). */
 export async function getEnergyPrefs(): Promise<EnergyPreferences | null> {
   const { demo } = useConnectionStore.getState();
-  if (demo) return DEMO_ENERGY_PREFS;
+  if (demo) return demoEnergyPrefs(DEMO_ENERGY_PREFS); // [fork] demoEnergy.ts
   const conn = getLiveConnection();
   return conn ? conn.fetchEnergyPrefs() : null;
 }
@@ -34,6 +35,7 @@ export async function getStatistics(
 ): Promise<StatisticsMap> {
   const { demo } = useConnectionStore.getState();
   if (demo) {
+    await demoEnergyWait(); // [fork] demoEnergy.ts
     return demoEnergyStatistics(statisticIds, period, start, end ?? new Date().toISOString());
   }
   const conn = getLiveConnection();

@@ -3,10 +3,11 @@ import { Thermometer, Flame, Snowflake, Wind, Power, RefreshCw } from 'lucide-re
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
 import { useT, useStateLabel, useLocale } from '../../i18n/useT'; // [fork] useLocale
-import { formatNumber } from '@hapulse/core'; // [fork]
+import { climateTone, formatNumber } from '@hapulse/core'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 import { climateSetpoint, stepSetpoint } from '../home/climateLogic'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: the circle in the colour of what it does (K95, K97)
 import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
 
 interface ClimateCardProps {
@@ -34,6 +35,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
   const hvacAction = entity.attributes.hvac_action as string | undefined;
   const currentMode = entity.state;
   const isOff = currentMode === 'off';
+  const glas = useIsGlas(); // [fork]
 
   // Optimistic local temperature — updates immediately on step, syncs from entity otherwise
   const [localTemp, setLocalTemp] = useState(targetTemp ?? currentTemp ?? 20);
@@ -70,7 +72,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
     : sl('climate', currentMode);
 
   return (
-    <Card className="climate-card">
+    <Card className="climate-card" data-tone={glas ? (isOff ? 'off' : climateTone(entity)) : undefined /* [fork] */}>
       {/* Header: icon chip + name/action */}
       <div className="climate-card__header">
         <div className="icon-chip climate-card__chip">

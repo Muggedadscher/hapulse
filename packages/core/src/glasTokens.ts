@@ -762,7 +762,13 @@ export function glasContrastPairs(input: GlasInput): ContrastPair[] {
       pairs.push({ name: `glassLabel2 on glass over ${back}`, fg: c.glassLabel2, bg: g, min: 4.5 });
     }
   }
-  return [...pairs, ...frameContrastPairs(input, c, a), ...windowContrastPairs(input, c, a), ...homeContrastPairs(c, a)];
+  return [
+    ...pairs,
+    ...frameContrastPairs(input, c, a),
+    ...windowContrastPairs(input, c, a),
+    ...homeContrastPairs(c, a),
+    ...pagesContrastPairs(c, a),
+  ];
 }
 
 /** Text of the "open" status pill (redSoft) in a window's group: dark, redInk on redSoft over the lighter group is
@@ -841,6 +847,68 @@ function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Cont
 }
 
 /**
+ * The other pages (plan Etappe 5 §3, K93/K94): the text of a field and its placeholder on `fill` over the card and
+ * over the page; the chosen choice pill (`accentInk` on `accentSoft` over the card); the yellow of a warning (motion,
+ * an open window, a system warning) as text on the card and on its soft tone over the card; the segment's lens with
+ * `label` (pool mode, on/off of a switch point); the pool's schedule editor: the hours of an on window `glyphDark` on
+ * `teal`, the time at the dragged handle `group` on `label`. Steppers and play draw `label` on `fill`, the playing state
+ * white on blue (window pairs). The energy page's tiles: their text is `label`/`label2` on `fill` over the card (the
+ * field pairs), the glyph in its circle the tone's ink on its soft tone over that (3:1, non-text); the neutral circle is
+ * the card with `label2`. The music page: a playing zone tile's badge `blueInk` on `blueSoft` over the card (the card
+ * lies under it: over the tile's `fill` it would be 4.2:1 in light mode); a chosen player's row `label` on
+ * `accentSoft`, also its state (`label2` would fall below 4.5:1 for some accents in dark mode); over a library tile's
+ * art the more glyph `label` and a favourite's star `yellowInk` on `fillSolid`, the play glyph `glyphDark` on the white
+ * knob (3:1, non-text). The playing blue (`blueInk` on `blueSoft`) on the card and the popovers' text on `group` are
+ * covered by the general and the window pairs.
+ */
+function pagesContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): ContrastPair[] {
+  const pairs: ContrastPair[] = [];
+  for (const [name, under] of [['card', c.card], ['bg', c.bg]] as const) {
+    const field = compositeOver(c.fill, under);
+    pairs.push({ name: `field text (label) on fill over ${name}`, fg: c.label, bg: field, min: 4.5 });
+    pairs.push({ name: `field placeholder (label2) on fill over ${name}`, fg: c.label2, bg: field, min: 4.5 });
+  }
+  pairs.push({ name: 'chosen pill (accentInk on accentSoft over card)', fg: a.accentInk, bg: compositeOver(a.accentSoft, c.card), min: 4.5 });
+  pairs.push({ name: 'warnInk on card', fg: c.warnInk, bg: c.card, min: 4.5 });
+  pairs.push({ name: 'warnInk on warnSoft over card (motion pill)', fg: c.warnInk, bg: compositeOver(c.warnSoft, c.card), min: 4.5 });
+  pairs.push({ name: 'label on seg (segment lens)', fg: c.label, bg: c.seg, min: 4.5 });
+  pairs.push({ name: 'glyphDark on teal (hours of an on window, pool schedule editor)', fg: c.glyphDark, bg: c.teal, min: 4.5 });
+  pairs.push({ name: 'group on label (time at the dragged handle)', fg: c.group, bg: c.label, min: 4.5 });
+  const tile = compositeOver(c.fill, c.card);
+  for (const [ink, soft] of [['blueInk', 'blueSoft'], ['greenInk', 'greenSoft'], ['yellowInk', 'yellowSoft'], ['redInk', 'redSoft']] as const) {
+    pairs.push({ name: `${ink} glyph on ${soft} over fill over card (energy tile)`, fg: c[ink], bg: compositeOver(c[soft], tile), min: 3 });
+  }
+  pairs.push({ name: 'blueInk on blueSoft over card (playing zone tile badge, the card under it)', fg: c.blueInk, bg: compositeOver(c.blueSoft, c.card), min: 4.5 });
+  pairs.push({ name: 'label on accentSoft over card (chosen player: name and state)', fg: c.label, bg: compositeOver(a.accentSoft, c.card), min: 4.5 });
+  pairs.push({ name: 'label glyph on fillSolid (library item more)', fg: c.label, bg: c.fillSolid, min: 3 });
+  pairs.push({ name: 'yellowInk glyph on fillSolid (library favourite star)', fg: c.yellowInk, bg: c.fillSolid, min: 3 });
+  pairs.push({ name: 'glyphDark on knob (library play)', fg: c.glyphDark, bg: c.knob, min: 3 });
+  // The devices page (plan Etappe 5 §7.13): a favourite in the device window, the inverted eye of a hidden entity.
+  pairs.push({ name: 'yellowInk glyph on yellowSoft over group (device window favourite)', fg: c.yellowInk, bg: compositeOver(c.yellowSoft, c.group), min: 3 });
+  pairs.push({ name: 'bg glyph on label (eye of a hidden entity or card)', fg: c.bg, bg: c.label, min: 3 });
+  // Automations and scenes (plan Etappe 5 §7.14): the symbols of the hero's stats in their ink, in the capsule.
+  for (const ink of ['greenInk', 'blueInk', 'tealInk'] as const) {
+    pairs.push({ name: `${ink} glyph on fill over card (hero stats)`, fg: c[ink], bg: compositeOver(c.fill, c.card), min: 3 });
+  }
+  // The system page (plan Etappe 5 §7.16): a battery's symbol in its ink in the grey circle; the chips of the
+  // security and system heroes lie in the hero's wash (at most half its soft tone): their secondary text `label2`, the
+  // dot of a value over its threshold and an alert's symbol in `warnInk` or `redInk`.
+  // The percentages (`orangeInk`, `redInk` on the card) and the count of low batteries (`orangeInk` on `orangeSoft`
+  // over the card) are general pairs.
+  for (const ink of ['orangeInk', 'redInk'] as const) {
+    pairs.push({ name: `${ink} glyph on fill over card (battery symbol)`, fg: c[ink], bg: compositeOver(c.fill, c.card), min: 3 });
+  }
+  for (const soft of ['greenSoft', 'warnSoft', 'redSoft'] as const) {
+    const chip = compositeOver(c.fill, compositeOver(atAlpha(c[soft], mustParse(c[soft]).a / 2), c.card));
+    pairs.push({ name: `label2 on fill over the ${soft} wash (hero chip)`, fg: c.label2, bg: chip, min: 4.5 });
+    for (const ink of ['warnInk', 'redInk'] as const) {
+      pairs.push({ name: `${ink} glyph on fill over the ${soft} wash (hero chip dot or symbol)`, fg: c[ink], bg: chip, min: 3 });
+    }
+  }
+  return pairs;
+}
+
+/**
  * The frame's pairs (plan Etappe 2 §6.3): each surface with its own minimum tint. Black/white text against the
  * realistic worst backdrops in rest (GLAS-DESIGN §2.5 rule 4); coloured text and glyphs only against what lies
  * behind the surface in rest (rule 3). "Deckend" has no glass: its surfaces are `cardSolid`/`sheetSolid` = card/bg,
@@ -903,7 +971,7 @@ function frameContrastPairs(input: GlasInput, c: Record<GlasColorKey, string>, a
   pairs.push({ name: 'banner text on lost', fg: c.label, bg: resolveMix(c.bannerLost), min: 4.5 });
   pairs.push({ name: 'onBadge on badge', fg: c.onBadge, bg: c.badge, min: 4.5 });
   for (const s of ['green', 'yellow', 'red', 'gray'] as const) {
-    pairs.push({ name: `glyphDark on ${s} (status pill)`, fg: c.glyphDark, bg: c[s], min: 4.5 });
+    pairs.push({ name: `glyphDark on ${s} (status pill, devices hero)`, fg: c.glyphDark, bg: c[s], min: 4.5 });
   }
   return pairs;
 }

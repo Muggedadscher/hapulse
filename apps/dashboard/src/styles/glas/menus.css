@@ -365,6 +365,35 @@
   color: var(--g-accent-ink);
 }
 
+/* More: the value on the right ("8,4 kWh", "12", "Normal") and the foot "Version … · F…" (K97, GLAS-DESIGN §7.18);
+   text on the glass sheet takes glassLabel2 (contrast list in glasTokens.ts). The value sits closer to the chevron
+   than the row's gap, as in iOS lists. */
+:root[data-style='glas'] .g-more-value {
+  flex-shrink: 0;
+  max-width: 50%;
+  overflow: hidden;
+  margin-inline-end: -6px;
+  color: var(--g-glass-label-2);
+  font-size: 17px;
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-more-foot {
+  padding: 14px 20px 6px;
+  color: var(--g-glass-label-2);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* "version 1.3.2 · F37" comes in lower case from the locales (Klassisch's About line) */
+:root[data-style='glas'] .g-more-foot::first-letter {
+  text-transform: uppercase;
+}
+
 /* ---- Phone: More and rooms as a sheet look (K43), with a scrim; the tab bar hides meanwhile (tabbar.css) ---- */
 @media (max-width: 899px) {
   :root[data-style='glas'] :is(.rooms-menu, .app-more-menu) {
@@ -476,6 +505,26 @@
     padding: 7px;
     border-radius: 50%;
     background: var(--g-fill);
+    transition:
+      background-color 300ms ease,
+      color 300ms ease;
+  }
+
+  /* the room's state (K97), in the tones of the overview's room tiles: lights on yellow, an open window or door a
+     warning, an open gate, water or smoke an alarm */
+  :root[data-style='glas'] .rooms-menu__row[data-tone='on'] .rooms-menu__row-icon {
+    background: var(--g-yellow);
+    color: var(--g-glyph-dark);
+  }
+
+  :root[data-style='glas'] .rooms-menu__row[data-tone='warn'] .rooms-menu__row-icon {
+    background: var(--g-warn-soft);
+    color: var(--g-warn-ink);
+  }
+
+  :root[data-style='glas'] .rooms-menu__row[data-tone='alarm'] .rooms-menu__row-icon {
+    background: var(--g-red-soft);
+    color: var(--g-red-ink);
   }
 }
 
@@ -506,6 +555,19 @@
   :root[data-style='glas'] .rooms-menu__row-icon {
     width: 20px;
     height: 20px;
+  }
+
+  /* the room's state (K97) without a circle: the symbol in the tone's ink */
+  :root[data-style='glas'] .rooms-menu__row[data-tone='on'] .rooms-menu__row-icon {
+    color: var(--g-yellow-ink);
+  }
+
+  :root[data-style='glas'] .rooms-menu__row[data-tone='warn'] .rooms-menu__row-icon {
+    color: var(--g-warn-ink);
+  }
+
+  :root[data-style='glas'] .rooms-menu__row[data-tone='alarm'] .rooms-menu__row-icon {
+    color: var(--g-red-ink);
   }
 }
 

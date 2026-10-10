@@ -2,8 +2,10 @@
    plan docs/glas/PLAN-ETAPPE-3.md §3.8, K54, K56, K67, K71).
 
    Only presentation of the existing markup: the same rows, buttons and texts, in iOS groups. Everything is scoped to
-   a window's body (.modal-body): several of these lists also stand on pages (garage and locks in the security
-   section, the alarm card, the pool duration picker, player tiles), which keep their look until their stage.
+   a window's body (.modal-body): several of these lists also stand on pages. The security page shares the rows of
+   the locks and garage doors and the alarm card's head and modes since stage 5 (`:is(.modal-body, .security-page)`;
+   its lists and card in lists.css and security.css); the pool duration picker and the player tiles follow with
+   their pages.
    Switches, segments and sliders keep the classic form with Glas colours (stage 5); the cards of "Climate/Blinds
    all" and the content of the entity detail follow in stages 4 and 5. No glass in the content. */
 
@@ -104,7 +106,8 @@
     .weather-modal__forecast-row,
     .waste-modal__row,
     .g-notes__row
-  ) {
+  ),
+:root[data-style='glas'] .security-page :is(.garage-row, .locks-row) {
   border: 0;
   border-radius: 0;
   background-repeat: no-repeat;
@@ -115,8 +118,8 @@
 :root[data-style='glas'] .modal-body .people-modal__row + .people-modal__row,
 :root[data-style='glas'] .modal-body .lights-modal__row + .lights-modal__row,
 :root[data-style='glas'] .modal-body .doors-modal__row + .doors-modal__row,
-:root[data-style='glas'] .modal-body .garage-row + .garage-row,
-:root[data-style='glas'] .modal-body .locks-row + .locks-row,
+:root[data-style='glas'] :is(.modal-body, .security-page) .garage-row + .garage-row,
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row + .locks-row,
 :root[data-style='glas'] .modal-body .pool-modal__glance + .pool-modal__glance,
 :root[data-style='glas'] .modal-body .weather-modal__forecast-row + .weather-modal__forecast-row,
 :root[data-style='glas'] .modal-body .waste-modal__row + .waste-modal__row,
@@ -246,11 +249,13 @@
   margin: 0 0 18px;
 }
 
+/* a block (one line of text) so that the first letter can be raised: "alle ausschalten" comes in lower case (K97) */
 :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn {
-  gap: 8px;
+  display: block;
   width: 100%;
   min-height: 48px;
-  padding: 0 18px;
+  padding: 13px 18px;
+  text-align: center;
   border: 0;
   border-radius: 24px;
   background: var(--g-prominent);
@@ -259,6 +264,10 @@
   font-size: 17px;
   line-height: 22px;
   font-weight: 600;
+}
+
+:root[data-style='glas'] .modal-body .lights-modal__header-action > .btn::first-letter {
+  text-transform: uppercase;
 }
 
 :root[data-style='glas'] .modal-body .lights-modal__header-action > .btn:hover {
@@ -405,41 +414,41 @@
 
 /* ---- Garage: circle 40 soft, state 15/600 in the ink without a pill, buttons 44; the buttons take their own line
    on the phone and stand in the row on the desktop ---- */
-:root[data-style='glas'] .modal-body .garage-row {
+:root[data-style='glas'] :is(.modal-body, .security-page) .garage-row {
   --g-row-sep: 66px;
   gap: 12px;
   min-height: 0;
   padding: 14px;
 }
 
-:root[data-style='glas'] .modal-body .garage-row:hover {
+:root[data-style='glas'] :is(.modal-body, .security-page) .garage-row:hover {
   background-color: transparent;
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__icon, .locks-row__icon) {
+:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__icon, .locks-row__icon) {
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__name-col, .locks-row__name-col) {
+:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__name-col, .locks-row__name-col) {
   gap: 0;
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__name, .locks-row__name) {
+:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__name, .locks-row__name) {
   color: var(--g-label);
   font-size: 17px;
   line-height: 22px;
   font-weight: 600;
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__room, .locks-row__room) {
+:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__room, .locks-row__room) {
   color: var(--g-label-2);
   font-size: 13px;
   line-height: 18px;
 }
 
-:root[data-style='glas'] .modal-body .garage-row__state {
+:root[data-style='glas'] :is(.modal-body, .security-page) .garage-row__state {
   padding: 0;
   border-radius: 0;
   background: none;
@@ -449,13 +458,13 @@
   letter-spacing: 0;
 }
 
-:root[data-style='glas'] .modal-body .garage-row__actions {
+:root[data-style='glas'] :is(.modal-body, .security-page) .garage-row__actions {
   flex: 1 0 100%;
   gap: 8px;
   margin-left: 0;
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn) {
+:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn) {
   justify-content: center;
   gap: 6px;
   border: 0;
@@ -468,31 +477,32 @@
   transition: background-color 150ms ease, opacity 150ms ease;
 }
 
-:root[data-style='glas'] .modal-body .garage-row__btn {
+:root[data-style='glas'] :is(.modal-body, .security-page) .garage-row__btn {
   flex: 1 1 0;
   min-height: 44px;
   padding: 0 12px;
   border-radius: 22px;
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn):not(:disabled):hover {
-  border: 0;
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn):not(:disabled):hover {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn):disabled {
+:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn):disabled {
   opacity: 0.4;
 }
 
-:root[data-style='glas'] .modal-body :is(.garage-row__btn, .locks-row__btn):focus-visible {
+:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn):focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
 }
 
 /* ---- Locks: circle 40 (locked green, otherwise red as on the chip), the state under the name, one button 40:
    "Entriegeln" while locked, "Verriegeln" otherwise — disabled while busy or jammed as today ---- */
-:root[data-style='glas'] .modal-body .locks-row {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row {
   --g-row-sep: 66px;
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
@@ -503,26 +513,26 @@
   padding: 12px 12px 12px 14px;
 }
 
-:root[data-style='glas'] .modal-body .locks-row:hover {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row:hover {
   background-color: transparent;
 }
 
-:root[data-style='glas'] .modal-body .locks-row__icon {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row__icon {
   grid-row: 1 / span 2;
 }
 
-:root[data-style='glas'] .modal-body .locks-row__icon--unlocked {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row__icon--unlocked {
   background: var(--g-red-soft);
   color: var(--g-red-ink);
 }
 
-:root[data-style='glas'] .modal-body .locks-row__name-col {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row__name-col {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
 }
 
-:root[data-style='glas'] .modal-body .locks-row__state {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row__state {
   grid-column: 2;
   grid-row: 2;
   justify-self: start;
@@ -536,25 +546,25 @@
   letter-spacing: 0;
 }
 
-:root[data-style='glas'] .modal-body .locks-row__state--unlocked {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row__state--unlocked {
   color: var(--g-red-ink);
   font-weight: 600;
 }
 
-:root[data-style='glas'] .modal-body .locks-row__actions {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row__actions {
   grid-column: 3;
   grid-row: 1 / span 2;
   margin-left: 0;
 }
 
-:root[data-style='glas'] .modal-body .locks-row__btn {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row__btn {
   min-height: 40px;
   padding: 0 14px;
   border-radius: 20px;
 }
 
-:root[data-style='glas'] .modal-body .locks-row:has(.locks-row__state--locked) .locks-row__btn--lock,
-:root[data-style='glas'] .modal-body .locks-row:has(.locks-row__state--unlocked) .locks-row__btn--unlock {
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row:has(.locks-row__state--locked) .locks-row__btn--lock,
+:root[data-style='glas'] :is(.modal-body, .security-page) .locks-row:has(.locks-row__state--unlocked) .locks-row__btn--unlock {
   display: none;
 }
 
@@ -584,7 +594,7 @@
   color: var(--g-label-2);
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__state-icon {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__state-icon {
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -593,30 +603,30 @@
   transition: background-color 300ms ease, color 300ms ease;
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__state-icon > svg {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__state-icon > svg {
   width: 28px;
   height: 28px;
 }
 
 :root[data-style='glas']
-  .modal-body
+  :is(.modal-body, .security-page)
   :is(.alarm-panel-card__state--home, .alarm-panel-card__state--night, .alarm-panel-card__state--away)
   .alarm-panel-card__state-icon {
   background: var(--g-green-soft);
   color: var(--g-green-ink);
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__state--warning .alarm-panel-card__state-icon {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__state--warning .alarm-panel-card__state-icon {
   background: var(--g-warn-soft);
   color: var(--g-warn-ink);
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__state--triggered .alarm-panel-card__state-icon {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__state--triggered .alarm-panel-card__state-icon {
   background: var(--g-red-soft);
   color: var(--g-red-ink);
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__name {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__name {
   margin: 0;
   color: var(--g-label-2);
   font-size: 13px;
@@ -626,7 +636,7 @@
   text-transform: none;
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__state-label {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__state-label {
   gap: 6px;
   color: var(--g-label);
   font-size: 22px;
@@ -634,23 +644,23 @@
   font-weight: 700;
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__divider {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__divider {
   display: none;
 }
 
-:root[data-style='glas'] .modal-body .alarm-panel-card__actions {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-panel-card__actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
 /* "Unscharf" closes the grid on a line of its own when it would stand alone */
-:root[data-style='glas'] .modal-body .alarm-btn--disarm:nth-child(odd) {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn--disarm:nth-child(odd) {
   grid-column: 1 / -1;
 }
 
-:root[data-style='glas'] .modal-body .alarm-btn,
-:root[data-style='glas'] .modal-body .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn,
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
   display: flex;
   align-items: center;
   min-width: 0;
@@ -658,7 +668,7 @@
   padding: 0 14px;
   border: 0;
   border-radius: 18px;
-  background: var(--g-group);
+  background: var(--g-alarm-mode, var(--g-group));
   box-shadow: none;
   color: var(--g-label);
   font-family: var(--g-font);
@@ -669,25 +679,27 @@
   transition: background-color 250ms ease, color 250ms ease, box-shadow 250ms ease, transform 100ms ease-out;
 }
 
-:root[data-style='glas'] .modal-body .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
-  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
 }
 
-:root[data-style='glas'] .modal-body .alarm-btn.alarm-btn--active {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn.alarm-btn--active {
   background: var(--g-accent-soft);
   box-shadow: inset 0 0 0 2px var(--g-accent);
   color: var(--g-accent-ink);
 }
 
-:root[data-style='glas'] .modal-body .alarm-btn:disabled:not(.alarm-btn--active) {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:disabled:not(.alarm-btn--active) {
   opacity: 0.45;
 }
 
-:root[data-style='glas'] .modal-body .alarm-btn.alarm-btn--active:disabled {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn.alarm-btn--active:disabled {
   opacity: 1;
 }
 
-:root[data-style='glas'] .modal-body .alarm-btn:focus-visible {
+:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
 }
@@ -818,7 +830,8 @@
   outline-offset: 2px;
 }
 
-/* ---- Pool: status 22/28 700 tealInk, modes as a capsule row 44 (the lens follows in stage 5), figures as a list ---- */
+/* ---- Pool: status 22/28 700 tealInk, the modes as the segment with its lens (stage 5, PoolModeSegment; with more than
+   five modes the classic buttons as a capsule row 44), figures as a list ---- */
 :root[data-style='glas'] .modal-body .pool-modal {
   gap: 12px;
 }
@@ -1612,12 +1625,12 @@
     line-height: 18px;
   }
 
-  :root[data-style='glas'] .modal-body .garage-row__actions {
+  :root[data-style='glas'] :is(.modal-body, .security-page) .garage-row__actions {
     flex: 0 0 auto;
     margin-left: auto;
   }
 
-  :root[data-style='glas'] .modal-body .garage-row__btn {
+  :root[data-style='glas'] :is(.modal-body, .security-page) .garage-row__btn {
     flex: 0 0 auto;
     padding: 0 16px;
   }

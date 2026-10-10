@@ -396,7 +396,7 @@
    its focus ring; the phone's device tiles too, the desktop's device rows lie in their card. */
 @media (forced-colors: active) {
   :root[data-style='glas']
-    :where(.home-page, .header-cluster__chips)
+    :where(.home-page, .room-page, .header-cluster__chips)
     :where(
       .scene-tile:not([data-active]),
       .hero-room-card .hero-pill:not(.hero-pill--lights-on),

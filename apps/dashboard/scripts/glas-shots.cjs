@@ -2,7 +2,7 @@
 //
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
-//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home]
+//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home|pages]
 //     [--dom-out <file>] [--only <block>,…]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
@@ -16,13 +16,15 @@
 //   the gesture scenes of stage 3b (ctx-card, ctx-card-off, swipe-lights, swipe-notes, glas-checks-gestures.cjs) a
 //   context menu or a swipe row, the overview scenes of stage 4 (home-hints, home-edit, energy-bubble, detail-light,
 //   glas-checks-home.cjs) the hints card, edit mode, a picked energy bar or a light's detail; all are taken at viewport
-//   size and are not part of the default list.
+//   size and are not part of the default list. The edit scenes of stage 5 (security-edit, energy-edit, …,
+//   glas-checks-pages.cjs) take a page in edit mode at full length; they are not in the default list either.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
 //   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
-//   (glas-checks-gestures.cjs) and the overview's content of stage 4 (PLAN-ETAPPE-4.md §3, glas-checks-home.cjs);
-//   --part runs one. --dom-out: the Klassisch DOM of every window as JSON, to compare a build with main's. --only runs
-//   some blocks of the window, gesture or overview checks (e.g. sheetsDrag, gesturesInspector, homeHints).
+//   (glas-checks-gestures.cjs), the overview's content of stage 4 (PLAN-ETAPPE-4.md §3, glas-checks-home.cjs) and the
+//   other pages of stage 5 (PLAN-ETAPPE-5.md §3, glas-checks-pages.cjs); --part runs one. --dom-out: the Klassisch
+//   DOM of every window as JSON, to compare a build with main's. --only runs some blocks of the window, gesture,
+//   overview or page checks (e.g. sheetsDrag, gesturesInspector, homeHints, pagesSwitches).
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
@@ -142,16 +144,20 @@ async function baseUrl(pos) {
   return { srv: null, url: process.argv[pos].replace(/\/+$/, '') };
 }
 
-/** Init script: demo connection + settings, seeded Math.random, no dialogs/confirm. */
-function seedScript({ demo, mode, style, strength, reduce, customization: extra }) {
+/** Init script: demo connection + settings, seeded Math.random, no dialogs/confirm. `state` adds fields of the settings
+ *  state (e.g. `modeOverride`), `storage` further localStorage entries (e.g. the global management's meta). */
+function seedScript({ demo, mode, style, strength, reduce, customization: extra, state, storage }) {
   const customization = { ...(style === 'glas' ? { uiStyle: 'glas', glassStrength: strength, reduceTransparency: reduce } : {}), ...extra };
-  const settings = { state: { theme: 'aurora', mode, lastSeenVersion: '99.0.0', lastSeenFork: 99, customization }, version: 0 };
+  const settings = { state: { theme: 'aurora', mode, lastSeenVersion: '99.0.0', lastSeenFork: 99, ...state, customization }, version: 0 };
+  const more = Object.entries(storage || {})
+    .map(([k, v]) => `localStorage.setItem(${JSON.stringify(k)}, ${JSON.stringify(typeof v === 'string' ? v : JSON.stringify(v))});`).join('\n');
   return `(() => {
     try {
       if (!sessionStorage.getItem('__glasSeeded')) {
         localStorage.clear();
         ${demo ? `localStorage.setItem('hapulse:connection', JSON.stringify({ demo: true, mode: 'demo' }));` : ''}
         localStorage.setItem('hapulse:settings', ${JSON.stringify(JSON.stringify(settings))});
+        ${more}
         sessionStorage.setItem('__glasSeeded', '1');
       }
     } catch (e) { /* storage blocked */ }
@@ -266,6 +272,9 @@ Object.assign(SCENES, GESTURES.scenes);
 // stage 4: the overview's content — scenes home-hints, home-edit, energy-bubble, detail-light and `checks --part home`
 const HOME = require('./glas-checks-home.cjs')({ DE, DEVICES, ABORTED, run, settleAnimations, isGlas, seedScript });
 Object.assign(SCENES, HOME.scenes);
+// stage 5: the other pages — scenes security-edit, energy-edit, … and `checks --part pages`
+const PAGES = require('./glas-checks-pages.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, run, isGlas });
+Object.assign(SCENES, PAGES.scenes);
 
 /** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
 async function tap(page, sel) {
@@ -618,7 +627,9 @@ async function stage1Checks(browser, url, out) {
         await settleAnimations(page); // the knob's background transition runs on real time
         const r = await page.evaluate((sels) => Object.fromEntries(Object.entries(sels).map(([k, s]) => {
           const [sel, pseudo] = Array.isArray(s) ? s : [s, null];
-          return [k, [...document.querySelectorAll(sel)].map((el) => getComputedStyle(el, pseudo).backgroundColor)];
+          // only knobs on screen: since stage 5 a room's tiles keep their classic switch hidden (K95)
+          return [k, [...document.querySelectorAll(sel)].filter((el) => el.getClientRects().length)
+            .map((el) => getComputedStyle(el, pseudo).backgroundColor)];
         })), KNOBS);
         for (const [k, colors] of Object.entries(r)) {
           found[k] = (found[k] || 0) + colors.length;
@@ -630,8 +641,9 @@ async function stage1Checks(browser, url, out) {
     }
     out.knobs = { found, bad };
     // the demo shows these kinds switched on; the others (legacy, device rows in a dialog, since stage 4 the classic
-    // device card, which Glas draws with its own switch) are checked where they appear
-    out.knobsOk = bad.length === 0 && ['pill', 'autoRow', 'pool', 'glasSwitch', 'admin'].every((k) => found[k] > 0);
+    // device card, which Glas draws with its own switch, since stage 5 the tiles' pill, which Glas hides, and the
+    // detail's, which pagesSwitches checks) are checked where they appear
+    out.knobsOk = bad.length === 0 && ['autoRow', 'pool', 'glasSwitch', 'admin'].every((k) => found[k] > 0);
   }
 
   // 6. cards are borderless in Glas, except borders that show a state: a triggered alarm card (added to the security
@@ -1423,6 +1435,7 @@ async function checks() {
   }
   if (part === 'all' || part === 'gestures') ok = (await GESTURES.gesturesChecks(browser, url, out, { only: list('only', '') })) && ok;
   if (part === 'all' || part === 'home') ok = (await HOME.homeChecks(browser, url, out, { only: list('only', '') })) && ok;
+  if (part === 'all' || part === 'pages') ok = (await PAGES.pagesChecks(browser, url, out, { only: list('only', '') })) && ok;
   await browser.close();
   if (srv) srv.close();
   console.log(JSON.stringify({ ok, ...out }, null, 1));

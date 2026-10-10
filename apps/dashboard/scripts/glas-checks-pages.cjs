@@ -1,0 +1,4415 @@
+// [fork] glas-checks-pages.cjs — the other pages of Glas stage 5 for glas-shots.cjs (docs/glas/PLAN-ETAPPE-5.md §3):
+// `checks --part pages`. glas-shots.cjs loads this file with its helpers; it is not run on its own.
+//
+// The checks run in real time and change the demo like the overview checks (glas-checks-home.cjs). Blocks so far:
+// pagesSwitches (K91), pagesControls (K93), pagesFields (K94), pagesTitles, pagesCardTitles and pagesFrame (K89, K90,
+// K85), pagesEdit (K96), pagesSegments (K92), pagesKeep and pagesEmpty (§3.1), pagesMenus (K97: chip windows, More and
+// rooms menus, "Klima alle" / "Rollläden alle"). Service calls the demo does not apply (the pool's mode, threshold,
+// schedule, restart) are read from the demo's call log (`__hapulseDemo.calls()`), the statistics requests of the
+// energy from its counter (`__hapulseDemo.energyLoads()`).
+
+module.exports = function pages(h) {
+  const { DE, DEVICES, ABORTED, settleAnimations, seedScript, run, isGlas } = h;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  // the energy checks' date (as `shoot`: 2026-10-06 12:30 Berlin): the demo's figures depend on the hour
+  const ENERGY_AT = Date.parse('2026-10-06T10:30:00Z');
+
+  /**
+   * The classic switches that Glas draws as the iOS switch (K91), where the demo shows them. `box` is the control a tap
+   * and Space reach (the label or the button), `capsule` the drawn track (null = the box itself), `knob` its knob
+   * (null = the capsule's ::after), `state` reads on/off. `open` brings the switch on screen.
+   */
+  const KINDS = {
+    automation: {
+      path: '/automations', box: '.auto-row-toggle', capsule: '.auto-row-toggle__track', knob: '.auto-row-toggle__knob',
+    },
+    poolSchedule: {
+      path: '/pool', box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
+    },
+    settings: {
+      path: '/settings', box: `.admin-toggle[aria-label="${DE['glas.reduceTransparency.label']}"]`, capsule: null,
+      knob: '.admin-toggle__thumb',
+    },
+    lights: {
+      path: '/', open: (page) => click(page, '.summary-chip[data-chip="lights"]'),
+      box: '.lights-modal__toggle', capsule: '.lights-modal__toggle-track', knob: null,
+    },
+    device: {
+      path: '/devices', open: openDeviceWithSwitch, box: '.device-toggle', capsule: null, knob: '.device-toggle__knob',
+    },
+  };
+
+  /** Click the first visible match (scrolled into view), then let it settle. */
+  async function click(page, sel) {
+    const el = page.locator(sel).filter({ visible: true }).first();
+    if (!(await el.count())) throw new Error('not visible: ' + sel);
+    await el.click();
+    await sleep(80);
+    await settleAnimations(page);
+  }
+
+  /** The devices page: the first device whose window has a switch row. */
+  async function openDeviceWithSwitch(page) {
+    const n = await page.locator('.device-card').count();
+    for (let i = 0; i < Math.min(n, 40); i++) {
+      await page.locator('.device-card').nth(i).click();
+      await sleep(150);
+      await settleAnimations(page);
+      if (await page.locator('[role="dialog"] .device-toggle').filter({ visible: true }).count()) return;
+      await page.keyboard.press('Escape');
+      await sleep(150);
+      await settleAnimations(page);
+    }
+    throw new Error('no device with a switch row');
+  }
+
+  async function pagesChecks(browser, url, out, opts = {}) {
+    const pageErrors = [];
+    const ran = [];
+    // --only names blocks (`pagesKeep`) or parts of one (`pagesKeep:devices`, the parts of a block with several pages):
+    // after a fix only the affected checks run (plan §3)
+    const onlyBlocks = (opts.only || []).map((o) => o.split(':')[0]);
+    const onlyParts = (name) => (opts.only || []).filter((o) => o.startsWith(`${name}:`)).map((o) => o.slice(name.length + 1));
+    const block = async (name, fn) => {
+      if (onlyBlocks.length && !onlyBlocks.includes(name)) return;
+      ran.push(name);
+      try {
+        await fn();
+      } catch (e) {
+        out[name + 'Error'] = String(e && e.message).split('\n')[0].slice(0, 300);
+        out[name + 'Ok'] = false;
+      }
+    };
+    const ev = (page, fn, a) => page.evaluate(fn, a);
+
+    /** A real-time document of the demo in Glas (or Klassisch). */
+    const open = async (device, style, p, extra = {}) => {
+      const ctx = await browser.newContext({
+        ...DEVICES[device], ...(extra.viewport ? { viewport: extra.viewport } : {}), locale: 'de-DE',
+        timezoneId: 'Europe/Berlin', colorScheme: extra.mode || 'light', reducedMotion: 'no-preference',
+      });
+      await ctx.route((u) => !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(u.href), (r) => r.abort());
+      await ctx.addInitScript(seedScript({ demo: true, mode: extra.mode || 'light', style, strength: 'clear', customization: extra.customization,
+        state: extra.state, storage: extra.storage }));
+      // a fixed date (timers keep running): the demo's energy figures depend on the hour, two documents must agree
+      if (extra.fixedTime) await ctx.clock.setFixedTime(extra.fixedTime);
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on('pageerror', (e) => errors.push('exc: ' + String(e.message).slice(0, 200)));
+      page.on('console', (m) => { if (m.type() === 'error' && !ABORTED.test(m.text())) errors.push('console: ' + m.text().slice(0, 200)); });
+      await page.goto(url + p, { waitUntil: 'load' });
+      await page.waitForFunction(() => document.querySelector('#root > *') && window.__hapulseDemo, null, { timeout: 15000 });
+      await page.waitForLoadState('networkidle');
+      await sleep(600);
+      await settleAnimations(page);
+      const close = async () => {
+        if (errors.length) pageErrors.push({ device, style, path: p, errors: errors.slice(0, 3) });
+        await ctx.close();
+      };
+      return { ctx, page, close };
+    };
+
+    /** The admin management as active (its meta in localStorage): the settings show this device's light/dark and the
+     *  management's rows. The demo user is an admin, so nothing is locked. */
+    const SETTINGS_MANAGED = { 'hapulse:global-meta': { state: { meta: { managed: true, rev: 3, activatedAt: '2026-10-02T18:00:00Z',
+      activatedBy: { id: 'user_alice', name: 'Alice' }, updatedAt: '2026-10-09T07:30:00Z', updatedBy: { id: 'user_alice', name: 'Alice' },
+      shareSecrets: true } }, version: 0 } };
+
+    // ---- K91: every list switch is the iOS switch — 51 × 31, iOS green / grey, knob 27 white at 2 / 22, hit area
+    //      64 × 44 (a point 5 px outside the capsule still reaches the control), click, Space and a tap on the edge of
+    //      the hit area switch. The pill of a switch card (detail) lets the tap through to the card. Glas only. ----
+    await block('pagesSwitches', async () => {
+      const res = {};
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        for (const [kind, k] of Object.entries(KINDS)) {
+          const { page, close } = await open(device, 'glas', k.path, { mode });
+          try {
+            if (k.open) await k.open(page);
+            const box = page.locator(k.box).filter({ visible: true }).first();
+            if (!(await box.count())) throw new Error('not visible: ' + k.box);
+            await box.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const look = () => ev(page, ([sel, capSel, knobSel]) => {
+              const boxEl = [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
+              const cap = capSel ? boxEl.querySelector(capSel) : boxEl;
+              const knob = knobSel ? boxEl.querySelector(knobSel) : null;
+              const kcs = knob ? getComputedStyle(knob) : getComputedStyle(cap, '::after');
+              const input = boxEl.querySelector('input');
+              const on = input ? input.checked : boxEl.getAttribute('aria-checked') === 'true';
+              const c = cap.getBoundingClientRect();
+              const kx = knob ? knob.getBoundingClientRect().left - c.left
+                : parseFloat(kcs.left) + (new DOMMatrixReadOnly(kcs.transform === 'none' ? undefined : kcs.transform).m41 || 0);
+              const tok = (name) => {
+                const d = document.createElement('div');
+                d.style.background = `var(${name})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d).backgroundColor;
+                d.remove();
+                return v;
+              };
+              // a point 5 px outside each edge of the capsule still belongs to the control
+              const owner = (x, y) => {
+                const e = document.elementFromPoint(x, y);
+                return !!e && e.closest(sel) === boxEl;
+              };
+              const mx = c.left + c.width / 2;
+              const my = c.top + c.height / 2;
+              return {
+                on, w: c.width, h: c.height, kx: Math.round(kx), kw: parseFloat(kcs.width), kbg: kcs.backgroundColor,
+                bg: getComputedStyle(cap).backgroundColor, want: tok(on ? '--g-switch-on' : '--g-switch-off'),
+                knobWhite: tok('--g-knob'),
+                hit: { left: owner(c.left - 5, my), right: owner(c.right + 5, my), top: owner(mx, c.top - 5), bottom: owner(mx, c.bottom + 5) },
+                edge: { x: c.right + 5, y: my }, mid: { x: mx, y: my },
+              };
+            }, [k.box, k.capsule, k.knob]);
+            const settle = async (was) => {
+              await page.waitForFunction(([sel, w]) => {
+                const b = [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
+                const input = b && b.querySelector('input');
+                return b && (input ? input.checked : b.getAttribute('aria-checked') === 'true') !== w;
+              }, [k.box, was], { timeout: 3000 }).catch(() => {});
+              await sleep(80);
+              await settleAnimations(page);
+            };
+            const a = await look();
+            // click in the middle
+            await page.mouse.click(a.mid.x, a.mid.y);
+            await settle(a.on);
+            const b = await look();
+            // Space on the control (the label's input or the button)
+            await ev(page, (sel) => {
+              const boxEl = [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
+              (boxEl.querySelector('input') || boxEl).focus();
+            }, k.box);
+            await page.keyboard.press('Space');
+            await settle(b.on);
+            const c = await look();
+            // a tap 5 px beside the capsule
+            await page.mouse.click(c.edge.x, c.edge.y);
+            await settle(c.on);
+            const d = await look();
+            const shape = (s) => Math.abs(s.w - 51) < 0.6 && Math.abs(s.h - 31) < 0.6 && Math.abs(s.kw - 27) < 0.6
+              && s.kx === (s.on ? 22 : 2) && s.kbg === s.knobWhite && s.bg === s.want;
+            const ok = [a, b, c, d].every(shape) && Object.values(a.hit).every(Boolean)
+              && b.on !== a.on && c.on !== b.on && d.on !== c.on;
+            res[`${device}-${kind}`] = { ok, a: { on: a.on, w: a.w, h: a.h, kx: a.kx, bg: a.bg, hit: a.hit }, flips: [a.on, b.on, c.on, d.on], shapes: [a, b, c, d].map(shape) };
+          } catch (e) {
+            res[`${device}-${kind}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        // the detail's control card: the pill is a picture of the card's state; a tap on it switches the card
+        {
+          const { page, close } = await open(device, 'glas', '/', { mode });
+          try {
+            await ev(page, () => window.__hapulseDemo.openDetail('switch.coffee_machine'));
+            await sleep(300);
+            await settleAnimations(page);
+            const state = () => ev(page, () => window.__hapulseDemo.entity('switch.coffee_machine').state);
+            const track = page.locator('.entity-detail__control .pill-toggle__track').filter({ visible: true }).first();
+            const s0 = await state();
+            const t = await track.boundingBox();
+            await page.mouse.click(t.x + t.width / 2, t.y + t.height / 2);
+            await page.waitForFunction((w) => window.__hapulseDemo.entity('switch.coffee_machine').state !== w, s0, { timeout: 3000 }).catch(() => {});
+            const s1 = await state();
+            await page.locator('.entity-detail__control .toggle-card').first().focus();
+            await page.keyboard.press('Space');
+            await page.waitForFunction((w) => window.__hapulseDemo.entity('switch.coffee_machine').state !== w, s1, { timeout: 3000 }).catch(() => {});
+            const s2 = await state();
+            const size = await track.boundingBox();
+            res[`${device}-detailPill`] = { ok: s1 !== s0 && s2 !== s1 && Math.abs(size.width - 51) < 0.6, states: [s0, s1, s2] };
+          } catch (e) {
+            res[`${device}-detailPill`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesSwitches = res;
+      out.pagesSwitchesOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K93 building blocks: steppers round 44 in fill (the climate card's setpoint is a capsule 40 in fill with
+    //      − / + 40 inside and a hit area of 44, §7.11, K97), choice pills 36 (chosen = accentSoft), sliders in Glas
+    //      colours (track fill2, brightness yellow, volume label2), gradient knobs 24, play 44 / 56 (playing = blue).
+    //      A click on +, on a pill and on play still does what it did. Glas only. ----
+    await block('pagesControls', async () => {
+      const res = {};
+      const probe = (page) => ev(page, () => {
+        const tok = (name) => {
+          const d = document.createElement('div');
+          d.style.background = `var(${name})`;
+          document.body.appendChild(d);
+          const v = getComputedStyle(d).backgroundColor;
+          d.remove();
+          return v;
+        };
+        const vis = (sel) => [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
+        const box = (e) => e && { w: Math.round(e.getBoundingClientRect().width * 10) / 10, h: Math.round(e.getBoundingClientRect().height * 10) / 10, bg: getComputedStyle(e).backgroundColor, r: getComputedStyle(e).borderRadius };
+        const step = vis('.climate-card__step-btn');
+        const capsule = vis('.climate-card__target-control');
+        capsule?.scrollIntoView({ block: 'center', behavior: 'instant' });
+        const cr = capsule && capsule.getBoundingClientRect();
+        // 1 px outside the capsule, beside − : still the button (its hit area reaches 2 px beyond the visible 40)
+        const hit = cr && document.elementFromPoint(cr.left - 1, cr.top + cr.height / 2)?.closest('.climate-card__step-btn');
+        const pills = [...document.querySelectorAll('.climate-card__mode-pill')].filter((e) => e.getClientRects().length);
+        const active = pills.find((e) => e.classList.contains('climate-card__mode-pill--active'));
+        const fill = vis('.light-card__fill:not(.light-card__fill--temp)');
+        const temp = vis('.light-card__fill--temp');
+        const play = vis('.media-card__play-btn');
+        const pool = vis('.pool-stepper__btn');
+        const np = vis('.now-playing-card__play-btn');
+        const accent = vis('.accent-slider');
+        const music = vis('.now-playing-card__progress, .player-tile__volume, .zone-row__slider');
+        return {
+          fill: tok('--g-fill'), fill2: tok('--g-fill-2'), yellow: tok('--g-yellow'), blue: tok('--g-blue'),
+          soft: tok('--g-accent-soft'),
+          step: box(step), capsule: box(capsule), stepHit: !!hit && hit === capsule.firstElementChild,
+          pills: pills.map((p) => box(p).h), active: box(active),
+          light: fill && { fill: getComputedStyle(fill).backgroundColor, track: getComputedStyle(fill.parentElement).backgroundColor },
+          tempKnob: temp && parseFloat(getComputedStyle(temp, '::after').width),
+          play: play && { ...box(play), playing: !!play.closest('.card--active') },
+          pool: box(pool),
+          np: np && { ...box(np), playing: !!np.querySelector(':scope > .lucide-pause') },
+          // the thumb has no computed style of its own: read the Glas rule that applies to the slider
+          accent: accent && {
+            h: accent.getBoundingClientRect().height,
+            knob: [...document.styleSheets].flatMap((sh) => { try { return [...sh.cssRules]; } catch { return []; } })
+              .filter((r) => r.selectorText && r.selectorText.endsWith('.accent-slider::-webkit-slider-thumb')
+                && accent.matches(r.selectorText.replace('::-webkit-slider-thumb', '')) && r.selectorText.includes('data-style'))
+              .map((r) => parseFloat(r.style.width))[0],
+          },
+          music: music && getComputedStyle(music).backgroundImage.includes(tok('--g-label-2')) && getComputedStyle(music).backgroundImage.includes(tok('--g-fill-2')),
+        };
+      });
+      const round44 = (b) => b && Math.abs(b.w - 44) < 0.6 && Math.abs(b.h - 44) < 0.6 && b.r === '50%';
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // room: climate stepper and pills, light sliders, media card play
+        {
+          const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
+          try {
+            const a = await probe(page);
+            const value = () => ev(page, () => [...document.querySelectorAll('.climate-card__target-value')].find((e) => e.getClientRects().length)?.textContent);
+            const v0 = await value();
+            await page.locator('.climate-card__step-btn').filter({ visible: true }).nth(1).click();
+            await sleep(150);
+            const v1 = await value();
+            const other = page.locator('.climate-card__mode-pill:not(.climate-card__mode-pill--active)').filter({ visible: true }).first();
+            const otherText = await other.textContent();
+            await other.click();
+            await sleep(200);
+            const nowActive = await ev(page, () => [...document.querySelectorAll('.climate-card__mode-pill--active')].find((e) => e.getClientRects().length)?.textContent);
+            await page.locator('.media-card__play-btn').filter({ visible: true }).first().click();
+            await sleep(400);
+            await settleAnimations(page);
+            const b = await probe(page);
+            const playOk = (p) => p && Math.abs(p.w - 44) < 0.6 && p.bg === (p.playing ? a.blue : a.fill);
+            const ok = a.capsule && Math.abs(a.capsule.h - 40) < 0.6 && a.capsule.r === '20px' && a.capsule.bg === a.fill
+              && Math.abs(a.step.w - 40) < 0.6 && Math.abs(a.step.h - 40) < 0.6 && a.step.bg === 'rgba(0, 0, 0, 0)' && a.stepHit
+              && v1 !== v0
+              && a.pills.length > 1 && a.pills.every((h) => Math.abs(h - 36) < 0.6) && a.active && a.active.bg === a.soft
+              && nowActive === otherText
+              && a.light && a.light.fill === a.yellow && a.light.track === a.fill2 && (a.tempKnob == null || a.tempKnob === 24)
+              && playOk(a.play) && playOk(b.play) && a.play.playing !== b.play.playing;
+            res[`${device}-room`] = { ok, capsule: a.capsule, step: a.step, stepHit: a.stepHit, values: [v0, v1], pills: a.pills, active: a.active, mode: [otherText, nowActive], light: a.light, tempKnob: a.tempKnob, play: [a.play, b.play] };
+          } catch (e) {
+            res[`${device}-room`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        // pool page stepper, music Now Playing, settings accent slider
+        for (const [name, p] of [['pool', '/pool'], ['music', '/music'], ['settings', '/settings']]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const a = await probe(page);
+            let ok;
+            if (name === 'pool') ok = round44(a.pool) && a.pool.bg === a.fill;
+            else if (name === 'settings') ok = !!a.accent && Math.abs(a.accent.h - 28) < 0.6 && a.accent.knob === 24;
+            else {
+              await page.locator('.now-playing-card__play-btn').filter({ visible: true }).first().click();
+              await sleep(400);
+              await settleAnimations(page);
+              const b = await probe(page);
+              const npOk = (n) => n && Math.abs(n.w - 56) < 0.6 && n.bg === (n.playing ? a.blue : a.fill);
+              ok = npOk(a.np) && npOk(b.np) && a.np.playing !== b.np.playing && a.music === true;
+              res[`${device}-${name}-after`] = b.np;
+            }
+            res[`${device}-${name}`] = { ok, pool: a.pool, np: a.np, music: a.music, accent: a.accent };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesControls = res;
+      out.pagesControlsOk = Object.entries(res).filter(([k]) => !k.endsWith('-after')).every(([, r]) => r.ok);
+    });
+
+    // ---- K94 fields: fill, 36 visible in a hit area of 44, text 17; a click 2 px inside the hit area but outside the
+    //      visible field still focuses it, and typing still reaches it (the pool editor's time field: the arrow up moves
+    //      its hour). Glas only. ----
+    await block('pagesFields', async () => {
+      const res = {};
+      const FIELDS = [
+        ['devices', '/devices', '.devices-toolbar__search-input', '.devices-toolbar__search'],
+        ['automations', '/automations', '.automations-toolbar__search-input', '.automations-toolbar__search'],
+        ['settings', '/settings', '.settings-text-input', null],
+        ['library', '/music', '.library-card__search-input', null],
+        ['poolTime', '/pool', '[role="dialog"] .pool-time-input', null, (page) => click(page, '.pool-schedule__edit')],
+      ];
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        for (const [name, p, input, bar, opener] of FIELDS) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            if (opener) await opener(page);
+            const field = page.locator(input).filter({ visible: true }).first();
+            if (!(await field.count())) throw new Error('not visible: ' + input);
+            await field.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const a = await ev(page, ([sel, barSel]) => {
+              const el = [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length);
+              const shown = barSel ? el.closest(barSel) : el;
+              const cs = getComputedStyle(shown);
+              const d = document.createElement('div');
+              d.style.background = 'var(--g-fill)';
+              document.body.appendChild(d);
+              const fill = getComputedStyle(d).backgroundColor;
+              d.remove();
+              const r = el.getBoundingClientRect();
+              const s = shown.getBoundingClientRect();
+              const visible = barSel ? s.height : r.height - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth);
+              return { hit: r.height, visible, top: Math.min(r.top, s.top), x: r.left + Math.min(40, r.width / 2), bg: cs.backgroundColor, fill, font: getComputedStyle(el).fontSize, visTop: barSel ? s.top : r.top + parseFloat(cs.borderTopWidth) };
+            }, [input, bar]);
+            // a click 2 px above the visible field, inside the hit area
+            await page.mouse.click(a.x, a.visTop - 2);
+            await sleep(100);
+            const focused = await ev(page, (sel) => document.activeElement && document.activeElement.matches(sel), input);
+            const before = await field.inputValue();
+            if (name === 'poolTime') await page.keyboard.press('ArrowUp');
+            else await page.keyboard.type('ab');
+            await sleep(100);
+            const typed = await field.inputValue();
+            const reached = name === 'poolTime' ? typed !== before : typed.endsWith('ab');
+            const ok = Math.abs(a.hit - 44) < 0.6 && Math.abs(a.visible - 36) < 0.6 && a.bg === a.fill && a.font === '17px' && focused && reached;
+            res[`${device}-${name}`] = { ok, hit: a.hit, visible: a.visible, bg: a.bg, font: a.font, focused, typed };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesFields = res;
+      out.pagesFieldsOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K89 section titles: sentence case instead of capitals, no hairline; room 20 in label (also in edit mode),
+    //      settings 15 in label2. Glas only. ----
+    await block('pagesTitles', async () => {
+      const res = {};
+      const read = (page) => ev(page, () => {
+        const d = document.createElement('div');
+        d.style.color = 'var(--g-label)';
+        document.body.appendChild(d);
+        const label = getComputedStyle(d).color;
+        d.style.color = 'var(--g-label-2)';
+        const label2 = getComputedStyle(d).color;
+        d.remove();
+        return {
+          label, label2,
+          titles: [...document.querySelectorAll('.section-label')].filter((e) => e.getClientRects().length && !e.closest('.home-page')).map((e) => {
+            const cs = getComputedStyle(e);
+            const line = e.querySelector('[aria-hidden="true"]');
+            const first = getComputedStyle(e.firstElementChild, '::first-letter').textTransform;
+            return { size: cs.fontSize, caps: cs.textTransform, first, color: cs.color, line: !!line && line.getClientRects().length > 0 };
+          }),
+        };
+      });
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        for (const [name, p] of [['room', '/room/living_room'], ['settings', '/settings']]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const runs = [await read(page)];
+            if (name === 'room') {
+              // edit mode: the header capsule on the desktop, the avatar menu on the phone (as the edit scene)
+              if (device === 'phone') {
+                await click(page, '.g-avatar__btn');
+                await click(page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.edit']}")`);
+              } else await click(page, '.g-edit-capsule');
+              await page.waitForSelector('.room-section__label-row', { timeout: 3000 });
+              runs.push(await read(page));
+            }
+            const want = name === 'room' ? ['20px', 'label'] : ['15px', 'label2'];
+            const ok = runs.every((r) => r.titles.length > 0 && r.titles.every((t) => t.size === want[0]
+              && t.caps === 'none' && t.first === 'uppercase' && t.color === r[want[1]] && !t.line));
+            res[`${device}-${name}`] = { ok, n: runs.map((r) => r.titles.length), first: runs.map((r) => r.titles[0]) };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesTitles = res;
+      out.pagesTitlesOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K89 card titles on every page: above the surface (the card itself has no background, its ::before surface
+    //      starts below the 44-px head + 6-px gap, the title (20, label) sits above it, the first body part 16 px
+    //      inside it, the icon chip is a bare symbol), or in the surface where the head carries a control (pool
+    //      schedule, the music page). Water with one meter and gas carry their figure in the surface. Glas only. ----
+    await block('pagesCardTitles', async () => {
+      const res = {};
+      // [page, card, title, chip, where, list, body, byDevice]: `list` = the body is an inset list (K94) that fills the
+      // surface from its top edge (a number: it starts up to that many px below the edge — the activity card on the
+      // system page, 6 below it on the desktop as on the overview; pagesKeep System compares both cards measure for
+      // measure); any other body starts at least 16 below it. `body` = selectors tried in turn for the
+      // body when it is not the card's second child (water and gas: the list of meters, or with one meter its figure,
+      // whose header is `display: contents`). `byDevice` = another `where` on a device: `bare` = no surface at all, the
+      // body 6 below the 44 head (the scenes' rooms on the phone, like the overview's scenes)
+      const CARDS = [
+        ['/security', '.people-list-card', '.people-list-card__title', '.people-list-card__icon-chip', 'above', true],
+        ['/security', '.locks-section-card', '.locks-section-card__title', '.locks-section-card__icon-chip', 'above'],
+        ['/security', '.garage-section-card', '.garage-section-card__title', '.garage-section-card__icon-chip', 'above'],
+        ['/security', '.sensor-section-card', '.sensor-section-card__title', '.sensor-section-card__icon-chip', 'above', true],
+        ['/energy', '.energy-sources', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-devices', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-solar', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'above', false, ['.energy-kv-list', '.energy-card__sub']],
+        ['/pool', '.pool-card:not(.pool-schedule, .pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
+        ['/pool', ':is(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above', true],
+        ['/pool', '.pool-schedule', '.pool-card__title', '.pool-card__icon', 'inside'],
+        ['/music', '.other-players-card', '.other-players-card__title', '.other-players-card__icon-chip', 'inside'],
+        ['/music', '.zones-card', '.zones-card__title', '.zones-card__icon-chip', 'inside'],
+        ['/music', '.queue-card', '.queue-card__title', '.queue-card__title-icon', 'inside'],
+        ['/music', '.library-card', '.library-card__title', '.library-card__title-icon', 'inside'],
+        ['/system', '.sys-monitor-card', '.sys-monitor-card__title', '.sys-monitor-card__icon-chip', 'above', true],
+        ['/system', '.batteries-card', '.batteries-card__title', '.batteries-card__icon-chip', 'above', true],
+        ['/system', '.activity-card', '.activity-card__title', '.activity-card__icon-chip', 'above', 6],
+        ['/automations', '.auto-feed-card', '.auto-feed-card__title', '.auto-feed-card__icon-chip', 'above', true],
+        ['/automations', '.auto-cat-card', '.auto-cat-card__title', '.auto-cat-card__icon-chip', 'above', true],
+        ['/scenes', '.scene-feed-card', '.scene-feed-card__title', '.scene-feed-card__icon-chip', 'above', true],
+        ['/scenes', '.scene-room-card', '.scene-room-card__title', '.scene-room-card__icon-chip', 'above', false, null, { phone: 'bare' }],
+      ];
+      const PAGES = [...new Set(CARDS.map((c) => c[0]))];
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        for (const p of PAGES) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const cards = await ev(page, (specs) => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label)';
+              document.body.appendChild(d);
+              const label = getComputedStyle(d).color;
+              d.remove();
+              return specs.flatMap(([, sel, titleSel, chipSel, where, list, bodySels]) => {
+                const els = [...document.querySelectorAll(`.page ${sel}`)].filter((e) => e.getClientRects().length);
+                if (!els.length) return [{ sel, missing: true }];
+                return els.map((card) => {
+                  const r = card.getBoundingClientRect();
+                  const surface = r.top + 44 + 6;
+                  const title = card.querySelector(titleSel);
+                  const tr = title.getBoundingClientRect();
+                  const tcs = getComputedStyle(title);
+                  const bodyEl = bodySels ? bodySels.map((b) => card.querySelector(b)).find(Boolean) : card.children[1];
+                  const body = bodyEl?.getBoundingClientRect();
+                  const before = getComputedStyle(card, '::before');
+                  const chip = card.querySelector(chipSel);
+                  const base = { sel, where, size: tcs.fontSize, label: tcs.color === label,
+                    chip: !chip || getComputedStyle(chip).backgroundColor === 'rgba(0, 0, 0, 0)' };
+                  if (where === 'inside') {
+                    return { ...base, ok: getComputedStyle(card).backgroundColor !== 'rgba(0, 0, 0, 0)'
+                      && before.content === 'none' && tr.top >= r.top - 0.5 && tr.bottom <= surface + 0.5 };
+                  }
+                  if (where === 'bare') {
+                    return { ...base, ok: getComputedStyle(card).backgroundColor === 'rgba(0, 0, 0, 0)'
+                      && before.content === 'none' && tr.bottom <= r.top + 44.5 && !!body
+                      && body.top >= surface - 0.5 && body.top <= surface + 1.5 };
+                  }
+                  return { ...base, ok: getComputedStyle(card).backgroundColor === 'rgba(0, 0, 0, 0)'
+                    && before.content !== 'none' && before.backgroundColor !== 'rgba(0, 0, 0, 0)'
+                    && tr.bottom <= surface + 0.5 && !!body
+                    && (list
+                      ? body.top >= surface - 0.5 && body.top <= surface + (list === true ? 0 : list) + 1.5
+                      : body.top >= surface + 16 - 0.5) };
+                });
+              });
+            }, CARDS.filter((c) => c[0] === p).map((c) => (c[7] && c[7][device] ? [...c.slice(0, 4), c[7][device], ...c.slice(5, 7)] : c.slice(0, 7))));
+            const bad = cards.filter((c) => c.missing || !c.ok || c.size !== '20px' || !c.label || !c.chip);
+            res[`${device}${p}`] = { ok: bad.length === 0, cards: cards.length, ...(bad.length ? { bad: bad.slice(0, 3) } : {}) };
+          } catch (e) {
+            res[`${device}${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+      out.pagesCardTitles = res;
+      out.pagesCardTitlesOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K89/K90/K85 the frame. Columns by content width (1920/1440/1100/900: 4/3/2/2; a grid whose cards all span
+    //      two columns takes four from 900 px of content), no page wider than the window; a card without a title above
+    //      (hero, alarm panel, pool schedule) starts its surface on the line of its neighbours' surfaces; heroes keep
+    //      their state as colour (security disarmed/armed/triggered, system healthy) with the symbol in a circle,
+    //      chips 32 in `fill`, no capitals; the stateless heroes lose their gradient; the camera section has neither
+    //      head nor surface; no element of a page that became a size container is fixed (windows and menus are
+    //      portaled: open ones included), the notifications panel still hangs below its bell. Glas only. ----
+    await block('pagesFrame', async () => {
+      const res = {};
+      const GRID = ['/security', '/energy', '/system', '/automations', '/scenes'];
+      const tokens = (page) => ev(page, () => {
+        const out = {};
+        const d = document.createElement('div');
+        document.body.appendChild(d);
+        for (const t of ['--g-label', '--g-label-2', '--g-fill', '--g-green-ink', '--g-green-soft', '--g-red-ink', '--g-warn-ink']) {
+          d.style.color = `var(${t})`;
+          out[t] = getComputedStyle(d).color;
+        }
+        d.remove();
+        return out;
+      });
+
+      // columns and alignment
+      const WANT = { 1920: [4, 4], 1440: [3, 4], 1100: [2, 2], 900: [2, 2] };
+      for (const w of [1920, 1440, 1100, 900]) {
+        for (const p of [...GRID, '/pool']) {
+          const { page, close } = await open('desktop', 'glas', p, { viewport: { width: w, height: 1000 } });
+          try {
+            const got = await ev(page, () => {
+              const grid = document.querySelector('.page > .overview-grid');
+              const cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
+              const wide = !!grid && ![...grid.children].some((c) => c.classList.contains('overview-grid__cell')
+                && ![...c.classList].some((k) => k.startsWith('overview-grid__cell--span-')));
+              // a headless card next to a card with a title above: same row = cells start on the same line
+              const HEADLESS = '.security-hero-card, .alarm-panel-card, .energy-hero, .system-hero-card, .auto-hero-card, .scene-hero-card, .pool-schedule';
+              const titled = [...document.querySelectorAll('.page .card')].filter((c) => getComputedStyle(c, '::before').content !== 'none'
+                && getComputedStyle(c).backgroundColor === 'rgba(0, 0, 0, 0)' && c.getClientRects().length);
+              const pairs = [];
+              // the grid item and the top of its grid area (a pool card is the item itself: less its own margin)
+              const item = (el) => el.closest('.overview-grid__cell, .pool-grid > *') || el;
+              const rowTop = (el) => {
+                const it = item(el);
+                return it.getBoundingClientRect().top - (it === el ? parseFloat(getComputedStyle(el).marginTop) || 0 : 0);
+              };
+              for (const h of document.querySelectorAll(`.page :is(${HEADLESS})`)) {
+                if (!h.getClientRects().length) continue;
+                const hr = item(h).getBoundingClientRect();
+                const top = rowTop(h);
+                const mate = titled.find((t) => Math.abs(rowTop(t) - top) < 1 && item(t).getBoundingClientRect().left !== hr.left);
+                const full = Math.abs(hr.width - item(h).parentElement.getBoundingClientRect().width) < 1;
+                pairs.push({ h: h.classList[1] || h.classList[0], mate: !!mate, full,
+                  d: mate ? Math.round(h.getBoundingClientRect().top - (mate.getBoundingClientRect().top + 50)) : null,
+                  top: Math.round(h.getBoundingClientRect().top - top) });
+              }
+              return { cols, wide, overflow: document.documentElement.scrollWidth > innerWidth + 0.5, pairs };
+            });
+            const want = p === '/pool' ? null : WANT[w][got.wide ? 1 : 0];
+            // with a mate the surface sits on its line; alone in its row (or full width) it keeps its place
+            const pairOk = got.pairs.every((x) => (x.mate ? Math.abs(x.d) <= 1 : x.top === 0 || !x.full));
+            const ok = (want === null || got.cols === want) && !got.overflow && pairOk;
+            const aligned = got.pairs.filter((x) => x.mate).map((x) => x.h);
+            res[`cols-${w}${p}`] = { ok, cols: got.cols, ...(got.wide ? { wide: true } : {}), aligned, ...(ok ? {} : got) };
+          } catch (e) {
+            res[`cols-${w}${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+
+      // heroes
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // security: disarmed, armed (green), triggered (red); chips; no capitals; the camera section
+        {
+          const { page, close } = await open(device, 'glas', '/security', { mode });
+          try {
+            const tk = await tokens(page);
+            const read = () => ev(page, () => {
+              const card = document.querySelector('.security-hero-card');
+              const icon = card.querySelector('.security-hero-card__alarm-icon');
+              const ir = icon.getBoundingClientRect();
+              const state = getComputedStyle(card.querySelector('.security-hero-card__alarm-state'));
+              const name = getComputedStyle(card.querySelector('.security-hero-card__alarm-name'));
+              const chips = [...card.querySelectorAll('.security-hero-chip')].map((c) => {
+                const cs = getComputedStyle(c);
+                return { h: c.getBoundingClientRect().height, r: parseFloat(cs.borderTopLeftRadius), bg: cs.backgroundColor,
+                  border: parseFloat(cs.borderTopWidth), warn: c.classList.contains('security-hero-chip--warn'),
+                  svg: c.querySelector('svg') ? getComputedStyle(c.querySelector('svg')).color : null };
+              });
+              const cam = document.querySelector('.security-page__camera-section');
+              return {
+                cls: card.className, grad: getComputedStyle(card).backgroundImage,
+                icon: { w: Math.round(ir.width), h: Math.round(ir.height), round: getComputedStyle(icon).borderTopLeftRadius === '50%'
+                  || parseFloat(getComputedStyle(icon).borderTopLeftRadius) >= ir.width / 2 - 0.5, color: getComputedStyle(icon).color },
+                state: { color: state.color, size: state.fontSize, weight: state.fontWeight },
+                name: { caps: name.textTransform, size: name.fontSize },
+                chips,
+                cam: cam ? { before: getComputedStyle(cam, '::before').content, bg: getComputedStyle(cam).backgroundColor,
+                  title: !!cam.querySelector('h2, h3, [class*="title"]:not([class*="camera"])') } : null,
+              };
+            });
+            const runs = { disarmed: await read() };
+            for (const [st, key] of [['armed_home', 'armed'], ['triggered', 'triggered']]) {
+              await ev(page, (s2) => window.__hapulseDemo.patch('alarm_control_panel.home', { state: s2 }), st);
+              await sleep(200);
+              runs[key] = await read();
+            }
+            await ev(page, () => window.__hapulseDemo.patch('alarm_control_panel.home', { state: 'disarmed' }));
+            const d = runs.disarmed;
+            const chipsOk = d.chips.length > 0 && d.chips.every((c) => c.h >= 32 - 0.5 && c.r >= 16 && c.bg === tk['--g-fill']
+              && c.border === 0 && (!c.warn || c.svg === tk['--g-warn-ink']));
+            const ok = d.icon.round && Math.abs(d.icon.w - 56) <= 1 && d.state.color === tk['--g-label'] && d.state.size === '22px'
+              && d.name.caps === 'none' && d.name.size === '13px'
+              && runs.armed.state.color === tk['--g-green-ink'] && runs.armed.icon.color === tk['--g-green-ink']
+              && /gradient/.test(runs.armed.grad)
+              && runs.triggered.state.color === tk['--g-red-ink'] && runs.triggered.icon.color === tk['--g-red-ink']
+              && chipsOk && !!d.cam && d.cam.before === 'none' && d.cam.bg === 'rgba(0, 0, 0, 0)' && !d.cam.title;
+            res[`hero-${device}/security`] = { ok, ...(ok ? {} : { runs }) };
+          } catch (e) {
+            res[`hero-${device}/security`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        // system: healthy = green; chips; no capitals
+        {
+          const { page, close } = await open(device, 'glas', '/system', { mode });
+          try {
+            const tk = await tokens(page);
+            const got = await ev(page, () => {
+              const card = document.querySelector('.system-hero-card');
+              const icon = card.querySelector('.system-hero-card__icon');
+              const status = getComputedStyle(card.querySelector('.system-hero-card__status'));
+              const label = getComputedStyle(card.querySelector('.system-hero-card__label'));
+              return {
+                cls: card.className,
+                icon: { w: Math.round(icon.getBoundingClientRect().width), color: getComputedStyle(icon).color },
+                status: status.color, size: status.fontSize, caps: label.textTransform,
+                chips: [...card.querySelectorAll('.system-hero-chip')].map((c) => ({
+                  h: c.getBoundingClientRect().height, bg: getComputedStyle(c).backgroundColor,
+                  r: parseFloat(getComputedStyle(c).borderTopLeftRadius) })),
+              };
+            });
+            const healthy = /system-hero-card--healthy/.test(got.cls);
+            const ok = (!healthy || (got.status === tk['--g-green-ink'] && got.icon.color === tk['--g-green-ink']))
+              && Math.abs(got.icon.w - 56) <= 1 && got.size === '22px' && got.caps === 'none' && got.chips.length > 0
+              && got.chips.every((c) => c.h >= 32 - 0.5 && c.bg === tk['--g-fill'] && c.r >= 16);
+            res[`hero-${device}/system`] = { ok, healthy, ...(ok ? {} : { got }) };
+          } catch (e) {
+            res[`hero-${device}/system`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        // the stateless heroes: plain card, eyebrow 15 label2 without capitals
+        for (const [p, sel, bg, eyebrow] of [
+          ['/energy', '.energy-hero', null, null],
+          ['/automations', '.auto-hero-card', '.auto-hero-card__bg', '.auto-hero-card__eyebrow'],
+          ['/scenes', '.scene-hero-card', '.scene-hero-card__bg', '.scene-hero-card__eyebrow'],
+        ]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            const tk = await tokens(page);
+            const got = await ev(page, ([s1, s2, s3]) => {
+              const card = document.querySelector(s1);
+              const b = s2 ? card.querySelector(s2) : null;
+              const e = s3 ? getComputedStyle(card.querySelector(s3)) : null;
+              return { grad: getComputedStyle(card).backgroundImage, bg: b ? getComputedStyle(b).display : 'none',
+                eyebrow: e ? { caps: e.textTransform, size: e.fontSize, color: e.color } : null };
+            }, [sel, bg, eyebrow]);
+            const ok = !/gradient/.test(got.grad) && got.bg === 'none'
+              && (!got.eyebrow || (got.eyebrow.caps === 'none' && got.eyebrow.size === '15px' && got.eyebrow.color === tk['--g-label-2']));
+            res[`hero-${device}${p}`] = { ok, ...(ok ? {} : { got }) };
+          } catch (e) {
+            res[`hero-${device}${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+      }
+
+      // nothing fixed inside a page that became a size container, also with its windows and menus open
+      for (const p of [...GRID, '/pool']) {
+        const { page, close } = await open('desktop', 'glas', p);
+        try {
+          const fixedIn = () => ev(page, () => [...document.querySelectorAll('.page *')]
+            .filter((e) => getComputedStyle(e).position === 'fixed').map((e) => e.className && String(e.className).slice(0, 40)));
+          const container = await ev(page, () => getComputedStyle(document.querySelector('.pool-layout') || document.querySelector('.page')).containerType);
+          const found = [...(await fixedIn())];
+          let opened = 'none';
+          if (p === '/security') {
+            // arming asks for the code: in Glas the pad is a window (portaled), whole inside the browser window
+            await click(page, '.alarm-btn:not(:disabled)');
+            const pad = await ev(page, () => {
+              const o = document.querySelector('.numpad-modal')?.closest('[role="dialog"]');
+              if (!o) return null;
+              const r = o.getBoundingClientRect();
+              return { inPage: !!o.closest('.page'), inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 0.5
+                && r.bottom <= innerHeight + 0.5, w: Math.round(r.width) };
+            });
+            opened = pad ? 'numpad' : 'no numpad';
+            found.push(...(await fixedIn()));
+            if (!pad || pad.inPage || !pad.inside) found.push('numpad: ' + JSON.stringify(pad));
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+          }
+          if (p === '/system' || p === '/energy') {
+            // an entity's detail as a tap opens it (the inspector from 1100 px), outside the page
+            await ev(page, () => window.__hapulseDemo.openDetail('light.living_room_ceiling'));
+            await sleep(400);
+            await settleAnimations(page);
+            const win = await ev(page, () => {
+              const d = [...document.querySelectorAll('[role="dialog"], [role="complementary"]')].find((e) => e.getClientRects().length);
+              if (!d) return null;
+              const r = d.getBoundingClientRect();
+              return { inPage: !!d.closest('.page'), inside: r.left >= -0.5 && r.right <= innerWidth + 0.5 && r.top >= -0.5 };
+            });
+            opened = win ? 'detail' : 'no detail';
+            found.push(...(await fixedIn()));
+            if (!win || win.inPage || !win.inside) found.push('detail: ' + JSON.stringify(win));
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+          }
+          const bell = page.locator('.header-cluster .notifications-trigger').filter({ visible: true }).first();
+          let panel = null;
+          if (await bell.count()) {
+            await bell.click();
+            await sleep(250);
+            await settleAnimations(page);
+            panel = await ev(page, () => {
+              const pn = document.querySelector('.notifications-panel');
+              const b = document.querySelector('.header-cluster .notifications-trigger').getBoundingClientRect();
+              if (!pn) return null;
+              const r = pn.getBoundingClientRect();
+              return { gap: Math.round(r.top - b.bottom), inPage: !!pn.closest('.page'), right: Math.round(innerWidth - r.right) };
+            });
+            found.push(...(await fixedIn()));
+            await page.keyboard.press('Escape');
+          }
+          const ok = container !== 'normal' && found.length === 0 && !!panel && !panel.inPage && panel.gap >= 0 && panel.gap <= 24;
+          res[`fixed${p}`] = { ok, container, opened, panel, ...(found.length ? { found: found.slice(0, 4) } : {}) };
+        } catch (e) {
+          res[`fixed${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
+        }
+        await close();
+      }
+      out.pagesFrame = res;
+      out.pagesFrameOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K96 edit bar on the pages with a card grid (pagesEdit): S / M / L write the fields Klassisch reads (span,
+    //      height, `tallSections` `<page>:<id>`), "⋯" sets columns and a cap, ‹ › keep the focus, the eye and the phone
+    //      toggle; the bar covers nothing (desktop, iPad, phone); after a switch to Klassisch the same order, spans and
+    //      hidden cards. One page after the other as they come in. ----
+    const EDIT_PAGES = [
+      { page: 'security', path: '/security', root: '.security-page', spans: 'securitySectionSpans', heights: 'securitySectionHeights',
+        hidden: 'hiddenSecuritySections', mobile: 'mobileHiddenSecuritySections', card: 'people' },
+      { page: 'energy', path: '/energy', root: '.energy-page', spans: 'energySectionSpans', heights: 'energySectionHeights',
+        hidden: 'hiddenEnergySections', mobile: 'mobileHiddenEnergySections', card: 'devices' },
+      { page: 'automations', path: '/automations', root: '.automations-page', spans: 'automationSectionSpans',
+        heights: 'automationSectionHeights', hidden: 'hiddenAutomationSections', mobile: 'mobileHiddenAutomationSections', card: 'cat_comfort' },
+      { page: 'scenes', path: '/scenes', root: '.scenes-page', spans: 'sceneSectionSpans', heights: 'sceneSectionHeights',
+        hidden: 'hiddenSceneSections', mobile: 'mobileHiddenSceneSections', card: 'room_kitchen' },
+      { page: 'system', path: '/system', root: '.system-page', spans: 'systemSectionSpans', heights: 'systemSectionHeights',
+        hidden: 'hiddenSystemSections', mobile: 'mobileHiddenSystemSections', card: 'batteries' },
+    ];
+    /** Edit mode: the header capsule, on a phone in Glas the avatar menu. */
+    const enterEdit = async (page) => {
+      if (await page.locator('.g-edit-capsule:visible, .edit-toggle:visible').count()) await click(page, '.g-edit-capsule, .edit-toggle');
+      else {
+        await click(page, '.g-avatar__btn');
+        await click(page, `.g-avatar-menu__item:has-text("${DE['glas.avatar.edit']}")`);
+      }
+      await sleep(300);
+      await settleAnimations(page);
+    };
+    /** Per card in edit mode: what of its contents a visible part of its bar covers (text, controls). */
+    const barCovers = (page, root) => ev(page, (r) => {
+      const hits = [];
+      for (const cell of document.querySelectorAll(`${r} .overview-grid__cell--editing`)) {
+        const parts = [...cell.querySelectorAll(':scope > .g-size-bar > *')].filter((e) => e.getClientRects().length
+          && getComputedStyle(e).visibility !== 'hidden' && !e.classList.contains('g-size-bar__space'))
+          .map((e) => {
+            const b = e.getBoundingClientRect();
+            const inset = e.classList.contains('g-size-bar__btn') ? 4 : 0; // the circles are 36 in a 44 hit area
+            return { l: b.left + inset, t: b.top + inset, r: b.right - inset, b: b.bottom - inset };
+          });
+        const content = [...cell.querySelectorAll('.edit-section-outline *')].filter((e) => {
+          if (!e.getClientRects().length || getComputedStyle(e).visibility === 'hidden') return false;
+          if (e.matches('button, a, input, [role="button"], svg')) return true;
+          return [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+        });
+        for (const e of content) {
+          const b = e.getBoundingClientRect();
+          if (b.width < 1 || b.height < 1) continue;
+          if (parts.some((p) => p.l < b.right - 1 && p.r > b.left + 1 && p.t < b.bottom - 1 && p.b > b.top + 1)) {
+            hits.push(`${cell.dataset.section}:${(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className) || e.tagName}`);
+          }
+        }
+      }
+      return hits;
+    }, root);
+
+    await block('pagesEdit', async () => {
+      const res = {};
+      // parts: a page of EDIT_PAGES or `music` (`--only pagesEdit:automations`)
+      const editPart = (name) => !onlyParts('pagesEdit').length || onlyParts('pagesEdit').includes(name);
+      for (const cfg of EDIT_PAGES.filter((c) => editPart(c.page))) {
+        // S / M / L, "⋯", ‹ ›, eye and phone on the desktop; then the switch to Klassisch
+        {
+          const { page, close } = await open('desktop', 'glas', cfg.path);
+          try {
+            const r = {};
+            const settle = async (ms = 250) => {
+              await sleep(ms);
+              await settleAnimations(page);
+            };
+            const bar = (id) => `${cfg.root} [data-section="${id}"] > .g-size-bar`;
+            const order = () => ev(page, (root) => [...document.querySelectorAll(`${root} .overview-grid [data-section]`)].map((e) => e.dataset.section), cfg.root);
+            const cust = () => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state?.customization || {});
+            const A = cfg.card;
+            const isTall = (c) => (c.tallSections || []).includes(`${cfg.page}:${A}`);
+            const focusOn = () => ev(page, () => {
+              const a = document.activeElement;
+              const sec = a && a.closest('[data-section]');
+              return a ? `${a.dataset.move || a.getAttribute('aria-haspopup') || ''}|${sec ? sec.dataset.section : ''}` : '';
+            });
+            await enterEdit(page);
+            const o1 = await order();
+            r.name = await ev(page, (sel) => document.querySelector(sel)?.getAttribute('aria-label'), bar(A));
+
+            await page.click(`${bar(A)} [role="radio"]:has-text("L")`);
+            await settle();
+            let c = await cust();
+            r.L = { span: (c[cfg.spans] || {})[A], tall: isTall(c), height: (c[cfg.heights] || {})[A] || 0,
+              cell: await ev(page, (sel) => Math.round(document.querySelector(sel).getBoundingClientRect().height), `${cfg.root} [data-section="${A}"]`) };
+            await page.click(`${bar(A)} [role="radio"]:has-text("S")`);
+            await settle();
+            c = await cust();
+            r.S = { span: c[cfg.spans][A], tall: isTall(c) };
+
+            await page.click(`${bar(A)} [aria-haspopup="dialog"]`);
+            await settle(450);
+            r.sheetTitle = await ev(page, () => [...document.querySelectorAll('[role="dialog"]')].map((d) => d.textContent.slice(0, 80)).join('|'));
+            await page.click('[role="dialog"] [role="radiogroup"] >> nth=0 >> [role="radio"]:has-text("3")');
+            await settle();
+            c = await cust();
+            r.cols = { span: c[cfg.spans][A], none: await ev(page, (sel) => document.querySelector(sel + ' .g-seg').hasAttribute('data-none'), bar(A)) };
+            await page.click('[role="dialog"] [role="radiogroup"] >> nth=1 >> [role="radio"]:has-text("280")');
+            await settle();
+            r.cap = ((await cust())[cfg.heights] || {})[A];
+            await page.click('[role="dialog"] [role="radiogroup"] >> nth=1 >> [role="radio"] >> nth=0');
+            await settle();
+            r.capOff = ((await cust())[cfg.heights] || {})[A];
+            await page.keyboard.press('Escape');
+            await settle(450);
+            r.focusBack = await focusOn();
+
+            const second = o1[1];
+            await page.focus(`${bar(second)} [data-move="1"]`);
+            await page.keyboard.press('Enter');
+            await settle(400);
+            r.move = { order: await order(), focus: await focusOn() };
+            await page.focus(`${bar(second)} [data-move="-1"]`);
+            await page.keyboard.press('Enter');
+            await settle(400);
+            r.moveBack = await order();
+
+            const toggle = async (nth, field) => {
+              const btn = page.locator(`${bar(A)} [aria-pressed]`).nth(nth);
+              await btn.click();
+              await settle(300);
+              const on = { stored: ((await cust())[field] || []).includes(A), pressed: await btn.getAttribute('aria-pressed') };
+              await btn.click();
+              await settle(300);
+              return { ...on, back: ((await cust())[field] || []).includes(A) };
+            };
+            r.eye = await toggle(0, cfg.hidden);
+            r.phone = await toggle(1, cfg.mobile);
+
+            // the same layout after the switch to Klassisch (L reads as M there): A is L, the second card hidden
+            await page.click(`${bar(A)} [role="radio"]:has-text("L")`);
+            await settle();
+            await page.locator(`${bar(second)} [aria-pressed]`).nth(0).click();
+            await settle(300);
+            const layout = () => ev(page, (root) => [...document.querySelectorAll(`${root} .overview-grid [data-section]`)].map((e) => {
+              const m = `${e.parentElement.className} ${e.className}`.match(/span-(\d)/);
+              return `${e.dataset.section}:${m ? m[1] : 1}:${e.classList.contains('overview-grid__cell--hidden') ? 'h' : ''}`;
+            }).join(','), cfg.root);
+            r.glas = await layout();
+            await ev(page, () => {
+              const st = JSON.parse(localStorage.getItem('hapulse:settings'));
+              st.state.customization.uiStyle = 'classic';
+              localStorage.setItem('hapulse:settings', JSON.stringify(st));
+            });
+            await page.reload({ waitUntil: 'load' });
+            await page.waitForFunction(() => document.querySelector('#root > *'));
+            await settle(900);
+            await enterEdit(page);
+            r.classic = await layout();
+            r.classicStyle = await ev(page, () => document.documentElement.getAttribute('data-style'));
+            r.classicGlas = await ev(page, () => document.querySelectorAll('.g-tall, .g-size-bar').length);
+
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const ok = !!r.name && r.L.span === 2 && r.L.tall && !r.L.height && r.L.cell >= 470 + 38
+              && r.S.span === 1 && !r.S.tall && r.sheetTitle.includes(r.name)
+              && r.cols.span === 3 && r.cols.none && r.cap === 2 && !r.capOff && r.focusBack === `dialog|${A}`
+              && r.move.order[2] === second && r.move.focus === `1|${second}` && same(r.moveBack, o1)
+              && r.eye.stored && r.eye.pressed === 'true' && !r.eye.back
+              && r.phone.stored && r.phone.pressed === 'true' && !r.phone.back
+              && r.glas === r.classic && r.classicStyle !== 'glas' && r.classicGlas === 0;
+            res[`${cfg.page}-desktop`] = { ok, order: o1, ...r };
+          } catch (e) {
+            res[`${cfg.page}-desktop`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // the bar covers nothing: default sizes, then with a capped titled card, an L card and a hero sharing a row
+        for (const device of ['desktop', 'ipad', 'phone']) {
+          for (const [variant, extra] of [['default', {}], ['sized', { [cfg.heights]: { [cfg.card]: 1 }, tallSections: [`${cfg.page}:${cfg.card}`] }]]) {
+            const { page, close } = await open(device, 'glas', cfg.path, { customization: extra });
+            try {
+              await enterEdit(page);
+              await page.evaluate(() => window.scrollTo(0, 0));
+              await settleAnimations(page);
+              const bars = await ev(page, (root) => document.querySelectorAll(`${root} .overview-grid__cell--editing > .g-size-bar`).length, cfg.root);
+              const cells = await ev(page, (root) => document.querySelectorAll(`${root} .overview-grid__cell--editing`).length, cfg.root);
+              const hits = await barCovers(page, cfg.root);
+              const classic = await ev(page, (root) => [...document.querySelectorAll(`${root} .overview-grid__cell--editing > :is(.edit-badge, .overview-span-dots, .overview-resize-handle, .section-height-dots, .section-height-handle)`)]
+                .filter((e) => e.getClientRects().length).length, cfg.root);
+              res[`${cfg.page}-${device}-${variant}`] = { ok: bars > 0 && bars === cells && hits.length === 0 && classic === 0, bars, cells, hits: hits.slice(0, 6), classic };
+            } catch (e) {
+              res[`${cfg.page}-${device}-${variant}`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+      }
+      // Music (K96, no card grid): the eye and the phone stand at each card's corner as in Klassisch and cover nothing
+      // of a card (text, controls); they write the fields Klassisch reads; a hidden card dims its content, not its
+      // badges (the eye inverted); after the switch to Klassisch the same cards are hidden
+      const MUSIC_CARDS = ['now-playing-card', 'zones-card', 'queue-card', 'other-players-card', 'library-card'];
+      const musicCust = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state?.customization || {});
+      const musicLayout = (page) => ev(page, (cards) => [...document.querySelectorAll('.music-page .edit-entity-wrap--editing')].map((w) => {
+        const card = cards.find((c) => w.querySelector(`.edit-item-outline > .${c}`)) || '?';
+        return `${card}:${w.classList.contains('edit-entity-wrap--hidden') ? 'h' : ''}${w.querySelector('.edit-badge__btn--mobile-hidden') ? 'm' : ''}`;
+      }).join(','), MUSIC_CARDS);
+      for (const [device, mode] of editPart('music') ? [['desktop', 'light'], ['ipad', 'light'], ['phone', 'dark']] : []) {
+        const { page, close } = await open(device, 'glas', '/music', { mode });
+        try {
+          const settle = async (ms = 300) => {
+            await sleep(ms);
+            await settleAnimations(page);
+          };
+          await enterEdit(page);
+          await page.evaluate(() => window.scrollTo(0, 0));
+          await settleAnimations(page);
+          const covers = () => ev(page, () => {
+            const hits = [];
+            const wraps = [...document.querySelectorAll('.music-page .edit-entity-wrap--editing')];
+            for (const w of wraps) {
+              const btns = [...w.querySelectorAll(':scope > .edit-badge .edit-badge__btn')].filter((e) => e.getClientRects().length)
+                .map((e) => e.getBoundingClientRect());
+              const content = [...w.querySelectorAll('.edit-item-outline *')].filter((e) => {
+                if (!e.getClientRects().length || getComputedStyle(e).visibility === 'hidden') return false;
+                if (e.matches('button, a, input, select, [role="button"], [role="radio"], svg')) return true;
+                return [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+              });
+              for (const e of content) {
+                const b = e.getBoundingClientRect();
+                if (b.width < 1 || b.height < 1) continue;
+                if (btns.some((p) => p.left < b.right - 1 && p.right > b.left + 1 && p.top < b.bottom - 1 && p.bottom > b.top + 1)) {
+                  const c = e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className;
+                  hits.push(`${(w.querySelector('.edit-item-outline > *') || {}).className}:${c || e.tagName}`);
+                }
+              }
+            }
+            return { wraps: wraps.length, badges: wraps.filter((w) => w.querySelectorAll(':scope > .edit-badge .edit-badge__btn').length === 2).length, hits };
+          });
+          const look = await covers();
+          const r = { look };
+          if (device === 'desktop') {
+            // eye and phone on the zones card: the field Klassisch reads, the look of a hidden card, and back
+            const wrap = page.locator('.music-page .edit-entity-wrap--editing', { has: page.locator('.zones-card') });
+            const eye = wrap.locator(':scope > .edit-badge .edit-badge__btn--eye');
+            const phone = wrap.locator(':scope > .edit-badge .edit-badge__btn--mobile');
+            await eye.click();
+            await settle();
+            r.eye = { stored: ((await musicCust(page)).hiddenMusicSections || []).includes('zones'), ...(await wrap.evaluate((w) => {
+              const tok = (n) => {
+                const d = document.createElement('div');
+                d.style.background = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d).backgroundColor;
+                d.remove();
+                return v;
+              };
+              const btn = w.querySelector(':scope > .edit-badge .edit-badge__btn--eye');
+              return { wrap: getComputedStyle(w).opacity, content: getComputedStyle(w.querySelector(':scope > .edit-item-outline')).opacity,
+                badge: getComputedStyle(w.querySelector(':scope > .edit-badge')).opacity, inverted: getComputedStyle(btn).backgroundColor === tok('--g-label') };
+            })) };
+            await phone.click();
+            await settle();
+            r.phone = { stored: ((await musicCust(page)).mobileHiddenMusicSections || []).includes('zones'), pressed: await phone.getAttribute('aria-pressed') };
+            r.glas = await musicLayout(page);
+            // the switch to Klassisch: the same cards hidden there
+            await ev(page, () => {
+              const st = JSON.parse(localStorage.getItem('hapulse:settings'));
+              st.state.customization.uiStyle = 'classic';
+              localStorage.setItem('hapulse:settings', JSON.stringify(st));
+            });
+            await page.reload({ waitUntil: 'load' });
+            await page.waitForFunction(() => document.querySelector('#root > *'));
+            await settle(900);
+            await enterEdit(page);
+            r.classic = await musicLayout(page);
+            r.classicStyle = await ev(page, () => document.documentElement.getAttribute('data-style'));
+            // and back: both toggles off
+            await page.locator('.music-page .edit-entity-wrap--editing', { has: page.locator('.zones-card') }).locator(':scope > .edit-badge .edit-badge__btn--eye').click();
+            await settle();
+            await page.locator('.music-page .edit-entity-wrap--editing', { has: page.locator('.zones-card') }).locator(':scope > .edit-badge .edit-badge__btn--mobile').click();
+            await settle();
+            const c = await musicCust(page);
+            r.back = (c.hiddenMusicSections || []).includes('zones') || (c.mobileHiddenMusicSections || []).includes('zones');
+          }
+          const ok = look.wraps === 5 && look.badges === 5 && look.hits.length === 0
+            && (device !== 'desktop' || (r.eye.stored && r.eye.wrap === '1' && r.eye.content === '0.4' && r.eye.badge === '1' && r.eye.inverted
+              && r.phone.stored && r.phone.pressed === 'true' && r.glas.includes('zones-card:hm') && r.glas === r.classic
+              && r.classicStyle !== 'glas' && r.back === false));
+          res[`music-${device}`] = { ok, ...r, look: { ...look, hits: look.hits.slice(0, 6) } };
+        } catch (e) {
+          res[`music-${device}`] = { ok: false, error: String(e.message).slice(0, 200) };
+        }
+        await close();
+      }
+      out.pagesEdit = res;
+      out.pagesEditOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K92: the segments with the lens write what Klassisch writes. The pool's mode, on the page and in the chip's
+    //      window: "Automatik" sends the call of the classic button; manual activation (the arrows only move the focus,
+    //      Space chooses); "Manuell" asks for the run length on every tap, also when it is the mode, and sends nothing;
+    //      long labels turn the segment tight on the phone and are never cut; six options keep the classic buttons. ----
+    await block('pagesSegments', async () => {
+      const res = {};
+      // parts: pool, energy, music, devices, settings (`--only pagesSegments:settings`)
+      const segPart = (name) => !onlyParts('pagesSegments').length || onlyParts('pagesSegments').includes(name);
+      const MODE = 'input_select.modus_poolpumpe';
+      const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+      const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+      const setMode = (page, state, options) => ev(page, ([i, st, o]) => window.__hapulseDemo.patch(i, { state: st, ...(o ? { attributes: { options: o } } : {}) }), [MODE, state, options]);
+      /** The pool's window from the chip row (a JS click: on the phone the chip may sit outside the scrolled row; the
+       *  aria-label names the chip in both styles, `data-chip` exists in Glas only). */
+      const openChip = async (page) => {
+        await ev(page, () => document.querySelector('.summary-chip[aria-label^="pool:"]').click());
+        await sleep(400);
+        await settleAnimations(page);
+      };
+      const ROOT = { page: '.pool-hero', sheet: '[role="dialog"]:has(.pool-modal)' };
+      const CLASSIC = { page: '.pool-hero .pool-mode__btn', sheet: '[role="dialog"] .pool-modal__mode-btn' };
+
+      if (segPart('pool')) {
+        // Klassisch: the call of the "Automatik" button on the page and in the window
+        const classic = {};
+        for (const where of ['page', 'sheet']) {
+          const { page, close } = await open('desktop', 'classic', where === 'page' ? '/pool' : '/');
+          try {
+            if (where === 'sheet') await openChip(page);
+            await clear(page);
+            await page.locator(CLASSIC[where], { hasText: 'Automatik' }).first().click();
+            await sleep(200);
+            classic[where] = await calls(page);
+          } catch (e) {
+            classic[where] = { error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          for (const where of ['page', 'sheet']) {
+            const { page, close } = await open(device, 'glas', where === 'page' ? '/pool' : '/', { mode });
+            try {
+              const reopen = async () => {
+                if (where === 'sheet' && !(await page.locator(ROOT.sheet).count())) await openChip(page);
+              };
+              await reopen();
+              const seg = page.locator(`${ROOT[where]} .g-seg--pool`).first();
+              const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
+              const state = () => seg.evaluate((el) => ({
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => o.dataset.value),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                tight: el.hasAttribute('data-tight'),
+                cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+              }));
+              const look = await state();
+              const picker = () => page.locator('.pool-manual-modal').filter({ visible: true }).count();
+              const closePicker = async () => {
+                await page.keyboard.press('Escape');
+                await sleep(300);
+                await settleAnimations(page);
+              };
+
+              // "Automatik" with a tap: the classic call
+              await clear(page);
+              await opt('Automatik').click();
+              await sleep(200);
+              const tap = await calls(page);
+
+              // manual activation: from "Ausgeschalten" the arrow moves the focus only, Space chooses
+              await reopen();
+              await setMode(page, 'Ausgeschalten');
+              await sleep(200);
+              await clear(page);
+              await opt('Ausgeschalten').focus();
+              await page.keyboard.press('ArrowRight');
+              await sleep(150);
+              const arrow = { ...(await state()), calls: (await calls(page)).length };
+              await page.keyboard.press('Space');
+              await sleep(200);
+              const space = await calls(page);
+
+              // "Manuell": asks while another mode is set and when it is the mode (twice), the mode stays, nothing is sent
+              await reopen();
+              await setMode(page, 'Automatik');
+              await sleep(200);
+              await clear(page);
+              const manual = [];
+              for (const [st, n] of [['Automatik', 1], ['Manuell', 2]]) {
+                await reopen();
+                await setMode(page, st);
+                await sleep(200);
+                for (let k = 0; k < n; k++) {
+                  await reopen();
+                  await opt('Manuell').click();
+                  await sleep(400);
+                  await settleAnimations(page);
+                  const m = { mode: st, asked: await picker(), sheetClosed: where === 'sheet' ? (await page.locator(ROOT.sheet).count()) === 0 : null };
+                  await closePicker();
+                  await reopen();
+                  m.checked = (await state()).checked;
+                  manual.push(m);
+                }
+              }
+              await reopen();
+              const after = { calls: (await calls(page)).length, checked: (await state()).checked };
+
+              // six options: the classic buttons
+              await setMode(page, 'Automatik', ['Ausgeschalten', 'Automatik', 'Manuell', 'Eco', 'Boost', 'Urlaub']);
+              await sleep(300);
+              await reopen();
+              const six = { segments: await page.locator(`${ROOT[where]} .g-seg--pool`).count(), buttons: await page.locator(CLASSIC[where]).count() };
+
+              const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+              const ok = same(look.options, ['Ausgeschalten', 'Automatik', 'Manuell']) && look.checked === 'Manuell' && look.cut.length === 0
+                && (device === 'desktop' ? !look.tight : where === 'sheet' || look.tight)
+                && Array.isArray(classic[where]) && classic[where].length === 1 && same(tap, classic[where])
+                && arrow.calls === 0 && arrow.checked === 'Ausgeschalten' && arrow.focus === 'Automatik'
+                && space.length === 1 && space[0].data.option === 'Automatik' && space[0].target.entity_id === MODE
+                && manual.length === 3 && manual.every((m) => m.asked === 1 && m.sheetClosed !== false && m.checked === m.mode)
+                && after.calls === 0 && after.checked === 'Manuell'
+                && six.segments === 0 && six.buttons === 6;
+              res[`${device}-${where}`] = { ok, look, tap, classic: classic[where], arrow, space, manual, after, six };
+            } catch (e) {
+              res[`${device}-${where}`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+      }
+      if (segPart('energy')) {
+        // The energy period: a view, so a tap and the arrows choose at once; the hero shows the figure of Klassisch's tab.
+        // While a period loads (the demo holds its statistics: energyHold) Klassisch swaps the page for its loading line
+        // and the focus is gone; Glas keeps the cards and dims them (`data-g-stale`, .5, the hero's head stays), so the
+        // segment keeps the focus and the arrows can go on.
+        const LABEL = { today: DE['energy.period.today'], week: DE['energy.period.week'], month: DE['energy.period.month'], year: DE['energy.period.year'] };
+        const figure = (page) => ev(page, () => document.querySelector('.energy-hero__primary-value')?.textContent.trim() ?? null);
+        const classicEnergy = {};
+        {
+          const { page, close } = await open('desktop', 'classic', '/energy', { fixedTime: ENERGY_AT });
+          try {
+            for (const p of ['week', 'month', 'year', 'today']) {
+              await page.locator('.energy-period__btn', { hasText: LABEL[p] }).click();
+              await sleep(300);
+              await page.waitForFunction((l) => document.querySelector('.energy-period__btn--active')?.textContent.trim() === l
+                && !document.querySelector('.energy-page__loading'), LABEL[p], { timeout: 5000 });
+              classicEnergy[p] = await figure(page);
+            }
+            // a held load: the loading line instead of the cards, the focus falls back to the page
+            await ev(page, () => window.__hapulseDemo.energyHold(true));
+            await page.locator('.energy-period__btn', { hasText: LABEL.month }).focus();
+            await page.keyboard.press('Enter');
+            await sleep(300);
+            classicEnergy.held = await ev(page, () => ({ loading: !!document.querySelector('.energy-page__loading'),
+              hero: !!document.querySelector('.energy-hero'), focus: document.activeElement === document.body }));
+            await ev(page, () => window.__hapulseDemo.energyHold(false));
+          } catch (e) {
+            classicEnergy.error = String(e.message).slice(0, 160);
+          }
+          await close();
+        }
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/energy', { mode, fixedTime: ENERGY_AT });
+          try {
+            const seg = page.locator('.energy-hero .g-seg--energy');
+            const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
+            const state = async () => ({ figure: await figure(page), ...(await seg.evaluate((el) => {
+              const cell = document.querySelector('.energy-page .overview-grid__cell:not([data-section="hero"]) > *');
+              return {
+                role: el.getAttribute('role'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.textContent.trim()}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+                h: Math.round(el.getBoundingClientRect().height),
+                stale: document.querySelector('.energy-page')?.hasAttribute('data-g-stale') ?? null,
+                loading: !!document.querySelector('.energy-page__loading'),
+                dim: { card: cell && getComputedStyle(cell).opacity,
+                  stats: getComputedStyle(document.querySelector('.energy-hero__stats')).opacity,
+                  head: getComputedStyle(document.querySelector('.energy-hero__header')).opacity },
+              };
+            })) });
+            const waitFigure = (want) => page.waitForFunction((w) => document.querySelector('.energy-hero__primary-value')?.textContent.trim() === w
+              && !document.querySelector('.energy-page[data-g-stale]'), want, { timeout: 5000 }).catch(() => {});
+            const look = await state();
+            // a tap on "Woche"
+            await opt('week').click();
+            await waitFigure(classicEnergy.week);
+            await sleep(300);
+            const tap = await state();
+            // the arrow from "Woche" while the load is held: "Monat" is chosen, the cards stay dimmed, the focus stays
+            await ev(page, () => window.__hapulseDemo.energyHold(true));
+            await page.keyboard.press('ArrowRight');
+            await sleep(400);
+            const held = await state();
+            await ev(page, () => window.__hapulseDemo.energyHold(false));
+            await waitFigure(classicEnergy.month);
+            await sleep(300);
+            const loaded = await state();
+            // and on: End chooses "Jahr", Home "Heute"
+            await page.keyboard.press('End');
+            await waitFigure(classicEnergy.year);
+            const end = await state();
+            await page.keyboard.press('Home');
+            await waitFigure(classicEnergy.today);
+            const home = await state();
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const plain = (st) => st.stale === false && !st.loading && st.dim.card === '1' && st.dim.stats === '1' && st.dim.head === '1';
+            const ok = !classicEnergy.error && look.role === 'radiogroup'
+              && same(look.options, ['today', 'week', 'month', 'year'].map((v) => `${v}:${LABEL[v]}`))
+              && look.checked === 'today' && look.figure === classicEnergy.today && look.cut.length === 0 && look.h === 44 && plain(look)
+              && tap.checked === 'week' && tap.figure === classicEnergy.week && plain(tap)
+              && held.checked === 'month' && held.focus === 'month' && held.stale === true && !held.loading
+              && held.figure === classicEnergy.week && held.dim.card === '0.5' && held.dim.stats === '0.5' && held.dim.head === '1'
+              && loaded.checked === 'month' && loaded.focus === 'month' && loaded.figure === classicEnergy.month && plain(loaded)
+              && end.checked === 'year' && end.focus === 'year' && end.figure === classicEnergy.year
+              && home.checked === 'today' && home.focus === 'today' && home.figure === classicEnergy.today
+              && new Set([classicEnergy.today, classicEnergy.week, classicEnergy.month, classicEnergy.year]).size === 4;
+            res[`${device}-energy`] = { ok, classic: classicEnergy, look, tap, held, loaded, end: [end.checked, end.figure], home: [home.checked, home.figure] };
+          } catch (e) {
+            res[`${device}-energy`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+
+      if (segPart('music')) {
+        // Music: the zones' view is a segment of two symbols (list, grid) instead of Klassisch's two buttons; a view, so
+        // the arrows choose; either view shows the rooms Klassisch shows in it
+        let classicZones;
+        {
+          const { page, close } = await open('desktop', 'classic', '/music');
+          try {
+            const names = () => ev(page, () => ({ tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
+              rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()) }));
+            const grid = await names();
+            await page.locator('.zones-card__view-btn').nth(0).click();
+            await sleep(200);
+            classicZones = { grid, list: await names() };
+          } catch (e) {
+            classicZones = { error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/music', { mode });
+          try {
+            const seg = page.locator('.zones-card .g-seg--view');
+            await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const state = () => seg.evaluate((el) => {
+              const b = el.getBoundingClientRect();
+              return {
+                role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                h: Math.round(b.height), w: Math.round(b.width),
+                tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
+                rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()),
+                buttons: document.querySelectorAll('.zones-card__view-btn').length,
+              };
+            });
+            const look = await state();
+            await seg.locator('.g-seg__opt[data-value="list"]').click();
+            await sleep(300);
+            const tap = await state();
+            const keys = {};
+            for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
+              await page.keyboard.press(key);
+              await sleep(300);
+              const st = await state();
+              keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st.checked === 'grid' ? st.tiles.length : st.rows.length };
+            }
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const cg = classicZones.grid || {};
+            const cl = classicZones.list || {};
+            const ok = !classicZones.error && (cg.tiles || []).length > 0 && same(cl.rows, cg.tiles) && look.role === 'radiogroup'
+              && look.label === DE['music.zones.viewModeAria']
+              && same(look.options, [`list:${DE['music.zones.listView']}`, `grid:${DE['music.zones.gridView']}`])
+              && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
+              && same(look.tiles, cg.tiles) && look.rows.length === 0
+              && tap.checked === 'list' && tap.focus === 'list' && same(tap.rows, cl.rows) && tap.tiles.length === 0
+              && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
+                ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.tiles.length}`));
+            res[`${device}-music`] = { ok, classic: classicZones, look, tap: [tap.checked, tap.focus, tap.rows.length], keys };
+          } catch (e) {
+            res[`${device}-music`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+
+      if (segPart('devices')) {
+        // Devices: grid | list is the same segment of two symbols instead of Klassisch's two buttons; a view, so the
+        // arrows choose; either view lists the devices Klassisch lists in it
+        let classicDevices;
+        {
+          const { page, close } = await open('desktop', 'classic', '/devices');
+          try {
+            const names = () => ev(page, () => [...document.querySelectorAll('.devices-results .device-card__name')].map((e) => e.textContent.trim()));
+            const grid = await names();
+            await page.locator('.devices-view-toggle__btn').nth(0).click();
+            await sleep(300);
+            classicDevices = { grid, list: await names() };
+          } catch (e) {
+            classicDevices = { error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/devices', { mode });
+          try {
+            const seg = page.locator('.devices-toolbar .g-seg--view');
+            await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const state = () => seg.evaluate((el) => {
+              const b = el.getBoundingClientRect();
+              const names = (v) => [...document.querySelectorAll(`.devices-results--${v} .device-card__name`)].map((e) => e.textContent.trim());
+              return {
+                role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                h: Math.round(b.height), w: Math.round(b.width),
+                grid: names('grid'), list: names('list'),
+                buttons: document.querySelectorAll('.devices-view-toggle__btn').length,
+              };
+            });
+            const look = await state();
+            await seg.locator('.g-seg__opt[data-value="list"]').click();
+            await sleep(300);
+            const tap = await state();
+            const keys = {};
+            for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
+              await page.keyboard.press(key);
+              await sleep(300);
+              const st = await state();
+              keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st[st.checked].length };
+            }
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const cg = classicDevices.grid || [];
+            const ok = !classicDevices.error && cg.length > 0 && same(classicDevices.list, cg) && look.role === 'radiogroup'
+              && look.label === DE['devices.toolbar.viewModeAria']
+              && same(look.options, [`list:${DE['devices.toolbar.listViewAria']}`, `grid:${DE['devices.toolbar.gridViewAria']}`])
+              && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
+              && same(look.grid, cg) && look.list.length === 0
+              && tap.checked === 'list' && tap.focus === 'list' && same(tap.list, classicDevices.list) && tap.grid.length === 0
+              && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
+                ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.length}`));
+            res[`${device}-devices`] = { ok, classic: classicDevices.error || classicDevices.grid.length, look: { ...look, grid: look.grid.length },
+              tap: [tap.checked, tap.focus, tap.list.length], keys };
+          } catch (e) {
+            res[`${device}-devices`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+      // Settings: style, glass strength, light/dark and this device's light/dark are segments with manual activation
+      // (they write): the arrows only move the focus, Space, Enter and a tap choose and write what Klassisch's button of
+      // the same choice writes. A switch of the style hands the focus to the other style's control of the same choice,
+      // in both directions. The device row exists under the admin management (its meta seeded as active).
+      if (segPart('settings')) {
+        const SEG = {
+          style: DE['glas.style.groupAria'], strength: DE['glas.strength.groupAria'],
+          mode: DE['settings.appearance.mode.groupAria'], device: DE['globalSettings.deviceMode.label'],
+        };
+        const settingsState = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state || {});
+        const written = async (page) => {
+          await sleep(150);
+          const st = await settingsState(page);
+          return { mode: st.mode, modeOverride: st.modeOverride ?? null, uiStyle: st.customization?.uiStyle ?? null,
+            glassStrength: st.customization?.glassStrength ?? null };
+        };
+        /** What has the focus: a segment option (`seg:<group>:<value>`), a classic button (`btn:<text>`) or else. */
+        const focused = (page) => ev(page, () => {
+          const a = document.activeElement;
+          if (!a || a === document.body) return 'body';
+          const seg = a.closest('.g-seg');
+          if (seg) return `seg:${seg.getAttribute('aria-label')}:${a.dataset.value}`;
+          if (a.classList.contains('mode-toggle__btn')) return `btn:${a.closest('.mode-toggle').getAttribute('aria-label')}:${a.textContent.trim()}`;
+          return a.tagName.toLowerCase() + (a.className ? '.' + String(a.className).split(' ')[0] : '');
+        });
+        const classicBtn = (page, group, text) => page.locator(`.mode-toggle[aria-label="${group}"] .mode-toggle__btn`, { hasText: text }).first();
+        let classicSettings;
+        {
+          const { page, close } = await open('desktop', 'classic', '/settings', { storage: SETTINGS_MANAGED });
+          try {
+            const r = {};
+            await classicBtn(page, SEG.mode, DE['settings.appearance.mode.auto']).click();
+            r.auto = (await written(page)).mode;
+            await classicBtn(page, SEG.device, DE['settings.appearance.mode.dark']).click();
+            r.deviceDark = (await written(page)).modeOverride;
+            await classicBtn(page, SEG.device, DE['globalSettings.deviceMode.follow']).click();
+            r.deviceFollow = (await written(page)).modeOverride;
+            // Klassisch → Glas with the mouse: the segment's "Glas" takes the focus
+            await page.locator('.mode-toggle__btn[data-glas-style-option="glas"]').click();
+            await sleep(300);
+            await settleAnimations(page);
+            r.toGlas = { ...(await written(page)), style: await ev(page, () => document.documentElement.dataset.style ?? null), focus: await focused(page) };
+            classicSettings = r;
+          } catch (e) {
+            classicSettings = { error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/settings', { mode, storage: SETTINGS_MANAGED });
+          try {
+            const look = await ev(page, (groups) => Object.fromEntries(Object.entries(groups).map(([k, label]) => {
+              const el = document.querySelector(`.g-seg[aria-label="${label}"]`);
+              if (!el) return [k, null];
+              const b = el.getBoundingClientRect();
+              const row = el.closest('.settings-card__row').getBoundingClientRect();
+              const lab = el.closest('.settings-card__row').querySelector('.settings-card__row-label').getBoundingClientRect();
+              return [k, {
+                role: el.getAttribute('role'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.textContent.trim()}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                h: Math.round(b.height), tight: el.hasAttribute('data-tight'),
+                cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+                // beside the label (right edge of the row's padding) or, on the phone, a line of its own across the row
+                left: Math.round(b.left - row.left), right: Math.round(row.right - b.right), beside: b.top < lab.bottom,
+              }];
+            })), SEG);
+            const seg = (k) => page.locator(`.g-seg[aria-label="${SEG[k]}"]`);
+            const opt = (k, v) => seg(k).locator(`.g-seg__opt[data-value="${v}"]`);
+            const step = async (key) => {
+              await page.keyboard.press(key);
+              await sleep(150);
+              return { focus: await focused(page), ...(await written(page)) };
+            };
+            // light/dark: the arrow moves the focus only, Space chooses; a tap on "Auto" writes what Klassisch's "Auto" writes
+            const next = mode === 'light' ? 'dark' : 'auto';
+            await opt('mode', mode).focus();
+            const modeArrow = await step('ArrowRight');
+            const modeSpace = await step('Space');
+            await opt('mode', 'auto').click();
+            const modeTap = await written(page);
+            // strength: a tap, the arrow, Enter
+            await opt('strength', 'tinted').click();
+            const strengthTap = { focus: await focused(page), ...(await written(page)) };
+            const strengthArrow = await step('ArrowRight');
+            const strengthEnter = await step('Enter');
+            // this device: a tap on "Dunkel", Home moves to "Vorgabe", Space chooses it (null: the admin's mode)
+            await opt('device', 'dark').click();
+            const deviceTap = await written(page);
+            const deviceHome = await step('Home');
+            const deviceSpace = await step('Space');
+            // style: the arrow does not switch; Space switches to Klassisch and its "Klassisch" button has the focus
+            await opt('style', 'glas').focus();
+            const styleArrow = { ...(await step('ArrowLeft')), style: await ev(page, () => document.documentElement.dataset.style ?? null) };
+            await page.keyboard.press('Space');
+            await sleep(300);
+            await settleAnimations(page);
+            const toClassic = { ...(await written(page)), style: await ev(page, () => document.documentElement.dataset.style ?? null),
+              focus: await focused(page), strength: await seg('strength').count() };
+            // and back with the keyboard: Enter on Klassisch's "Glas" button, the segment's "Glas" takes the focus
+            await page.locator('.mode-toggle__btn[data-glas-style-option="glas"]').focus();
+            await page.keyboard.press('Enter');
+            await sleep(300);
+            await settleAnimations(page);
+            const back = { ...(await written(page)), style: await ev(page, () => document.documentElement.dataset.style ?? null),
+              focus: await focused(page), strength: await seg('strength').count() };
+
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const C = classicSettings;
+            const shape = (k, vals, checked) => {
+              const l = look[k];
+              const where = device === 'desktop' ? l.right === 16 && l.beside : l.left === 16 && l.right === 16 && !l.beside;
+              return !!l && l.role === 'radiogroup' && same(l.options, vals) && l.checked === checked && l.h === 44 && !l.tight
+                && l.cut.length === 0 && where;
+            };
+            const segOf = (k, v) => `seg:${SEG[k]}:${v}`;
+            const ok = !C.error && C.auto === 'auto' && C.deviceDark === 'dark' && C.deviceFollow === null
+              && C.toGlas.uiStyle === 'glas' && C.toGlas.style === 'glas' && C.toGlas.focus === segOf('style', 'glas')
+              && shape('style', [`classic:${DE['glas.style.classic']}`, `glas:${DE['glas.style.glas']}`], 'glas')
+              && shape('strength', ['clear', 'tinted', 'opaque'].map((v) => `${v}:${DE[`glas.strength.${v}`]}`), 'clear')
+              && shape('mode', ['light', 'dark', 'auto'].map((v) => `${v}:${DE[`settings.appearance.mode.${v}`]}`), mode)
+              && shape('device', [`follow:${DE['globalSettings.deviceMode.follow']}`,
+                ...['light', 'dark', 'auto'].map((v) => `${v}:${DE[`settings.appearance.mode.${v}`]}`)], 'follow')
+              && modeArrow.focus === segOf('mode', next) && modeArrow.mode === mode
+              && modeSpace.focus === segOf('mode', next) && modeSpace.mode === next && modeTap.mode === C.auto
+              && strengthTap.glassStrength === 'tinted' && strengthTap.focus === segOf('strength', 'tinted')
+              && strengthArrow.focus === segOf('strength', 'opaque') && strengthArrow.glassStrength === 'tinted'
+              && strengthEnter.glassStrength === 'opaque'
+              && deviceTap.modeOverride === C.deviceDark && deviceHome.focus === segOf('device', 'follow') && deviceHome.modeOverride === 'dark'
+              && deviceSpace.modeOverride === C.deviceFollow
+              && styleArrow.focus === segOf('style', 'classic') && styleArrow.uiStyle === 'glas' && styleArrow.style === 'glas'
+              && toClassic.uiStyle === 'classic' && toClassic.style === 'classic' && toClassic.strength === 0
+              && toClassic.focus === `btn:${SEG.style}:${DE['glas.style.classic']}`
+              && back.uiStyle === 'glas' && back.style === 'glas' && back.strength === 1 && back.focus === segOf('style', 'glas');
+            res[`${device}-settings`] = { ok, classic: C, look, mode: [modeArrow, modeSpace, modeTap.mode],
+              strength: [strengthTap, strengthArrow, strengthEnter.glassStrength], device: [deviceTap.modeOverride, deviceHome, deviceSpace.modeOverride],
+              style: [styleArrow, toClassic, back] };
+          } catch (e) {
+            res[`${device}-settings`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+      out.pagesSegments = res;
+      out.pagesSegmentsOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- §3.1 "Nicht verlieren" (pagesKeep) page by page: what a page could do in Klassisch it still does in Glas.
+    //      Service calls are counted on the entity's last_updated (the demo stamps it on every call it applies).
+    //      Glas only; where a comparison with Klassisch is named, Klassisch is opened too. ----
+    /** A watch on the calls that reach `id`; `count()` = calls so far, `stop()` ends it and returns the count. */
+    const watchCalls = async (page, id) => {
+      await ev(page, (i) => {
+        const w = { n: 0, last: window.__hapulseDemo.entity(i)?.last_updated };
+        w.t = setInterval(() => {
+          const v = window.__hapulseDemo.entity(i)?.last_updated;
+          if (v !== w.last) { w.n += 1; w.last = v; }
+        }, 4);
+        window.__gKeepWatch = w;
+      }, id);
+      return {
+        count: () => ev(page, () => window.__gKeepWatch.n),
+        stop: () => ev(page, () => { clearInterval(window.__gKeepWatch.t); return window.__gKeepWatch.n; }),
+      };
+    };
+    const entity = (page, id) => ev(page, (i) => window.__hapulseDemo.entity(i), id);
+    const customization = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state?.customization || {});
+    /** Drag a range from `from` to `to` (fractions of its width): calls while the pointer is down and after the release. */
+    const dragRange = async (page, loc, id, from, to) => {
+      await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      await settleAnimations(page);
+      const b = await loc.boundingBox();
+      const y = b.y + b.height / 2;
+      const w = await watchCalls(page, id);
+      await page.mouse.move(b.x + b.width * from, y);
+      await page.mouse.down();
+      for (let k = 1; k <= 6; k++) await page.mouse.move(b.x + b.width * (from + ((to - from) * k) / 6), y);
+      await sleep(250);
+      const during = await w.count();
+      await page.mouse.up();
+      await sleep(400);
+      return { during, after: (await w.stop()) - during };
+    };
+    /** Section titles of a room in their order. */
+    const roomSections = (page) => ev(page, () => [...document.querySelectorAll('.room-page__section')]
+      .filter((e) => e.getClientRects().length)
+      .map((e) => e.querySelector('.section-label')?.textContent.trim()));
+
+    await block('pagesKeep', async () => {
+      const res = {};
+      const keepPart = (name) => !onlyParts('pagesKeep').length || onlyParts('pagesKeep').includes(name);
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // Room G: sections in Klassisch's order; half/full writes the same field as Klassisch (desktop: the handle
+        // is dragged by one column)
+        if (keepPart('room')) {
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/room/living_room', { mode });
+            try {
+              got[style] = { order: await roomSections(page) };
+              if (device === 'desktop') {
+                await page.locator('.g-edit-capsule:visible, .edit-toggle:visible').first().click();
+                await sleep(300);
+                await settleAnimations(page);
+                const handle = page.locator('.room-page__section:has(.light-card) .room-section__resize-handle').first();
+                await handle.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+                await settleAnimations(page);
+                const hb = await handle.boundingBox();
+                const gw = await ev(page, () => document.querySelector('.room-page__sections').getBoundingClientRect().width);
+                await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+                await page.mouse.down();
+                for (let k = 1; k <= 5; k++) await page.mouse.move(hb.x + hb.width / 2 - (gw / 2) * (k / 5), hb.y + hb.height / 2);
+                await page.mouse.up();
+                await sleep(300);
+                got[style].spans = (await customization(page)).roomSectionSpans || {};
+                got[style].half = await ev(page, () => document.querySelector('.room-page__section:has(.light-card)').classList.contains('room-page__section--span-1'));
+              }
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 160) };
+            }
+            await close();
+          }
+          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+          const ok = !got.classic.error && !got.glas.error && got.glas.order.length > 3 && same(got.classic.order, got.glas.order)
+            && (device !== 'desktop' || (same(got.classic.spans, got.glas.spans) && Object.values(got.glas.spans).includes(1) && got.glas.half));
+          res[`${device}-room-sections`] = { ok, ...got };
+        }
+
+        // Entity cards E: sliders send once on release, the tile switches by click and Space, volume, a scene tile, the
+        // sensors' fill bars and wording, "unavailable" dimmed
+        if (keepPart('room')) {
+          const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
+          try {
+            const ceiling = page.locator('.room-page .light-card', { hasText: 'Ceiling Light' }).first();
+            const before = await entity(page, 'light.living_room_ceiling');
+            const bright = await dragRange(page, ceiling.locator('.light-card__range').first(), 'light.living_room_ceiling', 0.2, 0.6);
+            const afterBright = await entity(page, 'light.living_room_ceiling');
+            const temp = await dragRange(page, ceiling.locator('.light-card__range').nth(1), 'light.living_room_ceiling', 0.7, 0.3);
+            const hue = await dragRange(page, ceiling.locator('.light-card__hue-range').first(), 'light.living_room_ceiling', 0.3, 0.6);
+            const sliders = [bright, temp, hue].every((x) => x.during === 0 && x.after === 1)
+              && afterBright.attributes.brightness !== before.attributes.brightness;
+
+            // the tile switches: a click on its name, then Space on the focused tile
+            const floor = page.locator('.room-page .light-card', { hasText: 'Floor Lamp' }).first();
+            const s0 = (await entity(page, 'light.living_room_floor_lamp')).state;
+            await floor.locator('.light-card__name').click();
+            await sleep(200);
+            const s1 = (await entity(page, 'light.living_room_floor_lamp')).state;
+            await floor.focus();
+            await page.keyboard.press('Space');
+            await sleep(200);
+            const s2 = (await entity(page, 'light.living_room_floor_lamp')).state;
+            const tile = s1 !== s0 && s2 === s0;
+
+            // volume by keyboard (the slider throttles while it moves)
+            const v0 = (await entity(page, 'media_player.living_room_tv')).attributes.volume_level;
+            const vol = page.locator('.room-page .media-card__volume-input').first();
+            await vol.focus();
+            for (let k = 0; k < 4; k++) await page.keyboard.press('ArrowRight');
+            await sleep(700);
+            const v1 = (await entity(page, 'media_player.living_room_tv')).attributes.volume_level;
+
+            // a scene tile activates its scene
+            const sw = await watchCalls(page, 'scene.living_room_movie');
+            await page.locator('.room-page .scene-tile', { hasText: 'Movie Night' }).first().click();
+            await sleep(300);
+            const scene = (await sw.stop()) === 1;
+
+            // sensors: numeric tiles keep their fill bar, the motion tile its wording
+            const sensors = await ev(page, () => {
+              const tiles = [...document.querySelectorAll('.room-page .sensor-tile')].filter((e) => e.getClientRects().length);
+              const bars = tiles.filter((t) => t.classList.contains('sensor-tile--numeric'))
+                .map((t) => t.querySelector('.sensor-tile__bar')?.getBoundingClientRect().width || 0);
+              const binary = tiles.filter((t) => t.classList.contains('sensor-tile--binary'))
+                .map((t) => t.querySelector('.sensor-tile__value').textContent.trim());
+              return { n: tiles.length, bars, binary };
+            });
+            const sensorsOk = sensors.n >= 3 && sensors.bars.length >= 2 && sensors.bars.every((w) => w > 0)
+              && sensors.binary.length >= 1 && sensors.binary.every((t) => ['Erkannt', 'Frei'].includes(t));
+
+            // "unavailable": the card stays, dimmed and out of reach
+            await ev(page, () => window.__hapulseDemo.patch('light.living_room_shelf', { state: 'unavailable' }));
+            await sleep(300);
+            const unavailable = await ev(page, () => {
+              const wrap = [...document.querySelectorAll('.room-page .entity-unavailable')].find((e) => e.textContent.includes('Shelf Light'));
+              return wrap ? { opacity: parseFloat(getComputedStyle(wrap).opacity), events: getComputedStyle(wrap).pointerEvents } : null;
+            });
+            const unavailableOk = !!unavailable && unavailable.opacity < 0.5 && unavailable.events === 'none';
+
+            const ok = sliders && tile && v1 !== v0 && scene && sensorsOk && unavailableOk;
+            res[`${device}-room-cards`] = { ok, bright, temp, hue, brightness: [before.attributes.brightness, afterBright.attributes.brightness],
+              tile: [s0, s1, s2], volume: [v0, v1], scene, sensors, unavailable };
+          } catch (e) {
+            res[`${device}-room-cards`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // blinds: close, stop, open (the narrow card shows symbols, its buttons keep their names)
+        if (keepPart('room')) {
+          const { page, close } = await open(device, 'glas', '/room/bedroom', { mode });
+          try {
+            const card = page.locator('.room-page .cover-card').first();
+            await card.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            const st = async () => (await entity(page, 'cover.bedroom_blinds')).state;
+            // the little blind follows the position (§7.12): open = a 4 px rail, closed = slats over the whole 40
+            const slats = () => card.evaluate((c) => parseFloat(getComputedStyle(c.querySelector('.cover-card__chip'), '::before').height));
+            const s0 = await st();
+            const h0 = await slats();
+            const press = async (key) => {
+              await card.getByRole('button', { name: DE[key], exact: true }).click();
+              await sleep(500);
+              return st();
+            };
+            const states = [s0, await press('cards.cover.open')];
+            const h1 = await slats();
+            states.push(await press('cards.cover.stop'), await press('cards.cover.close'));
+            const ok = states.join() === 'closed,open,stopped,closed' && Math.abs(h0 - 40) < 0.6 && Math.abs(h1 - 4) < 0.6;
+            res[`${device}-room-blinds`] = { ok, states, slats: [h0, h1] };
+          } catch (e) {
+            res[`${device}-room-blinds`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // garage: opening asks first (Escape leaves the door as it is)
+        if (keepPart('room')) {
+          const { page, close } = await open(device, 'glas', '/room/garage', { mode });
+          try {
+            const s0 = (await entity(page, 'cover.garage_door')).state;
+            await page.locator('.room-page .garage-card__btn').first().click();
+            await sleep(300);
+            await settleAnimations(page);
+            const asked = await page.locator('.garage-confirm__text').filter({ visible: true }).count();
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            const s1 = (await entity(page, 'cover.garage_door')).state;
+            const ok = s0 === 'closed' && asked === 1 && s1 === s0;
+            res[`${device}-room-garage`] = { ok, states: [s0, s1], asked };
+          } catch (e) {
+            res[`${device}-room-garage`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // hallway: a lock with a code reaches the code entry (Escape leaves it locked); the camera card is there
+        if (keepPart('room')) {
+          const { page, close } = await open(device, 'glas', '/room/hallway', { mode });
+          try {
+            await ev(page, () => window.__hapulseDemo.patch('lock.front_door', { attributes: { code_format: '^\\d{4}$' } }));
+            await sleep(200);
+            await page.locator('.room-page .lock-card__btn').first().click();
+            await sleep(300);
+            await settleAnimations(page);
+            const code = await page.locator('.lock-confirm__code').filter({ visible: true }).count();
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            const s1 = (await entity(page, 'lock.front_door')).state;
+            const camera = await page.locator('.room-page .camera-card').filter({ visible: true }).count();
+            const ok = code === 1 && s1 === 'locked' && camera >= 1;
+            res[`${device}-room-hallway`] = { ok, code, lock: s1, camera };
+          } catch (e) {
+            res[`${device}-room-hallway`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // button and vacuum (the demo has none: two are placed in the living room)
+        if (keepPart('room')) {
+          const { page, close } = await open(device, 'glas', '/room/living_room', { mode });
+          try {
+            await ev(page, () => {
+              const d = window.__hapulseDemo;
+              d.patch('button.doorbell', { state: 'unknown', attributes: { friendly_name: 'Doorbell' } });
+              d.patch('vacuum.robo', { state: 'docked', attributes: { friendly_name: 'Robo', battery_level: 80 } });
+              d.placeEntity('button.doorbell', 'living_room');
+              d.placeEntity('vacuum.robo', 'living_room');
+            });
+            await sleep(400);
+            const btn = page.locator('.room-page .button-card__btn').first();
+            await btn.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await btn.click();
+            await sleep(100);
+            const flash = await page.locator('.room-page .button-card__chip--flash').count();
+            const vac = await ev(page, () => {
+              const card = document.querySelector('.room-page .vacuum-card');
+              return card && { state: card.querySelector('.vacuum-card__state')?.textContent.trim(),
+                buttons: [...card.querySelectorAll('.vacuum-card__btn')].map((b) => b.getAttribute('aria-label')) };
+            });
+            await page.locator('.room-page .vacuum-card__btn--start').first().click();
+            await sleep(200);
+            const ok = flash === 1 && !!vac && !!vac.state && vac.buttons.length >= 1 && vac.buttons.every(Boolean);
+            res[`${device}-room-button-vacuum`] = { ok, flash, vacuum: vac };
+          } catch (e) {
+            res[`${device}-room-button-vacuum`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // Security H: the hero by alarm state (demo control), the triggered alarm card's ring; a mode reaches the code
+        // pad (Escape leaves the state), without a code one tap switches; "unlock all" asks with the count, "lock all"
+        // locks; the garage's "open all" asks, "close all" closes; the camera badge, people, doors, windows and motion
+        if (keepPart('security')) {
+          const { page, close } = await open(device, 'glas', '/security', { mode });
+          try {
+            const ALARM = 'alarm_control_panel.home';
+            const patch = (id, v) => ev(page, ([i, x]) => window.__hapulseDemo.patch(i, x), [id, v]);
+            const waitFor = (fn, a, timeout = 3000) => page.waitForFunction(fn, a, { timeout }).then(() => true, () => false);
+            const tok = (n) => ev(page, (name) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${name})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            }, n);
+            const [label, green, red, redRing, actDel, onBadge] = [await tok('--g-label'), await tok('--g-green-ink'),
+              await tok('--g-red-ink'), await tok('--g-red'), await tok('--g-act-del'), await tok('--g-on-badge')];
+            // the demo's hallway motion burst writes its snapshot back after 3 s and would undo a patch made meanwhile:
+            // without the sensor there is no burst (drop, wait a pending one out, drop again; it returns for the badge)
+            const HALL = 'binary_sensor.hallway_motion';
+            const hall = await entity(page, HALL);
+            await patch(HALL, null);
+            await sleep(3200);
+            await patch(HALL, null);
+
+            // the hero's word in the colour of its state
+            const hero = {};
+            for (const [st, want] of [['disarmed', label], ['armed_home', green], ['armed_away', green], ['armed_night', green],
+              ['armed_vacation', green], ['arming', label], ['pending', red], ['triggered', red]]) {
+              await patch(ALARM, { state: st });
+              await sleep(200);
+              hero[st] = (await ev(page, () => {
+                const e = document.querySelector('.security-page .security-hero-card__alarm-state');
+                return e && getComputedStyle(e).color;
+              })) === want;
+            }
+            const ring = await ev(page, () => {
+              const cs = getComputedStyle(document.querySelector('.security-page .alarm-panel-card'));
+              return `${cs.outlineStyle} ${cs.outlineWidth} ${cs.outlineColor} ${cs.outlineOffset}`;
+            });
+            const ringOk = ring === `solid 2px ${redRing} -2px`;
+            await patch(ALARM, { state: 'disarmed' });
+            await sleep(200);
+
+            // a mode with a code: the pad, its dots, Escape changes nothing
+            const modeBtn = (key) => page.locator('.security-page .alarm-btn', { hasText: DE[key] }).first();
+            await modeBtn('security.alarmPanel.action.armAway').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const pad = await ev(page, () => {
+              const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => x.querySelector('.numpad-modal'));
+              return d ? { keys: d.querySelectorAll('.numpad-key').length, text: d.textContent.slice(0, 60) } : null;
+            });
+            for (const k of ['1', '2', '3']) await page.locator('.numpad-modal .numpad-key', { hasText: k }).first().click();
+            const dots = await ev(page, () => document.querySelectorAll('.numpad-modal .numpad-modal__dot--filled').length);
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const padLeft = { state: (await entity(page, ALARM)).state, open: await page.locator('.numpad-modal').count() };
+            // without a code one tap arms
+            await patch(ALARM, { attributes: { code_format: null } });
+            await sleep(200);
+            const aw = await watchCalls(page, ALARM);
+            await modeBtn('security.alarmPanel.action.armHome').click();
+            await sleep(400);
+            const direct = { calls: await aw.stop(), state: (await entity(page, ALARM)).state };
+            const alarmOk = !!pad && pad.keys === 12 && pad.text.includes(DE['security.alarmPanel.action.armAway']) && dots === 3
+              && padLeft.state === 'disarmed' && padLeft.open === 0 && direct.calls === 1 && direct.state === 'armed_home';
+
+            // locks: a second one, "unlock all" asks with the count; Escape keeps both locked, the danger button unlocks
+            // both; "lock all" locks them without a question
+            await patch('lock.back_door', { state: 'locked', attributes: { friendly_name: 'Back Door Lock' } });
+            await sleep(300);
+            const lockStates = async () => [(await entity(page, 'lock.front_door')).state, (await entity(page, 'lock.back_door')).state].join();
+            await page.locator('.security-page .locks-section-card__ctrl-btn--unlock').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const question = await ev(page, () => document.querySelector('.lock-confirm__text')?.textContent.trim());
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const l1 = await lockStates();
+            await page.locator('.security-page .locks-section-card__ctrl-btn--unlock').click();
+            await sleep(300);
+            await settleAnimations(page);
+            await page.locator('[role="dialog"] .lock-confirm__actions .btn--danger').click();
+            await sleep(500);
+            await settleAnimations(page);
+            const l2 = await lockStates();
+            await page.locator('.security-page .locks-section-card__ctrl-btn--lock').click();
+            await sleep(500);
+            const l3 = { states: await lockStates(), asked: await page.locator('.lock-confirm__text').count() };
+            const locksOk = question === DE['security.locks.confirmUnlockAll.other'].replace('{count}', '2')
+              && l1 === 'locked,locked' && l2 === 'unlocked,unlocked' && l3.states === 'locked,locked' && l3.asked === 0;
+
+            // garage: "open all" asks (Escape keeps it closed), "close all" closes an open door at once
+            await page.locator('.security-page .garage-section-card__ctrl-btn--open').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const gAsked = await page.locator('.garage-confirm__text').filter({ visible: true }).count();
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const g1 = (await entity(page, 'cover.garage_door')).state;
+            await patch('cover.garage_door', { state: 'open', attributes: { current_position: 100 } });
+            await sleep(300);
+            await page.locator('.security-page .garage-section-card__ctrl-btn--close').click();
+            await sleep(400);
+            const g2 = (await entity(page, 'cover.garage_door')).state;
+            const garageOk = gAsked === 1 && g1 === 'closed' && g2 === 'closed';
+
+            // the camera badge: a capsule in actDel with the badge colour, sentence case
+            await patch(HALL, { state: 'on', attributes: hall.attributes });
+            const shown = await waitFor(() => !!document.querySelector('.security-page .camera-tile__motion-badge'));
+            const badge = shown ? await ev(page, () => {
+              const b = document.querySelector('.security-page .camera-tile__motion-badge');
+              const cs = getComputedStyle(b);
+              return { text: b.innerText.trim(), bg: cs.backgroundColor, color: cs.color, radius: parseFloat(cs.borderRadius) };
+            }) : null;
+            const want = DE['security.sensor.motion'];
+            const badgeOk = !!badge && badge.bg === actDel && badge.color === onBadge && badge.radius >= 10
+              && badge.text === want.charAt(0).toUpperCase() + want.slice(1);
+
+            // people, doors, windows and motion with their rows
+            const lists = await ev(page, () => {
+              const names = (sel) => [...document.querySelectorAll(sel)].filter((e) => e.getClientRects().length).map((e) => e.textContent.trim());
+              return {
+                people: names('.security-page .people-list__name'),
+                sensors: [...document.querySelectorAll('.security-page .sensor-section-card')].map((c) => ({
+                  title: c.querySelector('.sensor-section-card__title')?.textContent.trim(),
+                  rows: [...c.querySelectorAll('.motion-list__row')].map((r) => `${r.querySelector('.motion-list__name')?.textContent.trim()}|${r.querySelector('.motion-list__pill')?.textContent.trim()}`),
+                })),
+              };
+            });
+            const titles = lists.sensors.map((x) => x.title);
+            const listsOk = lists.people.length >= 2 && ['doors', 'windows', 'motion'].every((k) => titles.includes(DE[`security.section.label.${k}`]))
+              && lists.sensors.every((x) => x.rows.length >= 1 && x.rows.every((r) => !r.endsWith('|') && !r.startsWith('|')));
+
+            const ok = Object.values(hero).every(Boolean) && ringOk && alarmOk && locksOk && garageOk && badgeOk && listsOk;
+            res[`${device}-security`] = { ok, hero, ring: ringOk ? 'ok' : ring, pad, dots, padLeft, direct, question, locks: [l1, l2, l3],
+              garage: [gAsked, g1, g2], badge, lists };
+          } catch (e) {
+            res[`${device}-security`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // Pool K: the hero's word and the rings in their Glas colours (K99); the solar stepper writes the threshold,
+        // "Stopp" the automatic mode; the schedule: a handle moved by 5 min and saved sends scheduler.edit with the new
+        // switch point; a figure opens its detail; the restart asks first (Escape: nothing is sent, the danger button
+        // presses). The demo applies none of these calls: they are read from its call log (demoCalls.ts).
+        if (keepPart('pool')) {
+          const { page, close } = await open(device, 'glas', '/pool', { mode });
+          try {
+            const calls = () => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+            const clear = () => ev(page, () => window.__hapulseDemo.clearCalls());
+            const tok = (n) => ev(page, (name) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${name})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            }, n);
+            const look = await ev(page, () => {
+              const cs = (sel, prop) => {
+                const e = document.querySelector(sel);
+                return e ? getComputedStyle(e)[prop] : null;
+              };
+              return {
+                running: !!document.querySelector('.pool-hero--running'),
+                status: cs('.pool-hero__status', 'color'),
+                track: cs('.pool-solar .pool-gauge__track', 'stroke'),
+                manualTrack: cs('.pool-manual .pool-gauge__track', 'stroke'),
+                solar: cs('.pool-solar .pool-gauge__value', 'stroke'),
+                solarText: cs('.pool-solar .pool-gauge__primary', 'color'),
+                exceeded: !!document.querySelector('.pool-solar .pool-chip--positive'),
+                manual: cs('.pool-manual .pool-gauge__value', 'stroke'),
+                manualText: cs('.pool-manual .pool-gauge__primary', 'color'),
+              };
+            });
+            const [tealInk, fill2, green, greenInk, teal] = [await tok('--g-teal-ink'), await tok('--g-fill-2'), await tok('--g-green'),
+              await tok('--g-green-ink'), await tok('--g-teal')];
+            const colours = look.running && look.status === tealInk && look.track === fill2 && look.manualTrack === fill2 && look.exceeded
+              && look.solar === green && look.solarText === greenInk && look.manual === teal && look.manualText === tealInk;
+
+            // the solar stepper: + writes threshold + step
+            await clear();
+            const plus = page.locator('.pool-solar .pool-stepper__btn').nth(1);
+            await plus.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await plus.click();
+            await sleep(200);
+            const stepper = await calls();
+            const stepperOk = stepper.length === 1 && stepper[0].domain === 'input_number' && stepper[0].service === 'set_value'
+              && stepper[0].data.value === 450 && stepper[0].target.entity_id === 'input_number.schwellwert_poolpumpe_solarleistung';
+
+            // "Stopp" while the manual run is on: back to Automatik
+            await clear();
+            await page.locator('.pool-manual .pool-manual__action').click();
+            await sleep(200);
+            const stop = await calls();
+            const stopOk = stop.length === 1 && stop[0].domain === 'input_select' && stop[0].service === 'select_option'
+              && stop[0].data.option === 'Automatik' && stop[0].target.entity_id === 'input_select.modus_poolpumpe';
+
+            // the schedule: the handle at 12:00 moved to 12:05 and saved
+            await page.locator('.pool-schedule__edit').click();
+            await sleep(400);
+            await settleAnimations(page);
+            const handle = page.locator('[role="dialog"] .pool-timeline__handle').first();
+            await handle.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const h0 = Number(await handle.getAttribute('aria-valuenow'));
+            const bar = await page.locator('[role="dialog"] .pool-timeline__bar').boundingBox();
+            const hb = await handle.boundingBox();
+            await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+            await page.mouse.down();
+            const tx = bar.x + (bar.width * (h0 + 5)) / 1440;
+            for (let k = 1; k <= 4; k++) await page.mouse.move(hb.x + hb.width / 2 + (tx - hb.x - hb.width / 2) * (k / 4), hb.y + hb.height / 2);
+            await page.mouse.up();
+            await sleep(200);
+            const moved = { now: Number(await handle.getAttribute('aria-valuenow')), time: (await handle.locator('.pool-timeline__handle-time').textContent()).trim() };
+            await clear();
+            await page.locator('[role="dialog"] .pool-editor__footer .btn--primary').click();
+            await sleep(500);
+            await settleAnimations(page);
+            const saved = await calls();
+            const edit = saved[0];
+            const slot = edit && Array.isArray(edit.data.timeslots) ? edit.data.timeslots.find((s) => s.start === '12:05') : null;
+            const scheduleOk = h0 === 720 && moved.now === 725 && moved.time === '12:05' && saved.length === 1
+              && edit.domain === 'scheduler' && edit.service === 'edit' && edit.data.entity_id === 'switch.schedule_zeitplan_poolpumpe'
+              && !!slot && slot.actions[0].service === 'input_boolean.turn_on' && Array.isArray(edit.data.weekdays) && edit.data.weekdays.length > 0
+              && (await page.locator('[role="dialog"] .pool-editor').count()) === 0;
+
+            // a figure opens its detail (the inspector from 1100 px, the sheet on the phone)
+            const tile = page.locator('.pool-data .pool-tile--clickable').first();
+            await tile.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await tile.click();
+            await sleep(400);
+            await settleAnimations(page);
+            const detail = await ev(page, () => {
+              const p = [...document.querySelectorAll('[role="dialog"]')].find((d) => !d.closest('.g-sheet-ghost'));
+              const hd = p && p.querySelector('.g-sheet-header');
+              return hd ? { pres: p.parentElement.getAttribute('data-g-pres'), title: (hd.querySelector('.g-sheet-header__title') || {}).textContent } : null;
+            });
+            const detailOk = !!detail && detail.title === 'Laufzeit Poolpumpe Heute' && detail.pres === (device === 'desktop' ? 'inspector' : 'sheet');
+            await page.keyboard.press('Escape');
+            await sleep(400);
+            await settleAnimations(page);
+
+            // the restart: asks, Escape sends nothing, the danger button presses
+            await clear();
+            const restart = page.locator('.pool-admin__restart');
+            await restart.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await restart.click();
+            await sleep(300);
+            await settleAnimations(page);
+            const question = await ev(page, () => document.querySelector('[role="dialog"] .g-confirm__text')?.textContent.trim());
+            await page.keyboard.press('Escape');
+            await sleep(300);
+            await settleAnimations(page);
+            const afterEsc = { calls: (await calls()).length, open: await page.locator('.g-confirm__text').count() };
+            await restart.click();
+            await sleep(300);
+            await settleAnimations(page);
+            await page.locator('[role="dialog"] .g-confirm__actions .btn--danger').click();
+            await sleep(300);
+            const pressed = await calls();
+            const restartOk = question === DE['pool.admin.restartConfirm'] && afterEsc.calls === 0 && afterEsc.open === 0 && pressed.length === 1
+              && pressed[0].domain === 'button' && pressed[0].service === 'press' && pressed[0].target.entity_id === 'button.poolpumpe_esppoolpumpe_geraeteneustart';
+
+            const ok = colours && stepperOk && stopOk && scheduleOk && detailOk && restartOk;
+            res[`${device}-pool`] = { ok, colours: colours ? 'ok' : look, stepper: stepperOk || stepper, stop: stopOk || stop,
+              schedule: scheduleOk || { h0, moved, saved }, detail, restart: restartOk || { question, afterEsc, pressed } };
+          } catch (e) {
+            res[`${device}-pool`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // Energy N: on the same date as Klassisch the same figures, tiles, legend, totals, bars (their heights), solar
+        // rows and meter, devices (their bars) and water; the chart grey and yellow, its stacks 14 wide for 13 bars, the
+        // device bars orange, the solar meter yellow; every card in the picture, no value cut, the page no wider than the
+        // window; the hero does not tint under the pointer (desktop); the loading line 15/20 label2.
+        if (keepPart('energy')) {
+          const texts = (page) => ev(page, () => {
+            const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+            const all = (sel) => [...document.querySelectorAll(sel)].map(txt);
+            const styles = (sel) => [...document.querySelectorAll(sel)].map((e) => e.getAttribute('style'));
+            return {
+              figure: txt(document.querySelector('.energy-hero__primary-value')),
+              label: txt(document.querySelector('.energy-hero__primary-label')),
+              stats: all('.energy-stat'),
+              legend: all('.energy-legend__item'),
+              totals: all('.energy-total'),
+              bars: [...document.querySelectorAll('.energy-chart__col')].map((c) => [...c.querySelectorAll('.energy-chart__seg')]
+                .map((g) => g.getAttribute('style')).join('|')),
+              solar: all('.energy-solar .energy-kv').concat(all('.energy-solar__meter-label')),
+              solarFill: styles('.energy-solar__meter-fill'),
+              devices: all('.energy-device'),
+              deviceBars: styles('.energy-device__bar'),
+              heads: all('.energy-card__sub'),
+              sections: [...document.querySelectorAll('.energy-page .overview-grid [data-section]')].map((e) => e.dataset.section),
+            };
+          });
+          let classicTexts;
+          {
+            const { page, close } = await open(device, 'classic', '/energy', { mode, fixedTime: ENERGY_AT });
+            try {
+              classicTexts = await texts(page);
+            } catch (e) {
+              classicTexts = { error: String(e.message).slice(0, 160) };
+            }
+            await close();
+          }
+          const { page, close } = await open(device, 'glas', '/energy', { mode, fixedTime: ENERGY_AT });
+          try {
+            const glasTexts = await texts(page);
+            const look = await ev(page, () => {
+              const tok = (n, prop = 'backgroundColor') => {
+                const d = document.createElement('div');
+                d.style[prop === 'color' ? 'color' : 'background'] = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d)[prop];
+                d.remove();
+                return v;
+              };
+              const bg = (e) => getComputedStyle(e).backgroundColor;
+              const each = (sel, fn) => [...document.querySelectorAll(sel)].every(fn);
+              const stacks = [...document.querySelectorAll('.energy-chart__stack')];
+              const fig = getComputedStyle(document.querySelector('.energy-hero__primary-value'));
+              // values: a block that clips (ellipsis) must not; an inline value must stay inside its card
+              const cut = [...document.querySelectorAll('.energy-page :is(.energy-hero__primary-value, .energy-stat__value, .energy-total__value, .energy-kv__value, .energy-device__value, .energy-card__sub, .energy-legend__item)')]
+                .filter((e) => {
+                  const card = e.closest('.card') || e.closest('[data-section]');
+                  const r = e.getBoundingClientRect();
+                  const c = card.getBoundingClientRect();
+                  const clipped = getComputedStyle(e).display !== 'inline' && e.scrollWidth > e.clientWidth + 0.5;
+                  return clipped || r.right > c.right + 0.5 || r.left < c.left - 0.5;
+                }).map((e) => e.className);
+              const out = [...document.querySelectorAll('.energy-page .overview-grid [data-section]')]
+                .filter((e) => { const r = e.getBoundingClientRect(); return r.width < 1 || r.left < -0.5 || r.right > innerWidth + 0.5; })
+                .map((e) => e.dataset.section);
+              // the loading line (the first load only, a moment): its rule, read on a copy
+              const box = document.createElement('div');
+              box.className = 'page energy-page';
+              box.innerHTML = '<p class="energy-page__loading">x</p>';
+              document.body.appendChild(box);
+              const ld = getComputedStyle(box.firstChild);
+              const loading = `${ld.fontSize}/${ld.lineHeight}` === '15px/20px' && ld.color === tok('--g-label-2', 'color');
+              box.remove();
+              return {
+                grid: each('.energy-chart__seg--grid', (e) => bg(e) === tok('--g-chart-netz')),
+                solar: each('.energy-chart__seg--solar', (e) => bg(e) === tok('--g-chart-solar')),
+                legend: bg(document.querySelector('.energy-legend__swatch--grid')) === tok('--g-chart-netz')
+                  && bg(document.querySelector('.energy-legend__swatch--solar')) === tok('--g-chart-solar'),
+                stacks: stacks.length, widths: [...new Set(stacks.map((e) => Math.round(e.getBoundingClientRect().width)))],
+                deviceBars: each('.energy-device__bar', (e) => bg(e) === tok('--g-prominent')),
+                meter: bg(document.querySelector('.energy-solar__meter-fill')) === tok('--g-chart-solar'),
+                figure: `${fig.fontWeight} ${fig.fontSize}/${fig.lineHeight}`, figureColor: fig.color === tok('--g-label', 'color'),
+                tiles: each('.energy-stat', (e) => bg(e) === tok('--g-fill') && getComputedStyle(e).borderRadius === '12px'),
+                icons: each('.energy-stat__icon', (e) => Math.round(e.getBoundingClientRect().width) === 32 && getComputedStyle(e).borderRadius === '50%'),
+                cut, out, wide: document.documentElement.scrollWidth > innerWidth, loading,
+              };
+            });
+            let hover = null;
+            if (device === 'desktop') {
+              const hero = page.locator('.energy-hero');
+              const b = await hero.boundingBox();
+              await page.mouse.move(b.x + b.width - 30, b.y + b.height - 12);
+              await sleep(300);
+              hover = await ev(page, () => {
+                const d = document.createElement('div');
+                d.style.background = 'var(--bg-card)';
+                document.body.appendChild(d);
+                const want = getComputedStyle(d).backgroundColor;
+                d.remove();
+                return getComputedStyle(document.querySelector('.energy-hero')).backgroundColor === want;
+              });
+              await page.mouse.move(0, 0);
+            }
+            const same = JSON.stringify(glasTexts) === JSON.stringify(classicTexts);
+            const ok = same && glasTexts.sections.join() === 'hero,usage,solar,devices,water' && glasTexts.bars.length === 13
+              && look.grid && look.solar && look.legend && look.stacks === 13 && look.widths.length === 1 && look.widths[0] === 14
+              && look.deviceBars && look.meter && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
+              && look.cut.length === 0 && look.out.length === 0 && !look.wide && look.loading && hover !== false;
+            res[`${device}-energy`] = { ok, same, ...(same ? {} : { glas: glasTexts, classic: classicTexts }), look, hover };
+          } catch (e) {
+            res[`${device}-energy`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // Music: the same steps in Klassisch and Glas send the same calls (a range's numbers as the change from its value
+        // before) and change the page alike — Now Playing's transport, mute, source, seek and volume (keys); another
+        // player's play/pause and choosing it; a zone's mute and volume; the queue's shuffle, repeat, group, removing
+        // and dragging a track, moving the queue; the library's media types, favourites, search, item menu (Escape as
+        // in Klassisch) and play. Glas then drags seek (one call, on release), volume and a zone's volume (calls while
+        // dragging).
+        if (keepPart('music')) {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const texts = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length)
+            .map((e) => e.textContent.replace(/\s+/g, ' ').trim()), sel);
+          const runMusic = async (page, style) => {
+            const steps = {};
+            const fallbacks = [];
+            /** A real tap on the visible match (scrolled to the middle); Klassisch falls back to a JS click where its own
+             *  layout keeps the control from the pointer (NEBENBEFUNDE: its item menu clipped by the art). */
+            const tap = async (sel, o = {}) => {
+              const loc = (o.text ? page.locator(sel, { hasText: o.text }) : page.locator(sel)).filter({ visible: true }).nth(o.nth || 0);
+              await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              try {
+                await loc.click({ timeout: 2500 });
+              } catch (e) {
+                if (style !== 'classic') throw e;
+                fallbacks.push(sel);
+                await loc.evaluate((el) => el.click());
+              }
+              await sleep(250);
+              await settleAnimations(page);
+            };
+            /** A range moved by `n` arrow keys; returns its value before. */
+            const keys = async (sel, n) => {
+              const loc = page.locator(sel).filter({ visible: true }).first();
+              await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              const before = Number(await loc.inputValue());
+              await loc.focus();
+              for (let k = 0; k < n; k++) {
+                await page.keyboard.press('ArrowRight');
+                await sleep(60);
+              }
+              await sleep(350);
+              return before;
+            };
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              const before = await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => {
+                const data = {};
+                for (const [k, v] of Object.entries(c.data || {})) {
+                  data[k] = typeof v === 'number' && typeof before === 'number' ? Math.round((v - before) * 1000) / 1000 : v;
+                }
+                return `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(data)}`;
+              });
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const np = '.now-playing-card';
+            const hero = () => ev(page, () => ({ room: document.querySelector('.now-playing-card__room-label')?.textContent.trim(),
+              title: document.querySelector('.now-playing-card__title')?.textContent.trim() }));
+            const target = async () => {
+              const id = await page.locator('.library-card__player-native').inputValue();
+              return { id, title: ((await entity(page, id)) || { attributes: {} }).attributes.media_title };
+            };
+            const tiles = () => texts(page, '.library-tile__name');
+
+            await step('start', async () => {}, async () => {
+              const queue = await texts(page, '.full-queue__name');
+              return { hero: await hero(), tiles: await tiles(), queue: queue.slice(0, 3), queueN: queue.length };
+            });
+            await step('previous', () => tap(`${np} [aria-label="${DE['music.control.previous']}"]`));
+            await step('pause', () => tap(`${np} .now-playing-card__play-btn`), () => page.locator(`${np} .now-playing-card__play-btn`).getAttribute('aria-label'));
+            await step('next', () => tap(`${np} [aria-label="${DE['music.control.next']}"]`));
+            await step('mute', () => tap(`${np} .now-playing-card__mute-btn`));
+            await step('source', async () => {
+              const sel = page.locator(`${np} .now-playing-card__source-select`);
+              await sel.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await sel.selectOption('YouTube');
+            }, () => page.locator(`${np} .now-playing-card__source-select`).inputValue());
+            await step('seek', () => keys(`${np} .now-playing-card__progress`, 2));
+            await step('volume', () => keys(`${np} .now-playing-card__volume-slider`, 2));
+            await step('playerPp', () => tap('.other-player-row__pp'), () => hero());
+            // The first other player becomes the one shown above (playing it paused nothing, the hero may have moved).
+            let picked = null;
+            await step('playerSelect', async () => {
+              picked = (await texts(page, '.other-player-row__name'))[0];
+              await tap('.other-player-row__name');
+            }, async () => ({ picked, hero: await hero(), others: await texts(page, '.other-player-row__name') }));
+            await step('zoneMute', () => tap('.zone-grid-card__mute'));
+            await step('zoneVolume', () => keys('.zone-grid-card__slider', 2));
+            await step('queueShuffle', () => tap('.queue-card__ctl', { nth: 0 }));
+            await step('queueRepeat', () => tap('.queue-card__ctl', { nth: 1 }));
+            await step('group', () => tap('.group-menu__btn'), () => texts(page, '.group-menu__row'));
+            await step('groupRow', () => tap('.group-menu__row'), () => texts(page, '.group-menu__btn'));
+            await step('groupEscape', () => page.keyboard.press('Escape'), () => page.locator('.group-menu__pop').count());
+            await step('queueDelete', () => tap('.full-queue__delete'), async () => {
+              const names = await texts(page, '.full-queue__name');
+              return { first: names.slice(0, 2), n: names.length };
+            });
+            // the first track dragged by its grip onto the second (the pointer sensor starts after 6 px)
+            await step('queueMove', async () => {
+              const grip = page.locator('.full-queue__grip').filter({ visible: true }).first();
+              await grip.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              const g = await grip.boundingBox();
+              const second = await page.locator('.full-queue__row').nth(1).boundingBox();
+              const [x, y] = [g.x + g.width / 2, g.y + g.height / 2];
+              const ty = second.y + second.height * 0.75;
+              await page.mouse.move(x, y);
+              await page.mouse.down();
+              for (let k = 1; k <= 8; k++) {
+                await page.mouse.move(x, y + ((ty - y) * k) / 8);
+                await sleep(30);
+              }
+              await sleep(150);
+              await page.mouse.up();
+              await sleep(400);
+            }, async () => (await texts(page, '.full-queue__name')).slice(0, 3));
+            await step('albums', () => tap('.library-card__tab', { text: DE['music.library.type.album'] }), tiles);
+            await step('favourites', () => tap('.library-card__fav-toggle'), tiles);
+            await step('favouritesOff', () => tap('.library-card__fav-toggle'), async () => (await tiles()).length);
+            await step('search', async () => {
+              await page.locator('.library-card__search-input').fill('night');
+              await sleep(500);
+            }, tiles);
+            await step('searchOff', async () => {
+              await page.locator('.library-card__search-input').fill('');
+              await sleep(500);
+            }, async () => (await tiles()).length);
+            await step('menu', () => tap('.library-tile__more'), () => texts(page, '.library-tile__menu-item'));
+            await step('menuEscape', () => page.keyboard.press('Escape'), () => page.locator('.library-tile__menu').count());
+            await step('replace', () => tap('.library-tile__menu-item', { text: DE['music.library.replaceQueue'] }), target);
+            await step('tilePlay', () => tap('.library-tile__play', { nth: 1 }), target);
+            await step('transfer', () => tap('.queue-card__transfer .queue-card__ctl'), () => texts(page, '.queue-card__transfer-row'));
+            await step('transferRow', () => tap('.queue-card__transfer-row'), () => page.locator('.queue-card__player-native').inputValue());
+            return { steps, fallbacks };
+          };
+          /** A range dragged from `from` to `to` (fractions of its width) with the mouse: calls while it is down, after
+           *  the release, and the last one. */
+          const dragCalls = async (page, sel, from, to) => {
+            const loc = page.locator(sel).filter({ visible: true }).first();
+            await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const b = await loc.boundingBox();
+            const y = b.y + b.height / 2;
+            await clear(page);
+            await page.mouse.move(b.x + b.width * from, y);
+            await page.mouse.down();
+            for (let k = 1; k <= 6; k++) await page.mouse.move(b.x + b.width * (from + ((to - from) * k) / 6), y);
+            await sleep(250);
+            const during = (await calls(page)).length;
+            await page.mouse.up();
+            await sleep(400);
+            const all = await calls(page);
+            return { during, after: all.length - during, last: all.length ? all[all.length - 1].data : null, max: Number(await loc.getAttribute('max')) };
+          };
+
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/music', { mode });
+            try {
+              got[style] = await runMusic(page, style);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let drags;
+          {
+            const { page, close } = await open(device, 'glas', '/music', { mode });
+            try {
+              drags = {
+                seek: await dragCalls(page, '.now-playing-card__progress', 0.2, 0.6),
+                volume: await dragCalls(page, '.now-playing-card__volume-slider', 0.2, 0.7),
+                zone: await dragCalls(page, '.zone-grid-card__slider', 0.2, 0.7),
+              };
+            } catch (e) {
+              drags = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const sends = ['previous', 'pause', 'next', 'mute', 'source', 'playerPp', 'zoneMute', 'queueShuffle', 'queueRepeat', 'groupRow', 'transferRow']
+            .filter((k) => !(g[k] && g[k].sent.length === 1));
+          const twice = ['seek', 'volume'].filter((k) => !(g[k] && g[k].sent.length === 2));
+          const st = g.start ? g.start.dom : {};
+          const fine = same && sends.length === 0 && twice.length === 0 && (g.zoneVolume?.sent.length || 0) >= 2
+            && g.playerSelect.dom.hero.room === g.playerSelect.dom.picked && g.playerSelect.dom.picked !== g.playerPp.dom.room
+            && !g.playerSelect.dom.others.includes(g.playerSelect.dom.picked)
+            && g.queueDelete.dom.first[0] === st.queue[1] && g.queueDelete.dom.n === st.queueN - 1
+            && g.queueMove.dom[0] === g.queueDelete.dom.first[1] && g.queueMove.dom[1] === g.queueDelete.dom.first[0]
+            && g.albums.dom.length > 0 && g.albums.dom[0] !== st.tiles[0]
+            && g.favourites.dom.length > 0 && g.favourites.dom.length < g.albums.dom.length && g.favouritesOff.dom === g.albums.dom.length
+            && g.search.dom.join() === 'Midnight Frequencies' && g.searchOff.dom === g.albums.dom.length
+            && JSON.stringify(g.menu.dom) === JSON.stringify([DE['music.library.playNext'], DE['music.library.addQueue'], DE['music.library.replaceQueue']])
+            && g.replace.dom.title === g.albums.dom[0] && g.tilePlay.dom.title === g.albums.dom[1]
+            && g.transfer.dom.length > 0 && g.transferRow.dom !== g.replace.dom.id && g.group.dom.length > 0;
+          const dragged = !!drags && !drags.error && drags.seek.during === 0 && drags.seek.after === 1
+            && drags.seek.last.seek_position / drags.seek.max > 0.5 && drags.seek.last.seek_position / drags.seek.max < 0.7
+            && drags.volume.during >= 1 && drags.volume.last.volume_level > 0.55 && drags.volume.last.volume_level < 0.8
+            && drags.zone.during >= 1;
+          res[`${device}-music`] = { ok: fine && dragged, same, sends, twice, glas: g, ...(same ? {} : { classic: got.classic && got.classic.steps }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean),
+            fallbacks: { classic: got.classic && got.classic.fallbacks, glas: got.glas && got.glas.fallbacks }, drags };
+        }
+
+        // Devices O1–O7, the same steps in Klassisch and Glas: search (also without a match), room and integration,
+        // grid | list, a device's window with its switch, star, eye and "hide all" (Escape closes it as in Klassisch),
+        // a thermostat's stepper, a TV's transport, blinds, the lock (unlocking asks first) and the garage door
+        // (opening asks first). Glas alone: tiles, rows and controls in their measures (K93, K94).
+        if (keepPart('devices')) {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const texts = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length)
+            .map((e) => e.textContent.replace(/\s+/g, ' ').trim()), sel);
+          const runDevices = async (page, style) => {
+            const steps = {};
+            const tap = async (sel, o = {}) => {
+              const loc = (o.text ? page.locator(sel, { hasText: o.text }) : page.locator(sel)).filter({ visible: true }).nth(o.nth || 0);
+              await loc.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              await loc.click({ timeout: 2500 });
+              await sleep(250);
+              await settleAnimations(page);
+            };
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              const before = await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => {
+                const data = {};
+                for (const [k, v] of Object.entries(c.data || {})) {
+                  data[k] = typeof v === 'number' && typeof before === 'number' ? Math.round((v - before) * 1000) / 1000 : v;
+                }
+                return `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(data)}`;
+              });
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const names = () => texts(page, '.devices-results .device-card__name');
+            const search = (q) => page.locator('.devices-toolbar__search-input').fill(q).then(() => sleep(250));
+            const choose = (nth, label) => page.locator('.devices-select__native').nth(nth).selectOption({ label }).then(() => sleep(250));
+            const win = () => ev(page, () => {
+              const el = document.querySelector('.modal-body .device-modal');
+              if (!el) return null;
+              const panel = el.closest('[role="dialog"]');
+              return {
+                // the classic header or the Glas sheet head: the dialog's label either way
+                title: document.getElementById(panel?.getAttribute('aria-labelledby') || '')?.textContent.trim(),
+                chips: [...el.querySelectorAll('.device-modal__chip')].map((c) => c.textContent.trim()),
+                sections: [...el.querySelectorAll('.device-modal__section-label')].map((s) => s.textContent.replace(/\s+/g, ' ').trim()),
+                rows: [...el.querySelectorAll('.device-entity-row')].map((r) => [r.querySelector('.device-entity-row__name').textContent.trim(),
+                  r.classList.contains('device-entity-row--hidden') ? 'hidden' : 'shown',
+                  r.querySelector('.device-row-fav')?.getAttribute('aria-pressed') === 'true' ? 'fav' : '-',
+                  r.querySelector('.device-entity-row__value')?.textContent.trim() || r.querySelector('.device-stepper__value')?.textContent.trim() || ''].join('|')),
+                hideAll: el.querySelector('.device-modal__hide-all')?.textContent.trim(),
+              };
+            });
+            const dialogs = () => ev(page, () => document.querySelectorAll('[role="dialog"]').length);
+            const stored = async () => {
+              const c = await customization(page);
+              return { favorites: (c.favorites || []).filter((i) => /bedroom/.test(i)), hidden: (c.hiddenEntities || []).filter((i) => /bedroom/.test(i)).sort() };
+            };
+            const window_ = (name) => tap('.device-card', { text: name });
+            const close_ = async () => {
+              await page.keyboard.press('Escape');
+              await sleep(300);
+              await settleAnimations(page);
+            };
+            const label = (key) => `[role="dialog"] .device-modal [aria-label="${DE[key]}"]`;
+
+            await step('start', async () => {}, async () => {
+              const all = await names();
+              return { n: all.length, first: all.slice(0, 3), sub: (await texts(page, '.devices-hero__subtitle'))[0], status: (await texts(page, '.devices-hero__status'))[0] };
+            });
+            await step('search', () => search('kitchen'), names);
+            await step('searchNone', () => search('zzzz'), () => texts(page, '.devices-empty-filter'));
+            await step('searchOff', () => search(''), async () => (await names()).length);
+            await step('room', () => choose(0, 'Bedroom'), names);
+            await step('integration', async () => { await choose(0, DE['devices.toolbar.allRooms']); await choose(1, 'Z-Wave'); }, names);
+            await step('filtersOff', () => choose(1, DE['devices.toolbar.allIntegrations']), async () => (await names()).length);
+            await step('list', () => (style === 'glas' ? tap('.devices-toolbar .g-seg__opt[data-value="list"]') : tap('.devices-view-toggle__btn', { nth: 0 })),
+              async () => ({ names: (await texts(page, '.devices-results--list .device-card__name')).length, counts: (await texts(page, '.devices-results--list .device-card__count')).slice(0, 4) }));
+            await step('grid', () => (style === 'glas' ? tap('.devices-toolbar .g-seg__opt[data-value="grid"]') : tap('.devices-view-toggle__btn', { nth: 1 })),
+              async () => (await texts(page, '.devices-results--grid .device-card__name')).length);
+            await step('open', () => window_('Bedroom Lights'), win);
+            await step('toggle', () => tap('[role="dialog"] .device-toggle'), win);
+            await step('fav', () => tap('[role="dialog"] .device-row-fav'), async () => ({ win: await win(), stored: await stored() }));
+            await step('favOff', () => tap('[role="dialog"] .device-row-fav'), async () => ({ win: await win(), stored: await stored() }));
+            await step('hide', () => tap('[role="dialog"] .device-entity-row__edit > .device-icon-btn:last-child'), async () => ({ win: await win(), stored: await stored() }));
+            await step('unhide', () => tap('[role="dialog"] .device-entity-row__edit > .device-icon-btn:last-child'), async () => ({ win: await win(), stored: await stored() }));
+            await step('hideAll', () => tap('[role="dialog"] .device-modal__hide-all'), async () => ({ win: await win(), stored: await stored() }));
+            await step('showAll', () => tap('[role="dialog"] .device-modal__hide-all'), async () => ({ win: await win(), stored: await stored() }));
+            await step('escape', close_, dialogs);
+            await step('thermostat', async () => {
+              await window_('Living Room Thermostat');
+              const before = (await entity(page, 'climate.living_room')).attributes.temperature;
+              await tap(label('devices.row.increaseAria'));
+              return before;
+            }, win);
+            await step('thermostatDown', async () => {
+              const before = (await entity(page, 'climate.living_room')).attributes.temperature;
+              await tap(label('devices.row.decreaseAria'));
+              return before;
+            }, win);
+            await close_();
+            await step('media', async () => {
+              await window_('Living Room TV');
+              await tap(label('devices.row.previousAria'));
+              await tap(`${label('devices.row.pauseAria')}, ${label('devices.row.playAria')}`);
+              await tap(label('devices.row.nextAria'));
+            });
+            await close_();
+            await step('blinds', async () => {
+              await window_('Bedroom Blinds');
+              for (const key of ['devices.row.openAria', 'devices.row.stopAria', 'devices.row.closeAria']) await tap(label(key));
+            });
+            await close_();
+            await step('lockAsk', async () => {
+              await window_('Front Door Lock');
+              await tap('[role="dialog"] .device-modal .device-toggle');
+            }, () => texts(page, '.lock-confirm__text'));
+            await step('lockConfirm', () => tap('.lock-confirm__actions .btn--danger'), async () => ({ ask: await texts(page, '.lock-confirm__text'), win: await win() }));
+            await step('lockAgain', () => tap('[role="dialog"] .device-modal .device-toggle'), () => texts(page, '.lock-confirm__text'));
+            await close_();
+            await step('garageAsk', async () => {
+              await window_('Garage Door');
+              await tap(label('devices.row.openAria'));
+            }, () => texts(page, '.garage-confirm__text'));
+            await step('garageConfirm', () => tap('.garage-confirm__actions .btn--danger'), async () => ({ ask: await texts(page, '.garage-confirm__text'), dialogs: await dialogs() }));
+            await close_();
+            return { steps };
+          };
+          /** Glas: the tiles, list rows, choices and the window's controls in their measures — a hit area of 44 around
+           *  a capsule or circle of 36 (a point 3 px beside the visible edge still reaches it). */
+          const devicesLook = async (page) => {
+            const grid = await ev(page, () => {
+              const tile = document.querySelector('.devices-results--grid .device-card');
+              const cs = getComputedStyle(tile);
+              const icon = tile.querySelector('.device-card__icon').getBoundingClientRect();
+              const name = getComputedStyle(tile.querySelector('.device-card__name'));
+              const sel = document.querySelector('.devices-select__native');
+              const sb = sel.getBoundingClientRect();
+              const scs = getComputedStyle(sel);
+              return { radius: cs.borderTopLeftRadius, border: cs.borderTopWidth, icon: `${Math.round(icon.width)}x${Math.round(icon.height)}`,
+                name: `${name.fontWeight} ${name.fontSize}/${name.lineHeight}`, select: Math.round(sb.height), selectVisible: Math.round(sb.height - parseFloat(scs.borderTopWidth) - parseFloat(scs.borderBottomWidth)) };
+            });
+            await page.locator('.devices-toolbar .g-seg__opt[data-value="list"]').click();
+            await sleep(300);
+            await settleAnimations(page);
+            const list = await ev(page, () => {
+              const box = document.querySelector('.devices-results--list');
+              const rows = [...box.querySelectorAll('.device-card')];
+              return { radius: getComputedStyle(box).borderTopLeftRadius, rows: rows.length, minH: Math.round(Math.min(...rows.map((r) => r.getBoundingClientRect().height))) };
+            });
+            await page.locator('.devices-toolbar .g-seg__opt[data-value="grid"]').click();
+            await sleep(300);
+            await page.locator('.device-card', { hasText: 'Living Room Thermostat' }).first().click();
+            await sleep(500);
+            await settleAnimations(page);
+            const win = await ev(page, () => {
+              const el = document.querySelector('.modal-body .device-modal');
+              const btns = [...el.querySelectorAll('.device-icon-btn')].filter((b) => b.getClientRects().length);
+              const hits = btns.map((b) => {
+                const r = b.getBoundingClientRect();
+                const at = document.elementFromPoint(r.right + 3, r.top + r.height / 2);
+                return { size: `${Math.round(r.width)}x${Math.round(r.height)}`, hit: !!at && (at === b || b.contains(at)) };
+              });
+              const rows = [...el.querySelectorAll('.device-entity-row')].map((r) => Math.round(r.getBoundingClientRect().height));
+              const label = getComputedStyle(el.querySelector('.device-modal__section-label'));
+              return { buttons: hits, rows, section: `${label.fontWeight} ${label.fontSize} ${label.textTransform}`,
+                hideAll: Math.round(el.querySelector('.device-modal__hide-all').getBoundingClientRect().height) };
+            });
+            return { grid, list, win };
+          };
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/devices', { mode });
+            try {
+              got[style] = await runDevices(page, style);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let look;
+          {
+            const { page, close } = await open(device, 'glas', '/devices', { mode });
+            try {
+              look = await devicesLook(page);
+            } catch (e) {
+              look = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const one = (k, want) => !!g[k] && g[k].sent.length === 1 && g[k].sent[0].startsWith(want);
+          const st = g.start ? g.start.dom : {};
+          const fine = same && st.n > 10
+            && g.search.dom.length > 0 && g.search.dom.length < st.n && g.searchNone.dom.join() === DE['devices.emptyFilter'] && g.searchOff.dom === st.n
+            && g.room.dom.length > 0 && g.room.dom.length < st.n && g.integration.dom.length > 0 && g.integration.dom.length < st.n && g.filtersOff.dom === st.n
+            && g.list.dom.names === st.n && g.grid.dom === st.n
+            && g.open.dom.title === 'Bedroom Lights' && g.open.dom.rows.length === 2
+            && one('toggle', 'light.toggle')
+            && g.fav.dom.stored.favorites.length === 1 && g.fav.dom.win.rows[0].includes('|fav|') && g.favOff.dom.stored.favorites.length === 0
+            && g.hide.dom.stored.hidden.length === 1 && g.hide.dom.win.rows[0].includes('|hidden|') && g.unhide.dom.stored.hidden.length === 0
+            && g.hideAll.dom.stored.hidden.length === 2 && g.hideAll.dom.win.rows.every((r) => r.includes('|hidden|'))
+            && g.hideAll.dom.win.hideAll === DE['devices.modal.showAllEntities']
+            && g.showAll.dom.stored.hidden.length === 0 && g.showAll.dom.win.hideAll === DE['devices.modal.hideAllEntities']
+            && g.escape.dom === 0
+            && g.thermostat.sent.join() === 'climate.set_temperature {"entity_id":"climate.living_room"} {"temperature":0.5}'
+            && g.thermostatDown.sent.join() === 'climate.set_temperature {"entity_id":"climate.living_room"} {"temperature":-0.5}'
+            && g.media.sent.map((c) => c.split(' ')[0]).join() === 'media_player.media_previous_track,media_player.media_pause,media_player.media_next_track'
+            && g.blinds.sent.map((c) => c.split(' ')[0]).join() === 'cover.open_cover,cover.stop_cover,cover.close_cover'
+            && g.lockAsk.sent.length === 0 && g.lockAsk.dom.length === 1 && one('lockConfirm', 'lock.unlock') && g.lockConfirm.dom.ask.length === 0
+            && one('lockAgain', 'lock.lock') && g.lockAgain.dom.length === 0
+            && g.garageAsk.sent.length === 0 && g.garageAsk.dom.length === 1 && one('garageConfirm', 'cover.open_cover') && g.garageConfirm.dom.ask.length === 0;
+          const measured = !!look && !look.error && look.grid.radius === '22px' && look.grid.border === '0px' && look.grid.icon === '36x36'
+            && look.grid.name === '600 15px/20px' && look.grid.select === 44 && look.grid.selectVisible === 36
+            && look.list.radius === '22px' && look.list.rows === st.n && look.list.minH >= 60
+            && look.win.buttons.length >= 4 && look.win.buttons.every((b) => b.size === '36x36' && b.hit)
+            && look.win.rows.every((h) => h >= 52) && look.win.section === '600 15px none' && look.win.hideAll === 44;
+          res[`${device}-devices`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look };
+        }
+
+        // Automations P1–P4, the same steps in Klassisch and Glas: the hero's figures, the activity and the categories,
+        // a row's switch (a tap and Space), the search (also without a match), room (an automation placed in the
+        // living room) and category. Glas alone: rows, separators, lists to the surface's edges, the hero's stats and
+        // the choices in their measures (K94).
+        if (keepPart('automations')) {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const texts = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length)
+            .map((e) => e.textContent.replace(/\s+/g, ' ').trim()), sel);
+          const place = (page) => ev(page, () => window.__hapulseDemo.placeEntity('automation.evening_lights', 'living_room')).then(() => sleep(300));
+          const runAutomations = async (page) => {
+            const steps = {};
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(c.data || {})}`);
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const view = () => ev(page, () => {
+              const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+              const vis = (s, root = document) => [...root.querySelectorAll(s)].filter((e) => e.getClientRects().length);
+              const hero = document.querySelector('.auto-hero-card');
+              const parts = (e) => (e ? [...e.children].map(txt).filter(Boolean).join(' ') : null);
+              return {
+                hero: hero && { total: txt(hero.querySelector('.auto-hero-card__total')), sub: txt(hero.querySelector('.auto-hero-card__sub')),
+                  lastRan: parts(hero.querySelector('.auto-hero-card__last-ran')), stats: vis('.auto-hero-card__stat', hero).map(parts) },
+                feed: vis('.auto-feed-row').map((r) => ['name', 'cat', 'time'].map((k) => txt(r.querySelector(`.auto-feed-row__${k}`))).join('|')),
+                cats: vis('.auto-cat-card').map((c) => [txt(c.querySelector('.auto-cat-card__title')), txt(c.querySelector('.auto-cat-card__count')),
+                  ...[...c.querySelectorAll('.auto-cat-row')].map((r) => [txt(r.querySelector('.auto-cat-row__name')), txt(r.querySelector('.auto-cat-row__time')),
+                    r.querySelector('.auto-row-toggle input').checked ? 'on' : 'off', r.classList.contains('auto-cat-row--disabled') ? 'd' : ''].join('|'))].join(' / ')),
+              };
+            });
+            const names = () => texts(page, '.auto-cat-row__name');
+            const search = (q) => page.locator('.automations-toolbar__search-input').fill(q).then(() => sleep(250));
+            const choose = (nth, label) => page.locator('.automations-select__native').nth(nth).selectOption({ label }).then(() => sleep(250));
+            const row = (name) => page.locator('.auto-cat-row', { hasText: name }).first();
+
+            await step('start', async () => {}, view);
+            await step('tap', async () => {
+              const sw = row('Humidity Alert').locator('.auto-row-toggle');
+              await sw.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              await sw.click({ timeout: 2500 });
+            }, view);
+            await step('space', async () => {
+              const input = row('Away Mode').locator('.auto-row-toggle input');
+              await input.focus();
+              await page.keyboard.press('Space');
+            }, view);
+            await step('search', () => search('light'), names);
+            await step('searchNone', () => search('zzzz'), () => texts(page, '.automations-empty-filter'));
+            await step('searchOff', () => search(''), async () => (await names()).length);
+            await step('room', () => choose(0, 'Living Room'), names);
+            await step('category', async () => { await choose(0, DE['automations.toolbar.allRooms']); await choose(1, 'Security'); }, names);
+            await step('filtersOff', () => choose(1, DE['automations.toolbar.allCategories']), async () => (await names()).length);
+            return { steps };
+          };
+          /** Glas: a category's rows 60 and the activity's 52, the text from 60, separators from there and none above
+           *  the first row, the list from the surface's top to the card's edges (a card the grid does not stretch), the
+           *  activity 5 rows high and scrolling, a disabled automation not dimmed, the stats capsule 44 with no label
+           *  cut, the figure 34/41, the activity's name whole beside its category in plain `label2`, the choices 36 in 44. */
+          const automationsLook = (page) => ev(page, () => {
+            const tok = (n) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            };
+            const card = [...document.querySelectorAll('.auto-cat-card')].find((c) => c.textContent.includes('Alarm Notification'));
+            const list = card.querySelector('.auto-cat-card__list');
+            const rows = [...card.querySelectorAll('.auto-cat-row')];
+            const cb = card.getBoundingClientRect();
+            const lb = list.getBoundingClientRect();
+            const r0 = rows[0].getBoundingClientRect();
+            // the surface: the card's `::before`, inside its (transparent) border
+            const bw = (side) => parseFloat(getComputedStyle(card)[`border${side}Width`]);
+            const feed = document.querySelector('.auto-feed-card__list');
+            const feedRows = [...feed.querySelectorAll('.auto-feed-row')];
+            const off = card.querySelector('.auto-cat-row--disabled');
+            const stats = document.querySelector('.auto-hero-card__stats');
+            const total = getComputedStyle(document.querySelector('.auto-hero-card__total'));
+            const fname = feedRows[0].querySelector('.auto-feed-row__name');
+            const fcat = getComputedStyle(feedRows[0].querySelector('.auto-feed-row__cat'));
+            const sel = document.querySelector('.automations-select__native');
+            const scs = getComputedStyle(sel);
+            const sb = sel.getBoundingClientRect();
+            return {
+              catRows: Math.round(Math.min(...[...document.querySelectorAll('.auto-cat-row')].map((r) => r.getBoundingClientRect().height))),
+              feedRows: Math.round(Math.min(...feedRows.map((r) => r.getBoundingClientRect().height))),
+              textStart: Math.round(rows[0].querySelector('.auto-cat-row__name').getBoundingClientRect().left - r0.left),
+              feedTextStart: Math.round(fname.getBoundingClientRect().left - feedRows[0].getBoundingClientRect().left),
+              sep: `${getComputedStyle(rows[1]).backgroundImage.slice(0, 15)} ${getComputedStyle(rows[1]).backgroundPosition}`,
+              firstSep: getComputedStyle(rows[0]).backgroundImage,
+              edges: [lb.left - cb.left - bw('Left'), cb.right - lb.right - bw('Right'), cb.bottom - lb.bottom - bw('Bottom')].map(Math.round),
+              top: Math.round(lb.top - cb.top - bw('Top')) === Math.round(parseFloat(getComputedStyle(card, '::before').top)),
+              feedH: Math.round(feed.getBoundingClientRect().height), feedScrolls: feed.scrollHeight > feed.clientHeight,
+              off: !!off && getComputedStyle(off).opacity === '1' && getComputedStyle(off.querySelector('.auto-cat-row__name')).color === tok('--g-label-2'),
+              stats: `${Math.round(stats.getBoundingClientRect().height)} ${getComputedStyle(stats).borderTopLeftRadius}`,
+              statsCut: [...document.querySelectorAll('.auto-hero-card__stat-label')].filter((e) => e.scrollWidth > e.clientWidth).length,
+              total: `${total.fontWeight} ${total.fontSize}/${total.lineHeight}`,
+              feedName: fname.scrollWidth <= fname.clientWidth,
+              feedCat: `${fcat.fontSize}/${fcat.lineHeight} ${fcat.backgroundColor} ${fcat.color === tok('--g-label-2')}`,
+              select: Math.round(sb.height), selectVisible: Math.round(sb.height - parseFloat(scs.borderTopWidth) - parseFloat(scs.borderBottomWidth)),
+            };
+          });
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/automations', { mode });
+            try {
+              await place(page);
+              got[style] = await runAutomations(page);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let look;
+          {
+            const { page, close } = await open(device, 'glas', '/automations', { mode });
+            try {
+              look = await automationsLook(page);
+            } catch (e) {
+              look = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const st = g.start ? g.start.dom : {};
+          const stats = (v) => (v && v.hero ? v.hero.stats.join() : '');
+          const fine = same && !!st.hero && st.hero.total === '13' && st.feed.length === 8 && st.cats.length === 5
+            && stats(st) === '11 aktiv,2 deaktiviert,5 Kategorien'
+            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === '12 aktiv,1 deaktiviert,5 Kategorien'
+            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === '11 aktiv,2 deaktiviert,5 Kategorien'
+            && g.search.dom.join() === 'Evening Lights,Morning Lights' && g.searchNone.dom.join() === DE['automations.emptyFilter']
+            && g.searchOff.dom === 13 && g.room.dom.join() === 'Evening Lights'
+            && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 13;
+          const measured = !!look && !look.error && look.catRows >= 60 && look.feedRows >= 52 && look.textStart === 60 && look.feedTextStart === 60
+            && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none' && look.edges.join() === '0,0,0' && look.top
+            && look.feedH === 260 && look.feedScrolls && look.off && look.stats === '44 22px' && look.statsCut === 0
+            && look.total === '600 34px/41px' && look.feedName && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedCat)
+            && look.select === 44 && look.selectVisible === 36;
+          res[`${device}-automations`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look };
+        }
+
+        // Scenes Q1–Q4, the same steps in Klassisch and Glas: the hero's figures, the activity, the rooms with their
+        // tiles; a tile activates its scene by tap, Enter and Space, and no tile says "Aktiv" (K88: the overview only).
+        // Glas alone: the tiles in the overview's look (radius 22, circle 36 / from 900 px 40, name 15/20 600, the glyph
+        // in the ink of its tone, no inline colour), two columns (four in a card two columns wide), on the phone on the
+        // page background; the activity like the automations' (K94); the hero's stats capsule.
+        if (keepPart('scenes')) {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const runScenes = async (page) => {
+            const steps = {};
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(c.data || {})}`);
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const view = () => ev(page, () => {
+              const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+              const vis = (s, root = document) => [...root.querySelectorAll(s)].filter((e) => e.getClientRects().length);
+              const parts = (e) => (e ? [...e.children].map(txt).filter(Boolean).join(' ') : null);
+              const hero = document.querySelector('.scene-hero-card');
+              return {
+                hero: hero && { total: txt(hero.querySelector('.scene-hero-card__total')), sub: txt(hero.querySelector('.scene-hero-card__sub')),
+                  lastUsed: parts(hero.querySelector('.scene-hero-card__last-used')), stats: vis('.scene-hero-card__stat', hero).map(parts) },
+                feed: vis('.scene-feed-row').map((r) => ['name', 'room', 'time'].map((k) => txt(r.querySelector(`.scene-feed-row__${k}`))).join('|')),
+                rooms: vis('.scene-room-card').map((c) => [txt(c.querySelector('.scene-room-card__title')), txt(c.querySelector('.scene-room-card__count')),
+                  ...vis('.scene-tile', c).map((t) => txt(t.querySelector('.scene-tile__name'))
+                    + (t.hasAttribute('data-active') || t.querySelector('.scene-tile__sub') ? ' +' : ''))].join(' / ')),
+              };
+            });
+            const tile = (name) => page.locator('.scene-room-card .scene-tile', { hasText: name }).first();
+            await step('start', async () => {}, view);
+            await step('tap', async () => {
+              const t = tile('Relax Mode');
+              await t.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              await t.click({ timeout: 2500 });
+            }, view);
+            await step('enter', async () => {
+              await tile('Meeting').focus();
+              await page.keyboard.press('Enter');
+            }, view);
+            await step('space', async () => {
+              await tile('Away Mode').focus();
+              await page.keyboard.press('Space');
+            }, view);
+            return { steps };
+          };
+          /** Glas: the tiles (look, tone, columns, on the phone without a surface), the activity's rows and list, the
+           *  hero's stats; `wide` = the living room's card two columns wide. */
+          const scenesLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const bw = (el, side) => parseFloat(getComputedStyle(el)[`border${side}Width`]);
+            const card = [...document.querySelectorAll('.scene-room-card')].find((c) => c.textContent.includes('Living Room'));
+            const grid = card.querySelector('.scene-room-card__grid');
+            const tiles = [...document.querySelectorAll('.scenes-page .scene-tile')];
+            const t0 = tiles[0];
+            const cs = getComputedStyle(t0);
+            const icb = t0.querySelector('.scene-tile__icon').getBoundingClientRect();
+            const name = getComputedStyle(t0.querySelector('.scene-tile__name'));
+            const feed = document.querySelector('.scene-feed-card__list');
+            const fcard = feed.closest('.scene-feed-card');
+            const fcb = fcard.getBoundingClientRect();
+            const flb = feed.getBoundingClientRect();
+            const feedRows = [...feed.querySelectorAll('.scene-feed-row')];
+            const fname = feedRows[0].querySelector('.scene-feed-row__name');
+            const froom = getComputedStyle(feedRows[0].querySelector('.scene-feed-row__room'));
+            const stats = document.querySelector('.scene-hero-card__stats');
+            return {
+              radius: cs.borderTopLeftRadius, border: cs.borderTopWidth, bg: cs.backgroundColor === tok('--g-tile-off', 'backgroundColor'),
+              h: Math.round(t0.getBoundingClientRect().height),
+              circle: `${Math.round(icb.width)}x${Math.round(icb.height)}`, name: `${name.fontWeight} ${name.fontSize}/${name.lineHeight}`,
+              tones: tiles.every((t) => !!t.dataset.tone && !t.querySelector('.scene-tile__icon').getAttribute('style')
+                && getComputedStyle(t.querySelector('.scene-tile__icon')).color === tok(`--g-${t.dataset.tone}-ink`)),
+              cols: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+              surface: getComputedStyle(card, '::before').content,
+              gridTop: Math.round(grid.getBoundingClientRect().top - card.getBoundingClientRect().top - bw(card, 'Top')),
+              feedRows: Math.round(Math.min(...feedRows.map((r) => r.getBoundingClientRect().height))),
+              feedTextStart: Math.round(fname.getBoundingClientRect().left - feedRows[0].getBoundingClientRect().left),
+              sep: `${getComputedStyle(feedRows[1]).backgroundImage.slice(0, 15)} ${getComputedStyle(feedRows[1]).backgroundPosition}`,
+              firstSep: getComputedStyle(feedRows[0]).backgroundImage,
+              edges: [flb.left - fcb.left - bw(fcard, 'Left'), fcb.right - flb.right - bw(fcard, 'Right'),
+                fcb.bottom - flb.bottom - bw(fcard, 'Bottom')].map(Math.round),
+              top: Math.round(flb.top - fcb.top - bw(fcard, 'Top')) === Math.round(parseFloat(getComputedStyle(fcard, '::before').top)),
+              feedH: Math.round(flb.height), feedScrolls: feed.scrollHeight > feed.clientHeight,
+              feedName: fname.scrollWidth <= fname.clientWidth,
+              feedRoom: `${froom.fontSize}/${froom.lineHeight} ${froom.backgroundColor} ${froom.color === tok('--g-label-2')}`,
+              stats: `${Math.round(stats.getBoundingClientRect().height)} ${getComputedStyle(stats).borderTopLeftRadius}`,
+              statsCut: [...document.querySelectorAll('.scene-hero-card__stat-label')].filter((e) => e.scrollWidth > e.clientWidth).length,
+            };
+          });
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/scenes', { mode });
+            try {
+              got[style] = await runScenes(page);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let look;
+          let wide = null;
+          {
+            const { page, close } = await open(device, 'glas', '/scenes', { mode });
+            try {
+              look = await scenesLook(page);
+            } catch (e) {
+              look = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          if (device === 'desktop') {
+            const { page, close } = await open(device, 'glas', '/scenes', { mode, customization: { sceneSectionSpans: { room_living_room: 2 } } });
+            try {
+              wide = await ev(page, () => {
+                const card = [...document.querySelectorAll('.scene-room-card')].find((c) => c.textContent.includes('Living Room'));
+                return getComputedStyle(card.querySelector('.scene-room-card__grid')).gridTemplateColumns.split(' ').length;
+              });
+            } catch (e) {
+              wide = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const st = g.start ? g.start.dom : {};
+          const first = (step) => (step && step.dom && step.dom.feed[0]) || '';
+          const lastUsed = (step, n) => !!step && !!step.dom && !!step.dom.hero && step.dom.hero.lastUsed === `${DE['scenes.hero.lastUsed']} ${n} ${DE['scenes.time.justNow']}`;
+          const fine = same && !!st.hero && st.hero.total === '11' && st.hero.sub === DE['scenes.hero.totalLabel']
+            && st.hero.lastUsed === `${DE['scenes.hero.lastUsed']} Cooking Mode vor 1h`
+            && st.hero.stats.length === 2 && /^\d+ heute genutzt$/.test(st.hero.stats[0]) && st.hero.stats[1] === '5 Räume'
+            && st.feed.map((f) => f.split('|')[0]).join() === 'Cooking Mode,Movie Night,Focus Mode,Bright Mode,Welcome Home,Wake Up,Morning Coffee,Sleep'
+            && st.feed[0] === 'Cooking Mode|Kitchen|vor 1h'
+            && st.rooms.join(' // ') === ['Bedroom / 2 / Sleep / Wake Up', 'Hallway / 2 / Away Mode / Welcome Home', 'Kitchen / 2 / Cooking Mode / Morning Coffee',
+              'Living Room / 3 / Movie Night / Bright Mode / Relax Mode', 'Office / 2 / Focus Mode / Meeting'].join(' // ')
+            && g.tap.sent.join() === 'scene.turn_on {"entity_id":"scene.living_room_relax"} {}' && lastUsed(g.tap, 'Relax Mode')
+            && first(g.tap) === `Relax Mode|Living Room|${DE['scenes.time.justNow']}`
+            && g.enter.sent.join() === 'scene.turn_on {"entity_id":"scene.office_meeting"} {}' && lastUsed(g.enter, 'Meeting')
+            && first(g.enter).startsWith('Meeting|Office|')
+            && g.space.sent.join() === 'scene.turn_on {"entity_id":"scene.hallway_away"} {}' && lastUsed(g.space, 'Away Mode')
+            && first(g.space).startsWith('Away Mode|Hallway|')
+            && ['start', 'tap', 'enter', 'space'].every((k) => g[k].dom.rooms.every((r) => !r.includes(' +')));
+          const phone = device === 'phone';
+          const measured = !!look && !look.error && look.radius === '22px' && look.border === '0px' && look.bg
+            && look.h === (phone ? 64 : 116) && look.circle === (phone ? '36x36' : '40x40') && look.name === '600 15px/20px' && look.tones
+            && look.cols === 2 && (phone ? look.surface === 'none' && look.gridTop === 50 : look.surface !== 'none' && look.gridTop === 66)
+            && look.feedRows >= 52 && look.feedTextStart === 60 && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none'
+            && look.edges.join() === '0,0,0' && look.top && look.feedH === 260 && look.feedScrolls && look.feedName
+            && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedRoom) && look.stats === '44 22px' && look.statsCut === 0
+            && (phone || wide === 4);
+          res[`${device}-scenes`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look, wide };
+        }
+
+        // System R1–R5, the same content in Klassisch and Glas under the same values: the hero's state and chips with
+        // the alerts (low batteries, unavailable), the monitor's groups, values and bar bands, the batteries with their
+        // bands and the count of low ones. Glas alone: the alerts' symbol in the state's ink, the text 600 `label`; the
+        // monitor's group titles 600 15/20 `label2` without a symbol, tiles in `fill` radius 12 without a border, bars 6
+        // high in green / yellow / red, the groups scrolling 400 high up to the surface's edges; the batteries as an inset
+        // list (rows 52, circle 32 in `fill`, text and separators from 60, none above the first, bands green / yellow /
+        // orange / red, the symbol green, from 25 % orange, at 10 % red, the percentage low orangeInk, critical redInk,
+        // the badge in the orange's soft tone); the activity looks like the overview's.
+        if (keepPart('system')) {
+          const PATCHES = [
+            ['sensor.front_door_lock_battery', { state: '5' }],
+            ['sensor.hallway_motion_battery', { state: '18' }],
+            ['sensor.bedroom_sensor_battery', { state: '40' }],
+            ['sensor.garden_sensor_battery', { state: '80', attributes: { device_class: 'battery', unit_of_measurement: '%',
+              state_class: 'measurement', friendly_name: 'Garden Sensor Battery' } }],
+            ['sensor.processor_use', { state: '82' }],
+            ['sensor.memory_use_percent', { state: '93' }],
+            ['light.living_room_shelf', { state: 'unavailable' }],
+          ];
+          // the demo's hallway motion burst writes its snapshot back after 3 s and would undo a patch made meanwhile
+          const prep = async (page) => {
+            const HALL = 'binary_sensor.hallway_motion';
+            await ev(page, (h) => window.__hapulseDemo.patch(h, null), HALL);
+            await sleep(3200);
+            await ev(page, ([h, list]) => {
+              window.__hapulseDemo.patch(h, null);
+              list.forEach(([i, x]) => window.__hapulseDemo.patch(i, x));
+            }, [HALL, PATCHES]);
+            await sleep(500);
+            await settleAnimations(page);
+          };
+          const content = (page) => ev(page, () => {
+            const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+            const cls = (e, base) => (e ? ([...e.classList].find((c) => c.startsWith(`${base}--`)) || '').slice(base.length + 2) : '');
+            return {
+              status: txt(document.querySelector('.system-page .system-hero-card__status')),
+              chips: [...document.querySelectorAll('.system-page .system-hero-chip')].map((c) => `${cls(c, 'system-hero-chip')}:${txt(c)}`),
+              groups: [...document.querySelectorAll('.system-page .sys-monitor-group')].map((g) => [txt(g.querySelector('.sys-monitor-group__label')),
+                ...[...g.querySelectorAll('.sys-metric-tile')].map((t) => {
+                  const f = t.querySelector('.sys-metric-bar__fill');
+                  return `${txt(t.querySelector('.sys-metric-tile__name'))}|${txt(t.querySelector('.sys-metric-tile__value'))}`
+                    + (f ? `|${cls(f, 'sys-metric-bar__fill')} ${f.style.width}` : '');
+                })].join(' / ')),
+              batteries: [...document.querySelectorAll('.system-page .bat-row')].map((r) => {
+                const f = r.querySelector('.bat-row__bar-fill');
+                return [txt(r.querySelector('.bat-row__name')), txt(r.querySelector('.bat-row__pct')), `${cls(f, 'bat-row__bar-fill')} ${f.style.width}`,
+                  cls(r.querySelector('.bat-row__icon'), 'bat-row__icon'), cls(r.querySelector('.bat-row__pct'), 'bat-row__pct')].join('|');
+              }),
+              badge: txt(document.querySelector('.system-page .batteries-card__low-badge')),
+              activity: document.querySelectorAll('.system-page .activity-row').length,
+            };
+          });
+          const systemLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const bg = (n) => tok(n, 'backgroundColor');
+            const bw = (el, side) => parseFloat(getComputedStyle(el)[`border${side}Width`]);
+            const font = (el) => {
+              const c = getComputedStyle(el);
+              return `${c.fontWeight} ${c.fontSize}/${c.lineHeight}`;
+            };
+            /** left, right and bottom edge of a body to its card, and whether its top is the surface's top */
+            const edges = (body, card) => {
+              const cb = card.getBoundingClientRect();
+              const b = body.getBoundingClientRect();
+              return { edges: [b.left - cb.left - bw(card, 'Left'), cb.right - b.right - bw(card, 'Right'), cb.bottom - b.bottom - bw(card, 'Bottom')]
+                .map(Math.round).join(), top: Math.round(b.top - cb.top - bw(card, 'Top')) === Math.round(parseFloat(getComputedStyle(card, '::before').top)) };
+            };
+            const chips = [...document.querySelectorAll('.system-page .system-hero-chip')];
+            const alert = (kind, ink) => {
+              const c = chips.find((x) => x.classList.contains(`system-hero-chip--${kind}`) && x.querySelector('svg'));
+              if (!c) return null;
+              const s = c.querySelector('svg');
+              const sb = s.getBoundingClientRect();
+              const span = getComputedStyle(c.querySelector('span'));
+              return `${getComputedStyle(s).color === tok(ink)} ${Math.round(sb.width)}x${Math.round(sb.height)} ${span.color === tok('--g-label')} ${span.fontWeight}`;
+            };
+            const mon = document.querySelector('.system-page .sys-monitor-card');
+            const groups = mon.querySelector('.sys-monitor-card__groups');
+            const label = groups.querySelector('.sys-monitor-group__label');
+            const tile = groups.querySelector('.sys-metric-tile');
+            const tcs = getComputedStyle(tile);
+            const tname = tile.querySelector('.sys-metric-tile__name');
+            const tval = tile.querySelector('.sys-metric-tile__value');
+            const bar = groups.querySelector('.sys-metric-bar');
+            const BAND = { ok: bg('--g-green'), warn: bg('--g-yellow'), critical: bg('--g-red') };
+            const band = (f, base) => ['ok', 'medium', 'low', 'warn', 'critical'].find((k) => f.classList.contains(`${base}--${k}`));
+            const fills = [...groups.querySelectorAll('.sys-metric-bar__fill')];
+            const bat = document.querySelector('.system-page .batteries-card');
+            const list = bat.querySelector('.bat-list');
+            const rows = [...list.querySelectorAll('.bat-row')];
+            const row = (n) => rows.find((r) => r.querySelector('.bat-row__name').textContent.trim() === n);
+            const ic = rows[0].querySelector('.bat-row__icon');
+            const icb = ic.getBoundingClientRect();
+            const name0 = rows[0].querySelector('.bat-row__name');
+            const BAT = { 'Front Door Lock': ['--g-red-ink', '--g-red', '--g-red-ink', '600'], 'Hallway Motion': ['--g-orange-ink', '--g-orange', '--g-orange-ink', '600'],
+              'Bedroom Sensor': ['--g-green-ink', '--g-yellow', '--g-label-2', '400'], 'Garden Sensor': ['--g-green-ink', '--g-green', '--g-label-2', '400'] };
+            const bbar = rows[0].querySelector('.bat-row__bar');
+            const pct = getComputedStyle(row('Garden Sensor').querySelector('.bat-row__pct'));
+            const badge = bat.querySelector('.batteries-card__low-badge');
+            const bcs = getComputedStyle(badge);
+            /** a value chip (no symbol): its dot before the key and the value's colour and weight */
+            const value = (kind, ink) => {
+              const c = chips.find((x) => x.classList.contains(`system-hero-chip--${kind}`) && !x.querySelector('svg'));
+              if (!c) return null;
+              const d = getComputedStyle(c, '::before');
+              const v = getComputedStyle(c.querySelector('.system-hero-chip__val'));
+              return `${ink ? d.backgroundColor === bg(ink) : d.content} ${d.width}x${d.height} ${v.color === tok('--g-label')} ${v.fontWeight}`;
+            };
+            return {
+              warn: alert('warn', '--g-warn-ink'), critical: alert('critical', '--g-red-ink'),
+              dots: [value('warn', '--g-warn-ink'), value('critical', '--g-red-ink'), value('ok', null)],
+              label: `${font(label)} ${getComputedStyle(label).color === tok('--g-label-2')} ${getComputedStyle(label).textTransform}`,
+              symbol: getComputedStyle(label.querySelector('[aria-hidden="true"]')).display,
+              tile: `${tcs.borderTopLeftRadius} ${tcs.borderTopWidth} ${tcs.backgroundColor === bg('--g-fill')}`,
+              tname: `${font(tname)} ${getComputedStyle(tname).color === tok('--g-label-2')}`,
+              tval: `${font(tval)} ${getComputedStyle(tval).color === tok('--g-label')} ${getComputedStyle(tval).fontVariantNumeric}`,
+              bar: `${Math.round(bar.getBoundingClientRect().height)} ${getComputedStyle(bar).backgroundColor === bg('--g-fill')}`,
+              bands: fills.every((f) => getComputedStyle(f).backgroundColor === BAND[band(f, 'sys-metric-bar__fill')]),
+              bandSet: [...new Set(fills.map((f) => band(f, 'sys-metric-bar__fill')))].sort().join(),
+              groups: { ...edges(groups, mon), h: Math.round(groups.getBoundingClientRect().height), scrolls: groups.scrollHeight > groups.clientHeight,
+                gap: getComputedStyle(groups).rowGap },
+              rows: Math.round(Math.min(...rows.map((r) => r.getBoundingClientRect().height))),
+              circle: `${Math.round(icb.width)}x${Math.round(icb.height)} ${getComputedStyle(ic).borderRadius} ${getComputedStyle(ic).backgroundColor === bg('--g-fill')}`,
+              textStart: Math.round(name0.getBoundingClientRect().left - rows[0].getBoundingClientRect().left),
+              name: `${font(name0)} ${getComputedStyle(name0).color === tok('--g-label')}`,
+              sep: `${getComputedStyle(rows[1]).backgroundImage.slice(0, 15)} ${getComputedStyle(rows[1]).backgroundPosition}`,
+              firstSep: getComputedStyle(rows[0]).backgroundImage, borders: rows.every((r) => getComputedStyle(r).borderBottomWidth === '0px'),
+              list: edges(list, bat),
+              states: Object.entries(BAT).map(([n, [icon, fill, text, weight]]) => {
+                const r = row(n);
+                if (!r) return `${n}: missing`;
+                const p = getComputedStyle(r.querySelector('.bat-row__pct'));
+                return [getComputedStyle(r.querySelector('.bat-row__icon')).color === tok(icon),
+                  getComputedStyle(r.querySelector('.bat-row__bar-fill')).backgroundColor === bg(fill), p.color === tok(text), p.fontWeight === weight].join();
+              }),
+              bbar: `${Math.round(bbar.getBoundingClientRect().height)} ${getComputedStyle(bbar).backgroundColor === bg('--g-fill')}`,
+              pct: `${font(row('Garden Sensor').querySelector('.bat-row__pct'))} ${pct.fontVariantNumeric}`,
+              badge: `${bcs.backgroundColor === bg('--g-orange-soft')} ${bcs.color === tok('--g-orange-ink')} ${font(badge)} ${Math.round(badge.getBoundingClientRect().height)} ${bcs.borderTopLeftRadius}`,
+            };
+          });
+          /** The activity card's look, without what depends on the card's width. */
+          const activityLook = (page, root) => ev(page, (r) => {
+            const card = document.querySelector(`${r} .activity-card`);
+            const list = card.querySelector('.activity-card__list');
+            const rows = [...list.querySelectorAll('.activity-row')];
+            const f = (el) => {
+              const c = getComputedStyle(el);
+              return `${c.fontWeight} ${c.fontSize}/${c.lineHeight} ${c.color} ${c.fontVariantNumeric}`;
+            };
+            const sep = (el) => {
+              const c = getComputedStyle(el);
+              const b = getComputedStyle(el, '::before');
+              return `${c.borderTopWidth} ${c.borderTopColor} ${b.content} ${b.left} ${b.height} ${b.backgroundColor}`;
+            };
+            const ic = rows[0].querySelector('.activity-row__icon');
+            const cb = card.getBoundingClientRect();
+            const lb = list.getBoundingClientRect();
+            return {
+              rows: Math.round(Math.min(...rows.map((x) => x.getBoundingClientRect().height))),
+              icon: getComputedStyle(ic).display === 'none' ? 'none' : `${Math.round(ic.getBoundingClientRect().width)} ${getComputedStyle(ic).color}`,
+              name: f(rows[0].querySelector('.activity-row__name')), desc: f(rows[0].querySelector('.activity-row__desc')),
+              time: f(rows[0].querySelector('.activity-row__time')),
+              textStart: Math.round(rows[0].querySelector('.activity-row__info').getBoundingClientRect().left - cb.left),
+              first: sep(rows[0]), second: sep(rows[1]),
+              rowEdges: [rows[0].getBoundingClientRect().left - cb.left, cb.right - rows[0].getBoundingClientRect().right].map(Math.round).join(),
+              listTop: Math.round(lb.top - cb.top) - Math.round(parseFloat(getComputedStyle(card, '::before').top)),
+            };
+          }, root);
+          const got = {};
+          let look = null;
+          let act = null;
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/system', { mode });
+            try {
+              await prep(page);
+              got[style] = await content(page);
+              if (style === 'glas') {
+                look = await systemLook(page);
+                act = { system: await activityLook(page, '.system-page') };
+              }
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          {
+            const { page, close } = await open(device, 'glas', '/', { mode });
+            try {
+              act = { ...act, home: await activityLook(page, '.home-page') };
+            } catch (e) {
+              act = { ...act, home: { error: String(e.message).slice(0, 200) } };
+            }
+            await close();
+          }
+          const g = got.glas || {};
+          const same = !!got.classic && !got.classic.error && !g.error && JSON.stringify(got.classic) === JSON.stringify(g);
+          const fine = same && g.status === DE['system.hero.status.critical']
+            && g.chips.join() === ['warn:CPU82%', 'critical:RAM93%', 'ok:Speicher61%', `warn:${DE['system.hero.lowBatteryCount.other'].replace('{count}', '2')}`,
+              `critical:${DE['system.hero.unavailableCount.one'].replace('{count}', '1')}`].join()
+            && g.groups[0] === `${DE['system.monitor.group.processor']} / Processor use|82 %|warn 82% / Processor temperature|47 °C`
+            && g.groups[1].startsWith(`${DE['system.monitor.group.memory']} / Memory use|93 %|critical 93% / `)
+            && g.groups[2].startsWith(`${DE['system.monitor.group.disk']} / Disk use (/)|61 %|ok 61% / `)
+            && g.batteries.join(' // ') === ['Front Door Lock|5%|critical 5%|warn|critical', 'Hallway Motion|18%|low 18%|warn|low',
+              'Bedroom Sensor|40%|medium 40%|ok|', 'Garden Sensor|80%|ok 80%|ok|'].join(' // ')
+            && g.badge === DE['system.batteries.lowCount.other'].replace('{count}', '2') && g.activity > 1;
+          const L = look || {};
+          const measured = !!look && !look.error && L.warn === 'true 16x16 true 600' && L.critical === 'true 16x16 true 600'
+            && L.dots.join() === ['true 8pxx8px true 600', 'true 8pxx8px true 600', 'none autoxauto true 600'].join()
+            && L.label === '600 15px/20px true none' && L.symbol === 'none' && L.tile === '12px 0px true' && L.tname === '400 15px/20px true'
+            && L.tval === '600 15px/20px true tabular-nums' && L.bar === '6 true' && L.bands && L.bandSet === 'critical,ok,warn'
+            && L.groups.edges === '0,0,0' && L.groups.top && L.groups.h === 432 && L.groups.scrolls && L.groups.gap === '16px'
+            && L.rows === 52 && L.circle === '32x32 50% true' && L.textStart === 60 && L.name === '400 17px/22px true'
+            && L.sep === 'linear-gradient 60px 0px' && L.firstSep === 'none' && L.borders && L.list.edges === '0,0,0' && L.list.top
+            && L.states.every((s) => s === 'true,true,true,true') && L.bbar === '6 true' && L.pct === '400 15px/20px tabular-nums'
+            && L.badge === 'true true 600 13px/18px 26 999px';
+          const likeHome = !!act && !!act.system && !!act.home && !act.system.error && !act.home.error
+            && JSON.stringify(act.system) === JSON.stringify(act.home);
+          res[`${device}-system`] = { ok: fine && measured && likeHome, same, glas: g, ...(same ? {} : { classic: got.classic }), look, likeHome,
+            ...(likeHome ? {} : { act }) };
+        }
+        // Settings (S1–S16): every row does in Glas what it does in Klassisch. The same steps run in both styles and
+        // must leave the same settings behind: app name (S2), app symbol (S3), light/dark (S4), language (S6), accent
+        // and its reset (S8, the hue itself differs: Glas starts from its own orange), editing (S10, the rooms follow),
+        // the entities window with search, rename, star and eye (S11), room order and eye (S13), export as a file and
+        // import up to the file dialog (S14), version line, "Neuerungen" and the project link (S15), and last the demo's
+        // way to the onboarding (S1; with a real connection "Trennen" signs out at once, there is no dialog). Under the
+        // admin management (second document): this device's light/dark (S5) and the management's rows (S12); its
+        // switch and button need a real connection and are off in the demo, in both styles, like "für alle übernehmen"
+        // without the management, so its dialog is not reached here. The colour worlds (S7) are Klassisch's: Glas
+        // shows the hint instead and keeps the saved theme. S9 (locked rows) and S16 (sync with HA) need a non-admin or
+        // a real connection. Glas also measures the list: rows 52, hairlines from the text (56) or the edge (16), none
+        // above a list's first row, chips without tint in `label2`, values in `label2`, swatches 44, buttons 44.
+        if (keepPart('settings')) {
+          const state = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state || {});
+          const choose = async (page, group, text) => {
+            await page.locator(`:is(.g-seg, .mode-toggle)[aria-label="${group}"] button`, { hasText: text }).first().click();
+            await sleep(200);
+          };
+          const visible = (page, sel) => page.locator(sel).filter({ visible: true }).count();
+          const steps = async (page, style) => {
+            const r = {};
+            // S2: the app name is the browser title
+            await page.locator(`input[aria-label="${DE['settings.appearance.appName.label']}"]`).fill('Testhaus');
+            await sleep(200);
+            r.name = [(await state(page)).appName, await ev(page, () => document.title)];
+            // S3: a symbol is the favicon; "Kein Symbol" hides it in the app
+            await page.locator(`.icon-swatch[aria-label="${DE['settings.appearance.appIcon.heart']}"]`).click();
+            await sleep(200);
+            const icon = await state(page);
+            r.icon = [icon.appIcon, icon.appIconHidden, await ev(page, () => document.querySelector('link[rel="icon"]')?.getAttribute('href'))];
+            await page.locator(`.icon-swatch[aria-label="${DE['settings.appearance.appIcon.none']}"]`).click();
+            await sleep(200);
+            r.iconNone = [(await state(page)).appIconHidden, await page.locator('.icon-swatch--active').getAttribute('aria-label')];
+            // S4: light/dark (the segment's own keys: pagesSegments)
+            await choose(page, DE['settings.appearance.mode.groupAria'], DE['settings.appearance.mode.dark']);
+            r.mode = (await state(page)).mode;
+            // S6: the language changes the page's texts, and back
+            const lang = page.locator('.settings-select__native'); // its name follows the language
+            await lang.selectOption('en');
+            await sleep(300);
+            r.language = [(await state(page)).language, await ev(page, () => document.querySelector('.page__title').textContent.trim())];
+            await lang.selectOption('auto');
+            await sleep(300);
+            r.languageBack = [(await state(page)).language, await ev(page, () => document.querySelector('.page__title').textContent.trim())];
+            // S7: Klassisch's colour worlds; Glas shows the hint and keeps the saved theme
+            if (style === 'classic') {
+              await page.locator('.theme-grid > *').nth(1).click();
+              await sleep(200);
+              r.themes = [await page.locator('.theme-grid > *').count(), (await state(page)).theme];
+            } else {
+              r.themes = [await page.locator('.theme-grid').count(), (await state(page)).theme,
+                await ev(page, (txt) => [...document.querySelectorAll('.settings-page .managed-row-hint')].some((p) => p.textContent.trim() === txt), DE['glas.themeHint'])];
+            }
+            // S8: the accent with the keys, then "zurücksetzen"
+            const slider = page.locator(`input[aria-label="${DE['settings.appearance.accent.hueAria']}"]`);
+            await slider.focus();
+            // from the row's top: focus scrolls the page smoothly
+            const top = () => slider.evaluate((e) => e.getBoundingClientRect().top - e.closest('.accent-row').getBoundingClientRect().top);
+            const top0 = await top();
+            for (let k = 0; k < 5; k++) await page.keyboard.press('ArrowRight');
+            await sleep(200);
+            const reset = page.locator('.accent-row__label .btn');
+            r.accent = [typeof (await state(page)).accentHue, await reset.count()];
+            // Glas: "zurücksetzen" appears without moving the slider
+            r.sliderShift = Math.round((await top()) - top0);
+            await reset.click();
+            await sleep(200);
+            r.accentReset = [(await state(page)).accentHue === undefined, await reset.count()];
+            // S10: editing off hides the rooms, on brings them back
+            const editing = page.locator(`button[aria-label="${DE['settings.admin.editingToggleAria']}"]`);
+            const before = (await state(page)).customization?.editingEnabled;
+            await editing.click();
+            await sleep(200);
+            r.editing = [before, (await state(page)).customization?.editingEnabled, await page.locator('.rooms-list').count()];
+            await editing.click();
+            await sleep(200);
+            r.editingBack = [(await state(page)).customization?.editingEnabled, await page.locator('.rooms-list').count()];
+            // S11: the entities window: search, a group, rename, star, eye, Esc
+            await page.locator('.admin-entities-btn').click();
+            await page.waitForSelector('.entities-modal-content', { timeout: 5000 });
+            await sleep(300);
+            await settleAnimations(page);
+            await page.locator(`input[aria-label="${DE['settings.entities.searchAria']}"]`).fill('lamp');
+            await sleep(300);
+            r.search = await ev(page, () => [...document.querySelectorAll('.entities-modal-content .entity-group__summary')].map((s) => s.textContent.trim()));
+            await page.locator('.entities-modal-content .entity-group__summary').first().click();
+            await sleep(300);
+            const id = (await page.locator('.entities-modal-content .entity-group[open] .entity-row__id').first().textContent()).trim();
+            // the row by its id; the new name still contains the search word, so the row stays in the list
+            const row = page.locator('.entities-modal-content .entity-row')
+              .filter({ has: page.locator('.entity-row__id', { hasText: new RegExp(`^${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) });
+            await row.locator('.entity-row__controls .icon-btn').nth(0).click();
+            await sleep(150);
+            await row.locator('.entity-rename-input').fill('Testlampe');
+            await page.keyboard.press('Enter');
+            await sleep(200);
+            await row.locator('.entity-row__controls .icon-btn').nth(1).click();
+            await sleep(150);
+            await row.locator('.entity-row__controls .icon-btn').nth(2).click();
+            await sleep(200);
+            const c = (await state(page)).customization || {};
+            r.entity = [id, c.entityOverrides?.[id]?.name ?? null, (c.favorites || []).includes(id), (c.hiddenEntities || []).includes(id),
+              (await row.locator('.entity-row__name').textContent()).trim()];
+            await page.keyboard.press('Escape');
+            await sleep(500);
+            await settleAnimations(page);
+            r.entitiesClosed = await page.locator('.entities-modal-content').count();
+            // S13: the first room one down, then its eye
+            const rooms0 = await ev(page, () => [...document.querySelectorAll('.rooms-list .room-row__name')].map((e) => e.textContent.trim()));
+            await page.locator('.rooms-list .room-row').first().locator('.icon-btn').nth(1).click();
+            await sleep(200);
+            const rooms1 = await ev(page, () => [...document.querySelectorAll('.rooms-list .room-row__name')].map((e) => e.textContent.trim()));
+            await page.locator('.rooms-list .room-row').first().locator('.icon-btn').nth(2).click();
+            await sleep(200);
+            const rc = (await state(page)).customization || {};
+            r.rooms = [rooms0.slice(0, 3), rooms1.slice(0, 3), (rc.roomOrder || []).slice(0, 2), rc.hiddenRooms || [],
+              await page.locator('.rooms-list .room-row__name--hidden').count()];
+            // S14: export as a file; import up to the file dialog
+            const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }),
+              page.locator('.backup-row .btn', { hasText: DE['settings.backup.exportBtn'] }).click()]);
+            const file = JSON.parse(require('fs').readFileSync(await download.path(), 'utf8'));
+            r.exported = [download.suggestedFilename(), file.appName, Object.keys(file.customization || {}).includes('roomOrder')];
+            const [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 5000 }),
+              page.locator('.backup-row .btn', { hasText: DE['settings.backup.importBtn'] }).click()]);
+            r.importDialog = [chooser.isMultiple(), await chooser.element().getAttribute('accept')];
+            // S12 without the management: "für alle übernehmen" needs a real connection (off in the demo)
+            r.activate = await page.locator('.global-admin__actions .btn', { hasText: DE['globalSettings.admin.activateBtn'] }).isDisabled();
+            // S15: version line, "Neuerungen" (the whole history), the project link
+            r.version = await ev(page, () => document.querySelector('.about-card__sub').textContent.trim());
+            await page.locator('.about-card__link--button').click();
+            await sleep(500);
+            await settleAnimations(page);
+            r.whatsNew = await ev(page, () => ({ title: document.querySelector('[role="dialog"] .changelog-modal, [role="dialog"].changelog-modal') ? 1 : 0,
+              releases: document.querySelectorAll('[role="dialog"] .changelog-release__version').length }));
+            await page.keyboard.press('Escape');
+            await sleep(500);
+            await settleAnimations(page);
+            r.whatsNewClosed = await visible(page, '[role="dialog"]');
+            r.link = await ev(page, () => {
+              const a = document.querySelector('a.about-card__link');
+              return [a.getAttribute('href'), a.getAttribute('target'), a.getAttribute('rel')];
+            });
+            // S1, last: the demo's way to the onboarding
+            await page.locator('.conn-card__actions .btn').click();
+            await sleep(500);
+            r.connect = await ev(page, () => location.pathname);
+            return r;
+          };
+          const managedSteps = async (page) => {
+            const r = {};
+            // S5: this device's light/dark, the admin's mode stays
+            await choose(page, DE['globalSettings.deviceMode.label'], DE['settings.appearance.mode.light']);
+            const st = await state(page);
+            r.device = [st.mode, st.modeOverride];
+            // the hints both styles show (Glas adds those of its theme note and of "Transparenz reduzieren")
+            r.hints = await ev(page, (glasOnly) => [...document.querySelectorAll('.settings-page .managed-row-hint')].map((p) => p.textContent.trim())
+              .filter((t) => !glasOnly.includes(t)), [DE['glas.themeHint'], DE['glas.reduceTransparency.hint']]);
+            // S12 under the management: who and when, the switch and the button (off without a real connection), no lock
+            r.meta = await ev(page, () => document.querySelector('.global-admin__meta')?.textContent.trim() ?? null);
+            const share = page.locator(`button[role="switch"][aria-label="${DE['globalSettings.admin.shareLabel']}"]`);
+            r.share = [await share.getAttribute('aria-checked'), await share.isDisabled()];
+            r.defaults = await page.locator('.global-admin__actions .btn', { hasText: DE['globalSettings.admin.defaultsBtn'] }).isDisabled();
+            r.locked = [await page.locator('.managed-hint').count(), await page.locator('.settings-page fieldset:disabled').count()];
+            return r;
+          };
+          /** Glas: the list's look (before the steps). */
+          const settingsLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const font = (el) => {
+              const c = getComputedStyle(el);
+              return `${c.fontWeight} ${c.fontSize}/${c.lineHeight}`;
+            };
+            const page = document.querySelector('.settings-page');
+            const cards = [...page.querySelectorAll('.card')];
+            // the connection's profile and the about card's head are their lists' first rows (the line below them
+            // belongs to the next row)
+            const ROW = '.conn-card__profile, .about-card > div:first-child, .settings-card__row, .conn-card__row, .conn-card__actions, .room-row, .about-card__link';
+            const EDGE = '.conn-card__actions, .room-row, .conn-card__row:not(:has(> .conn-card__row-label))';
+            // every row of every card in order, its hairline (left offset or none) and its height
+            const lists = cards.map((card) => [...card.querySelectorAll(ROW)].filter((r) => r.getClientRects().length).map((r) => {
+              const b = getComputedStyle(r, '::before');
+              const cb = card.getBoundingClientRect();
+              const line = b.content === 'none' || b.content === 'normal' ? 'none'
+                : `${Math.round(parseFloat(b.left))} ${b.height} ${b.backgroundColor === tok('--g-sep', 'backgroundColor')}`;
+              const rb = r.getBoundingClientRect();
+              const bw = parseFloat(getComputedStyle(card).borderLeftWidth);
+              return { cls: r.className.split(' ')[0] || 'head', edge: r.matches(EDGE), line, h: Math.round(rb.height),
+                edges: [rb.left - cb.left - bw, cb.right - rb.right - bw].map(Math.round).join() };
+            }));
+            const chips = [...page.querySelectorAll('.settings-card__icon-chip, .conn-card__icon-chip')];
+            const chip = (c) => {
+              const b = c.getBoundingClientRect();
+              const s = c.querySelector('svg').getBoundingClientRect();
+              return `${Math.round(b.width)}x${Math.round(b.height)} ${getComputedStyle(c).backgroundColor} ${getComputedStyle(c).color === tok('--g-label-2')} ${Math.round(s.width)}`;
+            };
+            const values = [...page.querySelectorAll('.conn-card__row-value, .conn-status')];
+            const label = page.querySelector('.settings-card__row-label');
+            const title = page.querySelector('.settings-page__section > .section-label');
+            const sw = [...page.querySelectorAll('.icon-swatch')];
+            const active = page.querySelector('.icon-swatch--active');
+            const btns = [...page.querySelectorAll('.backup-row > .btn, .conn-card__actions > .btn')];
+            const select = page.querySelector('.settings-select__native');
+            const sub = page.querySelector('.about-card__sub');
+            return {
+              cards: [...new Set(cards.map((c) => {
+                const cs = getComputedStyle(c);
+                return `${cs.borderTopColor} ${cs.paddingTop} ${cs.borderTopLeftRadius}`;
+              }))],
+              lists,
+              chips: [...new Set(chips.map(chip))],
+              values: [...new Set(values.map((v) => `${font(v)} ${getComputedStyle(v).color === tok('--g-label-2')}`))],
+              label: `${font(label)} ${getComputedStyle(label).color === tok('--g-label')}`,
+              title: `${font(title)} ${getComputedStyle(title).color === tok('--g-label-2')} ${getComputedStyle(title).textTransform}`,
+              swatches: [...new Set(sw.map((s) => {
+                const b = s.getBoundingClientRect();
+                return `${Math.round(b.width)}x${Math.round(b.height)} ${getComputedStyle(s).borderTopLeftRadius}`;
+              }))],
+              ring: getComputedStyle(active).boxShadow.includes('inset') && getComputedStyle(active).backgroundColor === tok('--g-accent-soft', 'backgroundColor'),
+              buttons: [...new Set(btns.map((b) => `${Math.round(b.getBoundingClientRect().height)} ${parseFloat(getComputedStyle(b).borderTopLeftRadius) >= 22} ${getComputedStyle(b).backgroundColor === tok('--g-fill', 'backgroundColor')} ${getComputedStyle(b).color === tok('--g-label')}`))],
+              select: `${font(select)} ${getComputedStyle(select).color === tok('--g-label-2')} ${getComputedStyle(select).backgroundColor}`,
+              version: `${font(sub)} ${getComputedStyle(sub).color === tok('--g-label-2')} ${getComputedStyle(sub, '::first-letter').textTransform}`,
+              chevron: getComputedStyle(page.querySelector('.about-card__link--button'), '::after').transform !== 'none',
+            };
+          });
+          const got = {};
+          let look = null;
+          for (const style of ['classic', 'glas']) {
+            {
+              const { page, close } = await open(device, style, '/settings', { mode });
+              try {
+                if (style === 'glas') look = await settingsLook(page);
+                got[style] = await steps(page, style);
+              } catch (e) {
+                got[style] = { error: String(e.message).slice(0, 200) };
+              }
+              await close();
+            }
+            {
+              const { page, close } = await open(device, style, '/settings', { mode, storage: SETTINGS_MANAGED });
+              try {
+                got[`${style}Managed`] = await managedSteps(page);
+              } catch (e) {
+                got[`${style}Managed`] = { error: String(e.message).slice(0, 200) };
+              }
+              await close();
+            }
+          }
+          const g = got.glas || {};
+          const k = got.classic || {};
+          // the same results, apart from the colour worlds (S7)
+          const strip = (r) => ({ ...r, themes: undefined, sliderShift: undefined });
+          const same = !g.error && !k.error && JSON.stringify(strip(g)) === JSON.stringify(strip(k))
+            && !!got.glasManaged && !got.glasManaged.error && JSON.stringify(got.glasManaged) === JSON.stringify(got.classicManaged);
+          const m = got.glasManaged || {};
+          const fine = same && g.name[0] === 'Testhaus' && g.name[1] === 'Testhaus'
+            && g.icon.join() === 'heart,false,/icons/heart.svg' && g.iconNone[0] === true && g.iconNone[1] === DE['settings.appearance.appIcon.none']
+            && g.mode === 'dark' && g.language.join() === 'en,Settings' && g.languageBack.join() === `auto,${DE['settings.title']}`
+            && k.themes.join() === '4,sunset' && g.themes.join() === '0,aurora,true'
+            && g.accent.join() === 'number,1' && g.sliderShift === 0 && g.accentReset.join() === 'true,0'
+            && g.editing[0] !== g.editing[1] && g.editing[2] === (g.editing[1] ? 1 : 0) && g.editingBack.join() === `${g.editing[0]},1`
+            && g.search.length > 0 && g.entity[1] === 'Testlampe' && g.entity[2] === true && g.entity[3] === true && g.entity[4] === 'Testlampe'
+            && g.entitiesClosed === 0
+            && g.rooms[1][0] === g.rooms[0][1] && g.rooms[1][1] === g.rooms[0][0] && g.rooms[3].length === 1 && g.rooms[4] === 1
+            && g.exported.join() === 'hapulse-settings.json,Testhaus,true' && g.importDialog[0] === false && /json/.test(g.importDialog[1])
+            && g.activate === true && /^version \d+\.\d+\.\d+ · F\d+$/.test(g.version)
+            && g.whatsNew.title === 1 && g.whatsNew.releases > 10 && g.whatsNewClosed === 0
+            && g.link.join() === 'https://github.com/jlnbln/HAPulse,_blank,noopener noreferrer' && g.connect === '/onboarding'
+            && m.device.join() === `${mode},light` && m.meta && m.meta.includes('Alice') && m.share.join() === 'true,true' && m.defaults === true
+            && m.locked.join() === '0,0';
+          // Glas's list: rows 52 (taller with a hint or a second line), first rows without a line, the others from the
+          // text (56) or, without a symbol column, from the edge (16)
+          const L = look || {};
+          const lines = !!look && L.lists.every((list) => list.every((r, i) => (i === 0 ? r.line === 'none' : r.line === `${r.edge ? 16 : 56} 0.5px true`)
+            && r.h >= 52 && r.edges === '0,0'));
+          const measured = !!look && L.cards.join() === 'rgba(0, 0, 0, 0) 0px 26px' && lines
+            && L.chips.length === 1 && L.chips[0] === '28x28 rgba(0, 0, 0, 0) true 22'
+            && L.values.length === 1 && L.values[0] === '400 17px/22px true' && L.label === '400 17px/22px true'
+            && L.title === '600 15px/20px true none' && L.swatches.join() === '44x44 12px' && L.ring
+            && L.buttons.join() === '44 true true true' && L.select === '400 17px/22px true rgba(0, 0, 0, 0)'
+            && L.version === '400 15px/20px true uppercase' && L.chevron;
+          res[`${device}-settings`] = { ok: fine && measured, same, glas: g, glasManaged: m, ...(same ? {} : { classic: k, classicManaged: got.classicManaged }),
+            look: measured ? { ok: true } : look };
+        }
+        // Onboarding (T1–T6): logged out, without the demo. The same steps run in both styles and must give the same
+        // results: "/" leads to the onboarding (T6); logo, name and tagline (T1); the sign-in without a URL, then on a
+        // page served over HTTPS (a test origin the context serves from the build) with an HTTP URL the mixed-content
+        // warning and error, and with an HTTPS URL the way to Home Assistant's login page (T2, intercepted); the token
+        // way opens and closes, refuses a missing token and the HTTP URL on HTTPS, and a refused connection shows the
+        // loader, then the error (T3, T5); the demo starts (T4). Glas also measures (K98): the card without a frame,
+        // one prominent action as a capsule 50, the other buttons capsules 50 without a frame (grey, tinted), the
+        // fields of K94, warning and error as tinted areas without a frame, "Erweitert" without a frame from the
+        // fields' edge, hairlines around "oder".
+        if (keepPart('onboarding')) {
+          const HTTPS = 'https://hapulse.test';
+          const HA = 'https://192.0.2.10:8123'; // documentation address (RFC 5737), never reached
+          const REFUSED = /^WebSocket connection to 'ws:\/\/127\.0\.0\.1:1\/api\/websocket' failed/;
+          /** A logged-out document: the build at `origin` (the local server or the HTTPS test origin). */
+          const openOut = async (style, origin) => {
+            const ctx = await browser.newContext({ ...DEVICES[device], locale: 'de-DE', timezoneId: 'Europe/Berlin', colorScheme: mode,
+              reducedMotion: 'no-preference' });
+            await ctx.route((u) => !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(u.href), (r) => r.abort());
+            // later routes win: the test origin from the local server, Home Assistant's login page as a stub
+            await ctx.route(`${HTTPS}/**`, async (r) => {
+              const u = new URL(r.request().url());
+              await r.fulfill({ response: await r.fetch({ url: url + u.pathname + u.search }) });
+            });
+            await ctx.route(`${HA}/**`, (r) => r.fulfill({ contentType: 'text/html', body: '<!doctype html><title>HA</title>' }));
+            await ctx.addInitScript(seedScript({ demo: false, mode, style, strength: 'clear' }));
+            const page = await ctx.newPage();
+            const errors = [];
+            page.on('pageerror', (e) => errors.push('exc: ' + String(e.message).slice(0, 200)));
+            page.on('console', (m) => {
+              if (m.type() === 'error' && !ABORTED.test(m.text()) && !REFUSED.test(m.text())) errors.push('console: ' + m.text().slice(0, 200));
+            });
+            await page.goto(origin === 'https' ? `${HTTPS}/onboarding` : `${url}/`, { waitUntil: 'load' });
+            await page.waitForSelector('.onboarding__card', { timeout: 15000 });
+            await sleep(600);
+            await settleAnimations(page);
+            const close = async () => {
+              if (errors.length) pageErrors.push({ device, style, path: `onboarding (${origin})`, errors: errors.slice(0, 3) });
+              await ctx.close();
+            };
+            return { page, close };
+          };
+          const alert = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].map((e) => [e.textContent.trim(), e.getAttribute('role')].join('|')), sel);
+          const submit = '.onboarding__connect-btn:not(.onboarding__connect-btn--secondary)';
+          const toggle = '.onboarding__advanced-toggle';
+          const steps = async (page) => {
+            const r = {};
+            // T6, T1
+            r.guard = await ev(page, () => location.pathname);
+            r.head = await ev(page, () => [!!document.querySelector('.onboarding__header svg'),
+              document.querySelector('.onboarding__title').textContent.trim(), document.querySelector('.onboarding__tagline').textContent.trim()]);
+            // T2: no URL, then an HTTP URL on an HTTP page (no warning), typing clears the error
+            await page.locator(submit).click();
+            await sleep(200);
+            r.emptyUrl = await alert(page, '.onboarding__form:not(.onboarding__advanced-form) .onboarding__error');
+            await page.locator('#ha-url-oauth').fill('http://192.0.2.10:8123');
+            await sleep(200);
+            r.httpPage = [await page.locator('.onboarding__warning').count(), await page.locator('.onboarding__error').count()];
+            // T3: open, no token, a refused connection (T5: the loader while it connects), close
+            await page.locator(toggle).click();
+            await sleep(200);
+            r.advanced = [await page.locator(toggle).getAttribute('aria-expanded'), await page.locator('.onboarding__advanced-form input').count()];
+            await page.locator('#ha-url-token').fill('http://127.0.0.1:1');
+            await page.locator('.onboarding__connect-btn--secondary').click();
+            await sleep(200);
+            r.noToken = await alert(page, '.onboarding__advanced-form .onboarding__error');
+            await page.locator('#ha-token').fill('abc');
+            await ev(page, () => {
+              window.__onbLoader = [];
+              new MutationObserver(() => {
+                const l = document.querySelector('.dash-boot__label');
+                if (l && !window.__onbLoader.includes(l.textContent.trim())) window.__onbLoader.push(l.textContent.trim());
+              }).observe(document.body, { childList: true, subtree: true });
+            });
+            await page.locator('.onboarding__connect-btn--secondary').click();
+            await page.waitForSelector('.onboarding__advanced-form .onboarding__error', { timeout: 10000 });
+            await sleep(200);
+            r.refused = [...await alert(page, '.onboarding__advanced-form .onboarding__error'), ...await ev(page, () => window.__onbLoader)];
+            await page.locator(toggle).click();
+            await sleep(200);
+            r.collapsed = [await page.locator(toggle).getAttribute('aria-expanded'), await page.locator('.onboarding__advanced-form').count()];
+            // T4
+            await page.locator('.onboarding__demo-btn').click();
+            await page.waitForFunction(() => window.__hapulseDemo && document.querySelector('.home-page'), null, { timeout: 15000 });
+            r.demo = await ev(page, () => [location.pathname, JSON.parse(localStorage.getItem('hapulse:connection') || '{}').demo]);
+            return r;
+          };
+          const httpsSteps = async (page, measure) => {
+            const r = {};
+            // T2 on HTTPS: the warning, the error
+            await page.locator('#ha-url-oauth').fill('http://192.0.2.10:8123');
+            await sleep(200);
+            r.mixed = await alert(page, '.onboarding__warning');
+            await page.locator(submit).click();
+            await sleep(200);
+            r.mixedError = await alert(page, '.onboarding__error');
+            // T3 on HTTPS: the token form's warning and error
+            await page.locator(toggle).click();
+            await sleep(200);
+            await page.locator('#ha-url-token').fill('http://192.0.2.10:8123');
+            await page.locator('#ha-token').fill('abc');
+            await page.locator('.onboarding__connect-btn--secondary').click();
+            await sleep(200);
+            r.tokenMixed = [await page.locator('.onboarding__warning').count(), ...await alert(page, '.onboarding__advanced-form .onboarding__error')];
+            const look = measure ? await onboardingLook(page) : null;
+            // T2: an HTTPS URL leads to Home Assistant's login page with this app as the client
+            await page.locator('#ha-url-oauth').fill(HA + '/');
+            await page.locator(submit).click();
+            await page.waitForURL(`${HA}/auth/authorize**`, { timeout: 10000 });
+            const u = new URL(page.url());
+            r.oauth = [u.origin + u.pathname, u.searchParams.get('client_id'), u.searchParams.get('redirect_uri'), u.searchParams.get('response_type')];
+            return { r, look };
+          };
+          /** Glas: the page's look with the token form open, warnings and errors on screen. */
+          const onboardingLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const font = (cs) => `${cs.fontWeight} ${cs.fontSize}/${cs.lineHeight}`;
+            const h = (el) => Math.round(el.getBoundingClientRect().height);
+            const card = getComputedStyle(document.querySelector('.onboarding__card'));
+            const btn = (el) => {
+              const cs = getComputedStyle(el);
+              return `${h(el)} ${cs.borderTopLeftRadius} ${cs.borderTopWidth} ${font(cs)}`;
+            };
+            const prominent = [...document.querySelectorAll('button')].filter((b) => getComputedStyle(b).backgroundColor === tok('--g-prominent', 'backgroundColor'));
+            const main = document.querySelector('.onboarding__connect-btn:not(.onboarding__connect-btn--secondary)');
+            const second = document.querySelector('.onboarding__connect-btn--secondary');
+            const demo = document.querySelector('.onboarding__demo-btn');
+            const box = (el, soft, ink) => {
+              const cs = getComputedStyle(el);
+              return `${cs.borderTopWidth} ${cs.borderTopLeftRadius} ${cs.backgroundColor === tok(soft, 'backgroundColor')} ${cs.color === tok(ink)} ${font(cs)}`;
+            };
+            const field = document.querySelector('#ha-url-oauth');
+            const tg = document.querySelector('.onboarding__advanced-toggle');
+            const adv = getComputedStyle(document.querySelector('.onboarding__advanced'));
+            const form = getComputedStyle(document.querySelector('.onboarding__advanced-form'));
+            const line = getComputedStyle(document.querySelector('.onboarding__divider'), '::before');
+            return {
+              card: `${card.borderTopColor} ${card.borderTopLeftRadius}`,
+              prominent: prominent.length === 1 && prominent[0] === main && getComputedStyle(main).color === tok('--g-on-prominent'),
+              main: btn(main),
+              second: `${btn(second)} ${getComputedStyle(second).backgroundColor === tok('--g-fill', 'backgroundColor')} ${getComputedStyle(second).color === tok('--g-label')}`,
+              demo: `${btn(demo)} ${getComputedStyle(demo).backgroundColor === tok('--accent-soft', 'backgroundColor')} ${getComputedStyle(demo).color === tok('--accent')}`,
+              fields: [...new Set([...document.querySelectorAll('.onboarding__input')].map((f) => {
+                const cs = getComputedStyle(f);
+                return `${h(f)} ${cs.borderTopWidth} ${cs.borderTopColor} ${cs.backgroundColor === tok('--g-fill', 'backgroundColor')} ${cs.fontSize}`;
+              }))],
+              warnings: [...new Set([...document.querySelectorAll('.onboarding__warning')].map((w) => box(w, '--warning-soft', '--warning')))],
+              errors: [...new Set([...document.querySelectorAll('.onboarding__error')].map((e) => box(e, '--danger-soft', '--danger')))],
+              advanced: `${adv.borderTopWidth} ${adv.overflow} ${form.borderTopWidth} ${form.backgroundColor}`,
+              toggle: `${font(getComputedStyle(tg))} ${getComputedStyle(tg).color === tok('--g-label-2')} ${h(tg)} ${Math.round(tg.getBoundingClientRect().left - field.getBoundingClientRect().left)}`,
+              line: `${line.height} ${line.backgroundColor === tok('--line', 'backgroundColor')}`,
+            };
+          });
+          const got = {};
+          let look = null;
+          for (const style of ['classic', 'glas']) {
+            got[style] = {};
+            for (const origin of ['http', 'https']) {
+              const { page, close } = await openOut(style, origin);
+              try {
+                if (origin === 'http') Object.assign(got[style], await steps(page));
+                else {
+                  const o = await httpsSteps(page, style === 'glas');
+                  Object.assign(got[style], o.r);
+                  if (o.look) look = o.look;
+                }
+              } catch (e) {
+                got[style].error = `${origin}: ${String(e.message).slice(0, 200)}`;
+              }
+              await close();
+            }
+          }
+          const g = got.glas;
+          const same = !g.error && !got.classic.error && JSON.stringify(g) === JSON.stringify(got.classic);
+          const refused = DE['onboarding.connectionError'].replace('{message}', '');
+          const fine = same && g.guard === '/onboarding' && g.head.join('|') === `true|HAPulse|${DE['onboarding.tagline']}`
+            && g.emptyUrl.join() === `${DE['onboarding.errorMissingUrl']}|alert` && g.httpPage.join() === '0,0'
+            && g.advanced.join() === 'true,2' && g.noToken.join() === `${DE['onboarding.errorMissingToken']}|alert`
+            && g.refused[0].startsWith(refused) && g.refused.slice(1).join() === DE['onboarding.connecting']
+            && g.collapsed.join() === 'false,0' && g.demo.join() === '/,true'
+            && g.mixed.join() === `${DE['onboarding.mixedContentWarning']}|alert` && g.mixedError.join() === `${DE['onboarding.oauthMixedContent']}|alert`
+            && g.tokenMixed.join() === `2,${DE['onboarding.tokenMixedContent']}|alert`
+            && g.oauth.join() === `${HA}/auth/authorize,${HTTPS}/,${HTTPS}/onboarding?auth_callback=1,code`;
+          const L = look || {};
+          const measured = !!look && L.card === 'rgba(0, 0, 0, 0) 26px' && L.prominent && L.main === '50 25px 0px 600 17px/22px'
+            && L.second === '50 25px 0px 600 17px/22px true true' && L.demo === '50 25px 0px 600 17px/22px true true'
+            && L.fields.join() === '44 4px rgba(0, 0, 0, 0) true 17px'
+            && L.warnings.join() === '0px 12px true true 400 13px/18px' && L.errors.join() === '0px 12px true true 400 15px/20px'
+            && L.advanced === '0px visible 0px rgba(0, 0, 0, 0)' && L.toggle === '400 15px/20px true 44 0' && L.line === '0.5px true';
+          res[`${device}-onboarding`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic }), look: measured ? { ok: true } : look };
+        }
+      }
+      out.pagesKeep = res;
+      out.pagesKeepOk = Object.values(res).every((r) => r.ok);
+    });
+
+    /** The look of a page's empty state (§7.31): circle 56 `fill` with the glyph in `label2`, title 17/22 600 `label`,
+     *  text 15/20 `label2`. */
+    const emptyLook = (page, sel) => ev(page, (s) => {
+      const tok = (n, prop = 'color') => {
+        const d = document.createElement('div');
+        d.style[prop] = `var(${n})`;
+        document.body.appendChild(d);
+        const v = getComputedStyle(d)[prop];
+        d.remove();
+        return v;
+      };
+      const box = document.querySelector(s);
+      if (!box) return null;
+      const icon = box.querySelector('.empty-state__icon');
+      const title = box.querySelector('.empty-state__title');
+      const desc = box.querySelector('.empty-state__description');
+      const ic = getComputedStyle(icon);
+      const t = getComputedStyle(title);
+      const dd = getComputedStyle(desc);
+      const b = icon.getBoundingClientRect();
+      return { text: title.textContent.trim(), circle: Math.round(b.width) === 56 && Math.round(b.height) === 56 && ic.borderRadius === '50%',
+        fill: ic.backgroundColor === tok('--g-fill', 'backgroundColor'),
+        glyph: ic.color === tok('--g-label-2'), title: `${t.fontWeight} ${t.fontSize}/${t.lineHeight}`, titleColor: t.color === tok('--g-label'),
+        desc: `${dd.fontSize}/${dd.lineHeight}`, descColor: dd.color === tok('--g-label-2') };
+    }, sel);
+    const emptyOk = (got, key) => !!got && got.text === DE[key] && got.circle && got.fill && got.glyph && got.title === '600 17px/22px'
+      && got.titleColor && got.desc === '15px/20px' && got.descColor;
+
+    // ---- Empty states (pagesEmpty, §7.31): what the demo can show, page by page. Glas only. ----
+    await block('pagesEmpty', async () => {
+      const res = {};
+      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+        // room: "not found" and "no entities" (the garage door moves to the hallway), title label 600 17, the way back
+        // in accentInk
+        for (const [name, p, key] of [['room-notFound', '/room/nowhere', 'room.notFound.title'], ['room-empty', '/room/garage', 'room.empty.title']]) {
+          const { page, close } = await open(device, 'glas', p, { mode });
+          try {
+            if (name === 'room-empty') {
+              await ev(page, () => window.__hapulseDemo.placeEntity('cover.garage_door', 'hallway'));
+              await sleep(400);
+            }
+            const got = await ev(page, () => {
+              const tok = (n) => {
+                const d = document.createElement('div');
+                d.style.color = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d).color;
+                d.remove();
+                return v;
+              };
+              const title = document.querySelector('.room-page__not-found-title');
+              const link = document.querySelector('.room-page__not-found-link');
+              if (!title || !link) return null;
+              const t = getComputedStyle(title);
+              const l = getComputedStyle(link);
+              return { text: title.textContent.trim(), color: t.color === tok('--g-label'), font: `${t.fontWeight} ${t.fontSize}`,
+                link: l.color === tok('--g-accent-ink'), linkH: link.getBoundingClientRect().height };
+            });
+            const ok = !!got && got.text === DE[key] && got.color && got.font === '600 17px' && got.link && got.linkH >= 44;
+            res[`${device}-${name}`] = { ok, ...got };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        // security: without alarm, cameras, people, locks, garage doors and door, window and motion sensors (the demo's,
+        // read from the core build) the page's empty state in the window's look (§7.31)
+        {
+          const { page, close } = await open(device, 'glas', '/security', { mode });
+          try {
+            const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+            const SENSOR = new Set(['door', 'garage_door', 'window', 'opening', 'motion', 'occupancy', 'presence']);
+            const ids = Object.entries(DEMO_ENTITIES).filter(([id, e]) => /^(camera|person|lock|alarm_control_panel)\./.test(id)
+              || (id.startsWith('cover.') && ['garage', 'gate'].includes(e.attributes.device_class))
+              || (id.startsWith('binary_sensor.') && SENSOR.has(e.attributes.device_class))).map(([id]) => id);
+            const drop = () => ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            // a motion burst of the demo writes its snapshot back after 3 s: drop, wait it out, drop again
+            await drop();
+            await sleep(3300);
+            await drop();
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await emptyLook(page, '.security-page > .empty-state');
+            const ok = emptyOk(got, 'security.empty.title');
+            res[`${device}-security-empty`] = { ok, removed: ids.length, ...got };
+          } catch (e) {
+            res[`${device}-security-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // pool: without the mode and the pump the page shows "not set up" in the same look
+        {
+          const { page, close } = await open(device, 'glas', '/pool', { mode });
+          try {
+            await ev(page, () => ['input_select.modus_poolpumpe', 'switch.esppoolpumpe_poolpumpe'].forEach((i) => window.__hapulseDemo.patch(i, null)));
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await emptyLook(page, '.pool-page > .empty-state');
+            res[`${device}-pool-empty`] = { ok: emptyOk(got, 'pool.notConfigured.title'), ...got };
+          } catch (e) {
+            res[`${device}-pool-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // energy: HA's energy not set up (a demo switch; the demo also gets an HA address, it has none): a card in the
+        // empty state's look, its link opens HA's energy settings in a new tab, prominent 48
+        {
+          const { page, close } = await open(device, 'glas', '/', { mode });
+          try {
+            await ev(page, () => {
+              window.__hapulseDemo.energyConfigured(false);
+              window.__hapulseDemo.setUrl('http://192.0.2.10:8123/');
+              history.pushState({}, '', '/energy');
+              dispatchEvent(new PopStateEvent('popstate'));
+            });
+            await page.waitForSelector('.energy-empty-state', { timeout: 5000 });
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await ev(page, () => {
+              const tok = (n, prop = 'color') => {
+                const d = document.createElement('div');
+                d.style[prop] = `var(${n})`;
+                document.body.appendChild(d);
+                const v = getComputedStyle(d)[prop];
+                d.remove();
+                return v;
+              };
+              const card = document.querySelector('.energy-empty-state');
+              const icon = card.querySelector('.energy-empty-state__icon');
+              const title = card.querySelector('.energy-empty-state__title');
+              const desc = card.querySelector('.energy-empty-state__desc');
+              const btn = card.querySelector('.energy-empty-state__btn');
+              const [ic, t, dd, bc] = [icon, title, desc, btn].map((e) => getComputedStyle(e));
+              const ib = icon.getBoundingClientRect();
+              const bb = btn ? btn.getBoundingClientRect() : null;
+              return {
+                text: title.textContent.trim(),
+                card: getComputedStyle(card).backgroundColor === tok('--bg-card', 'backgroundColor') && getComputedStyle(card, '::before').content === 'none',
+                circle: Math.round(ib.width) === 56 && Math.round(ib.height) === 56 && ic.borderRadius === '50%',
+                fill: ic.backgroundColor === tok('--g-fill', 'backgroundColor'), glyph: ic.color === tok('--g-label-2'),
+                title: `${t.fontWeight} ${t.fontSize}/${t.lineHeight}`, titleColor: t.color === tok('--g-label'),
+                desc: `${dd.fontSize}/${dd.lineHeight}`, descColor: dd.color === tok('--g-label-2'),
+                btn: bb && { href: btn.getAttribute('href'), target: btn.getAttribute('target'), rel: btn.getAttribute('rel'),
+                  h: Math.round(bb.height), w: Math.round(bb.width), bg: bc.backgroundColor === tok('--g-prominent', 'backgroundColor'),
+                  ink: bc.color === tok('--g-on-prominent'), text: btn.textContent.trim() },
+              };
+            });
+            const ok = !!got && got.text === DE['energy.notConfigured.title'] && got.card && got.circle && got.fill && got.glyph
+              && got.title === '600 17px/22px' && got.titleColor && got.desc === '15px/20px' && got.descColor && !!got.btn
+              && got.btn.href === 'http://192.0.2.10:8123/config/energy' && got.btn.target === '_blank' && /\bnoopener\b/.test(got.btn.rel)
+              && got.btn.h === 48 && got.btn.w >= 44 && got.btn.bg && got.btn.ink && got.btn.text === DE['energy.notConfigured.openSettings'];
+            res[`${device}-energy-empty`] = { ok, ...got };
+          } catch (e) {
+            res[`${device}-energy-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // music: without media players the page's empty state in the same look
+        {
+          const { page, close } = await open(device, 'glas', '/music', { mode });
+          try {
+            const ids = await ev(page, () => ['media_player.living_room_tv', 'media_player.bedroom_speaker', 'media_player.kitchen_speaker']
+              .filter((i) => window.__hapulseDemo.entity(i)));
+            await ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await emptyLook(page, '.music-page > .empty-state');
+            res[`${device}-music-empty`] = { ok: ids.length === 3 && emptyOk(got, 'music.empty.title'), removed: ids.length, ...got };
+          } catch (e) {
+            res[`${device}-music-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // devices: with every entity hidden and editing off no device is left, the page's empty state in the same look;
+        // a search without a match says so in 15/20 `label2`
+        {
+          const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+          const { page, close } = await open(device, 'glas', '/devices',
+            { mode, customization: { editingEnabled: false, hiddenEntities: Object.keys(DEMO_ENTITIES) } });
+          try {
+            await sleep(500);
+            await settleAnimations(page);
+            const got = await emptyLook(page, '.devices-page > .empty-state');
+            res[`${device}-devices-empty`] = { ok: emptyOk(got, 'devices.empty.title'), ...got };
+          } catch (e) {
+            res[`${device}-devices-empty`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+        {
+          const { page, close } = await open(device, 'glas', '/devices', { mode });
+          try {
+            await page.locator('.devices-toolbar__search-input').fill('zzzz');
+            await sleep(300);
+            const got = await ev(page, () => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label-2)';
+              document.body.appendChild(d);
+              const want = getComputedStyle(d).color;
+              d.remove();
+              const e = document.querySelector('.devices-empty-filter');
+              const cs = getComputedStyle(e);
+              return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
+                cards: document.querySelectorAll('.device-card').length };
+            });
+            res[`${device}-devices-noMatch`] = { ok: got.text === DE['devices.emptyFilter'] && got.font === '15px/20px' && got.color && got.cards === 0, ...got };
+          } catch (e) {
+            res[`${device}-devices-noMatch`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // automations: a search without a match, and no automation at all (the page has no empty state of its own:
+        // the hero counts 0, the activity says nothing ran yet, no category is left); both texts 15/20 `label2`
+        for (const [name, sel, key] of [['automations-noMatch', '.automations-empty-filter', 'automations.emptyFilter'],
+          ['automations-none', '.auto-feed-card__empty', 'automations.activity.empty']]) {
+          const { page, close } = await open(device, 'glas', '/automations', { mode });
+          try {
+            if (name === 'automations-noMatch') await page.locator('.automations-toolbar__search-input').fill('zzzz');
+            else {
+              const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+              const ids = Object.keys(DEMO_ENTITIES).filter((i) => i.startsWith('automation.'));
+              await ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            }
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await ev(page, (s) => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label-2)';
+              document.body.appendChild(d);
+              const want = getComputedStyle(d).color;
+              d.remove();
+              const e = document.querySelector(s);
+              const cs = getComputedStyle(e);
+              return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
+                cards: document.querySelectorAll('.auto-cat-card').length, total: document.querySelector('.auto-hero-card__total')?.textContent.trim() };
+            }, sel);
+            res[`${device}-${name}`] = { ok: got.text === DE[key] && got.font === '15px/20px' && got.color && got.cards === 0
+              && (name === 'automations-noMatch' || got.total === '0'), ...got };
+          } catch (e) {
+            res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+
+        // scenes: none at all (no empty state of its own either: the hero counts 0, the activity says none was
+        // activated yet, no room is left); the text 15/20 `label2`
+        {
+          const { page, close } = await open(device, 'glas', '/scenes', { mode });
+          try {
+            const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+            const ids = Object.keys(DEMO_ENTITIES).filter((i) => i.startsWith('scene.'));
+            await ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await ev(page, () => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label-2)';
+              document.body.appendChild(d);
+              const want = getComputedStyle(d).color;
+              d.remove();
+              const e = document.querySelector('.scene-feed-card__empty');
+              const cs = getComputedStyle(e);
+              return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
+                cards: document.querySelectorAll('.scene-room-card').length, total: document.querySelector('.scene-hero-card__total')?.textContent.trim() };
+            });
+            res[`${device}-scenes-none`] = { ok: got.text === DE['scenes.activity.empty'] && got.font === '15px/20px' && got.color && got.cards === 0
+              && got.total === '0', ...got };
+          } catch (e) {
+            res[`${device}-scenes-none`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+      out.pagesEmpty = res;
+      out.pagesEmptyOk = Object.values(res).every((r) => r.ok);
+    });
+
+    // ---- K97 menus. chips: each chip's window has the chip's words as its subtitle (the same count, hidden entities
+    //      left out, live while it is open, also when the hints card opens it); titles and subtitles that come in lower
+    //      case start with a capital (::first-letter), the lights' "alle ausschalten" too; Klassisch has no subtitle.
+    //      more (phone): today's energy, the scenes and the system's state on the right of their rows (the others
+    //      without a value), the foot "Version … · F…" under the list; today's energy is fetched only while the menu is
+    //      open (the demo counts its statistics requests) and equals the overview's. rooms: the menu's symbol shows the
+    //      room's state like the overview's room tiles (the same symbol; an open window or door a warning, an open gate
+    //      an alarm, before lights on), its name says it for screen readers, live; Klassisch unchanged. all: "Klima
+    //      alle" and "Rollläden alle" have the room's controls (capsule 40, pills 36, little blind 40 radius 12, position
+    //      15/20 600, buttons 40). ----
+    await block('pagesMenus', async () => {
+      const res = {};
+      const menuPart = (name) => !onlyParts('pagesMenus').length || onlyParts('pagesMenus').includes(name);
+      const say = (key, count) => DE[key].replace('{count}', String(count));
+      // the window on top: a closing window leaves its ghost copy behind for a moment
+      const head = (page) => page.waitForFunction(() => [...document.querySelectorAll('[role="dialog"]')]
+        .some((d) => !d.closest('.g-sheet-ghost') && d.querySelector('.g-sheet-header__title, .modal-header__title')), null, { timeout: 4000 })
+        .then(() => ev(page, () => {
+          const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+          const title = d.querySelector('.g-sheet-header__title, .modal-header__title');
+          const sub = d.querySelector('.g-sheet-header__subtitle');
+          const first = (e) => (e ? getComputedStyle(e, '::first-letter').textTransform : null);
+          return { title: title.textContent.trim(), subtitle: sub ? sub.textContent.trim() : null, titleCase: first(title), subCase: first(sub) };
+        }));
+      const subtitleIs = (page, want) => page.waitForFunction((w) => {
+        const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+        return d?.querySelector('.g-sheet-header__subtitle')?.textContent.trim() === w;
+      }, want, { timeout: 3000 }).then(() => true, () => false);
+      const shut = async (page) => {
+        await page.keyboard.press('Escape');
+        await page.waitForFunction(() => ![...document.querySelectorAll('[role="dialog"]')].some((d) => !d.closest('.g-sheet-ghost'))
+          && !document.querySelector('.g-sheet-ghost'), null, { timeout: 4000 }).catch(() => {});
+        await sleep(80);
+        await settleAnimations(page);
+      };
+      const chipSel = (id) => `.summary-chip[aria-label^="${id}:"]`;
+      const chipLabel = (page, id) => ev(page, (s) => [...document.querySelectorAll(s)].find((e) => e.getClientRects().length)
+        ?.querySelector('.summary-chip__count')?.textContent.trim() ?? null, chipSel(id));
+      /** Bring a control to the middle of the screen (not under the floating tab bar), then click it. */
+      const reachClick = async (page, sel, text) => {
+        const el = (text ? page.locator(sel, { hasText: text }) : page.locator(sel)).filter({ visible: true }).first();
+        if (!(await el.count())) throw new Error('not visible: ' + sel + (text ? ` "${text}"` : ''));
+        await el.evaluate((e) => e.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' }));
+        await settleAnimations(page);
+        await el.click();
+        await sleep(80);
+        await settleAnimations(page);
+      };
+      const tokens = (page, names, prop = 'color') => ev(page, ([list, p]) => Object.fromEntries(list.map((name) => {
+        const d = document.createElement('div');
+        d.style[p] = `var(${name})`;
+        document.body.appendChild(d);
+        const v = getComputedStyle(d)[p === 'background' ? 'backgroundColor' : p];
+        d.remove();
+        return [name, v];
+      })), [names, prop]);
+
+      if (menuPart('chips')) {
+        for (const [device, mode] of [['phone', 'light'], ['desktop', 'dark']]) {
+          // every chip: its window's subtitle is the chip's label; both starting with a capital in Glas
+          {
+            const { page, close } = await open(device, 'glas', '/', { mode });
+            try {
+              const rows = {};
+              for (const id of ['people', 'lights', 'doors', 'garage', 'locks', 'alarm', 'pool', 'media']) {
+                const label = await chipLabel(page, id);
+                if (label == null) {
+                  rows[id] = { ok: false, error: 'no chip' };
+                  continue;
+                }
+                await reachClick(page, chipSel(id));
+                const h = await head(page);
+                rows[id] = { ok: h.subtitle === label && h.titleCase === 'uppercase' && h.subCase === 'uppercase', label, ...h };
+                await shut(page);
+              }
+              const counts = rows.lights.label === say('home.summaryChips.lightsCount.other', 6)
+                && rows.doors.label === DE['home.summaryChips.allClosed'];
+
+              // live: a light goes off while its window is open, then on again; the button "alle ausschalten" starts
+              // with a capital
+              await reachClick(page, chipSel('lights'));
+              await head(page);
+              const action = await ev(page, () => {
+                const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+                const b = d && d.querySelector('.lights-modal__header-action > .btn');
+                return b && { text: b.textContent.trim(), first: getComputedStyle(b, '::first-letter').textTransform,
+                  h: Math.round(b.getBoundingClientRect().height * 10) / 10 };
+              });
+              await ev(page, () => window.__hapulseDemo.patch('light.kitchen_ceiling', { state: 'off' }));
+              const live = await subtitleIs(page, say('home.summaryChips.lightsCount.other', 5));
+              const liveChip = await chipLabel(page, 'lights');
+              await ev(page, () => window.__hapulseDemo.patch('light.kitchen_ceiling', { state: 'on' }));
+              const back = await subtitleIs(page, say('home.summaryChips.lightsCount.other', 6));
+              await shut(page);
+
+              // the hints card opens the doors window with the doors chip's words
+              await ev(page, () => window.__hapulseDemo.patch('binary_sensor.bedroom_window', { state: 'on' }));
+              await page.waitForFunction((w) => [...document.querySelectorAll('.hint-row__title')].some((e) => e.textContent.trim() === w),
+                DE['hints.windowOpen.one'], { timeout: 3000 });
+              const doorsChip = await chipLabel(page, 'doors');
+              await reachClick(page, '.hint-row', DE['hints.windowOpen.one']);
+              const hint = await head(page);
+              await shut(page);
+              await ev(page, () => window.__hapulseDemo.patch('binary_sensor.bedroom_window', { state: 'off' }));
+
+              // another window keeps the spelling of a name people gave (a sheet on the phone; the desktop's inspector
+              // is no dialog)
+              let named = null;
+              if (device === 'phone') {
+                await ev(page, () => {
+                  window.__hapulseDemo.patch('light.kitchen_counter', { attributes: { friendly_name: 'iPhone Lampe' } });
+                  window.__hapulseDemo.openDetail('light.kitchen_counter');
+                });
+                named = await head(page);
+                await shut(page);
+              }
+
+              const actionOk = !!action && action.text === DE['home.chipmodals.lights.turnAllOff'] && action.first === 'uppercase' && action.h >= 47.5;
+              const namedOk = device !== 'phone' || (named.title === 'iPhone Lampe' && named.titleCase === 'none' && [null, 'none'].includes(named.subCase));
+              const ok = Object.values(rows).every((r) => r.ok) && counts && actionOk && live && liveChip === say('home.summaryChips.lightsCount.other', 5)
+                && back && doorsChip === say('home.summaryChips.openCount.one', 1) && hint.subtitle === doorsChip && hint.title === DE['home.chipmodals.doors.title']
+                && namedOk;
+              res[`${device}-chips`] = { ok, rows, counts, action, live, liveChip, back, doorsChip, hint, named };
+            } catch (e) {
+              res[`${device}-chips`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+
+          // a hidden light counts neither on the chip nor in the subtitle
+          {
+            const { page, close } = await open(device, 'glas', '/', { mode, customization: { hiddenEntities: ['light.office_desk'] } });
+            try {
+              const label = await chipLabel(page, 'lights');
+              await reachClick(page, chipSel('lights'));
+              const h = await head(page);
+              await shut(page);
+              res[`${device}-chips-hidden`] = { ok: label === say('home.summaryChips.lightsCount.other', 5) && h.subtitle === label, label, subtitle: h.subtitle };
+            } catch (e) {
+              res[`${device}-chips-hidden`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+
+        // Klassisch: no subtitle, the classic head
+        {
+          const { page, close } = await open('phone', 'classic', '/');
+          try {
+            await reachClick(page, chipSel('lights'));
+            const h = await head(page);
+            const glasHead = await ev(page, () => !!document.querySelector('.g-sheet-header'));
+            await shut(page);
+            res['phone-classic-chips'] = { ok: h.subtitle === null && !glasHead && h.title === DE['home.chipmodals.lights.title'], ...h, glasHead };
+          } catch (e) {
+            res['phone-classic-chips'] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+
+      if (menuPart('more')) {
+        const { ctx, page, close } = await open('phone', 'glas', '/devices', { fixedTime: ENERGY_AT });
+        try {
+          const loads = () => ev(page, () => window.__hapulseDemo.energyLoads());
+          const moreTab = `.app-tabs__item[aria-label="${DE['nav.moreNavigation']}"]`;
+          const read = () => ev(page, () => {
+            const tok = (name) => {
+              const d = document.createElement('div');
+              d.style.color = `var(${name})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d).color;
+              d.remove();
+              return v;
+            };
+            const label2 = tok('--g-glass-label-2');
+            const all = [...document.querySelectorAll('.app-more-menu .app-more-menu__row')];
+            const rows = all.map((r) => {
+              const v = r.querySelector('.g-more-value');
+              const name = r.querySelector('.app-more-menu__row-name').getBoundingClientRect();
+              const chev = r.querySelector('.app-more-menu__row-chevron').getBoundingClientRect();
+              const vr = v && v.getBoundingClientRect();
+              const cs = v && getComputedStyle(v);
+              return {
+                href: r.getAttribute('href'), name: r.querySelector('.app-more-menu__row-name').textContent.trim(),
+                value: v ? v.textContent.trim() : null,
+                // name, value, chevron from left to right, the value on the name's line
+                order: v ? name.right <= vr.left + 0.5 && vr.right <= chev.left + 0.5 : null,
+                mid: v ? Math.abs((vr.top + vr.bottom) / 2 - (name.top + name.bottom) / 2) < 1.5 : null,
+                color: cs ? cs.color === label2 : null, font: cs ? `${cs.fontSize}/${cs.lineHeight}` : null,
+              };
+            });
+            const foot = document.querySelector('.app-more-menu .g-more-foot');
+            const fcs = foot && getComputedStyle(foot);
+            const last = all[all.length - 1];
+            return {
+              rows,
+              foot: foot && {
+                text: foot.textContent.trim(), hidden: foot.getAttribute('aria-hidden'), first: getComputedStyle(foot, '::first-letter').textTransform,
+                color: fcs.color === label2, font: `${fcs.fontSize}/${fcs.lineHeight}`,
+                below: !!last && foot.getBoundingClientRect().top >= last.getBoundingClientRect().bottom - 0.5,
+              },
+            };
+          });
+          const valueOf = (r, href) => r.rows.find((x) => x.href && x.href.endsWith(href))?.value ?? null;
+          const VALUED = ['/energy', '/scenes', '/system'];
+
+          // never opened: nothing fetched
+          const l0 = await loads();
+          await sleep(800);
+          const l1 = await loads();
+          await click(page, moreTab);
+          await page.waitForFunction(() => document.querySelector('.app-more-menu--open .app-more-menu__row[href$="/energy"] .g-more-value'), null, { timeout: 5000 });
+          const a = await read();
+          const l2 = await loads();
+          // the system's state follows the entities while the menu is open
+          await ev(page, () => window.__hapulseDemo.patch('light.hallway', { state: 'unavailable' }));
+          const sysLive = await page.waitForFunction((w) => document.querySelector('.app-more-menu__row[href$="/system"] .g-more-value')?.textContent.trim() === w,
+            say('nav.systemStatus.unavailable.one', 1), { timeout: 3000 }).then(() => true, () => false);
+          await ev(page, () => window.__hapulseDemo.patch('light.hallway', { state: 'off' }));
+          await page.keyboard.press('Escape');
+          await page.waitForFunction(() => !document.querySelector('.app-more-menu--open'), null, { timeout: 3000 });
+          await sleep(300);
+          await settleAnimations(page);
+          const l3 = await loads();
+          // two hours later, closed: the remembered figure is out of date, still nothing is fetched
+          await ctx.clock.setFixedTime(ENERGY_AT + 2 * 3600_000);
+          await sleep(1500);
+          const l4 = await loads();
+          // open again: fetched anew
+          await click(page, moreTab);
+          const refetch = await page.waitForFunction((was) => window.__hapulseDemo.energyLoads() > was, l4, { timeout: 5000 }).then(() => true, () => false);
+          await sleep(300);
+          const b = await read();
+          // a row still leads to its page: the scenes page counts as many scenes as the menu
+          await page.locator('.app-more-menu--open .app-more-menu__row[href$="/scenes"]').click();
+          await page.waitForFunction(() => document.querySelector('.scene-hero-card__total'), null, { timeout: 5000 });
+          const scenesTotal = await ev(page, () => document.querySelector('.scene-hero-card__total').textContent.trim());
+          // the overview's energy card says the same for today
+          await page.goto(url + '/', { waitUntil: 'load' });
+          await page.waitForFunction(() => document.querySelector('.g-energy__num'), null, { timeout: 8000 });
+          const homeEnergy = await ev(page, () => `${document.querySelector('.g-energy__num').textContent.trim()} kWh`);
+
+          const rowsOk = (r) => r.rows.length >= 4 && r.rows.every((x) => (VALUED.some((v) => x.href && x.href.endsWith(v))
+            ? x.value != null && x.order && x.mid && x.color && x.font === '17px/22px' : x.value === null));
+          const footOk = (f) => !!f && /^version \d+\.\d+\.\d+ · F\d+$/.test(f.text) && f.hidden === 'true' && f.first === 'uppercase'
+            && f.color && f.font === '13px/18px' && f.below;
+          const energyRe = /^\d+(,\d)? kWh$/;
+          const ok = l0 === 0 && l1 === 0 && l2 > 0 && l3 === l2 && l4 === l3 && refetch
+            && rowsOk(a) && rowsOk(b) && footOk(a.foot)
+            && energyRe.test(valueOf(a, '/energy')) && valueOf(b, '/energy') === homeEnergy
+            && valueOf(a, '/scenes') === scenesTotal && valueOf(a, '/system') === DE['glas.more.system.healthy'] && sysLive;
+          res['phone-more'] = { ok, loads: [l0, l1, l2, l3, l4], refetch, rows: a.rows, foot: a.foot, energyLater: valueOf(b, '/energy'), homeEnergy,
+            scenesTotal, sysLive };
+        } catch (e) {
+          res['phone-more'] = { ok: false, error: String(e.message).slice(0, 200) };
+        }
+        await close();
+      }
+
+      if (menuPart('rooms')) {
+        const TONES = {
+          phone: { on: ['--g-yellow', '--g-glyph-dark'], warn: ['--g-warn-soft', '--g-warn-ink'], alarm: ['--g-red-soft', '--g-red-ink'] },
+          desktop: { on: [null, '--g-yellow-ink'], warn: [null, '--g-warn-ink'], alarm: [null, '--g-red-ink'] },
+        };
+        // the demo's lights: Living Room 2, Kitchen 1, Bedroom 1, Office 2, Bathroom and Hallway none
+        const WANT = {
+          Bedroom: ['warn', DE['hints.windowOpen.one']], Hallway: ['warn', DE['hints.doorOpen.one']], Garage: ['alarm', DE['hints.garageOpen.one']],
+          Kitchen: ['on', say('glas.hero.lightsOn.one', 1)], 'Living Room': ['on', say('glas.hero.lightsOn.other', 2)],
+          Office: ['on', say('glas.hero.lightsOn.other', 2)], Bathroom: [null, null],
+        };
+        for (const [device, style] of [['phone', 'glas'], ['desktop', 'glas'], ['phone', 'classic']]) {
+          const { page, close } = await open(device, style, '/');
+          try {
+            await ev(page, () => {
+              const d = window.__hapulseDemo;
+              d.patch('binary_sensor.bedroom_window', { state: 'on' });
+              d.patch('binary_sensor.front_door', { state: 'on' });
+              d.patch('cover.garage_door', { state: 'open' });
+            });
+            await sleep(300);
+            await settleAnimations(page);
+            // the overview's room tiles (Glas): each room's symbol
+            const tileIcon = () => ev(page, () => Object.fromEntries([...document.querySelectorAll('.g-room')]
+              .map((t) => [t.querySelector('.g-room__name').textContent.trim(), t.querySelector('.g-room__circle svg')?.innerHTML ?? null])));
+            const tiles = await tileIcon();
+            await click(page, device === 'phone' ? `.app-tabs__item[aria-label="${DE['nav.rooms']}"]` : ".sidebar-nav__item[aria-haspopup='menu']");
+            await page.waitForFunction(() => document.querySelector('.rooms-menu--open .rooms-menu__row'), null, { timeout: 3000 });
+            await sleep(200);
+            await settleAnimations(page);
+            const read = () => ev(page, () => [...document.querySelectorAll('.rooms-menu--open .rooms-menu__row')].map((r) => {
+              const icon = r.querySelector('.rooms-menu__row-icon');
+              const cs = getComputedStyle(icon);
+              const b = icon.getBoundingClientRect();
+              return { name: r.querySelector('.rooms-menu__row-name').textContent.trim(), tone: r.getAttribute('data-tone'), aria: r.getAttribute('aria-label'),
+                icon: icon.innerHTML, bg: cs.backgroundColor, color: cs.color, size: [Math.round(b.width), Math.round(b.height)] };
+            }));
+            const rows = await read();
+            const byName = Object.fromEntries(rows.map((r) => [r.name, r]));
+            let ok;
+            const detail = {};
+            if (style === 'glas') {
+              const tok = { ...(await tokens(page, ['--g-yellow', '--g-warn-soft', '--g-red-soft'], 'background')),
+                ...(await tokens(page, ['--g-glyph-dark', '--g-warn-ink', '--g-red-ink', '--g-yellow-ink'])) };
+              const each = Object.entries(WANT).map(([name, [tone, said]]) => {
+                const r = byName[name];
+                if (!r) return { name, ok: false, error: 'no row' };
+                const [bg, ink] = tone ? TONES[device][tone] : [null, null];
+                const look = !tone || ((!bg || r.bg === tok[bg]) && r.color === tok[ink]);
+                const same = tiles[name] == null || r.icon === tiles[name];
+                return { name, ok: r.tone === tone && r.aria === (said ? `${name}, ${said}` : null) && look && same, tone: r.tone, aria: r.aria, look, same };
+              });
+              const circle = device !== 'phone' || rows.every((r) => r.size[0] === 32 && r.size[1] === 32);
+              // live: the window closes while the menu is open: the bedroom is back to its own symbol, yellow
+              await ev(page, () => window.__hapulseDemo.patch('binary_sensor.bedroom_window', { state: 'off' }));
+              const live = await page.waitForFunction(() => [...document.querySelectorAll('.rooms-menu--open .rooms-menu__row')]
+                .find((r) => r.querySelector('.rooms-menu__row-name').textContent.trim() === 'Bedroom')?.getAttribute('data-tone') === 'on', null, { timeout: 3000 })
+                .then(() => true, () => false);
+              await sleep(400);
+              await settleAnimations(page);
+              const after = Object.fromEntries((await read()).map((r) => [r.name, r]));
+              const tilesAfter = await tileIcon();
+              const liveOk = live && after.Bedroom.aria === `Bedroom, ${say('glas.hero.lightsOn.one', 1)}` && after.Bedroom.icon !== byName.Bedroom.icon
+                && (tilesAfter.Bedroom == null || after.Bedroom.icon === tilesAfter.Bedroom);
+              ok = each.every((x) => x.ok) && circle && liveOk && Object.keys(tiles).length > 0;
+              Object.assign(detail, { each, circle, live, liveOk, tiles: Object.keys(tiles) });
+            } else {
+              // Klassisch: no state in the menu (the room's own symbol, no tone, no extra name)
+              ok = rows.length >= 7 && rows.every((r) => r.tone === null && r.aria === null);
+              Object.assign(detail, { rows: rows.map((r) => ({ name: r.name, tone: r.tone, aria: r.aria })) });
+            }
+            await page.keyboard.press('Escape');
+            await sleep(200);
+            res[`${device}-${style}-rooms`] = { ok, ...detail };
+          } catch (e) {
+            res[`${device}-${style}-rooms`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
+      }
+
+      if (menuPart('all')) {
+        for (const [device, mode] of [['phone', 'light'], ['desktop', 'dark']]) {
+          for (const [kind, trigger, extra] of [['climate', '.climate-card__link', {}], ['blinds', '.blinds-card__link', { customization: { hiddenSections: [] } }]]) {
+            const { page, close } = await open(device, 'glas', '/', { mode, ...extra });
+            try {
+              await reachClick(page, trigger);
+              await page.waitForFunction(() => [...document.querySelectorAll('[role="dialog"]')]
+                .some((d) => !d.closest('.g-sheet-ghost') && d.querySelector('.all-modal__grid')), null, { timeout: 4000 });
+              await sleep(200);
+              await settleAnimations(page);
+              const tok = await tokens(page, ['--g-fill', '--g-accent-soft'], 'background');
+              const got = await ev(page, (k) => {
+                const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
+                const grid = d.querySelector('.all-modal__grid');
+                const round = (v) => Math.round(v * 10) / 10;
+                const box = (e) => e && { w: round(e.getBoundingClientRect().width), h: round(e.getBoundingClientRect().height),
+                  bg: getComputedStyle(e).backgroundColor, r: getComputedStyle(e).borderRadius };
+                if (k === 'climate') {
+                  return {
+                    cards: grid.querySelectorAll('.climate-card').length, capsule: box(grid.querySelector('.climate-card__target-control')),
+                    step: box(grid.querySelector('.climate-card__step-btn')),
+                    pills: [...grid.querySelectorAll('.climate-card__mode-pill')].map((p) => round(p.getBoundingClientRect().height)),
+                    active: box(grid.querySelector('.climate-card__mode-pill--active')),
+                  };
+                }
+                const chip = grid.querySelector('.cover-card__chip');
+                const pos = grid.querySelector('.cover-card__position');
+                const pcs = pos && getComputedStyle(pos);
+                return {
+                  cards: grid.querySelectorAll('.cover-card').length, chip: box(chip), slats: chip && parseFloat(getComputedStyle(chip, '::before').height),
+                  pos: pcs && { font: `${pcs.fontSize}/${pcs.lineHeight}`, weight: pcs.fontWeight, text: pos.textContent.trim() },
+                  btns: [...grid.querySelectorAll('.cover-card__btn')].map((b) => round(b.getBoundingClientRect().height)),
+                };
+              }, kind);
+              await shut(page);
+              const near = (v, w) => v != null && Math.abs(v - w) < 0.6;
+              const ok = kind === 'climate'
+                ? got.cards >= 2 && !!got.capsule && near(got.capsule.h, 40) && got.capsule.r === '20px' && got.capsule.bg === tok['--g-fill']
+                  && near(got.step.w, 40) && near(got.step.h, 40) && got.step.bg === 'rgba(0, 0, 0, 0)'
+                  && got.pills.length > 1 && got.pills.every((h) => near(h, 36)) && !!got.active && got.active.bg === tok['--g-accent-soft']
+                : got.cards >= 1 && !!got.chip && near(got.chip.w, 40) && near(got.chip.h, 40) && got.chip.r === '12px' && near(got.slats, 40)
+                  && !!got.pos && got.pos.font === '15px/20px' && got.pos.weight === '600'
+                  && got.btns.length >= 3 && got.btns.every((h) => near(h, 40));
+              res[`${device}-all-${kind}`] = { ok, ...got };
+            } catch (e) {
+              res[`${device}-all-${kind}`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+      }
+
+      out.pagesMenus = res;
+      out.pagesMenusOk = Object.keys(res).length > 0 && Object.values(res).every((r) => r.ok);
+    });
+
+    out.pagesPageErrors = pageErrors;
+    return ran.every((k) => out[k + 'Ok']) && pageErrors.length === 0;
+  }
+
+  // ---- Scenes for `shoot` (its paused clock: only `run` moves time): a page in edit mode, Glas with its bars and
+  //      Klassisch with its badges, so that `compare` also holds Klassisch's edit mode pixel-identical (as `home-edit`
+  //      does on the overview). On a phone Glas enters edit mode from the avatar menu. ----
+  const editScene = (p) => ({ path: p, act: async (page) => {
+    const press = async (sel, text) => {
+      const done = await page.evaluate(([s, t]) => {
+        const b = [...document.querySelectorAll(s)].find((e) => e.getClientRects().length && (!t || e.textContent.includes(t)));
+        if (b) b.click();
+        return !!b;
+      }, [sel, text]);
+      await run(page, 200);
+      await settleAnimations(page);
+      return done;
+    };
+    const phoneGlas = page.viewportSize().width < 900 && (await isGlas(page));
+    const done = phoneGlas
+      ? (await press('.g-avatar__btn')) && (await press('.g-avatar-menu__item', DE['glas.avatar.edit']))
+      : await press('.g-edit-capsule, .edit-toggle');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await run(page, 100);
+    await settleAnimations(page);
+    return done ? '' : 'no edit toggle';
+  } });
+  const scenes = {
+    'security-edit': editScene('/security'),
+    'energy-edit': editScene('/energy'),
+    'music-edit': editScene('/music'),
+    'automations-edit': editScene('/automations'),
+    'scenes-edit': editScene('/scenes'),
+    'system-edit': editScene('/system'),
+  };
+
+  return { pagesChecks, scenes };
+};

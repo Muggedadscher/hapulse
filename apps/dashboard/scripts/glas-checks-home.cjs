@@ -490,7 +490,11 @@ module.exports = function home(h) {
         await page.keyboard.press(' ');
         await sleep(250);
         await page.keyboard.press(device === 'phone' ? 'ArrowDown' : 'ArrowRight');
-        await sleep(250);
+        // on the phone the step scrolls the page smoothly first (dnd-kit's keyboard sensor), and the card is over the
+        // next one only once that scroll has run: wait for that instead of a fixed time
+        await until(page, (id) => [...document.querySelectorAll('[id^="DndLiveRegion"]')]
+          .some((x) => /over droppable area/.test(x.textContent) && !x.textContent.includes(`area ${id}.`)), o1[1], 2000);
+        await sleep(100);
         await page.keyboard.press(' ');
         await sleep(600);
         await settleAnimations(page);

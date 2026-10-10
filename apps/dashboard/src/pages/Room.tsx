@@ -28,6 +28,7 @@ import { NvrRoomCameras } from '../nvr/NvrRoomCameras'; // [fork]
 import { isGarageDoor } from '@hapulse/core'; // [fork]
 import { withDefaultSlot } from '../lib/defaultSlot'; // [fork]
 import { useIsGlas } from '../app/glas/useUiStyle'; // [fork] Glas: back as a glass circle 44 (docs/glas/PLAN-ETAPPE-2.md K41)
+import { glasSceneTone } from '../components/glas/home/sceneTone'; // [fork] Glas: scene tiles like the overview (K95)
 
 // ── Entity name helpers ───────────────────────────────────────────────────────
 
@@ -447,9 +448,14 @@ export function Room() {
             className={['scene-tile', 'scene-tile--compact', isHidden && editMode ? 'scene-tile--hidden' : ''].filter(Boolean).join(' ')}
             onClick={() => void callService('scene', 'turn_on', {}, { entity_id: entityId })}
             aria-label={t('room.scene.activate', { name: displayName })}
+            data-tone={glas ? glasSceneTone(sceneIcon(displayName), idx) : undefined /* [fork] the overview's look (K88, K95) */}
             type="button"
           >
-            <span className="scene-tile__icon" style={{ background: palette.bg, color: palette.color }} aria-hidden="true">
+            <span
+              className="scene-tile__icon"
+              style={glas ? undefined : { background: palette.bg, color: palette.color } /* [fork] Glas: CSS */}
+              aria-hidden="true"
+            >
               {sceneIcon(displayName)}
             </span>
             <span className="scene-tile__name">{displayName}</span>

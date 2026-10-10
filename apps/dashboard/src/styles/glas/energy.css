@@ -1,0 +1,440 @@
+/* [fork] Glas — the energy page (plan docs/glas/PLAN-ETAPPE-5.md K90, K92, §7.11; GLAS-DESIGN §2.4, §7.9, §7.27,
+   §7.31): the hero with the period segment, the figure and the value tiles, the sources chart in the grid and solar
+   colours of the overview's energy card, the solar meter, the devices' bars, water and gas (one meter: its value as
+   the figure), the "not configured" state and the cards dimmed while another period loads. Only presentation: the
+   contents N1–N9 stay. The card titles, the columns and the hero's title row are the frame (pages.css); the segment's
+   size is controls.css (`g-seg--energy`, the same as on the overview), its markup the [fork] switch in
+   components/energy/EnergyCards.tsx. */
+
+/* ---- Hero: the title row (44) carries the period segment — beside the title where both fit (a segment of 240 to
+   300), else in its own row (the phone: as wide as the card). The figure like the overview's energy card: the line
+   above it 15/20 label2 with its symbol 18, the number 34/41 600, "kWh" 17/22 600 label2. ---- */
+:root[data-style='glas'] .energy-page .energy-hero {
+  gap: 12px;
+  padding: 6px 16px 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* a content surface, not a control: no hover tint (like the overview's cards) */
+:root[data-style='glas'] .energy-page .card.energy-hero:hover {
+  background-color: var(--bg-card);
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__header {
+  gap: 4px 12px;
+  min-height: 44px;
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__header > .energy-card__title-row {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__header > .g-seg--energy {
+  flex: 1 1 240px;
+  max-width: 300px;
+}
+
+@media (max-width: 899px) {
+  :root[data-style='glas'] .energy-page .energy-hero__header > .g-seg--energy {
+    max-width: none;
+  }
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__primary {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__primary-label {
+  gap: 6px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__primary-label > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__primary-value {
+  color: var(--g-label);
+  font: 600 34px / 41px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .energy-page .energy-hero__primary-unit {
+  color: var(--g-label-2);
+  font: 600 17px / 22px var(--g-font);
+}
+
+/* Value tiles: `fill` on the card, no border, radius 12 (concentric: card 26 − padding 16 ± 2); the symbol in a circle
+   32 in its soft tone with the ink (solar yellow like its chart part, the classic tones for the others: grid blue,
+   returned green, cost red, battery the card with label2); label 12/16 label2 (a long one wraps), value 17/22 600 with
+   its unit 13/18 600 label2. */
+:root[data-style='glas'] .energy-page .energy-hero__stats {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+:root[data-style='glas'] .energy-page .energy-stat {
+  gap: 10px;
+  min-height: 60px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .energy-page .energy-stat__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .energy-page .energy-stat__icon > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] .energy-page .energy-stat--accent .energy-stat__icon {
+  background: var(--g-yellow-soft);
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .energy-page .energy-stat__body {
+  gap: 0;
+}
+
+:root[data-style='glas'] .energy-page .energy-stat__label {
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+  white-space: normal;
+}
+
+:root[data-style='glas'] .energy-page .energy-stat__value {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .energy-page .energy-stat__unit {
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+}
+
+/* ---- Sources (§2.4, §7.9): the legend's swatches are dots 8; the bars grid grey below and solar yellow above (in the
+   light mode with its 1-px edge, yellow on white is too light), 1.5 px between both, rounded only on top, on a solid
+   base line. Width and gap by the number of bars as on the overview's card: up to 12 (week, year) at most 26 wide with
+   gaps of 4, up to 24 (day) 14 and 3, more (month) 10 and 3. They grow from the base line like there. ---- */
+:root[data-style='glas'] .energy-page .energy-legend {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .energy-page .energy-legend__item {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .energy-page .energy-legend__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .energy-page :is(.energy-legend__swatch--grid, .energy-total__dot--grid) {
+  background: var(--g-chart-netz);
+}
+
+:root[data-style='glas'] .energy-page :is(.energy-legend__swatch--solar, .energy-total__dot--solar) {
+  background: var(--g-chart-solar);
+  box-shadow: inset 0 0 0 1px var(--g-chart-solar-edge);
+}
+
+:root[data-style='glas'] .energy-page .energy-chart {
+  --g-en-max: 26px;
+  --g-en-r: 6px;
+  gap: 4px;
+  border-bottom: 1px solid var(--g-sep-strong);
+}
+
+:root[data-style='glas'] .energy-page .energy-chart:has(> :nth-child(13)) {
+  --g-en-max: 14px;
+  --g-en-r: 4px;
+  gap: 3px;
+}
+
+:root[data-style='glas'] .energy-page .energy-chart:has(> :nth-child(25)) {
+  --g-en-max: 10px;
+  --g-en-r: 3px;
+}
+
+:root[data-style='glas'] .energy-page .energy-chart__col {
+  justify-content: center;
+}
+
+:root[data-style='glas'] .energy-page .energy-chart__stack {
+  max-width: var(--g-en-max);
+  gap: 1.5px;
+  transform-origin: 50% 100%;
+  animation: g-en-grow 0.6s var(--g-spring-bouncy) both;
+}
+
+:root[data-style='glas'] .energy-page .energy-chart__seg {
+  border-radius: 0;
+}
+
+:root[data-style='glas'] .energy-page .energy-chart__seg--grid {
+  background: var(--g-chart-netz);
+}
+
+:root[data-style='glas'] .energy-page .energy-chart__seg--solar {
+  border-radius: var(--g-en-r) var(--g-en-r) 0 0;
+  background: var(--g-chart-solar);
+  box-shadow: inset 0 0 0 1px var(--g-chart-solar-edge);
+}
+
+/* without solar in the bar the grid part is its top */
+:root[data-style='glas']
+  .energy-page
+  .energy-chart__stack:has(> .energy-chart__seg--solar[style*='height: 0%'])
+  > .energy-chart__seg--grid {
+  border-radius: var(--g-en-r) var(--g-en-r) 0 0;
+}
+
+:root[data-style='glas'] .energy-page .energy-empty {
+  padding: 4px 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* the totals below the chart: dot 8, label 15/20 label2, value 15/20 600; a hairline above */
+:root[data-style='glas'] .energy-page .energy-sources__totals {
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .energy-page .energy-total {
+  gap: 10px;
+}
+
+:root[data-style='glas'] .energy-page :is(.energy-total__label, .energy-kv__label) {
+  min-width: 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .energy-page :is(.energy-total__value, .energy-kv__value) {
+  flex: none;
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Devices: name 15/20 label, the bar on a `fill` track 6 high (the accent, as the overview's bars), the value
+   13/18 600 label2; the bar column narrower than in Klassisch so a name keeps its words ---- */
+:root[data-style='glas'] .energy-page .energy-devices__list {
+  gap: 14px;
+}
+
+:root[data-style='glas'] .energy-page .energy-device {
+  grid-template-columns: minmax(96px, 1fr) minmax(48px, 1.4fr) auto;
+  gap: 12px;
+}
+
+:root[data-style='glas'] .energy-page .energy-device__name {
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .energy-page .energy-device__bar-wrap {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .energy-page .energy-device__bar {
+  border-radius: 3px;
+}
+
+:root[data-style='glas'] .energy-page .energy-device__value {
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Solar: the figures as rows 15/20 (with the totals above), the meter 6 high on `fill` in the solar yellow with
+   its edge, its line 13/18 label2 ---- */
+:root[data-style='glas'] .energy-page :is(.energy-solar__rows, .energy-kv-list) {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .energy-page .energy-solar__meter {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .energy-page .energy-solar__meter-fill {
+  border-radius: 3px;
+  background: var(--g-chart-solar);
+  box-shadow: inset 0 0 0 1px var(--g-chart-solar-edge);
+}
+
+:root[data-style='glas'] .energy-page .energy-solar__meter-label {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* ---- Water with one meter and gas: the card is only its figure. The title above the surface like the other cards
+   (pages.css), the value in it as the figure 22/28 600: the header's box falls away, its title row is the head and its
+   value the surface's content. Capped (a height from "⋯"), the title row sits in the surface like the other capped
+   cards. ---- */
+:root[data-style='glas'] .energy-page :is(.energy-water:not(:has(> .energy-kv-list)), .energy-gas) > .energy-card__header {
+  display: contents;
+}
+
+:root[data-style='glas']
+  .energy-page
+  :is(.energy-water:not(:has(> .energy-kv-list)), .energy-gas)
+  > .energy-card__header
+  > .energy-card__title-row {
+  flex: none;
+  min-height: var(--g-card-head);
+  margin: 0 -16px calc(var(--g-card-gap) + 4px);
+  padding: 0;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas']
+    .energy-page
+    :is(.energy-water:not(:has(> .energy-kv-list)), .energy-gas)
+    > .energy-card__header
+    > .energy-card__title-row {
+    padding-left: 4px;
+  }
+}
+
+:root[data-style='glas']
+  .energy-page
+  .overview-grid__cell[class*='section-h-']
+  :is(.energy-water:not(:has(> .energy-kv-list)), .energy-gas)
+  > .energy-card__header
+  > .energy-card__title-row {
+  margin: 0 -16px -4px;
+  padding: 6px 16px 0;
+}
+
+:root[data-style='glas']
+  .energy-page
+  :is(.energy-water:not(:has(> .energy-kv-list)), .energy-gas)
+  > .energy-card__header
+  > .energy-card__sub {
+  color: var(--g-label);
+  font: 600 22px / 28px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Loading and error line ---- */
+:root[data-style='glas'] .energy-page__loading {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- While another period loads (Energy.tsx `data-g-stale`): everything but the hero's title row at .5, as on the
+   overview's card (K75) ---- */
+:root[data-style='glas'] .energy-page .overview-grid__cell > *,
+:root[data-style='glas'] .energy-page .energy-hero > :not(.energy-hero__header) {
+  transition: opacity 0.2s ease;
+}
+
+:root[data-style='glas'] .energy-page[data-g-stale] .overview-grid__cell:not([data-section='hero']) > *,
+:root[data-style='glas'] .energy-page[data-g-stale] .energy-hero > :not(.energy-hero__header) {
+  opacity: 0.5;
+}
+
+/* ---- Not configured (§7.31): the window's empty state on the card — the symbol in a circle 56 `fill`, title 17/22
+   600, explanation 15/20 label2; the way to Home Assistant a prominent capsule 48 (17/22 600, symbol 18; colours
+   accent.css). ---- */
+:root[data-style='glas'] .energy-page .energy-empty-state {
+  gap: 0;
+  padding: 32px 24px;
+}
+
+:root[data-style='glas'] .energy-page .card.energy-empty-state:hover {
+  background-color: var(--bg-card);
+}
+
+:root[data-style='glas'] .energy-page .energy-empty-state__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 0 12px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .energy-page .energy-empty-state__icon > svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.75;
+}
+
+:root[data-style='glas'] .energy-page .energy-empty-state__title {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .energy-page .energy-empty-state__desc {
+  margin-top: 4px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .energy-page .energy-empty-state__btn {
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  margin-top: 20px;
+  padding: 0 22px;
+  font: 600 17px / 22px var(--g-font);
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .energy-page .energy-empty-state__btn > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .energy-page .energy-empty-state__btn:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Reduced motion (§6.4): the bars fade in over 200 ms like the overview's, nothing grows. !important answers
+   upstream's global switch-off (global.css, K38). */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .energy-page .energy-chart__stack {
+    animation-name: g-fade-in !important;
+    animation-duration: 200ms !important;
+    animation-timing-function: ease !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .energy-page :is(.energy-stat, .energy-device__bar-wrap, .energy-solar__meter) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .energy-page .energy-empty-state__btn {
+    border: 1px solid ButtonText;
+  }
+}

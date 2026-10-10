@@ -11,15 +11,7 @@ import { formatNumber } from '@hapulse/core';
 import type { Room } from '@hapulse/core';
 import { RoomDisplayIcon } from '../../ui/RoomDisplayIcon';
 import { useLocale, useT } from '../../../i18n/useT';
-
-/** How loud roomStatusIconName's statuses are (packages/core/src/roomIcons.ts). */
-const STATUS_TONE: Record<string, 'warn' | 'alarm'> = {
-  'grid-2x2': 'warn',
-  'door-open': 'warn',
-  car: 'alarm',
-  droplets: 'alarm',
-  flame: 'alarm',
-};
+import { roomStatusText, roomTone } from './roomTone';
 
 interface GlasRoomTileProps {
   room: Room;
@@ -49,24 +41,6 @@ export function GlasRoomTile({
   const locale = useLocale();
   const pct = useMemo(() => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }), [locale]);
 
-  const statusText = (): string | null => {
-    if (!isStatus) return null;
-    switch (iconName) {
-      case 'grid-2x2':
-        return t('hints.windowOpen', { count: 1 });
-      case 'door-open':
-        return t('hints.doorOpen', { count: 1 });
-      case 'car':
-        return t('hints.garageOpen', { count: 1 });
-      case 'droplets':
-        return t('hints.leak');
-      case 'flame':
-        return t('hints.smoke');
-      default:
-        return null;
-    }
-  };
-
   const climate = [
     temperature != null ? `${formatNumber(temperature, locale, { minDecimals: 1, maxDecimals: 1 })}°` : null,
     humidity != null ? pct.format(humidity / 100) : null,
@@ -74,12 +48,12 @@ export function GlasRoomTile({
     .filter(Boolean)
     .join(' · ');
   const deviceLine = t('home.hero.deviceCount', { count: devices });
-  const status = statusText();
+  const status = roomStatusText(t, iconName, isStatus);
   const lightLine =
     lights > 0 ? (lightsOn > 0 ? t('glas.hero.lightsOn', { count: lightsOn }) : t('glas.hero.lightsOff')) : null;
   const line1 = climate || deviceLine;
   const line2 = status ?? lightLine ?? (climate ? deviceLine : null);
-  const tone = isStatus ? (STATUS_TONE[iconName] ?? 'warn') : lightsOn > 0 ? 'on' : undefined;
+  const tone = roomTone(iconName, isStatus, lightsOn);
   const label = [t('home.roomsQuickAccess.roomAria', { name: room.name }), line1, line2].filter(Boolean).join(', ');
 
   return (

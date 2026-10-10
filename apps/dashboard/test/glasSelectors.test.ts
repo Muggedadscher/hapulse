@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { createElement, type ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Cpu, Home, LayoutGrid, Lightbulb, MoreHorizontal, Monitor, Music, Settings, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
+import { Cpu, DoorOpen, Fan, Home, LayoutGrid, Lightbulb, MoreHorizontal, Monitor, Music, Pause, Settings, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
 
 // [fork] Guard for the Glas stylesheets (docs/GLAS-PLAN.md §1.4, §5.2): Glas must never touch Klassisch, and an
 // upstream rename must not leave a Glas rule silently pointing at nothing.
@@ -115,17 +115,35 @@ const FILLED_ICONS: [ComponentType<{ size?: number }>, string, string][] = [
   [Lightbulb, 'lucide-lightbulb', 'path path path'],
 ];
 
+/**
+ * Lucide symbols whose class the Glas CSS reads as a state: Now Playing shows the pause glyph while it plays
+ * (controls.css, plan docs/glas/PLAN-ETAPPE-5.md K93); the security hero's door chip is the "danger" chip with the
+ * open door, which K87 colours like doors and windows (pages.css, K90); a switch tile that is on is a fan by its symbol
+ * and turns teal like the fans among the devices (cards.css, K95).
+ */
+const MARKER_ICONS: [ComponentType<{ size?: number }>, string][] = [
+  [Pause, 'lucide-pause'],
+  [DoorOpen, 'lucide-door-open'],
+  [Fan, 'lucide-fan'],
+];
+
 /** Classes that only exist at runtime (set from code, never in a stylesheet) and may still be targeted. */
-const RUNTIME_CLASSES = new Set<string>(FILLED_ICONS.map(([, cls]) => cls));
+const RUNTIME_CLASSES = new Set<string>([...FILLED_ICONS, ...MARKER_ICONS].map(([, cls]) => cls));
 
 describe('Glas stylesheets', () => {
   it('exist', () => {
     expect(glasCss.map((f) => f.name).sort()).toEqual([
-      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/controls.css', 'styles/glas/detail.css', 'styles/glas/edit.css',
-      'styles/glas/feedback.css', 'styles/glas/gestures.css', 'styles/glas/home-cards.css', 'styles/glas/home-lists.css',
-      'styles/glas/home.css', 'styles/glas/index.css', 'styles/glas/material.css', 'styles/glas/menus.css',
-      'styles/glas/motion.css', 'styles/glas/nvr.css', 'styles/glas/sheet-content.css', 'styles/glas/sheets.css',
-      'styles/glas/shell.css', 'styles/glas/tabbar.css', 'styles/glas/titles.css',
+      'styles/glas/accent.css', 'styles/glas/base.css', 'styles/glas/cards.css', 'styles/glas/controls.css', 'styles/glas/detail.css',
+      'styles/glas/devices.css',
+      'styles/glas/edit.css', 'styles/glas/energy.css', 'styles/glas/feedback.css', 'styles/glas/gestures.css', 'styles/glas/home-cards.css',
+      'styles/glas/home-lists.css',
+      'styles/glas/home.css', 'styles/glas/index.css', 'styles/glas/lists.css', 'styles/glas/material.css', 'styles/glas/menus.css',
+      'styles/glas/motion.css', 'styles/glas/music.css', 'styles/glas/nvr.css', 'styles/glas/onboarding.css', 'styles/glas/pages.css',
+      'styles/glas/pool.css',
+      'styles/glas/security.css', 'styles/glas/settings.css',
+      'styles/glas/sheet-content.css', 'styles/glas/sheets.css', 'styles/glas/shell.css', 'styles/glas/system.css',
+      'styles/glas/tabbar.css',
+      'styles/glas/titles.css',
     ]);
   });
 
@@ -175,6 +193,13 @@ describe('Glas stylesheets', () => {
       expect(svg.match(/class="([^"]*)"/)?.[1]?.split(' '), cls).toContain(cls);
       const kids = [...svg.matchAll(/<(path|rect|circle|line|polyline|polygon|ellipse)\b/g)].map((m) => m[1]).join(' ');
       expect(kids, cls).toBe(parts.trim());
+    }
+  });
+
+  it('read only Lucide state symbols whose class is as checked', () => {
+    for (const [Icon, cls] of MARKER_ICONS) {
+      const svg = renderToStaticMarkup(createElement(Icon, { size: 24 }));
+      expect(svg.match(/class="([^"]*)"/)?.[1]?.split(' '), cls).toContain(cls);
     }
   });
 

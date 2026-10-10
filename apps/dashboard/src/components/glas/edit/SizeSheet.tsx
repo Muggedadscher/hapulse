@@ -1,7 +1,8 @@
 /**
- * [fork] Glas edit mode: "⋯ Anpassen" of a card on the overview (plan docs/glas/PLAN-ETAPPE-4.md K78, GLAS-DESIGN
- * §7.32). The classic values in one window: columns 1–4 and the height cap (off, 180, 280, 400, 560 px), both as a
- * segment. They are the same fields Klassisch reads; a cap leaves "L" (the cap sets the height, Home.tsx).
+ * [fork] Glas edit mode: "⋯ Anpassen" of a card (plans docs/glas/PLAN-ETAPPE-4.md K78, PLAN-ETAPPE-5.md K96,
+ * GLAS-DESIGN §7.32). The classic values in one window: columns 1–4 and the height cap (off, 180, 280, 400, 560 px),
+ * both as a segment. They are the same fields Klassisch reads; a cap leaves "L" (the cap sets the height,
+ * useGlasSectionEdit).
  */
 
 import { formatNumber } from '@hapulse/core';
@@ -40,6 +41,7 @@ export function SizeSheet({ open, onClose, name, span, height, onSpan, onHeight 
           value={String(span)}
           options={COLUMNS.map((c) => ({ value: c, label: formatNumber(Number(c), locale) }))}
           onChange={(c) => onSpan(Number(c))}
+          activation="manual"
         />
       </div>
       <div className="g-size-sheet__group">
@@ -50,6 +52,7 @@ export function SizeSheet({ open, onClose, name, span, height, onSpan, onHeight 
           value={String(height)}
           options={levels}
           onChange={(l) => onHeight(Number(l))}
+          activation="manual"
         />
       </div>
     </Modal>

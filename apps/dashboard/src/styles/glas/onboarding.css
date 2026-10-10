@@ -1,0 +1,110 @@
+/* [fork] Glas — the onboarding (T1–T6, plan docs/glas/PLAN-ETAPPE-5.md K98): only tokens, one prominent action, the
+   fields of K94 (lists.css) and no frames; the layout stays Klassisch's. The orange of the sign-in button and of the
+   logo comes from accent.css. */
+
+/* the card: borderless like every card in Glas (base.css) */
+:root[data-style='glas'] .onboarding__card {
+  border-color: transparent;
+}
+
+/* Buttons: capsules 50, 17/22 600 — "mit Home Assistant anmelden" prominent (the page's one prominent action), the
+   token form's button grey `fill`, the demo tinted (accent-soft with the ink, as in Klassisch) */
+:root[data-style='glas'] :is(.onboarding__connect-btn, .onboarding__demo-btn) {
+  min-height: 50px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 25px;
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .onboarding__connect-btn--secondary {
+  background: var(--g-fill);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .onboarding__connect-btn--secondary:hover:not(:disabled) {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .onboarding__demo-btn:hover:not(:disabled) {
+  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+}
+
+:root[data-style='glas'] :is(.onboarding__demo-btn, .onboarding__advanced-toggle):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* "Erweitert" without the frame: the toggle a row of 44 from the fields' edge, 15/20 `label2` with the chevron
+   `label3`; the open form without the raised background and the line. Nothing clips any more, so the focus rings of
+   the full-width parts stay whole. */
+:root[data-style='glas'] .onboarding__advanced {
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+:root[data-style='glas'] .onboarding__advanced-toggle {
+  padding: 0;
+  color: var(--g-label-2);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+:root[data-style='glas'] .onboarding__advanced-toggle:hover {
+  background: none;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .onboarding__advanced-chevron {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .onboarding__advanced-form {
+  padding: 4px 0 16px;
+  border-top: 0;
+  background: none;
+}
+
+/* The mixed-content warning and the errors: tinted areas without a frame, radius 12 — the warning 13/18 in the
+   warning ink on its soft tone, the error 15/20 in the red ink on red soft (both pairs in glasTokens.ts' contrast
+   list). */
+:root[data-style='glas'] :is(.onboarding__warning, .onboarding__error) {
+  border: 0;
+  border-radius: 12px;
+}
+
+:root[data-style='glas'] .onboarding__warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .onboarding__error {
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+/* "oder": hairlines like the lists' separators */
+:root[data-style='glas'] .onboarding__divider::before,
+:root[data-style='glas'] .onboarding__divider::after {
+  height: 0.5px;
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.onboarding__connect-btn, .onboarding__demo-btn) {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] :is(.onboarding__warning, .onboarding__error) {
+    border: 1px solid CanvasText;
+  }
+}

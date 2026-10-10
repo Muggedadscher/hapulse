@@ -23,6 +23,8 @@ import { MA_MEDIA_TYPES } from '@hapulse/core';
 import type { MAMediaType, MAMediaItem, MAEnqueueMode, MusicAssistantInfo } from '@hapulse/core';
 import { useT, type TKey } from '../../i18n/useT';
 import './LibraryCard.css';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: the item menu stays in the card
+import { keepInCard } from '../glas/keepInCard'; // [fork]
 
 const PAGE_SIZE = 36;
 
@@ -269,6 +271,7 @@ function LibraryTile({ item, menuOpen, onPlay, onToggleMenu, onEnqueue }: {
   onEnqueue: (mode: MAEnqueueMode) => void;
 }) {
   const t = useT();
+  const isGlas = useIsGlas(); // [fork]
   const [imgFailed, setImgFailed] = useState(false);
   useEffect(() => setImgFailed(false), [item.image]);
 
@@ -328,7 +331,8 @@ function LibraryTile({ item, menuOpen, onPlay, onToggleMenu, onEnqueue }: {
         )}
 
         {menuOpen && (
-          <div className="library-tile__menu" role="menu">
+          // [fork] ref: in Glas the art no longer clips the menu, which opens to the left where it would leave the card
+          <div className="library-tile__menu" role="menu" ref={isGlas ? keepInCard : undefined}>
             {ENQUEUE_OPTIONS.map(({ mode, labelKey }) => (
               <button
                 key={mode}

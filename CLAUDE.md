@@ -17,7 +17,8 @@ sauber übernehmen können.
 - `@hapulse/core` bleibt React-/DOM-frei (HA-Logik dort, Components sind dünn).
 - **Zwei Stile (Klassisch und Glas):** Jede neue Fork-Funktion in beiden Stilen prüfen (`apps/dashboard/scripts/glas-shots.cjs`,
   Klick-Fuzz auch mit `glas`); neue Settings-Felder auch für Glas durchdenken (Scope-Tabelle, Darstellung). Glas-CSS nur in
-  `apps/dashboard/src/styles/glas/` und nur unter `:root[data-style='glas']` — Klassisch bleibt pixelgleich.
+  `apps/dashboard/src/styles/glas/` und nur unter `:root[data-style='glas']`. Glas geht vor (User, 2026-10-10): keine Umwege,
+  nur um Klassisch pixelgleich zu halten; beabsichtigte Klassisch-Änderungen einzeln im PR (`docs/GLAS-PLAN.md` §3).
 - Vor jedem Push: `npm run typecheck && npm run build && npm test -w @hapulse/core`.
 - **Changelog:** Jede für Nutzer sichtbare Fork-Änderung bekommt im selben PR einen Eintrag in
   `packages/core/src/forkChangelog.ts` (DE + EN, neuer Release `F<n+1>` mit Merge-Datum oder der neueste, solange er
@@ -149,7 +150,7 @@ sauber übernehmen können.
   Gesehen-Stand `lastSeenFork` ist DEVICE (nie exportiert/synchronisiert); frische Installation = aktueller Stand,
   ältere gespeicherte Daten = 0. Über: „Version 1.3.2 · F11“. Labor-Probe CT 213: `/root/lab/hp-changelog-test.cjs`.
 
-- **Stil „Glas“ (Etappe 0–4 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
+- **Stil „Glas“ (Etappe 0–5 von 0–7 umgesetzt, „Glas (Vorschau)“ nur für Admins)**: zweiter Stil neben Klassisch, Apple-/iOS-26-artig —
   **nur Aussehen und Bewegung, gleiche Komponenten, Funktionen und Seiten**. Felder `customization.uiStyle`
   (`classic`/`glas`), `glassStrength` (klar/getönt/deckend) und `reduceTransparency`, alle GLOBAL: der Admin stellt den Stil
   für alle ein, pro Gerät gibt es nur Hell/Dunkel. Zeilen unter Einstellungen → Darstellung
@@ -191,10 +192,19 @@ sauber übernehmen können.
   aktiv, bis sich ein Mitglied ändert) und Netz/Solar gestapelt in der Energie-Karte. Nur Glas: eigene Körper der Karten
   in `components/glas/home/` (Hauptraum mit Lichtkreisen, Geräte als Kachel/Zeile, Klima und Rollläden mit Raumauswahl,
   `EnergyGlas` mit Tag/Woche/Monat über `ha/useEnergyWindow.ts`), Detail mit `LightBrightnessControl` und `Segment`,
-  Bearbeiten ab 900 px mit `SizeBar` (S/M/L, Feld `tallSections`, „⋯“ = `SizeSheet`), Kontextmenü auch an Szenen und
-  Geräten (`GlasMenuTarget`). CSS in `styles/glas/{home,home-cards,home-lists,controls,detail,edit,nvr}.css`. Prüfungen
-  `checks --part home` (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus
-  `ha/demoControl.ts`). Nächste Etappen 5–7 (übrige Seiten, NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
+  Bearbeiten ab 900 px mit `SizeBar` (S/M/L, Feld `tallSections`, „⋯“ = `SizeSheet`, beide in `components/glas/edit/`
+  über den Hook `useGlasSectionEdit`), Kontextmenü auch an Szenen und Geräten (`GlasMenuTarget`). CSS in
+  `styles/glas/{home,home-cards,home-lists,controls,detail,edit,nvr}.css`. Prüfungen `checks --part home`
+  (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus `ha/demoControl.ts`). **Übrige
+  Seiten (Etappe 5, `docs/glas/PLAN-ETAPPE-5.md`):** nur Glas, fast nur CSS an den klassischen Klassen: Kartentitel über
+  der Fläche, ruhige Heroes, Spalten nach Inhaltsbreite (`pages.css`), iOS-Schalter, Stepper, Pillen, Regler und Play
+  (`controls.css`), Listen und Felder (`lists.css`), Karten im Raum und in „Klima/Rollläden alle“ (`cards.css`), je Seite
+  eine Datei (`security`, `pool`, `energy`, `music`, `devices`, `system`, `settings`, `onboarding`); neues Markup nur für
+  `Segment` (Zeitraum, Raster/Liste, Hell/Dunkel, Pool-Modus `PoolModeSegment`), die Bearbeiten-Leiste auf Sicherheit,
+  Energie, Automationen, Szenen und System, die Menü-Werte (`MoreValue.tsx`, `roomsMenuStatus.ts`) und die Untertitel der
+  Chip-Fenster (`chipLabels.ts`; die Zählung steht für beide Stile in Core `chipCounts.ts`). Prüfungen
+  `checks --part pages` (`scripts/glas-checks-pages.cjs`; Demo-Hilfen `demoCalls.ts`, `demoEnergy.ts`). Nächste
+  Etappen 6–7 (NVR, Feinschliff) nach `docs/GLAS-PLAN.md` §3.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

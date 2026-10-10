@@ -16,6 +16,7 @@ import { SystemHeroCard } from '../components/system/SystemHeroCard';
 import { SystemMonitorCard } from '../components/system/SystemMonitorCard';
 import { BatteriesCard } from '../components/system/BatteriesCard';
 import { applyStoredOrder } from '../lib/order';
+import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K96)
 import { indexSystemMonitor } from '@hapulse/core';
 import './Page.css';
 import './System.css';
@@ -54,6 +55,15 @@ const SECTION_TOGGLE_KEYS: Record<SectionId, ToggleKeys> = {
     hideMobile: 'system.section.hideMobile.batteries',
     showMobile: 'system.section.showMobile.batteries',
   },
+};
+
+// [fork] Glas edit bar (plan docs/glas/PLAN-ETAPPE-5.md K96): the card's name for the bar's group and the size window —
+// the cards' titles (the hero is the page's "Overview", as on the other pages)
+const SECTION_NAME_KEYS: Record<SectionId, TKey> = {
+  system_hero: 'nav.overview',
+  activity: 'home.activity.title',
+  system_monitor: 'system.monitor.title',
+  batteries: 'system.batteries.title',
 };
 
 const MAX_COLS = 4;
@@ -248,6 +258,20 @@ export function System() {
     updateCustomization({ systemSectionOrder: newOrder });
   }, [updateCustomization]);
 
+  // [fork] Glas edit bar (plan docs/glas/PLAN-ETAPPE-5.md K96): S / M / L, ‹ › and "⋯" as on the overview; the cards of
+  // edit mode are every existing card in the stored order
+  const glasEdit = useGlasSectionEdit({
+    page: 'system',
+    spansField: 'systemSectionSpans',
+    heightsField: 'systemSectionHeights',
+    visibleIds: orderedIds,
+    onReorder: handleReorder,
+    spanOf: (id) => getSpan(id, systemSectionSpans),
+    heightOf: (id) => getHeightLevel(id, systemSectionHeights),
+    onSpan: handleSpanChange,
+    nameOf: (id) => t(SECTION_NAME_KEYS[id as SectionId]),
+  });
+
   function renderWidget(id: SectionId): React.ReactNode {
     switch (id) {
       case 'system_hero':
@@ -288,6 +312,7 @@ export function System() {
           const sc          = spanClass(currentSpan);
           const currentHeight = getHeightLevel(id, systemSectionHeights);
           const hc            = heightClass(currentHeight);
+          const tall          = glasEdit.isTall(id); // [fork] Glas L: taller from 900 px (K96); a height cap wins
           const widget      = renderWidget(id);
 
           if (!widget) return null;
@@ -296,7 +321,7 @@ export function System() {
             return (
               <div
                 key={id}
-                className={['overview-grid__cell', sc, hc, isMobileHidden ? 'section-mobile-hidden' : ''].filter(Boolean).join(' ')}
+                className={['overview-grid__cell', sc, hc, isMobileHidden ? 'section-mobile-hidden' : '', tall ? 'g-tall' : '' /* [fork] */].filter(Boolean).join(' ')}
                 data-section={id}
               >
                 {widget}
@@ -305,7 +330,7 @@ export function System() {
           }
 
           return (
-            <SortableItem key={id} id={id} editMode={editMode} className={sc}>
+            <SortableItem key={id} id={id} editMode={editMode} className={tall ? `${sc} g-tall` : sc}>{/* [fork] g-tall */}
               <div
                 className={[
                   'overview-grid__cell',
@@ -330,11 +355,20 @@ export function System() {
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />
                 <HeightDots level={currentHeight} />
                 <HeightHandle id={id} level={currentHeight} onCommit={handleHeightChange} />
+                {glasEdit.renderBar(id, { // [fork] Glas: one bar instead of the badges and handles above (K96)
+                  hidden: isHidden,
+                  hideLabel: t(SECTION_TOGGLE_KEYS[id].hide),
+                  onToggleHidden: () => handleToggleHidden(id),
+                  mobileHidden: isMobileHidden,
+                  mobileLabel: t(SECTION_TOGGLE_KEYS[id].hideMobile),
+                  onToggleMobileHidden: () => handleToggleMobileHidden(id),
+                })}
               </div>
             </SortableItem>
           );
         })}
       </SortableGrid>
+      {glasEdit.sheet}{/* [fork] Glas "⋯": the classic values of one card (K96) */}
     </div>
   );
 }

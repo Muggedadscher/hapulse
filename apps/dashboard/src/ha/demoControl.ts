@@ -9,12 +9,21 @@
  * can give a card more rooms than the demo has (climate, blinds). `openDetail(id)` opens an entity's detail the way a
  * tap does, so a check can reach the detail of an entity without a card for it (a light's brightness control).
  * `entity(id)` reads an entity as the store holds it, so a check can see what a control has sent (a light's brightness
- * only after the key is let go). Outside demo mode the object does not exist.
+ * only after the key is let go). `calls()` returns the service calls of the demo, newest last, and `clearCalls()`
+ * empties that list (demoCalls.ts), for the calls the demo does not apply (the pool's mode, threshold and schedule).
+ * `energyConfigured(false)` makes the demo's energy "not set up" (demoEnergy.ts) for the pages opened after it,
+ * `energyHold(true)` keeps its statistics back until `energyHold(false)` (a period that loads), `energyLoads()` counts
+ * its statistics requests (the More menu's figure, K97), and `setUrl(url)` gives
+ * the demo connection an HA address (the demo has none), so the energy page's empty state shows its link to the HA
+ * energy settings (plan docs/glas/PLAN-ETAPPE-5.md K92, §7.31).
+ * Outside demo mode the object does not exist.
  */
 
 import type { AreaRegistryEntry, EntityRegistryEntry, HassEntity, HassEntityAttributes } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
+import { clearDemoCalls, demoCalls, type DemoCall } from './demoCalls';
+import { demoEnergyLoads, setDemoEnergyConfigured, setDemoEnergyHold } from './demoEnergy';
 
 export interface DemoPatch {
   state?: string;
@@ -29,11 +38,18 @@ interface DemoControl {
   placeEntity: (id: string, areaId: string | null) => EntityRegistryEntry | null;
   openDetail: (id: string) => void;
   entity: (id: string) => HassEntity | null;
+  calls: () => DemoCall[];
+  clearCalls: () => void;
+  energyConfigured: (on: boolean) => void;
+  energyHold: (on: boolean) => void;
+  energyLoads: () => number;
+  setUrl: (url: string) => void;
 }
 
 type DemoWindow = Window & { __hapulseDemo?: DemoControl };
 
-export function startDemoControl(): void {
+/** `conn.setUrl` writes the connection's HA address (handed in by connectionStore, which starts the control). */
+export function startDemoControl(conn: { setUrl: (url: string) => void }): void {
   if (typeof window === 'undefined') return;
   (window as DemoWindow).__hapulseDemo = {
     patch(id, patch) {
@@ -85,6 +101,12 @@ export function startDemoControl(): void {
     entity(id) {
       return useEntityStore.getState().entities[id] ?? null;
     },
+    calls: demoCalls,
+    clearCalls: clearDemoCalls,
+    energyConfigured: setDemoEnergyConfigured,
+    energyHold: setDemoEnergyHold,
+    energyLoads: demoEnergyLoads,
+    setUrl: conn.setUrl,
   };
 }
 

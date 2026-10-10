@@ -66,6 +66,7 @@ import { useCanEditHere } from './glas/shellStore'; // [fork]
 import { useIsGlas } from './glas/useUiStyle'; // [fork]
 import { weatherIcon } from '../components/glas/weatherIcon'; // [fork]
 import { weatherTemp } from '../components/glas/WeatherLine'; // [fork]
+import { GlasMoreFoot, GlasMoreValue } from '../components/glas/MoreValue'; // [fork] Glas: More menu values and foot (K97)
 import './AppLayout.css';
 
 /* =========================================================
@@ -644,6 +645,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       >
         <span className="app-more-menu__row-icon" aria-hidden="true">{item.icon}</span>
         <span className="app-more-menu__row-name">{label}</span>
+        {glas && <GlasMoreValue id={id} open={moreOpen} />}{/* [fork] Glas: the value on the right (K97) */}
         <ChevronRight size={16} strokeWidth={1.75} className="app-more-menu__row-chevron" aria-hidden="true" />
       </NavLink>
     );
@@ -735,6 +737,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       >
         <div className="app-more-menu__inner">
           {moreTabIds.map(renderMoreRow)}
+          {glas && <GlasMoreFoot />}{/* [fork] Glas: "Version … · F…" below the list (K97) */}
         </div>
       </div>
 

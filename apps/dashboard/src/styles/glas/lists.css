@@ -1,0 +1,517 @@
+/* [fork] Glas — lists on the pages (docs/GLAS-DESIGN.md §7.30, plan docs/glas/PLAN-ETAPPE-5.md K94): inset-grouped
+   lists and fields. Only presentation of the existing markup. */
+
+
+/* ---- Fields (K94, GLAS-DESIGN §7.30; also the switch points of the pool's schedule editor and the Music Assistant
+   connection below the queue): `fill`, radius 10, 36 visible in a hit area of 44, text 17 (below 16 px iOS zooms into
+   the field), placeholder `label2`, the focus ring inside the field. A field on its own draws its 36 inside a
+   transparent border of 4 above and below (corners 10 / 14, which leaves 10 at the visible edge). In a search the bar
+   is 36 and its input reaches 4 above and below it; the magnifier is `label2`. ---- */
+:root[data-style='glas'] :is(
+    .settings-text-input,
+    .onboarding__input,
+    .library-card__search-input,
+    .pool-time-input,
+    .queue-card__connect-input
+  ) {
+  height: 44px;
+  min-height: 44px;
+  padding-block: 0;
+  padding-right: 12px;
+  border: 0;
+  border-block: 4px solid transparent;
+  border-radius: 10px / 14px;
+  background: var(--g-fill);
+  background-clip: padding-box;
+  box-shadow: none;
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] :is(.settings-text-input, .onboarding__input, .pool-time-input, .queue-card__connect-input) {
+  padding-left: 12px;
+}
+
+:root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search) {
+  gap: 6px;
+  height: 36px;
+  margin-block: 4px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(.devices-toolbar__search-input, .automations-toolbar__search-input) {
+  height: 44px;
+  margin-block: -4px;
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] .library-card__search-icon {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(
+    .settings-text-input,
+    .onboarding__input,
+    .library-card__search-input,
+    .devices-toolbar__search-input,
+    .automations-toolbar__search-input,
+    .queue-card__connect-input
+  )::placeholder {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(
+    .settings-text-input,
+    .onboarding__input,
+    .library-card__search-input,
+    .pool-time-input,
+    .queue-card__connect-input
+  ):focus,
+:root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search):focus-within {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--g-focus);
+}
+
+/* ---- Toolbar choices (devices O3, automations P4): capsules 36 in `fill` in a hit area of 44 like the music page's
+   player choice, 15/20, the chevron `label2`. ---- */
+:root[data-style='glas'] :is(.devices-toolbar, .automations-toolbar) {
+  gap: 4px 10px;
+}
+
+:root[data-style='glas'] :is(.devices-toolbar__filters, .automations-toolbar__filters) {
+  gap: 8px;
+}
+
+:root[data-style='glas'] :is(.devices-select__native, .automations-select__native) {
+  max-width: 200px;
+  min-height: 44px;
+  padding: 0 34px 0 14px;
+  border: 0;
+  border-block: 4px solid transparent;
+  border-radius: 18px / 22px;
+  background: var(--g-fill);
+  background-clip: padding-box;
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.devices-select__native, .automations-select__native):hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
+}
+
+/* the ring inside the visible capsule like the fields' (the transparent border above and below is hit area) */
+:root[data-style='glas'] :is(.devices-select__native, .automations-select__native):focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--g-focus);
+}
+
+:root[data-style='glas'] :is(.devices-select__chevron, .automations-select__chevron) {
+  right: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--g-label-2);
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(
+    .settings-text-input,
+    .onboarding__input,
+    .library-card__search-input,
+    .pool-time-input,
+    .queue-card__connect-input
+  ) {
+    height: 36px;
+    min-height: 36px;
+    margin-block: 4px;
+    border: 1px solid CanvasText;
+    border-radius: 10px;
+  }
+
+  :root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] :is(.devices-select__native, .automations-select__native) {
+    min-height: 36px;
+    margin-block: 4px;
+    border: 1px solid ButtonText;
+    border-radius: 18px;
+  }
+
+  /* forced colours drop the inset ring */
+  :root[data-style='glas'] :is(
+    .settings-text-input,
+    .onboarding__input,
+    .library-card__search-input,
+    .pool-time-input,
+    .queue-card__connect-input
+  ):focus,
+  :root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search):focus-within,
+  :root[data-style='glas'] :is(.devices-select__native, .automations-select__native):focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
+/* ---- Security page (K94, §7.30): each card's list reaches its surface's edges and clips at its rounded corners;
+   rows with their own inset 16, separators 0.5 px from the text start, none after the last row. People, doors,
+   windows and motion are the whole surface below the title; the rows of the locks and garage doors are the windows'
+   (sheet-content.css) below the "all" buttons. ---- */
+:root[data-style='glas'] .security-page :is(.people-list-card__list, .sensor-section-card__body) {
+  margin: -16px -16px -16px;
+  border-radius: var(--radius-card);
+}
+
+/* a capped card scrolls whole under its pinned title (Page.css, pages.css): there the list starts below the title, as
+   the automations' do */
+:root[data-style='glas']
+  .security-page
+  .overview-grid__cell[class*='section-h-']
+  :is(.people-list-card__list, .sensor-section-card__body) {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+:root[data-style='glas'] .security-page :is(.locks-section-card .locks-list, .garage-section-card .garage-list) {
+  margin: 0 -16px -16px;
+  border: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: none;
+  box-shadow: none;
+}
+
+:root[data-style='glas'] .security-page :is(.locks-row, .garage-row) {
+  --g-row-sep: 68px;
+  padding-inline: 16px;
+}
+
+/* People: rows 62, avatar 40 (at home in the accent's soft tone) with the zone dot 12 on its lower right edge, the
+   zone greenInk 600 at home, the time 13 label2 */
+:root[data-style='glas'] .security-page .people-list__row {
+  gap: 12px;
+  min-height: 62px;
+  padding: 0 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .security-page .people-list__row + .people-list__row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 68px 0 / calc(100% - 68px) 0.5px;
+}
+
+:root[data-style='glas'] .security-page .people-list__avatar {
+  width: 40px;
+  height: 40px;
+}
+
+:root[data-style='glas'] .security-page :is(.people-list__avatar-img, .people-list__avatar-fallback) {
+  width: 40px;
+  height: 40px;
+  border: 0;
+}
+
+:root[data-style='glas'] .security-page .people-list__avatar-fallback {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .people-list__row:has(.people-list__location--home) .people-list__avatar-fallback {
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .security-page .people-list__status-dot {
+  right: -1px;
+  bottom: -1px;
+  width: 12px;
+  height: 12px;
+  border: 0;
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+:root[data-style='glas'] .security-page .people-list__status-dot--home {
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .security-page .people-list__status-dot--away {
+  background: var(--g-label-3);
+}
+
+:root[data-style='glas'] .security-page .people-list__info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .security-page .people-list__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .people-list__location {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .people-list__location--home {
+  color: var(--g-green-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .security-page .people-list__time {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* Doors, windows, motion: rows 62, circle 36 (an open door red, an open window and motion yellow, as in Klassisch),
+   name 17/600 and room 13; on the right the state as a pill 26 — open and motion in the soft tone with the dot, closed
+   and quiet in `fill` with a green dot — and the time below it */
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__row {
+  gap: 12px;
+  min-height: 62px;
+  padding: 8px 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__row + .motion-list__row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 64px 0 / calc(100% - 64px) 0.5px;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__icon--active {
+  background: var(--g-warn-soft);
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__icon--danger {
+  background: var(--g-red-soft);
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__name-col {
+  gap: 0;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__room {
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__right {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill {
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  font: 400 13px / 18px var(--g-font);
+  text-transform: capitalize;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--clear {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+/* the quiet pill has no dot in the markup: a green one, as in the doors window */
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--clear::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--active {
+  background: var(--g-warn-soft);
+  color: var(--g-warn-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--danger {
+  background: var(--g-red-soft);
+  color: var(--g-red-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__dot {
+  width: 7px;
+  height: 7px;
+}
+
+:root[data-style='glas'] .security-page .sensor-section-card .motion-list__time {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ---- Automations (P2, P3, K94) and scenes (Q2): a category's list and the activities reach their surface's edges and
+   scroll there as in Klassisch, clipped at its rounded corners, with as many whole rows as there: an activity 5 (260,
+   Klassisch 5 rows in 220), a category 7 (420, Klassisch 400); an L card (edit.css) and a capped card set their own
+   height. Rows with their own inset 16: the symbol in a circle 32 (`fill`; `label2`, a disabled automation `label3`),
+   separators 0.5 px from the text start (60), none after the last row. A category's rows have two lines (60): the name
+   17/22, the last run 13/18 `label2`, the switch on the right (controls.css; its hit area stays inside the row). A
+   disabled automation is not dimmed below the contrast minimum (Klassisch: .5): its name turns `label2`, the switch
+   says it. An activity's rows have one line (52): the name 17/22, beside it the category or the room as plain text
+   13/18 `label2` (Klassisch: a capsule; in a list it stays secondary), the time 15/20 `label2`. Where the line is short
+   the category or room gives way first (ellipsis), then the name. A capped card scrolls whole under its pinned title
+   (Page.css, pages.css): there the list starts below the title. ---- */
+:root[data-style='glas']
+  :is(.automations-page :is(.auto-cat-card__list, .auto-feed-card__list), .scenes-page .scene-feed-card__list) {
+  margin: -16px;
+  padding: 0;
+  border-radius: var(--radius-card);
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-feed-card__list, .scenes-page .scene-feed-card__list) {
+  max-height: 260px;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-card__list {
+  max-height: 420px;
+}
+
+:root[data-style='glas']
+  :is(.automations-page, .scenes-page)
+  .overview-grid__cell[class*='section-h-']
+  :is(.auto-cat-card__list, .auto-feed-card__list, .scene-feed-card__list) {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+:root[data-style='glas'] :is(.automations-page :is(.auto-cat-row, .auto-feed-row), .scenes-page .scene-feed-row) {
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row {
+  min-height: 60px;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-feed-row, .scenes-page .scene-feed-row) {
+  min-height: 52px;
+}
+
+:root[data-style='glas']
+  :is(
+    .automations-page :is(.auto-cat-row + .auto-cat-row, .auto-feed-row + .auto-feed-row),
+    .scenes-page .scene-feed-row + .scene-feed-row
+  ) {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 60px 0 / calc(100% - 60px) 0.5px;
+}
+
+:root[data-style='glas']
+  :is(.automations-page :is(.auto-cat-row__icon, .auto-feed-row__icon), .scenes-page .scene-feed-row__icon) {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-3);
+}
+
+/* a scene has no on and off: its symbol like a running automation's */
+:root[data-style='glas']
+  :is(.automations-page :is(.auto-cat-row__icon--on, .auto-feed-row__icon--on), .scenes-page .scene-feed-row__icon) {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas']
+  :is(.automations-page :is(.auto-cat-row__icon, .auto-feed-row__icon), .scenes-page .scene-feed-row__icon)
+  > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row__info {
+  gap: 0;
+}
+
+:root[data-style='glas']
+  :is(.automations-page :is(.auto-cat-row__name, .auto-feed-row__name), .scenes-page .scene-feed-row__name) {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row--disabled {
+  opacity: 1;
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row--disabled .auto-cat-row__name {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .automations-page .auto-cat-row__time {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-feed-row__info, .scenes-page .scene-feed-row__info) {
+  align-items: baseline;
+  gap: 8px;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-feed-row__cat, .scenes-page .scene-feed-row__room) {
+  flex: 0 1000 auto;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+}
+
+:root[data-style='glas'] :is(.automations-page .auto-feed-row__time, .scenes-page .scene-feed-row__time) {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas']
+  :is(.automations-page :is(.auto-feed-card__empty, .automations-empty-filter), .scenes-page .scene-feed-card__empty) {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas']
+    :is(.automations-page :is(.auto-cat-row__icon, .auto-feed-row__icon), .scenes-page .scene-feed-row__icon) {
+    border: 1px solid CanvasText;
+  }
+}

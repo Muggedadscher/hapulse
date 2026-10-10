@@ -1,0 +1,1177 @@
+/* [fork] Glas — the music page (plan docs/glas/PLAN-ETAPPE-5.md K92–K96, §7.12; GLAS-DESIGN §3.6, §5.2, §5.3, §7.27,
+   §7.29–§7.31): the gaps of the layout, Now Playing (no wash, artwork 16, title 22/28, transport, the source), the
+   zones as tiles and as rows, the other players and the queue as inset lists, the transfer and group popovers, the
+   Music Assistant connection and the library (media types as choice pills, favourites, the tiles with play, more,
+   star and their menu). Only presentation: the contents M1–M11 stay. The card titles in the surface and the hover rule
+   are the frame (pages.css); grid | list is `g-seg--view` (controls.css), its markup the [fork] switch in
+   components/music/ZonesCard.tsx; the play buttons, the slider colours and the media types' pills are controls.css;
+   the search and token fields lists.css; the edit badges cards.css. A playing player is blue as in the media window
+   (sheet-content.css); the accent marks only a choice (§2.3). The popovers are opaque `group` surfaces: no new
+   backdrop-filter on the pages (plan §5). */
+
+/* ---- Layout: the gaps of the other pages (20, from 900 px rows 26); the library row lies in the page's column, whose
+   gap (24) its margin tops up or takes back ---- */
+:root[data-style='glas'] .music-page__layout {
+  gap: 20px;
+}
+
+:root[data-style='glas'] .music-page__col-left {
+  gap: 20px;
+}
+
+:root[data-style='glas'] .music-page__library-row {
+  margin-top: -4px;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .music-page__col-left {
+    gap: 26px;
+  }
+
+  :root[data-style='glas'] .music-page__library-row {
+    margin-top: 2px;
+  }
+}
+
+:root[data-style='glas'] .music-page__no-player {
+  padding: 32px 24px;
+  border: 0;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- Now Playing: a plain card (K90, a hero without a state loses its wash); the blurred artwork behind a playing
+   track stays (§3.6). Artwork 16 (a large thumbnail), its stand-in `fill` with the note in `label2`, blue while it
+   plays. The name of the player 13/18 `label2` without capitals, the title 22/28 700, the artist 15/20 `label2`. ---- */
+:root[data-style='glas'] .now-playing-card {
+  padding: 24px;
+}
+
+:root[data-style='glas'] .now-playing-card--gradient {
+  --hero-grad: none;
+}
+
+:root[data-style='glas'] .now-playing-card__inner {
+  gap: 24px;
+}
+
+:root[data-style='glas'] .now-playing-card__artwork-wrap {
+  border-radius: 16px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .now-playing-card__artwork-fallback {
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .now-playing-card:has(.now-playing-card__play-btn > .lucide-pause) .now-playing-card__artwork-fallback {
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] .now-playing-card__controls {
+  gap: 16px;
+}
+
+:root[data-style='glas'] .now-playing-card__room-label {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .now-playing-card__meta {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .now-playing-card__title {
+  color: var(--g-label);
+  font: 700 22px / 28px var(--g-font);
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .now-playing-card__title.now-playing-card__title--state {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .now-playing-card__artist {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* the times 12/16 `label2` just below the line (its hit area reaches 11 below it) */
+:root[data-style='glas'] .now-playing-card__progress-wrap {
+  gap: 0;
+}
+
+:root[data-style='glas'] .now-playing-card__time-row {
+  margin-top: -4px;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .now-playing-card__time-remaining {
+  opacity: 1;
+}
+
+/* The thin lines keep their thickness (Now Playing 6, zone rows 5, zone tiles 4) and get a hit area of 28 (§5.3): the
+   line is the padding box between two transparent borders, its ends round (outer radius 3 / 14 → 3 inside). The
+   colours and the growing under the finger are controls.css. */
+:root[data-style='glas'] :is(.now-playing-card__progress, .now-playing-card__volume-slider) {
+  height: 28px;
+  border-block: 11px solid transparent;
+  border-radius: 3px / 14px;
+  background-clip: padding-box;
+}
+
+:root[data-style='glas'] .zone-row__slider {
+  min-width: 0;
+  height: 27px;
+  border-block: 11px solid transparent;
+  border-radius: 2.5px / 13.5px;
+  background-clip: padding-box;
+}
+
+:root[data-style='glas'] .zone-grid-card__slider {
+  min-width: 0;
+  height: 28px;
+  border-block: 12px solid transparent;
+  border-radius: 2px / 14px;
+  background-clip: padding-box;
+}
+
+/* transport: round 44 without a surface, the glyphs in `label`; shuffle and repeat, when on, `accentSoft` with
+   `accentInk` (a mode the user chose, like a choice pill); play 56 is controls.css */
+:root[data-style='glas'] .now-playing-card__transport {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .now-playing-card__transport-btn {
+  border-radius: 50%;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .now-playing-card__transport-btn:hover {
+  background: var(--g-hover);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .now-playing-card__transport-btn.now-playing-card__transport-btn--active,
+:root[data-style='glas'] .now-playing-card__transport-btn.now-playing-card__transport-btn--active:hover {
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+/* volume: mute 44 (its glyph on the line of the text above), the line between two glyphs in `label2` */
+:root[data-style='glas'] .now-playing-card__volume-row {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .now-playing-card__mute-btn {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  margin-left: -13px;
+  border-radius: 50%;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .now-playing-card__mute-btn:hover {
+  background: var(--g-hover);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .now-playing-card__vol-high {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(.now-playing-card__transport-btn, .now-playing-card__mute-btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  :root[data-style='glas'] .now-playing-card {
+    padding: 20px 16px 16px;
+  }
+
+  :root[data-style='glas'] .now-playing-card__inner {
+    gap: 20px;
+  }
+}
+
+/* ---- The choices of a player (Now Playing's source, the queue's and the library's player): a capsule 36 in `fill`
+   inside a hit area of 44 (transparent border above and below, corners 18 / 22 → 18 at the visible edge), 15/20
+   `label`, the chevron `label2`. ---- */
+:root[data-style='glas'] :is(.now-playing-card__source-select, .queue-card__player-native, .library-card__player-native) {
+  max-width: 200px;
+  min-height: 44px;
+  padding: 0 34px 0 14px;
+  border: 0;
+  border-block: 4px solid transparent;
+  border-radius: 18px / 22px;
+  background: var(--g-fill);
+  background-clip: padding-box;
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas']
+  :is(.now-playing-card__source-select, .queue-card__player-native, .library-card__player-native):hover {
+  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+}
+
+:root[data-style='glas']
+  :is(.now-playing-card__source-select, .queue-card__player-native, .library-card__player-native):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas']
+  :is(.now-playing-card__source-chevron, .queue-card__player-chevron, .library-card__player-chevron) {
+  right: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--g-label-2);
+}
+
+/* ---- Zones (M3, M4): tiles in `fill` without a border, radius 18; rows as an inset list. A zone that does not play
+   is not dimmed (.45 would fall below the contrast minimum): it says so in `label2`, the one that plays has its symbol
+   in blue and the volume. The small room symbol beside the name falls away, the art shows it. The grid's columns may
+   shrink (minmax 0): the volume line's minimum width pushed the tiles out of the card on a phone (Klassisch: side
+   finding 21). ---- */
+:root[data-style='glas'] .zones-card__header-right {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .zones-card__empty {
+  padding: 4px 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .zones-card__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@container (max-width: 499px) {
+  :root[data-style='glas'] .zones-card__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 319px) {
+  :root[data-style='glas'] .zones-card__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+:root[data-style='glas'] .zone-grid-card {
+  gap: 6px;
+  padding: 12px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] :is(.zone-grid-card--inactive, .zone-row--inactive) {
+  opacity: 1;
+}
+
+:root[data-style='glas'] .zone-grid-card__top {
+  align-items: center;
+  gap: 12px;
+}
+
+:root[data-style='glas'] :is(.zone-row__art, .zone-grid-card__art) {
+  border-radius: 10px;
+  background: var(--g-fill);
+}
+
+/* the tile is `fill` already: its art lies on the card colour */
+:root[data-style='glas'] .zone-grid-card__art {
+  background: var(--bg-card);
+}
+
+:root[data-style='glas'] :is(.zone-row__art-fallback, .zone-grid-card__art-fallback) {
+  background: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .zone-row:not(.zone-row--inactive) .zone-row__art-fallback,
+:root[data-style='glas'] .zone-grid-card:not(.zone-grid-card--inactive) .zone-grid-card__art-fallback {
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] :is(.zone-row__icon, .zone-grid-card__room-icon) {
+  display: none;
+}
+
+:root[data-style='glas'] :is(.zone-row__name-row, .zone-grid-card__name-row) {
+  gap: 6px;
+}
+
+:root[data-style='glas'] :is(.zone-row__info, .zone-grid-card__info) {
+  gap: 0;
+}
+
+:root[data-style='glas'] .zone-row__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .zone-grid-card__name {
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] :is(.zone-row__sub, .zone-grid-card__sub) {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* the number of players that play in the room; on a tile the card lies under its blue (`blueInk` on `blueSoft` over
+   the tile's `fill` stays below 4.5:1 in light mode) */
+:root[data-style='glas'] :is(.zone-row__badge, .zone-grid-card__badge) {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+  font: 600 12px / 16px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .zone-grid-card__badge {
+  background: linear-gradient(var(--g-blue-soft), var(--g-blue-soft)), var(--bg-card);
+}
+
+/* the volume: mute 44 round without a surface (its glyph 18 `label2`), the line beside it */
+:root[data-style='glas'] .zone-row__volume {
+  gap: 2px;
+  width: clamp(140px, 30%, 200px);
+}
+
+:root[data-style='glas'] .zone-grid-card__volume {
+  gap: 2px;
+  margin: 0 0 -6px -13px;
+}
+
+:root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute) {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute):hover {
+  background: var(--g-hover);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute) > svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* the list: from edge to edge of the surface, rows 64 with their own inset 16, the separator from the text */
+:root[data-style='glas'] .zones-card__list {
+  margin: 0 -16px -6px;
+}
+
+:root[data-style='glas'] .zone-row,
+:root[data-style='glas'] .zone-row:first-child,
+:root[data-style='glas'] .zone-row:last-child {
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .zone-row + .zone-row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 72px 0 / calc(100% - 72px) 0.5px;
+}
+
+/* ---- Other players (M5): an inset list over the surface's width (it scrolls in its column), rows 60, art 40 with
+   radius 10, name 17/22 600, state 13/18 `label2`. The chosen one (it fills Now Playing) `accentSoft`, its state
+   `label` (`label2` on `accentSoft` falls below 4.5:1 for some accents in dark mode). A playing
+   player: the dot on its art and its play button blue, the stand-in of its art blue. Play/pause 32 in a hit area
+   of 44. ---- */
+:root[data-style='glas'] .other-players-card__empty {
+  padding: 4px 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .other-players-card__list {
+  margin: 0 -16px -16px;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+:root[data-style='glas'] .other-player-row {
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 16px;
+  border-radius: 0;
+}
+
+:root[data-style='glas'] .other-player-row + .other-player-row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 68px 0 / calc(100% - 68px) 0.5px;
+}
+
+:root[data-style='glas'] .other-player-row:hover {
+  background-color: var(--g-hover);
+}
+
+:root[data-style='glas'] .other-player-row.other-player-row--selected,
+:root[data-style='glas'] .other-player-row.other-player-row--selected:hover {
+  background: var(--g-accent-soft);
+}
+
+:root[data-style='glas'] .other-player-row.other-player-row--selected + .other-player-row {
+  background-image: none;
+}
+
+:root[data-style='glas'] .other-player-row:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .other-player-row__art {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: visible;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] :is(.other-player-row__art-img, .other-player-row__art-fallback) {
+  border-radius: inherit;
+}
+
+:root[data-style='glas'] .other-player-row__art-fallback {
+  background: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .other-player-row:has(.other-player-row__playing-dot) .other-player-row__art-fallback {
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] .other-player-row__playing-dot {
+  right: -2px;
+  bottom: -2px;
+  width: 10px;
+  height: 10px;
+  border: 0;
+  background: var(--g-blue);
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+:root[data-style='glas'] .other-player-row__info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .other-player-row__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .other-player-row__state {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .other-player-row--selected .other-player-row__state {
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .other-player-row__pp,
+:root[data-style='glas'] .other-player-row__pp:hover {
+  position: relative;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  margin-right: -2px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  transition: background-color 250ms ease, color 250ms ease, transform 160ms ease-out;
+}
+
+:root[data-style='glas'] .other-player-row__pp::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .other-player-row:has(.other-player-row__playing-dot) .other-player-row__pp {
+  background: var(--g-blue);
+  color: var(--g-on-badge);
+}
+
+:root[data-style='glas'] .other-player-row__pp:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Queue (M6–M8): the head wraps before its title is cut (on a phone the player choice moves to a line of its
+   own). The full list from edge to edge (it scrolls as in Klassisch), rows 60: grip 44 (`label3`), art 40, the track
+   17/22 with the artist 13/18 `label2`, the length 15/20 `label2`, remove 44 (`label3`, `redInk` under the pointer);
+   the current track's name in `blueInk` 600 and its stand-in blue; the dragged row lifts as a card. Without the full
+   list "now" and "next" as rows; below, the count and the controls with a hairline. ---- */
+:root[data-style='glas'] .music-page :is(.queue-card__header, .library-card__header) {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+:root[data-style='glas']
+  .music-page
+  :is(.queue-card, .library-card)
+  > :is(.queue-card__header, .library-card__header)
+  > :is(.queue-card__title-wrap, .library-card__title-wrap) {
+  flex: 1 0 auto;
+}
+
+/* the group menu opens from the actions, not from its 44-px button: at their right edge, or at their left where it would
+   leave the card (components/glas/keepInCard.ts) */
+:root[data-style='glas'] .queue-card__header-actions {
+  position: relative;
+  min-width: 0;
+  gap: 8px;
+}
+
+:root[data-style='glas'] .queue-card__header-actions > .group-menu {
+  position: static;
+}
+
+:root[data-style='glas'] :is(.queue-card__empty, .library-card__status) {
+  padding: 24px 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .full-queue {
+  margin: 0 -16px;
+  padding-right: 0;
+}
+
+:root[data-style='glas'] .full-queue__row {
+  gap: 12px;
+  min-height: 60px;
+  padding: 0 2px 0 0;
+  border-radius: 0;
+  background: none;
+}
+
+:root[data-style='glas'] .full-queue__row + .full-queue__row {
+  border-top: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 96px 0 / calc(100% - 96px) 0.5px;
+}
+
+:root[data-style='glas'] .full-queue__row.full-queue__row--dragging {
+  border-radius: 14px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-elevated);
+}
+
+:root[data-style='glas'] .full-queue__grip {
+  width: 44px;
+  height: 44px;
+  margin-right: -12px;
+  border-radius: 12px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] :is(.full-queue__art, .queue-row__art) {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] :is(.full-queue__art, .queue-row__art) > svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] :is(.full-queue__row--current .full-queue__art, .queue-row--active .queue-row__art) {
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] :is(.full-queue__main, .queue-row__main) {
+  gap: 0;
+}
+
+:root[data-style='glas'] :is(.full-queue__name, .queue-row__name) {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .full-queue__row--current .full-queue__name {
+  color: var(--g-blue-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] :is(.full-queue__artist, .queue-row__artist) {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .full-queue__duration {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .full-queue__delete {
+  width: 44px;
+  height: 44px;
+  margin-left: -8px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .full-queue__delete:hover {
+  background: var(--g-hover);
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] :is(.full-queue__grip, .full-queue__delete):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -4px;
+}
+
+:root[data-style='glas'] .queue-card__items {
+  margin: 0 -16px;
+}
+
+:root[data-style='glas'] .queue-row {
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 16px;
+}
+
+:root[data-style='glas'] .queue-row + .queue-row {
+  border-top: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 68px 0 / calc(100% - 68px) 0.5px;
+}
+
+:root[data-style='glas'] .queue-row__label {
+  color: var(--g-label-2);
+  font: 600 12px / 16px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .queue-row--active .queue-row__label {
+  color: var(--g-blue-ink);
+}
+
+/* the count and the controls: shuffle, repeat and move as circles 36 in `fill` (hit area 44), on = `accentSoft` */
+:root[data-style='glas'] .queue-card__footer {
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 0 0 / 100% 0.5px;
+}
+
+:root[data-style='glas'] .queue-card__count {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .queue-card__controls {
+  gap: 8px;
+}
+
+:root[data-style='glas'] :is(.queue-card__ctl, .library-card__pager-btn, .library-card__fav-toggle) {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] :is(.queue-card__ctl, .library-card__pager-btn, .library-card__fav-toggle)::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] :is(.queue-card__ctl, .library-card__fav-toggle):hover,
+:root[data-style='glas'] .library-card__pager-btn:hover:not(:disabled) {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .queue-card__ctl.queue-card__ctl--active,
+:root[data-style='glas'] .queue-card__ctl.queue-card__ctl--active:hover {
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] :is(.queue-card__ctl, .library-card__pager-btn, .library-card__fav-toggle) > svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] :is(.queue-card__ctl, .library-card__pager-btn, .library-card__fav-toggle):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- The popovers (move the queue, play together, a library item's menu): opaque `group`, radius 22, inset 6, the
+   lifted shadow; a title 13/18 600 `label2` without capitals, entries 44 (radius 14, 17/22 `label`), the hover
+   `hover`. Grouped speakers carry a check in `accentInk` (a choice), without a box. ---- */
+:root[data-style='glas'] :is(.queue-card__transfer-pop, .group-menu__pop, .library-tile__menu) {
+  padding: 6px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* as wide as their entries: anchored to a 36-px button, the move menu otherwise wrapped its title */
+:root[data-style='glas'] :is(.queue-card__transfer-pop, .group-menu__pop) {
+  width: max-content;
+  max-width: 280px;
+}
+
+:root[data-style='glas'] .queue-card__transfer-pop {
+  bottom: calc(100% + 6px);
+  min-width: 220px;
+}
+
+:root[data-style='glas'] .group-menu__pop {
+  top: calc(100% + 2px);
+  min-width: 240px;
+}
+
+/* where it would leave the card (the head wrapped on a phone: the actions start at the left), from the left */
+:root[data-style='glas'] .group-menu__pop[data-g-flip] {
+  right: auto;
+  left: 0;
+}
+
+:root[data-style='glas'] :is(.queue-card__transfer-title, .group-menu__pop-title) {
+  padding: 8px 12px 4px;
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item) {
+  min-height: 44px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):hover {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .group-menu__row {
+  gap: 8px;
+  padding-block: 0;
+}
+
+:root[data-style='glas'] :is(.group-menu__check, .group-menu__check--on) {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .group-menu__check > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+}
+
+/* the speaker button: a capsule 36 in `fill` (hit area 44), grouped = blue (the speakers play together) */
+:root[data-style='glas'] .group-menu__btn,
+:root[data-style='glas'] .group-menu__btn:hover {
+  position: relative;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--g-fill);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .group-menu__btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 22px;
+}
+
+:root[data-style='glas'] .group-menu__btn.group-menu__btn--active {
+  background: var(--g-blue-soft);
+  color: var(--g-blue-ink);
+}
+
+:root[data-style='glas'] .group-menu__btn > svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] .group-menu__count {
+  font: 600 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .group-menu__btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Connect Music Assistant (below the queue without the full list): a hairline, the prompt as a link in
+   `accentInk` at least 44 high (on a phone it wraps, its symbol stays on the first line), the fields lists.css, saving
+   prominent 48. ---- */
+:root[data-style='glas'] .queue-card__connect {
+  padding-top: 2px;
+  border-top: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 0 0 / 100% 0.5px;
+}
+
+:root[data-style='glas'] .queue-card__connect-toggle,
+:root[data-style='glas'] .queue-card__connect-toggle:hover {
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 0;
+  color: var(--g-accent-ink);
+  font: 400 15px / 20px var(--g-font);
+  text-align: left;
+}
+
+:root[data-style='glas'] .queue-card__connect-toggle > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+:root[data-style='glas'] .queue-card__connect-toggle:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+:root[data-style='glas'] .queue-card__connect-form {
+  gap: 8px;
+  margin-top: 0;
+  padding-bottom: 4px;
+}
+
+:root[data-style='glas'] .queue-card__connect-hint {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .queue-card__connect-save {
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 0 22px;
+  border-radius: 24px;
+  font: 600 17px / 22px var(--g-font);
+}
+
+/* ---- Library (M9, M10): the media types as choice pills (controls.css) in a row that scrolls, favourites a circle 36
+   (on: `yellowSoft` with a filled star in `yellowInk`), the search fills the rest of its line up to 320, the pager
+   circles 36. Tiles: art radius 12 (artists round) on `fill`, the name 15/20, the line below 13/18 `label2`. Over the
+   art: play a white circle 36 with the dark glyph and the knob's shadow, more a circle 32 in `fillSolid`, the star of a
+   favourite 22 in `fillSolid` with `yellowInk` — they appear as in Klassisch (under the pointer, always on touch). The
+   art no longer clips: its menu shows whole, and where it would leave the card on the right it opens to the left
+   (`data-g-flip` from components/glas/keepInCard.ts; Klassisch clips it, side finding 23). ---- */
+:root[data-style='glas'] .library-card__toolbar {
+  gap: 8px 12px;
+}
+
+/* the media types keep their width and the row scrolls (shrunk, they lost their symbols on a phone); the row runs to
+   the card's edges and leaves room for the focus ring */
+:root[data-style='glas'] .library-card__tabs {
+  gap: 8px;
+  margin: -4px -16px;
+  padding: 4px 16px;
+  scroll-padding-inline: 16px;
+}
+
+:root[data-style='glas'] .library-card__tab {
+  flex: none;
+  gap: 6px;
+}
+
+:root[data-style='glas'] .library-card__tab > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+:root[data-style='glas'] .library-card__filters {
+  flex: 1 1 240px;
+  gap: 8px;
+  margin-left: 0;
+}
+
+:root[data-style='glas'] .library-card__fav-toggle {
+  flex: none;
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .library-card__fav-toggle.library-card__fav-toggle--active,
+:root[data-style='glas'] .library-card__fav-toggle.library-card__fav-toggle--active:hover {
+  background: var(--g-yellow-soft);
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .library-card__fav-toggle--active > svg {
+  fill: currentColor;
+}
+
+:root[data-style='glas'] .library-card__search {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 320px;
+}
+
+:root[data-style='glas'] .library-card__search-input {
+  width: 100%;
+  padding-left: 36px;
+}
+
+:root[data-style='glas'] .library-card__search-icon {
+  left: 12px;
+  width: 16px;
+  height: 16px;
+}
+
+:root[data-style='glas'] .library-card__pager {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .library-card__pager-label {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .library-card__grid {
+  gap: 20px 16px;
+}
+
+@media (max-width: 640px) {
+  :root[data-style='glas'] .library-card__grid {
+    gap: 16px 10px;
+  }
+}
+
+:root[data-style='glas'] .library-tile {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .library-tile__art {
+  border-radius: 12px;
+  overflow: visible;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .library-tile__art.library-tile__art--round {
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] :is(.library-tile__img, .library-tile__placeholder) {
+  border-radius: inherit;
+}
+
+:root[data-style='glas'] .library-tile__play {
+  right: 6px;
+  bottom: 6px;
+  width: 36px;
+  height: 36px;
+  padding-left: 2px;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .library-tile__more {
+  left: 6px;
+  bottom: 8px;
+  width: 32px;
+  height: 32px;
+  background: var(--g-fill-solid);
+  box-shadow: var(--g-shadow-knob);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] :is(.library-tile__play, .library-tile__more)::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .library-tile__more::after {
+  inset: -6px;
+}
+
+:root[data-style='glas'] .library-tile__play > svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] .library-tile__more > svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] :is(.library-tile__play, .library-tile__more):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .library-tile__fav {
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  background: var(--g-fill-solid);
+  box-shadow: var(--g-shadow-knob);
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .library-tile__fav > svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* the item's menu above its more button; opens to the left where it would leave the card */
+:root[data-style='glas'] .library-tile__menu {
+  left: 0;
+  bottom: 46px;
+  width: max-content;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+:root[data-style='glas'] .library-tile__menu[data-g-flip] {
+  right: 0;
+  left: auto;
+}
+
+:root[data-style='glas'] .library-tile__menu-item {
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .library-tile__name {
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .library-tile__sub {
+  margin-top: -6px;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* ---- Editing (K96): the eye and the phone stand at the card's corner as in Klassisch (cards.css); a card's head keeps
+   its count, segment and player choice clear of them ---- */
+:root[data-style='glas']
+  .music-page
+  .edit-entity-wrap--editing
+  :is(.zones-card__header, .queue-card__header, .other-players-card__header, .library-card__header) {
+  padding-right: 14px;
+}
+
+/* ---- Forced colours: the surfaces' colours are gone, the controls keep an edge; the player choices drop their
+   transparent hit borders like the fields (lists.css); a grouped speaker and a chosen player in the system
+   highlight ---- */
+@media (forced-colors: active) {
+  :root[data-style='glas']
+    :is(
+      .queue-card__ctl,
+      .library-card__pager-btn,
+      .library-card__fav-toggle,
+      .other-player-row__pp,
+      .group-menu__btn,
+      .library-tile__play,
+      .library-tile__more,
+      .zone-grid-card
+    ),
+  :root[data-style='glas'] .group-menu__btn:hover {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] :is(.now-playing-card__source-select, .queue-card__player-native, .library-card__player-native) {
+    min-height: 36px;
+    margin-block: 4px;
+    border: 1px solid ButtonText;
+    border-radius: 18px;
+  }
+
+  :root[data-style='glas'] :is(.queue-card__transfer-pop, .group-menu__pop, .library-tile__menu) {
+    border: 1px solid CanvasText;
+  }
+
+  /* as specific as the active rules above (with their hover), which come first */
+  :root[data-style='glas']
+    :is(
+      .queue-card__ctl.queue-card__ctl--active,
+      .group-menu__btn.group-menu__btn--active,
+      .library-card__fav-toggle.library-card__fav-toggle--active,
+      .other-player-row.other-player-row--selected,
+      .now-playing-card__transport-btn.now-playing-card__transport-btn--active
+    ),
+  :root[data-style='glas']
+    :is(
+      .queue-card__ctl.queue-card__ctl--active,
+      .group-menu__btn.group-menu__btn--active,
+      .library-card__fav-toggle.library-card__fav-toggle--active,
+      .other-player-row.other-player-row--selected,
+      .now-playing-card__transport-btn.now-playing-card__transport-btn--active
+    ):hover {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  /* the chosen player's row holds more than a glyph: its content takes the system's colours again, the text the
+     highlight's */
+  :root[data-style='glas'] .other-player-row.other-player-row--selected > * {
+    forced-color-adjust: auto;
+  }
+}

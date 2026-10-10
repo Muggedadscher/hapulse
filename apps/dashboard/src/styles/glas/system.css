@@ -1,0 +1,239 @@
+/* [fork] Glas — the system page (plan docs/glas/PLAN-ETAPPE-5.md R1–R5, K94; GLAS-DESIGN §7.30). The hero and the
+   cards' frame are pages.css, edit mode edit.css. Only presentation of the existing markup: the thresholds stay
+   (monitor bars above 75 % and above 90 %; batteries at 50, 25 and 10 %), each band keeps a colour of its own, in the
+   state's full colour instead of the classic ink — and the classic accent band (a battery at 50 %) becomes yellow,
+   because the accent is never a state colour in Glas (GLAS-DESIGN §2.3): green, yellow, orange, red. */
+
+/* ---- Activity (R2): the overview's card (home-lists.css). Its frame there has no gap between head and list (home.css)
+   and the head's own distance to the list; pages.css gives the cards here 12 and a head rule that would win. ---- */
+:root[data-style='glas'] .system-page .activity-card {
+  row-gap: 0;
+}
+
+:root[data-style='glas'] .system-page .activity-card > .activity-card__header {
+  margin-bottom: var(--g-card-gap);
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .system-page .activity-card > .activity-card__header {
+    margin-bottom: calc(var(--g-card-gap) + 6px);
+  }
+}
+
+/* ---- Monitor (R3): group titles 15/20 600 label2 in sentence case without their symbol (the title says it, like the
+   groups in the sheets); tiles in `fill` without a border, radius 12 (like the energy page's figures), the name
+   15/20 label2, the value 15/20 600 tabular; the bar 6 high on `fill`. The groups scroll as in Klassisch (400 high),
+   but up to the surface's edges and clipped at its rounded corners, so nothing is cut off 16 px inside it. ---- */
+:root[data-style='glas'] .system-page .sys-monitor-card__groups {
+  gap: 16px;
+  max-height: calc(400px + 32px);
+  margin: -16px;
+  padding: 16px;
+  border-radius: var(--radius-card);
+}
+
+/* a capped cell sizes the scroll body itself (Page.css) */
+:root[data-style='glas'] .system-page .overview-grid__cell[class*='section-h-'] .sys-monitor-card__groups {
+  max-height: none;
+}
+
+:root[data-style='glas'] .system-page .sys-monitor-group__label {
+  gap: 0;
+  margin: 0 4px 8px;
+  color: var(--g-label-2);
+  font: 600 15px / 20px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .system-page .sys-monitor-group__label > [aria-hidden='true'] {
+  display: none;
+}
+
+/* the larger type needs wider tiles (Klassisch 180); a group fills its row instead of leaving empty columns on the
+   right (a single tile then takes the whole row, like a list row) */
+:root[data-style='glas'] .system-page .sys-monitor-group__tiles {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 8px;
+}
+
+:root[data-style='glas'] .system-page .sys-metric-tile {
+  gap: 8px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .system-page .sys-metric-tile__name {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .system-page .sys-metric-tile__value {
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .system-page :is(.sys-metric-bar, .sys-metric-bar__fill) {
+  border-radius: 3px;
+}
+
+:root[data-style='glas'] .system-page .sys-metric-bar {
+  height: 6px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .system-page .sys-metric-bar__fill--ok {
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .system-page .sys-metric-bar__fill--warn {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .system-page .sys-metric-bar__fill--critical {
+  background: var(--g-red);
+}
+
+/* ---- Batteries (R4, K94): the list is the whole surface below the title and scrolls there as in Klassisch (400, plus
+   the insets it now holds, as the monitor beside it), clipped at its rounded corners. Rows 52 with their own inset 16:
+   the symbol in a circle 32
+   (`fill`; green, from 25 % down orange, at 10 % red, like the bar), the name 17/22, the bar 6 high and the
+   percentage 15/20 tabular in `label2` (low orangeInk, critical redInk, both 600); separators 0.5 px from the text
+   start (60), none after the last row. The count of low batteries beside the title: a capsule 26 in the orange's soft
+   tone. ---- */
+:root[data-style='glas'] .system-page .bat-list {
+  max-height: calc(400px + 32px);
+  margin: -16px;
+  border-radius: var(--radius-card);
+}
+
+/* a capped card scrolls whole under its pinned title (Page.css, pages.css): there the list starts below the title, as
+   the automations' do (lists.css) */
+:root[data-style='glas'] .system-page .overview-grid__cell[class*='section-h-'] .bat-list {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
+:root[data-style='glas'] .system-page .bat-row {
+  grid-template-columns: 32px minmax(0, 1fr) 64px 44px;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .system-page .bat-row + .bat-row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 60px 0 / calc(100% - 60px) 0.5px;
+}
+
+:root[data-style='glas'] .system-page .bat-row__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .system-page .bat-row__icon > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+:root[data-style='glas'] .system-page .bat-row__icon--ok {
+  color: var(--g-green-ink);
+}
+
+:root[data-style='glas'] .system-page .bat-row__icon--warn {
+  color: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .system-page .bat-row:has(.bat-row__pct--critical) .bat-row__icon {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .system-page .bat-row__name {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .system-page :is(.bat-row__bar, .bat-row__bar-fill) {
+  border-radius: 3px;
+}
+
+:root[data-style='glas'] .system-page .bat-row__bar {
+  height: 6px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .system-page .bat-row__bar-fill--ok {
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .system-page .bat-row__bar-fill--medium {
+  background: var(--g-yellow);
+}
+
+:root[data-style='glas'] .system-page .bat-row__bar-fill--low {
+  background: var(--g-orange);
+}
+
+:root[data-style='glas'] .system-page .bat-row__bar-fill--critical {
+  background: var(--g-red);
+}
+
+:root[data-style='glas'] .system-page .bat-row__pct {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .system-page .bat-row__pct--low {
+  color: var(--g-orange-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .system-page .bat-row__pct--critical {
+  color: var(--g-red-ink);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .system-page .batteries-card__low-badge {
+  flex: none;
+  min-height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--g-orange-soft);
+  color: var(--g-orange-ink);
+  font: 600 13px / 18px var(--g-font);
+  white-space: nowrap;
+}
+
+@media (max-width: 479px) {
+  :root[data-style='glas'] .system-page .bat-row {
+    grid-template-columns: 32px minmax(0, 1fr) 52px 44px;
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .system-page :is(.sys-metric-tile, .bat-row__icon, .batteries-card__low-badge) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .system-page :is(.sys-metric-bar, .bat-row__bar) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .system-page :is(.sys-metric-bar__fill, .bat-row__bar-fill) {
+    background: CanvasText;
+  }
+
+  /* the hero's dot of a value over its threshold (pages.css) */
+  :root[data-style='glas'] .system-page .system-hero-chip::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+}

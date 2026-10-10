@@ -2,9 +2,11 @@ import React, { useCallback } from 'react';
 import { Plug, Fan, ToggleLeft } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
-import { domainOf } from '@hapulse/core';
+import { domainOf, formatEntityState } from '@hapulse/core'; // [fork] formatEntityState
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas tile: the state as text (docs/glas/PLAN-ETAPPE-5.md K91, K95)
+import { useLocale, useStateLabel } from '../../i18n/useT'; // [fork]
 
 interface ToggleCardProps {
   entity: HassEntity;
@@ -21,6 +23,9 @@ export function ToggleCard({ entity, name }: ToggleCardProps) {
   const entityId = entity.entity_id;
   const domain = domainOf(entityId);
   const isOn = entity.state === 'on';
+  const glas = useIsGlas(); // [fork]
+  const locale = useLocale(); // [fork]
+  const sl = useStateLabel(); // [fork]
 
   const handleToggle = useCallback(
     (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -47,6 +52,7 @@ export function ToggleCard({ entity, name }: ToggleCardProps) {
       </div>
 
       <span className="toggle-card__name">{name}</span>
+      {glas && <span className="g-tile-state">{formatEntityState(entity, locale, sl)}</span>}{/* [fork] Glas: the pill is hidden, the line names the state */}
 
       {/* Pill toggle — visual only (click propagates to card) */}
       <label className="pill-toggle" aria-hidden="true" onClick={(e) => e.stopPropagation()}>

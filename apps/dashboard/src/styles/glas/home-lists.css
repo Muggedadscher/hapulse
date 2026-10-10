@@ -600,13 +600,15 @@
   transition-duration: 120ms;
 }
 
-/* ---- Capped cells: a scroll body spans the surface, so rows that reach its edges are not clipped ---- */
+/* ---- Capped cells: a scroll body spans the surface, so rows that reach its edges are not clipped (also the activity
+   card on the system page) ---- */
 
 :root[data-style='glas']
   .home-page
   .overview-grid__cell[class*='section-h-']
   :is(.climate-card, .security-card, .activity-card)
-  .card-scroll-body {
+  .card-scroll-body,
+:root[data-style='glas'] .system-page .overview-grid__cell[class*='section-h-'] .activity-card .card-scroll-body {
   margin-inline: -16px;
   padding-inline: 16px;
 }
@@ -866,19 +868,19 @@
   color: var(--g-label-3);
 }
 
-/* ---- Activity (ActivityCard, §7.16) ----
+/* ---- Activity (ActivityCard, §7.16; the same card on the system page, plan docs/glas/PLAN-ETAPPE-5.md R2) ----
    Five calm rows: name, what happened and when. Phone without symbols, the rows indented by 16 with the separator
    from there; desktop with the plain symbol in a 36 column. The rows open nothing, as in Klassisch. */
 
-:root[data-style='glas'] .home-page .activity-card {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card {
   padding-bottom: 0;
 }
 
-:root[data-style='glas'] .home-page .activity-card__header {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card__header {
   margin-bottom: var(--g-card-gap);
 }
 
-:root[data-style='glas'] .home-page .activity-card .activity-row {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row {
   position: relative;
   gap: 12px;
   min-height: 60px;
@@ -888,29 +890,29 @@
   border-bottom: 0;
 }
 
-:root[data-style='glas'] .home-page .activity-card .activity-row:first-child {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row:first-child {
   border-top: 0;
 }
 
-:root[data-style='glas'] .home-page .activity-card .activity-row__icon {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__icon {
   display: none;
 }
 
-:root[data-style='glas'] .home-page .activity-card .activity-row__info {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__info {
   gap: 0;
 }
 
-:root[data-style='glas'] .home-page .activity-card .activity-row__name {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__name {
   color: var(--g-label);
   font: 400 17px / 22px var(--g-font);
 }
 
-:root[data-style='glas'] .home-page .activity-card .activity-row__desc {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__desc {
   color: var(--g-label-2);
   font: 400 15px / 20px var(--g-font);
 }
 
-:root[data-style='glas'] .home-page .activity-card .activity-row__time {
+:root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__time {
   color: var(--g-label-2);
   font: 400 15px / 20px var(--g-font);
   font-variant-numeric: tabular-nums;
@@ -1192,11 +1194,13 @@
 /* ---- Desktop: security, waste, activity, rooms, hints ---- */
 
 @media (min-width: 900px) {
-  :root[data-style='glas'] .home-page :is(.security-card, .activity-card) {
+  :root[data-style='glas'] .home-page :is(.security-card, .activity-card),
+  :root[data-style='glas'] .system-page .activity-card {
     padding-bottom: 6px;
   }
 
-  :root[data-style='glas'] .home-page :is(.security-card__header, .activity-card__header) {
+  :root[data-style='glas'] .home-page :is(.security-card__header, .activity-card__header),
+  :root[data-style='glas'] .system-page .activity-card__header {
     margin-bottom: calc(var(--g-card-gap) + 6px);
   }
 
@@ -1310,7 +1314,7 @@
     line-height: 22px;
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row {
     gap: 0;
     min-height: 56px;
     margin: 0 -16px;
@@ -1318,7 +1322,7 @@
     border-top: 0;
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row::before {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row::before {
     content: '';
     position: absolute;
     top: 0;
@@ -1328,11 +1332,11 @@
     background: var(--g-sep);
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row:first-child::before {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row:first-child::before {
     content: none;
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row__icon {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__icon {
     display: flex;
     justify-content: flex-start;
     width: 36px;
@@ -1342,22 +1346,22 @@
     color: var(--g-label-2);
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row__icon svg {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__icon svg {
     width: 20px;
     height: 20px;
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row__info {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__info {
     margin-right: 10px;
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row__name {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__name {
     font-size: 15px;
     font-weight: 600;
     line-height: 20px;
   }
 
-  :root[data-style='glas'] .home-page .activity-card .activity-row__desc {
+  :root[data-style='glas'] :is(.home-page, .system-page) .activity-card .activity-row__desc {
     font-size: 13px;
     line-height: 18px;
   }

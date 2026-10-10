@@ -2,9 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
-import { useT } from '../../i18n/useT';
+import { useT, useLocale, useStateLabel } from '../../i18n/useT'; // [fork] useLocale, useStateLabel
+import { formatEntityState, formatNumber } from '@hapulse/core'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas tile: the state as text (docs/glas/PLAN-ETAPPE-5.md K91, K95)
 
 /** Color modes that mean "this light has an adjustable RGB/hue color", as
  *  opposed to 'color_temp' (white-only warmth) or 'onoff'/'brightness'. */
@@ -20,6 +22,9 @@ interface LightCardProps {
 
 export function LightCard({ entity, name, colorOnly }: LightCardProps) { // [fork] colorOnly
   const t = useT();
+  const glas = useIsGlas(); // [fork]
+  const locale = useLocale(); // [fork]
+  const sl = useStateLabel(); // [fork]
   const isOn = entity.state === 'on';
   const brightness = entity.attributes.brightness as number | undefined;
   const colorTempKelvin = entity.attributes.color_temp_kelvin as number | undefined;
@@ -141,7 +146,12 @@ export function LightCard({ entity, name, colorOnly }: LightCardProps) { // [for
         {/* Name + brightness subtitle */}
         <div className="light-card__text">
           <span className="light-card__name">{name}</span>
-          {isOn && supportsBrightness && (
+          {glas ? ( // [fork] Glas: its switch is hidden, so the line always names the state ("An · 78 %", "Aus")
+            <span className="light-card__subtitle">
+              {formatEntityState(entity, locale, sl)}
+              {isOn && supportsBrightness && ` · ${formatNumber(brightnessPercent, locale)} %`}
+            </span>
+          ) : isOn && supportsBrightness && (
             <span className="light-card__subtitle">{brightnessPercent}%</span>
           )}
 

@@ -16,6 +16,7 @@ import { useEntityStore } from '../stores/entityStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
+import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K96)
 import { roomIconName, resolveEntityAreaId, buildDeviceAreaMap } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
 import './Page.css';
@@ -266,6 +267,25 @@ export function Scenes() {
     };
   }
 
+  // [fork] Glas edit bar (plan docs/glas/PLAN-ETAPPE-5.md K96): S / M / L, ‹ › and "⋯" as on the overview. The names:
+  // the hero is the "Overview" as on the energy page, the activity its title, a room its name.
+  const glasEdit = useGlasSectionEdit({
+    page: 'scenes',
+    spansField: 'sceneSectionSpans',
+    heightsField: 'sceneSectionHeights',
+    visibleIds: orderedIds,
+    onReorder: handleReorder,
+    spanOf: (id) => getSpan(id, sceneSectionSpans),
+    heightOf: (id) => getHeightLevel(id, sceneSectionHeights),
+    onSpan: handleSpanChange,
+    nameOf: (id) => {
+      if (id === 'hero') return t('nav.overview');
+      if (id === 'activity') return t('scenes.activity.title');
+      const areaId = sectionIdToAreaId(id);
+      return areaId === 'general' ? t('scenes.section.generalLabel') : (areaMap[areaId]?.name ?? areaId);
+    },
+  });
+
   const namedRoomCount = areaIds.filter((a) => a !== 'general').length;
 
   function renderWidget(id: string) {
@@ -316,6 +336,7 @@ export function Scenes() {
           const sc          = spanClass(currentSpan);
           const currentHeight = getHeightLevel(id, sceneSectionHeights);
           const hc            = heightClass(currentHeight);
+          const tall          = glasEdit.isTall(id); // [fork] Glas L: taller from 900 px (K96); a height cap wins
           const widget      = renderWidget(id);
 
           if (!editMode) {
@@ -325,6 +346,7 @@ export function Scenes() {
               hc,
               isHidden ? 'overview-grid__cell--hidden' : '',
               isMobileHidden ? 'section-mobile-hidden' : '',
+              tall ? 'g-tall' : '', // [fork]
             ].filter(Boolean).join(' ');
 
             return (
@@ -342,7 +364,7 @@ export function Scenes() {
           ].filter(Boolean).join(' ');
 
           return (
-            <SortableItem key={id} id={id} editMode={editMode} className={sc}>
+            <SortableItem key={id} id={id} editMode={editMode} className={tall ? `${sc} g-tall` : sc}>{/* [fork] g-tall */}
               <div className={cellClass} data-section={id}>
                 <div className="edit-section-outline">{widget}</div>
                 <EditBadge
@@ -359,11 +381,20 @@ export function Scenes() {
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />
                 <HeightDots level={currentHeight} />
                 <HeightHandle id={id} level={currentHeight} onCommit={handleHeightChange} />
+                {glasEdit.renderBar(id, { // [fork] Glas: one bar instead of the badges and handles above (K96)
+                  hidden: isHidden,
+                  hideLabel: getToggleLabels(id).hide,
+                  onToggleHidden: () => handleToggleHidden(id),
+                  mobileHidden: isMobileHidden,
+                  mobileLabel: getToggleLabels(id).hideMobile,
+                  onToggleMobileHidden: () => handleToggleMobileHidden(id),
+                })}
               </div>
             </SortableItem>
           );
         })}
       </SortableGrid>
+      {glasEdit.sheet}{/* [fork] Glas "⋯": the classic values of one card (K96) */}
     </div>
   );
 }

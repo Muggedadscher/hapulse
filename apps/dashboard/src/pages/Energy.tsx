@@ -22,6 +22,8 @@ import { useConnectionStore } from '../stores/connectionStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
 import { applyStoredOrder } from '../lib/order';
+import { useIsGlas } from '../app/glas/useUiStyle'; // [fork]
+import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K96)
 import type { EnergyDashboard, EnergyPeriod } from '@hapulse/core';
 import './Page.css';
 import './Energy.css';
@@ -165,6 +167,17 @@ const SECTION_TOGGLE_KEYS = {
  *  `SECTION_TOGGLE_KEYS[id]` is known to exist and no `!` assertion is needed. */
 type SectionId = keyof typeof SECTION_TOGGLE_KEYS;
 
+// [fork] Glas edit bar (K96): the card's name for the bar's group and the size window — the cards' titles, the same
+// words as the hide labels above (the hero is their "Overview")
+const SECTION_NAME_KEYS: Record<SectionId, TKey> = {
+  hero: 'nav.overview',
+  usage: 'energy.sources.title',
+  solar: 'energy.solar.title',
+  devices: 'energy.devices.title',
+  water: 'energy.water.title',
+  gas: 'energy.gas.title',
+};
+
 /** Which sections exist depends on what the user configured in HA. */
 function availableSections(d: EnergyDashboard): SectionId[] {
   const ids: SectionId[] = ['hero'];
@@ -180,6 +193,7 @@ function availableSections(d: EnergyDashboard): SectionId[] {
 
 export function Energy() {
   const t = useT();
+  const isGlas = useIsGlas(); // [fork]
   const [period, setPeriod] = useState<EnergyPeriod>('today');
   const { state, dashboard, currency } = useEnergy(period);
   const editMode = useUIStore((s) => s.editMode);
@@ -233,6 +247,25 @@ export function Energy() {
     [updateCustomization]
   );
 
+  // [fork] Glas edit bar (plan docs/glas/PLAN-ETAPPE-5.md K96): S / M / L, ‹ › and "⋯" as on the overview. The hook
+  // runs before the gates below, so it gets the cards of edit mode here: every available card in the stored order, as
+  // the grid further down shows them while editing.
+  const glasEditIds = dashboard ? applyStoredOrder(availableSections(dashboard), energySectionOrder) : [];
+  const glasEdit = useGlasSectionEdit({
+    page: 'energy',
+    spansField: 'energySectionSpans',
+    heightsField: 'energySectionHeights',
+    visibleIds: glasEditIds,
+    onReorder: handleReorder,
+    spanOf: (id) => getSpan(id, energySectionSpans),
+    heightOf: (id) => getHeightLevel(id, energySectionHeights),
+    onSpan: handleSpanChange,
+    nameOf: (id) => t(SECTION_NAME_KEYS[id as SectionId]),
+  });
+  // [fork] Glas: while another period loads, the cards stay and dim instead of the loading line (as the overview's
+  // energy card, plan K75, K92): the period segment keeps its focus, the arrows can go on
+  const glasStale = isGlas && state === 'loading' && dashboard !== null;
+
   function renderWidget(id: string, d: EnergyDashboard) {
     switch (id) {
       case 'hero':
@@ -253,7 +286,7 @@ export function Energy() {
   }
 
   // ---- Loading / not-configured / error gates ----
-  if (state === 'loading') {
+  if (state === 'loading' && !glasStale) { // [fork] glasStale
     return (
       <div className="page energy-page stagger-rise">
         <div className="page__header-row energy-page__header">
@@ -301,7 +334,7 @@ export function Energy() {
     : orderedIds.filter((id) => !hiddenEnergySections.includes(id));
 
   return (
-    <div className="page energy-page stagger-rise">
+    <div className="page energy-page stagger-rise" data-g-stale={glasStale || undefined}>{/* [fork] data-g-stale */}
       <div className="page__header-row energy-page__header">
         <h1 className="page__title">{t('energy.title')}</h1>
         <PageHeaderActions><EditToggle /></PageHeaderActions>
@@ -320,6 +353,7 @@ export function Energy() {
           const sc          = spanClass(currentSpan);
           const currentHeight = getHeightLevel(id, energySectionHeights);
           const hc            = heightClass(currentHeight);
+          const tall          = glasEdit.isTall(id); // [fork] Glas L: taller from 900 px (K96); a height cap wins
           const widget      = renderWidget(id, dashboard);
 
           if (!editMode) {
@@ -329,6 +363,7 @@ export function Energy() {
               hc,
               isHidden ? 'overview-grid__cell--hidden' : '',
               isMobileHidden ? 'section-mobile-hidden' : '',
+              tall ? 'g-tall' : '', // [fork]
             ].filter(Boolean).join(' ');
             return (
               <div key={id} className={cellClass} data-section={id}>
@@ -345,7 +380,7 @@ export function Energy() {
           ].filter(Boolean).join(' ');
 
           return (
-            <SortableItem key={id} id={id} editMode={editMode} className={sc}>
+            <SortableItem key={id} id={id} editMode={editMode} className={tall ? `${sc} g-tall` : sc}>{/* [fork] g-tall */}
               <div className={cellClass} data-section={id}>
                 <div className="edit-section-outline">{widget}</div>
                 <EditBadge
@@ -362,11 +397,20 @@ export function Energy() {
                 <ResizeHandle id={id} span={currentSpan} onCommit={handleSpanChange} />
                 <HeightDots level={currentHeight} />
                 <HeightHandle id={id} level={currentHeight} onCommit={handleHeightChange} />
+                {glasEdit.renderBar(id, { // [fork] Glas: one bar instead of the badges and handles above (K96)
+                  hidden: isHidden,
+                  hideLabel: t(SECTION_TOGGLE_KEYS[id].hide),
+                  onToggleHidden: () => handleToggleHidden(id),
+                  mobileHidden: isMobileHidden,
+                  mobileLabel: t(SECTION_TOGGLE_KEYS[id].hideMobile),
+                  onToggleMobileHidden: () => handleToggleMobileHidden(id),
+                })}
               </div>
             </SortableItem>
           );
         })}
       </SortableGrid>
+      {glasEdit.sheet}{/* [fork] Glas "⋯": the classic values of one card (K96) */}
     </div>
   );
 }
