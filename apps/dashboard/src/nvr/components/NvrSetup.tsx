@@ -204,8 +204,10 @@ export function NvrSetupCard() {
   );
 }
 
-/** Edit an existing connection (gear button on the NVR page). */
-/** `returnFocus`: where the focus goes when the window closes (Glas: the head's "⋯", whose menu item is gone by then). */
+/**
+ * Edit an existing connection (Klassisch: gear button on the NVR page; Glas: "Einrichtung" in the head's "⋯" menu).
+ * `returnFocus`: where the focus goes when the window closes (Glas: the head's "⋯", whose menu item is gone by then).
+ */
 export function NvrSetupModal({ open, onClose, returnFocus }: {
   open: boolean;
   onClose: () => void;

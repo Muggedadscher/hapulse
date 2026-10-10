@@ -97,11 +97,13 @@
   }
 }
 
+:root[data-style='glas'][data-g-vt]::view-transition-group(root),
 :root[data-style='glas'][data-g-vt]::view-transition-old(root),
 :root[data-style='glas'][data-g-vt]::view-transition-new(root) {
   animation-duration: 160ms;
 }
 
+:root[data-style='glas'][data-g-vt='fade']::view-transition-group(root),
 :root[data-style='glas'][data-g-vt='fade']::view-transition-old(root),
 :root[data-style='glas'][data-g-vt='fade']::view-transition-new(root) {
   animation-duration: 200ms;

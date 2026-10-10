@@ -764,6 +764,14 @@
   }
 }
 
+/* under a finger the pager keeps its fill after a tap: the upstream hover (LibraryCard.css, same specificity, loaded
+   later with the music page) would paint it in the card's hover colour (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .library-card__pager-btn:hover:not(:disabled) {
+    background: var(--g-fill);
+  }
+}
+
 :root[data-style='glas'] .queue-card__ctl.queue-card__ctl--active,
 :root[data-style='glas'] .queue-card__ctl.queue-card__ctl--active:hover {
   background: var(--g-accent-soft);
@@ -832,6 +840,14 @@
 @media (hover: hover) {
   :root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):hover {
     background: var(--g-hover);
+  }
+}
+
+/* under a finger a tapped row keeps its resting look: the group menu stays open after a tap, and the upstream hover
+   would leave the row filled (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):hover {
+    background: none;
   }
 }
 

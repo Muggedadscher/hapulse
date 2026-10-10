@@ -142,9 +142,11 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   Tab-Leiste).
 - **Übrige Ansichten:** Übersicht, Sicherheits-Sektion, Raum-Kameras, Einrichtung, das Fenster Datum/Uhrzeit und der
   Hinweis im Detail einer HA-Kamera bekommen den Glas-Look per CSS an den Klassen des Pakets und des NVR-Moduls
-  (`styles/glas/nvr.css`, Akzentflächen in `accent.css`). Markup ändert sich nur an zwei Stellen: die Kopfaktionen der
-  Übersicht sind in Glas Kreise 44 (`NvrOverviewPage.tsx`, Name auch als Tooltip, in beiden Stilen), und Token/Konto der
-  Einrichtung ist in Glas ein `Segment` (`NvrSetup.tsx`). Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper
+  (`styles/glas/nvr.css`, Akzentflächen in `accent.css`). Eigenes Markup nur in Glas: die Übersicht beginnt mit einem
+  ruhigen Kopf (`nvr/NvrHeroGlas.tsx`), „Sentinel öffnen“, „Räume“ und „Einrichtung“ liegen im Menü „⋯“ neben dem
+  Avatar (`components/glas/HeaderMenu.tsx`, beim Schließen geht der Fokus auf den Knopf zurück), „Ereignisse“ und
+  „Kameras“ tragen ihr Symbol im Titel (`icon` des Pakets), der Speicherhinweis ist eine Fußnote (`.nvr-note`), und
+  Token/Konto der Einrichtung ist ein `Segment` (`NvrSetup.tsx`). Klassisch bleibt unverändert. Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper
   (`NvrHomeGlas.tsx`).
 - **Kamera öffnen (Etappe 7):** In Glas wächst das Bild der gedrückten Kachel in das Standbild der Kameraseite (View
   Transition mit dem Namen `g-cam`, `app/glas/glasNavigate.ts`), ausgelöst von `nav.openCamera` ohne Zeitpunkt

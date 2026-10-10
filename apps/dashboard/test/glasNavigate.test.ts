@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -67,7 +68,9 @@ describe('routeChunks', () => {
 
 describe('camera morph', () => {
   it("names the package's still, which the installed package still has (renamed, the morph would become a fade)", () => {
-    const css = readFileSync(join(__dirname, '../../../node_modules/@sentinel-nvr/web/dist/ui/ui.css'), 'utf8');
+    // through the package's own export, wherever npm put it; the `[data-src]` half of the selector is the player's,
+    // only the browser probe (checks --part polish, camera morph) sees it
+    const css = readFileSync(createRequire(import.meta.url).resolve('@sentinel-nvr/web/ui/ui.css'), 'utf8');
     const cls = /^\.([\w-]+)/.exec(CAMERA_STILL)![1]!;
     expect(css).toMatch(new RegExp(`\\.${cls}(?![\\w-])`));
   });

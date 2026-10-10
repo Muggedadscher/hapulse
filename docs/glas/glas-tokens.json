@@ -1035,6 +1035,7 @@
       "--g-glass-shadow",
       "--g-glass-glow",
       "--g-glass-clear-fill",
+      "--g-glass-clear-text-fill",
       "--g-glass-clear-filter",
       "--g-glass-clear-rim",
       "--g-glass-clear-shadow",

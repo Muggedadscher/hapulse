@@ -194,7 +194,9 @@ export function glasNavigate(navigate: (to: string) => unknown, to: string, want
     const committed = waitForCommit(path, deadline);
     void navigate(to);
     if (!(await committed)) return;
-    (document.scrollingElement ?? root).scrollTop = 0;
+    // instant: the app scrolls smoothly (global.css), a smooth reset would still be at the old page's place when the
+    // scroll state is flushed next and the new page would glide up after the fade
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     scrollFlush?.();
     if (kind === 'page') document.querySelector('.app-main > .stagger-rise')?.setAttribute('data-g-entry', '');
     if (tile) {
