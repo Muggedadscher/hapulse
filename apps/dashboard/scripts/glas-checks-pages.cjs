@@ -3488,6 +3488,203 @@ module.exports = function pages(h) {
           res[`${device}-settings`] = { ok: fine && measured, same, glas: g, glasManaged: m, ...(same ? {} : { classic: k, classicManaged: got.classicManaged }),
             look: measured ? { ok: true } : look };
         }
+        // Onboarding (T1–T6): logged out, without the demo. The same steps run in both styles and must give the same
+        // results: "/" leads to the onboarding (T6); logo, name and tagline (T1); the sign-in without a URL, then on a
+        // page served over HTTPS (a test origin the context serves from the build) with an HTTP URL the mixed-content
+        // warning and error, and with an HTTPS URL the way to Home Assistant's login page (T2, intercepted); the token
+        // way opens and closes, refuses a missing token and the HTTP URL on HTTPS, and a refused connection shows the
+        // loader, then the error (T3, T5); the demo starts (T4). Glas also measures (K98): the card without a frame,
+        // one prominent action as a capsule 50, the other buttons capsules 50 without a frame (grey, tinted), the
+        // fields of K94, warning and error as tinted areas without a frame, "Erweitert" without a frame from the
+        // fields' edge, hairlines around "oder".
+        if (keepPart('onboarding')) {
+          const HTTPS = 'https://hapulse.test';
+          const HA = 'https://192.0.2.10:8123'; // documentation address (RFC 5737), never reached
+          const REFUSED = /^WebSocket connection to 'ws:\/\/127\.0\.0\.1:1\/api\/websocket' failed/;
+          /** A logged-out document: the build at `origin` (the local server or the HTTPS test origin). */
+          const openOut = async (style, origin) => {
+            const ctx = await browser.newContext({ ...DEVICES[device], locale: 'de-DE', timezoneId: 'Europe/Berlin', colorScheme: mode,
+              reducedMotion: 'no-preference' });
+            await ctx.route((u) => !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(u.href), (r) => r.abort());
+            // later routes win: the test origin from the local server, Home Assistant's login page as a stub
+            await ctx.route(`${HTTPS}/**`, async (r) => {
+              const u = new URL(r.request().url());
+              await r.fulfill({ response: await r.fetch({ url: url + u.pathname + u.search }) });
+            });
+            await ctx.route(`${HA}/**`, (r) => r.fulfill({ contentType: 'text/html', body: '<!doctype html><title>HA</title>' }));
+            await ctx.addInitScript(seedScript({ demo: false, mode, style, strength: 'clear' }));
+            const page = await ctx.newPage();
+            const errors = [];
+            page.on('pageerror', (e) => errors.push('exc: ' + String(e.message).slice(0, 200)));
+            page.on('console', (m) => {
+              if (m.type() === 'error' && !ABORTED.test(m.text()) && !REFUSED.test(m.text())) errors.push('console: ' + m.text().slice(0, 200));
+            });
+            await page.goto(origin === 'https' ? `${HTTPS}/onboarding` : `${url}/`, { waitUntil: 'load' });
+            await page.waitForSelector('.onboarding__card', { timeout: 15000 });
+            await sleep(600);
+            await settleAnimations(page);
+            const close = async () => {
+              if (errors.length) pageErrors.push({ device, style, path: `onboarding (${origin})`, errors: errors.slice(0, 3) });
+              await ctx.close();
+            };
+            return { page, close };
+          };
+          const alert = (page, sel) => ev(page, (s) => [...document.querySelectorAll(s)].map((e) => [e.textContent.trim(), e.getAttribute('role')].join('|')), sel);
+          const submit = '.onboarding__connect-btn:not(.onboarding__connect-btn--secondary)';
+          const toggle = '.onboarding__advanced-toggle';
+          const steps = async (page) => {
+            const r = {};
+            // T6, T1
+            r.guard = await ev(page, () => location.pathname);
+            r.head = await ev(page, () => [!!document.querySelector('.onboarding__header svg'),
+              document.querySelector('.onboarding__title').textContent.trim(), document.querySelector('.onboarding__tagline').textContent.trim()]);
+            // T2: no URL, then an HTTP URL on an HTTP page (no warning), typing clears the error
+            await page.locator(submit).click();
+            await sleep(200);
+            r.emptyUrl = await alert(page, '.onboarding__form:not(.onboarding__advanced-form) .onboarding__error');
+            await page.locator('#ha-url-oauth').fill('http://192.0.2.10:8123');
+            await sleep(200);
+            r.httpPage = [await page.locator('.onboarding__warning').count(), await page.locator('.onboarding__error').count()];
+            // T3: open, no token, a refused connection (T5: the loader while it connects), close
+            await page.locator(toggle).click();
+            await sleep(200);
+            r.advanced = [await page.locator(toggle).getAttribute('aria-expanded'), await page.locator('.onboarding__advanced-form input').count()];
+            await page.locator('#ha-url-token').fill('http://127.0.0.1:1');
+            await page.locator('.onboarding__connect-btn--secondary').click();
+            await sleep(200);
+            r.noToken = await alert(page, '.onboarding__advanced-form .onboarding__error');
+            await page.locator('#ha-token').fill('abc');
+            await ev(page, () => {
+              window.__onbLoader = [];
+              new MutationObserver(() => {
+                const l = document.querySelector('.dash-boot__label');
+                if (l && !window.__onbLoader.includes(l.textContent.trim())) window.__onbLoader.push(l.textContent.trim());
+              }).observe(document.body, { childList: true, subtree: true });
+            });
+            await page.locator('.onboarding__connect-btn--secondary').click();
+            await page.waitForSelector('.onboarding__advanced-form .onboarding__error', { timeout: 10000 });
+            await sleep(200);
+            r.refused = [...await alert(page, '.onboarding__advanced-form .onboarding__error'), ...await ev(page, () => window.__onbLoader)];
+            await page.locator(toggle).click();
+            await sleep(200);
+            r.collapsed = [await page.locator(toggle).getAttribute('aria-expanded'), await page.locator('.onboarding__advanced-form').count()];
+            // T4
+            await page.locator('.onboarding__demo-btn').click();
+            await page.waitForFunction(() => window.__hapulseDemo && document.querySelector('.home-page'), null, { timeout: 15000 });
+            r.demo = await ev(page, () => [location.pathname, JSON.parse(localStorage.getItem('hapulse:connection') || '{}').demo]);
+            return r;
+          };
+          const httpsSteps = async (page, measure) => {
+            const r = {};
+            // T2 on HTTPS: the warning, the error
+            await page.locator('#ha-url-oauth').fill('http://192.0.2.10:8123');
+            await sleep(200);
+            r.mixed = await alert(page, '.onboarding__warning');
+            await page.locator(submit).click();
+            await sleep(200);
+            r.mixedError = await alert(page, '.onboarding__error');
+            // T3 on HTTPS: the token form's warning and error
+            await page.locator(toggle).click();
+            await sleep(200);
+            await page.locator('#ha-url-token').fill('http://192.0.2.10:8123');
+            await page.locator('#ha-token').fill('abc');
+            await page.locator('.onboarding__connect-btn--secondary').click();
+            await sleep(200);
+            r.tokenMixed = [await page.locator('.onboarding__warning').count(), ...await alert(page, '.onboarding__advanced-form .onboarding__error')];
+            const look = measure ? await onboardingLook(page) : null;
+            // T2: an HTTPS URL leads to Home Assistant's login page with this app as the client
+            await page.locator('#ha-url-oauth').fill(HA + '/');
+            await page.locator(submit).click();
+            await page.waitForURL(`${HA}/auth/authorize**`, { timeout: 10000 });
+            const u = new URL(page.url());
+            r.oauth = [u.origin + u.pathname, u.searchParams.get('client_id'), u.searchParams.get('redirect_uri'), u.searchParams.get('response_type')];
+            return { r, look };
+          };
+          /** Glas: the page's look with the token form open, warnings and errors on screen. */
+          const onboardingLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const font = (cs) => `${cs.fontWeight} ${cs.fontSize}/${cs.lineHeight}`;
+            const h = (el) => Math.round(el.getBoundingClientRect().height);
+            const card = getComputedStyle(document.querySelector('.onboarding__card'));
+            const btn = (el) => {
+              const cs = getComputedStyle(el);
+              return `${h(el)} ${cs.borderTopLeftRadius} ${cs.borderTopWidth} ${font(cs)}`;
+            };
+            const prominent = [...document.querySelectorAll('button')].filter((b) => getComputedStyle(b).backgroundColor === tok('--g-prominent', 'backgroundColor'));
+            const main = document.querySelector('.onboarding__connect-btn:not(.onboarding__connect-btn--secondary)');
+            const second = document.querySelector('.onboarding__connect-btn--secondary');
+            const demo = document.querySelector('.onboarding__demo-btn');
+            const box = (el, soft, ink) => {
+              const cs = getComputedStyle(el);
+              return `${cs.borderTopWidth} ${cs.borderTopLeftRadius} ${cs.backgroundColor === tok(soft, 'backgroundColor')} ${cs.color === tok(ink)} ${font(cs)}`;
+            };
+            const field = document.querySelector('#ha-url-oauth');
+            const tg = document.querySelector('.onboarding__advanced-toggle');
+            const adv = getComputedStyle(document.querySelector('.onboarding__advanced'));
+            const form = getComputedStyle(document.querySelector('.onboarding__advanced-form'));
+            const line = getComputedStyle(document.querySelector('.onboarding__divider'), '::before');
+            return {
+              card: `${card.borderTopColor} ${card.borderTopLeftRadius}`,
+              prominent: prominent.length === 1 && prominent[0] === main && getComputedStyle(main).color === tok('--g-on-prominent'),
+              main: btn(main),
+              second: `${btn(second)} ${getComputedStyle(second).backgroundColor === tok('--g-fill', 'backgroundColor')} ${getComputedStyle(second).color === tok('--g-label')}`,
+              demo: `${btn(demo)} ${getComputedStyle(demo).backgroundColor === tok('--accent-soft', 'backgroundColor')} ${getComputedStyle(demo).color === tok('--accent')}`,
+              fields: [...new Set([...document.querySelectorAll('.onboarding__input')].map((f) => {
+                const cs = getComputedStyle(f);
+                return `${h(f)} ${cs.borderTopWidth} ${cs.borderTopColor} ${cs.backgroundColor === tok('--g-fill', 'backgroundColor')} ${cs.fontSize}`;
+              }))],
+              warnings: [...new Set([...document.querySelectorAll('.onboarding__warning')].map((w) => box(w, '--warning-soft', '--warning')))],
+              errors: [...new Set([...document.querySelectorAll('.onboarding__error')].map((e) => box(e, '--danger-soft', '--danger')))],
+              advanced: `${adv.borderTopWidth} ${adv.overflow} ${form.borderTopWidth} ${form.backgroundColor}`,
+              toggle: `${font(getComputedStyle(tg))} ${getComputedStyle(tg).color === tok('--g-label-2')} ${h(tg)} ${Math.round(tg.getBoundingClientRect().left - field.getBoundingClientRect().left)}`,
+              line: `${line.height} ${line.backgroundColor === tok('--line', 'backgroundColor')}`,
+            };
+          });
+          const got = {};
+          let look = null;
+          for (const style of ['classic', 'glas']) {
+            got[style] = {};
+            for (const origin of ['http', 'https']) {
+              const { page, close } = await openOut(style, origin);
+              try {
+                if (origin === 'http') Object.assign(got[style], await steps(page));
+                else {
+                  const o = await httpsSteps(page, style === 'glas');
+                  Object.assign(got[style], o.r);
+                  if (o.look) look = o.look;
+                }
+              } catch (e) {
+                got[style].error = `${origin}: ${String(e.message).slice(0, 200)}`;
+              }
+              await close();
+            }
+          }
+          const g = got.glas;
+          const same = !g.error && !got.classic.error && JSON.stringify(g) === JSON.stringify(got.classic);
+          const refused = DE['onboarding.connectionError'].replace('{message}', '');
+          const fine = same && g.guard === '/onboarding' && g.head.join('|') === `true|HAPulse|${DE['onboarding.tagline']}`
+            && g.emptyUrl.join() === `${DE['onboarding.errorMissingUrl']}|alert` && g.httpPage.join() === '0,0'
+            && g.advanced.join() === 'true,2' && g.noToken.join() === `${DE['onboarding.errorMissingToken']}|alert`
+            && g.refused[0].startsWith(refused) && g.refused.slice(1).join() === DE['onboarding.connecting']
+            && g.collapsed.join() === 'false,0' && g.demo.join() === '/,true'
+            && g.mixed.join() === `${DE['onboarding.mixedContentWarning']}|alert` && g.mixedError.join() === `${DE['onboarding.oauthMixedContent']}|alert`
+            && g.tokenMixed.join() === `2,${DE['onboarding.tokenMixedContent']}|alert`
+            && g.oauth.join() === `${HA}/auth/authorize,${HTTPS}/,${HTTPS}/onboarding?auth_callback=1,code`;
+          const L = look || {};
+          const measured = !!look && L.card === 'rgba(0, 0, 0, 0) 26px' && L.prominent && L.main === '50 25px 0px 600 17px/22px'
+            && L.second === '50 25px 0px 600 17px/22px true true' && L.demo === '50 25px 0px 600 17px/22px true true'
+            && L.fields.join() === '44 4px rgba(0, 0, 0, 0) true 17px'
+            && L.warnings.join() === '0px 12px true true 400 13px/18px' && L.errors.join() === '0px 12px true true 400 15px/20px'
+            && L.advanced === '0px visible 0px rgba(0, 0, 0, 0)' && L.toggle === '400 15px/20px true 44 0' && L.line === '0.5px true';
+          res[`${device}-onboarding`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic }), look: measured ? { ok: true } : look };
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);

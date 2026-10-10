@@ -676,3 +676,27 @@ und übernommen, außer wo anders vermerkt.
   Einstellungen, Stilwechsel mit offenem Fenster, mit offener Wischzeile, Rahmen nach dem Wechsel und Etappe 1.
   `glas-shots.cjs`: `seedScript` nimmt weitere Felder des Zustands (`state`) und weitere localStorage-Einträge
   (`storage`, z. B. die Verwaltung). Klassisch der Einstellungen gegen `main`: gleich.
+
+### 7.18 Onboarding (T1–T6, K94, K98)
+
+- Datei `onboarding.css` (neu, in `index.css` und im Selektor-Wächter); Feld und Orange gab es schon (`lists.css`,
+  `accent.css`). Kein neues Layout, kein Markup.
+- **Karte und Rahmen (K98):** Die Karte ohne Rand wie alle Glas-Karten. „Erweitert“ verliert seinen Rahmen: der
+  Schalter ist eine Zeile 44 ab der Kante der Felder, 15/20 `label2` mit Chevron `label3`; das offene Formular ohne
+  eigenen Hintergrund und ohne Linie. Ohne Rahmen schneidet nichts mehr ab, die Fokusringe der breiten Teile bleiben
+  ganz. „oder“ zwischen Haarlinien 0,5.
+- **Eine prominente Hauptaktion:** „mit home assistant anmelden“ als Kapsel 50 in `prominent` (17/22 600); „Mit
+  Zugriffstoken verbinden“ und „Das Demo-Zuhause erkunden“ dieselbe Kapsel ohne Rand, grau (`fill`, `label`) bzw. getönt
+  (`accent-soft` mit der Akzent-Tinte wie in Klassisch).
+- **Felder (K94):** URL und Token sichtbar 36 in einer Trefferfläche 44, `fill`, Schrift 17.
+- **Warnung und Fehler:** getönte Flächen ohne Rand mit Radius 12: die Mixed-Content-Warnung 13/18 in der Warn-Tinte
+  auf ihrem weichen Ton, Fehler 15/20 in `redInk` auf `redSoft` (beide Paare stehen in der Kontrastliste von
+  `glasTokens.ts`). Mit erzwungenen Farben bekommen Knöpfe und Hinweise wieder einen Rand.
+- Prüfungen: `pagesKeep` Onboarding (abgemeldet, ohne Demo, Klassisch und Glas mit demselben Ergebnis): „/“ führt zur
+  Anmeldung (T6), Logo, Name, Leitsatz (T1), Anmelden ohne URL, eine HTTP-URL auf einer HTTP-Seite ohne Warnung, auf
+  einer über HTTPS ausgelieferten Seite (eine Test-Herkunft, die der Kontext aus dem Build bedient) Warnung und Fehler,
+  mit einer HTTPS-URL der Weg zur Login-Seite von Home Assistant mit dieser App als Client (T2, abgefangen; die Adresse
+  ist eine Dokumentationsadresse); der Token-Weg auf und zu, fehlender Token, Warnung und Fehler auf HTTPS, eine
+  abgelehnte Verbindung zeigt erst den Ladebildschirm, dann den Fehler (T3, T5); die Demo startet (T4). In Glas die
+  Maße: Karte ohne Rand, genau ein Knopf in `prominent`, drei Kapseln 50, Felder 44/36, Warnung, Fehler, „Erweitert“,
+  Haarlinien. Klassisch der Anmeldung gegen `main`: gleich.
