@@ -144,16 +144,20 @@ async function baseUrl(pos) {
   return { srv: null, url: process.argv[pos].replace(/\/+$/, '') };
 }
 
-/** Init script: demo connection + settings, seeded Math.random, no dialogs/confirm. */
-function seedScript({ demo, mode, style, strength, reduce, customization: extra }) {
+/** Init script: demo connection + settings, seeded Math.random, no dialogs/confirm. `state` adds fields of the settings
+ *  state (e.g. `modeOverride`), `storage` further localStorage entries (e.g. the global management's meta). */
+function seedScript({ demo, mode, style, strength, reduce, customization: extra, state, storage }) {
   const customization = { ...(style === 'glas' ? { uiStyle: 'glas', glassStrength: strength, reduceTransparency: reduce } : {}), ...extra };
-  const settings = { state: { theme: 'aurora', mode, lastSeenVersion: '99.0.0', lastSeenFork: 99, customization }, version: 0 };
+  const settings = { state: { theme: 'aurora', mode, lastSeenVersion: '99.0.0', lastSeenFork: 99, ...state, customization }, version: 0 };
+  const more = Object.entries(storage || {})
+    .map(([k, v]) => `localStorage.setItem(${JSON.stringify(k)}, ${JSON.stringify(typeof v === 'string' ? v : JSON.stringify(v))});`).join('\n');
   return `(() => {
     try {
       if (!sessionStorage.getItem('__glasSeeded')) {
         localStorage.clear();
         ${demo ? `localStorage.setItem('hapulse:connection', JSON.stringify({ demo: true, mode: 'demo' }));` : ''}
         localStorage.setItem('hapulse:settings', ${JSON.stringify(JSON.stringify(settings))});
+        ${more}
         sessionStorage.setItem('__glasSeeded', '1');
       }
     } catch (e) { /* storage blocked */ }
@@ -623,7 +627,9 @@ async function stage1Checks(browser, url, out) {
         await settleAnimations(page); // the knob's background transition runs on real time
         const r = await page.evaluate((sels) => Object.fromEntries(Object.entries(sels).map(([k, s]) => {
           const [sel, pseudo] = Array.isArray(s) ? s : [s, null];
-          return [k, [...document.querySelectorAll(sel)].map((el) => getComputedStyle(el, pseudo).backgroundColor)];
+          // only knobs on screen: since stage 5 a room's tiles keep their classic switch hidden (K95)
+          return [k, [...document.querySelectorAll(sel)].filter((el) => el.getClientRects().length)
+            .map((el) => getComputedStyle(el, pseudo).backgroundColor)];
         })), KNOBS);
         for (const [k, colors] of Object.entries(r)) {
           found[k] = (found[k] || 0) + colors.length;
@@ -635,8 +641,9 @@ async function stage1Checks(browser, url, out) {
     }
     out.knobs = { found, bad };
     // the demo shows these kinds switched on; the others (legacy, device rows in a dialog, since stage 4 the classic
-    // device card, which Glas draws with its own switch) are checked where they appear
-    out.knobsOk = bad.length === 0 && ['pill', 'autoRow', 'pool', 'glasSwitch', 'admin'].every((k) => found[k] > 0);
+    // device card, which Glas draws with its own switch, since stage 5 the tiles' pill, which Glas hides, and the
+    // detail's, which pagesSwitches checks) are checked where they appear
+    out.knobsOk = bad.length === 0 && ['autoRow', 'pool', 'glasSwitch', 'admin'].every((k) => found[k] > 0);
   }
 
   // 6. cards are borderless in Glas, except borders that show a state: a triggered alarm card (added to the security

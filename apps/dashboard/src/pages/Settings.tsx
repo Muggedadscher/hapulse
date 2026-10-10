@@ -41,6 +41,7 @@ import { ManagedHint } from '../components/settings/ManagedHint'; // [fork]
 import { DeviceModeRow } from '../components/settings/DeviceModeRow'; // [fork]
 import { StyleSettings, GlasThemeHint } from '../components/settings/StyleSettings'; // [fork] Glas
 import { useIsGlas } from '../app/glas/useUiStyle'; // [fork] Glas
+import { Segment } from '../components/glas/Segment'; // [fork] Glas
 import { glasAccent } from '@hapulse/core'; // [fork] Glas
 import { GlobalSettingsAdmin } from '../components/settings/GlobalSettingsAdmin'; // [fork]
 import { useEditingEnabled, useIsManaged, useSettingsLocked } from '../ha/managedHooks'; // [fork]
@@ -431,6 +432,16 @@ function AppearanceSection() {
             </span>
             {t('settings.appearance.mode.label')}
           </span>
+          {isGlas ? ( // [fork] Glas: the segment; it writes, so the arrows only move the focus (plan K92)
+            <Segment
+              className="g-seg--settings"
+              label={t('settings.appearance.mode.groupAria')}
+              value={mode}
+              onChange={setMode}
+              activation="manual"
+              options={MODE_OPTIONS.map((m) => ({ value: m.id, label: t(m.labelKey) }))}
+            />
+          ) : ( // [fork]
           <div className="mode-toggle" role="group" aria-label={t('settings.appearance.mode.groupAria')}>
             {MODE_OPTIONS.map((m) => (
               <button
@@ -444,6 +455,7 @@ function AppearanceSection() {
               </button>
             ))}
           </div>
+          )}{/* [fork] */}
           {managed && <p className="managed-row-hint">{t('globalSettings.mode.hintGlobal')}</p>}{/* [fork] */}
         </div>
 
@@ -515,7 +527,7 @@ function AppearanceSection() {
                 <button
                   type="button"
                   className="btn btn--ghost"
-                  style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', minHeight: 32 }}
+                  style={isGlas ? undefined : { padding: '0.25rem 0.75rem', fontSize: '0.75rem', minHeight: 32 } /* [fork] Glas: CSS */}
                   onClick={handleResetHue}
                 >
                   {t('settings.appearance.accent.reset')}
@@ -884,6 +896,7 @@ function BackupSection() {
   const applyUser = useSettingsStore((s) => s.applyUser); // [fork]
   const locked = useSettingsLocked(); // [fork]
   const managed = useIsManaged(); // [fork]
+  const isGlas = useIsGlas(); // [fork] Glas: the import note's look comes from CSS
   const { connMode, connDemo, connStatus } = useConnectionStore(
     useShallow((s) => ({ connMode: s.mode, connDemo: s.demo, connStatus: s.status }))
   );
@@ -988,7 +1001,7 @@ function BackupSection() {
         </div>
         {importError && <p className="import-error" role="alert">{importError}</p>}
         {importSuccess && (
-          <p style={{ fontSize: '0.8125rem', color: 'var(--positive)', padding: '0 1.375rem 0.75rem' }} role="status">
+          <p style={isGlas ? undefined : { fontSize: '0.8125rem', color: 'var(--positive)', padding: '0 1.375rem 0.75rem' } /* [fork] Glas: CSS */} role="status">
             {t('settings.backup.importSuccess')}
           </p>
         )}

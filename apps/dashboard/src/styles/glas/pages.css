@@ -166,7 +166,8 @@
     .automations-page .auto-hero-card,
     .scenes-page .scene-hero-card,
     .pool-layout :is(.pool-hero, .pool-card:where(:has(> .pool-card__head > .pool-switch))),
-    .music-page .card
+    .music-page .card,
+    .settings-page .card
   ):where(.card):hover {
   background-color: var(--bg-card);
 }

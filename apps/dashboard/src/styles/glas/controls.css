@@ -110,6 +110,40 @@
   width: calc(var(--g-seg-n) * 44px);
 }
 
+/* The settings' choices (style, strength, light/dark, this device; K92): hit area 44, visible track 32, lens 28 like
+   the energy period, at the row's end; the options equally wide as the longest label (at least 72; like the classic
+   toggle). A transparent border of 2 on each side gives the measuring in Segment.tsx its slack: an option sized to its
+   label would otherwise count as not fitting and turn the segment tight. Phones: the segment takes its own line in
+   the row's whole width. */
+:root[data-style='glas'] .g-seg--settings {
+  --g-seg-h: 44px;
+  --g-seg-inset: 6px;
+  --g-seg-pad: 2px;
+  display: inline-grid;
+  flex: none;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  margin-left: auto;
+}
+
+:root[data-style='glas'] .g-seg--settings .g-seg__opt {
+  min-width: 72px;
+  padding: 0 10px;
+  border-inline: 2px solid transparent;
+}
+
+@media (max-width: 480px) {
+  :root[data-style='glas'] .g-seg--settings {
+    flex: 1 1 100%;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+
+  :root[data-style='glas'] .g-seg--settings .g-seg__opt {
+    min-width: 0;
+    padding: 0 2px;
+  }
+}
+
 /* A label that does not fit (Segment.tsx measures it, e.g. "Ausgeschalten" on a phone): the whole segment 13/18 with
    2 px padding; what still does not fit ends in "…". */
 :root[data-style='glas'] .g-seg[data-tight] .g-seg__opt {

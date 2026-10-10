@@ -11,7 +11,9 @@
  * Keys: arrows (wrapping), Home and End. With `activation="auto"` (default) the selection follows the focus — for
  * views (period, grid/list). With `activation="manual"` the keys only move the focus and Space/Enter choose — for
  * segments that write something (settings, the pool mode), so that arrowing across does not set every option on the
- * way. Choosing the chosen option again calls `onReselect` (the pool's "Manuell" reopens its duration picker).
+ * way. Choosing the chosen option again calls `onReselect` (the pool's "Manuell" reopens its duration picker). An
+ * option may carry data attributes (`data`): the style's options keep the hook of the classic buttons
+ * (`data-glas-style-option`) that probes use to switch the style.
  *
  * Long labels (an input_select's own options, another language) that do not fit at the segment's size turn the whole
  * segment tight (`data-tight`: 13 px, less padding; controls.css), so a phone shows "Ausgeschalten" whole. On every
@@ -38,6 +40,8 @@ export interface SegmentOption<V extends string> {
   aria?: string;
   /** A symbol option: shows only this symbol (every option of one segment has one, or none has). */
   icon?: React.ReactNode;
+  /** Data attributes for the option's button, e.g. the hook a classic button of the same choice carries. */
+  data?: Record<`data-${string}`, string>;
 }
 
 interface SegmentProps<V extends string> {
@@ -147,6 +151,7 @@ export function Segment<V extends string>({
           title={o.icon ? o.label : undefined}
           tabIndex={i === stop ? 0 : -1}
           className={o.icon ? 'g-seg__opt g-seg__opt--icon' : 'g-seg__opt'}
+          {...o.data}
           data-value={o.value}
           onClick={() => choose(o)}
         >

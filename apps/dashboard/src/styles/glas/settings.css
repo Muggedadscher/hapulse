@@ -1,0 +1,937 @@
+/* [fork] Glas — the settings (plan docs/glas/PLAN-ETAPPE-5.md K94, K98, §7.17; GLAS-DESIGN §7.30): one iOS settings
+   list. Only presentation of the existing markup: the group titles are pages.css, the segments (style, strength,
+   light/dark, this device) controls.css (`g-seg--settings`), the switches and the hue slider controls.css, the fields
+   lists.css. Rows 52 (inline: 44 inside 4 above and below), the symbol monochrome `label2` in a column of 28 (its
+   colours come inline; the tokens are set on the chip itself), the label 17/22, separators 0.5 px from the text start
+   (56; 16 without a symbol), none above the first row of a list: the rule hangs on the list, not on the
+   `managed-fieldset` that splits a list into blocks (N5). Values `label2`, chevrons `label3`. Explanations below a
+   control or a label start under the label text (desktop) or at the row's inset (phones), where a control below its
+   label takes the whole row.
+
+   The locales write most of these texts in lower case ("demomodus", "exportiere …"); Klassisch shows them so. Glas
+   raises only the first letter (sentence case, like the group titles §7.4); words inside a sentence stay as written. */
+
+:root[data-style='glas'] .settings-page {
+  --g-row-indent: 40px;
+}
+
+@media (max-width: 480px) {
+  :root[data-style='glas'] .settings-page {
+    --g-row-indent: 0px;
+  }
+}
+
+/* ---- Groups: the title 8 above its list, inset like the rows ---- */
+:root[data-style='glas'] .settings-page .settings-page__section {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .settings-page .settings-page__section > .section-label {
+  padding: 0 16px;
+}
+
+/* "Keine Räume gefunden …" without a list: like an explanation below a group */
+:root[data-style='glas'] .settings-page .settings-page__section > p {
+  --text-faint: var(--g-label-2);
+  padding: 0 16px;
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .settings-page__section > p::first-letter {
+  text-transform: uppercase;
+}
+
+/* ---- The lists: one surface, rows to its edges ---- */
+:root[data-style='glas'] .settings-page .card:is(.settings-card, .conn-card, .about-card, :has(> .rooms-list)) {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ---- Rows ---- */
+:root[data-style='glas'] .settings-page .card :is(.settings-card__row, .conn-card__row, .conn-card__actions, .room-row) {
+  position: relative;
+  min-height: 52px;
+  border: 0;
+}
+
+:root[data-style='glas'] .settings-page .card .settings-card__row {
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+:root[data-style='glas'] .settings-page .card :is(.settings-card__row--inline, .conn-card__row) {
+  gap: 0 12px;
+  padding: 4px 16px;
+}
+
+/* separators: 0.5 px from the text start, never above a list's first row */
+:root[data-style='glas']
+  .settings-page
+  .card
+  :is(.settings-card__row, .conn-card__row, .conn-card__actions, .room-row, .about-card__link)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 56px;
+  height: 0.5px;
+  background: var(--g-sep);
+  pointer-events: none;
+}
+
+:root[data-style='glas']
+  .settings-page
+  .card
+  :is(.conn-card__actions, .room-row, .conn-card__row:not(:has(> .conn-card__row-label)))::before {
+  left: 16px;
+}
+
+:root[data-style='glas']
+  .settings-page
+  .card
+  :is(
+    .settings-card > .settings-card__row:first-child,
+    .settings-card > .managed-fieldset:first-child > .settings-card__row:first-child,
+    .rooms-list > .room-row:first-child
+  )::before {
+  content: none;
+}
+
+/* ---- Label and symbol ---- */
+:root[data-style='glas'] .settings-page .card :is(.settings-card__row-label, .conn-card__row-label) {
+  gap: 12px;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card :is(.settings-card__row--inline, .conn-card__row) > :is(.settings-card__row-label, .conn-card__row-label) {
+  flex: 0 1 auto;
+  min-height: 44px;
+}
+
+/* beside a switch the label wraps, the switch stays at the row's end ("Zugänge teilen (Sentinel, Music Assistant)");
+   a segment instead takes its own line when the label and it do not fit side by side */
+:root[data-style='glas'] .settings-page .card .settings-card__row--inline:has(> .admin-toggle) > .settings-card__row-label {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+/* a switch that cannot act (sharing access without a connection) looks so; inside a locked block the block fades */
+:root[data-style='glas'] .settings-page .card > .settings-card__row > .admin-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+:root[data-style='glas'] .settings-page .card :is(.settings-card__icon-chip, .conn-card__icon-chip) {
+  --accent-soft: transparent;
+  --accent: var(--g-label-2);
+  --info-soft: transparent;
+  --info: var(--g-label-2);
+  --warning-soft: transparent;
+  --warning: var(--g-label-2);
+  --bg-subtle: transparent;
+  --text-dim: var(--g-label-2);
+  width: 28px;
+  height: 28px;
+  border-radius: 0;
+}
+
+:root[data-style='glas'] .settings-page .card :is(.settings-card__icon-chip, .conn-card__icon-chip) > svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---- Explanations ---- */
+:root[data-style='glas'] .settings-page .card .managed-row-hint {
+  margin: -6px 0 8px;
+  padding-left: var(--g-row-indent);
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+@media (max-width: 480px) {
+  :root[data-style='glas'] .settings-page .card .managed-row-hint {
+    margin-top: 0;
+  }
+}
+
+:root[data-style='glas'] .settings-page .card :is(.global-admin__text, .global-admin__meta, .global-admin__error, .global-admin__ok) {
+  padding-left: var(--g-row-indent);
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card .global-admin__error {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .settings-page .card .global-admin__ok {
+  color: var(--g-green-ink);
+}
+
+/* "Vom Administrator verwaltet": the first row of its list, the lock in the symbol column */
+:root[data-style='glas'] .settings-page .card .managed-hint {
+  gap: 12px;
+  min-height: 52px;
+  padding: 12px 16px;
+  border-bottom: 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card .managed-hint > svg {
+  flex: none;
+  width: 28px;
+  height: 18px;
+}
+
+/* ---- Buttons in the rows: plain capsules 44 (GLAS-DESIGN §7.29) ---- */
+:root[data-style='glas']
+  .settings-page
+  .card
+  :is(.conn-card__actions > .btn, .global-admin__actions > .btn, .backup-row > .btn) {
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas']
+  .settings-page
+  .card
+  :is(.conn-card__actions > .btn, .global-admin__actions > .btn, .backup-row > .btn):hover:not(:disabled) {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas']
+  .settings-page
+  .card
+  :is(.conn-card__actions > .btn, .global-admin__actions > .btn, .backup-row > .btn):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .settings-page .card .backup-row > .btn > svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  stroke-width: 2;
+}
+
+/* Disconnect and sign out end the connection: `actDel` and white like the danger buttons of the sheets (K93); in demo
+   mode the same place connects (plain) */
+:root[data-style='glas']
+  .settings-page
+  .conn-card:has(.conn-card__badge:is(.conn-card__badge--token, .conn-card__badge--oauth))
+  .conn-card__actions
+  > .btn,
+:root[data-style='glas']
+  .settings-page
+  .conn-card:has(.conn-card__badge:is(.conn-card__badge--token, .conn-card__badge--oauth))
+  .conn-card__actions
+  > .btn:hover {
+  background: var(--g-act-del);
+  color: var(--g-on-badge);
+}
+
+:root[data-style='glas'] .settings-page .card .global-admin__actions {
+  justify-content: flex-start;
+  gap: 8px;
+  padding-left: var(--g-row-indent);
+}
+
+@media (max-width: 480px) {
+  :root[data-style='glas'] .settings-page .card .global-admin__actions > .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---- Connection: the account like the top row of iOS settings (avatar 56, name 20/25 600, below it how and as whom
+   in `label2`), then the rows, then the action ---- */
+:root[data-style='glas'] .settings-page .conn-card__profile {
+  gap: 16px;
+  padding: 16px;
+}
+
+:root[data-style='glas'] .settings-page .conn-card__profile .user-avatar {
+  width: 56px;
+  height: 56px;
+  border: 0;
+  background: var(--g-accent-soft);
+}
+
+:root[data-style='glas'] .settings-page .conn-card__profile .user-avatar__initial {
+  color: var(--g-label);
+  font: 600 22px / 28px var(--g-font);
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .settings-page .conn-card__profile-info {
+  gap: 2px;
+}
+
+:root[data-style='glas'] .settings-page .conn-card__profile-name {
+  color: var(--g-label);
+  font: 600 20px / 25px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .conn-card__profile-meta {
+  gap: 0 6px;
+}
+
+:root[data-style='glas'] .settings-page .conn-card__profile-meta > :is(.conn-card__badge, .conn-card__role-badge) {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-style='glas'] .settings-page .conn-card__profile-meta > :is(.conn-card__badge, .conn-card__role-badge)::first-letter {
+  text-transform: uppercase;
+}
+
+:root[data-style='glas'] .settings-page .conn-card__badge:has(+ .conn-card__role-badge)::after {
+  content: '\00a0·';
+}
+
+/* the values: `label2`, shrinking before the label (a long address wraps) */
+:root[data-style='glas'] .settings-page .card :is(.conn-card__row-value, .conn-status) {
+  flex: 0 1 auto;
+  min-width: 0;
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
+  text-align: right;
+}
+
+:root[data-style='glas'] .settings-page .card .conn-card__url {
+  overflow-wrap: anywhere;
+}
+
+/* the spaces are in the text (&nbsp;); without the classic gap the line reads "7 räume · 101 entitäten" */
+:root[data-style='glas'] .settings-page .card .conn-card__counts {
+  gap: 0;
+}
+
+:root[data-style='glas'] .settings-page .card .conn-card__counts > span {
+  color: inherit;
+}
+
+/* the status word in `label2` (its colour comes inline; the dot keeps the state's colour) */
+:root[data-style='glas'] .settings-page .card .conn-status > span:not(.conn-status__dot) {
+  --positive: var(--g-label-2);
+  --warning: var(--g-label-2);
+  --text-dim: var(--g-label-2);
+}
+
+:root[data-style='glas'] .settings-page .card .conn-status > span:not(.conn-status__dot)::first-letter {
+  text-transform: uppercase;
+}
+
+/* the demo note (its tint and size come inline): an explanation 13/18 without a tint */
+:root[data-style='glas'] .settings-page .card .conn-card__row:not(:has(> .conn-card__row-label)) {
+  --bg-subtle: transparent;
+  --text-dim: var(--g-label-2);
+  padding-block: 12px;
+  line-height: 18px;
+}
+
+:root[data-style='glas'] .settings-page .card .conn-card__row:not(:has(> .conn-card__row-label)) > span::first-letter {
+  text-transform: uppercase;
+}
+
+:root[data-style='glas'] .settings-page .card .conn-card__actions {
+  padding: 12px 16px 16px;
+}
+
+/* ---- Appearance ---- */
+/* app name: the field under the label */
+:root[data-style='glas'] .settings-page .card .settings-card__row > .settings-text-input {
+  width: calc(100% - var(--g-row-indent));
+  margin-left: var(--g-row-indent);
+}
+
+/* app symbol: swatches 44, radius 12, `fill`; the chosen one in the accent's soft tone with a ring of 2 */
+:root[data-style='glas'] .settings-page .card .icon-swatch-row {
+  gap: 8px;
+  padding-left: var(--g-row-indent);
+}
+
+:root[data-style='glas'] .settings-page .card .icon-swatch {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .settings-page .card .icon-swatch--active {
+  background: var(--g-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--g-accent);
+}
+
+:root[data-style='glas'] .settings-page .card .icon-swatch--none > svg {
+  width: 20px;
+  height: 20px;
+}
+
+:root[data-style='glas'] .settings-page .card .icon-swatch:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* language: the value with its chevron at the row's end, like an iOS pop-up row */
+:root[data-style='glas'] .settings-page .card .settings-select {
+  margin-left: auto;
+}
+
+:root[data-style='glas'] .settings-page .card .settings-select__native {
+  min-height: 44px;
+  padding: 0 24px 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
+  text-align: right;
+  text-align-last: right;
+}
+
+:root[data-style='glas'] .settings-page .card .settings-select__native:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 0;
+}
+
+:root[data-style='glas'] .settings-page .card .settings-select__chevron {
+  right: 2px;
+  color: var(--g-label-3);
+}
+
+/* accent: the label line is always 44 high (inside the row's inset), so "Zurücksetzen" appearing on the first drag
+   does not move the slider under the finger; the slider under the label text */
+:root[data-style='glas'] .settings-page .card .accent-row {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .settings-page .card .accent-row__label {
+  min-height: 44px;
+  margin: -8px 0;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card .accent-row__label .settings-card__icon-chip {
+  margin-right: 4px;
+}
+
+:root[data-style='glas'] .settings-page .card .accent-preview-dot {
+  width: 16px;
+  height: 16px;
+  border: 0;
+}
+
+:root[data-style='glas'] .settings-page .card .accent-row__label > .btn {
+  display: inline-block;
+  min-height: 44px;
+  padding: 12px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--g-accent-ink);
+  font: 400 17px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card .accent-row__label > .btn::first-letter {
+  text-transform: uppercase;
+}
+
+:root[data-style='glas'] .settings-page .card .accent-row__label > .btn:hover {
+  background: transparent;
+  color: var(--g-accent-ink);
+  opacity: 0.7;
+}
+
+:root[data-style='glas'] .settings-page .card .accent-row__label > .btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+
+:root[data-style='glas'] .settings-page .card .accent-slider {
+  align-self: stretch;
+  width: auto;
+  margin-left: var(--g-row-indent);
+}
+
+/* ---- Admin: "Entitäten bearbeiten ›" opens its window from the whole row (a navigation row): the button reads as the
+   row's value in `label2`, its chevron `label3` ---- */
+:root[data-style='glas'] .settings-page .card .admin-entities-btn {
+  gap: 6px;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card .admin-entities-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+:root[data-style='glas'] .settings-page .card .admin-entities-btn > svg {
+  width: 17px;
+  height: 17px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .settings-page .card .admin-entities-btn:hover {
+  background: transparent;
+  color: var(--g-label-2);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .settings-page .card .settings-card__row:has(> .admin-entities-btn:hover) {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .settings-page .card .admin-entities-btn:focus-visible {
+  outline: 0;
+}
+
+:root[data-style='glas'] .settings-page .card .settings-card__row:has(> .admin-entities-btn:focus-visible) {
+  box-shadow: inset 0 0 0 2px var(--g-focus);
+}
+
+:root[data-style='glas'] .settings-page .card .admin-entities-btn:active {
+  transform: none;
+}
+
+/* ---- Rooms: name 17/22, the number of entities 15/20 `label2`, the buttons round 36 in `fill` (hit area 44, the
+   areas touch); a hidden room's name `label2` struck through, its eye inverted like a hidden card ---- */
+:root[data-style='glas'] .settings-page .card .room-row {
+  gap: 12px;
+  padding: 4px 16px;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .settings-page .card .room-row:hover {
+    background: transparent;
+  }
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__name {
+  min-width: 0;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+  overflow-wrap: anywhere;
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__name--hidden {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__count {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__controls {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn {
+  position: relative;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn > svg {
+  width: 17px;
+  height: 17px;
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn:hover:not(:disabled) {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .settings-page .card .room-row:has(> .room-row__name--hidden) .room-row__controls > .icon-btn:last-child,
+:root[data-style='glas'] .settings-page .card .room-row:has(> .room-row__name--hidden) .room-row__controls > .icon-btn:last-child:hover {
+  background: var(--g-label);
+  color: var(--bg);
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn:active:not(:disabled) {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+}
+
+/* ---- Backup: the explanation 15/20 `label2`, the two buttons plain, messages in their ink ---- */
+:root[data-style='glas'] .settings-page .card .backup-hint {
+  padding: 12px 16px 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card .backup-hint + .backup-hint {
+  padding-top: 4px;
+}
+
+:root[data-style='glas'] .settings-page .card .backup-hint::first-letter {
+  text-transform: uppercase;
+}
+
+:root[data-style='glas'] .settings-page .card .backup-row {
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+:root[data-style='glas'] .settings-page .card :is(.import-error, .backup-row ~ p[role='status']) {
+  padding: 0 16px 12px;
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .card .import-error {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .settings-page .card .backup-row ~ p[role='status'] {
+  color: var(--g-green-ink);
+}
+
+/* ---- About: the app as a row with two lines below its name (version, tagline), then "Neuerungen ›" and the link to
+   the project as rows (`about-card__link--button` stays a button, N4); the head's symbol and its spacing come inline:
+   capped to the symbol column, its tint set to none on the symbol itself ---- */
+:root[data-style='glas'] .settings-page .about-card > div:first-child {
+  min-height: 52px;
+  padding: 12px 16px 0;
+}
+
+:root[data-style='glas'] .settings-page .about-card > div:first-child > span:first-child {
+  --accent-soft: transparent;
+  --accent: var(--g-label-2);
+  max-width: 28px;
+  max-height: 28px;
+}
+
+:root[data-style='glas'] .settings-page .about-card > div:first-child > span:first-child > svg {
+  width: 22px;
+  height: 22px;
+}
+
+:root[data-style='glas'] .settings-page .about-card__title {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+  letter-spacing: normal;
+}
+
+:root[data-style='glas'] .settings-page .about-card__sub {
+  padding: 0 16px 0 56px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .settings-page .about-card__sub:not(:has(+ .about-card__sub)) {
+  padding-bottom: 12px;
+}
+
+:root[data-style='glas'] .settings-page .about-card__sub::first-letter {
+  text-transform: uppercase;
+}
+
+:root[data-style='glas'] .settings-page .about-card .about-card__link {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  padding: 0 16px;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+  text-align: left;
+  text-decoration: none;
+}
+
+:root[data-style='glas'] .settings-page .about-card .about-card__link > svg:first-child {
+  flex: none;
+  width: 28px;
+  height: 22px;
+  color: var(--g-label-2);
+}
+
+/* the external link's mark at the row's end */
+:root[data-style='glas'] .settings-page .about-card .about-card__link > svg:last-child:not(:first-child) {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  color: var(--g-label-3);
+}
+
+/* "Neuerungen" opens a window: chevron */
+:root[data-style='glas'] .settings-page .about-card .about-card__link--button::after {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 4px 0 auto;
+  border-right: 2px solid var(--g-label-3);
+  border-bottom: 2px solid var(--g-label-3);
+  transform: rotate(-45deg);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .settings-page .about-card .about-card__link:hover {
+    background: var(--g-hover);
+    text-decoration: none;
+  }
+}
+
+:root[data-style='glas'] .settings-page .about-card .about-card__link:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+  border-radius: 0;
+}
+
+/* ---- The window "Entitäten bearbeiten" (S11): the rooms as grouped lists (summary row 52 with the number `label2`
+   and the chevron `label3`), the entities as rows 52 (symbol in a circle 32 `fill`, name 17/22, the id 13/18 `label2`),
+   the buttons round 36 like the device window's (the favourite on in yellow's soft tone, the eye of a hidden entity
+   inverted); renaming in a field ---- */
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-group {
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+  box-shadow: none;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-group__summary {
+  gap: 8px;
+  min-height: 52px;
+  padding: 4px 16px;
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .entities-modal-content .entity-group__summary:hover {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-group__summary:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+  border-radius: 22px;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-group__count {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-group__chevron {
+  width: 18px;
+  height: 18px;
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-rows {
+  border-top: 0;
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 16px 0 / calc(100% - 16px) 0.5px;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row {
+  gap: 12px;
+  min-height: 52px;
+  padding: 4px 16px;
+  border-bottom: 0;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row + .entity-row {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 60px 0 / calc(100% - 60px) 0.5px;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .modal-body .entities-modal-content .entity-row:hover {
+    background-color: transparent;
+  }
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__info {
+  gap: 0;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__name {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__name--hidden {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__id {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-rename-input {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--g-fill);
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-rename-input:focus {
+  box-shadow: inset 0 0 0 2px var(--g-focus);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls {
+  gap: 8px;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls > .icon-btn {
+  position: relative;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls > :is(.icon-btn--ghost, .icon-btn--default) {
+  background: var(--g-fill);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls > .icon-btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls > .icon-btn > svg {
+  width: 17px;
+  height: 17px;
+}
+
+:root[data-style='glas']
+  .modal-body
+  .entities-modal-content
+  .entity-row__controls
+  > :is(.icon-btn--ghost, .icon-btn--default):hover:not(:disabled) {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+/* the favourite: the star is the button before the eye; on = the accent variant */
+:root[data-style='glas']
+  .modal-body
+  .entities-modal-content
+  .entity-row__controls
+  > .icon-btn--accent:not(:first-child):nth-last-child(2),
+:root[data-style='glas']
+  .modal-body
+  .entities-modal-content
+  .entity-row__controls
+  > .icon-btn--accent:not(:first-child):nth-last-child(2):hover {
+  background: var(--g-yellow-soft);
+  color: var(--g-yellow-ink);
+  opacity: 1;
+}
+
+/* the eye of a hidden entity (the last button; its name is struck through) */
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row:has(.entity-row__name--hidden) .entity-row__controls > .icon-btn:last-child,
+:root[data-style='glas']
+  .modal-body
+  .entities-modal-content
+  .entity-row:has(.entity-row__name--hidden)
+  .entity-row__controls
+  > .icon-btn:last-child:hover {
+  background: var(--g-label);
+  color: var(--bg);
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls > .icon-btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls > .icon-btn:active:not(:disabled) {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .modal-body .entities-modal-content .entity-row__controls > .icon-btn:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas']
+    .settings-page
+    .card
+    :is(.settings-card__row, .conn-card__row, .conn-card__actions, .room-row, .about-card__link)::before {
+    forced-color-adjust: none;
+    background: GrayText;
+  }
+
+  :root[data-style='glas'] :is(.settings-page .card .room-row__controls, .modal-body .entity-row__controls) > .icon-btn {
+    border: 1px solid ButtonText;
+  }
+
+  :root[data-style='glas'] .settings-page .card .icon-swatch--active {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}

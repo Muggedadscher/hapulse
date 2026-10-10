@@ -615,3 +615,64 @@ und übernommen, außer wo anders vermerkt.
   Monitor mit Werten und Bändern, Batterien mit Bändern und Zahl der schwachen; in Glas die Maße und Farben von
   Punkten, Symbolen, Gruppen, Kacheln, Balken, Zeilen, Linien, Listenkanten und der Kapsel; die Aktivität wie auf der
   Übersicht), `pagesEdit` System, Szene `system-edit` für den Klassisch-Vergleich.
+
+### 7.17 Einstellungen (S1–S16, K91, K92, K94, K98)
+
+- Dateien wie geplant: `settings.css`, die Segment-Größe `g-seg--settings` in `controls.css`; `[fork]`-Zeilen in
+  `Settings.tsx` (Hell/Dunkel als Segment, die Inline-Maße von „zurücksetzen“ und der Import-Meldung nur in
+  Klassisch), Fork-Dateien `StyleSettings.tsx` und `DeviceModeRow.tsx` (Segmente). `Segment` lernt Daten-Attribute je
+  Option: die Stil-Optionen tragen den Haken der klassischen Knöpfe (`data-glas-style-option`), den Proben und ältere
+  Prüfungen zum Umschalten nutzen.
+- **Liste (K94, K98):** Jede Karte ist eine eingerückte Liste ohne Innenabstand: Zeilen ab 52 (zweizeilige höher),
+  Name 17/22, Wert 17/22 `label2` rechts, Trennlinie 0,5 ab dem Text (56) bzw. ab der Kante (16: Knopfzeile, Räume, der
+  Demo-Hinweis), keine über der ersten Zeile einer Liste; die Regel hängt an der Liste, nicht am `managed-fieldset`.
+  Die Symbol-Chips werden eine Spalte 28 ohne Tönung mit dem Symbol 22 in `label2`; die Tokens setzt Glas lokal am Chip
+  (N3, kein `!important`). Erklärungen und Hinweise 13/18 bzw. 15/20 `label2` unter dem Namen, ab 481 px eingerückt
+  (40), am Handy ab der Kante.
+- **Verbindung (S1):** Profil als erste Zeile (Avatar 56 in `accent-soft`, Name 20/25 600, Abzeichen und Rolle als
+  schlichter Text mit „·“), Status, Adresse, Token und Zahlen als Zeilen mit Wert, der Demo-Hinweis als Zeile 13/18. Die
+  Knöpfe sind Kapseln 44 in `fill`; „Abmelden“/„Trennen“ (OAuth, Token) in `actDel` mit weißer Schrift.
+- **Darstellung (S2–S8, K92):** App-Name als Feld nach K94, unter dem Namen eingerückt; Symbole 44 mit Radius 12, das
+  gewählte in `accent-soft` mit Ring 2. Stil, Glas-Stärke, Hell/Dunkel und Hell/Dunkel dieses Geräts sind Segmente 44
+  mit manueller Aktivierung neben dem Namen, am Handy eine eigene Zeile über die ganze Breite. Die Optionen sind
+  mindestens 72 breit und gleich breit; ein unsichtbarer Rand von 2 je Seite hält die Messung von `data-tight` ehrlich
+  (sie zieht nur das Padding ab, eine Inhaltsbreite wäre sonst immer „eng“). Sprache als Wert mit Chevron `label3` (das
+  native `select` bleibt), statt der Farbwelten der Hinweis aus Etappe 1, Akzent: Name mit Vorschau-Punkt,
+  „zurücksetzen“ als Textknopf in `accentInk` (die Zeile verschiebt den Regler nicht, wenn er erscheint), der Regler
+  darunter über die Zeile.
+- **Admin (S10–S12):** Bearbeiten als Schalter (K91), „Entitäten bearbeiten ›“ als Navigationszeile (die ganze Zeile
+  ist die Trefferfläche, Text `label2`, Chevron `label3`), die Verwaltung mit Erklärung, Kapsel-Knopf und dem Schalter
+  „Zugänge teilen“. Das Fenster der Entitäten: Räume als eingerückte Listen (Radius 22, `group`), Kopfzeilen 52 mit
+  Anzahl und Chevron, Entitäten 52 mit Kreis 32, Name 17/22, ID 13/18 `label2`, runde Knöpfe 36 mit Trefferfläche 44;
+  der Stern im weichen Gelb, das Auge einer ausgeblendeten Entität invertiert; Umbenennen als Feld nach K94.
+- **Räume (S13):** Zeilen 52, Name 17/22 (ausgeblendet `label2` durchgestrichen), Anzahl 15/20 `label2`, runde Knöpfe
+  36 in `fill` mit Trefferfläche 44, das Auge eines ausgeblendeten Raums invertiert.
+- **Sicherung (S14):** Erklärung 15/20 `label2`, zwei Kapsel-Knöpfe, Meldungen 15/20 in `redInk` bzw. `greenInk`.
+- **Über (S15, K98):** der Kopf als Zeile (Symbol `label2` in der Spalte 28, Name 17/22 600), darunter Version und
+  Leitsatz 15/20 `label2` ab dem Text; „Neuerungen ›“ und der Projekt-Link als Zeilen 52 (Symbol `label2`, Chevron bzw.
+  Außen-Zeichen `label3`). **Abweichung:** Die Versionszeile bleibt eine zweite Zeile unter dem Namen statt einer
+  eigenen Zeile „Version | 1.3.2 · F…“: Sie ist ein Text, Teilen hieße neues Markup, und Klassisch zeigt denselben.
+- **Abweichungen:** (1) Texte der Locales in Kleinschrift (Abzeichen, Status, Demo-Hinweis, Version, Erklärungen,
+  „zurücksetzen“) bekommen in Glas nur den ersten Buchstaben groß (`::first-letter`); im Satz bleibt „Demo-zuhause“,
+  „räume“, „home assistant“. Die Texte selbst ändern sich nicht (Klassisch zeigt sie so). (2) Der Fokus wechselt beim
+  Stilwechsel in beide Richtungen auf die Wahl des neuen Stils (K92 nannte nur Glas → Klassisch); ist ein Fenster
+  offen, bleibt er dort. (3) Ein gesperrter Schalter („Zugänge teilen“ ohne echte Verbindung) steht in Glas auf 0,4,
+  Klassisch zeigt ihn unverändert. (4) Der Knopf „Meine Einstellungen für alle übernehmen“ darf am Handy zweizeilig sein.
+- In der Demo nicht erreichbar, in einem Wegwerf-Build mit erzwungener Bedingung angesehen: gesperrte Zeilen eines
+  Nicht-Admins unter der Verwaltung (S9), der Dialog „für alle übernehmen“ (S12, ohne echte Verbindung in beiden Stilen
+  aus), „Trennen“/„Abmelden“ in Rot und der Sync-Status „verbunden“ (S16). Für das Labor mit echtem HA vorgemerkt.
+- Nebenbei gesehen (nicht von diesem Schritt): In den Prüfbildern stehen Bindestriche in Fenstern breit („Home -
+  Assistant“). Die Ersatzschrift des Labors (Inter) zählt den Bindestrich zu den tabellarischen Ziffern, die Glas seit
+  Etappe 1 am Root setzt (gemessen bei 17 px: 11,0 statt 7,8 px breit). Ob SF das am iPad auch tut, prüft das Labor.
+- Prüfungen: `pagesSegments` Einstellungen (vier Segmente: Optionen, Wahl, 44 hoch, nicht eng, Lage neben dem Namen bzw.
+  am Handy über die Breite; Pfeile bewegen nur den Fokus, Leertaste, Enter und Tippen schreiben, was der klassische
+  Knopf derselben Wahl schreibt; Stilwechsel mit der Tastatur nach Klassisch und mit Enter zurück, der Fokus folgt),
+  `pagesKeep` Einstellungen (dieselben Schritte S1–S15 in Klassisch und Glas mit demselben Ergebnis: App-Name als
+  Titel, Symbol als Favicon, Hell/Dunkel, Sprache hin und zurück, Akzent und „zurücksetzen“, Bearbeiten blendet die
+  Räume aus und ein, Entitäten suchen, umbenennen, Stern, Auge, Räume verschieben und ausblenden, Export als Datei mit
+  Inhalt, Import bis zum Dateidialog, Version, „Neuerungen“, Link, zuletzt der Weg der Demo zur Anmeldung; unter der
+  Verwaltung Gerät, wer/wann, Schalter und Knopf; die Farbwelten nur in Klassisch, Glas zeigt den Hinweis und behält
+  das gespeicherte Design; in Glas die Maße der Liste), dazu wieder grün: Schalter, Regler, Feld und Gruppentitel der
+  Einstellungen, Stilwechsel mit offenem Fenster, mit offener Wischzeile, Rahmen nach dem Wechsel und Etappe 1.
+  `glas-shots.cjs`: `seedScript` nimmt weitere Felder des Zustands (`state`) und weitere localStorage-Einträge
+  (`storage`, z. B. die Verwaltung). Klassisch der Einstellungen gegen `main`: gleich.

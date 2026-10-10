@@ -88,7 +88,8 @@ module.exports = function pages(h) {
         timezoneId: 'Europe/Berlin', colorScheme: extra.mode || 'light', reducedMotion: 'no-preference',
       });
       await ctx.route((u) => !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(u.href), (r) => r.abort());
-      await ctx.addInitScript(seedScript({ demo: true, mode: extra.mode || 'light', style, strength: 'clear', customization: extra.customization }));
+      await ctx.addInitScript(seedScript({ demo: true, mode: extra.mode || 'light', style, strength: 'clear', customization: extra.customization,
+        state: extra.state, storage: extra.storage }));
       // a fixed date (timers keep running): the demo's energy figures depend on the hour, two documents must agree
       if (extra.fixedTime) await ctx.clock.setFixedTime(extra.fixedTime);
       const page = await ctx.newPage();
@@ -106,6 +107,12 @@ module.exports = function pages(h) {
       };
       return { ctx, page, close };
     };
+
+    /** The admin management as active (its meta in localStorage): the settings show this device's light/dark and the
+     *  management's rows. The demo user is an admin, so nothing is locked. */
+    const SETTINGS_MANAGED = { 'hapulse:global-meta': { state: { meta: { managed: true, rev: 3, activatedAt: '2026-10-02T18:00:00Z',
+      activatedBy: { id: 'user_alice', name: 'Alice' }, updatedAt: '2026-10-09T07:30:00Z', updatedBy: { id: 'user_alice', name: 'Alice' },
+      shareSecrets: true } }, version: 0 } };
 
     // ---- K91: every list switch is the iOS switch — 51 × 31, iOS green / grey, knob 27 white at 2 / 22, hit area
     //      64 × 44 (a point 5 px outside the capsule still reaches the control), click, Space and a tap on the edge of
@@ -1076,6 +1083,8 @@ module.exports = function pages(h) {
     //      long labels turn the segment tight on the phone and are never cut; six options keep the classic buttons. ----
     await block('pagesSegments', async () => {
       const res = {};
+      // parts: pool, energy, music, devices, settings (`--only pagesSegments:settings`)
+      const segPart = (name) => !onlyParts('pagesSegments').length || onlyParts('pagesSegments').includes(name);
       const MODE = 'input_select.modus_poolpumpe';
       const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
       const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
@@ -1090,334 +1099,485 @@ module.exports = function pages(h) {
       const ROOT = { page: '.pool-hero', sheet: '[role="dialog"]:has(.pool-modal)' };
       const CLASSIC = { page: '.pool-hero .pool-mode__btn', sheet: '[role="dialog"] .pool-modal__mode-btn' };
 
-      // Klassisch: the call of the "Automatik" button on the page and in the window
-      const classic = {};
-      for (const where of ['page', 'sheet']) {
-        const { page, close } = await open('desktop', 'classic', where === 'page' ? '/pool' : '/');
-        try {
-          if (where === 'sheet') await openChip(page);
-          await clear(page);
-          await page.locator(CLASSIC[where], { hasText: 'Automatik' }).first().click();
-          await sleep(200);
-          classic[where] = await calls(page);
-        } catch (e) {
-          classic[where] = { error: String(e.message).slice(0, 160) };
-        }
-        await close();
-      }
-
-      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+      if (segPart('pool')) {
+        // Klassisch: the call of the "Automatik" button on the page and in the window
+        const classic = {};
         for (const where of ['page', 'sheet']) {
-          const { page, close } = await open(device, 'glas', where === 'page' ? '/pool' : '/', { mode });
+          const { page, close } = await open('desktop', 'classic', where === 'page' ? '/pool' : '/');
           try {
-            const reopen = async () => {
-              if (where === 'sheet' && !(await page.locator(ROOT.sheet).count())) await openChip(page);
-            };
-            await reopen();
-            const seg = page.locator(`${ROOT[where]} .g-seg--pool`).first();
-            const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
-            const state = () => seg.evaluate((el) => ({
-              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => o.dataset.value),
-              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
-              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
-              tight: el.hasAttribute('data-tight'),
-              cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
-            }));
-            const look = await state();
-            const picker = () => page.locator('.pool-manual-modal').filter({ visible: true }).count();
-            const closePicker = async () => {
-              await page.keyboard.press('Escape');
-              await sleep(300);
-              await settleAnimations(page);
-            };
-
-            // "Automatik" with a tap: the classic call
+            if (where === 'sheet') await openChip(page);
             await clear(page);
-            await opt('Automatik').click();
+            await page.locator(CLASSIC[where], { hasText: 'Automatik' }).first().click();
             await sleep(200);
-            const tap = await calls(page);
-
-            // manual activation: from "Ausgeschalten" the arrow moves the focus only, Space chooses
-            await reopen();
-            await setMode(page, 'Ausgeschalten');
-            await sleep(200);
-            await clear(page);
-            await opt('Ausgeschalten').focus();
-            await page.keyboard.press('ArrowRight');
-            await sleep(150);
-            const arrow = { ...(await state()), calls: (await calls(page)).length };
-            await page.keyboard.press('Space');
-            await sleep(200);
-            const space = await calls(page);
-
-            // "Manuell": asks while another mode is set and when it is the mode (twice), the mode stays, nothing is sent
-            await reopen();
-            await setMode(page, 'Automatik');
-            await sleep(200);
-            await clear(page);
-            const manual = [];
-            for (const [st, n] of [['Automatik', 1], ['Manuell', 2]]) {
-              await reopen();
-              await setMode(page, st);
-              await sleep(200);
-              for (let k = 0; k < n; k++) {
-                await reopen();
-                await opt('Manuell').click();
-                await sleep(400);
-                await settleAnimations(page);
-                const m = { mode: st, asked: await picker(), sheetClosed: where === 'sheet' ? (await page.locator(ROOT.sheet).count()) === 0 : null };
-                await closePicker();
-                await reopen();
-                m.checked = (await state()).checked;
-                manual.push(m);
-              }
-            }
-            await reopen();
-            const after = { calls: (await calls(page)).length, checked: (await state()).checked };
-
-            // six options: the classic buttons
-            await setMode(page, 'Automatik', ['Ausgeschalten', 'Automatik', 'Manuell', 'Eco', 'Boost', 'Urlaub']);
-            await sleep(300);
-            await reopen();
-            const six = { segments: await page.locator(`${ROOT[where]} .g-seg--pool`).count(), buttons: await page.locator(CLASSIC[where]).count() };
-
-            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-            const ok = same(look.options, ['Ausgeschalten', 'Automatik', 'Manuell']) && look.checked === 'Manuell' && look.cut.length === 0
-              && (device === 'desktop' ? !look.tight : where === 'sheet' || look.tight)
-              && Array.isArray(classic[where]) && classic[where].length === 1 && same(tap, classic[where])
-              && arrow.calls === 0 && arrow.checked === 'Ausgeschalten' && arrow.focus === 'Automatik'
-              && space.length === 1 && space[0].data.option === 'Automatik' && space[0].target.entity_id === MODE
-              && manual.length === 3 && manual.every((m) => m.asked === 1 && m.sheetClosed !== false && m.checked === m.mode)
-              && after.calls === 0 && after.checked === 'Manuell'
-              && six.segments === 0 && six.buttons === 6;
-            res[`${device}-${where}`] = { ok, look, tap, classic: classic[where], arrow, space, manual, after, six };
+            classic[where] = await calls(page);
           } catch (e) {
-            res[`${device}-${where}`] = { ok: false, error: String(e.message).slice(0, 200) };
+            classic[where] = { error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          for (const where of ['page', 'sheet']) {
+            const { page, close } = await open(device, 'glas', where === 'page' ? '/pool' : '/', { mode });
+            try {
+              const reopen = async () => {
+                if (where === 'sheet' && !(await page.locator(ROOT.sheet).count())) await openChip(page);
+              };
+              await reopen();
+              const seg = page.locator(`${ROOT[where]} .g-seg--pool`).first();
+              const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
+              const state = () => seg.evaluate((el) => ({
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => o.dataset.value),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                tight: el.hasAttribute('data-tight'),
+                cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+              }));
+              const look = await state();
+              const picker = () => page.locator('.pool-manual-modal').filter({ visible: true }).count();
+              const closePicker = async () => {
+                await page.keyboard.press('Escape');
+                await sleep(300);
+                await settleAnimations(page);
+              };
+
+              // "Automatik" with a tap: the classic call
+              await clear(page);
+              await opt('Automatik').click();
+              await sleep(200);
+              const tap = await calls(page);
+
+              // manual activation: from "Ausgeschalten" the arrow moves the focus only, Space chooses
+              await reopen();
+              await setMode(page, 'Ausgeschalten');
+              await sleep(200);
+              await clear(page);
+              await opt('Ausgeschalten').focus();
+              await page.keyboard.press('ArrowRight');
+              await sleep(150);
+              const arrow = { ...(await state()), calls: (await calls(page)).length };
+              await page.keyboard.press('Space');
+              await sleep(200);
+              const space = await calls(page);
+
+              // "Manuell": asks while another mode is set and when it is the mode (twice), the mode stays, nothing is sent
+              await reopen();
+              await setMode(page, 'Automatik');
+              await sleep(200);
+              await clear(page);
+              const manual = [];
+              for (const [st, n] of [['Automatik', 1], ['Manuell', 2]]) {
+                await reopen();
+                await setMode(page, st);
+                await sleep(200);
+                for (let k = 0; k < n; k++) {
+                  await reopen();
+                  await opt('Manuell').click();
+                  await sleep(400);
+                  await settleAnimations(page);
+                  const m = { mode: st, asked: await picker(), sheetClosed: where === 'sheet' ? (await page.locator(ROOT.sheet).count()) === 0 : null };
+                  await closePicker();
+                  await reopen();
+                  m.checked = (await state()).checked;
+                  manual.push(m);
+                }
+              }
+              await reopen();
+              const after = { calls: (await calls(page)).length, checked: (await state()).checked };
+
+              // six options: the classic buttons
+              await setMode(page, 'Automatik', ['Ausgeschalten', 'Automatik', 'Manuell', 'Eco', 'Boost', 'Urlaub']);
+              await sleep(300);
+              await reopen();
+              const six = { segments: await page.locator(`${ROOT[where]} .g-seg--pool`).count(), buttons: await page.locator(CLASSIC[where]).count() };
+
+              const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+              const ok = same(look.options, ['Ausgeschalten', 'Automatik', 'Manuell']) && look.checked === 'Manuell' && look.cut.length === 0
+                && (device === 'desktop' ? !look.tight : where === 'sheet' || look.tight)
+                && Array.isArray(classic[where]) && classic[where].length === 1 && same(tap, classic[where])
+                && arrow.calls === 0 && arrow.checked === 'Ausgeschalten' && arrow.focus === 'Automatik'
+                && space.length === 1 && space[0].data.option === 'Automatik' && space[0].target.entity_id === MODE
+                && manual.length === 3 && manual.every((m) => m.asked === 1 && m.sheetClosed !== false && m.checked === m.mode)
+                && after.calls === 0 && after.checked === 'Manuell'
+                && six.segments === 0 && six.buttons === 6;
+              res[`${device}-${where}`] = { ok, look, tap, classic: classic[where], arrow, space, manual, after, six };
+            } catch (e) {
+              res[`${device}-${where}`] = { ok: false, error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+        }
+      }
+      if (segPart('energy')) {
+        // The energy period: a view, so a tap and the arrows choose at once; the hero shows the figure of Klassisch's tab.
+        // While a period loads (the demo holds its statistics: energyHold) Klassisch swaps the page for its loading line
+        // and the focus is gone; Glas keeps the cards and dims them (`data-g-stale`, .5, the hero's head stays), so the
+        // segment keeps the focus and the arrows can go on.
+        const LABEL = { today: DE['energy.period.today'], week: DE['energy.period.week'], month: DE['energy.period.month'], year: DE['energy.period.year'] };
+        const figure = (page) => ev(page, () => document.querySelector('.energy-hero__primary-value')?.textContent.trim() ?? null);
+        const classicEnergy = {};
+        {
+          const { page, close } = await open('desktop', 'classic', '/energy', { fixedTime: ENERGY_AT });
+          try {
+            for (const p of ['week', 'month', 'year', 'today']) {
+              await page.locator('.energy-period__btn', { hasText: LABEL[p] }).click();
+              await sleep(300);
+              await page.waitForFunction((l) => document.querySelector('.energy-period__btn--active')?.textContent.trim() === l
+                && !document.querySelector('.energy-page__loading'), LABEL[p], { timeout: 5000 });
+              classicEnergy[p] = await figure(page);
+            }
+            // a held load: the loading line instead of the cards, the focus falls back to the page
+            await ev(page, () => window.__hapulseDemo.energyHold(true));
+            await page.locator('.energy-period__btn', { hasText: LABEL.month }).focus();
+            await page.keyboard.press('Enter');
+            await sleep(300);
+            classicEnergy.held = await ev(page, () => ({ loading: !!document.querySelector('.energy-page__loading'),
+              hero: !!document.querySelector('.energy-hero'), focus: document.activeElement === document.body }));
+            await ev(page, () => window.__hapulseDemo.energyHold(false));
+          } catch (e) {
+            classicEnergy.error = String(e.message).slice(0, 160);
+          }
+          await close();
+        }
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/energy', { mode, fixedTime: ENERGY_AT });
+          try {
+            const seg = page.locator('.energy-hero .g-seg--energy');
+            const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
+            const state = async () => ({ figure: await figure(page), ...(await seg.evaluate((el) => {
+              const cell = document.querySelector('.energy-page .overview-grid__cell:not([data-section="hero"]) > *');
+              return {
+                role: el.getAttribute('role'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.textContent.trim()}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+                h: Math.round(el.getBoundingClientRect().height),
+                stale: document.querySelector('.energy-page')?.hasAttribute('data-g-stale') ?? null,
+                loading: !!document.querySelector('.energy-page__loading'),
+                dim: { card: cell && getComputedStyle(cell).opacity,
+                  stats: getComputedStyle(document.querySelector('.energy-hero__stats')).opacity,
+                  head: getComputedStyle(document.querySelector('.energy-hero__header')).opacity },
+              };
+            })) });
+            const waitFigure = (want) => page.waitForFunction((w) => document.querySelector('.energy-hero__primary-value')?.textContent.trim() === w
+              && !document.querySelector('.energy-page[data-g-stale]'), want, { timeout: 5000 }).catch(() => {});
+            const look = await state();
+            // a tap on "Woche"
+            await opt('week').click();
+            await waitFigure(classicEnergy.week);
+            await sleep(300);
+            const tap = await state();
+            // the arrow from "Woche" while the load is held: "Monat" is chosen, the cards stay dimmed, the focus stays
+            await ev(page, () => window.__hapulseDemo.energyHold(true));
+            await page.keyboard.press('ArrowRight');
+            await sleep(400);
+            const held = await state();
+            await ev(page, () => window.__hapulseDemo.energyHold(false));
+            await waitFigure(classicEnergy.month);
+            await sleep(300);
+            const loaded = await state();
+            // and on: End chooses "Jahr", Home "Heute"
+            await page.keyboard.press('End');
+            await waitFigure(classicEnergy.year);
+            const end = await state();
+            await page.keyboard.press('Home');
+            await waitFigure(classicEnergy.today);
+            const home = await state();
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const plain = (st) => st.stale === false && !st.loading && st.dim.card === '1' && st.dim.stats === '1' && st.dim.head === '1';
+            const ok = !classicEnergy.error && look.role === 'radiogroup'
+              && same(look.options, ['today', 'week', 'month', 'year'].map((v) => `${v}:${LABEL[v]}`))
+              && look.checked === 'today' && look.figure === classicEnergy.today && look.cut.length === 0 && look.h === 44 && plain(look)
+              && tap.checked === 'week' && tap.figure === classicEnergy.week && plain(tap)
+              && held.checked === 'month' && held.focus === 'month' && held.stale === true && !held.loading
+              && held.figure === classicEnergy.week && held.dim.card === '0.5' && held.dim.stats === '0.5' && held.dim.head === '1'
+              && loaded.checked === 'month' && loaded.focus === 'month' && loaded.figure === classicEnergy.month && plain(loaded)
+              && end.checked === 'year' && end.focus === 'year' && end.figure === classicEnergy.year
+              && home.checked === 'today' && home.focus === 'today' && home.figure === classicEnergy.today
+              && new Set([classicEnergy.today, classicEnergy.week, classicEnergy.month, classicEnergy.year]).size === 4;
+            res[`${device}-energy`] = { ok, classic: classicEnergy, look, tap, held, loaded, end: [end.checked, end.figure], home: [home.checked, home.figure] };
+          } catch (e) {
+            res[`${device}-energy`] = { ok: false, error: String(e.message).slice(0, 200) };
           }
           await close();
         }
       }
-      // The energy period: a view, so a tap and the arrows choose at once; the hero shows the figure of Klassisch's tab.
-      // While a period loads (the demo holds its statistics: energyHold) Klassisch swaps the page for its loading line
-      // and the focus is gone; Glas keeps the cards and dims them (`data-g-stale`, .5, the hero's head stays), so the
-      // segment keeps the focus and the arrows can go on.
-      const LABEL = { today: DE['energy.period.today'], week: DE['energy.period.week'], month: DE['energy.period.month'], year: DE['energy.period.year'] };
-      const figure = (page) => ev(page, () => document.querySelector('.energy-hero__primary-value')?.textContent.trim() ?? null);
-      const classicEnergy = {};
-      {
-        const { page, close } = await open('desktop', 'classic', '/energy', { fixedTime: ENERGY_AT });
-        try {
-          for (const p of ['week', 'month', 'year', 'today']) {
-            await page.locator('.energy-period__btn', { hasText: LABEL[p] }).click();
-            await sleep(300);
-            await page.waitForFunction((l) => document.querySelector('.energy-period__btn--active')?.textContent.trim() === l
-              && !document.querySelector('.energy-page__loading'), LABEL[p], { timeout: 5000 });
-            classicEnergy[p] = await figure(page);
+
+      if (segPart('music')) {
+        // Music: the zones' view is a segment of two symbols (list, grid) instead of Klassisch's two buttons; a view, so
+        // the arrows choose; either view shows the rooms Klassisch shows in it
+        let classicZones;
+        {
+          const { page, close } = await open('desktop', 'classic', '/music');
+          try {
+            const names = () => ev(page, () => ({ tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
+              rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()) }));
+            const grid = await names();
+            await page.locator('.zones-card__view-btn').nth(0).click();
+            await sleep(200);
+            classicZones = { grid, list: await names() };
+          } catch (e) {
+            classicZones = { error: String(e.message).slice(0, 160) };
           }
-          // a held load: the loading line instead of the cards, the focus falls back to the page
-          await ev(page, () => window.__hapulseDemo.energyHold(true));
-          await page.locator('.energy-period__btn', { hasText: LABEL.month }).focus();
-          await page.keyboard.press('Enter');
-          await sleep(300);
-          classicEnergy.held = await ev(page, () => ({ loading: !!document.querySelector('.energy-page__loading'),
-            hero: !!document.querySelector('.energy-hero'), focus: document.activeElement === document.body }));
-          await ev(page, () => window.__hapulseDemo.energyHold(false));
-        } catch (e) {
-          classicEnergy.error = String(e.message).slice(0, 160);
+          await close();
         }
-        await close();
-      }
-      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        const { page, close } = await open(device, 'glas', '/energy', { mode, fixedTime: ENERGY_AT });
-        try {
-          const seg = page.locator('.energy-hero .g-seg--energy');
-          const opt = (v) => seg.locator(`.g-seg__opt[data-value="${v}"]`);
-          const state = async () => ({ figure: await figure(page), ...(await seg.evaluate((el) => {
-            const cell = document.querySelector('.energy-page .overview-grid__cell:not([data-section="hero"]) > *');
-            return {
-              role: el.getAttribute('role'),
-              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.textContent.trim()}`),
-              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
-              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
-              cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
-              h: Math.round(el.getBoundingClientRect().height),
-              stale: document.querySelector('.energy-page')?.hasAttribute('data-g-stale') ?? null,
-              loading: !!document.querySelector('.energy-page__loading'),
-              dim: { card: cell && getComputedStyle(cell).opacity,
-                stats: getComputedStyle(document.querySelector('.energy-hero__stats')).opacity,
-                head: getComputedStyle(document.querySelector('.energy-hero__header')).opacity },
-            };
-          })) });
-          const waitFigure = (want) => page.waitForFunction((w) => document.querySelector('.energy-hero__primary-value')?.textContent.trim() === w
-            && !document.querySelector('.energy-page[data-g-stale]'), want, { timeout: 5000 }).catch(() => {});
-          const look = await state();
-          // a tap on "Woche"
-          await opt('week').click();
-          await waitFigure(classicEnergy.week);
-          await sleep(300);
-          const tap = await state();
-          // the arrow from "Woche" while the load is held: "Monat" is chosen, the cards stay dimmed, the focus stays
-          await ev(page, () => window.__hapulseDemo.energyHold(true));
-          await page.keyboard.press('ArrowRight');
-          await sleep(400);
-          const held = await state();
-          await ev(page, () => window.__hapulseDemo.energyHold(false));
-          await waitFigure(classicEnergy.month);
-          await sleep(300);
-          const loaded = await state();
-          // and on: End chooses "Jahr", Home "Heute"
-          await page.keyboard.press('End');
-          await waitFigure(classicEnergy.year);
-          const end = await state();
-          await page.keyboard.press('Home');
-          await waitFigure(classicEnergy.today);
-          const home = await state();
-          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-          const plain = (st) => st.stale === false && !st.loading && st.dim.card === '1' && st.dim.stats === '1' && st.dim.head === '1';
-          const ok = !classicEnergy.error && look.role === 'radiogroup'
-            && same(look.options, ['today', 'week', 'month', 'year'].map((v) => `${v}:${LABEL[v]}`))
-            && look.checked === 'today' && look.figure === classicEnergy.today && look.cut.length === 0 && look.h === 44 && plain(look)
-            && tap.checked === 'week' && tap.figure === classicEnergy.week && plain(tap)
-            && held.checked === 'month' && held.focus === 'month' && held.stale === true && !held.loading
-            && held.figure === classicEnergy.week && held.dim.card === '0.5' && held.dim.stats === '0.5' && held.dim.head === '1'
-            && loaded.checked === 'month' && loaded.focus === 'month' && loaded.figure === classicEnergy.month && plain(loaded)
-            && end.checked === 'year' && end.focus === 'year' && end.figure === classicEnergy.year
-            && home.checked === 'today' && home.focus === 'today' && home.figure === classicEnergy.today
-            && new Set([classicEnergy.today, classicEnergy.week, classicEnergy.month, classicEnergy.year]).size === 4;
-          res[`${device}-energy`] = { ok, classic: classicEnergy, look, tap, held, loaded, end: [end.checked, end.figure], home: [home.checked, home.figure] };
-        } catch (e) {
-          res[`${device}-energy`] = { ok: false, error: String(e.message).slice(0, 200) };
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/music', { mode });
+          try {
+            const seg = page.locator('.zones-card .g-seg--view');
+            await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const state = () => seg.evaluate((el) => {
+              const b = el.getBoundingClientRect();
+              return {
+                role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                h: Math.round(b.height), w: Math.round(b.width),
+                tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
+                rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()),
+                buttons: document.querySelectorAll('.zones-card__view-btn').length,
+              };
+            });
+            const look = await state();
+            await seg.locator('.g-seg__opt[data-value="list"]').click();
+            await sleep(300);
+            const tap = await state();
+            const keys = {};
+            for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
+              await page.keyboard.press(key);
+              await sleep(300);
+              const st = await state();
+              keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st.checked === 'grid' ? st.tiles.length : st.rows.length };
+            }
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const cg = classicZones.grid || {};
+            const cl = classicZones.list || {};
+            const ok = !classicZones.error && (cg.tiles || []).length > 0 && same(cl.rows, cg.tiles) && look.role === 'radiogroup'
+              && look.label === DE['music.zones.viewModeAria']
+              && same(look.options, [`list:${DE['music.zones.listView']}`, `grid:${DE['music.zones.gridView']}`])
+              && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
+              && same(look.tiles, cg.tiles) && look.rows.length === 0
+              && tap.checked === 'list' && tap.focus === 'list' && same(tap.rows, cl.rows) && tap.tiles.length === 0
+              && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
+                ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.tiles.length}`));
+            res[`${device}-music`] = { ok, classic: classicZones, look, tap: [tap.checked, tap.focus, tap.rows.length], keys };
+          } catch (e) {
+            res[`${device}-music`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
         }
-        await close();
       }
 
-      // Music: the zones' view is a segment of two symbols (list, grid) instead of Klassisch's two buttons; a view, so
-      // the arrows choose; either view shows the rooms Klassisch shows in it
-      let classicZones;
-      {
-        const { page, close } = await open('desktop', 'classic', '/music');
-        try {
-          const names = () => ev(page, () => ({ tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
-            rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()) }));
-          const grid = await names();
-          await page.locator('.zones-card__view-btn').nth(0).click();
-          await sleep(200);
-          classicZones = { grid, list: await names() };
-        } catch (e) {
-          classicZones = { error: String(e.message).slice(0, 160) };
-        }
-        await close();
-      }
-      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        const { page, close } = await open(device, 'glas', '/music', { mode });
-        try {
-          const seg = page.locator('.zones-card .g-seg--view');
-          await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-          await settleAnimations(page);
-          const state = () => seg.evaluate((el) => {
-            const b = el.getBoundingClientRect();
-            return {
-              role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
-              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
-              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
-              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
-              h: Math.round(b.height), w: Math.round(b.width),
-              tiles: [...document.querySelectorAll('.zone-grid-card__name')].map((e) => e.textContent.trim()),
-              rows: [...document.querySelectorAll('.zone-row__name')].map((e) => e.textContent.trim()),
-              buttons: document.querySelectorAll('.zones-card__view-btn').length,
-            };
-          });
-          const look = await state();
-          await seg.locator('.g-seg__opt[data-value="list"]').click();
-          await sleep(300);
-          const tap = await state();
-          const keys = {};
-          for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
-            await page.keyboard.press(key);
+      if (segPart('devices')) {
+        // Devices: grid | list is the same segment of two symbols instead of Klassisch's two buttons; a view, so the
+        // arrows choose; either view lists the devices Klassisch lists in it
+        let classicDevices;
+        {
+          const { page, close } = await open('desktop', 'classic', '/devices');
+          try {
+            const names = () => ev(page, () => [...document.querySelectorAll('.devices-results .device-card__name')].map((e) => e.textContent.trim()));
+            const grid = await names();
+            await page.locator('.devices-view-toggle__btn').nth(0).click();
             await sleep(300);
-            const st = await state();
-            keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st.checked === 'grid' ? st.tiles.length : st.rows.length };
+            classicDevices = { grid, list: await names() };
+          } catch (e) {
+            classicDevices = { error: String(e.message).slice(0, 160) };
           }
-          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-          const cg = classicZones.grid || {};
-          const cl = classicZones.list || {};
-          const ok = !classicZones.error && (cg.tiles || []).length > 0 && same(cl.rows, cg.tiles) && look.role === 'radiogroup'
-            && look.label === DE['music.zones.viewModeAria']
-            && same(look.options, [`list:${DE['music.zones.listView']}`, `grid:${DE['music.zones.gridView']}`])
-            && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
-            && same(look.tiles, cg.tiles) && look.rows.length === 0
-            && tap.checked === 'list' && tap.focus === 'list' && same(tap.rows, cl.rows) && tap.tiles.length === 0
-            && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
-              ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.tiles.length}`));
-          res[`${device}-music`] = { ok, classic: classicZones, look, tap: [tap.checked, tap.focus, tap.rows.length], keys };
-        } catch (e) {
-          res[`${device}-music`] = { ok: false, error: String(e.message).slice(0, 200) };
+          await close();
         }
-        await close();
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/devices', { mode });
+          try {
+            const seg = page.locator('.devices-toolbar .g-seg--view');
+            await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            await settleAnimations(page);
+            const state = () => seg.evaluate((el) => {
+              const b = el.getBoundingClientRect();
+              const names = (v) => [...document.querySelectorAll(`.devices-results--${v} .device-card__name`)].map((e) => e.textContent.trim());
+              return {
+                role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
+                h: Math.round(b.height), w: Math.round(b.width),
+                grid: names('grid'), list: names('list'),
+                buttons: document.querySelectorAll('.devices-view-toggle__btn').length,
+              };
+            });
+            const look = await state();
+            await seg.locator('.g-seg__opt[data-value="list"]').click();
+            await sleep(300);
+            const tap = await state();
+            const keys = {};
+            for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
+              await page.keyboard.press(key);
+              await sleep(300);
+              const st = await state();
+              keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st[st.checked].length };
+            }
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const cg = classicDevices.grid || [];
+            const ok = !classicDevices.error && cg.length > 0 && same(classicDevices.list, cg) && look.role === 'radiogroup'
+              && look.label === DE['devices.toolbar.viewModeAria']
+              && same(look.options, [`list:${DE['devices.toolbar.listViewAria']}`, `grid:${DE['devices.toolbar.gridViewAria']}`])
+              && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
+              && same(look.grid, cg) && look.list.length === 0
+              && tap.checked === 'list' && tap.focus === 'list' && same(tap.list, classicDevices.list) && tap.grid.length === 0
+              && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
+                ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.length}`));
+            res[`${device}-devices`] = { ok, classic: classicDevices.error || classicDevices.grid.length, look: { ...look, grid: look.grid.length },
+              tap: [tap.checked, tap.focus, tap.list.length], keys };
+          } catch (e) {
+            res[`${device}-devices`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
+      // Settings: style, glass strength, light/dark and this device's light/dark are segments with manual activation
+      // (they write): the arrows only move the focus, Space, Enter and a tap choose and write what Klassisch's button of
+      // the same choice writes. A switch of the style hands the focus to the other style's control of the same choice,
+      // in both directions. The device row exists under the admin management (its meta seeded as active).
+      if (segPart('settings')) {
+        const SEG = {
+          style: DE['glas.style.groupAria'], strength: DE['glas.strength.groupAria'],
+          mode: DE['settings.appearance.mode.groupAria'], device: DE['globalSettings.deviceMode.label'],
+        };
+        const settingsState = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state || {});
+        const written = async (page) => {
+          await sleep(150);
+          const st = await settingsState(page);
+          return { mode: st.mode, modeOverride: st.modeOverride ?? null, uiStyle: st.customization?.uiStyle ?? null,
+            glassStrength: st.customization?.glassStrength ?? null };
+        };
+        /** What has the focus: a segment option (`seg:<group>:<value>`), a classic button (`btn:<text>`) or else. */
+        const focused = (page) => ev(page, () => {
+          const a = document.activeElement;
+          if (!a || a === document.body) return 'body';
+          const seg = a.closest('.g-seg');
+          if (seg) return `seg:${seg.getAttribute('aria-label')}:${a.dataset.value}`;
+          if (a.classList.contains('mode-toggle__btn')) return `btn:${a.closest('.mode-toggle').getAttribute('aria-label')}:${a.textContent.trim()}`;
+          return a.tagName.toLowerCase() + (a.className ? '.' + String(a.className).split(' ')[0] : '');
+        });
+        const classicBtn = (page, group, text) => page.locator(`.mode-toggle[aria-label="${group}"] .mode-toggle__btn`, { hasText: text }).first();
+        let classicSettings;
+        {
+          const { page, close } = await open('desktop', 'classic', '/settings', { storage: SETTINGS_MANAGED });
+          try {
+            const r = {};
+            await classicBtn(page, SEG.mode, DE['settings.appearance.mode.auto']).click();
+            r.auto = (await written(page)).mode;
+            await classicBtn(page, SEG.device, DE['settings.appearance.mode.dark']).click();
+            r.deviceDark = (await written(page)).modeOverride;
+            await classicBtn(page, SEG.device, DE['globalSettings.deviceMode.follow']).click();
+            r.deviceFollow = (await written(page)).modeOverride;
+            // Klassisch → Glas with the mouse: the segment's "Glas" takes the focus
+            await page.locator('.mode-toggle__btn[data-glas-style-option="glas"]').click();
+            await sleep(300);
+            await settleAnimations(page);
+            r.toGlas = { ...(await written(page)), style: await ev(page, () => document.documentElement.dataset.style ?? null), focus: await focused(page) };
+            classicSettings = r;
+          } catch (e) {
+            classicSettings = { error: String(e.message).slice(0, 160) };
+          }
+          await close();
+        }
+        for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
+          const { page, close } = await open(device, 'glas', '/settings', { mode, storage: SETTINGS_MANAGED });
+          try {
+            const look = await ev(page, (groups) => Object.fromEntries(Object.entries(groups).map(([k, label]) => {
+              const el = document.querySelector(`.g-seg[aria-label="${label}"]`);
+              if (!el) return [k, null];
+              const b = el.getBoundingClientRect();
+              const row = el.closest('.settings-card__row').getBoundingClientRect();
+              const lab = el.closest('.settings-card__row').querySelector('.settings-card__row-label').getBoundingClientRect();
+              return [k, {
+                role: el.getAttribute('role'),
+                options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.textContent.trim()}`),
+                checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
+                h: Math.round(b.height), tight: el.hasAttribute('data-tight'),
+                cut: [...el.querySelectorAll('.g-seg__opt')].filter((o) => o.scrollWidth > o.clientWidth + 0.5).map((o) => o.dataset.value),
+                // beside the label (right edge of the row's padding) or, on the phone, a line of its own across the row
+                left: Math.round(b.left - row.left), right: Math.round(row.right - b.right), beside: b.top < lab.bottom,
+              }];
+            })), SEG);
+            const seg = (k) => page.locator(`.g-seg[aria-label="${SEG[k]}"]`);
+            const opt = (k, v) => seg(k).locator(`.g-seg__opt[data-value="${v}"]`);
+            const step = async (key) => {
+              await page.keyboard.press(key);
+              await sleep(150);
+              return { focus: await focused(page), ...(await written(page)) };
+            };
+            // light/dark: the arrow moves the focus only, Space chooses; a tap on "Auto" writes what Klassisch's "Auto" writes
+            const next = mode === 'light' ? 'dark' : 'auto';
+            await opt('mode', mode).focus();
+            const modeArrow = await step('ArrowRight');
+            const modeSpace = await step('Space');
+            await opt('mode', 'auto').click();
+            const modeTap = await written(page);
+            // strength: a tap, the arrow, Enter
+            await opt('strength', 'tinted').click();
+            const strengthTap = { focus: await focused(page), ...(await written(page)) };
+            const strengthArrow = await step('ArrowRight');
+            const strengthEnter = await step('Enter');
+            // this device: a tap on "Dunkel", Home moves to "Vorgabe", Space chooses it (null: the admin's mode)
+            await opt('device', 'dark').click();
+            const deviceTap = await written(page);
+            const deviceHome = await step('Home');
+            const deviceSpace = await step('Space');
+            // style: the arrow does not switch; Space switches to Klassisch and its "Klassisch" button has the focus
+            await opt('style', 'glas').focus();
+            const styleArrow = { ...(await step('ArrowLeft')), style: await ev(page, () => document.documentElement.dataset.style ?? null) };
+            await page.keyboard.press('Space');
+            await sleep(300);
+            await settleAnimations(page);
+            const toClassic = { ...(await written(page)), style: await ev(page, () => document.documentElement.dataset.style ?? null),
+              focus: await focused(page), strength: await seg('strength').count() };
+            // and back with the keyboard: Enter on Klassisch's "Glas" button, the segment's "Glas" takes the focus
+            await page.locator('.mode-toggle__btn[data-glas-style-option="glas"]').focus();
+            await page.keyboard.press('Enter');
+            await sleep(300);
+            await settleAnimations(page);
+            const back = { ...(await written(page)), style: await ev(page, () => document.documentElement.dataset.style ?? null),
+              focus: await focused(page), strength: await seg('strength').count() };
 
-      // Devices: grid | list is the same segment of two symbols instead of Klassisch's two buttons; a view, so the
-      // arrows choose; either view lists the devices Klassisch lists in it
-      let classicDevices;
-      {
-        const { page, close } = await open('desktop', 'classic', '/devices');
-        try {
-          const names = () => ev(page, () => [...document.querySelectorAll('.devices-results .device-card__name')].map((e) => e.textContent.trim()));
-          const grid = await names();
-          await page.locator('.devices-view-toggle__btn').nth(0).click();
-          await sleep(300);
-          classicDevices = { grid, list: await names() };
-        } catch (e) {
-          classicDevices = { error: String(e.message).slice(0, 160) };
-        }
-        await close();
-      }
-      for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        const { page, close } = await open(device, 'glas', '/devices', { mode });
-        try {
-          const seg = page.locator('.devices-toolbar .g-seg--view');
-          await seg.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-          await settleAnimations(page);
-          const state = () => seg.evaluate((el) => {
-            const b = el.getBoundingClientRect();
-            const names = (v) => [...document.querySelectorAll(`.devices-results--${v} .device-card__name`)].map((e) => e.textContent.trim());
-            return {
-              role: el.getAttribute('role'), label: el.getAttribute('aria-label'),
-              options: [...el.querySelectorAll('.g-seg__opt')].map((o) => `${o.dataset.value}:${o.getAttribute('aria-label')}`),
-              checked: el.querySelector('.g-seg__opt[aria-checked="true"]')?.dataset.value ?? null,
-              focus: document.activeElement?.closest('.g-seg') === el ? document.activeElement.dataset.value : null,
-              h: Math.round(b.height), w: Math.round(b.width),
-              grid: names('grid'), list: names('list'),
-              buttons: document.querySelectorAll('.devices-view-toggle__btn').length,
+            const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+            const C = classicSettings;
+            const shape = (k, vals, checked) => {
+              const l = look[k];
+              const where = device === 'desktop' ? l.right === 16 && l.beside : l.left === 16 && l.right === 16 && !l.beside;
+              return !!l && l.role === 'radiogroup' && same(l.options, vals) && l.checked === checked && l.h === 44 && !l.tight
+                && l.cut.length === 0 && where;
             };
-          });
-          const look = await state();
-          await seg.locator('.g-seg__opt[data-value="list"]').click();
-          await sleep(300);
-          const tap = await state();
-          const keys = {};
-          for (const key of ['ArrowRight', 'Home', 'End', 'ArrowRight']) {
-            await page.keyboard.press(key);
-            await sleep(300);
-            const st = await state();
-            keys[`${Object.keys(keys).length}:${key}`] = { checked: st.checked, focus: st.focus, n: st[st.checked].length };
+            const segOf = (k, v) => `seg:${SEG[k]}:${v}`;
+            const ok = !C.error && C.auto === 'auto' && C.deviceDark === 'dark' && C.deviceFollow === null
+              && C.toGlas.uiStyle === 'glas' && C.toGlas.style === 'glas' && C.toGlas.focus === segOf('style', 'glas')
+              && shape('style', [`classic:${DE['glas.style.classic']}`, `glas:${DE['glas.style.glas']}`], 'glas')
+              && shape('strength', ['clear', 'tinted', 'opaque'].map((v) => `${v}:${DE[`glas.strength.${v}`]}`), 'clear')
+              && shape('mode', ['light', 'dark', 'auto'].map((v) => `${v}:${DE[`settings.appearance.mode.${v}`]}`), mode)
+              && shape('device', [`follow:${DE['globalSettings.deviceMode.follow']}`,
+                ...['light', 'dark', 'auto'].map((v) => `${v}:${DE[`settings.appearance.mode.${v}`]}`)], 'follow')
+              && modeArrow.focus === segOf('mode', next) && modeArrow.mode === mode
+              && modeSpace.focus === segOf('mode', next) && modeSpace.mode === next && modeTap.mode === C.auto
+              && strengthTap.glassStrength === 'tinted' && strengthTap.focus === segOf('strength', 'tinted')
+              && strengthArrow.focus === segOf('strength', 'opaque') && strengthArrow.glassStrength === 'tinted'
+              && strengthEnter.glassStrength === 'opaque'
+              && deviceTap.modeOverride === C.deviceDark && deviceHome.focus === segOf('device', 'follow') && deviceHome.modeOverride === 'dark'
+              && deviceSpace.modeOverride === C.deviceFollow
+              && styleArrow.focus === segOf('style', 'classic') && styleArrow.uiStyle === 'glas' && styleArrow.style === 'glas'
+              && toClassic.uiStyle === 'classic' && toClassic.style === 'classic' && toClassic.strength === 0
+              && toClassic.focus === `btn:${SEG.style}:${DE['glas.style.classic']}`
+              && back.uiStyle === 'glas' && back.style === 'glas' && back.strength === 1 && back.focus === segOf('style', 'glas');
+            res[`${device}-settings`] = { ok, classic: C, look, mode: [modeArrow, modeSpace, modeTap.mode],
+              strength: [strengthTap, strengthArrow, strengthEnter.glassStrength], device: [deviceTap.modeOverride, deviceHome, deviceSpace.modeOverride],
+              style: [styleArrow, toClassic, back] };
+          } catch (e) {
+            res[`${device}-settings`] = { ok: false, error: String(e.message).slice(0, 200) };
           }
-          const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-          const cg = classicDevices.grid || [];
-          const ok = !classicDevices.error && cg.length > 0 && same(classicDevices.list, cg) && look.role === 'radiogroup'
-            && look.label === DE['devices.toolbar.viewModeAria']
-            && same(look.options, [`list:${DE['devices.toolbar.listViewAria']}`, `grid:${DE['devices.toolbar.gridViewAria']}`])
-            && look.checked === 'grid' && look.h === 44 && look.w === 88 && look.buttons === 0
-            && same(look.grid, cg) && look.list.length === 0
-            && tap.checked === 'list' && tap.focus === 'list' && same(tap.list, classicDevices.list) && tap.grid.length === 0
-            && same(Object.values(keys).map((k) => `${k.checked}/${k.focus}/${k.n}`),
-              ['grid', 'list', 'grid', 'list'].map((v) => `${v}/${v}/${cg.length}`));
-          res[`${device}-devices`] = { ok, classic: classicDevices.error || classicDevices.grid.length, look: { ...look, grid: look.grid.length },
-            tap: [tap.checked, tap.focus, tap.list.length], keys };
-        } catch (e) {
-          res[`${device}-devices`] = { ok: false, error: String(e.message).slice(0, 200) };
+          await close();
         }
-        await close();
       }
       out.pagesSegments = res;
       out.pagesSegmentsOk = Object.values(res).every((r) => r.ok);
@@ -3037,6 +3197,296 @@ module.exports = function pages(h) {
             && JSON.stringify(act.system) === JSON.stringify(act.home);
           res[`${device}-system`] = { ok: fine && measured && likeHome, same, glas: g, ...(same ? {} : { classic: got.classic }), look, likeHome,
             ...(likeHome ? {} : { act }) };
+        }
+        // Settings (S1–S16): every row does in Glas what it does in Klassisch. The same steps run in both styles and
+        // must leave the same settings behind: app name (S2), app symbol (S3), light/dark (S4), language (S6), accent
+        // and its reset (S8, the hue itself differs: Glas starts from its own orange), editing (S10, the rooms follow),
+        // the entities window with search, rename, star and eye (S11), room order and eye (S13), export as a file and
+        // import up to the file dialog (S14), version line, "Neuerungen" and the project link (S15), and last the demo's
+        // way to the onboarding (S1; with a real connection "Trennen" signs out at once, there is no dialog). Under the
+        // admin management (second document): this device's light/dark (S5) and the management's rows (S12); its
+        // switch and button need a real connection and are off in the demo, in both styles, like "für alle übernehmen"
+        // without the management, so its dialog is not reached here. The colour worlds (S7) are Klassisch's: Glas
+        // shows the hint instead and keeps the saved theme. S9 (locked rows) and S16 (sync with HA) need a non-admin or
+        // a real connection. Glas also measures the list: rows 52, hairlines from the text (56) or the edge (16), none
+        // above a list's first row, chips without tint in `label2`, values in `label2`, swatches 44, buttons 44.
+        if (keepPart('settings')) {
+          const state = (page) => ev(page, () => JSON.parse(localStorage.getItem('hapulse:settings') || '{}').state || {});
+          const choose = async (page, group, text) => {
+            await page.locator(`:is(.g-seg, .mode-toggle)[aria-label="${group}"] button`, { hasText: text }).first().click();
+            await sleep(200);
+          };
+          const visible = (page, sel) => page.locator(sel).filter({ visible: true }).count();
+          const steps = async (page, style) => {
+            const r = {};
+            // S2: the app name is the browser title
+            await page.locator(`input[aria-label="${DE['settings.appearance.appName.label']}"]`).fill('Testhaus');
+            await sleep(200);
+            r.name = [(await state(page)).appName, await ev(page, () => document.title)];
+            // S3: a symbol is the favicon; "Kein Symbol" hides it in the app
+            await page.locator(`.icon-swatch[aria-label="${DE['settings.appearance.appIcon.heart']}"]`).click();
+            await sleep(200);
+            const icon = await state(page);
+            r.icon = [icon.appIcon, icon.appIconHidden, await ev(page, () => document.querySelector('link[rel="icon"]')?.getAttribute('href'))];
+            await page.locator(`.icon-swatch[aria-label="${DE['settings.appearance.appIcon.none']}"]`).click();
+            await sleep(200);
+            r.iconNone = [(await state(page)).appIconHidden, await page.locator('.icon-swatch--active').getAttribute('aria-label')];
+            // S4: light/dark (the segment's own keys: pagesSegments)
+            await choose(page, DE['settings.appearance.mode.groupAria'], DE['settings.appearance.mode.dark']);
+            r.mode = (await state(page)).mode;
+            // S6: the language changes the page's texts, and back
+            const lang = page.locator('.settings-select__native'); // its name follows the language
+            await lang.selectOption('en');
+            await sleep(300);
+            r.language = [(await state(page)).language, await ev(page, () => document.querySelector('.page__title').textContent.trim())];
+            await lang.selectOption('auto');
+            await sleep(300);
+            r.languageBack = [(await state(page)).language, await ev(page, () => document.querySelector('.page__title').textContent.trim())];
+            // S7: Klassisch's colour worlds; Glas shows the hint and keeps the saved theme
+            if (style === 'classic') {
+              await page.locator('.theme-grid > *').nth(1).click();
+              await sleep(200);
+              r.themes = [await page.locator('.theme-grid > *').count(), (await state(page)).theme];
+            } else {
+              r.themes = [await page.locator('.theme-grid').count(), (await state(page)).theme,
+                await ev(page, (txt) => [...document.querySelectorAll('.settings-page .managed-row-hint')].some((p) => p.textContent.trim() === txt), DE['glas.themeHint'])];
+            }
+            // S8: the accent with the keys, then "zurücksetzen"
+            const slider = page.locator(`input[aria-label="${DE['settings.appearance.accent.hueAria']}"]`);
+            await slider.focus();
+            // from the row's top: focus scrolls the page smoothly
+            const top = () => slider.evaluate((e) => e.getBoundingClientRect().top - e.closest('.accent-row').getBoundingClientRect().top);
+            const top0 = await top();
+            for (let k = 0; k < 5; k++) await page.keyboard.press('ArrowRight');
+            await sleep(200);
+            const reset = page.locator('.accent-row__label .btn');
+            r.accent = [typeof (await state(page)).accentHue, await reset.count()];
+            // Glas: "zurücksetzen" appears without moving the slider
+            r.sliderShift = Math.round((await top()) - top0);
+            await reset.click();
+            await sleep(200);
+            r.accentReset = [(await state(page)).accentHue === undefined, await reset.count()];
+            // S10: editing off hides the rooms, on brings them back
+            const editing = page.locator(`button[aria-label="${DE['settings.admin.editingToggleAria']}"]`);
+            const before = (await state(page)).customization?.editingEnabled;
+            await editing.click();
+            await sleep(200);
+            r.editing = [before, (await state(page)).customization?.editingEnabled, await page.locator('.rooms-list').count()];
+            await editing.click();
+            await sleep(200);
+            r.editingBack = [(await state(page)).customization?.editingEnabled, await page.locator('.rooms-list').count()];
+            // S11: the entities window: search, a group, rename, star, eye, Esc
+            await page.locator('.admin-entities-btn').click();
+            await page.waitForSelector('.entities-modal-content', { timeout: 5000 });
+            await sleep(300);
+            await settleAnimations(page);
+            await page.locator(`input[aria-label="${DE['settings.entities.searchAria']}"]`).fill('lamp');
+            await sleep(300);
+            r.search = await ev(page, () => [...document.querySelectorAll('.entities-modal-content .entity-group__summary')].map((s) => s.textContent.trim()));
+            await page.locator('.entities-modal-content .entity-group__summary').first().click();
+            await sleep(300);
+            const id = (await page.locator('.entities-modal-content .entity-group[open] .entity-row__id').first().textContent()).trim();
+            // the row by its id; the new name still contains the search word, so the row stays in the list
+            const row = page.locator('.entities-modal-content .entity-row')
+              .filter({ has: page.locator('.entity-row__id', { hasText: new RegExp(`^${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) });
+            await row.locator('.entity-row__controls .icon-btn').nth(0).click();
+            await sleep(150);
+            await row.locator('.entity-rename-input').fill('Testlampe');
+            await page.keyboard.press('Enter');
+            await sleep(200);
+            await row.locator('.entity-row__controls .icon-btn').nth(1).click();
+            await sleep(150);
+            await row.locator('.entity-row__controls .icon-btn').nth(2).click();
+            await sleep(200);
+            const c = (await state(page)).customization || {};
+            r.entity = [id, c.entityOverrides?.[id]?.name ?? null, (c.favorites || []).includes(id), (c.hiddenEntities || []).includes(id),
+              (await row.locator('.entity-row__name').textContent()).trim()];
+            await page.keyboard.press('Escape');
+            await sleep(500);
+            await settleAnimations(page);
+            r.entitiesClosed = await page.locator('.entities-modal-content').count();
+            // S13: the first room one down, then its eye
+            const rooms0 = await ev(page, () => [...document.querySelectorAll('.rooms-list .room-row__name')].map((e) => e.textContent.trim()));
+            await page.locator('.rooms-list .room-row').first().locator('.icon-btn').nth(1).click();
+            await sleep(200);
+            const rooms1 = await ev(page, () => [...document.querySelectorAll('.rooms-list .room-row__name')].map((e) => e.textContent.trim()));
+            await page.locator('.rooms-list .room-row').first().locator('.icon-btn').nth(2).click();
+            await sleep(200);
+            const rc = (await state(page)).customization || {};
+            r.rooms = [rooms0.slice(0, 3), rooms1.slice(0, 3), (rc.roomOrder || []).slice(0, 2), rc.hiddenRooms || [],
+              await page.locator('.rooms-list .room-row__name--hidden').count()];
+            // S14: export as a file; import up to the file dialog
+            const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }),
+              page.locator('.backup-row .btn', { hasText: DE['settings.backup.exportBtn'] }).click()]);
+            const file = JSON.parse(require('fs').readFileSync(await download.path(), 'utf8'));
+            r.exported = [download.suggestedFilename(), file.appName, Object.keys(file.customization || {}).includes('roomOrder')];
+            const [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 5000 }),
+              page.locator('.backup-row .btn', { hasText: DE['settings.backup.importBtn'] }).click()]);
+            r.importDialog = [chooser.isMultiple(), await chooser.element().getAttribute('accept')];
+            // S12 without the management: "für alle übernehmen" needs a real connection (off in the demo)
+            r.activate = await page.locator('.global-admin__actions .btn', { hasText: DE['globalSettings.admin.activateBtn'] }).isDisabled();
+            // S15: version line, "Neuerungen" (the whole history), the project link
+            r.version = await ev(page, () => document.querySelector('.about-card__sub').textContent.trim());
+            await page.locator('.about-card__link--button').click();
+            await sleep(500);
+            await settleAnimations(page);
+            r.whatsNew = await ev(page, () => ({ title: document.querySelector('[role="dialog"] .changelog-modal, [role="dialog"].changelog-modal') ? 1 : 0,
+              releases: document.querySelectorAll('[role="dialog"] .changelog-release__version').length }));
+            await page.keyboard.press('Escape');
+            await sleep(500);
+            await settleAnimations(page);
+            r.whatsNewClosed = await visible(page, '[role="dialog"]');
+            r.link = await ev(page, () => {
+              const a = document.querySelector('a.about-card__link');
+              return [a.getAttribute('href'), a.getAttribute('target'), a.getAttribute('rel')];
+            });
+            // S1, last: the demo's way to the onboarding
+            await page.locator('.conn-card__actions .btn').click();
+            await sleep(500);
+            r.connect = await ev(page, () => location.pathname);
+            return r;
+          };
+          const managedSteps = async (page) => {
+            const r = {};
+            // S5: this device's light/dark, the admin's mode stays
+            await choose(page, DE['globalSettings.deviceMode.label'], DE['settings.appearance.mode.light']);
+            const st = await state(page);
+            r.device = [st.mode, st.modeOverride];
+            // the hints both styles show (Glas adds those of its theme note and of "Transparenz reduzieren")
+            r.hints = await ev(page, (glasOnly) => [...document.querySelectorAll('.settings-page .managed-row-hint')].map((p) => p.textContent.trim())
+              .filter((t) => !glasOnly.includes(t)), [DE['glas.themeHint'], DE['glas.reduceTransparency.hint']]);
+            // S12 under the management: who and when, the switch and the button (off without a real connection), no lock
+            r.meta = await ev(page, () => document.querySelector('.global-admin__meta')?.textContent.trim() ?? null);
+            const share = page.locator(`button[role="switch"][aria-label="${DE['globalSettings.admin.shareLabel']}"]`);
+            r.share = [await share.getAttribute('aria-checked'), await share.isDisabled()];
+            r.defaults = await page.locator('.global-admin__actions .btn', { hasText: DE['globalSettings.admin.defaultsBtn'] }).isDisabled();
+            r.locked = [await page.locator('.managed-hint').count(), await page.locator('.settings-page fieldset:disabled').count()];
+            return r;
+          };
+          /** Glas: the list's look (before the steps). */
+          const settingsLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const font = (el) => {
+              const c = getComputedStyle(el);
+              return `${c.fontWeight} ${c.fontSize}/${c.lineHeight}`;
+            };
+            const page = document.querySelector('.settings-page');
+            const cards = [...page.querySelectorAll('.card')];
+            // the connection's profile and the about card's head are their lists' first rows (the line below them
+            // belongs to the next row)
+            const ROW = '.conn-card__profile, .about-card > div:first-child, .settings-card__row, .conn-card__row, .conn-card__actions, .room-row, .about-card__link';
+            const EDGE = '.conn-card__actions, .room-row, .conn-card__row:not(:has(> .conn-card__row-label))';
+            // every row of every card in order, its hairline (left offset or none) and its height
+            const lists = cards.map((card) => [...card.querySelectorAll(ROW)].filter((r) => r.getClientRects().length).map((r) => {
+              const b = getComputedStyle(r, '::before');
+              const cb = card.getBoundingClientRect();
+              const line = b.content === 'none' || b.content === 'normal' ? 'none'
+                : `${Math.round(parseFloat(b.left))} ${b.height} ${b.backgroundColor === tok('--g-sep', 'backgroundColor')}`;
+              const rb = r.getBoundingClientRect();
+              const bw = parseFloat(getComputedStyle(card).borderLeftWidth);
+              return { cls: r.className.split(' ')[0] || 'head', edge: r.matches(EDGE), line, h: Math.round(rb.height),
+                edges: [rb.left - cb.left - bw, cb.right - rb.right - bw].map(Math.round).join() };
+            }));
+            const chips = [...page.querySelectorAll('.settings-card__icon-chip, .conn-card__icon-chip')];
+            const chip = (c) => {
+              const b = c.getBoundingClientRect();
+              const s = c.querySelector('svg').getBoundingClientRect();
+              return `${Math.round(b.width)}x${Math.round(b.height)} ${getComputedStyle(c).backgroundColor} ${getComputedStyle(c).color === tok('--g-label-2')} ${Math.round(s.width)}`;
+            };
+            const values = [...page.querySelectorAll('.conn-card__row-value, .conn-status')];
+            const label = page.querySelector('.settings-card__row-label');
+            const title = page.querySelector('.settings-page__section > .section-label');
+            const sw = [...page.querySelectorAll('.icon-swatch')];
+            const active = page.querySelector('.icon-swatch--active');
+            const btns = [...page.querySelectorAll('.backup-row > .btn, .conn-card__actions > .btn')];
+            const select = page.querySelector('.settings-select__native');
+            const sub = page.querySelector('.about-card__sub');
+            return {
+              cards: [...new Set(cards.map((c) => {
+                const cs = getComputedStyle(c);
+                return `${cs.borderTopColor} ${cs.paddingTop} ${cs.borderTopLeftRadius}`;
+              }))],
+              lists,
+              chips: [...new Set(chips.map(chip))],
+              values: [...new Set(values.map((v) => `${font(v)} ${getComputedStyle(v).color === tok('--g-label-2')}`))],
+              label: `${font(label)} ${getComputedStyle(label).color === tok('--g-label')}`,
+              title: `${font(title)} ${getComputedStyle(title).color === tok('--g-label-2')} ${getComputedStyle(title).textTransform}`,
+              swatches: [...new Set(sw.map((s) => {
+                const b = s.getBoundingClientRect();
+                return `${Math.round(b.width)}x${Math.round(b.height)} ${getComputedStyle(s).borderTopLeftRadius}`;
+              }))],
+              ring: getComputedStyle(active).boxShadow.includes('inset') && getComputedStyle(active).backgroundColor === tok('--g-accent-soft', 'backgroundColor'),
+              buttons: [...new Set(btns.map((b) => `${Math.round(b.getBoundingClientRect().height)} ${parseFloat(getComputedStyle(b).borderTopLeftRadius) >= 22} ${getComputedStyle(b).backgroundColor === tok('--g-fill', 'backgroundColor')} ${getComputedStyle(b).color === tok('--g-label')}`))],
+              select: `${font(select)} ${getComputedStyle(select).color === tok('--g-label-2')} ${getComputedStyle(select).backgroundColor}`,
+              version: `${font(sub)} ${getComputedStyle(sub).color === tok('--g-label-2')} ${getComputedStyle(sub, '::first-letter').textTransform}`,
+              chevron: getComputedStyle(page.querySelector('.about-card__link--button'), '::after').transform !== 'none',
+            };
+          });
+          const got = {};
+          let look = null;
+          for (const style of ['classic', 'glas']) {
+            {
+              const { page, close } = await open(device, style, '/settings', { mode });
+              try {
+                if (style === 'glas') look = await settingsLook(page);
+                got[style] = await steps(page, style);
+              } catch (e) {
+                got[style] = { error: String(e.message).slice(0, 200) };
+              }
+              await close();
+            }
+            {
+              const { page, close } = await open(device, style, '/settings', { mode, storage: SETTINGS_MANAGED });
+              try {
+                got[`${style}Managed`] = await managedSteps(page);
+              } catch (e) {
+                got[`${style}Managed`] = { error: String(e.message).slice(0, 200) };
+              }
+              await close();
+            }
+          }
+          const g = got.glas || {};
+          const k = got.classic || {};
+          // the same results, apart from the colour worlds (S7)
+          const strip = (r) => ({ ...r, themes: undefined, sliderShift: undefined });
+          const same = !g.error && !k.error && JSON.stringify(strip(g)) === JSON.stringify(strip(k))
+            && !!got.glasManaged && !got.glasManaged.error && JSON.stringify(got.glasManaged) === JSON.stringify(got.classicManaged);
+          const m = got.glasManaged || {};
+          const fine = same && g.name[0] === 'Testhaus' && g.name[1] === 'Testhaus'
+            && g.icon.join() === 'heart,false,/icons/heart.svg' && g.iconNone[0] === true && g.iconNone[1] === DE['settings.appearance.appIcon.none']
+            && g.mode === 'dark' && g.language.join() === 'en,Settings' && g.languageBack.join() === `auto,${DE['settings.title']}`
+            && k.themes.join() === '4,sunset' && g.themes.join() === '0,aurora,true'
+            && g.accent.join() === 'number,1' && g.sliderShift === 0 && g.accentReset.join() === 'true,0'
+            && g.editing[0] !== g.editing[1] && g.editing[2] === (g.editing[1] ? 1 : 0) && g.editingBack.join() === `${g.editing[0]},1`
+            && g.search.length > 0 && g.entity[1] === 'Testlampe' && g.entity[2] === true && g.entity[3] === true && g.entity[4] === 'Testlampe'
+            && g.entitiesClosed === 0
+            && g.rooms[1][0] === g.rooms[0][1] && g.rooms[1][1] === g.rooms[0][0] && g.rooms[3].length === 1 && g.rooms[4] === 1
+            && g.exported.join() === 'hapulse-settings.json,Testhaus,true' && g.importDialog[0] === false && /json/.test(g.importDialog[1])
+            && g.activate === true && /^version \d+\.\d+\.\d+ · F\d+$/.test(g.version)
+            && g.whatsNew.title === 1 && g.whatsNew.releases > 10 && g.whatsNewClosed === 0
+            && g.link.join() === 'https://github.com/jlnbln/HAPulse,_blank,noopener noreferrer' && g.connect === '/onboarding'
+            && m.device.join() === `${mode},light` && m.meta && m.meta.includes('Alice') && m.share.join() === 'true,true' && m.defaults === true
+            && m.locked.join() === '0,0';
+          // Glas's list: rows 52 (taller with a hint or a second line), first rows without a line, the others from the
+          // text (56) or, without a symbol column, from the edge (16)
+          const L = look || {};
+          const lines = !!look && L.lists.every((list) => list.every((r, i) => (i === 0 ? r.line === 'none' : r.line === `${r.edge ? 16 : 56} 0.5px true`)
+            && r.h >= 52 && r.edges === '0,0'));
+          const measured = !!look && L.cards.join() === 'rgba(0, 0, 0, 0) 0px 26px' && lines
+            && L.chips.length === 1 && L.chips[0] === '28x28 rgba(0, 0, 0, 0) true 22'
+            && L.values.length === 1 && L.values[0] === '400 17px/22px true' && L.label === '400 17px/22px true'
+            && L.title === '600 15px/20px true none' && L.swatches.join() === '44x44 12px' && L.ring
+            && L.buttons.join() === '44 true true true' && L.select === '400 17px/22px true rgba(0, 0, 0, 0)'
+            && L.version === '400 15px/20px true uppercase' && L.chevron;
+          res[`${device}-settings`] = { ok: fine && measured, same, glas: g, glasManaged: m, ...(same ? {} : { classic: k, classicManaged: got.classicManaged }),
+            look: measured ? { ok: true } : look };
         }
       }
       out.pagesKeep = res;
