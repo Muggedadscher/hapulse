@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F37 — 2026-10-10
+
+**Klima in Celsius** · _Climate in Celsius_
+
+### Behoben / Fixed
+
+- Klima: HAPulse übernimmt die Temperatureinheit aus Home Assistant; Thermostate mit hohem Höchstwert (etwa 90 °C) galten vorher als Fahrenheit, in Glas stand „°F“ und der Bogen der Klima-Karte blieb in beiden Stilen leer  
+  _Climate: HAPulse takes the temperature unit from Home Assistant; thermostats with a high maximum (about 90 °C) counted as Fahrenheit before, Glass showed “°F” and the climate card’s ring stayed empty in both styles_
+
 ## F36 — 2026-10-09
 
 **Hinweise und aktive Szenen; Vorschau Glas: Übersicht** · _Notices and active scenes; Glass preview: overview_
