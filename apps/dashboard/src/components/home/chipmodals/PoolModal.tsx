@@ -29,7 +29,7 @@ interface PoolModalProps {
 
 export function PoolModal({ open, onClose }: PoolModalProps) {
   const t = useT();
-  const { subtitle, windowClass } = useChipWindow('pool', open);
+  const subtitle = useChipWindow('pool', open);
   const locale = useLocale();
   const navigate = useNavigate();
 
@@ -71,7 +71,6 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
       onClose={onClose}
       title={t('pool.title')}
       subtitle={subtitle}
-      className={windowClass}
       icon={<Waves size={20} strokeWidth={1.75} />}
       footer={footer}
     >

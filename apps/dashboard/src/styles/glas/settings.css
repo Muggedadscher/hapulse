@@ -6,10 +6,7 @@
    (56; 16 without a symbol), none above the first row of a list: the rule hangs on the list, not on the
    `managed-fieldset` that splits a list into blocks (N5). Values `label2`, chevrons `label3`. Explanations below a
    control or a label start under the label text (desktop) or at the row's inset (phones), where a control below its
-   label takes the whole row.
-
-   The locales write most of these texts in lower case ("demomodus", "exportiere …"); Klassisch shows them so. Glas
-   raises only the first letter (sentence case, like the group titles §7.4); words inside a sentence stay as written. */
+   label takes the whole row. */
 
 :root[data-style='glas'] .settings-page {
   --g-row-indent: 40px;
@@ -35,10 +32,6 @@
   --text-faint: var(--g-label-2);
   padding: 0 16px;
   font: 400 15px / 20px var(--g-font);
-}
-
-:root[data-style='glas'] .settings-page .settings-page__section > p::first-letter {
-  text-transform: uppercase;
 }
 
 /* ---- The lists: one surface, rows to its edges ---- */
@@ -297,10 +290,6 @@
   text-transform: none;
 }
 
-:root[data-style='glas'] .settings-page .conn-card__profile-meta > :is(.conn-card__badge, .conn-card__role-badge)::first-letter {
-  text-transform: uppercase;
-}
-
 :root[data-style='glas'] .settings-page .conn-card__badge:has(+ .conn-card__role-badge)::after {
   content: '\00a0·';
 }
@@ -334,20 +323,12 @@
   --text-dim: var(--g-label-2);
 }
 
-:root[data-style='glas'] .settings-page .card .conn-status > span:not(.conn-status__dot)::first-letter {
-  text-transform: uppercase;
-}
-
 /* the demo note (its tint and size come inline): an explanation 13/18 without a tint */
 :root[data-style='glas'] .settings-page .card .conn-card__row:not(:has(> .conn-card__row-label)) {
   --bg-subtle: transparent;
   --text-dim: var(--g-label-2);
   padding-block: 12px;
   line-height: 18px;
-}
-
-:root[data-style='glas'] .settings-page .card .conn-card__row:not(:has(> .conn-card__row-label)) > span::first-letter {
-  text-transform: uppercase;
 }
 
 :root[data-style='glas'] .settings-page .card .conn-card__actions {
@@ -449,10 +430,6 @@
   background: transparent;
   color: var(--g-accent-ink);
   font: 400 17px / 20px var(--g-font);
-}
-
-:root[data-style='glas'] .settings-page .card .accent-row__label > .btn::first-letter {
-  text-transform: uppercase;
 }
 
 :root[data-style='glas'] .settings-page .card .accent-row__label > .btn:hover {
@@ -613,10 +590,6 @@
   padding-top: 4px;
 }
 
-:root[data-style='glas'] .settings-page .card .backup-hint::first-letter {
-  text-transform: uppercase;
-}
-
 :root[data-style='glas'] .settings-page .card .backup-row {
   gap: 8px;
   padding: 12px 16px;
@@ -669,10 +642,6 @@
 
 :root[data-style='glas'] .settings-page .about-card__sub:not(:has(+ .about-card__sub)) {
   padding-bottom: 12px;
-}
-
-:root[data-style='glas'] .settings-page .about-card__sub::first-letter {
-  text-transform: uppercase;
 }
 
 :root[data-style='glas'] .settings-page .about-card .about-card__link {

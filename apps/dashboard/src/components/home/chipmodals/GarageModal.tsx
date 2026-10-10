@@ -27,7 +27,7 @@ const byOpenThenName = (a: HassEntity, b: HassEntity) =>
 
 export function GarageModal({ open, onClose }: GarageModalProps) {
   const t = useT();
-  const { subtitle, windowClass } = useChipWindow('garage', open);
+  const subtitle = useChipWindow('garage', open);
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
   const rooms = useEntityStore((s) => s.rooms);
   const garages = useEntityStore(
@@ -42,7 +42,6 @@ export function GarageModal({ open, onClose }: GarageModalProps) {
       onClose={onClose}
       title={t('garage.title')}
       subtitle={subtitle}
-      className={windowClass}
       icon={<GarageSummaryIcon tone="closed" size={20} />}
     >
       {garages.length === 0 ? (

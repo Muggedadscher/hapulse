@@ -26,15 +26,6 @@
   display: none;
 }
 
-/* The labels come in lower case from the locales ("verbindung"); Klassisch shows them in capitals. Glas raises only
-   the first letter (sentence case), the room's labels already start with one. */
-:root[data-style='glas']
-  :is(.room-page__section, .room-section__label-row, .settings-page__section)
-  > .section-label
-  > :first-child::first-letter {
-  text-transform: uppercase;
-}
-
 /* ---- Card titles above the surface (K89, like the overview §2.13): the title row leaves the surface, the surface
    becomes a ::before below it, the parts of the body keep the classic flex column with a 12 gap (a part pinned to the
    bottom with margin-top: auto stays there). home.css keeps the overview's own list until every page is in (plan §7.6).

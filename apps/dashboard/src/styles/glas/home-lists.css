@@ -941,7 +941,6 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  text-transform: capitalize;
 }
 
 /* the hairline after the title */

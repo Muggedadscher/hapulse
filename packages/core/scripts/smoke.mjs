@@ -154,6 +154,8 @@ import {
   climateTone,
   // [fork] Etappe 5: the summary chips' counts
   chipCounts,
+  // [fork] the fork's spelling of upstream texts
+  withCase,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2119,4 +2121,23 @@ console.log('\n── chip counts ──');
   const pumpOnly = chipCounts(map(ent('switch.pool_pump', 'on')), POOL);
   assertEqual(JSON.stringify(pumpOnly.pool), JSON.stringify({ present: false, running: true }), 'chips: the pool needs all its entities to show');
   assertEqual(chipCounts(map(ent('switch.pool_pump', 'off'), ent('select.pool_mode', 'auto')), POOL).pool.running, false, 'chips: pump off → not running');
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Spelling of upstream texts — the overlay of locales/case/<lang>.json (docs/glas/PLAN-TEXTE.md)
+// ---------------------------------------------------------------------------
+console.log('\n── text case ──');
+{
+  const dict = { 'a.title': 'türen & fenster', 'b.label': 'Licht', 'c.count': '{count} an' };
+  const out = withCase(dict, { 'a.title': 'Türen & Fenster', 'gone.key': 'Weg' });
+  assertEqual(out['a.title'], 'Türen & Fenster', 'withCase: the correction replaces the text');
+  assertEqual(out['b.label'], 'Licht', 'withCase: a key without a correction keeps its text');
+  assertEqual(out['c.count'], '{count} an', 'withCase: placeholders pass through');
+  assert(!('gone.key' in out), 'withCase: a correction for a key the dictionary lacks is left out');
+  assertEqual(dict['a.title'], 'türen & fenster', 'withCase: the dictionary itself stays untouched');
+  for (const [lang, d] of Object.entries({ en: EN_DICT, de: DE_DICT, es: ES_DICT, fr: FR_DICT, it: IT_DICT, pt: PT_DICT, sv: SV_DICT })) {
+    const fix = JSON.parse(readFileSync(new URL(`../locales/case/${lang}.json`, import.meta.url), 'utf8'));
+    const keys = Object.keys(fix);
+    assert(keys.length > 0 && keys.every((k) => k in d), `withCase: case/${lang}.json names only keys of ${lang}.json`);
+  }
 }

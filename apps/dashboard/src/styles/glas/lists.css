@@ -329,7 +329,6 @@
   padding: 0 10px;
   border-radius: 13px;
   font: 400 13px / 18px var(--g-font);
-  text-transform: capitalize;
 }
 
 :root[data-style='glas'] .security-page .sensor-section-card .motion-list__pill--clear {

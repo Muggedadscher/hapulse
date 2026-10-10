@@ -142,6 +142,13 @@ sauber übernehmen können.
   `numberFormat.ts`) bzw. `formatEntityState(entity, locale)` — nie `toFixed`/`${n}` in UI-Text
   (Upstream zeigte überall „5.5“ statt „5,5“). Ausnahmen: Werte an HA, SVG/CSS, Uhrzeiten, Versionsnummern.
 
+- **Texte richtig geschrieben**: Satzanfang groß, deutsche Nomen groß, Namen wie „Home Assistant“, in beiden Stilen und
+  allen 7 Sprachen. Upstream-Texte in `packages/core/locales/*.json` bleiben unverändert; ihre Schreibweise korrigiert je
+  Sprache `packages/core/locales/case/<lang>.json` (nur Groß/Klein, `withCase` in `I18nProvider.tsx`), Fork-Texte werden
+  direkt richtig geschrieben, `nvr.*` bleibt beim Paket. Nie per CSS heben (`::first-letter`, `capitalize`). Der Test
+  `apps/dashboard/test/textCase.test.ts` meldet klein beginnende Texte; Ausnahmen mit Grund in `test/keep-lower.json`
+  (`docs/glas/PLAN-TEXTE.md`, `docs/SYNC.md`).
+
 - **Fork-Changelog („Was ist neu“)**: Eigene Releases F1, F2, … in `packages/core/src/forkChangelog.ts` (DE + EN,
   `pickText` wählt nach UI-Sprache, sonst Englisch) — getrennt von Upstreams semver-`RELEASES`, damit Upstream-Merges nie
   kollidieren. `components/changelog/ForkChangelogModal.tsx` + `forkEntries.ts` mischen beide Listen nach Datum

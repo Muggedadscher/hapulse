@@ -77,7 +77,7 @@ function Section({ icon, label, openCount, total, sensors }: SectionProps) {
 
 export function DoorsModal({ open, onClose }: DoorsModalProps) {
   const t = useT();
-  const { subtitle, windowClass } = useChipWindow('doors', open); // [fork]
+  const subtitle = useChipWindow('doors', open); // [fork]
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -115,7 +115,6 @@ export function DoorsModal({ open, onClose }: DoorsModalProps) {
       onClose={onClose}
       title={t('home.chipmodals.doors.title')}
       subtitle={subtitle} // [fork]
-      className={windowClass} // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<DoorOpen size={20} strokeWidth={1.75} />}
     >
       {sensors.length === 0 ? (

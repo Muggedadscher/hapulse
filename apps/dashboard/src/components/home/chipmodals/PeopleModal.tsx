@@ -22,7 +22,7 @@ interface PeopleModalProps {
 
 export function PeopleModal({ open, onClose }: PeopleModalProps) {
   const t = useT();
-  const { subtitle, windowClass } = useChipWindow('people', open); // [fork]
+  const subtitle = useChipWindow('people', open); // [fork]
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -45,7 +45,6 @@ export function PeopleModal({ open, onClose }: PeopleModalProps) {
       onClose={onClose}
       title={t('home.chipmodals.people.title')}
       subtitle={subtitle} // [fork]
-      className={windowClass} // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<Users size={20} strokeWidth={1.75} />}
     >
       {people.length === 0 ? (

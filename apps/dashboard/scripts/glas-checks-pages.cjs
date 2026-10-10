@@ -401,8 +401,8 @@ module.exports = function pages(h) {
       out.pagesFieldsOk = Object.values(res).every((r) => r.ok);
     });
 
-    // ---- K89 section titles: sentence case instead of capitals, no hairline; room 20 in label (also in edit mode),
-    //      settings 15 in label2. Glas only. ----
+    // ---- K89 section titles: sentence case instead of capitals (the text itself starts with a capital, no CSS case),
+    //      no hairline; room 20 in label (also in edit mode), settings 15 in label2. Glas only. ----
     await block('pagesTitles', async () => {
       const res = {};
       const read = (page) => ev(page, () => {
@@ -419,7 +419,8 @@ module.exports = function pages(h) {
             const cs = getComputedStyle(e);
             const line = e.querySelector('[aria-hidden="true"]');
             const first = getComputedStyle(e.firstElementChild, '::first-letter').textTransform;
-            return { size: cs.fontSize, caps: cs.textTransform, first, color: cs.color, line: !!line && line.getClientRects().length > 0 };
+            const capital = !/^[^\p{L}\p{N}]*\p{Ll}/u.test(e.firstElementChild.textContent.trim());
+            return { size: cs.fontSize, caps: cs.textTransform, first, capital, color: cs.color, line: !!line && line.getClientRects().length > 0 };
           }),
         };
       });
@@ -439,7 +440,7 @@ module.exports = function pages(h) {
             }
             const want = name === 'room' ? ['20px', 'label'] : ['15px', 'label2'];
             const ok = runs.every((r) => r.titles.length > 0 && r.titles.every((t) => t.size === want[0]
-              && t.caps === 'none' && t.first === 'uppercase' && t.color === r[want[1]] && !t.line));
+              && t.caps === 'none' && t.first === 'none' && t.capital && t.color === r[want[1]] && !t.line));
             res[`${device}-${name}`] = { ok, n: runs.map((r) => r.titles.length), first: runs.map((r) => r.titles[0]) };
           } catch (e) {
             res[`${device}-${name}`] = { ok: false, error: String(e.message).slice(0, 160) };
@@ -1961,9 +1962,8 @@ module.exports = function pages(h) {
               const cs = getComputedStyle(b);
               return { text: b.innerText.trim(), bg: cs.backgroundColor, color: cs.color, radius: parseFloat(cs.borderRadius) };
             }) : null;
-            const want = DE['security.sensor.motion'];
             const badgeOk = !!badge && badge.bg === actDel && badge.color === onBadge && badge.radius >= 10
-              && badge.text === want.charAt(0).toUpperCase() + want.slice(1);
+              && badge.text === DE['security.sensor.motion'];
 
             // people, doors, windows and motion with their rows
             const lists = await ev(page, () => {
@@ -2796,10 +2796,11 @@ module.exports = function pages(h) {
             && JSON.stringify(got.classic.steps) === JSON.stringify(g);
           const st = g.start ? g.start.dom : {};
           const stats = (v) => (v && v.hero ? v.hero.stats.join() : '');
+          const counts = (on, off) => `${on} ${DE['automations.hero.statActive']},${off} ${DE['automations.hero.statDisabled']},5 ${DE['automations.hero.categoryLabel.other']}`;
           const fine = same && !!st.hero && st.hero.total === '13' && st.feed.length === 8 && st.cats.length === 5
-            && stats(st) === '11 aktiv,2 deaktiviert,5 Kategorien'
-            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === '12 aktiv,1 deaktiviert,5 Kategorien'
-            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === '11 aktiv,2 deaktiviert,5 Kategorien'
+            && stats(st) === counts(11, 2)
+            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === counts(12, 1)
+            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === counts(11, 2)
             && g.search.dom.join() === 'Evening Lights,Morning Lights' && g.searchNone.dom.join() === DE['automations.emptyFilter']
             && g.searchOff.dom === 13 && g.room.dom.join() === 'Evening Lights'
             && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 13;
@@ -2950,11 +2951,14 @@ module.exports = function pages(h) {
           const st = g.start ? g.start.dom : {};
           const first = (step) => (step && step.dom && step.dom.feed[0]) || '';
           const lastUsed = (step, n) => !!step && !!step.dom && !!step.dom.hero && step.dom.hero.lastUsed === `${DE['scenes.hero.lastUsed']} ${n} ${DE['scenes.time.justNow']}`;
+          const hourAgo = DE['scenes.time.hoursAgo.one'].replace('{count}', '1');
+          const usedToday = DE['scenes.hero.statUsedToday'];
           const fine = same && !!st.hero && st.hero.total === '11' && st.hero.sub === DE['scenes.hero.totalLabel']
-            && st.hero.lastUsed === `${DE['scenes.hero.lastUsed']} Cooking Mode vor 1h`
-            && st.hero.stats.length === 2 && /^\d+ heute genutzt$/.test(st.hero.stats[0]) && st.hero.stats[1] === '5 Räume'
+            && st.hero.lastUsed === `${DE['scenes.hero.lastUsed']} Cooking Mode ${hourAgo}`
+            && st.hero.stats.length === 2 && /^\d+ /.test(st.hero.stats[0]) && st.hero.stats[0].replace(/^\d+ /, '') === usedToday
+            && st.hero.stats[1] === `5 ${DE['scenes.hero.roomLabel.other']}`
             && st.feed.map((f) => f.split('|')[0]).join() === 'Cooking Mode,Movie Night,Focus Mode,Bright Mode,Welcome Home,Wake Up,Morning Coffee,Sleep'
-            && st.feed[0] === 'Cooking Mode|Kitchen|vor 1h'
+            && st.feed[0] === `Cooking Mode|Kitchen|${hourAgo}`
             && st.rooms.join(' // ') === ['Bedroom / 2 / Sleep / Wake Up', 'Hallway / 2 / Away Mode / Welcome Home', 'Kitchen / 2 / Cooking Mode / Morning Coffee',
               'Living Room / 3 / Movie Night / Bright Mode / Relax Mode', 'Office / 2 / Focus Mode / Meeting'].join(' // ')
             && g.tap.sent.join() === 'scene.turn_on {"entity_id":"scene.living_room_relax"} {}' && lastUsed(g.tap, 'Relax Mode')
@@ -3256,7 +3260,7 @@ module.exports = function pages(h) {
               r.themes = [await page.locator('.theme-grid').count(), (await state(page)).theme,
                 await ev(page, (txt) => [...document.querySelectorAll('.settings-page .managed-row-hint')].some((p) => p.textContent.trim() === txt), DE['glas.themeHint'])];
             }
-            // S8: the accent with the keys, then "zurücksetzen"
+            // S8: the accent with the keys, then "Zurücksetzen"
             const slider = page.locator(`input[aria-label="${DE['settings.appearance.accent.hueAria']}"]`);
             await slider.focus();
             // from the row's top: focus scrolls the page smoothly
@@ -3266,7 +3270,7 @@ module.exports = function pages(h) {
             await sleep(200);
             const reset = page.locator('.accent-row__label .btn');
             r.accent = [typeof (await state(page)).accentHue, await reset.count()];
-            // Glas: "zurücksetzen" appears without moving the slider
+            // Glas: "Zurücksetzen" appears without moving the slider
             r.sliderShift = Math.round((await top()) - top0);
             await reset.click();
             await sleep(200);
@@ -3474,7 +3478,7 @@ module.exports = function pages(h) {
             && g.entitiesClosed === 0
             && g.rooms[1][0] === g.rooms[0][1] && g.rooms[1][1] === g.rooms[0][0] && g.rooms[3].length === 1 && g.rooms[4] === 1
             && g.exported.join() === 'hapulse-settings.json,Testhaus,true' && g.importDialog[0] === false && /json/.test(g.importDialog[1])
-            && g.activate === true && /^version \d+\.\d+\.\d+ · F\d+$/.test(g.version)
+            && g.activate === true && /^Version \d+\.\d+\.\d+ · F\d+$/.test(g.version)
             && g.whatsNew.title === 1 && g.whatsNew.releases > 10 && g.whatsNewClosed === 0
             && g.link.join() === 'https://github.com/jlnbln/HAPulse,_blank,noopener noreferrer' && g.connect === '/onboarding'
             && m.device.join() === `${mode},light` && m.meta && m.meta.includes('Alice') && m.share.join() === 'true,true' && m.defaults === true
@@ -3489,7 +3493,7 @@ module.exports = function pages(h) {
             && L.values.length === 1 && L.values[0] === '400 17px/22px true' && L.label === '400 17px/22px true'
             && L.title === '600 15px/20px true none' && L.swatches.join() === '44x44 12px' && L.ring
             && L.buttons.join() === '44 true true true' && L.select === '400 17px/22px true rgba(0, 0, 0, 0)'
-            && L.version === '400 15px/20px true uppercase' && L.chevron;
+            && L.version === '400 15px/20px true none' && L.chevron;
           res[`${device}-settings`] = { ok: fine && measured, same, glas: g, glasManaged: m, ...(same ? {} : { classic: k, classicManaged: got.classicManaged }),
             look: measured ? { ok: true } : look };
         }
@@ -3501,7 +3505,7 @@ module.exports = function pages(h) {
         // loader, then the error (T3, T5); the demo starts (T4). Glas also measures (K98): the card without a frame,
         // one prominent action as a capsule 50, the other buttons capsules 50 without a frame (grey, tinted), the
         // fields of K94, warning and error as tinted areas without a frame, "Erweitert" without a frame from the
-        // fields' edge, hairlines around "oder".
+        // fields' edge, hairlines around "Oder".
         if (keepPart('onboarding')) {
           const HTTPS = 'https://hapulse.test';
           const HA = 'https://192.0.2.10:8123'; // documentation address (RFC 5737), never reached
@@ -3979,8 +3983,8 @@ module.exports = function pages(h) {
     });
 
     // ---- K97 menus. chips: each chip's window has the chip's words as its subtitle (the same count, hidden entities
-    //      left out, live while it is open, also when the hints card opens it); titles and subtitles that come in lower
-    //      case start with a capital (::first-letter), the lights' "alle ausschalten" too; Klassisch has no subtitle.
+    //      left out, live while it is open, also when the hints card opens it); titles, subtitles and the lights' "Alle
+    //      ausschalten" start with a capital in the text itself (no CSS case); Klassisch has no subtitle.
     //      more (phone): today's energy, the scenes and the system's state on the right of their rows (the others
     //      without a value), the foot "Version … · F…" under the list; today's energy is fetched only while the menu is
     //      open (the demo counts its statistics requests) and equals the overview's. rooms: the menu's symbol shows the
@@ -3999,8 +4003,10 @@ module.exports = function pages(h) {
           const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
           const title = d.querySelector('.g-sheet-header__title, .modal-header__title');
           const sub = d.querySelector('.g-sheet-header__subtitle');
-          const first = (e) => (e ? getComputedStyle(e, '::first-letter').textTransform : null);
-          return { title: title.textContent.trim(), subtitle: sub ? sub.textContent.trim() : null, titleCase: first(title), subCase: first(sub) };
+          const capital = (e) => (e ? !/^[^\p{L}\p{N}]*\p{Ll}/u.test(e.textContent.trim()) : null);
+          const css = (e) => (e ? `${getComputedStyle(e).textTransform} ${getComputedStyle(e, '::first-letter').textTransform}` : null);
+          return { title: title.textContent.trim(), subtitle: sub ? sub.textContent.trim() : null, titleCap: capital(title), subCap: capital(sub),
+            titleCss: css(title), subCss: css(sub) };
         }));
       const subtitleIs = (page, want) => page.waitForFunction((w) => {
         const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
@@ -4050,20 +4056,20 @@ module.exports = function pages(h) {
                 }
                 await reachClick(page, chipSel(id));
                 const h = await head(page);
-                rows[id] = { ok: h.subtitle === label && h.titleCase === 'uppercase' && h.subCase === 'uppercase', label, ...h };
+                rows[id] = { ok: h.subtitle === label && h.titleCap && h.subCap && h.titleCss === 'none none' && h.subCss === 'none none', label, ...h };
                 await shut(page);
               }
               const counts = rows.lights.label === say('home.summaryChips.lightsCount.other', 6)
                 && rows.doors.label === DE['home.summaryChips.allClosed'];
 
-              // live: a light goes off while its window is open, then on again; the button "alle ausschalten" starts
-              // with a capital
+              // live: a light goes off while its window is open, then on again; the button "Alle ausschalten" as the
+              // locales write it
               await reachClick(page, chipSel('lights'));
               await head(page);
               const action = await ev(page, () => {
                 const d = [...document.querySelectorAll('[role="dialog"]')].find((x) => !x.closest('.g-sheet-ghost'));
                 const b = d && d.querySelector('.lights-modal__header-action > .btn');
-                return b && { text: b.textContent.trim(), first: getComputedStyle(b, '::first-letter').textTransform,
+                return b && { text: b.textContent.trim(), css: `${getComputedStyle(b).textTransform} ${getComputedStyle(b, '::first-letter').textTransform}`,
                   h: Math.round(b.getBoundingClientRect().height * 10) / 10 };
               });
               await ev(page, () => window.__hapulseDemo.patch('light.kitchen_ceiling', { state: 'off' }));
@@ -4095,8 +4101,8 @@ module.exports = function pages(h) {
                 await shut(page);
               }
 
-              const actionOk = !!action && action.text === DE['home.chipmodals.lights.turnAllOff'] && action.first === 'uppercase' && action.h >= 47.5;
-              const namedOk = device !== 'phone' || (named.title === 'iPhone Lampe' && named.titleCase === 'none' && [null, 'none'].includes(named.subCase));
+              const actionOk = !!action && action.text === DE['home.chipmodals.lights.turnAllOff'] && action.css === 'none none' && action.h >= 47.5;
+              const namedOk = device !== 'phone' || (named.title === 'iPhone Lampe' && named.titleCss === 'none none' && [null, 'none none'].includes(named.subCss));
               const ok = Object.values(rows).every((r) => r.ok) && counts && actionOk && live && liveChip === say('home.summaryChips.lightsCount.other', 5)
                 && back && doorsChip === say('home.summaryChips.openCount.one', 1) && hint.subtitle === doorsChip && hint.title === DE['home.chipmodals.doors.title']
                 && namedOk;
@@ -4223,7 +4229,7 @@ module.exports = function pages(h) {
 
           const rowsOk = (r) => r.rows.length >= 4 && r.rows.every((x) => (VALUED.some((v) => x.href && x.href.endsWith(v))
             ? x.value != null && x.order && x.mid && x.color && x.font === '17px/22px' : x.value === null));
-          const footOk = (f) => !!f && /^version \d+\.\d+\.\d+ · F\d+$/.test(f.text) && f.hidden === 'true' && f.first === 'uppercase'
+          const footOk = (f) => !!f && /^Version \d+\.\d+\.\d+ · F\d+$/.test(f.text) && f.hidden === 'true' && f.first === 'none'
             && f.color && f.font === '13px/18px' && f.below;
           const energyRe = /^\d+(,\d)? kWh$/;
           const ok = l0 === 0 && l1 === 0 && l2 > 0 && l3 === l2 && l4 === l3 && refetch

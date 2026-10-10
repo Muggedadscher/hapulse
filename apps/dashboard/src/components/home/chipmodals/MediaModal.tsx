@@ -28,7 +28,7 @@ const ACTIVE_STATES = new Set(['playing', 'paused', 'buffering', 'on']);
 
 export function MediaModal({ open, onClose }: MediaModalProps) {
   const t = useT();
-  const { subtitle, windowClass } = useChipWindow('media', open); // [fork]
+  const subtitle = useChipWindow('media', open); // [fork]
   const navigate = useNavigate();
 
   const rooms = useEntityStore((s) => s.rooms);
@@ -107,7 +107,6 @@ export function MediaModal({ open, onClose }: MediaModalProps) {
       onClose={onClose}
       title={t('home.chipmodals.media.title')}
       subtitle={subtitle} // [fork]
-      className={windowClass} // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<Music2 size={20} strokeWidth={1.75} />}
       footer={footer}
     >

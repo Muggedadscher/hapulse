@@ -25,7 +25,7 @@ interface LightsModalProps {
 
 export function LightsModal({ open, onClose }: LightsModalProps) {
   const t = useT();
-  const { subtitle, windowClass } = useChipWindow('lights', open); // [fork]
+  const subtitle = useChipWindow('lights', open); // [fork]
   const glas = useIsGlas(); // [fork]
   const rooms = useEntityStore((s) => s.rooms);
   const entities = useEntityStore(
@@ -103,7 +103,6 @@ export function LightsModal({ open, onClose }: LightsModalProps) {
       onClose={onClose}
       title={t('home.chipmodals.lights.title')}
       subtitle={subtitle} // [fork]
-      className={windowClass} // [fork] Glas: the lower-case title starts with a capital (sheets.css, K97)
       icon={<Lightbulb size={20} strokeWidth={1.75} />}
     >
       {allLights.length === 0 ? (

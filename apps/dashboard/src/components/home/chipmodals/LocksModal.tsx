@@ -28,7 +28,7 @@ const byOpenThenName = (a: HassEntity, b: HassEntity) =>
 
 export function LocksModal({ open, onClose }: LocksModalProps) {
   const t = useT();
-  const { subtitle, windowClass } = useChipWindow('locks', open);
+  const subtitle = useChipWindow('locks', open);
   const hiddenEntities = useSettingsStore(useShallow((s) => s.customization.hiddenEntities));
   const rooms = useEntityStore((s) => s.rooms);
   const locks = useEntityStore(
@@ -38,7 +38,7 @@ export function LocksModal({ open, onClose }: LocksModalProps) {
   );
 
   return (
-    <Modal open={open} onClose={onClose} title={t('security.locks.title')} subtitle={subtitle} className={windowClass} icon={<Lock size={20} strokeWidth={1.75} />}>
+    <Modal open={open} onClose={onClose} title={t('security.locks.title')} subtitle={subtitle} icon={<Lock size={20} strokeWidth={1.75} />}>
       {locks.length === 0 ? (
         <EmptyState
           icon={<Lock size={32} strokeWidth={1.5} />}
