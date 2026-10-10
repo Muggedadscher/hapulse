@@ -624,9 +624,17 @@
   padding: 1px 0 18px;
 }
 
-/* the room page can load without ScenesCard.css (its own chunk), so the tile and its circle bring what they take from
-   there: the pointer and the centred symbol */
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile {
+/* the scenes page (Q3): a room's tiles in the overview's raster, two columns, from 900 px four once the card is 480
+   wide (the overview's M and L); below 900 px they stand on the page background like there (below) */
+:root[data-style='glas'] .scenes-page .scene-room-card__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* the same tile on the overview, in a room and on the scenes page (K88, K95). The room page can load without
+   ScenesCard.css (its own chunk), so the tile and its circle bring what they take from there: the pointer and the
+   centred symbol */
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
   grid-template-rows: 1fr auto auto 1fr;
@@ -651,31 +659,31 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile:hover {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile:hover {
   background: var(--g-tile-off);
   box-shadow: none;
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active],
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active]:hover {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active],
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active]:hover {
   background: var(--g-tile-on);
   box-shadow: var(--g-shadow-tile-lift);
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile:active {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile:active {
   transform: scale(0.97);
   transition-duration: 120ms;
 }
 
 /* lifted by the context menu (the tile is the card it lifts, components/glas/ContextMenu.tsx): the lift starts where
    the hover and the press left the tile and takes them over, so their transitions stop here */
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-g-lifted] {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-g-lifted] {
   translate: none;
   transform: scale(1.04);
   transition-property: background-color, box-shadow;
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile__icon {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile__icon {
   position: relative;
   display: flex;
   flex-shrink: 0;
@@ -693,20 +701,20 @@
     color 350ms ease;
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active] .scene-tile__icon {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active] .scene-tile__icon {
   background: var(--g-scene, var(--g-accent-ink));
   color: var(--g-scene-glyph, var(--g-on-badge));
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-swept='a'] .scene-tile__icon {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-swept='a'] .scene-tile__icon {
   animation: g-pulse-a 700ms cubic-bezier(0.3, 0, 0.2, 1);
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-swept='b'] .scene-tile__icon {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-swept='b'] .scene-tile__icon {
   animation: g-pulse-b 700ms cubic-bezier(0.3, 0, 0.2, 1);
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile__icon > svg:not(.g-scene-ring) {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile__icon > svg:not(.g-scene-ring) {
   width: 20px;
   height: 20px;
 }
@@ -739,7 +747,7 @@
   animation: g-scene-sweep-b 760ms cubic-bezier(0.3, 0, 0.2, 1) both;
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile__name {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile__name {
   display: block;
   grid-row: 2;
   grid-column: 2;
@@ -754,7 +762,7 @@
   -webkit-line-clamp: none;
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile__sub {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile__sub {
   grid-row: 3;
   grid-column: 2;
   justify-self: stretch;
@@ -767,7 +775,7 @@
   white-space: nowrap;
 }
 
-:root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active] .scene-tile__sub {
+:root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active] .scene-tile__sub {
   color: var(--g-label-2);
   font-weight: 400;
 }
@@ -806,18 +814,37 @@
   :root[data-style='glas'] .home-page .scene-tile:not([data-active]) .scene-tile__sub {
     display: none;
   }
+
+  /* the scenes page's rooms the same (Q3): the title above, the tiles on the page background; a capped card keeps its
+     surface (pages.css) */
+  :root[data-style='glas'] .scenes-page .overview-grid__cell:not([class*='section-h-']) .scene-room-card {
+    row-gap: 0;
+    padding: 0;
+  }
+
+  :root[data-style='glas'] .scenes-page .overview-grid__cell:not([class*='section-h-']) .scene-room-card::before {
+    content: none;
+  }
+
+  :root[data-style='glas']
+    .scenes-page
+    .overview-grid__cell:not([class*='section-h-'])
+    .scene-room-card
+    > .scene-room-card__header {
+    margin: 0 0 6px;
+  }
 }
 
 @media (min-width: 900px) {
-  :root[data-style='glas'] .home-page .scenes-card {
+  :root[data-style='glas'] :is(.home-page .scenes-card, .scenes-page .scene-room-card) {
     container: g-scenes / inline-size;
   }
 
-  :root[data-style='glas'] .home-page .scenes-card__grid {
+  :root[data-style='glas'] :is(.home-page .scenes-card__grid, .scenes-page .scene-room-card__grid) {
     grid-auto-rows: 1fr;
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -828,19 +855,19 @@
     text-align: center;
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active],
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active]:hover {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active],
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active]:hover {
     box-shadow: var(--g-shadow-tile-on-desktop);
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile__icon {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile__icon {
     flex: none;
     width: 40px;
     height: 40px;
     border-radius: 20px;
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile__icon > svg:not(.g-scene-ring) {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile__icon > svg:not(.g-scene-ring) {
     width: 22px;
     height: 22px;
   }
@@ -863,43 +890,43 @@
     animation: g-scene-sweep-fade-b 700ms cubic-bezier(0.32, 0.72, 0, 1) both;
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) :is(.scene-tile__name, .scene-tile__sub) {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) :is(.scene-tile__name, .scene-tile__sub) {
     max-width: 100%;
     text-align: center;
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile__sub {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile__sub {
     font-size: 12px;
     line-height: 16px;
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active] .scene-tile__sub {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active] .scene-tile__sub {
     color: var(--g-label);
     font-weight: 600;
   }
 }
 
 @media (min-width: 900px) and (hover: hover) {
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile:hover {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile:hover {
     translate: 0 -1px;
     box-shadow: var(--g-shadow-card-hover);
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active]:hover {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active]:hover {
     box-shadow: var(--g-shadow-card-hover);
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile:active {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile:active {
     translate: 0 0;
   }
 
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-g-lifted] {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-g-lifted] {
     translate: none;
   }
 }
 
 @container g-scenes (min-width: 480px) {
-  :root[data-style='glas'] .home-page .scenes-card__grid {
+  :root[data-style='glas'] :is(.home-page .scenes-card__grid, .scenes-page .scene-room-card__grid) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
@@ -909,14 +936,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-g-lifted] {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-g-lifted] {
     transform: none;
   }
 }
 
 /* Forced colours: the active tile and circle keep an outline, the ring stays visible as text colour. */
 @media (forced-colors: active) {
-  :root[data-style='glas'] :is(.home-page, .room-page) .scene-tile[data-active] {
+  :root[data-style='glas'] :is(.home-page, .room-page, .scenes-page) .scene-tile[data-active] {
     outline: 2px solid Highlight;
   }
 

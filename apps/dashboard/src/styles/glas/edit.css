@@ -26,40 +26,42 @@
 
 /* ---- classic affordances off, the cell without its margins and outline ---- */
 
-:root[data-style='glas'] :is(.home-page, .security-page, .energy-page, .automations-page) .overview-grid__cell--editing {
+:root[data-style='glas']
+  :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
+  .overview-grid__cell--editing {
   margin: 0;
 }
 
 :root[data-style='glas']
-  :is(.home-page, .security-page, .energy-page, .automations-page)
+  :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
   .overview-grid__cell--editing
   > :is(.edit-badge, .overview-span-dots, .overview-resize-handle, .section-height-dots, .section-height-handle) {
   display: none;
 }
 
 :root[data-style='glas']
-  :is(.home-page, .security-page, .energy-page, .automations-page)
+  :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
   .overview-grid__cell--editing
   .edit-section-outline {
   outline: none;
 }
 
 :root[data-style='glas']
-  :is(.home-page, .security-page, .energy-page, .automations-page)
+  :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
   .overview-grid__cell--editing.overview-grid__cell--hidden {
   opacity: 1;
 }
 
 :root[data-style='glas']
-  :is(.home-page, .security-page, .energy-page, .automations-page)
+  :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
   .overview-grid__cell--editing.overview-grid__cell--hidden
   > .edit-section-outline {
   opacity: 0.4;
 }
 
 /* a security card without a title (hero, alarm, cameras, NVR), the energy hero (its title is inside the surface) and
-   the automations' hero: the bar above it — from 900 px in a shared row it moves into the card's lane instead
-   (below) */
+   the heroes of the automations and scenes pages: the bar above it — from 900 px in a shared row it moves into the
+   card's lane instead (below) */
 :root[data-style='glas']
   .security-page
   .overview-grid__cell--editing:is(
@@ -70,8 +72,8 @@
   )
   > .edit-section-outline,
 :root[data-style='glas']
-  :is(.energy-page, .automations-page)
-  .overview-grid__cell--editing:has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card))
+  :is(.energy-page, .automations-page, .scenes-page)
+  .overview-grid__cell--editing:has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card, .scene-hero-card))
   > .edit-section-outline {
   margin-top: 48px;
 }
@@ -241,7 +243,11 @@
   :root[data-style='glas']
     .automations-page
     .overview-grid__cell--editing
-    :is(.auto-feed-card__header, .auto-cat-card__header) {
+    :is(.auto-feed-card__header, .auto-cat-card__header),
+  :root[data-style='glas']
+    .scenes-page
+    .overview-grid__cell--editing
+    :is(.scene-feed-card__header, .scene-room-card__header) {
     padding-right: 88px;
   }
 
@@ -269,6 +275,12 @@
   :root[data-style='glas']
     .automations-page
     .overview-grid__cell--editing[class*='section-h-']:has(> .edit-section-outline > :is(.auto-feed-card, .auto-cat-card))
+    > .g-size-bar,
+  :root[data-style='glas']
+    .scenes-page
+    .overview-grid__cell--editing[class*='section-h-']:has(
+      > .edit-section-outline > :is(.scene-feed-card, .scene-room-card)
+    )
     > .g-size-bar {
     top: 6px;
     right: 12px;
@@ -276,7 +288,7 @@
 
   /* its pinned title row (home.css, pages.css) keeps clear of the bar: 12 + 88 */
   :root[data-style='glas']
-    :is(.home-page, .security-page, .energy-page, .automations-page)
+    :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
     .overview-grid__cell--editing[class*='section-h-']
     :is(
       .scenes-card,
@@ -298,7 +310,9 @@
       .energy-water,
       .energy-gas,
       .auto-feed-card,
-      .auto-cat-card
+      .auto-cat-card,
+      .scene-feed-card,
+      .scene-room-card
     ):not(:has(.card-scroll-body))
     > :first-child {
     padding-right: 100px;
@@ -349,7 +363,8 @@
     .energy-page
     .overview-grid__cell--editing
     :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
-  :root[data-style='glas'] .automations-page .overview-grid__cell--editing :is(.auto-feed-card, .auto-cat-card) {
+  :root[data-style='glas'] .automations-page .overview-grid__cell--editing :is(.auto-feed-card, .auto-cat-card),
+  :root[data-style='glas'] .scenes-page .overview-grid__cell--editing :is(.scene-feed-card, .scene-room-card) {
     --g-card-gap: 44px;
   }
 
@@ -388,10 +403,10 @@
     )
     > .g-size-bar,
   :root[data-style='glas']
-    :is(.energy-page, .automations-page)
+    :is(.energy-page, .automations-page, .scenes-page)
     .overview-grid__cell--editing:is(
       [class*='section-h-'],
-      :has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card))
+      :has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card, .scene-hero-card))
     )
     > .g-size-bar {
     top: 0;
@@ -405,7 +420,7 @@
     )
     > .edit-section-outline,
   :root[data-style='glas']
-    :is(.security-page, .energy-page, .automations-page)
+    :is(.security-page, .energy-page, .automations-page, .scenes-page)
     .overview-grid__cell--editing[class*='section-h-']
     > .edit-section-outline {
     margin-top: 48px;
@@ -431,13 +446,13 @@
   /* L: taller (the bar's 38 on top while editing). The cards' classic 400-px cap goes; a scrolling list fills the
      height instead of pushing it (flex basis 0). */
   :root[data-style='glas']
-    :is(.home-page, .security-page, .energy-page, .automations-page)
+    :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
     .overview-grid__cell.g-tall {
     min-height: 470px;
   }
 
   :root[data-style='glas']
-    :is(.home-page, .security-page, .energy-page, .automations-page)
+    :is(.home-page, .security-page, .energy-page, .automations-page, .scenes-page)
     .overview-grid
     > .g-tall
     > .overview-grid__cell--editing {
@@ -456,7 +471,8 @@
   }
 
   :root[data-style='glas'] .home-page .g-tall .devices-card__list--scrollable,
-  :root[data-style='glas'] .automations-page .g-tall :is(.auto-cat-card__list, .auto-feed-card__list) {
+  :root[data-style='glas'] .automations-page .g-tall :is(.auto-cat-card__list, .auto-feed-card__list),
+  :root[data-style='glas'] .scenes-page .g-tall .scene-feed-card__list {
     flex: 1 1 0;
     min-height: 0;
     max-height: none;
@@ -533,71 +549,71 @@
   }
 }
 
-/* The same for the energy hero and the automations' hero. */
+/* The same for the heroes of the energy, automations and scenes pages. */
 @container g-page (min-width: 900px) {
   :root[data-style='glas']
-    :is(.energy-page, .automations-page)
+    :is(.energy-page, .automations-page, .scenes-page)
     .overview-grid
     > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
-    > .overview-grid__cell--editing:has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card)):not(
-      [class*='section-h-']
-    )
+    > .overview-grid__cell--editing:has(
+      > .edit-section-outline > :is(.energy-hero, .auto-hero-card, .scene-hero-card)
+    ):not([class*='section-h-'])
     > .g-size-bar {
     top: 38px;
   }
 
   :root[data-style='glas']
-    :is(.energy-page, .automations-page)
+    :is(.energy-page, .automations-page, .scenes-page)
     .overview-grid
     > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
-    > .overview-grid__cell--editing:has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card)):not(
-      [class*='section-h-']
-    )
+    > .overview-grid__cell--editing:has(
+      > .edit-section-outline > :is(.energy-hero, .auto-hero-card, .scene-hero-card)
+    ):not([class*='section-h-'])
     > .edit-section-outline {
     margin-top: 0;
   }
 
   :root[data-style='glas']
-    :is(.energy-page, .automations-page)
+    :is(.energy-page, .automations-page, .scenes-page)
     .overview-grid
     > :not(.overview-grid__cell--span-3, .overview-grid__cell--span-4)
     > .overview-grid__cell--editing:not([class*='section-h-'])
     > .edit-section-outline
-    > :is(.energy-hero, .auto-hero-card) {
+    > :is(.energy-hero, .auto-hero-card, .scene-hero-card) {
     margin-top: 88px;
   }
 }
 
 @container g-page (min-width: 1180px) {
   :root[data-style='glas']
-    :is(.energy-page, .automations-page)
+    :is(.energy-page, .automations-page, .scenes-page)
     .overview-grid
     > .overview-grid__cell--span-3
-    > .overview-grid__cell--editing:has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card)):not(
-      [class*='section-h-']
-    )
+    > .overview-grid__cell--editing:has(
+      > .edit-section-outline > :is(.energy-hero, .auto-hero-card, .scene-hero-card)
+    ):not([class*='section-h-'])
     > .g-size-bar {
     top: 38px;
   }
 
   :root[data-style='glas']
-    :is(.energy-page, .automations-page)
+    :is(.energy-page, .automations-page, .scenes-page)
     .overview-grid
     > .overview-grid__cell--span-3
-    > .overview-grid__cell--editing:has(> .edit-section-outline > :is(.energy-hero, .auto-hero-card)):not(
-      [class*='section-h-']
-    )
+    > .overview-grid__cell--editing:has(
+      > .edit-section-outline > :is(.energy-hero, .auto-hero-card, .scene-hero-card)
+    ):not([class*='section-h-'])
     > .edit-section-outline {
     margin-top: 0;
   }
 
   :root[data-style='glas']
-    :is(.energy-page, .automations-page)
+    :is(.energy-page, .automations-page, .scenes-page)
     .overview-grid
     > .overview-grid__cell--span-3
     > .overview-grid__cell--editing:not([class*='section-h-'])
     > .edit-section-outline
-    > :is(.energy-hero, .auto-hero-card) {
+    > :is(.energy-hero, .auto-hero-card, .scene-hero-card) {
     margin-top: 88px;
   }
 }

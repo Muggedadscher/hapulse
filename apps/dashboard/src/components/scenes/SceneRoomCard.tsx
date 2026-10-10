@@ -7,6 +7,8 @@ import { useT } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
 import { callService } from '../../ha/service';
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas: the overview's scene tiles (K88)
+import { glasSceneTone } from '../glas/home/sceneTone'; // [fork]
 import type { HassEntity } from '@hapulse/core';
 import '../../components/home/ScenesCard.css';
 import './SceneRoomCard.css';
@@ -49,6 +51,7 @@ function sceneName(e: HassEntity): string {
 
 export function SceneRoomCard({ roomName, roomIcon, roomHaIcon, scenes }: SceneRoomCardProps) {
   const t = useT();
+  const glas = useIsGlas(); // [fork]
   return (
     <Card className="scene-room-card">
       <div className="scene-room-card__header">
@@ -82,10 +85,11 @@ export function SceneRoomCard({ roomName, roomIcon, roomHaIcon, scenes }: SceneR
               className="scene-tile scene-tile--compact"
               onClick={() => void callService('scene', 'turn_on', {}, { entity_id: entity.entity_id })}
               aria-label={t('scenes.room.activateAria', { name })}
+              data-tone={glas ? glasSceneTone(sceneIcon(name), idx) : undefined /* [fork] the overview's look (K88) */}
             >
               <span
                 className="scene-tile__icon"
-                style={{ background: palette.bg, color: palette.color }}
+                style={glas ? undefined : { background: palette.bg, color: palette.color } /* [fork] Glas: CSS */}
                 aria-hidden="true"
               >
                 {sceneIcon(name)}

@@ -449,10 +449,11 @@ module.exports = function pages(h) {
     //      schedule, the music page). Water with one meter and gas carry their figure in the surface. Glas only. ----
     await block('pagesCardTitles', async () => {
       const res = {};
-      // [page, card, title, chip, where, list, body]: `list` = the body is an inset list (K94) that fills the surface from
-      // its top edge; any other body starts at least 16 below it. `body` = selectors tried in turn for the body when it
-      // is not the card's second child (water and gas: the list of meters, or with one meter its figure, whose header
-      // is `display: contents`)
+      // [page, card, title, chip, where, list, body, byDevice]: `list` = the body is an inset list (K94) that fills the
+      // surface from its top edge; any other body starts at least 16 below it. `body` = selectors tried in turn for the
+      // body when it is not the card's second child (water and gas: the list of meters, or with one meter its figure,
+      // whose header is `display: contents`). `byDevice` = another `where` on a device: `bare` = no surface at all, the
+      // body 6 below the 44 head (the scenes' rooms on the phone, like the overview's scenes)
       const CARDS = [
         ['/security', '.people-list-card', '.people-list-card__title', '.people-list-card__icon-chip', 'above', true],
         ['/security', '.locks-section-card', '.locks-section-card__title', '.locks-section-card__icon-chip', 'above'],
@@ -474,8 +475,8 @@ module.exports = function pages(h) {
         ['/system', '.activity-card', '.activity-card__title', '.activity-card__icon-chip', 'above'],
         ['/automations', '.auto-feed-card', '.auto-feed-card__title', '.auto-feed-card__icon-chip', 'above', true],
         ['/automations', '.auto-cat-card', '.auto-cat-card__title', '.auto-cat-card__icon-chip', 'above', true],
-        ['/scenes', '.scene-feed-card', '.scene-feed-card__title', '.scene-feed-card__icon-chip', 'above'],
-        ['/scenes', '.scene-room-card', '.scene-room-card__title', '.scene-room-card__icon-chip', 'above'],
+        ['/scenes', '.scene-feed-card', '.scene-feed-card__title', '.scene-feed-card__icon-chip', 'above', true],
+        ['/scenes', '.scene-room-card', '.scene-room-card__title', '.scene-room-card__icon-chip', 'above', false, null, { phone: 'bare' }],
       ];
       const PAGES = [...new Set(CARDS.map((c) => c[0]))];
       for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
@@ -507,13 +508,18 @@ module.exports = function pages(h) {
                     return { ...base, ok: getComputedStyle(card).backgroundColor !== 'rgba(0, 0, 0, 0)'
                       && before.content === 'none' && tr.top >= r.top - 0.5 && tr.bottom <= surface + 0.5 };
                   }
+                  if (where === 'bare') {
+                    return { ...base, ok: getComputedStyle(card).backgroundColor === 'rgba(0, 0, 0, 0)'
+                      && before.content === 'none' && tr.bottom <= r.top + 44.5 && !!body
+                      && body.top >= surface - 0.5 && body.top <= surface + 1.5 };
+                  }
                   return { ...base, ok: getComputedStyle(card).backgroundColor === 'rgba(0, 0, 0, 0)'
                     && before.content !== 'none' && before.backgroundColor !== 'rgba(0, 0, 0, 0)'
                     && tr.bottom <= surface + 0.5 && !!body
                     && (list ? body.top >= surface - 0.5 && body.top <= surface + 1.5 : body.top >= surface + 16 - 0.5) };
                 });
               });
-            }, CARDS.filter((c) => c[0] === p));
+            }, CARDS.filter((c) => c[0] === p).map((c) => (c[7] && c[7][device] ? [...c.slice(0, 4), c[7][device], ...c.slice(5, 7)] : c.slice(0, 7))));
             const bad = cards.filter((c) => c.missing || !c.ok || c.size !== '20px' || !c.label || !c.chip);
             res[`${device}${p}`] = { ok: bad.length === 0, cards: cards.length, ...(bad.length ? { bad: bad.slice(0, 3) } : {}) };
           } catch (e) {
@@ -785,6 +791,8 @@ module.exports = function pages(h) {
         hidden: 'hiddenEnergySections', mobile: 'mobileHiddenEnergySections', card: 'devices' },
       { page: 'automations', path: '/automations', root: '.automations-page', spans: 'automationSectionSpans',
         heights: 'automationSectionHeights', hidden: 'hiddenAutomationSections', mobile: 'mobileHiddenAutomationSections', card: 'cat_comfort' },
+      { page: 'scenes', path: '/scenes', root: '.scenes-page', spans: 'sceneSectionSpans', heights: 'sceneSectionHeights',
+        hidden: 'hiddenSceneSections', mobile: 'mobileHiddenSceneSections', card: 'room_kitchen' },
     ];
     /** Edit mode: the header capsule, on a phone in Glas the avatar menu. */
     const enterEdit = async (page) => {
@@ -2636,6 +2644,170 @@ module.exports = function pages(h) {
           res[`${device}-automations`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
             errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look };
         }
+
+        // Scenes Q1–Q4, the same steps in Klassisch and Glas: the hero's figures, the activity, the rooms with their
+        // tiles; a tile activates its scene by tap, Enter and Space, and no tile says "Aktiv" (K88: the overview only).
+        // Glas alone: the tiles in the overview's look (radius 22, circle 36 / from 900 px 40, name 15/20 600, the glyph
+        // in the ink of its tone, no inline colour), two columns (four in a card two columns wide), on the phone on the
+        // page background; the activity like the automations' (K94); the hero's stats capsule.
+        if (keepPart('scenes')) {
+          const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
+          const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
+          const runScenes = async (page) => {
+            const steps = {};
+            const step = async (name, fn, dom) => {
+              await clear(page);
+              await fn();
+              await sleep(250);
+              const sent = (await calls(page)).map((c) => `${c.domain}.${c.service} ${JSON.stringify(c.target || {})} ${JSON.stringify(c.data || {})}`);
+              steps[name] = { sent, ...(dom ? { dom: await dom() } : {}) };
+            };
+            const view = () => ev(page, () => {
+              const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+              const vis = (s, root = document) => [...root.querySelectorAll(s)].filter((e) => e.getClientRects().length);
+              const parts = (e) => (e ? [...e.children].map(txt).filter(Boolean).join(' ') : null);
+              const hero = document.querySelector('.scene-hero-card');
+              return {
+                hero: hero && { total: txt(hero.querySelector('.scene-hero-card__total')), sub: txt(hero.querySelector('.scene-hero-card__sub')),
+                  lastUsed: parts(hero.querySelector('.scene-hero-card__last-used')), stats: vis('.scene-hero-card__stat', hero).map(parts) },
+                feed: vis('.scene-feed-row').map((r) => ['name', 'room', 'time'].map((k) => txt(r.querySelector(`.scene-feed-row__${k}`))).join('|')),
+                rooms: vis('.scene-room-card').map((c) => [txt(c.querySelector('.scene-room-card__title')), txt(c.querySelector('.scene-room-card__count')),
+                  ...vis('.scene-tile', c).map((t) => txt(t.querySelector('.scene-tile__name'))
+                    + (t.hasAttribute('data-active') || t.querySelector('.scene-tile__sub') ? ' +' : ''))].join(' / ')),
+              };
+            });
+            const tile = (name) => page.locator('.scene-room-card .scene-tile', { hasText: name }).first();
+            await step('start', async () => {}, view);
+            await step('tap', async () => {
+              const t = tile('Relax Mode');
+              await t.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await settleAnimations(page);
+              await t.click({ timeout: 2500 });
+            }, view);
+            await step('enter', async () => {
+              await tile('Meeting').focus();
+              await page.keyboard.press('Enter');
+            }, view);
+            await step('space', async () => {
+              await tile('Away Mode').focus();
+              await page.keyboard.press('Space');
+            }, view);
+            return { steps };
+          };
+          /** Glas: the tiles (look, tone, columns, on the phone without a surface), the activity's rows and list, the
+           *  hero's stats; `wide` = the living room's card two columns wide. */
+          const scenesLook = (page) => ev(page, () => {
+            const tok = (n, prop = 'color') => {
+              const d = document.createElement('div');
+              d.style[prop] = `var(${n})`;
+              document.body.appendChild(d);
+              const v = getComputedStyle(d)[prop];
+              d.remove();
+              return v;
+            };
+            const bw = (el, side) => parseFloat(getComputedStyle(el)[`border${side}Width`]);
+            const card = [...document.querySelectorAll('.scene-room-card')].find((c) => c.textContent.includes('Living Room'));
+            const grid = card.querySelector('.scene-room-card__grid');
+            const tiles = [...document.querySelectorAll('.scenes-page .scene-tile')];
+            const t0 = tiles[0];
+            const cs = getComputedStyle(t0);
+            const icb = t0.querySelector('.scene-tile__icon').getBoundingClientRect();
+            const name = getComputedStyle(t0.querySelector('.scene-tile__name'));
+            const feed = document.querySelector('.scene-feed-card__list');
+            const fcard = feed.closest('.scene-feed-card');
+            const fcb = fcard.getBoundingClientRect();
+            const flb = feed.getBoundingClientRect();
+            const feedRows = [...feed.querySelectorAll('.scene-feed-row')];
+            const fname = feedRows[0].querySelector('.scene-feed-row__name');
+            const froom = getComputedStyle(feedRows[0].querySelector('.scene-feed-row__room'));
+            const stats = document.querySelector('.scene-hero-card__stats');
+            return {
+              radius: cs.borderTopLeftRadius, border: cs.borderTopWidth, bg: cs.backgroundColor === tok('--g-tile-off', 'backgroundColor'),
+              h: Math.round(t0.getBoundingClientRect().height),
+              circle: `${Math.round(icb.width)}x${Math.round(icb.height)}`, name: `${name.fontWeight} ${name.fontSize}/${name.lineHeight}`,
+              tones: tiles.every((t) => !!t.dataset.tone && !t.querySelector('.scene-tile__icon').getAttribute('style')
+                && getComputedStyle(t.querySelector('.scene-tile__icon')).color === tok(`--g-${t.dataset.tone}-ink`)),
+              cols: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+              surface: getComputedStyle(card, '::before').content,
+              gridTop: Math.round(grid.getBoundingClientRect().top - card.getBoundingClientRect().top - bw(card, 'Top')),
+              feedRows: Math.round(Math.min(...feedRows.map((r) => r.getBoundingClientRect().height))),
+              feedTextStart: Math.round(fname.getBoundingClientRect().left - feedRows[0].getBoundingClientRect().left),
+              sep: `${getComputedStyle(feedRows[1]).backgroundImage.slice(0, 15)} ${getComputedStyle(feedRows[1]).backgroundPosition}`,
+              firstSep: getComputedStyle(feedRows[0]).backgroundImage,
+              edges: [flb.left - fcb.left - bw(fcard, 'Left'), fcb.right - flb.right - bw(fcard, 'Right'),
+                fcb.bottom - flb.bottom - bw(fcard, 'Bottom')].map(Math.round),
+              top: Math.round(flb.top - fcb.top - bw(fcard, 'Top')) === Math.round(parseFloat(getComputedStyle(fcard, '::before').top)),
+              feedH: Math.round(flb.height), feedScrolls: feed.scrollHeight > feed.clientHeight,
+              feedName: fname.scrollWidth <= fname.clientWidth,
+              feedRoom: `${froom.fontSize}/${froom.lineHeight} ${froom.backgroundColor} ${froom.color === tok('--g-label-2')}`,
+              stats: `${Math.round(stats.getBoundingClientRect().height)} ${getComputedStyle(stats).borderTopLeftRadius}`,
+              statsCut: [...document.querySelectorAll('.scene-hero-card__stat-label')].filter((e) => e.scrollWidth > e.clientWidth).length,
+            };
+          });
+          const got = {};
+          for (const style of ['classic', 'glas']) {
+            const { page, close } = await open(device, style, '/scenes', { mode });
+            try {
+              got[style] = await runScenes(page);
+            } catch (e) {
+              got[style] = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          let look = null;
+          let wide = null;
+          {
+            const { page, close } = await open(device, 'glas', '/scenes', { mode });
+            try {
+              look = await scenesLook(page);
+            } catch (e) {
+              look = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          if (device === 'desktop') {
+            const { page, close } = await open(device, 'glas', '/scenes', { mode, customization: { sceneSectionSpans: { room_living_room: 2 } } });
+            try {
+              wide = await ev(page, () => {
+                const card = [...document.querySelectorAll('.scene-room-card')].find((c) => c.textContent.includes('Living Room'));
+                return getComputedStyle(card.querySelector('.scene-room-card__grid')).gridTemplateColumns.split(' ').length;
+              });
+            } catch (e) {
+              wide = { error: String(e.message).slice(0, 200) };
+            }
+            await close();
+          }
+          const g = (got.glas && got.glas.steps) || {};
+          const same = !!got.classic && !!got.glas && !got.classic.error && !got.glas.error
+            && JSON.stringify(got.classic.steps) === JSON.stringify(g);
+          const st = g.start ? g.start.dom : {};
+          const first = (step) => (step && step.dom && step.dom.feed[0]) || '';
+          const lastUsed = (step, n) => !!step && !!step.dom && !!step.dom.hero && step.dom.hero.lastUsed === `${DE['scenes.hero.lastUsed']} ${n} ${DE['scenes.time.justNow']}`;
+          const fine = same && !!st.hero && st.hero.total === '11' && st.hero.sub === DE['scenes.hero.totalLabel']
+            && st.hero.lastUsed === `${DE['scenes.hero.lastUsed']} Cooking Mode vor 1h`
+            && st.hero.stats.length === 2 && /^\d+ heute genutzt$/.test(st.hero.stats[0]) && st.hero.stats[1] === '5 Räume'
+            && st.feed.map((f) => f.split('|')[0]).join() === 'Cooking Mode,Movie Night,Focus Mode,Bright Mode,Welcome Home,Wake Up,Morning Coffee,Sleep'
+            && st.feed[0] === 'Cooking Mode|Kitchen|vor 1h'
+            && st.rooms.join(' // ') === ['Bedroom / 2 / Sleep / Wake Up', 'Hallway / 2 / Away Mode / Welcome Home', 'Kitchen / 2 / Cooking Mode / Morning Coffee',
+              'Living Room / 3 / Movie Night / Bright Mode / Relax Mode', 'Office / 2 / Focus Mode / Meeting'].join(' // ')
+            && g.tap.sent.join() === 'scene.turn_on {"entity_id":"scene.living_room_relax"} {}' && lastUsed(g.tap, 'Relax Mode')
+            && first(g.tap) === `Relax Mode|Living Room|${DE['scenes.time.justNow']}`
+            && g.enter.sent.join() === 'scene.turn_on {"entity_id":"scene.office_meeting"} {}' && lastUsed(g.enter, 'Meeting')
+            && first(g.enter).startsWith('Meeting|Office|')
+            && g.space.sent.join() === 'scene.turn_on {"entity_id":"scene.hallway_away"} {}' && lastUsed(g.space, 'Away Mode')
+            && first(g.space).startsWith('Away Mode|Hallway|')
+            && ['start', 'tap', 'enter', 'space'].every((k) => g[k].dom.rooms.every((r) => !r.includes(' +')));
+          const phone = device === 'phone';
+          const measured = !!look && !look.error && look.radius === '22px' && look.border === '0px' && look.bg
+            && look.h === (phone ? 64 : 116) && look.circle === (phone ? '36x36' : '40x40') && look.name === '600 15px/20px' && look.tones
+            && look.cols === 2 && (phone ? look.surface === 'none' && look.gridTop === 50 : look.surface !== 'none' && look.gridTop === 66)
+            && look.feedRows >= 52 && look.feedTextStart === 60 && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none'
+            && look.edges.join() === '0,0,0' && look.top && look.feedH === 260 && look.feedScrolls && look.feedName
+            && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedRoom) && look.stats === '44 22px' && look.statsCut === 0
+            && (phone || wide === 4);
+          res[`${device}-scenes`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
+            errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look, wide };
+        }
       }
       out.pagesKeep = res;
       out.pagesKeepOk = Object.values(res).every((r) => r.ok);
@@ -2890,6 +3062,35 @@ module.exports = function pages(h) {
           }
           await close();
         }
+
+        // scenes: none at all (no empty state of its own either: the hero counts 0, the activity says none was
+        // activated yet, no room is left); the text 15/20 `label2`
+        {
+          const { page, close } = await open(device, 'glas', '/scenes', { mode });
+          try {
+            const { DEMO_ENTITIES } = await import(require('url').pathToFileURL(require('path').join(__dirname, '../../../packages/core/dist/demo.js')).href);
+            const ids = Object.keys(DEMO_ENTITIES).filter((i) => i.startsWith('scene.'));
+            await ev(page, (list) => list.forEach((i) => window.__hapulseDemo.patch(i, null)), ids);
+            await sleep(400);
+            await settleAnimations(page);
+            const got = await ev(page, () => {
+              const d = document.createElement('div');
+              d.style.color = 'var(--g-label-2)';
+              document.body.appendChild(d);
+              const want = getComputedStyle(d).color;
+              d.remove();
+              const e = document.querySelector('.scene-feed-card__empty');
+              const cs = getComputedStyle(e);
+              return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
+                cards: document.querySelectorAll('.scene-room-card').length, total: document.querySelector('.scene-hero-card__total')?.textContent.trim() };
+            });
+            res[`${device}-scenes-none`] = { ok: got.text === DE['scenes.activity.empty'] && got.font === '15px/20px' && got.color && got.cards === 0
+              && got.total === '0', ...got };
+          } catch (e) {
+            res[`${device}-scenes-none`] = { ok: false, error: String(e.message).slice(0, 200) };
+          }
+          await close();
+        }
       }
       out.pagesEmpty = res;
       out.pagesEmptyOk = Object.values(res).every((r) => r.ok);
@@ -2927,6 +3128,7 @@ module.exports = function pages(h) {
     'energy-edit': editScene('/energy'),
     'music-edit': editScene('/music'),
     'automations-edit': editScene('/automations'),
+    'scenes-edit': editScene('/scenes'),
   };
 
   return { pagesChecks, scenes };

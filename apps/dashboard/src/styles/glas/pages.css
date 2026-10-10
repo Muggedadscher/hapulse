@@ -313,14 +313,16 @@
 }
 
 /* a phrase beside the title (the activities' "8 heute ausgeführt") gives way before the title where the head is short
-   (a phone in edit mode, the bar's two buttons beside it): both start from their width, the phrase shrinks first;
-   a count keeps its width */
+   (a phone in edit mode, the bar's two buttons beside it): the title keeps its width (at most the line, then it ends
+   with "…" itself), the phrase takes what is left and ends with "…"; a count keeps its width. Not by shrink weights:
+   a title shrunk by a fraction of a pixel already shows its "…". */
 :root[data-style='glas']
   :is(
     .automations-page .auto-feed-card__header > .auto-feed-card__title-row,
     .scenes-page .scene-feed-card__header > .scene-feed-card__title-row
   ) {
-  flex: 1 1 auto;
+  flex: none;
+  max-width: 100%;
 }
 
 :root[data-style='glas']
@@ -328,7 +330,7 @@
     .automations-page .auto-feed-card__header .auto-feed-card__sub,
     .scenes-page .scene-feed-card__header .scene-feed-card__sub
   ) {
-  flex: 0 1000 auto;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

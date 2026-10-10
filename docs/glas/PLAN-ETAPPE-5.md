@@ -549,3 +549,31 @@ und übernommen, außer wo anders vermerkt.
   Schalter per Tipp und per Leertaste, Suche auch ohne Treffer, Raum, Kategorie; in Glas die Maße der Zeilen, Linien,
   Listenkanten, Kennzahlen und Wahlen), `pagesEdit` Automationen, `pagesEmpty` Automationen (Suche ohne Treffer, gar
   keine Automation), Szene `automations-edit` für den Klassisch-Vergleich.
+
+### 7.15 Szenen (Q1–Q4, K88, K90, K94, K96)
+
+- Keine eigene Datei: Hero in `pages.css` und Aktivität in `lists.css` (beide gemeinsam mit den Automationen), Kacheln
+  in `home-cards.css` (die Regeln der Übersicht gelten jetzt auch für `.scenes-page`), Bearbeiten in `edit.css`;
+  `[fork]`-Zeilen in `Scenes.tsx` (Leiste, K96) und `SceneRoomCard.tsx` (Ton statt Inline-Farbe, K88).
+- **Hero (Q1, K90):** wie bei den Automationen; die Kennzahlen „heute genutzt“ (Symbol `tealInk`) und „Räume“
+  (`blueInk`).
+- **Letzte Aktivität (Q2, K94):** wie bei den Automationen, statt der Kategorie der Raum als schlichter Text; das Symbol
+  `label2` im Kreis (eine Szene hat kein Aus).
+- **Räume (Q3, K88):** Kacheln wie auf der Übersicht (Ton aus `glasSceneTone`, Kreis 36, ab 900 px 40 und 116 hoch),
+  ohne „Aktiv“. Zwei Spalten, ab 900 px vier, sobald die Karte 480 breit ist (wie M und L der Übersicht).
+  **Abweichung:** Am Handy stehen die Kacheln wie auf der Übersicht ohne Fläche auf dem Seitengrund, der Titel darüber.
+  In einer Fläche verschwand ihr Grund im Dunkeln (`tileOff` gleich `card`) und die Namen wurden 32 px schmaler. Eine
+  gedeckelte Karte behält ihre Fläche.
+- **Bearbeiten (Q4, K96):** die Leiste wie auf den Automationen; die Namen: der Hero „Übersicht“, die Aktivität ihr
+  Titel, ein Raum sein Name (ohne Raum „Allgemein“).
+- Kopf der Aktivität (auch bei den Automationen): der Titel behält seine Breite, „8 heute genutzt“ nimmt den Rest und
+  endet mit „…“. Mit Schrumpf-Gewichten verlor der Titel Bruchteile eines Pixels und zeigte schon „…“.
+- Prüfungen: `pagesKeep` Szenen (dieselben Schritte in Klassisch und Glas: Hero, Aktivität, Räume mit ihren Kacheln, eine
+  Kachel per Tipp, Enter und Leertaste, nirgends „Aktiv“; in Glas Look und Ton-Ink der Kacheln, Spalten, vier in einer
+  Karte über zwei Spalten, am Handy ohne Fläche, die Aktivität wie bei den Automationen, die Kennzahlen), `pagesEdit`
+  Szenen, `pagesEmpty` Szenen (gar keine Szene), `pagesCardTitles` (die Räume am Handy ohne Fläche), Szene
+  `scenes-edit` für den Klassisch-Vergleich. Nebenbefund 28: „8 heute genutzt“ zählt die gezeigten Einträge.
+- `homeKeep` (Übersicht, Ziehen per Tastatur am Handy) wartet nach dem Pfeil, bis die Karte über der nächsten liegt,
+  statt fest 250 ms: der Pfeil rollt am Handy erst weich (Tastatur-Sensor von dnd-kit), und erst danach liegt die Karte
+  dort. Seit dem Energie-Schritt ließ die Prüfung am Handy zu früh los (vermutlich rollt es etwas langsamer, nicht
+  gemessen); das Ziehen selbst war nie kaputt (dieselben Schritte mit Wartezeit schieben die Karte).
