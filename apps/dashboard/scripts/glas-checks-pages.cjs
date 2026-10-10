@@ -2796,10 +2796,11 @@ module.exports = function pages(h) {
             && JSON.stringify(got.classic.steps) === JSON.stringify(g);
           const st = g.start ? g.start.dom : {};
           const stats = (v) => (v && v.hero ? v.hero.stats.join() : '');
+          const counts = (on, off) => `${on} ${DE['automations.hero.statActive']},${off} ${DE['automations.hero.statDisabled']},5 ${DE['automations.hero.categoryLabel.other']}`;
           const fine = same && !!st.hero && st.hero.total === '13' && st.feed.length === 8 && st.cats.length === 5
-            && stats(st) === '11 aktiv,2 deaktiviert,5 Kategorien'
-            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === '12 aktiv,1 deaktiviert,5 Kategorien'
-            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === '11 aktiv,2 deaktiviert,5 Kategorien'
+            && stats(st) === counts(11, 2)
+            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === counts(12, 1)
+            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === counts(11, 2)
             && g.search.dom.join() === 'Evening Lights,Morning Lights' && g.searchNone.dom.join() === DE['automations.emptyFilter']
             && g.searchOff.dom === 13 && g.room.dom.join() === 'Evening Lights'
             && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 13;
@@ -2950,11 +2951,14 @@ module.exports = function pages(h) {
           const st = g.start ? g.start.dom : {};
           const first = (step) => (step && step.dom && step.dom.feed[0]) || '';
           const lastUsed = (step, n) => !!step && !!step.dom && !!step.dom.hero && step.dom.hero.lastUsed === `${DE['scenes.hero.lastUsed']} ${n} ${DE['scenes.time.justNow']}`;
+          const hourAgo = DE['scenes.time.hoursAgo.one'].replace('{count}', '1');
+          const usedToday = DE['scenes.hero.statUsedToday'];
           const fine = same && !!st.hero && st.hero.total === '11' && st.hero.sub === DE['scenes.hero.totalLabel']
-            && st.hero.lastUsed === `${DE['scenes.hero.lastUsed']} Cooking Mode vor 1h`
-            && st.hero.stats.length === 2 && /^\d+ heute genutzt$/.test(st.hero.stats[0]) && st.hero.stats[1] === '5 Räume'
+            && st.hero.lastUsed === `${DE['scenes.hero.lastUsed']} Cooking Mode ${hourAgo}`
+            && st.hero.stats.length === 2 && /^\d+ /.test(st.hero.stats[0]) && st.hero.stats[0].replace(/^\d+ /, '') === usedToday
+            && st.hero.stats[1] === `5 ${DE['scenes.hero.roomLabel.other']}`
             && st.feed.map((f) => f.split('|')[0]).join() === 'Cooking Mode,Movie Night,Focus Mode,Bright Mode,Welcome Home,Wake Up,Morning Coffee,Sleep'
-            && st.feed[0] === 'Cooking Mode|Kitchen|vor 1h'
+            && st.feed[0] === `Cooking Mode|Kitchen|${hourAgo}`
             && st.rooms.join(' // ') === ['Bedroom / 2 / Sleep / Wake Up', 'Hallway / 2 / Away Mode / Welcome Home', 'Kitchen / 2 / Cooking Mode / Morning Coffee',
               'Living Room / 3 / Movie Night / Bright Mode / Relax Mode', 'Office / 2 / Focus Mode / Meeting'].join(' // ')
             && g.tap.sent.join() === 'scene.turn_on {"entity_id":"scene.living_room_relax"} {}' && lastUsed(g.tap, 'Relax Mode')
