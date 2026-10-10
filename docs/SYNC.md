@@ -408,4 +408,5 @@ Nach jedem Upstream-Merge:
     `data-g-immersive` den Rahmen weg (`.app-content`, `.app-main`, `.app-tabs`, `.app-chips-mobile`); bekommt der
     Rahmen bei Upstream ein neues Element, die Kameraseite am Handy in Glas ansehen. Der dunkle Teilbaum
     (`[data-glas-scheme='dark']`) nimmt dieselben `glasCssVars` und bekommt neue Tokens von selbst. Danach
-    `checks --part nvr` laufen lassen (braucht ffmpeg für die Aufnahme-Segmente des nachgestellten Sentinels).
+    `checks --part nvr` laufen lassen (braucht ffmpeg mit VP9 für Bilder und Aufnahme-Segmente des nachgestellten
+    Sentinels; ohne ist der Teil rot).

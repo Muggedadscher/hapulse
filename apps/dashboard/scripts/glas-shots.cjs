@@ -3,7 +3,7 @@
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
 //   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home|pages|nvr]
-//     [--dom-out <file>] [--only <block>,…]
+//     [--dom-out <file>] [--only <block>,…] [--no-media]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
 //   --devices phone,ipad,desktop  --scenes home,room,…  --contrast  --forced-colors  --engine chromium|webkit
@@ -22,8 +22,9 @@
 //   glas-checks-pages.cjs) take a page in edit mode at full length; they are not in the default list either. The NVR
 //   scenes of stage 6 (nvr-overview, nvr-cam, nvr-cam-night, nvr-cam-events, nvr-cam-date, nvr-cam-rec, nvr-security,
 //   nvr-room, nvr-error, nvr-trouble, nvr-setup, nvr-setup-login, nvr-setup-window, nvr-rooms; glas-checks-nvr.cjs)
-//   answer Sentinel's routes with a stand-in (pictures made with ffmpeg; without it they are skipped); all but
-//   nvr-cam-rec (the playing time moves) are in the default list.
+//   answer Sentinel's routes with a stand-in (pictures and recordings made with ffmpeg and libvpx-vp9; without them the
+//   run fails, with --no-media they are skipped and listed); all but nvr-cam-rec (the playing time moves) are in the
+//   default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
 //   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
@@ -31,7 +32,8 @@
 //   other pages of stage 5 (PLAN-ETAPPE-5.md §3, glas-checks-pages.cjs) and the NVR views of stage 6
 //   (PLAN-ETAPPE-6.md §3, glas-checks-nvr.cjs); --part runs one. --dom-out: the Klassisch DOM of every window as JSON,
 //   to compare a build with main's. --only runs some blocks of the window, gesture, overview, page or NVR checks
-//   (e.g. sheetsDrag, gesturesInspector, homeHints, pagesSwitches, nvrImmersive).
+//   (e.g. sheetsDrag, gesturesInspector, homeHints, pagesSwitches, nvrImmersive). --no-media: without ffmpeg (VP9) the
+//   NVR checks are skipped and reported instead of failing the run.
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
@@ -219,16 +221,20 @@ async function gotoPage(page, url) {
 }
 
 /** The console line of a request the context aborted on purpose (only local requests, see newContext; the NVR window
- * scenes point Sentinel at a documentation address), or one the Sentinel stand-in refuses on purpose (glas-checks-nvr:
- * 503 for an offline camera's snapshot, 401 for the error state). The demo itself never gets these. */
-const ABORTED = /^Failed to load resource: (net::ERR_FAILED|the server responded with a status of (401 \(Unauthorized\)|503 \(Service Unavailable\)))$/;
+ * scenes point Sentinel at a documentation address). The demo itself never gets these. */
+const ABORTED = /^Failed to load resource: net::ERR_FAILED$/;
+/** …or one the Sentinel stand-in of the NVR scenes refuses on purpose (glas-checks-nvr: 503 for an offline camera's
+ * snapshot, 401 for the error state) — only for the stand-in's own address. */
+const STAND_IN_REFUSED = /^Failed to load resource: the server responded with a status of (401 \(Unauthorized\)|503 \(Service Unavailable\))$/;
+const expectedConsole = (m) => ABORTED.test(m.text())
+  || (STAND_IN_REFUSED.test(m.text()) && ((m.location() && m.location().url) || '').startsWith('https://192.0.2.10/'));
 
 /** Load a path with the clock paused, let it settle deterministically. */
 async function openPage(ctx, url, extraRun = 0) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push('exc: ' + String(e.message).slice(0, 200)));
-  page.on('console', (m) => { if (m.type() === 'error' && !ABORTED.test(m.text())) errors.push('console: ' + m.text().slice(0, 200)); });
+  page.on('console', (m) => { if (m.type() === 'error' && !expectedConsole(m)) errors.push('console: ' + m.text().slice(0, 200)); });
   await gotoPage(page, url);
   await page.waitForFunction(() => document.querySelector('#root > *'), null, { timeout: 15000 });
   await page.waitForLoadState('networkidle');
@@ -387,7 +393,10 @@ async function shoot() {
         const ctx = await newContext(browser, device, { demo: sc.demo !== false, mode, style, strength, reduce, contrast, forcedColors,
           customization: sc.customization, ...(lang ? { locale: LANG_LOCALES[lang], state: { language: lang } } : {}) });
         if (sc.media && !NVR.haveMedia()) {
-          report.push({ name: [style, mode, device, scene].join('-'), skipped: 'needs ffmpeg: ' + NVR.media().error });
+          // without the stand-in's pictures a comparison would be equal by default: fail unless asked to skip
+          const name = [style, mode, device, scene].join('-');
+          report.push(flag('no-media') ? { name, skipped: 'needs ffmpeg (VP9): ' + NVR.media().error }
+            : { name, errors: ['needs ffmpeg (VP9) for the Sentinel stand-in (--no-media skips): ' + NVR.media().error] });
           await ctx.close();
           continue;
         }
@@ -1468,7 +1477,7 @@ async function checks() {
   if (part === 'all' || part === 'gestures') ok = (await GESTURES.gesturesChecks(browser, url, out, { only: list('only', '') })) && ok;
   if (part === 'all' || part === 'home') ok = (await HOME.homeChecks(browser, url, out, { only: list('only', '') })) && ok;
   if (part === 'all' || part === 'pages') ok = (await PAGES.pagesChecks(browser, url, out, { only: list('only', '') })) && ok;
-  if (part === 'all' || part === 'nvr') ok = (await NVR.nvrChecks(browser, url, out, { only: list('only', '') })) && ok;
+  if (part === 'all' || part === 'nvr') ok = (await NVR.nvrChecks(browser, url, out, { only: list('only', ''), noMedia: flag('no-media') })) && ok;
   await browser.close();
   if (srv) srv.close();
   console.log(JSON.stringify({ ok, ...out }, null, 1));

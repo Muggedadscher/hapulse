@@ -150,7 +150,8 @@ in Klassisch und in Sentinels eigener UI. Plan, Abweichungen und Messwerte: `doc
   Das Abzeichen „Aufnahme hängt“ einer Kachel erkennt Glas am Symbol `lucide-video-off` (`MARKER_ICONS` dort).
   `node apps/dashboard/scripts/glas-shots.cjs checks --serve apps/dashboard/dist --part nvr` prüft alle NVR-Ansichten
   beider Stile gegen ein nachgestelltes Sentinel (`scripts/glas-checks-nvr.cjs`, Adresse `192.0.2.10`, Playwright-Route;
-  die Aufnahme-Segmente erzeugt es mit ffmpeg, ohne ffmpeg meldet es diese Punkte als „Labor“). Echte Wiedergabe (Relay,
+  Bilder und Aufnahme-Segmente erzeugt es mit ffmpeg; ohne ffmpeg mit VP9 ist der Teil rot, `--no-media` überspringt ihn
+  und meldet das). Echte Wiedergabe (Relay,
   Scrub, Ton, WebRTC) prüft der Klick-Test gegen ein echtes Sentinel mit dem Zusatz `glas` (unten).
 - Sentinels eigene UI bekommt kein Glas; sie rendert die Kameraseite im Standard.
 
@@ -239,10 +240,13 @@ git grep -n "\[fork\]" -- apps/dashboard/src/pages/Home.tsx apps/dashboard/src/p
   apps/dashboard/src/app/AppLayout.tsx apps/dashboard/src/stores/settingsStore.ts \
   packages/core/src/index.ts   # NVR-Zeilen entfernen (settingsSecrets.ts bleibt: gilt auch für Music Assistant)
 # Locales: alle Keys nvr.*, nav.nvr, home.section.*.nvr, security.section.*.nvr aus packages/core/locales/*.json löschen
-# Stil Glas: styles/glas/nvr.css (+ Import in styles/glas/index.css und Eintrag im Selektor-Wächter) und
-# scripts/glas-checks-nvr.cjs (+ require und --part nvr in glas-shots.cjs) entfernen; der Wächter liest sonst die
-# ui.css des entfernten Pakets. useGlasImmersive, glasUiStore.immersive und data-glas-scheme bleiben dann ungenutzt.
-npm run typecheck && npm run build && npm test -w @hapulse/core
+# Stil Glas: styles/glas/nvr.css (+ Import in styles/glas/index.css) und scripts/glas-checks-nvr.cjs (+ require,
+# Szenen und --part nvr in glas-shots.cjs) entfernen; NVR-Selektoren stehen auch in anderen Glas-Dateien
+# (git grep -n nvr -- apps/dashboard/src/styles/glas: lists, material, controls, accent, home, edit, base, sheets …).
+# Im Selektor-Wächter (test/glasSelectors.test.ts) den Eintrag für nvr.css und VideoOff in MARKER_ICONS entfernen;
+# er liest sonst die ui.css des entfernten Pakets. useGlasImmersive, glasUiStore.immersive und data-glas-scheme
+# bleiben dann ungenutzt.
+npm run typecheck && npm run build && npm test -w @hapulse/core && npm test -w @hapulse/dashboard
 ```
 
 Danach ist HAPulse wieder ohne NVR (die Settings-Keys `scryptedUrl`/

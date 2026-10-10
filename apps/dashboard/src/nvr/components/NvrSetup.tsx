@@ -118,12 +118,14 @@ function useSetupForm(onSaved?: () => void) {
         />
       </label>
       {glas ? (
-        // Glas: a segment (plan docs/glas/PLAN-ETAPPE-6.md K105); manual, as switching resets the probe
+        // Glas: a segment (plan docs/glas/PLAN-ETAPPE-6.md K105); manual, as switching resets the probe; choosing the
+        // chosen mode again resets it too, like the classic buttons
         <Segment<AuthMode>
           className="g-seg--nvr-auth"
           label={authLabel}
           value={mode}
           onChange={chooseMode}
+          onReselect={chooseMode}
           activation="manual"
           options={AUTH_MODES.map((m) => ({ value: m, label: authText(m) }))}
         />

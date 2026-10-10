@@ -2,7 +2,7 @@
  * [fork] Glas gestures (stage 3b) — state of the Glas-only overlays, not persisted (plan docs/glas/PLAN-ETAPPE-3.md
  * §4.1). `contextMenu`: the entity card whose context menu is open (`components/glas/ContextMenu.tsx`, hosted by
  * `GlasRuntime`); opening is idempotent, because Android fires `contextmenu` on top of the long press.
- * `immersive` (stage 6, E13): the camera page is shown — set by the page (`app/glas/useGlasImmersive.ts`), read by
+ * `immersive` (stage 6, E13): the camera page is shown — held by the page (`app/glas/useGlasImmersive.ts`), read by
  * `GlasRuntime` (root flag) and `AppLayout` (dark content column) (plan docs/glas/PLAN-ETAPPE-6.md K103, K104).
  */
 
@@ -26,24 +26,38 @@ interface GlasUiState {
   contextMenu: ContextMenuTarget | null;
   openContextMenu: (target: ContextMenuTarget) => void;
   closeContextMenu: () => void;
+  /** True while at least one page holds it. */
   immersive: boolean;
-  setImmersive: (on: boolean) => void;
+  /** Holds `immersive` until the returned release is called (a second call does nothing). Counted, so a camera page
+   *  that replaces another — both mounted for a moment while the route changes — never clears it in between. */
+  holdImmersive: () => () => void;
 }
 
-export const useGlasUiStore = create<GlasUiState>()((set) => ({
-  contextMenu: null,
+export const useGlasUiStore = create<GlasUiState>()((set) => {
+  let holders = 0;
+  return {
+    contextMenu: null,
 
-  openContextMenu(target) {
-    set((s) => (s.contextMenu?.el === target.el && s.contextMenu.entityId === target.entityId ? s : { contextMenu: target }));
-  },
+    openContextMenu(target) {
+      set((s) => (s.contextMenu?.el === target.el && s.contextMenu.entityId === target.entityId ? s : { contextMenu: target }));
+    },
 
-  closeContextMenu() {
-    set((s) => (s.contextMenu ? { contextMenu: null } : s));
-  },
+    closeContextMenu() {
+      set((s) => (s.contextMenu ? { contextMenu: null } : s));
+    },
 
-  immersive: false,
+    immersive: false,
 
-  setImmersive(on) {
-    set((s) => (s.immersive === on ? s : { immersive: on }));
-  },
-}));
+    holdImmersive() {
+      holders++;
+      set((s) => (s.immersive ? s : { immersive: true }));
+      let held = true;
+      return () => {
+        if (!held) return;
+        held = false;
+        holders--;
+        if (holders === 0) set((s) => (s.immersive ? { immersive: false } : s));
+      };
+    },
+  };
+});

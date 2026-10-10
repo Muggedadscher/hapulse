@@ -10,10 +10,5 @@ import { useLayoutEffect } from 'react';
 import { useGlasUiStore } from '../../stores/glasUiStore';
 
 export function useGlasImmersive(active: boolean): void {
-  useLayoutEffect(() => {
-    if (!active) return undefined;
-    const { setImmersive } = useGlasUiStore.getState();
-    setImmersive(true);
-    return () => setImmersive(false);
-  }, [active]);
+  useLayoutEffect(() => (active ? useGlasUiStore.getState().holdImmersive() : undefined), [active]);
 }

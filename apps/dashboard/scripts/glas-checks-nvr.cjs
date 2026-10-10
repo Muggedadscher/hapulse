@@ -7,7 +7,8 @@
 // chart, a day of clips with events and motion, snapshots, event pictures and segment thumbnails (ffmpeg makes the
 // pictures once per run). Playback without a media server: the signalling WebSocket closes at once, so live falls back
 // to the picture stream (one JPEG, the player's MJPEG path) and recordings to the native <video> (api/segment = a short
-// VP9 file of the same still, so every frame looks alike). Without ffmpeg the scenes are skipped and the part says so.
+// VP9 file of the same still, so every frame looks alike). Without ffmpeg (with libvpx-vp9) the scenes and the part
+// fail; `--no-media` skips them instead and says so.
 
 /* global __g, __n -- helpers in the page (glas-shots.cjs pageHelpers, nvrHelpers below) */
 
@@ -174,14 +175,18 @@ module.exports = function nvr(h) {
     'referrer-policy': 'no-referrer',
   };
 
+  /** Pictures and recordings: they keep answering while `fail` is set (mockSentinel). */
+  const MEDIA_ROUTES = new Set(['api/snapshot', 'api/live', 'api/evthumb', 'api/evframe', 'api/thumb', 'api/segment']);
+
   /**
    * Answer Sentinel's routes in this context (registered after newContext's "only local" route, so it wins). `now`:
-   * the data's clock (the paused clock of `shoot`, or real time for the checks). `fail`: every answer with this status
-   * (or 'unreachable': aborted). `picture`: the same picture for every camera ('grey', 'white', 'night', 'day').
-   * `segment: 'hang'`: recordings never arrive (the still stays, "Lädt …"). `exchange`: the token exchange answers with
-   * this status (default: a token). `delay`: ms before the stats answer (the loading state). Returns a log of the
-   * requests; its `set(key, value)` changes an option for every later answer (`fail(v)` = `set('fail', v)`: a refresh
-   * that fails after the first load).
+   * the data's clock (the paused clock of `shoot`, or real time for the checks). `fail`: every JSON answer with this
+   * status (or 'unreachable': aborted); pictures and recordings keep answering, so a failure switched on while a page
+   * still loads its pictures cannot break them (the scene nvr-trouble). `picture`: the same picture for every camera
+   * ('grey', 'white', 'night', 'day'). `segment: 'hang'`: recordings never arrive (the still stays, "Lädt …").
+   * `exchange`: the token exchange answers with this status (default: a token). `delay`: ms before the stats answer
+   * (the loading state). Returns a log of the requests; its `set(key, value)` changes an option for every later answer
+   * (`fail(v)` = `set('fail', v)`: a refresh that fails after the first load).
    */
   async function mockSentinel(ctx, opts = {}) {
     const now = opts.now != null ? opts.now : Date.now();
@@ -204,10 +209,11 @@ module.exports = function nvr(h) {
         return route.fulfill({ status: 204, headers: { ...CORS, 'access-control-allow-headers': 'Content-Type, x-sentinel-token, Range',
           'access-control-allow-methods': 'GET, POST, OPTIONS' } });
       }
-      if (opts.fail === 'unreachable') return route.abort('connectionrefused');
       const json = (body, status = 200) => route.fulfill({ status, headers: { ...CORS, 'content-type': 'application/json',
         'cache-control': 'no-store' }, body: JSON.stringify(body) });
-      if (opts.fail) return json({ error: 'refused' }, opts.fail);
+      if (opts.fail && !MEDIA_ROUTES.has(name)) {
+        return opts.fail === 'unreachable' ? route.abort('connectionrefused') : json({ error: 'refused' }, opts.fail);
+      }
       const cam = d.cams.find((c) => c.id === q.get('camera'));
       const pic = (c) => m[(c && c.picture) || 'day'];
       const image = (buf, cache = 'no-store') => (buf
@@ -452,9 +458,10 @@ module.exports = function nvr(h) {
 
   async function nvrChecks(browser, url, out, opts = {}) {
     if (!haveMedia()) {
-      // the stand-in has no pictures and no recordings: the lab runs these points (plan §3)
-      out.nvrLab = 'needs ffmpeg (pictures and recordings of the Sentinel stand-in): ' + media().error;
-      return true;
+      // the stand-in has no pictures and no recordings, so no block could run: red, unless skipping was asked for
+      out.nvrMedia = (opts.noMedia ? 'skipped (--no-media): ' : 'needs ffmpeg with libvpx-vp9 (--no-media skips): ')
+        + media().error;
+      return opts.noMedia === true;
     }
     const pageErrors = [];
     const ran = [];
@@ -626,7 +633,8 @@ module.exports = function nvr(h) {
           'picture ' + j(l.stage));
         want(l.back.radius === '22px', 'back radius ' + l.back.radius);
         want(same(l.h1, ['17px', '22px', '600']), 'title ' + j(l.h1));
-        want(same(l.shade, ['104px', '120px']), 'gradients ' + j(l.shade));
+        // the top gradient grows with the safe area (the header moves down by it)
+        want(same(l.shade, [`${104 + insetTop}px`, '120px']), 'gradients ' + j(l.shade));
         want(near(l.body, l.vh) && near(l.rightBottom, l.vh), `height ${l.body}/${l.rightBottom}/${l.vh}`);
         want(l.card[1] === '0px' && l.right[0] === '0px', 'cards ' + j([l.card, l.right]));
       }
@@ -752,13 +760,40 @@ module.exports = function nvr(h) {
           const closed = await until(o.page, () => !document.querySelector('.nvr-cam__body--clip'));
           const b = layoutBad(lay, false, 47).filter((x) => !x.startsWith('badge'));
           if (lay.badge === DE['nvr.live'] || !/\d\d:\d\d:\d\d/.test(lay.badge || '')) b.push('time badge ' + lay.badge);
-          if (!(sa.chip === 44 && sa.zoom === 44 && sa.live === 96 && sa.list === '42px')) b.push('safe area ' + JSON.stringify(sa));
+          // the events list ends above the date chip: 62 px + the inset
+          if (!(sa.chip === 44 && sa.zoom === 44 && sa.live === 96 && sa.list === '96px')) b.push('safe area ' + JSON.stringify(sa));
           const st = clip.stage;
           if (!(near(st.h, Math.round(clip.vh * 0.28), 2) && near(st.x, (clip.vw - st.w) / 2, 1) && st.y === 0)) b.push('clip picture ' + JSON.stringify(st));
           if (!(clip.head.shown && clip.head.y === 55 && clip.head.bottom <= st.bottom)) b.push('clip header ' + JSON.stringify(clip.head));
           if (clip.bar || clip.tabs || clip.filters || !clip.clipbar || clip.pad !== '40px' || !closed) b.push('clip mode ' + JSON.stringify(clip));
           res.safeArea = { bad: b, sa, clip };
           bad.push(...b.map((x) => `safe area: ${x}`));
+        } finally {
+          await o.close();
+        }
+      }
+
+      // a long name on the phone: between the back button and the action (no overlap), ending in an ellipsis, the time
+      // badge kept
+      {
+        const r = recording();
+        const cameras = [{ id: '1', name: 'Garten hinten links am Zaun beim Schuppen', picture: 'day' }];
+        const o = await open('phone', 'glas', r.path, { sentinel: { now: r.now, cameras } });
+        try {
+          await camReady(o.page, 'rec');
+          const n = await ev(o.page, () => {
+            const q = (s) => document.querySelector(s);
+            const rect = (el) => el.getBoundingClientRect();
+            const h1 = q('.nvr-cam__h1');
+            const name = rect(q('.nvr-cam__name') || h1);
+            const back = rect(q('.nvr-cam__head .nvr-iconbtn'));
+            const act = rect(q('.nvr-cam__actions'));
+            const badge = q('.nvr-cam__badge--time');
+            return { left: Math.round(name.left - back.right), right: Math.round(act.left - name.right),
+              cut: h1.scrollWidth > h1.clientWidth, badge: !!badge && badge.scrollWidth <= Math.ceil(rect(badge).width) };
+          });
+          res.longName = n;
+          if (!(n.left >= 4 && n.right >= 4 && n.cut && n.badge)) bad.push('long name ' + JSON.stringify(n));
         } finally {
           await o.close();
         }
@@ -1326,9 +1361,27 @@ module.exports = function nvr(h) {
     });
 
     // 5. Forced colours: the floating parts of the camera page keep an edge, the playhead stays drawn, the lens is a
-    //    ring; the date window's chosen day keeps a ring; tiles and head actions of the overview keep an edge
+    //    ring; the date window's chosen day keeps a ring; tiles and head actions of the overview keep an edge; every
+    //    status dot (live, offline, hanging, the hero's problem pill, the home card) is drawn in CanvasText
     await block('nvrForcedColors', async () => {
       const res = {};
+      /** The dots under `sel` with their state and fill, and the value of CanvasText (from a probe). */
+      const dots = (page, sel) => ev(page, (s) => {
+        const probe = document.createElement('span');
+        probe.style.cssText = 'position:absolute;forced-color-adjust:none;color:CanvasText';
+        document.body.append(probe);
+        const ink = getComputedStyle(probe).color;
+        probe.remove();
+        const state = (d) => {
+          if (d.closest('.nvr-pill--danger')) return 'danger';
+          const cam = d.closest('[data-state]');
+          if (cam) return cam.getAttribute('data-state');
+          if (!d.classList.contains('nvr-camtile__dot--off')) return 'ok';
+          return d.closest('.nvr-camtile').querySelector(':scope > .nvr-camtile__offline > .lucide-video-off') ? 'stalled' : 'offline';
+        };
+        return { ink, dots: [...document.querySelectorAll(s)].map((d) => ({ state: state(d), fill: getComputedStyle(d).backgroundColor })) };
+      }, sel);
+      const allInk = (r, want) => want.every((st) => r.dots.some((d) => d.state === st)) && r.dots.every((d) => d.fill === r.ink);
       const o = await open('phone', 'glas', '/nvr/1', { forced: true });
       try {
         await camReady(o.page, 'live');
@@ -1350,12 +1403,21 @@ module.exports = function nvr(h) {
         await until(ov.page, () => document.querySelectorAll('.nvr-layout .nvr-camtile').length === 4);
         res.overview = await ev(ov.page, () => [...document.querySelectorAll('.nvr-layout .nvr-camtile, .nvr-actions > .icon-btn')]
           .map((t) => getComputedStyle(t).borderTopWidth));
+        res.overviewDots = await dots(ov.page, '.nvr-layout :is(.nvr-pill__dot, .nvr-camtile__dot)');
       } finally {
         await ov.close();
       }
+      const home = await open('desktop', 'glas', '/', { forced: true });
+      try {
+        await until(home.page, () => document.querySelectorAll('.g-nvr__cam .g-nvr__dot').length === 4);
+        res.homeDots = await dots(home.page, '.g-nvr__cam .g-nvr__dot');
+      } finally {
+        await home.close();
+      }
       out.nvrForcedColors = res;
       out.nvrForcedColorsOk = ['pill', 'tabs', 'chip', 'back', 'tool'].every((k) => res.cam[k] === '1px') && res.cam.lens === '2px'
-        && res.cam.playhead === 1 && res.day === '2px' && res.overview.length === 6 && res.overview.every((w) => w === '1px');
+        && res.cam.playhead === 1 && res.day === '2px' && res.overview.length === 6 && res.overview.every((w) => w === '1px')
+        && allInk(res.overviewDots, ['danger', 'ok', 'offline', 'stalled']) && allInk(res.homeDots, ['ok', 'offline', 'stalled']);
     });
 
     // 6. Opaque glass ("Deckend"; more contrast alike): no backdrop-filter on the camera page and the overview, the

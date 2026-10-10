@@ -227,9 +227,42 @@ describe('applyAppearance', () => {
     for (const [k, v] of Object.entries(dark)) expect(root.style.getPropertyValue(k)).toBe(v);
     expect(head.children).toHaveLength(1);
 
+    // more contrast reaches the subtree too: opaque glass and the stronger secondary text
+    G.applyAppearance(glas({ accentHue: 200, glassStrength: 'tinted' }), { ...ENV, contrastMore: true });
+    const more = glasCssVars({ mode: 'dark', accentHue: 200, strength: 'opaque', contrastMore: true, supportsLinear: true });
+    expect(darkScope()).toBe(G.darkScopeCss(more));
+    expect(more['--text-dim']).toBe(GLAS_COLORS.dark.glassLabel2);
+    expect(more['--g-glass-tint']).toBe('1');
+
     G.applyAppearance(classic(), ENV);
     expect(darkScope()).toBeNull();
     expect(head.children).toHaveLength(0);
+  });
+
+  it('while the camera page is shown the browser colour is the dark page\'s in Glas; Klassisch ignores it', () => {
+    try {
+      G.applyAppearance(glas(), ENV);
+      expect(meta.getAttribute('content')).toBe(GLAS_COLORS.light.bg);
+      G.setImmersiveThemeColor(true);
+      expect(meta.getAttribute('content')).toBe(GLAS_COLORS.dark.bg);
+      // a settings change meanwhile keeps it dark, leaving restores the page's colour
+      G.applyAppearance(glas({ glassStrength: 'tinted' }), ENV);
+      expect(meta.getAttribute('content')).toBe(GLAS_COLORS.dark.bg);
+      G.setImmersiveThemeColor(false);
+      expect(meta.getAttribute('content')).toBe(GLAS_COLORS.light.bg);
+
+      // Klassisch keeps the colour of index.html, shown camera page or not
+      G.applyAppearance(classic(), ENV);
+      G.setImmersiveThemeColor(true);
+      expect(meta.getAttribute('content')).toBe('#f3f4f6');
+      G.applyAppearance(classic({ mode: 'dark' }), ENV);
+      expect(meta.getAttribute('content')).toBe('#f3f4f6');
+      // back to Glas while it is still shown: dark at once
+      G.applyAppearance(glas(), ENV);
+      expect(meta.getAttribute('content')).toBe(GLAS_COLORS.dark.bg);
+    } finally {
+      G.setImmersiveThemeColor(false);
+    }
   });
 
   it('"auto" follows the system colour scheme in both styles', () => {

@@ -40,7 +40,8 @@ Raum-Kameras und Einrichtung sowie E13.
 Histogramm, Clips, Schnappschüsse (hell und dunkel), `features: ["export"]`. Wiedergabe: der Signalisierungs-WebSocket wird
 geschlossen (`routeWebSocket`), MSE-Live antwortet 404, Live läuft als MJPEG-Einzelbild; Aufnahmen gehen nach dem Relay
 (WebSocket zu) und MSE (der Codec fehlt in Playwrights Chromium) auf den nativen Weg, `api/segment` liefert eine kurze
-VP9-Datei, die der Prüfteil beim Start mit ffmpeg erzeugt (ohne ffmpeg: diese Punkte als „Labor“ gemeldet). Blöcke:
+VP9-Datei, die der Prüfteil beim Start mit ffmpeg erzeugt (ohne ffmpeg mit VP9 rot; `--no-media` überspringt den Teil und
+meldet das). Blöcke:
 `nvrImmersive` (Handy, iPad, Desktop, hell und dunkel: Seite und Inhaltsspalte dunkel, Kopf über dem Bild, Tab-/Chip-Leiste
 nur dort aus und danach wieder da, Linse der Tab-Leiste ohne Gleiten, Maße K101, Safe Area, Clip-Modus; Kontrast ≥ 4,5:1 für
 Titel, Uhrzeit-Abzeichen und „1×“ und ≥ 3:1 für Glyphen der Kapsel über hellem und dunklem Bild), `nvrKeep` (Tabelle),
@@ -147,10 +148,13 @@ Linse der Tab-Leiste.
 - Am Desktop zeigt das Paket die Kapsel erst, wenn der Zeiger über dem Bild ist; die Kontrastmessung legt ihn vorher
   dorthin. Die Übersicht wartet vor dem Messen das Einblenden der Seite ab (`g-rise`).
 - Safe Area per Browser-Emulation (CDP `Emulation.setSafeAreaInsetsOverride`, oben 47, unten 34 wie ein iPhone mit Notch):
-  Kopf bei 8 + 47, Datum-Chip und Zoom 10 + 34 über dem unteren Rand, LIVE-Pille 62 + 34, Ereignisliste und Clip-Leiste
-  mit der unteren Safe Area.
+  Kopf bei 8 + 47, oberer Verlauf 104 + 47, Datum-Chip und Zoom 10 + 34 über dem unteren Rand, LIVE-Pille 62 + 34, die
+  letzte Zeile der Ereignisliste endet über dem Datum-Chip (Abstand unten 62 + 34), Clip-Leiste mit der unteren Safe Area.
+- Langer Kameraname am Handy: zwischen Zurück und Aktion, mit Auslassungspunkten, das Uhrzeit-Abzeichen bleibt ganz.
 - Ergebnis: alle sechs Blöcke grün (`nvrImmersive`; `nvrKeep` mit 17 Schritten auf Handy und Desktop in Klassisch und Glas;
   `nvrPages`; `nvrReducedMotion`; `nvrForcedColors`; `nvrOpaque`).
+- Ohne ffmpeg mit VP9 kann der nachgestellte Sentinel keine Bilder und Aufnahmen liefern: dann ist der Teil rot,
+  `--no-media` überspringt ihn ausdrücklich (vorher lief er still grün durch).
 - Labor bleibt (§3): Scrub und Relay, hörbarer Ton, echte Wiedergabe über WebRTC. Dafür kennt
   `scripts/nvr-sweep-test.cjs` jetzt `glas` (Glas-Karte der Übersicht, Kameraseite immersiv, auf dem Handy ohne
   Tab-Leiste, danach der Rahmen wieder da).
@@ -161,3 +165,28 @@ Linse der Tab-Leiste.
   als Systemschrift unter Linux) auch Bindestrich und Doppelpunkt so breit wie eine Ziffer; ob SF Pro auf dem iPhone das
   auch tut, ist ungeprüft. Eine Regel für alle Seiten, deshalb nicht in dieser Etappe; Kandidat für Etappe 7:
   `tabular-nums` nur an Zahlen, die sich ändern.
+
+## 8. Review des Codes (2026-10-10)
+
+**Paket** (PR in sentinel-nvr-web, unabhängig geprüft): keine Blocker. Behoben: langer Name am Handy (die Knöpfe behalten
+ihre Spalten, der Name endet mit Auslassungspunkten), Name und Uhrzeit über dem oberen Verlauf weiß auch ohne
+`--nvr-ctl-fg` (der Verlauf ist in jedem Theme dunkel), Hover der Knöpfe am Datum-Chip und der Zoom-Werkzeuge, der untere
+Verlauf am Desktop nur mit der Kapsel, Safe Areas (oberer Verlauf, seitliche Abstände, Ereignisliste über dem Datum-Chip),
+Hook-Liste in `ui.css`, README und JSDoc; der CSS-Test lehnt jetzt auch andere At-Regeln, Verschachtelung und
+Geschwister-Kombinatoren ab (mit Selbsttest), die gruppierten Zahlen sind in Deutsch und Englisch getestet.
+
+**HAPulse** (unabhängig geprüft, keine Blocker). Behoben:
+
+- **Öffentliches Repo:** ein interner Gerätename stand in diesem Plan; aus dem Commit entfernt, bevor es einen PR gab.
+- **Prüfteil ohne ffmpeg** lief still grün durch (alle Blöcke übersprungen): jetzt rot, `--no-media` überspringt
+  ausdrücklich, auch die NVR-Szenen von `shoot`.
+- **Szene `nvr-trouble` wackelte** im Klassisch-Vergleich (4 von 78 Bildern): der nachgestellte Sentinel ließ nach dem
+  Umschalten auf „Fehler“ auch die noch ladenden Bilder scheitern. `fail` gilt jetzt nur für JSON-Antworten.
+- **Konsole:** `shoot` überging alle 401/503-Meldungen, jetzt nur die des nachgestellten Sentinels.
+- **Hochkontrast:** die Punkte für „Aufnahme hängt“ (Kachel, NVR-Karte) und der Punkt der Problem-Pille behielten ihre
+  Farbe, weil ihre Zustandsregeln spezifischer waren als die Hochkontrast-Regel; jetzt zeichnen alle Punkte in
+  `CanvasText`, `nvrForcedColors` prüft jeden Zustand in der Übersicht und auf der NVR-Karte der Startseite.
+- **Kleinigkeiten:** das Segment Token/Anmeldung setzt beim erneuten Wählen des gewählten Wegs die Prüfung zurück wie die
+  klassischen Knöpfe (`onReselect`); `immersive` im Glas-Store ist gezählt (`holdImmersive`), damit zwei kurz zugleich
+  eingehängte Kameraseiten den Rahmen nicht zwischendurch einblenden; Tests für die dunkle Browser-Farbe der Kameraseite
+  und für mehr Kontrast im dunklen Teilbaum; Anleitung zum Entfernen der NVR-Integration um die Glas-Dateien ergänzt.

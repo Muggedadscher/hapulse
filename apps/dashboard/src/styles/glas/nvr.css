@@ -1508,8 +1508,17 @@
     border: 1px solid CanvasText;
   }
 
+  /* every state of the dots (their state rules above are more specific than the plain dot) */
   :root[data-style='glas'] .nvr-layout .nvr-pill__dot,
-  :root[data-style='glas'] :is(.nvr-layout, .nvr-sec, .nvr-room-cams) .nvr-camtile__dot {
+  :root[data-style='glas'] .nvr-layout .nvr-pill--danger > .nvr-pill__dot,
+  :root[data-style='glas'] :is(.nvr-layout, .nvr-sec, .nvr-room-cams) .nvr-camtile__dot,
+  :root[data-style='glas']
+    :is(.nvr-layout, .nvr-sec, .nvr-room-cams)
+    .nvr-camtile:has(> .nvr-camtile__offline > .lucide-video-off)
+    .nvr-camtile__dot--off,
+  :root[data-style='glas'] .g-nvr__dot,
+  :root[data-style='glas'] .g-nvr__cam:not([data-state='ok']) .g-nvr__dot,
+  :root[data-style='glas'] .g-nvr__cam[data-state='stalled'] .g-nvr__dot {
     forced-color-adjust: none;
     background: CanvasText;
   }
