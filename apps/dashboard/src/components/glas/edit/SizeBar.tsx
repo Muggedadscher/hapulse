@@ -83,6 +83,7 @@ export function SizeBar({
           value={sizePresetOf(size)}
           options={SIZE_PRESETS.map((p) => ({ value: p, label: p, aria: t(PRESET_NAME[p]) }))}
           onChange={onPreset}
+          activation="manual"
         />
       )}
       <span className="g-size-bar__space" />

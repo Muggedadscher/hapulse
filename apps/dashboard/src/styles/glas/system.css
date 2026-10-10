@@ -110,6 +110,13 @@
   border-radius: var(--radius-card);
 }
 
+/* a capped card scrolls whole under its pinned title (Page.css, pages.css): there the list starts below the title, as
+   the automations' do (lists.css) */
+:root[data-style='glas'] .system-page .overview-grid__cell[class*='section-h-'] .bat-list {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+}
+
 :root[data-style='glas'] .system-page .bat-row {
   grid-template-columns: 32px minmax(0, 1fr) 64px 44px;
   gap: 12px;

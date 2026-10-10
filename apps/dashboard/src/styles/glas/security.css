@@ -58,12 +58,13 @@
   stroke-width: 2;
 }
 
-:root[data-style='glas']
-  .security-page
-  :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn):hover:not(:disabled) {
-  border: 0;
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas']
+    .security-page
+    :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn):hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .security-page :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn):disabled {
@@ -130,8 +131,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-:root[data-style='glas'] .security-page .camera-tile--pressable:active {
-  transform: scale(0.98);
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .security-page .camera-tile--pressable:active {
+    transform: scale(0.98);
+  }
 }
 
 :root[data-style='glas'] .security-page .camera-tile--pressable:focus-visible {
@@ -139,16 +142,17 @@
   outline-offset: 2px;
 }
 
-/* Forced colours (GLAS-DESIGN §3.7): the buttons whose only edge is their fill get one; the chosen mode, the badge and
-   the triggered alarm's ring keep a Highlight edge. */
+/* Forced colours (GLAS-DESIGN §3.7): the buttons whose only edge is their fill get one (the alarm modes also in the
+   alarm window, which shares their rules, and with the hover that sheet-content.css keeps edgeless); the chosen mode,
+   the badge and the triggered alarm's ring keep a Highlight edge. */
 @media (forced-colors: active) {
-  :root[data-style='glas']
-    .security-page
-    :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn, .alarm-btn:not(.alarm-btn--active)) {
+  :root[data-style='glas'] .security-page :is(.locks-section-card__ctrl-btn, .garage-section-card__ctrl-btn),
+  :root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:not(.alarm-btn--active),
+  :root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
     border: 1px solid ButtonText;
   }
 
-  :root[data-style='glas'] .security-page .alarm-btn.alarm-btn--active {
+  :root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn.alarm-btn--active {
     border: 2px solid Highlight;
   }
 

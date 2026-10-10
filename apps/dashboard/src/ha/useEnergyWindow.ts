@@ -8,10 +8,10 @@
  * next full hour (plus 90 s: Home Assistant writes an hour's statistics row shortly after the hour), so switching
  * back to a period shows it at once; while a period loads for the first time, the result on screen stays there
  * (`stale`), so the card keeps its place and the focus stays in the segment. A failed load keeps what is shown and
- * tries again after 30 s. Energy lives in long-term statistics, not in the entity store (like `useEnergy`).
- *
- * `enabled = false` fetches nothing and shows only what is remembered: the phone's More menu asks for today's figure
- * only while it is open (docs/glas/PLAN-ETAPPE-5.md K97).
+ * tries again after 30 s. Energy lives in long-term statistics, not in the entity store (like `useEnergy`). A result
+ * belongs to its window: after midnight (today, the last 7 or 30 days start a day later) the day before's result is
+ * no longer remembered and, while the new one loads, shows as `stale`. The phone's More menu mounts its figure only
+ * while it is open (docs/glas/PLAN-ETAPPE-5.md K97), so it fetches only then.
  */
 
 import { useEffect, useState } from 'react';
@@ -60,6 +60,10 @@ const RETRY_MS = 30_000;
 /** A result stays valid within its slot: from 90 s after a full hour to 90 s after the next one. */
 const slotOf = (t: number): number => Math.floor((t - ROW_LAG_MS) / HOUR);
 
+/** The result still belongs to the period's window as of now (a day's result is yesterday's after midnight). */
+const current = (result: Result, period: GlasEnergyPeriod): boolean =>
+  result.state !== 'ready' || result.data.window.bounds[0] === glasEnergyWindow(period, new Date()).bounds[0];
+
 /** Remembered results of the current connection, per period. */
 const cache = new Map<GlasEnergyPeriod, { result: Result; slot: number }>();
 let cacheOwner = '';
@@ -91,10 +95,13 @@ async function load(period: GlasEnergyPeriod): Promise<Result> {
   return { state: 'ready', data: { period, window: win, now: now.getTime(), dashboard, bars, change } };
 }
 
-export function useEnergyWindow(period: GlasEnergyPeriod, enabled = true): UseEnergyWindowResult {
+export function useEnergyWindow(period: GlasEnergyPeriod): UseEnergyWindowResult {
   const status = useConnectionStore((s) => s.status);
   const owner = useConnectionStore((s) => (s.demo ? 'demo' : s.url));
-  const remembered = (p: GlasEnergyPeriod) => (cacheOwner === owner ? cache.get(p)?.result : undefined);
+  const remembered = (p: GlasEnergyPeriod) => {
+    const hit = cacheOwner === owner ? cache.get(p) : undefined;
+    return hit && current(hit.result, p) ? hit.result : undefined;
+  };
   const [shown, setShown] = useState<{ result: Result | null; failed: boolean }>(() => ({
     result: remembered(period) ?? null,
     failed: false,
@@ -102,7 +109,7 @@ export function useEnergyWindow(period: GlasEnergyPeriod, enabled = true): UseEn
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    if (status !== 'connected' || !enabled) return undefined;
+    if (status !== 'connected') return undefined;
     if (cacheOwner !== owner) {
       cache.clear();
       cacheOwner = owner;
@@ -113,7 +120,8 @@ export function useEnergyWindow(period: GlasEnergyPeriod, enabled = true): UseEn
       timer = setTimeout(() => setTick((n) => n + 1), ms);
     };
     const untilNextSlot = () => Math.max(1000, (slotOf(Date.now()) + 1) * HOUR + ROW_LAG_MS - Date.now());
-    const hit = cache.get(period);
+    const found = cache.get(period);
+    const hit = found && current(found.result, period) ? found : undefined;
     if (hit) setShown({ result: hit.result, failed: false });
     if (hit && hit.slot === slotOf(Date.now())) {
       later(untilNextSlot());
@@ -140,11 +148,11 @@ export function useEnergyWindow(period: GlasEnergyPeriod, enabled = true): UseEn
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [status, owner, period, tick, enabled]);
+  }, [status, owner, period, tick]);
 
   // The period's own result wins as soon as it exists (no frame with the previous one after switching back).
   const result = remembered(period) ?? shown.result;
   if (!result) return { state: shown.failed ? 'error' : 'loading', data: null, stale: false };
   if (result.state === 'not-configured') return { state: 'not-configured', data: null, stale: false };
-  return { state: 'ready', data: result.data, stale: result.data.period !== period };
+  return { state: 'ready', data: result.data, stale: result.data.period !== period || !current(result, period) };
 }

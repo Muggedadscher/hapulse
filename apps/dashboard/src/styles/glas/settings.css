@@ -509,8 +509,10 @@
   }
 }
 
+/* the row shows the ring; the transparent outline is the one forced colours paint, where the ring is gone */
 :root[data-style='glas'] .settings-page .card .admin-entities-btn:focus-visible {
-  outline: 0;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
 }
 
 :root[data-style='glas'] .settings-page .card .settings-card__row:has(> .admin-entities-btn:focus-visible) {
@@ -930,8 +932,27 @@
     border: 1px solid ButtonText;
   }
 
+  /* the rows' capsules and the symbol swatches: their fill was their only edge */
+  :root[data-style='glas']
+    .settings-page
+    .card
+    :is(.conn-card__actions > .btn, .global-admin__actions > .btn, .backup-row > .btn, .icon-swatch) {
+    border: 1px solid ButtonText;
+  }
+
   :root[data-style='glas'] .settings-page .card .icon-swatch--active {
     outline: 2px solid Highlight;
     outline-offset: -2px;
+  }
+
+  /* the rename field keeps an edge like the other fields (lists.css), its ring, which forced colours drop, as an
+     outline */
+  :root[data-style='glas'] .modal-body .entities-modal-content .entity-rename-input {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .modal-body .entities-modal-content .entity-rename-input:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }

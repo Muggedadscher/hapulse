@@ -304,7 +304,7 @@ export function ZonesCard({ zones }: ZonesCardProps) {
                 { value: 'grid', label: t('music.zones.gridView'), icon: <LayoutGrid size={18} strokeWidth={2} /> },
               ]}
             />
-          ) : (
+          ) : ( // [fork] Klassisch: its buttons
           <div className="zones-card__view-toggle" role="group" aria-label={t('music.zones.viewModeAria')}>
             <button
               type="button"
@@ -325,7 +325,7 @@ export function ZonesCard({ zones }: ZonesCardProps) {
               <LayoutGrid size={14} strokeWidth={1.75} />
             </button>
           </div>
-          )}
+          )}{/* [fork] */}
         </div>
       </div>
 

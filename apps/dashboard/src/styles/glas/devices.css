@@ -584,7 +584,10 @@
 /* ---- Forced colours: the surfaces' colours are gone, the tiles, the list, the window's choices and the controls keep an
    edge; the choices drop their transparent hit borders like the fields (lists.css, also the toolbar's choices) ---- */
 @media (forced-colors: active) {
-  :root[data-style='glas'] :is(.device-card--grid, .devices-results--list, .devices-hero__stat) {
+  /* as specific as the rules above that set no edge (the hero's stats, a tile's hover) */
+  :root[data-style='glas'] :is(.device-card--grid, .devices-results--list),
+  :root[data-style='glas'] .device-card--grid:hover,
+  :root[data-style='glas'] .devices-page .devices-hero__stat {
     border: 1px solid CanvasText;
   }
 

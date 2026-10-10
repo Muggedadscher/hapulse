@@ -243,12 +243,11 @@
 
 /* ---- Plain buttons (§7.29): `fill`, text `label` 15/20 600, capsule 44; the lock and the gate keep their dialog ---- */
 
+/* (0,4,0) beats the classic hover rules (at most 0,3,0), so a touch's sticky hover keeps this look; the hover tint
+   follows under (hover: hover), and the start button and the button card's flash keep their own colours */
 :root[data-style='glas']
   :is(.room-page, .all-modal__grid, .entity-detail__control)
-  :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn),
-:root[data-style='glas']
-  :is(.room-page, .all-modal__grid, .entity-detail__control)
-  :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn):hover:not(:disabled) {
+  :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn) {
   min-height: 44px;
   padding: 0 16px;
   border: 0;
@@ -265,9 +264,10 @@
 @media (hover: hover) {
   :root[data-style='glas']
     :is(.room-page, .all-modal__grid, .entity-detail__control)
-    :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn):not(.vacuum-card__btn--start):hover:not(
-      :disabled
-    ) {
+    :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn):not(
+      .vacuum-card__btn--start,
+      .button-card__btn:is(:active, .button-card__btn--flash)
+    ):hover:not(:disabled) {
     background: var(--g-fill-2);
   }
 }
@@ -763,9 +763,11 @@
   border-radius: 50%;
 }
 
-:root[data-style='glas'] .room-section__grip:hover {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .room-section__grip:hover {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .room-section__grip:focus-visible {
@@ -802,8 +804,10 @@
   color: var(--g-label-2);
 }
 
-:root[data-style='glas'] .room-section__resize-handle:hover {
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .room-section__resize-handle:hover {
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .room-section__resize-handle:focus-visible {
@@ -874,12 +878,16 @@
     background: repeating-linear-gradient(to bottom, CanvasText 0 2px, transparent 2px 5px);
   }
 
+  /* with the hovers that the rules above keep edgeless */
   :root[data-style='glas']
     :is(.room-page, .all-modal__grid, .entity-detail__control)
     :is(.lock-card__btn, .garage-card__btn, .button-card__btn, .vacuum-card__btn, .cover-card__btn),
+  :root[data-style='glas'] :is(.room-page, .all-modal__grid, .entity-detail__control) .cover-card__btn:hover,
   :root[data-style='glas'] .climate-card__target-control,
   :root[data-style='glas'] :is(.room-section__grip, .room-section__resize-handle),
-  :root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn {
+  :root[data-style='glas'] .room-section__resize-handle:hover,
+  :root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn,
+  :root[data-style='glas'] :is(.room-page, .music-page) .edit-badge__btn:hover {
     border: 1px solid ButtonText;
   }
 }

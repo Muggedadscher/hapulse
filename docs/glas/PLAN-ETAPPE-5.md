@@ -716,9 +716,10 @@ und übernommen, außer wo anders vermerkt.
 - **Mehr-Menü (Handy):** rechts in der Zeile Energie heute („8,4 kWh“, dieselbe Zahl wie die Energie-Karte), die Zahl
   der Szenen (wie der Hero der Szenen-Seite) und das System in einem Wort („Normal“, „Ausgelastet“, „Kritisch“; Zählungen
   wie die Status-Pille, etwa „1 nicht verfügbar“); unter der Liste „Version … · F…“, für Vorleser verborgen (die Version
-  steht in den Einstellungen). Das Menü bleibt eingehängt, deshalb rechnet es vor dem ersten Öffnen nichts, und die
-  Energie lädt nur, solange es offen ist (`useEnergyWindow(…, enabled)`); eine gemerkte Zahl erscheint sofort. Zahl
-  und Name stehen mittig auf einer Linie, der Wert in `glassLabel2`, 17/22.
+  steht in den Einstellungen). Das Menü bleibt eingehängt; jeden Wert liest eine kleine Komponente, die nur bei offenem
+  Menü eingehängt ist und ihren Text vor dem Malen meldet (geschlossen bleibt der letzte Text stehen, nichts wird gelesen
+  oder gezählt). Die Energie lädt deshalb nur, solange es offen ist; eine gemerkte Zahl erscheint sofort, solange sie
+  zum heutigen Tag gehört. Zahl und Name stehen mittig auf einer Linie, der Wert in `glassLabel2`, 17/22.
 - **Räume-Menü:** der Zustand je Raum wie auf den Raumkacheln (`roomTone.ts`, gemeinsam mit `GlasRoomTile`: Offenes,
   Wasser und Rauch vor Licht an), am Handy als Kreis 32 mit Symbol im Soft-Ton, am Desktop als Farbe des Symbols; der
   Vorleser hört „Name, Zustand“. Klassisch unverändert.
@@ -736,3 +737,38 @@ und übernommen, außer wo anders vermerkt.
   capitalize` sind Umwege, weil die Texte in den Locales klein stehen; sie heben nur den ersten Buchstaben („Türen &
   fenster“), andere Stellen bleiben klein („zu hause“, „poolseite öffnen“). Der nächste PR schreibt die Texte selbst
   richtig (eigene Textdatei des Forks, alle 7 Sprachen, beide Stile) und entfernt diese Regeln samt `g-chip-window`.
+
+## 8. Review des Codes (2026-10-10)
+
+Drei unabhängige Prüfungen (CSS in zwei Teilen, Logik), keine Blocker. Behoben:
+
+- **Hover auf Touch:** Die Glas-Grundregeln der Knöpfe schlagen die klassischen Hover-Regeln (höchstens (0,3,0)), damit
+  ein „klebendes“ Hover nach einem Tipp den Ruhezustand zeigt; die Tönung beim Überfahren steht unter
+  `@media (hover: hover)`: Knöpfe der Karten im Raum (Schloss, Tor, Knopf, Sauger; Start und Aufblitzen behalten ihre
+  Farben), Griff und Größen-Griff, Stepper (die Pool-Seite lädt ihre klassische Regel später, deshalb ein Neutralisierer
+  außerhalb), Modus-Pillen, Bibliotheks-Reiter, Auswahlfelder, Pool-Knöpfe, Sicherheits-Knöpfe, Schloss- und Torzeilen,
+  Alarm-Modi.
+- **Drücken:** Verkleinern beim Drücken nur ohne „Bewegung reduzieren“ (Kamerakachel, Knopf der leeren Energie-Seite).
+- **Fokus:** Ring an den sichtbaren Reglern (Farbton, Akzent, Musik), innen an den Auswahlfeldern von Geräten und
+  Automationen; am Knopf „Entitäten bearbeiten“ eine transparente Kontur, die Hochkontrast sichtbar macht, wo der Ring
+  der Zeile fehlt.
+- **Hochkontrast (forced colors):** Schwellen-Punkt im System-Hero als Zeichen in Textfarbe; aktive Musik-Knöpfe und der
+  gewählte Player so spezifisch wie ihre Glas-Regeln (sonst blieb die Glas-Farbe), der Inhalt der gewählten Zeile in
+  Systemfarben; Ränder auch beim Überfahren (Gerätekacheln, Gruppen-Knopf, Rollladen-Knöpfe, Größen-Griff,
+  Bearbeiten-Abzeichen, Alarm-Modi, diese jetzt auch im Alarm-Fenster), an den Kennzahlen des Geräte-Heros, den Kapseln
+  und Symbol-Feldern der Einstellungen und am Umbenennen-Feld (im Fokus mit Kontur). Geprüft mit `forcedColors` in
+  Chromium (Ränder, Hover, Fokus); der gewählte Player und der Gruppen-Knopf sind in der Demo nicht erreichbar, dort nur
+  über die Spezifität begründet.
+- **Gekappte Karten:** Die Listen von Personen, Türen/Fenster, Bewegung und Batterien beginnen unter dem angehefteten
+  Titel wie die der Automationen (vorher lagen 8 px darunter, gemessen); die Aktivitäten auf der System-Seite reichen
+  wie auf der Übersicht bis an die Fläche.
+- **Logik:** Mehr- und Räume-Menü lesen nur bei offenem Menü (vorher abonnierten sie den Store auch geschlossen); die
+  Energie-Zahl kommt aus `energyFigure.ts` (die Energie-Karte bleibt in ihrem eigenen Paket); ein gemerktes
+  Energie-Ergebnis gilt nur für sein Fenster (nach Mitternacht ist es nicht mehr „heute“); die Größen-Segmente
+  (`SizeBar`, `SizeSheet`) schalten erst per Enter oder Leertaste (`activation="manual"`, K92); `[fork]`-Marker in
+  `ZonesCard.tsx`.
+- Bewusst so gelassen: `useChipWindow` rechnet alle acht Texte (eine Zählung, vernachlässigbar).
+
+**Offen für Etappe 7:** die übrigen Hover-Tönungen, auch älterer Etappen (rund 100 Regeln), unter `(hover: hover)`,
+mit einer Prüfung „nach einem Tipp zeigt jedes Bedienelement seinen Ruhezustand“; Kacheln in Fenstern ohne Rand in
+Hochkontrast (etwa die Player-Kachel).

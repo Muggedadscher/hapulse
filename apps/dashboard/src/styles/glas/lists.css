@@ -102,13 +102,16 @@
   font: 400 15px / 20px var(--g-font);
 }
 
-:root[data-style='glas'] :is(.devices-select__native, .automations-select__native):hover {
-  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.devices-select__native, .automations-select__native):hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
 }
 
+/* the ring inside the visible capsule like the fields' (the transparent border above and below is hit area) */
 :root[data-style='glas'] :is(.devices-select__native, .automations-select__native):focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: -2px;
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--g-focus);
 }
 
 :root[data-style='glas'] :is(.devices-select__chevron, .automations-select__chevron) {
@@ -152,7 +155,8 @@
     .pool-time-input,
     .queue-card__connect-input
   ):focus,
-  :root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search):focus-within {
+  :root[data-style='glas'] :is(.devices-toolbar__search, .automations-toolbar__search):focus-within,
+  :root[data-style='glas'] :is(.devices-select__native, .automations-select__native):focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
@@ -165,6 +169,16 @@
 :root[data-style='glas'] .security-page :is(.people-list-card__list, .sensor-section-card__body) {
   margin: -16px -16px -16px;
   border-radius: var(--radius-card);
+}
+
+/* a capped card scrolls whole under its pinned title (Page.css, pages.css): there the list starts below the title, as
+   the automations' do */
+:root[data-style='glas']
+  .security-page
+  .overview-grid__cell[class*='section-h-']
+  :is(.people-list-card__list, .sensor-section-card__body) {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
 }
 
 :root[data-style='glas'] .security-page :is(.locks-section-card .locks-list, .garage-section-card .garage-list) {

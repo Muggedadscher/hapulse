@@ -1131,7 +1131,8 @@
       .library-tile__play,
       .library-tile__more,
       .zone-grid-card
-    ) {
+    ),
+  :root[data-style='glas'] .group-menu__btn:hover {
     border: 1px solid ButtonText;
   }
 
@@ -1146,16 +1147,31 @@
     border: 1px solid CanvasText;
   }
 
+  /* as specific as the active rules above (with their hover), which come first */
   :root[data-style='glas']
     :is(
-      .queue-card__ctl--active,
-      .group-menu__btn--active,
-      .library-card__fav-toggle--active,
-      .other-player-row--selected,
-      .now-playing-card__transport-btn--active
-    ) {
+      .queue-card__ctl.queue-card__ctl--active,
+      .group-menu__btn.group-menu__btn--active,
+      .library-card__fav-toggle.library-card__fav-toggle--active,
+      .other-player-row.other-player-row--selected,
+      .now-playing-card__transport-btn.now-playing-card__transport-btn--active
+    ),
+  :root[data-style='glas']
+    :is(
+      .queue-card__ctl.queue-card__ctl--active,
+      .group-menu__btn.group-menu__btn--active,
+      .library-card__fav-toggle.library-card__fav-toggle--active,
+      .other-player-row.other-player-row--selected,
+      .now-playing-card__transport-btn.now-playing-card__transport-btn--active
+    ):hover {
     forced-color-adjust: none;
     background: Highlight;
     color: HighlightText;
+  }
+
+  /* the chosen player's row holds more than a glyph: its content takes the system's colours again, the text the
+     highlight's */
+  :root[data-style='glas'] .other-player-row.other-player-row--selected > * {
+    forced-color-adjust: auto;
   }
 }

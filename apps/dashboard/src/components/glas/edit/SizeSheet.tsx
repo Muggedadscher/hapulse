@@ -41,6 +41,7 @@ export function SizeSheet({ open, onClose, name, span, height, onSpan, onHeight 
           value={String(span)}
           options={COLUMNS.map((c) => ({ value: c, label: formatNumber(Number(c), locale) }))}
           onChange={(c) => onSpan(Number(c))}
+          activation="manual"
         />
       </div>
       <div className="g-size-sheet__group">
@@ -51,6 +52,7 @@ export function SizeSheet({ open, onClose, name, span, height, onSpan, onHeight 
           value={String(height)}
           options={levels}
           onChange={(l) => onHeight(Number(l))}
+          activation="manual"
         />
       </div>
     </Modal>

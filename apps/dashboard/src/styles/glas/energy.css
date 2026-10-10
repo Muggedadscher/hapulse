@@ -413,8 +413,10 @@
   height: 18px;
 }
 
-:root[data-style='glas'] .energy-page .energy-empty-state__btn:active {
-  transform: scale(0.97);
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .energy-page .energy-empty-state__btn:active {
+    transform: scale(0.97);
+  }
 }
 
 /* Reduced motion (§6.4): the bars fade in over 200 ms like the overview's, nothing grows. !important answers

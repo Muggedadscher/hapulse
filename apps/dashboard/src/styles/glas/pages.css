@@ -908,3 +908,13 @@
 :root[data-style='glas'] .page > .empty-state > .empty-state__action {
   margin-top: 16px;
 }
+
+@media (forced-colors: active) {
+  /* forced colours drop the threshold dot's background: it stays as a mark in the text colour */
+  :root[data-style='glas']
+    .system-page
+    :is(.system-hero-chip--warn, .system-hero-chip--critical):not(:has(> svg))::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+}

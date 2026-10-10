@@ -484,10 +484,11 @@
   border-radius: 22px;
 }
 
-:root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn):not(:disabled):hover {
-  border: 0;
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn):not(:disabled):hover {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] :is(.modal-body, .security-page) :is(.garage-row__btn, .locks-row__btn):disabled {
@@ -678,8 +679,10 @@
   transition: background-color 250ms ease, color 250ms ease, box-shadow 250ms ease, transform 100ms ease-out;
 }
 
-:root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
-  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn:not(:disabled):not(.alarm-btn--active):hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
 }
 
 :root[data-style='glas'] :is(.modal-body, .security-page) .alarm-btn.alarm-btn--active {

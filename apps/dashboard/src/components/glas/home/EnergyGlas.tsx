@@ -18,6 +18,7 @@ import type { GlasEnergyBar, GlasEnergyPeriod } from '@hapulse/core';
 import { Card } from '../../ui/Card';
 import { EnergyWidget } from '../../home/EnergyWidget';
 import { Segment } from '../Segment';
+import { energyFigure } from './energyFigure';
 import { useEnergyWindow } from '../../../ha/useEnergyWindow';
 import type { EnergyWindowData } from '../../../ha/useEnergyWindow';
 import { useLocale, useT, type TFunction, type TKey } from '../../../i18n/useT';
@@ -77,10 +78,7 @@ function formats(locale: string): Formats {
 
 /** One decimal ("1,2"). */
 const one = (v: number, locale: string) => formatNumber(v, locale, { minDecimals: 1, maxDecimals: 1 });
-/** The big figure and the PV yield: one decimal below 100, whole numbers above (sketch). The More menu shows today's
- *  figure the same way (MoreValue.tsx). */
-export const energyFigure = (v: number, locale: string) =>
-  v >= 100 ? formatNumber(v, locale, { maxDecimals: 0 }) : one(v, locale);
+/** The big figure and the PV yield (energyFigure.ts, shared with the More menu). */
 const figure = energyFigure;
 
 /** What a bar shows: data (a button), a past bucket without data (a button, "no data") or a stub (to come). */

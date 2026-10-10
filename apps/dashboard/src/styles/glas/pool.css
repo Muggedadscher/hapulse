@@ -260,9 +260,11 @@
   color: var(--g-label);
 }
 
-:root[data-style='glas'] .pool-card :is(.pool-manual__action.btn--ghost, .pool-schedule__edit):hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .pool-card :is(.pool-manual__action.btn--ghost, .pool-schedule__edit):hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .pool-card .pool-manual__action.btn--primary {
@@ -799,9 +801,11 @@
   color: var(--g-red-ink);
 }
 
-:root[data-style='glas'] .pool-editor__remove:hover {
-  background: var(--g-fill-2);
-  color: var(--g-red-ink);
+@media (hover: hover) {
+  :root[data-style='glas'] .pool-editor__remove:hover {
+    background: var(--g-fill-2);
+    color: var(--g-red-ink);
+  }
 }
 
 :root[data-style='glas'] .pool-editor__remove:focus-visible {
@@ -820,8 +824,10 @@
   font: 600 15px / 20px var(--g-font);
 }
 
-:root[data-style='glas'] .pool-editor__add.btn--secondary:hover {
-  background: var(--g-fill-2);
+@media (hover: hover) {
+  :root[data-style='glas'] .pool-editor__add.btn--secondary:hover {
+    background: var(--g-fill-2);
+  }
 }
 
 :root[data-style='glas'] .pool-editor__add.btn--secondary:focus-visible {
