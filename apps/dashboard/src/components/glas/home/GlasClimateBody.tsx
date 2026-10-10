@@ -21,6 +21,8 @@ export interface GlasClimateRoom {
   name: string;
   entity: HassEntity;
   currentTemp: number | null;
+  /** the room sensor's unit; null when `currentTemp` is the thermostat's own reading (in HA's unit) */
+  currentUnit: string | null;
 }
 
 interface GlasClimateBodyProps {
@@ -52,8 +54,13 @@ export function GlasClimateBody({ room, rooms, onSelect, setpoint, sp, onDown, o
     hvacAction && tone !== 'off' && tone !== 'auto'
       ? sl('climate', hvacAction, { attribute: 'hvac_action' })
       : sl('climate', entity.state);
-  const unit = sp.fahrenheit ? '°F' : '°C';
-  const temp = (v: number | null) => (v == null ? '–' : `${formatNumber(v, locale, { minDecimals: 1, maxDecimals: 1 })} ${unit}`);
+  // "21,5 °C": a sensor in its own unit, a thermostat in HA's (sp.unit); "21,5°" while HA's unit is not known yet
+  const temp = (v: number | null, sensorUnit: string | null) => {
+    if (v == null) return '–';
+    const n = formatNumber(v, locale, { minDecimals: 1, maxDecimals: 1 });
+    const unit = sensorUnit ?? sp.unit;
+    return unit ? `${n} ${unit}` : `${n}°`;
+  };
   const target =
     setpoint == null ? '–' : `${formatNumber(setpoint, locale, { minDecimals: sp.decimals, maxDecimals: sp.decimals })}°`;
   const { min, max } = range(sp);
@@ -69,7 +76,7 @@ export function GlasClimateBody({ room, rooms, onSelect, setpoint, sp, onDown, o
         <div
           className="g-ctl__gauge"
           role="img"
-          aria-label={t('glas.climate.gaugeAria', { room: room.name, target, current: temp(current), action })}
+          aria-label={t('glas.climate.gaugeAria', { room: room.name, target, current: temp(current, room.currentUnit), action })}
         >
           <GlasArc frac={frac} className="g-ctl__arc" />
           <GlasArc frac={frac} big className="g-ctl__arc g-ctl__arc--big" />
@@ -90,7 +97,7 @@ export function GlasClimateBody({ room, rooms, onSelect, setpoint, sp, onDown, o
         <div className="g-ctl__side">
           <span className="g-ctl__title">{room.name}</span>
           <span className="g-ctl__sub">
-            {t('cards.climate.current')} {temp(current)}
+            {t('cards.climate.current')} {temp(current, room.currentUnit)}
           </span>
           <span className="g-ctl__action">
             <span className="g-ctl__action-circle" aria-hidden="true">
@@ -130,7 +137,7 @@ export function GlasClimateBody({ room, rooms, onSelect, setpoint, sp, onDown, o
           return {
             key: r.name,
             name: r.name,
-            value: temp(r.currentTemp),
+            value: temp(r.currentTemp, r.currentUnit),
             note:
               rTone === 'heat' || rTone === 'cool' ? (
                 <span className="g-pick__note" data-tone={rTone}>

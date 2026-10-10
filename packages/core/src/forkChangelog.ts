@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 37,
+    date: '2026-10-10',
+    title: { de: 'Klima: richtige Temperatureinheit', en: 'Climate: the right temperature unit' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Klima: HAPulse übernimmt die Temperatureinheit aus Home Assistant; Thermostate mit hohem Höchstwert (etwa 90 °C) galten vorher als Fahrenheit, in Glas stand „°F“ und der Bogen der Klima-Karte blieb in beiden Stilen leer',
+            en: 'Climate: HAPulse takes the temperature unit from Home Assistant; thermostats with a high maximum (about 90 °C) counted as Fahrenheit before, Glass showed “°F” and the climate card’s ring stayed empty in both styles',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 36,
     date: '2026-10-09',
     title: { de: 'Hinweise und aktive Szenen; Vorschau Glas: Übersicht', en: 'Notices and active scenes; Glass preview: overview' },

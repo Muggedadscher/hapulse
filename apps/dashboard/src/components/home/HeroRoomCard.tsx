@@ -23,6 +23,7 @@ import { HeroGlance } from '../glas/home/HeroGlance'; // [fork]
 import { HeroLights } from '../glas/home/HeroLights'; // [fork]
 import { RollingValue } from '../glas/RollingValue'; // [fork]
 import { climateSetpoint } from './climateLogic'; // [fork]
+import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
 
 /** Resolve an HA area picture path against the connection URL. */
 function resolvePicture(picture: string | null | undefined, baseUrl: string): string | null {
@@ -86,6 +87,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   const baseUrl = useConnectionStore((s) => s.url);
   const isGlas = useIsGlas(); // [fork]
   const locale = useLocale(); // [fork]
+  const temperatureUnit = useTemperatureUnit(); // [fork] HA's unit: the default step when the thermostat has none
   const [lightsPulse, setLightsPulse] = useState(0); // [fork] Glas: the light pill pulses when tapped
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
@@ -222,7 +224,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
     ? ((climateEntity.attributes.temperature as number | undefined) ?? (climateEntity.attributes.current_temperature as number | undefined))
     : undefined;
   // [fork] Glas: the setpoint with the decimals of the thermostat's step ("22,0 °"), rolling when it changes
-  const setpointDecimals = climateEntity ? climateSetpoint(climateEntity.attributes).decimals : 0;
+  const setpointDecimals = climateEntity ? climateSetpoint(climateEntity.attributes, temperatureUnit).decimals : 0;
   const setpointText = climateTemp != null
     ? `${formatNumber(climateTemp, locale, { minDecimals: setpointDecimals, maxDecimals: setpointDecimals })} °`
     : '';
