@@ -2396,7 +2396,7 @@ module.exports = function pages(h) {
             }
             await close();
           }
-          let drags = null;
+          let drags;
           {
             const { page, close } = await open(device, 'glas', '/music', { mode });
             try {
@@ -2615,7 +2615,7 @@ module.exports = function pages(h) {
             }
             await close();
           }
-          let look = null;
+          let look;
           {
             const { page, close } = await open(device, 'glas', '/devices', { mode });
             try {
@@ -2777,7 +2777,7 @@ module.exports = function pages(h) {
             }
             await close();
           }
-          let look = null;
+          let look;
           {
             const { page, close } = await open(device, 'glas', '/automations', { mode });
             try {
@@ -2917,7 +2917,7 @@ module.exports = function pages(h) {
             }
             await close();
           }
-          let look = null;
+          let look;
           let wide = null;
           {
             const { page, close } = await open(device, 'glas', '/scenes', { mode });
