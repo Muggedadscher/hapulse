@@ -79,6 +79,12 @@ describe('keptScrollY', () => {
       expect(keptScrollY(state), JSON.stringify(state)).toBe(null);
     }
   });
+
+  it("only for the navigation that asked: the browser's back/forward and a reload (POP) start at the top", () => {
+    expect(keptScrollY({ glasScrollY: 640 }, 'PUSH')).toBe(640);
+    expect(keptScrollY({ glasScrollY: 640 }, 'REPLACE')).toBe(640);
+    expect(keptScrollY({ glasScrollY: 640 }, 'POP')).toBe(null);
+  });
 });
 
 describe('cameraBackTarget', () => {
@@ -125,6 +131,23 @@ describe('the way in and back (no view transitions: the plain navigations)', () 
     // the way in is spent: the camera page again without a new one (browser forward) leads to the overview
     noteRouteCommit('/nvr/cam 1');
     glasCameraBack(nav, 'cam 1', '/nvr');
+    expect(nav).toHaveBeenLastCalledWith('/nvr', { state: { glasScrollY: 0 } });
+  });
+
+  it('a second tap on back before the page changed is no second navigation', () => {
+    browser(640);
+    noteRouteCommit('/room/kitchen');
+    glasOpenCamera(nav, '/nvr/c1', true);
+    noteRouteCommit('/nvr/c1');
+    glasCameraBack(nav, 'c1', '/nvr');
+    glasCameraBack(nav, 'c1', '/nvr');
+    expect(nav).toHaveBeenCalledTimes(2); // the open and one back
+    expect(nav).toHaveBeenLastCalledWith('/room/kitchen', { state: { glasScrollY: 640 } });
+    // once a page is committed, back works again (the camera page again by the browser: the way in is spent)
+    noteRouteCommit('/room/kitchen');
+    noteRouteCommit('/nvr/c1');
+    glasCameraBack(nav, 'c1', '/nvr');
+    expect(nav).toHaveBeenCalledTimes(3);
     expect(nav).toHaveBeenLastCalledWith('/nvr', { state: { glasScrollY: 0 } });
   });
 

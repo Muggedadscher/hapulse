@@ -6,9 +6,9 @@
  * back (`glasCameraBack`). In Glas, where the browser has `document.startViewTransition`, the old page fades out and the
  * new one in (160 ms) while the new page's sections rise 6 px; a camera tile's picture grows into the camera page's
  * still (540 ms), and back the picture shrinks into its tile on the page the camera was opened from (480 ms, K107
- * addendum). Klassisch, browsers without the API and every other navigation (status pill, rooms menu, back in a room,
- * the browser's back/forward and Safari's swipe) navigate as before. Reduced motion: a 200-ms fade, no rise, no morph
- * (§6.4).
+ * addendum). Klassisch and every other navigation (status pill, rooms menu, back in a room, the browser's back/forward
+ * and Safari's swipe) navigate as before; browsers without the API navigate without a transition (in Glas the camera
+ * page's back still leads to where the camera was opened). Reduced motion: a 200-ms fade, no rise, no morph (§6.4).
  *
  * Nothing on the frame carries a name: the root's fade keeps equal pixels in place, so tab bar, sidebar and header stay
  * calm, and a named frame would become a backdrop root and lose its glass. The update callback navigates and waits for
@@ -44,6 +44,9 @@ export const TILE_PICTURE = '.nvr-camtile__pic, .nvr-home__cam-pic';
 const LAND_FADE_MS = 200;
 /** The longest entrance a part of a page plays when it appears (sections rising, energy bars growing in, ~1 s). */
 const ENTRANCE_MAX_MS = 1500;
+/** How much of a tile's picture must be in sight, across and down, for back to land in it; less, and the picture
+ *  would fly under the window's edge or the tab bar — it closes where it is instead. */
+const LAND_SHOWN = 0.5;
 /** The location state key a navigation keeps the new page's scroll position under (Router.tsx's ScrollToTop). */
 export const KEEP_SCROLL = 'glasScrollY';
 
@@ -95,8 +98,11 @@ function decoded(path: string): string {
   }
 }
 
-/** The scroll position a navigation asks the new page to keep (`state.glasScrollY`), else null: the top. */
-export function keptScrollY(state: unknown): number | null {
+/** The scroll position a navigation asks the new page to keep (`state.glasScrollY`), else null: the top. Only for the
+ *  navigation that asked: the browser's back/forward and a reload (`action` POP) reach that history entry again and
+ *  start at the top, as on every other page. */
+export function keptScrollY(state: unknown, action?: string): number | null {
+  if (action === 'POP') return null;
   const y = state && typeof state === 'object' ? (state as Record<string, unknown>)[KEEP_SCROLL] : undefined;
   return typeof y === 'number' && Number.isFinite(y) && y >= 0 ? y : null;
 }
@@ -133,10 +139,14 @@ let current: object | null = null;
 let here: string | null = null;
 /** How the camera page on screen was opened (glasOpenCamera); spent when another page is committed. */
 let wayIn: CameraWayIn | null = null;
+/** The camera page a back is leaving, until the next route is committed: a second tap on back meanwhile is no second
+ *  navigation. */
+let leaving: string | null = null;
 
 /** GlasRuntime, from a layout effect: the route with this pathname (and query) is committed. */
 export function noteRouteCommit(pathname: string, search = ''): void {
   here = pathname + search;
+  leaving = null;
   if (wayIn && !samePath(wayIn.camera, pathname)) wayIn = null;
   const w = waiter;
   if (w && samePath(w.path, pathname)) {
@@ -149,6 +159,7 @@ export function noteRouteCommit(pathname: string, search = ''): void {
 export function forgetRoute(): void {
   here = null;
   wayIn = null;
+  leaving = null;
 }
 
 /** GlasRuntime: evaluates its scroll state now instead of in the next frame (null when it goes). */
@@ -245,19 +256,27 @@ function revealInRow(el: HTMLElement): void {
   }
 }
 
-function onScreen(el: Element): boolean {
+/** The part of `el` in sight, across and down (0–1): inside the window and above the tab bar (phone). */
+function inSight(el: Element): { x: number; y: number } {
   const r = el.getBoundingClientRect();
-  return r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth;
+  if (r.width <= 0 || r.height <= 0) return { x: 0, y: 0 };
+  const bar = document.querySelector('.app-tabs')?.getBoundingClientRect();
+  const bottom = bar && bar.height > 0 ? Math.min(window.innerHeight, bar.top) : window.innerHeight;
+  return {
+    x: Math.max(0, Math.min(r.right, window.innerWidth) - Math.max(r.left, 0)) / r.width,
+    y: Math.max(0, Math.min(r.bottom, bottom) - Math.max(r.top, 0)) / r.height,
+  };
 }
 
-/** Where the camera's picture lands on the new page: the picture box of its first tile that shows a picture on screen
- *  (brought into its row first). */
+/** Where the camera's picture lands on the new page: the picture box of its first tile that shows a picture in sight
+ *  (`LAND_SHOWN`); a row that scrolls sideways is moved to the tile first, but only for a tile in sight up and down. */
 function landing(camId: string): { tile: HTMLElement; el: HTMLElement; radius: number } | null {
   for (const tile of document.querySelectorAll<HTMLElement>(`[data-nvr-camera="${CSS.escape(camId)}"]`)) {
     const pic = pictureOf(tile);
-    if (!pic) continue;
+    if (!pic || inSight(pic).y < LAND_SHOWN) continue;
     revealInRow(tile);
-    if (onScreen(pic)) return { tile, el: pic, radius: Math.max(radiusOf(pic), radiusOf(tile)) };
+    const seen = inSight(pic);
+    if (seen.x * seen.y >= LAND_SHOWN) return { tile, el: pic, radius: Math.max(radiusOf(pic), radiusOf(tile)) };
   }
   return null;
 }
@@ -279,7 +298,12 @@ function finishEntrances(): void {
   for (const a of document.getAnimations()) {
     const target = a.effect instanceof KeyframeEffect ? a.effect.target : null;
     const end = a.effect?.getComputedTiming().endTime;
-    if (target && main.contains(target) && typeof end === 'number' && end <= ENTRANCE_MAX_MS) a.finish();
+    if (!target || !main.contains(target) || typeof end !== 'number' || end > ENTRANCE_MAX_MS) continue;
+    try {
+      a.finish();
+    } catch {
+      // a paused one (playback rate 0) cannot finish: it stays as it is, the landing goes on
+    }
   }
 }
 
@@ -398,7 +422,9 @@ export function glasOpenCamera(navigate: GlasNavigateFn, to: string, morph: bool
 /** The camera page's back in Glas: to the page the camera was opened from (cameraBackTarget), at the same place, the
  *  picture shrinking into its tile there. */
 export function glasCameraBack(navigate: GlasNavigateFn, camId: string, fallback: string): void {
+  if (leaving != null && leaving === here) return;
   const { to, y } = cameraBackTarget(wayIn, here, fallback);
+  leaving = here;
   if (!glasNavigate(navigate, to, 'back', { camId, scrollY: y })) void navigate(to, { state: { [KEEP_SCROLL]: y } });
 }
 

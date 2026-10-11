@@ -3,7 +3,7 @@
  */
 
 import React, { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router';
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from 'react-router'; // [fork] useNavigationType
 import { Guard } from './Guard';
 import { AppLayout } from './AppLayout';
 import { useT } from '../i18n/useT';
@@ -34,8 +34,9 @@ const Pool        = lazy(() => import('../pages/Pool').then((m) => ({ default: m
  */
 function ScrollToTop() {
   const { pathname, state } = useLocation(); // [fork] state
-  // [fork] Glas: back from a camera page returns to where the page was (app/glas/glasNavigate.ts, `glasScrollY`)
-  const kept = keptScrollY(state); // [fork]
+  // [fork] Glas: back from a camera page returns to where the page was (app/glas/glasNavigate.ts, `glasScrollY`); the
+  // [fork] browser's back/forward and a reload (POP) start at the top as before
+  const kept = keptScrollY(state, useNavigationType()); // [fork]
   useEffect(() => {
     // Set scrollTop directly rather than window.scrollTo(): the app sets
     // `scroll-behavior: smooth` globally, which would otherwise animate the

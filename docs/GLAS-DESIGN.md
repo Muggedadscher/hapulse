@@ -605,7 +605,7 @@ Skizze: Desktop nutzt leicht andere Stützpunkte (max. Abweichung smooth 0,04 / 
 | **Energie-Balken** | `scaleY(0 → 1)` .6 s `bouncy`, Versatz i × 14 / 40 / 9 ms (Tag/Woche/Monat), beim ersten Anzeigen und je Zeitraumwechsel; Kennzahl `translateY(6px)` + fade .45 s `smooth`; Blase `scale(.88 → 1)` .3 s `snappy`, Position .35 s `snappy` |
 | Bildschirm-Eintritt | Abschnitte `translateY(8px)` + fade 420 ms `smooth`, 25 ms versetzt, max. 6 Stufen |
 | Tab-Wechsel | Überblendung 160 ms + 6 px Anstieg |
-| Kamera öffnen | Bild aus der Kachel zur Bühne 540 ms `smooth` (`clip-path: inset(… round …)`), zurück 480 ms in die Kachel der Seite, von der aus die Kamera geöffnet wurde, an derselben Scrollstelle; Name und Zustand der Kachel blenden danach 200 ms ein; ohne Kachel mit Bild auf dem Schirm schließt das Bild an Ort und Stelle (`scale(.92)` + Ausblenden 270 ms) |
+| Kamera öffnen | Bild aus der Kachel zur Bühne 540 ms `smooth` (`clip-path: inset(… round …)`), zurück 480 ms in die Kachel der Seite, von der aus die Kamera geöffnet wurde, an derselben Scrollstelle; Name und Zustand der Kachel blenden danach 200 ms ein; ohne Kachel mit Bild, die mindestens zur Hälfte zu sehen ist, schließt das Bild an Ort und Stelle (`scale(.92)` + Ausblenden 270 ms) |
 | Bearbeiten | Badges `scale(.2 → 1)` .5 s `bouncy`, versetzt; Desktop „Bearbeiten“ (Glas, → `scale(.7,1)` + blur 6 px + fade) ↔ „Fertig“ (prominent, `scale(1.4,1) → 1` .55 s `snappy`); **kein Wackeln** |
 | Code falsch | Schütteln 420 ms (−10 / 9 / −6 / 4 px) |
 | Live-Punkt | Deckkraft 1 → .35 → 1, 2 s, unendlich |

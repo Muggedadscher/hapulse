@@ -222,7 +222,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 5, K97): Werte und Fuß im Mehr-Menü (`GlasMoreValue`, `GlasMoreFoot`) |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 6, K103): `data-glas-scheme="dark"` an `.app-content`, solange die Kameraseite offen ist (dunkler Teilbaum, am Desktop auch Kopf und Ränder) |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 7, K107): Tab-Leiste, Seitenleiste und Mehr-Menü navigieren in Glas über `glasLinkClick` (View Transition); Klassisch, Zusatztasten und die Seite, auf der man ist, bleiben beim `NavLink` |
-| `apps/dashboard/src/app/Router.tsx` | Stil Glas (F43): `ScrollToTop` springt bei `state.glasScrollY` (Zurück aus einer Kamera, `keptScrollY`) sofort an diese Stelle statt nach oben |
+| `apps/dashboard/src/app/Router.tsx` | Stil Glas (F43): `ScrollToTop` springt bei `state.glasScrollY` (Zurück aus einer Kamera, `keptScrollY`) sofort an diese Stelle statt nach oben, nicht bei Zurück/Vor des Browsers (POP, `useNavigationType`) |
 | `apps/dashboard/src/components/nav/RoomsMenu.tsx` | Stil Glas (Etappe 5, K97): Zustand je Raum (Symbol wie die Raumkachel, `data-tone`, der Zustand im `aria-label`); Klassisch unverändert |
 | `apps/dashboard/src/ha/{energy,service}.ts`, `stores/connectionStore.ts` | Nur Demo (Etappe 5, für die Prüfungen): Energie-Einstellungen und -Abrufe über `demoEnergy.ts`, Dienstaufrufe ins Protokoll `demoCalls.ts`, `setUrl` an die Demo-Steuerung; seit Etappe 7 `setAdmin` (die Einstellungen als Nicht-Admin) |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |

@@ -1471,7 +1471,7 @@ module.exports = function polish(h) {
         } else {
           want(s.named.length === 0 && s.landing.length === 0 && s.after.landing.length === 0,
             `${msg}: no tile ${JSON.stringify([s.named, s.landing])}`);
-          want(s.close.join() === '270' && s.round.every((d) => d === 0) && s.radii[0] === s.radii[1],
+          want(s.close.join() === '270' && s.round.length > 0 && s.round.every((d) => d === 0) && s.radii[0] === s.radii[1],
             `${msg}: closes in place ${JSON.stringify([s.close, s.round, s.radii])}`);
         }
       };
@@ -1511,7 +1511,8 @@ module.exports = function polish(h) {
 
       // phone, Glas, Sentinel: an event on the Home card opens as before; the camera tile morphs, and back shrinks the
       // picture into its tile on Home, the page where it was (K107 addendum) — also for the second camera, whose tile
-      // the row brings back into view; a camera opened from an event goes back to Home the same way
+      // the row brings back into view; a camera opened from an event goes back to Home the same way; the browser's back to
+      // that Home page later starts at the top
       {
         const o = await open('phone', 'glas', '/', { init: rec, sentinel: true, customization: NVR.NVR });
         try {
@@ -1575,6 +1576,17 @@ module.exports = function polish(h) {
               pic: ['1', '2'].includes(evCam) ? 'nvr-home__cam-pic' : null });
           }
           await landingGone(o.page);
+
+          // the browser's back to that Home page starts at the top, as on every page: the place kept for the camera
+          // page's back is not taken again (keptScrollY, POP), and the tab bar is not minimised by the jump
+          await tabLink(o.page, 'nav.pool').tap();
+          pageOk((res.popPool = await settled(o.page, 6)), '/pool', 'pool tab after back', true);
+          await o.page.goBack();
+          await o.page.waitForFunction(() => location.pathname === '/', null, { timeout: 8000 });
+          res.popBack = { yEv, transitions: await quiet(o.page, 6), ...(await ev(o.page, () => ({ y: Math.round(scrollY),
+            tabsMin: document.documentElement.hasAttribute('data-tabs-min') }))) };
+          want(yEv > 0 && res.popBack.y === 0 && res.popBack.transitions === 0 && !res.popBack.tabsMin,
+            `browser back to Home ${JSON.stringify(res.popBack)}`);
         } finally {
           await o.close();
         }

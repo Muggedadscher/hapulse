@@ -21,7 +21,7 @@
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigationType } from 'react-router';
 import { useIsGlas } from './useUiStyle';
 import { useShellStore } from './shellStore';
 import {
@@ -101,7 +101,7 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
   const t = useT();
   const { pathname, search, state } = useLocation();
   // back from a camera keeps the page where it was (Router.tsx ScrollToTop): the tab bar's anchor is that position
-  const kept = keptScrollY(state);
+  const kept = keptScrollY(state, useNavigationType());
   const rooms = useRooms();
   const editMode = useUIStore((s) => s.editMode);
   const [desktop, setDesktop] = useState(() => window.matchMedia(DESKTOP).matches);
