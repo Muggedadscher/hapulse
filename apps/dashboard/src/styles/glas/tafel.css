@@ -18,6 +18,8 @@
   padding: 16px;
   background: var(--bg-card);
   background-image: none;
+  /* the grid's lone last cell (below) asks the card's width */
+  container: g-tafel / inline-size;
 }
 
 /* the classic heroes paint their wash or glow from these; the tafel has none */
@@ -129,6 +131,21 @@
   );
   margin: 0 0 -6px -12px;
   overflow: hidden;
+}
+
+/* two columns and an odd count (energy 5, scenes 3, security without garage doors): the last cell takes the whole row,
+   so its hairline runs across and no half row stays empty. Two columns at --g-tafel-min m: grid 2m … 3m, the card
+   (padding 2 × 16, the grid's -12 margin) 2m + 20 … 3m + 20. */
+@container g-tafel (280px <= width < 410px) {
+  :root[data-style='glas'] .g-tafel__grid[data-min='130'] > .g-tafel__cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@container g-tafel (300px <= width < 440px) {
+  :root[data-style='glas'] .g-tafel__grid[data-min='140'] > .g-tafel__cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 
 :root[data-style='glas'] .g-tafel__cell {

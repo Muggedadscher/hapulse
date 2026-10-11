@@ -1122,7 +1122,8 @@ Innenabstand 16, Abstand der Teile 16.
   Energie-Karte der Übersicht (34/41 600, „kWh“ 17/22 600 `label2`).
 - **Raster:** eine Beschreibungsliste. Je Zelle Symbol 15 + Beschriftung 13/18 600 `label2`, darunter der Wert: Zahlen
   28/34 600 (Einheit 17 600 `label2`), Zustände als Wort 17/22 600. Haarlinien 0,5 `sep` nur zwischen den Zellen, die
-  Spalten nach Platz (Mindestbreite, höchstens 3 bzw. 4). Keine Kacheln, keine Kapseln.
+  Spalten nach Platz (Mindestbreite, höchstens 3 bzw. 4). Bleibt bei zwei Spalten eine Zelle allein in der letzten
+  Reihe (Energie, Szenen, Sicherheit ohne Garagentore), nimmt sie die ganze Reihe. Keine Kacheln, keine Kapseln.
 - **Farbe nur, wo etwas abweicht** (§2.2, wie die Status-Chips K87): Zählwerte, Geschlossenes, Verriegeltes und Ruhe
   `label2`; offene Türen und Fenster, Bewegung, Störungen und die nicht erreichbare Aufbewahrung (NVR) `warnInk`, offene
   Schlösser und Garagentore `redInk`, jeweils an Symbol und Wert; Solar behält seine Diagrammfarbe am Symbol (§2.4).

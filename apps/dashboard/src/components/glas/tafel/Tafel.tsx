@@ -57,8 +57,8 @@ interface TafelGridProps {
   items: TafelFigure[];
   /** `number`: values 28/34 600 (counts, amounts); `text`: 17/22 600 (states as words) */
   kind?: 'number' | 'text';
-  /** a cell's minimum width (px) and the most columns in a row */
-  min?: number;
+  /** a cell's minimum width (px) and the most columns in a row; tafel.css knows the two columns' widths for 130 and 140 */
+  min?: 130 | 140;
   max?: number;
 }
 
@@ -69,6 +69,7 @@ export function TafelGrid({ items, kind = 'number', min = 130, max = 4 }: TafelG
     <dl
       className="g-tafel__grid"
       data-kind={kind}
+      data-min={min}
       style={{ '--g-tafel-min': `${min}px`, '--g-tafel-max': max } as React.CSSProperties}
     >
       {items.map((f) => (
