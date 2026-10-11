@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 42,
+    date: '2026-10-11',
+    title: { de: 'Kameraseite oben scharf', en: 'Camera page sharp at the top' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Glas am Handy: auf der Kameraseite liegt die Statusleiste auf dem Schwarz hinter dem Bild; Bild, Knöpfe und Name oben werden nicht mehr verwischt',
+            en: 'Glass on the phone: on the camera page the status bar sits on the black behind the picture; the picture, the buttons and the name at the top are no longer blurred',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 41,
     date: '2026-10-10',
     title: { de: 'Stil Glas', en: 'Glass style' },

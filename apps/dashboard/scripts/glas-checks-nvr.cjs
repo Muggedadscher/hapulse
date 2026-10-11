@@ -606,6 +606,60 @@ module.exports = function nvr(h) {
         body: getComputedStyle(document.body).backgroundColor,
       };
     });
+    /** The top edge as WebKit (iOS 26) sees it (package 0.19.1, GLAS-DESIGN §7.33). It hit-tests only fixed and sticky
+     *  boxes and what is inside them, at the middle of the top edge 4 px down (the viewport less 4 px on each side),
+     *  pointer-events ignored, takes the topmost one and walks up from it: past boxes that are neither fixed nor sticky,
+     *  and past fixed or sticky ones narrower than 90 % of that width while they are short (a tall one is a sidebar, no
+     *  bar); one taller than 105 % of the height ends the walk, the first other one is the page's top bar. A home-screen
+     *  app on an iPhone then shows its status bar on the first background on the way (a box at least 10 px high and 90 %
+     *  wide) instead of laying its soft blur over the top of the page; a backdrop filter on the way leaves it without
+     *  one colour. Also whether the picture's card has room to move in its column ([top gap, height left]). */
+    const topEdge = (page) => ev(page, () => {
+      const R = (el) => __g.r(el);
+      const cs = (el) => getComputedStyle(el);
+      const card = document.querySelector('.nvr-stage-card');
+      const left = document.querySelector('.nvr-cam__left');
+      const W = innerWidth - 8;
+      const H = innerHeight - 8;
+      const fixed = (el) => ['fixed', 'sticky'].includes(cs(el).position);
+      const inFixed = (el) => {
+        for (let a = el; a; a = a.parentElement) if (fixed(a)) return true;
+        return false;
+      };
+      const name = (el) => el.tagName.toLowerCase() + (el.getAttribute('class') || '').trim().split(/\s+/).filter(Boolean).map((c) => '.' + c).join('');
+      const s = document.createElement('style');
+      s.textContent = '*, *::before, *::after { pointer-events: auto !important; }';
+      document.head.append(s);
+      let bar = null;
+      try {
+        const hit = document.elementsFromPoint(innerWidth / 2, 4).find(inFixed);
+        if (hit) {
+          bar = { kind: 'none', hit: name(hit) };
+          let backdrop = false;
+          let bg = null;
+          for (let a = hit; a && a !== document.documentElement; a = a.parentElement) {
+            const st = cs(a);
+            const r = R(a);
+            if ([st.backdropFilter, st.webkitBackdropFilter].some((f) => f && f !== 'none')) backdrop = true;
+            if (!bg && r.h >= 10 && r.w >= 0.9 * W && __n.rgba(st.backgroundColor)[3] > 0) {
+              bg = { el: name(a), a: __n.rgba(st.backgroundColor)[3], lum: __n.L(st.backgroundColor) };
+            }
+            if (!fixed(a)) continue;
+            const kind = r.w < 0.9 * W ? (r.h >= 0.9 * H ? 'sidebar' : null) : r.h > 1.05 * H ? 'tooLarge' : 'bar';
+            if (!kind) continue;
+            bar = { ...bar, kind, el: name(a), card: a === card, w: Math.round(r.w), h: Math.round(r.h), backdrop, bg,
+              hidden: st.visibility === 'hidden' || Number(st.opacity) < 0.1 };
+            break;
+          }
+        }
+      } finally {
+        s.remove();
+      }
+      return { cardPos: cs(card).position, room: [Math.round(R(card).y - R(left).y), Math.round(R(left).h - R(card).h)], bar };
+    });
+    /** Whether WebKit takes the picture's card for the top bar, on the stage's opaque black. */
+    const barOk = (t) => !!t && t.kind === 'bar' && t.card && !t.backdrop && !t.hidden && !!t.bg && t.bg.el.split('.').includes('nvr-stage')
+      && t.bg.a === 1 && t.bg.lum < 0.02;
     /** The camera page's measures (K101). */
     const layout = (page) => ev(page, () => {
       const q = (s) => document.querySelector(s);
@@ -644,10 +698,11 @@ module.exports = function nvr(h) {
         rightBottom: Math.round(R(right).bottom),
         card: [cs(card).borderTopWidth, cs(card).borderTopLeftRadius, cs(card).boxShadow],
         right: [cs(right).borderTopWidth, cs(right).borderTopLeftRadius],
+        stageBg: { a: __n.rgba(cs(stage).backgroundColor)[3], lum: __n.L(cs(stage).backgroundColor) },
       };
-    });
+    }).then(async (l) => ({ ...l, top: await topEdge(page) }));
     /** What a layout misses of K101 (phone: picture edge to edge under the header; wide: header row above). */
-    const layoutBad = (l, wide, insetTop = 0) => {
+    const layoutBad = (l, wide, insetTop = 0, softPocket = true) => {
       const b = [];
       const want = (cond, what) => {
         if (!cond) b.push(what);
@@ -664,6 +719,7 @@ module.exports = function nvr(h) {
       want(same(l.back.size, [44, 44]), 'back ' + j(l.back));
       want(l.card[0] === '0px' && l.card[2] === 'none', 'picture card ' + j(l.card));
       if (wide) {
+        want(l.top.cardPos !== 'sticky', 'picture card position ' + l.top.cardPos);
         want(l.head.pos !== 'absolute' && l.head.bottom <= l.stage.y, 'header ' + j(l.head));
         want(['50%', '22px'].includes(l.back.radius) && l.back.fill > 0, 'back fill ' + j(l.back));
         want(same(l.h1, ['34px', '41px', '700']), 'title ' + j(l.h1));
@@ -681,6 +737,12 @@ module.exports = function nvr(h) {
         want(same(l.shade, [`${104 + insetTop}px`, '120px']), 'gradients ' + j(l.shade));
         want(near(l.body, l.vh) && near(l.rightBottom, l.vh), `height ${l.body}/${l.rightBottom}/${l.vh}`);
         want(l.card[1] === '0px' && l.right[0] === '0px', 'cards ' + j([l.card, l.right]));
+        // the picture's card is sticky without room to move, on the stage's opaque black; on the phone WebKit takes it
+        // for the top bar (nothing fixed of HAPulse's above it there, GLAS-DESIGN §7.33). An iPad lays no soft blur over
+        // the page (its pocket is a hard bar in the page's colour), and its upright picture is narrower than 90 %.
+        want(l.top.cardPos === 'sticky' && same(l.top.room, [0, 0]), 'picture card ' + j([l.top.cardPos, l.top.room]));
+        if (softPocket) want(barOk(l.top.bar), 'top bar ' + j(l.top.bar));
+        want(l.stageBg.a === 1 && l.stageBg.lum < 0.02, 'stage background ' + j(l.stageBg));
       }
       return b;
     };
@@ -726,7 +788,8 @@ module.exports = function nvr(h) {
     };
 
     // 1. The camera page immersive (K101–K104, E13): on the phone and an upright iPad the page owns the screen (no tab or
-    //    chip bar, the picture from the top edge, the header over it) and both come back afterwards, the tab bar's lens in
+    //    chip bar, the picture from the top edge, the header over it; on the phone the picture's card is the top bar
+    //    iOS 26 takes for the status bar, package 0.19.1) and both come back afterwards, the tab bar's lens in
     //    place; from 900 px the sidebar stays. The page (html and body: the home-screen app's status bar band takes the
     //    body's colour, plan E7 N1) and the content column are dark in both modes (also derived colours), the browser
     //    colour too. Measures of K101; safe areas (CDP) and clip mode on a recording; contrast over
@@ -749,7 +812,7 @@ module.exports = function nvr(h) {
           await o.page.locator(`.nvr-cam__head ${L('nvr.back')}`).click();
           await until(o.page, () => !document.documentElement.hasAttribute('data-g-immersive') && !!document.querySelector('.nvr-layout'));
           const after = await frame(o.page);
-          const b = layoutBad(lay, wide);
+          const b = layoutBad(lay, wide, 0, device === 'phone');
           if (!on.flag || on.scheme !== 'dark') b.push('not immersive ' + JSON.stringify(on));
           if (after.flag || after.scheme) b.push('frame stays immersive');
           if (wide) {
@@ -806,6 +869,7 @@ module.exports = function nvr(h) {
               soundGap: Math.round(__g.r(q('.nvr-mute')).x - (__g.r(q('.nvr-pill-ctl')).x + __g.r(q('.nvr-pill-ctl')).w)),
               barEdges: [Math.round(cb.x), Math.round(innerWidth - cb.x - cb.w), Math.round(innerHeight - cb.bottom)] };
           });
+          clip.top = await topEdge(o.page);
           await o.page.locator(`.nvr-clipbar ${L('nvr.clip.close')}`).click();
           const closed = await until(o.page, () => !document.querySelector('.nvr-cam__body--clip'));
           const b = layoutBad(lay, false, 47).filter((x) => !x.startsWith('badge'));
@@ -819,6 +883,8 @@ module.exports = function nvr(h) {
           if (!(clip.head.shown && clip.head.y === 55 && clip.head.bottom <= st.bottom)) b.push('clip header ' + JSON.stringify(clip.head));
           if (!(clip.soundGap >= 8)) b.push('clip sound button ' + clip.soundGap);
           if (clip.bar || clip.tabs || clip.filters || !clip.clipbar || !same(clip.barEdges, [8, 8, 42]) || !closed) b.push('clip mode ' + JSON.stringify(clip));
+          // the picture's card stays the top bar WebKit takes (the clip bar is not in its column)
+          if (!(clip.top.cardPos === 'sticky' && same(clip.top.room, [0, 0]) && barOk(clip.top.bar))) b.push('clip top bar ' + JSON.stringify(clip.top));
           res.safeArea = { bad: b, sa, clip };
           bad.push(...b.map((x) => `safe area: ${x}`));
         } finally {

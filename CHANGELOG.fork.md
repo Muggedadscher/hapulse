@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F42 — 2026-10-11
+
+**Kameraseite oben scharf** · _Camera page sharp at the top_
+
+### Behoben / Fixed
+
+- Glas am Handy: auf der Kameraseite liegt die Statusleiste auf dem Schwarz hinter dem Bild; Bild, Knöpfe und Name oben werden nicht mehr verwischt  
+  _Glass on the phone: on the camera page the status bar sits on the black behind the picture; the picture, the buttons and the name at the top are no longer blurred_
+
 ## F41 — 2026-10-10
 
 **Stil Glas** · _Glass style_

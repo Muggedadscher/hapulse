@@ -240,6 +240,12 @@ von Jannick am 10.10.).
   hell. Solange die Kameraseite offen ist, ist jetzt auch der `body` dunkel (`shell.css`, `[data-g-immersive] body`). Die
   Knöpfe bleiben, wo sie sind (Jannick: „müssen dann nicht unbedingt tiefer“). Prüfung `nvrImmersive` (Farbe von `html`
   und `body` in beiden Modi).
+  Nachtrag 11.10. (F42): danach sah Jannick am iPhone oben noch eine Unschärfe über Knöpfen und Schrift, der Schimmer
+  war weg. Ursache: iOS 26 legt in der Home-Bildschirm-App eine weiche Unschärfe unter die Statusleiste, solange WebKit
+  oben keine feste oder haftende Fläche findet, die fast so breit ist wie der Bildschirm; auf den anderen Seiten ist das
+  `.g-edge`, auf der Kameraseite gab es keine. Lösung: `@sentinel-nvr/web` 0.19.1 macht die Karte des Bilds unter
+  900 px haftend (ohne Platz zum Bewegen), die Statusleiste liegt dann auf dem Schwarz der Bühne (GLAS-DESIGN §7.33).
+  Eigene PR mit Review; am iPhone noch zu bestätigen (§9 Punkt 1).
 - **N2 Sentinel-Übersicht „wie der Rest“:** in Glas ein eigener ruhiger Kopf wie bei Sicherheit und System
   (`nvr/NvrHeroGlas.tsx`: Symbol im Kreis, „Sentinel NVR“, der Zustand groß in seiner Farbe, die Werte als Kapseln; die
   Fakten wie im Kopf des Pakets, den Klassisch behält), Abschnittstitel „Ereignisse“ und „Kameras“ mit Symbol in einer
@@ -301,7 +307,8 @@ Lauf). Klick-Fuzz 8 von 8 sauber (Klassisch und Glas, Desktop und Handy, je norm
 Was kein Testbrowser zeigt, prüft Jannick am iPhone (Home-Bildschirm-App) und am iPad:
 
 1. **Statusleiste** (K39, N1): Inhalt unter der Statusleiste in beiden Stilen; auf der Kameraseite ist das Band schwarz mit
-   weißer Schrift, ohne hellen Schimmer.
+   weißer Schrift, ohne hellen Schimmer, und Bild, Knöpfe und Name darunter sind scharf (keine Unschärfe, F42), auch
+   gleich nach dem Öffnen aus der Übersicht und nach Zurück und erneutem Öffnen.
 2. **Textbreiten in SF Pro:** Kapseln, Chips und Titel brechen nicht um und werden nicht abgeschnitten (gemessen wurde
    mit der Ersatzschrift unter Linux), besonders das Segment im Pool-Fenster und die Kennzahlen im Kopf der Automationen.
 3. **Leistung am iPad:** Scrollen der Übersicht, Öffnen von Fenstern, das „⋯“-Menü (E17); ohne Grafikchip öffneten die
