@@ -1079,6 +1079,17 @@ die über der Kameraseite aufgehen, sind ebenfalls dunkel (seit Etappe 7, K109: 
 Scrim hatte 2,7:1 am ×). Fokus über dem Bild: Ring innen auf dem Glas des Knopfs in dessen Schriftfarbe (§2.5 Regel 7).
 
 - **Bühne** randlos, Höhe = Breite × 3/4 (293 bei 390; Vollbild 100 %), Verläufe oben 104 / unten 120 (§3.6).
+- **Statusleiste** (Home-Bildschirm-App am Handy): sie liegt auf dem Schwarz hinter dem Bild, ohne Unschärfe, wie in
+  der Fotos-App. iOS 26 legt sonst eine weiche Unschärfe über den oberen Rand der Seite, hier über Bild, Knöpfe und Namen.
+  WebKit schaut an der Mitte des oberen Rands nur auf feste und haftende Flächen, nimmt die oberste und von ihr aus die
+  erste umgebende, die mindestens 90 % so breit ist wie der Bildschirm. Findet es eine, zeigt iOS die Statusleiste auf
+  dem ersten Hintergrund auf diesem Weg und lässt die Unschärfe weg. Hier ist das die Karte des Bilds (Paket 0.19.1,
+  `position: sticky`, ohne Platz zum Bewegen); sie selbst ist durchsichtig, die Farbe kommt von der schwarzen Bühne
+  darin. Darüber liegt auf der Kameraseite nichts Festes von HAPulse (keine `.g-edge`). Die Prüfung `nvrImmersive` misst
+  das wie WebKit, auch im Clip-Modus. Grenzen: ein Bild schmaler als 90 % (eine quadratische oder hochkant stehende
+  Kamera am kleinen Handy) behält die Unschärfe; und iOS braucht dafür oben einen verdeckten Rand (die Statusleiste). Ob
+  die Home-Bildschirm-App ihn meldet, steht nicht im offenen Quelltext, das zeigt nur das Gerät. Am iPad legt iOS keine
+  weiche Unschärfe über die Seite, es nutzt dort eine harte Kante.
 - Oben: Zurück + Extern als **clear**-Kreise 44 (`top 8`, `left/right 12`), Mitte Titel 17/22 600 Weiß + LIVE-Badge
   20 hoch (Radius 10, `#D70015`, 11/13 700, .6 px, Schatten `live`) bzw. Uhrzeit 15/600.
 - Unten mittig **Steuerkapsel clear** 52 hoch (Innenabstand 4, Radius 26): −15 s · Play/Pause · +15 s (bei Live .4) ·
