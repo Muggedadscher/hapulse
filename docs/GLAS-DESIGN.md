@@ -852,6 +852,11 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
   „Einfahrt“ 20/25 700 + LIVE-Badge (20 hoch, `#D70015`, 12/20 700, .4 px) + „63 heute · vor 19 Min.“ 15; Ereigniszeilen
   (Innenabstand 4, Radius 16): Bild 92 × 69 Radius 12, Zeit 17/600, „Fahrzeug · vor 19 Min.“ 13 `label2`.
 - Link „Alle anzeigen ›“ → NVR. Offline/Fallback/REC wie HAPulse (Inventar J).
+- **NVR-Übersicht (seit F44):** dieselben Kacheln und Ereignisse als Abschnitte „Kameras“ und „Ereignisse“, alle Kameras
+  und alle letzten Ereignisse. Handy: Kacheln 16:10 statt 220 hoch (zwei Spalten ab 300 px je Kachel), Ereignisse als
+  Streifen; ab 900 px Kacheln in zwei Spalten, Ereigniszeilen in einer Karte (Innenabstand 8, scrollt, höchstens 420),
+  ab 720 px Seitenbreite `1.65fr / 1fr` nebeneinander. Vor heute steht der Tag vor der Uhrzeit („gestern 22:10“,
+  `label2` 400), auch auf der Karte.
 
 ### 7.16 Aktivität
 

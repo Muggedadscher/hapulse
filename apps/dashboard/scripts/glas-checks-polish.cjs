@@ -1598,14 +1598,14 @@ module.exports = function polish(h) {
       }
 
       // phone, Glas, Sentinel: a camera page reached by a link has no way in — back goes to the overview at the top and
-      // the picture closes where it is (no tile shows a picture yet); the event strip there opens without a transition
+      // the picture closes where it is (no tile shows a picture yet); an event there opens without a transition
       {
         const o = await open('phone', 'glas', '/nvr/1', { init: rec, sentinel: true, customization: NVR.NVR });
         try {
           await stageReady(o.page);
           await backButton(o.page).tap();
           backOk((res.linkBack = await settled(o.page, 1)), 'link back', { path: '/nvr', y0: 0, camId: '1', pic: null });
-          await o.page.locator('.nvr-strip__item').first().tap();
+          await o.page.locator('.nvr-layout .g-nvr__ev').first().tap();
           res.stripEvent = await quiet(o.page, 1);
           want(res.stripEvent === 0, 'event of the overview strip started a transition');
         } finally {
@@ -1613,25 +1613,26 @@ module.exports = function polish(h) {
         }
       }
 
-      // desktop, Glas, Sentinel: the overview tile morphs (stage radius) and back lands in it again, the page where it
+      // desktop, Glas, Sentinel: the overview tile (the NVR card's) morphs (stage radius) and back lands in it again, the page where it
       // was; sidebar fades, a modifier key and the browser keep their own way
       {
         const o = await open('desktop', 'glas', '/nvr', { init: rec, sentinel: true, customization: NVR.NVR });
         try {
-          await tileReady(o.page, '.nvr-layout .nvr-camtile[data-nvr-camera="1"] .nvr-camtile__img');
-          await ev(o.page, () => document.querySelector('.nvr-layout .nvr-camtile[data-nvr-camera="1"]').scrollIntoView({ block: 'center', behavior: 'instant' }));
+          await tileReady(o.page, '.nvr-layout .g-nvr__cam[data-nvr-camera="1"] img.nvr-home__cam-img');
+          // the tile is the page's first: the page scrolled to its end (the tile still wholly in sight) for back to keep
+          await ev(o.page, () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
           await sleep(300);
-          await o.page.locator('.nvr-layout .nvr-camtile[data-nvr-camera="1"]').click();
+          await o.page.locator('.nvr-layout .g-nvr__cam[data-nvr-camera="1"]').click();
           const cam = (res.desktopCamera = await settled(o.page, 1));
           want(cam && cam.y0 > 0, `desktop camera: the overview did not scroll (${cam && cam.y0})`);
           if (cam) {
-            want(cam.kind === 'camera' && cam.named0.join() === 'nvr-camtile__pic' && cam.named.length === 1, `desktop camera: names ${JSON.stringify([cam.named0, cam.named])}`);
+            want(cam.kind === 'camera' && cam.named0.join() === 'nvr-home__cam-pic' && cam.named.length === 1, `desktop camera: names ${JSON.stringify([cam.named0, cam.named])}`);
             want(cam.cam.join() === '540' && cam.radii[1] === '18px', `desktop camera: morph ${JSON.stringify([cam.cam, cam.radii])}`);
           }
           await stageReady(o.page);
           await backButton(o.page).click();
           backOk((res.desktopBack = await settled(o.page, 2)), 'desktop back',
-            { path: '/nvr', y0: cam && cam.y0, camId: '1', pic: 'nvr-camtile__pic', box0: cam && cam.box0[0] });
+            { path: '/nvr', y0: cam && cam.y0, camId: '1', pic: 'nvr-home__cam-pic', box0: cam && cam.box0[0] });
           await landingGone(o.page);
           await sideLink(o.page, 'nav.energy').click();
           pageOk((res.sidebar = await settled(o.page, 3)), '/energy', 'sidebar', true);

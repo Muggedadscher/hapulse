@@ -38,6 +38,30 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 44,
+    date: '2026-10-11',
+    title: { de: 'NVR-Seite wie die Karte', en: 'NVR page like the card' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Die NVR-Seite sieht aus wie die NVR-Karte der Übersicht, erst die Kameras als große Bilder, dann die Ereignisse mit Uhrzeit, Art und Kamera; am Desktop stehen die Ereignisse als Liste neben den Kameras',
+            en: 'Glass: the NVR page looks like the overview’s NVR card, first the cameras as large pictures, then the events with time, kind and camera; on the desktop the events are a list beside the cameras',
+          },
+          {
+            de: 'Glas: Ereignisse von gestern oder früher zeigen den Tag vor der Uhrzeit, auch auf der NVR-Karte',
+            en: 'Glass: events from yesterday or earlier show the day before the time, on the NVR card too',
+          },
+          {
+            de: 'Kamera-Kacheln der NVR-Karte versuchen ein fehlgeschlagenes Bild alle 30 Sekunden neu, etwa wenn eine Kamera wieder online ist',
+            en: 'Camera tiles on the NVR card try a failed picture again every 30 seconds, for example once a camera is back online',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 43,
     date: '2026-10-11',
     title: { de: 'Zurück aus der Kamera', en: 'Back from a camera' },

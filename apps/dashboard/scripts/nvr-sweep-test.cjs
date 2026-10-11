@@ -15,6 +15,10 @@ const BASE = process.argv[2], NVR = process.argv[3], TOKEN = process.argv[4] || 
 const NOEXPORT = process.argv.includes('noexport');
 const GLAS = process.argv.includes('glas');
 const HOME = GLAS ? { card: '.g-nvr', cam: '.g-nvr__cam', ev: '.g-nvr__ev' } : { card: '.nvr-home', cam: '.nvr-home__cam', ev: '.nvr-home__ev' };
+// the overview /nvr: in Glas the NVR card's tiles and events, in Klassisch the package's
+const OV = GLAS
+  ? { tile: '.nvr-layout .g-nvr__cam', ev: '.nvr-layout .g-nvr__ev', img: '.nvr-layout :is(img.nvr-home__cam-img,.g-nvr__ev-img)' }
+  : { tile: '.nvr-camtile', ev: '.nvr-strip__item', img: '.nvr-camtile__img,.nvr-strip__img img' };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = ''; r.on('data', (c) => (d += c)); r.on('end', () => { try { res(JSON.parse(d)); } catch (e) { rej(e); } }); }).on('error', rej); });
 (async () => {
@@ -103,9 +107,9 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
 
     // ---------- /nvr overview ----------
     await go('/nvr'); await sleep(5000);
-    const ov = await ev(`JSON.stringify({tiles:document.querySelectorAll('.nvr-camtile').length,strip:document.querySelectorAll('.nvr-strip__item').length,imgs:Array.from(document.querySelectorAll('.nvr-camtile__img,.nvr-strip__img img')).filter(i=>i.complete&&i.naturalWidth>0).length})`).then(JSON.parse);
+    const ov = await ev(`JSON.stringify({tiles:document.querySelectorAll('${OV.tile}').length,strip:document.querySelectorAll('${OV.ev}').length,imgs:Array.from(document.querySelectorAll('${OV.img}')).filter(i=>i.complete&&i.naturalWidth>0).length})`).then(JSON.parse);
     step('/nvr: tiles, event strip, images', ov.tiles >= 1 && ov.strip >= 1 && ov.imgs >= 2, ov);
-    await click('.nvr-strip__item');
+    await click(OV.ev);
     step('strip event → recording', await until(`location.pathname.startsWith('/nvr/')&&window.__snvr&&__snvr.state().label==='playing'&&__snvr.state().transport==='relay'`, 15000), { path: await path() });
     // Glas: the page is immersive (on the phone without the tab bar) and gives the frame back on the way back
     const frame = () => ev(`JSON.stringify({flag:document.documentElement.hasAttribute('data-g-immersive'),page:!!document.querySelector('.nvr-cam[data-nvr-appearance="immersive"]'),tabs:(()=>{const e=document.querySelector('.app-tabs');return !!e&&e.getBoundingClientRect().height>0})()})`).then(JSON.parse);
@@ -116,7 +120,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     await vtStep('back', 'back');
     if (GLAS) { await sleep(300); const f = await frame(); step('glas: frame back after the camera page', !f.flag && !f.page && (!MOBILE || f.tabs), f); }
     await vtReset();
-    await click('.nvr-camtile');
+    await click(OV.tile);
     await vtStep('overview tile', 'camera');
     step('tile → live WebRTC', await until(`window.__snvr&&__snvr.state().live&&__snvr.state().transport==='webrtc'&&__snvr.ctl.presentedFrames()>3`, 20000), await st());
 

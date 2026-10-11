@@ -144,13 +144,20 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   Hinweis im Detail einer HA-Kamera bekommen den Glas-Look per CSS an den Klassen des Pakets und des NVR-Moduls
   (`styles/glas/nvr.css`, Akzentflächen in `accent.css`). Eigenes Markup nur in Glas: die Übersicht beginnt mit einem
   ruhigen Kopf (`nvr/NvrHeroGlas.tsx`), „Sentinel öffnen“, „Räume“ und „Einrichtung“ liegen im Menü „⋯“ neben dem
-  Avatar (`components/glas/HeaderMenu.tsx`, beim Schließen geht der Fokus auf den Knopf zurück), „Ereignisse“ und
-  „Kameras“ tragen ihr Symbol im Titel (`icon` des Pakets), der Speicherhinweis ist eine Fußnote (`.nvr-note`), und
-  Token/Konto der Einrichtung ist ein `Segment` (`NvrSetup.tsx`). Klassisch bleibt unverändert. Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper
-  (`NvrHomeGlas.tsx`).
+  Avatar (`components/glas/HeaderMenu.tsx`, beim Schließen geht der Fokus auf den Knopf zurück), der Speicherhinweis
+  ist eine Fußnote (`.nvr-note`), und Token/Konto der Einrichtung ist ein `Segment` (`NvrSetup.tsx`). Klassisch bleibt
+  unverändert. Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper (`NvrHomeGlas.tsx`). Seit F44 nimmt die
+  Übersicht in Glas deren Aufbau: erst „Kameras“, dann „Ereignisse“ (Titel mit Symbol), beide aus den Hälften der
+  Home-Karte (`NvrGlasCameras`, `NvrGlasEvents` in `NvrHomeGlas.tsx`, auf der Seite `.g-nvr-page`), mit allen Kameras
+  und allen letzten Ereignissen; die Klassen eines Ereignisses stehen als Wort unter der Uhrzeit, nicht als Symbol auf
+  dem Bild (Entscheid Jannick 11.10.2026). Unter 900 px Kacheln 16:10 mit Kapsel (zwei nebeneinander, sobald 300 px
+  passen) und ein Bildstreifen bis zum Rand; ab 900 px Kacheln in zwei Spalten und die Ereignisse als Zeilen in einer
+  eigenen Karte, die scrollt, ab 720 px Seitenbreite rechts neben den Kameras und so hoch wie sie. Die Schnappschüsse
+  erneuern sich alle 5 s wie die des Pakets, ein gescheiterter wird alle 30 s neu versucht (`useSnapshotTick`, auch
+  auf der Home-Karte).
 - **Kamera öffnen und zurück (Etappe 7, Zurück seit F43):** In Glas wächst das Bild der gedrückten Kachel in das
   Standbild der Kameraseite (View Transition mit dem Namen `g-cam`, `app/glas/glasNavigate.ts`), ausgelöst von
-  `nav.openCamera` ohne Zeitpunkt (`nvr/ui.tsx`) und den Kacheln der Home-Karte (`NvrHomeGlas.tsx`); das NVR-Chunk lädt
+  `nav.openCamera` ohne Zeitpunkt (`nvr/ui.tsx`) und den Kacheln der Home-Karte und der Übersicht (`NvrHomeGlas.tsx`); das NVR-Chunk lädt
   beim Drücken. Ziel ist das Standbild des Pakets (`.nvr-stage__freeze[data-src]`, nicht `.nvr-stage`: darin liegt die
   Steuerkapsel mit Glas); zeichnet die Seite es nicht binnen 300 ms, blendet der Übergang nur über. Ereignisse (mit
   `at`/`ev`) öffnen ohne Morph. Zurück führt dorthin, wo die Kamera geöffnet wurde (Kachel oder Ereignis auf Home,

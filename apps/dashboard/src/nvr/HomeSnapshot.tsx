@@ -9,12 +9,19 @@
  * is decoded — and in Glas the camera page's picture lands in that box (app/glas/glasNavigate.ts).
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Camera } from 'lucide-react';
 import { drawLastTileSnapshot, hasLastTileSnapshot, rememberTileSnapshot } from '@sentinel-nvr/web/ui';
 
-export function HomeSnapshot({ camId, src, fallback }: { camId: string; src: string; fallback: string | null }) {
+export function HomeSnapshot({ camId, src, fallback, retry = 0 }: {
+  camId: string;
+  src: string;
+  fallback: string | null;
+  /** Changes when a failed snapshot is to be tried again (useSnapshotTick). */
+  retry?: number;
+}) {
   const [failed, setFailed] = useState(0);
+  useEffect(() => setFailed(0), [retry]);
   const [last, setLast] = useState(() => hasLastTileSnapshot(camId));
   const drawLast = useCallback((canvas: HTMLCanvasElement | null) => void (canvas && drawLastTileSnapshot(camId, canvas)), [camId]);
   const url = failed === 0 ? src : failed === 1 && fallback ? fallback : null;
