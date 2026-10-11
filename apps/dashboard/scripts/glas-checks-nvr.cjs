@@ -1494,6 +1494,7 @@ module.exports = function nvr(h) {
       }
       // the same outcome in both styles (looks aside)
       const plain = (r) => j({ ...r, overview: { ...r.overview, actions: null, menu: null,
+        hero: r.overview.hero && { ...r.overview.hero, look: null },
         tiles: r.overview.tiles.map((t) => ({ ...t, radius: null })),
         strip: { ...r.overview.strip, img: null, time: null, badges: null, labels: null } },
       setup: { ...r.setup, manual: null } });
