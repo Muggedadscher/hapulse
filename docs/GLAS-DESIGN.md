@@ -431,7 +431,7 @@ Genau **eine** Kante pro Ansicht; keine Trennlinie, keine Abdunklung. Auf der Ka
 |---|---|
 | NVR-Karte oben (76 px) / unten (90 px) | `rgba(0,0,0,.35) → 0` / `0 → rgba(0,0,0,.6)` |
 | Kamerabühne oben (104 px) / unten (120 px) | `rgba(0,0,0,.7) → 0` / `0 → rgba(0,0,0,.35) 50 %` |
-| Desktop-NVR-Kachel unten (110 px) | `transparent → rgba(0,0,0,.5)` |
+| Desktop-NVR-Kachel unten (120 px, seit F44; vorher 110 px → .5) | `transparent → rgba(0,0,0,.45) 40 % → rgba(0,0,0,.72)` (Weiß über weißem Bild ≥ 4,5:1 am Namen 17 px, ≥ 3:1 am großen Namen 20 px fett) |
 
 ### 3.7 Barrierefreiheit und Fallbacks
 
@@ -848,10 +848,15 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
   „63 heute · vor 19 Min.“ 15/600 Weiß mit Textschatten. Tipp → Kameraseite (Zoom aus der Kachel). Darunter
   **Ereignisse** horizontal (Abstand 10, bis zum Rand): Karte 150 breit, Bild 150 × 112 Radius 16, Zeit 15/600,
   Klasse 13 `label2` → Kamera **an diesem Moment**.
-- **Desktop:** Raster `1.65fr / 1fr` (M) bzw. 1 Spalte (S), Abstand 16; Kachel 16:10, Radius 18, unterer Verlauf 110:
+- **Desktop:** Raster `1.65fr / 1fr` (M) bzw. 1 Spalte (S), Abstand 16; Kachel 16:10, Radius 18, unterer Verlauf 120 (§3.6):
   „Einfahrt“ 20/25 700 + LIVE-Badge (20 hoch, `#D70015`, 12/20 700, .4 px) + „63 heute · vor 19 Min.“ 15; Ereigniszeilen
   (Innenabstand 4, Radius 16): Bild 92 × 69 Radius 12, Zeit 17/600, „Fahrzeug · vor 19 Min.“ 13 `label2`.
 - Link „Alle anzeigen ›“ → NVR. Offline/Fallback/REC wie HAPulse (Inventar J).
+- **NVR-Übersicht (seit F44):** dieselben Kacheln und Ereignisse als Abschnitte „Kameras“ und „Ereignisse“, alle Kameras
+  und alle letzten Ereignisse. Handy: Kacheln 16:10 statt 220 hoch (zwei Spalten ab 300 px je Kachel), Ereignisse als
+  Streifen; ab 900 px Kacheln in zwei Spalten, Ereigniszeilen in einer Karte (Innenabstand 8, scrollt, höchstens 420),
+  ab 720 px Seitenbreite `1.65fr / 1fr` nebeneinander. Vor heute steht der Tag vor der Uhrzeit („gestern 22:10“,
+  `label2` 400), auch auf der Karte.
 
 ### 7.16 Aktivität
 

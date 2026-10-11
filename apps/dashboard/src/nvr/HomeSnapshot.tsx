@@ -9,12 +9,32 @@
  * is decoded — and in Glas the camera page's picture lands in that box (app/glas/glasNavigate.ts).
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera } from 'lucide-react';
 import { drawLastTileSnapshot, hasLastTileSnapshot, rememberTileSnapshot } from '@sentinel-nvr/web/ui';
 
-export function HomeSnapshot({ camId, src, fallback }: { camId: string; src: string; fallback: string | null }) {
+export function HomeSnapshot({ camId, src, fallback, retry = 0 }: {
+  camId: string;
+  src: string;
+  fallback: string | null;
+  /** Changes when a failed snapshot is to be tried again (useSnapshotTick). */
+  retry?: number;
+}) {
   const [failed, setFailed] = useState(0);
+  // a failed snapshot is tried again in the background: the tile keeps its fallback (or symbol) and switches back to
+  // the snapshot only once one has loaded — no broken picture in between
+  const now = useRef({ failed, src });
+  now.current = { failed, src };
+  useEffect(() => {
+    if (now.current.failed === 0) return;
+    const probe = new Image();
+    probe.crossOrigin = 'anonymous';
+    probe.onload = () => setFailed(0);
+    probe.src = now.current.src;
+    return () => {
+      probe.onload = null;
+    };
+  }, [retry]);
   const [last, setLast] = useState(() => hasLastTileSnapshot(camId));
   const drawLast = useCallback((canvas: HTMLCanvasElement | null) => void (canvas && drawLastTileSnapshot(camId, canvas)), [camId]);
   const url = failed === 0 ? src : failed === 1 && fallback ? fallback : null;

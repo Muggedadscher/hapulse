@@ -1197,7 +1197,16 @@ module.exports = function nvr(h) {
           return { label: b.getAttribute('aria-label'), size: [Math.round(__g.r(b).w), Math.round(__g.r(b).h)],
             radius: cs(b).borderTopLeftRadius, fill: __n.rgba(cs(b).backgroundColor)[3] };
         })() : null,
-        tiles: all('.nvr-layout .nvr-camtile').map((t) => {
+        // Glas: the NVR card's tiles and events (`.g-nvr-page`), read as the same facts as the package's
+        tiles: q('.nvr-layout .g-nvr-page') ? all('.nvr-layout .g-nvr__cam').map((t) => {
+          const img = t.querySelector('img.nvr-home__cam-img');
+          const state = t.getAttribute('data-state');
+          return { name: txt(t.querySelector('.g-nvr__name')),
+            badge: state === 'offline' || state === 'stalled' ? txt(t.querySelector('.g-nvr__badge')) : null,
+            dot: t.querySelector('.g-nvr__dot') ? (state === 'ok' ? 'rec' : 'off') : null,
+            img: img ? ((/api\/(snapshot|thumb)/.exec(img.src) || [])[1] || 'other') + (img.complete && img.naturalWidth > 0 ? '' : ' (not loaded)') : 'placeholder',
+            meta: txt(t.querySelector('.g-nvr__today')), radius: cs(t).borderTopLeftRadius };
+        }) : all('.nvr-layout .nvr-camtile').map((t) => {
           const img = t.querySelector('.nvr-camtile__img');
           return { name: t.getAttribute('aria-label'), badge: txt(t.querySelector('.nvr-camtile__offline')),
             dot: t.querySelector('.nvr-camtile__dot') ? (t.querySelector('.nvr-camtile__dot--off') ? 'off' : 'rec') : null,
@@ -1212,10 +1221,16 @@ module.exports = function nvr(h) {
           : { state: txt(q('.nvr-hero .nvr-pill')),
             values: [q('.nvr-hero__primary-value'), ...all('.nvr-hero .nvr-stat__value').slice(1)].map(txt).map((v) => v.replace(/\s+/g, '')),
             problem: !!q('.nvr-hero .nvr-pill--danger') },
-        strip: { n: all('.nvr-layout .nvr-strip__item').length, badges: all('.nvr-layout .nvr-strip .nvr-cbadge').length,
-          days: all('.nvr-layout .nvr-strip__day').length,
-          img: q('.nvr-strip__img') ? cs(q('.nvr-strip__img')).borderTopLeftRadius : null,
-          time: q('.nvr-strip__time') ? [cs(q('.nvr-strip__time')).fontSize, cs(q('.nvr-strip__time')).fontWeight] : null },
+        // Klassisch: the classes as symbols on the pictures; Glas: as words under the time, as on the NVR card
+        strip: q('.nvr-layout .g-nvr-page') ? { n: all('.nvr-layout .g-nvr__ev').length,
+          labels: all('.nvr-layout .g-nvr__ev-sub').map((el) => txt(el).split(' · ')[0]),
+          days: all('.nvr-layout .g-nvr__ev-day').length,
+          img: q('.nvr-layout .g-nvr__ev-img') ? cs(q('.nvr-layout .g-nvr__ev-img')).borderTopLeftRadius : null,
+          time: q('.nvr-layout .g-nvr__ev-time') ? [cs(q('.nvr-layout .g-nvr__ev-time')).fontSize, cs(q('.nvr-layout .g-nvr__ev-time')).fontWeight] : null }
+          : { n: all('.nvr-layout .nvr-strip__item').length, badges: all('.nvr-layout .nvr-strip .nvr-cbadge').length,
+            days: all('.nvr-layout .nvr-strip__day').length,
+            img: q('.nvr-strip__img') ? cs(q('.nvr-strip__img')).borderTopLeftRadius : null,
+            time: q('.nvr-strip__time') ? [cs(q('.nvr-strip__time')).fontSize, cs(q('.nvr-strip__time')).fontWeight] : null },
         bars: all('.nvr-chart__bar').length,
         meter: !!q('.nvr-meter') && __g.visible(q('.nvr-meter')),
       };
@@ -1251,8 +1266,8 @@ module.exports = function nvr(h) {
         const o = await open('desktop', style, '/nvr', { sentinel: { now } });
         try {
           await until(o.page, () => {
-            const tiles = [...document.querySelectorAll('.nvr-layout .nvr-camtile')];
-            return tiles.length === 4 && tiles.every((t) => { const i = t.querySelector('.nvr-camtile__img'); return i && i.complete && i.naturalWidth > 0; });
+            const tiles = [...document.querySelectorAll('.nvr-layout :is(.nvr-camtile, .g-nvr__cam)')];
+            return tiles.length === 4 && tiles.every((t) => { const i = t.querySelector('img:is(.nvr-camtile__img, .nvr-home__cam-img)'); return i && i.complete && i.naturalWidth > 0; });
           }, null, 12000);
           await settleAnimations(o.page); // Glas: the page rises in (g-rise, opacity)
           r.overview = await overview(o.page);
@@ -1425,8 +1440,11 @@ module.exports = function nvr(h) {
         want(same(ov.tiles.map((t) => [t.name, t.badge, t.dot]), [['Einfahrt', null, 'rec'], ['Garage', null, 'rec'],
           ['Carport', DE['nvr.cameras.offline'], 'off'], ['Hof', DE['nvr.cameras.stalled'], 'off']]), `${style} tiles ${j(ov.tiles)}`);
         want(ov.tiles[2].img === 'thumb' && ov.tiles[0].img === 'snapshot', `${style} tile pictures ${j(ov.tiles.map((t) => t.img))}`);
-        want(ov.strip.n === EVENTS.length && ov.strip.badges === EVENTS.reduce((n, e) => n + e[2].length, 0) && ov.strip.days === ov.yesterday,
-          `${style} strip ${j(ov.strip)} (${ov.yesterday} yesterday)`);
+        want(ov.strip.n === EVENTS.length && ov.strip.days === ov.yesterday && (style === 'classic'
+          ? ov.strip.badges === EVENTS.reduce((n, e) => n + e[2].length, 0)
+          // (the package orders an event's classes by priority: compare them as sets)
+          : same(ov.strip.labels.map((l) => l.split(', ').sort().join()), EVENTS.map((e) => e[2].map((c) => DE[`nvr.class.${c}`]).sort().join()))),
+        `${style} strip ${j(ov.strip)} (${ov.yesterday} yesterday)`);
         want(ov.bars === 24 && ov.meter, `${style} chart/storage ${j([ov.bars, ov.meter])}`);
         // Carport offline, Hof hanging (counts as online, named)
         want(ov.hero.state === `${DE['nvr.hero.offline.one'].replace('{count}', '1')} · ${DE['nvr.hero.stalled.one'].replace('{count}', '1')}`
@@ -1457,7 +1475,8 @@ module.exports = function nvr(h) {
       }
       // the same outcome in both styles (looks aside)
       const plain = (r) => j({ ...r, overview: { ...r.overview, actions: null, menu: null,
-        tiles: r.overview.tiles.map((t) => ({ ...t, radius: null })), strip: { ...r.overview.strip, img: null, time: null } },
+        tiles: r.overview.tiles.map((t) => ({ ...t, radius: null })),
+        strip: { ...r.overview.strip, img: null, time: null, badges: null, labels: null } },
       setup: { ...r.setup, manual: null } });
       /** Paths where two plain values differ (at most 6). */
       const diff = (a, b, at = '', acc = []) => {
@@ -1469,10 +1488,11 @@ module.exports = function nvr(h) {
       };
       const d = diff(JSON.parse(plain(classic)), JSON.parse(plain(glas)));
       want(!d.length, 'styles differ (classic ≠ glas): ' + d.join(' | '));
-      // K105 in Glas: the head's "⋯" a filled circle 44 (E7 N2), tiles 18, strip pictures 16, the strip's time 15/600
+      // K105 in Glas: the head's "⋯" a filled circle 44 (E7 N2); the NVR card's tiles 18 and, from 900 px, its event
+      // rows (pictures 12, the time 17/600)
       const g = glas.overview;
       want(g.menu && same(g.menu.size, [44, 44]) && ['50%', '22px'].includes(g.menu.radius) && g.menu.fill > 0, 'glas head ' + j(g.menu));
-      want(g.tiles.every((t) => t.radius === '18px') && g.strip.img === '16px' && same(g.strip.time, ['15px', '600']),
+      want(g.tiles.every((t) => t.radius === '18px') && g.strip.img === '12px' && same(g.strip.time, ['17px', '600']),
         'glas looks ' + j([g.tiles.map((t) => t.radius), g.strip.img, g.strip.time]));
       want(classic.overview.actions.every((a) => same(a.size, [40, 40])), 'classic head actions ' + j(classic.overview.actions));
       out.nvrPages = { bad, glas: { overview: g, setup: glas.setup, security: glas.security } };
@@ -1518,7 +1538,7 @@ module.exports = function nvr(h) {
     });
     const MENU_BTN = '.nvr-actions .g-hmenu__btn';
     const menuItem = (key) => `.g-hmenu__item:has-text("${DE[key]}")`;
-    const overviewReady = (page) => until(page, () => document.querySelectorAll('.nvr-layout .nvr-camtile').length === 4, null, 12000);
+    const overviewReady = (page) => until(page, () => document.querySelectorAll('.nvr-layout :is(.nvr-camtile, .g-nvr__cam)').length === 4, null, 12000);
     const menuShown = async (page) => {
       const ok = await until(page, () => !!document.querySelector('.g-hmenu__menu:not(.g-hmenu__menu--closing)'));
       await settleAnimations(page);
@@ -1748,10 +1768,12 @@ module.exports = function nvr(h) {
         await o.close();
       }
       const dot = async (reduce) => {
-        const p = await open('desktop', 'glas', '/nvr', { reduce });
+        const p = await open('phone', 'glas', '/nvr', { reduce });
         try {
-          await until(p.page, () => !!document.querySelector('.nvr-layout .nvr-camtile__dot:not(.nvr-camtile__dot--off)'));
-          return await ev(p.page, () => getComputedStyle(document.querySelector('.nvr-layout .nvr-camtile__dot:not(.nvr-camtile__dot--off)')).animationName);
+          // the overview's tiles are the NVR card's (`.g-nvr-page`): a recording camera's dot in its capsule
+          const sel = '.nvr-layout .g-nvr__cam[data-state="ok"] .g-nvr__dot';
+          await until(p.page, (s) => !!document.querySelector(s), sel);
+          return await ev(p.page, (s) => getComputedStyle(document.querySelector(s)).animationName, sel);
         } finally {
           await p.close();
         }
@@ -1806,10 +1828,10 @@ module.exports = function nvr(h) {
       // a retention target out of reach (60 days, about 49 fit): the warning dots of the hero and the storage note
       const ov = await open('desktop', 'glas', '/nvr', { forced: true, sentinel: { stats: { retentionDays: 60 } } });
       try {
-        await until(ov.page, () => document.querySelectorAll('.nvr-layout .nvr-camtile').length === 4);
-        res.overview = await ev(ov.page, () => [...document.querySelectorAll('.nvr-layout .nvr-camtile, .nvr-actions .g-hmenu__btn')]
+        await until(ov.page, () => document.querySelectorAll('.nvr-layout .g-nvr__cam').length === 4);
+        res.overview = await ev(ov.page, () => [...document.querySelectorAll('.nvr-layout .g-nvr__cam, .nvr-actions .g-hmenu__btn')]
           .map((t) => getComputedStyle(t).borderTopWidth));
-        res.overviewDots = await dots(ov.page, '.nvr-layout :is(.nvr-camtile__dot, .g-nvr-hero__chip[data-warn], .nvr-note--warn)');
+        res.overviewDots = await dots(ov.page, '.nvr-layout :is(.g-nvr__dot, .g-nvr-hero__chip[data-warn], .nvr-note--warn)');
       } finally {
         await ov.close();
       }

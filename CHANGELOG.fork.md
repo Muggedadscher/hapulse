@@ -6,6 +6,21 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F44 — 2026-10-11
+
+**NVR-Seite wie die Karte** · _NVR page like the card_
+
+### Geändert / Changed
+
+- Glas: Die NVR-Seite sieht aus wie die NVR-Karte der Übersicht, erst die Kameras als große Bilder, dann die Ereignisse mit Uhrzeit, Art und Kamera; am Desktop stehen die Ereignisse als Liste neben den Kameras  
+  _Glass: the NVR page looks like the overview’s NVR card, first the cameras as large pictures, then the events with time, kind and camera; on the desktop the events are a list beside the cameras_
+- Glas: Ereignisse von gestern oder früher zeigen den Tag vor der Uhrzeit, auch auf der NVR-Karte  
+  _Glass: events from yesterday or earlier show the day before the time, on the NVR card too_
+- Glas: Auf großen Bildschirmen sind die Kameranamen auch über hellen Bildern gut lesbar, der Verlauf darunter ist dunkler  
+  _Glass: on large screens the camera names stay readable over bright pictures too, the shade under them is darker_
+- Kamera-Kacheln der NVR-Karte (und in Glas der NVR-Seite) laden ein fehlgeschlagenes Bild alle 30 Sekunden neu, etwa wenn eine Kamera wieder online ist  
+  _Camera tiles on the NVR card (and in Glass on the NVR page) load a failed picture again every 30 seconds, for example once a camera is back online_
+
 ## F43 — 2026-10-11
 
 **Zurück aus der Kamera** · _Back from a camera_
