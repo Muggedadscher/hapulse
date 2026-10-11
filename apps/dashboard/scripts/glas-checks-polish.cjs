@@ -300,9 +300,17 @@ module.exports = function polish(h) {
     });
     const glassy = (o) => backdrop(getComputedStyle(o)) || backdrop(getComputedStyle(o, '::before'))
       || backdrop(getComputedStyle(o, '::after'));
-    /** At a point: what covers `el` (the first painted element above it; an ancestor listed above it covers it with a
-     *  pseudo-element) and whether glass lies under it (a glass layer of its own or of an ancestor, also a sibling layer
-     *  like the tab bar's). */
+    /** A glass layer of `o` at the point that hit testing does not list (the tab bar's `.g-tabs__glass` lies at
+     *  z-index -2 inside the nav, which paints nothing itself): what scrolls under the bar is covered, not measured
+     *  through it (GLAS-DESIGN §2.5 rule 3: media under the bar only while scrolling). */
+    const glassLayerAt = (o, x, y) => [...o.children].some((c) => {
+      if (!glassy(c) || opacityOf(c) < 0.02 || getComputedStyle(c).visibility !== 'visible') return false;
+      const r = c.getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    });
+    /** At a point: what covers `el` (the first painted element above it, or one whose glass layer lies over the point,
+     *  `glassLayerAt`; an ancestor listed above it covers it with a pseudo-element) and whether glass lies under it (a
+     *  glass layer of its own or of an ancestor, also a sibling layer like the tab bar's). */
     const stackAt = (el, x, y) => {
       let reached = false;
       let glass = false;
@@ -312,7 +320,7 @@ module.exports = function polish(h) {
           else if (o.contains(el)) {
             if (pseudoPaints(o)) return { cover: o, pseudo: true };
             reached = true;
-          } else if (paints(o)) return { cover: o };
+          } else if (paints(o) || glassLayerAt(o, x, y)) return { cover: o };
         }
         if (reached && !glass && glassy(o)) glass = true;
       }

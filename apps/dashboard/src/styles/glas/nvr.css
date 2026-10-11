@@ -5,7 +5,7 @@
    high (radius 26, shade 76 on top and 90 at the bottom), a clear capsule top left (dot pulsing while recording runs,
    name and state), today's events bottom left; several cameras side by side to swipe; the latest events as a strip to
    the screen edge (150 wide, picture 150 × 112). With a capped height the card keeps its surface and both strips end
-   at its edge. From 900 px the card keeps its surface: tile 16:10 (radius 18, shade 110) with name 20, state badge and
+   at its edge. From 900 px the card keeps its surface: tile 16:10 (radius 18, shade 120) with name 20, state badge and
    today's events, then the latest three events as rows (picture 92 × 69) — beside the tile once the card is 560 px
    wide (1.65fr / 1fr), else below it. Stage 6 adds the other NVR views (K105) and the camera page (K101–K103) further
    down. */
@@ -388,9 +388,15 @@
     color: var(--g-label-3);
   }
 
+  /* under the caption: white text keeps 4.5:1 over a white picture (GLAS-DESIGN §2.5 rule 5, §3.6; F44: on the larger
+     overview tiles .5 over 110 px gave 2.6:1 over a light wall) */
   :root[data-style='glas'] .g-nvr__shade {
-    background: linear-gradient(transparent, color-mix(in srgb, var(--g-media-bg) 50%, transparent)) bottom / 100% 110px
-      no-repeat;
+    background: linear-gradient(
+        transparent,
+        color-mix(in srgb, var(--g-media-bg) 45%, transparent) 40%,
+        color-mix(in srgb, var(--g-media-bg) 72%, transparent)
+      )
+      bottom / 100% 120px no-repeat;
   }
 
   :root[data-style='glas'] .g-nvr__pill {

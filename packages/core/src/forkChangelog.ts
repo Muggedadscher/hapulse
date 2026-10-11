@@ -54,6 +54,10 @@ export const FORK_RELEASES: ForkRelease[] = [
             en: 'Glass: events from yesterday or earlier show the day before the time, on the NVR card too',
           },
           {
+            de: 'Glas: Auf großen Bildschirmen sind die Kameranamen auch über hellen Bildern gut lesbar, der Verlauf darunter ist dunkler',
+            en: 'Glass: on large screens the camera names stay readable over bright pictures too, the shade under them is darker',
+          },
+          {
             de: 'Kamera-Kacheln der NVR-Karte (und in Glas der NVR-Seite) laden ein fehlgeschlagenes Bild alle 30 Sekunden neu, etwa wenn eine Kamera wieder online ist',
             en: 'Camera tiles on the NVR card (and in Glass on the NVR page) load a failed picture again every 30 seconds, for example once a camera is back online',
           },
