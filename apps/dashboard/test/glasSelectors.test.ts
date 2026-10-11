@@ -78,6 +78,34 @@ function declarations(css: string): { prop: string; value: string; at: string[] 
   return out;
 }
 
+/** Every style rule with its selector list, its declarations and the at-rules around it (keyframe steps excluded). */
+function rulesWithDeclarations(css: string): { selectors: string[]; at: string[]; decls: { prop: string; value: string }[] }[] {
+  const out: { selectors: string[]; at: string[]; decls: { prop: string; value: string }[] }[] = [];
+  const stack: ({ at: string } | { rule: (typeof out)[number] | null })[] = [];
+  let buf = '';
+  const flush = () => {
+    const d = buf.trim();
+    buf = '';
+    const top = stack[stack.length - 1];
+    const i = d.indexOf(':');
+    if (top && 'rule' in top && top.rule && i > 0) top.rule.decls.push({ prop: d.slice(0, i).trim(), value: d.slice(i + 1).trim() });
+  };
+  for (const ch of stripComments(css)) {
+    if (ch === '{') {
+      const head = buf.trim();
+      buf = '';
+      if (head.startsWith('@')) { stack.push({ at: head }); continue; }
+      const at = stack.flatMap((s) => ('at' in s ? [s.at] : []));
+      const rule = at.some((a) => a.startsWith('@keyframes')) ? null : { selectors: splitSelectors(head), at, decls: [] };
+      if (rule) out.push(rule);
+      stack.push({ rule });
+    } else if (ch === '}') { flush(); stack.pop(); }
+    else if (ch === ';') flush();
+    else buf += ch;
+  }
+  return out;
+}
+
 /** The contents of every `:where(...)` in a stylesheet, whitespace normalised. */
 function whereLists(css: string): string[] {
   const out: string[] = [];
@@ -181,6 +209,25 @@ describe('Glas stylesheets', () => {
       );
       expect(bad.map((d) => `${d.prop}: ${d.value}`), f.name).toEqual([]);
     }
+  });
+
+  // Hover only with a pointer (plan docs/glas/PLAN-ETAPPE-7.md K108): on a touch screen a :hover state sticks after a
+  // tap, so a :hover rule outside @media (hover: hover) may only put an element back to rest (an upstream hover tint
+  // neutralised) — no hover fill, no brightening, no fading.
+  it('tint on :hover only under @media (hover: hover)', () => {
+    const tint = (d: { prop: string; value: string }) =>
+      /--g-hover\b|--g-fill-2\b|brightness\(/.test(d.value) || (d.prop === 'opacity' && parseFloat(d.value) < 1);
+    const hover = glasCss.flatMap((f) =>
+      rulesWithDeclarations(f.css)
+        .filter((r) => r.selectors.some((sel) => sel.includes(':hover')))
+        .map((r) => ({ ...r, file: f.name, pointer: r.at.some((a) => /\(hover:\s*hover\)/.test(a)) })),
+    );
+    // the walk found the hover effects (a broken parser would pass with nothing to check)
+    expect(hover.filter((r) => r.pointer && r.decls.some(tint)).length).toBeGreaterThan(20);
+    const bad = hover
+      .filter((r) => !r.pointer)
+      .flatMap((r) => r.decls.filter(tint).map((d) => `${r.file}: ${r.selectors.join(', ')} { ${d.prop}: ${d.value} }`));
+    expect(bad).toEqual([]);
   });
 
   it('list the same surfaces in every :where() of material.css (plan K30)', () => {

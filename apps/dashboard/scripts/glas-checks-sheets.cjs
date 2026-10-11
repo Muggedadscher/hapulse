@@ -42,6 +42,9 @@ module.exports = function sheets(h) {
     return '';
   };
   const glasOnly = (step) => async (page) => ((await isGlas(page)) ? step(page) : 'Glas only');
+  const nvrHead = (classicKey, glasKey) => async (page) => ((await isGlas(page))
+    ? seq(sel('.nvr-actions .g-hmenu__btn'), sel(`.g-hmenu__item:has-text("${DE[glasKey]}")`))(page)
+    : sel(`.nvr-actions [aria-label="${DE[classicKey]}"]`)(page));
   /** "Manuell" in the pool window: the classic button, in Glas the option of the mode segment (plan Etappe 5 K92). */
   const POOL_MANUAL = '.modal-body .pool-modal__mode-btn--manual, .modal-body .g-seg--pool .g-seg__opt[data-value="Manuell"]';
   const NVR = { customization: { scryptedUrl: 'https://192.0.2.10/endpoint/@local/sentinel-nvr/public/', scryptedToken: 'demo' } };
@@ -68,8 +71,9 @@ module.exports = function sheets(h) {
     'win-unlock-security': { path: '/security', act: sel('.locks-row__btn--unlock') },
     'win-garage-open': { act: seq(chip('garage'), sel('.modal-body .garage-row__btn--open')) },
     'win-entities': { path: '/settings', act: sel(`button:has-text("${DE['settings.admin.editEntitiesBtn']}")`) },
-    'win-nvr-setup': { path: '/nvr', ...NVR, act: sel(`.nvr-actions [aria-label="${DE['nvr.setup.modalTitle']}"]`) },
-    'win-nvr-rooms': { path: '/nvr', ...NVR, act: sel(`.nvr-actions [aria-label="${DE['cameraSource.rooms.title']}"]`) },
+    // the windows of the NVR overview's head: Klassisch from its buttons, Glas from the "⋯" menu (plan E7 N2)
+    'win-nvr-setup': { path: '/nvr', ...NVR, act: nvrHead('nvr.setup.modalTitle', 'glas.nvr.menu.setup') },
+    'win-nvr-rooms': { path: '/nvr', ...NVR, act: nvrHead('cameraSource.rooms.title', 'glas.nvr.menu.rooms') },
     'win-keypad': { act: seq(chip('alarm'), sel('.modal-body .alarm-btn--away')) },
     'win-keypad-security': { path: '/security', act: sel('.alarm-btn--away') },
     'win-pool-restart': { path: '/pool', act: glasOnly(sel('.pool-admin__restart')) },
@@ -100,6 +104,12 @@ module.exports = function sheets(h) {
       try {
         await fn();
       } catch (e) {
+        // WebKit has no CDP (Etappe 7, K112): a block that needs it is skipped and listed, never counted as green
+        if (/CDP session is only available in Chromium/.test(String(e && e.message))) {
+          ran.splice(ran.indexOf(name), 1);
+          (out.skippedNoCdp = out.skippedNoCdp || []).push(name);
+          return;
+        }
         out[name + 'Error'] = String(e && e.message).split('\n')[0].slice(0, 300);
         out[name + 'Ok'] = false;
       }
@@ -951,13 +961,17 @@ module.exports = function sheets(h) {
       out.sheetsOriginExpiryOk = first.w >= end.w * 0.9;
     });
 
-    // 17. Performance (a report, GLAS-PLAN §5.5, plan §6.3), at full speed and at 4× CPU slowdown, Klassisch at 4× as the
+    // 17. Performance (GLAS-PLAN §5.5, plan §6.3), at full speed and at 4× CPU slowdown, Klassisch at 4× as the
     //     baseline: frames dropped in the 900 ms after the press that opens a window and after the press that closes it,
     //     long tasks, and how long the ghost's synchronous work takes — from the backdrop's clone until the ghost queues
-    //     its decision (copy, frozen styles, stills, insertion) — with the number of nodes of the window.
+    //     its decision (copy, frozen styles, stills, insertion) — with the number of nodes of the window. Required
+    //     (Etappe 7 K110): opening a window, Glas at 4× drops at most 2 frames more than Klassisch at 4× (median of three
+    //     runs each, the styles taking turns); the rest is a report.
     await block('sheetsPerf', async () => {
       const res = {};
-      for (const [style, rate] of [['glas', 1], ['glas', 4], ['classic', 4]]) {
+      const dropped = {};
+      const runs = [[['glas', 1], ['glas', 4], ['classic', 4]], [['glas', 4], ['classic', 4]], [['glas', 4], ['classic', 4]]];
+      for (const [style, rate] of runs.flat()) {
         for (const [key, name] of [['lights', 'win-lights'], ['entities', 'win-entities'], ['detail', 'win-detail']]) {
           const sc = scenes[name];
           const w = await open('phone', style, sc.path, sc);
@@ -1010,12 +1024,21 @@ module.exports = function sheets(h) {
           const closing = { ...(await frames()), ghost: await ev(w.page, () => window.__perf.clones.slice()) };
           await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
           await cdp.detach();
-          res[`${key}@${rate}x${style === 'classic' ? ' Klassisch' : ''}`] = { opening, closing };
+          const id = `${key}@${rate}x${style === 'classic' ? ' Klassisch' : ''}`;
+          if (!res[id]) res[id] = { opening, closing };
+          (dropped[id] = dropped[id] || []).push(opening.dropped);
           await w.close();
         }
       }
+      const median = (xs) => xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+      res.budget = {};
+      for (const key of ['lights', 'entities', 'detail']) {
+        const glas = median(dropped[`${key}@4x`]);
+        const classic = median(dropped[`${key}@4x Klassisch`]);
+        res.budget[key] = { glas, classic, runs: { glas: dropped[`${key}@4x`], classic: dropped[`${key}@4x Klassisch`] }, ok: glas <= classic + 2 };
+      }
       out.sheetsPerf = res;
-      out.sheetsPerfOk = true;
+      out.sheetsPerfOk = Object.values(res.budget).every((b) => b.ok);
     });
 
     // 12. Every window of §6.0 opens in Glas on the phone and the desktop without an error, with one window on top and

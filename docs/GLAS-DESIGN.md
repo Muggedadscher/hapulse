@@ -69,7 +69,7 @@ Wo eine Apple-Regel eine HAPulse-Funktion entfernen würde, **gewinnt HAPulse**.
 | E3/E9 | **Hinweise, „Aktiv“ bei Szenen, Netz/Solar-Balken + PV-Ertrag in beiden Stilen** | §7.3 |
 | E6 | **L = 2 Spalten + höher**; S = 1 Spalte, M = 2 Spalten; „⋯ Anpassen“ behält alle alten Werte | §7.3 |
 | E8 | Hauptraum-Karte **immer schlicht** (kein Verlauf, **kein Raumbild** – auch wenn in HA gesetzt) | §7.3 |
-| E11 | „Glas (Vorschau)“ nur für HA-Admins sichtbar | §7.3 |
+| E11 | „Glas (Vorschau)“ nur für HA-Admins sichtbar (bis Etappe 6; seit Etappe 7 „Glas“, die Zeile sehen alle, ändern nur Admins) | §7.3 |
 | E16 | Inspector ab **1100 px** | §7.3 |
 | E17 | Leistungsmaßstab **iPad (Safari/WebKit)** | §7.3 |
 | Energie | Apple-Health-Look: Segment Tag/Woche/Monat, schmale gerundete gestapelte Balken Netz/Solar, Hilfslinien mit Achswerten, Ø-Linie, Tipp → Info-Blase | §7.3 |
@@ -231,26 +231,46 @@ bzw. ≥ 19 px fett 3:1; Glyphen/Grafik 3:1. **Hell zählt am meisten** (iPad be
 | Fläche (wirksame Tönung) | über Weiß | über `#F2F2F7` | über Grau `#808080` | über `#333333` | über Schwarz |
 |---|---|---|---|---|---|
 | Tab-Leiste hell (t .6): `label` | 21,0 | 21,0 | 10,24 | 5,50 | 3,39 |
-| Tab-Leiste hell: `tabInk` auf Linse | 4,79 | 4,79 | 2,53 | 1,48 | — |
+| Tab-Leiste hell: `tabInk` auf der Linse (deckend `#E6E6E9` seit Etappe 7; vorher `.16`: 4,79 / 4,79 / 2,53 / 1,48) | 4,65 | 4,65 | 4,65 | 4,65 | 4,65 |
 | Seitenleiste hell (t .5): `glassLabel2` | 11,35 | 11,35 | 5,25 | 2,66 | — |
-| Desktop-Dialog hell (t .68, Scrim .22): `glassLabel2` | 9,01 | 8,51 | 4,73 | 2,95 | — |
+| Desktop-Dialog hell (Sheet-Füllung über Scrim .22, seit Etappe 7; vorher Glas t .68: `glassLabel2` 9,01 / 8,51 / 4,73 / 2,95): `label` / `glassLabel2` | 19,43 / 10,50 | 19,26 / 10,41 | 16,52 / 8,93 | 14,88 / 8,04 | 13,75 / 7,43 |
 | Menü hell (t .88): `redInk` („Ausblenden“) | 5,38 | 5,38 | 3,04 | 1,89 | — |
-| Sheet mittel hell (Fläche 80 %): `label` / `glassLabel2` / `label2` | — | — | 15,24 / 8,24 / 4,61 | — | 11,78 / 6,36 / **3,56 ✘** |
+| Sheet mittel hell (weiß, unten .82, seit Etappe 7; vorher `#F2F2F7` .80: 15,24 / 8,24 / 4,61 über Grau, 11,78 / 6,36 / 3,56 über Schwarz): `label` / `glassLabel2` / `label2` | 21,00 / 11,35 / 6,35 | 20,83 / 11,26 / 6,30 | 17,30 / 9,35 / 5,23 | — | 13,75 / 7,43 / **4,16 ✘** |
+| Sheet hell über der abgedunkelten Seite (Scrim .25; Kontextmenü .18: ≥ diese Werte): `label` / `glassLabel2` | 19,26 / 10,41 | 18,94 / 10,23 | 16,36 / 8,84 | 14,73 / 7,96 | 13,75 / 7,43 |
+| Fenster hell über der abgedunkelten Seite (Sheet, Dialog, Kontextmenü): farbige Schrift (Inks, Akzent, Akzent auf `accentSoft`), Ruhezustand | ≥ 4,73 | ≥ 4,65 | — | — | — |
 | Glas dunkel (t .6): `label` | 3,10 ✘ | — | 7,78 | — | 18,77 |
 | Sheet mittel dunkel: `label2 #AEAEB2` über Weiß | 4,37 ✘ | — | — | — | — |
 | Sheet mittel dunkel: `glassLabel2` über Weiß | 6,35 ✔ | — | — | — | — |
+| Fenster dunkel über der abgedunkelten Seite (Scrim .45, Kontextmenü .40): farbige Schrift, Ruhezustand | — | — | — | — | ≥ 5,94 (über `#1C1C1E` ≥ 5,76) |
 
 **Folgerungen (Regeln):**
-1. Auf **jeder Glasfläche** ersetzt `glassLabel2` den Sekundärtext (`--text-dim`/`label2`) – sonst 3,56:1 (hell) bzw. 4,37:1 (dunkel).
+1. Auf **jeder Glasfläche** ersetzt `glassLabel2` den Sekundärtext (`--text-dim`/`label2`) – sonst bis 4,16:1 (hell, Sheet über
+   Schwarz; vor Etappe 7 3,56:1) bzw. 4,37:1 (dunkel). In Glas-Fenstern seit Etappe 7 (K109) auch das eigene `--g-label-2`
+   der Glas-Teile, ein Fenster hat also eine Sekundärfarbe.
 2. Im **Ruhezustand** liegt hinter Glas nur Seitenhintergrund oder helle Karte → alle Paare ≥ 4,5:1. Die Seitenleiste liegt
-   nie über Inhalt (Inhalt beginnt rechts davon); die Tab-Leiste hat Inhalt nur beim Scrollen hinter sich.
+   nie über Inhalt (Inhalt beginnt rechts davon). Die Tab-Leiste dagegen liegt auf langen Seiten in jeder Scroll-Lage
+   über Inhalt (Messung am Bildschirm, Etappe 7, K109: aktiver Tab bis 3,1:1 über farbigen Karten) → die **Linse ist
+   deckend** (`#E6E6E9` / `#3C3C3D`), `tabInk` liest sich auf ihr unabhängig vom Inhalt dahinter.
 3. Dunkle Medien (Kamerabild) unter heller Glas-Tab-Leiste sind **vorübergehend** erlaubt (Apple: Überschneidung nur beim
    Scrollen); Primärtext bleibt ≥ 3:1 über `#333`. Farbiger Text (Akzent, Rot) nur im Ruhezustand prüfen.
 4. Abnahmetest (Plan §5.2) prüft Glas gegen **Weiß, `#F2F2F7` und `#808080`** (realistisch schlechtester Ruhe-Untergrund);
    Schwarz/`#333` nur als Information. Stärke „getönt“ und „deckend“ heben alle Werte an.
 5. Klares Glas über Video (Fläche .20): Weiß über hellstem Bild 1,61:1 ✘; **mit 35 % Abdunklung** über Hellgrau `#C8C8C8`
    5,57:1 ✔, über reinem Weiß 3,71:1 (Glyphen ✔) → Verläufe oben/unten im Bild sind Pflicht (§3.6). Kopftext „Einfahrt“ über
-   `imageTopStrong` (.7) ≈ 8,5:1.
+   `imageTopStrong` (.7) ≈ 8,5:1. **Text auf klarem Glas** (Namen der Kamerakacheln, Pille der NVR-Karte) hat seit Etappe 7
+   (K109) die dichtere Füllung `textFill` .50: über weißem Bild unter dem oberen Verlauf (an der Schriftunterkante halb,
+   .175) 5,49:1 (mit .20 nur 2,38:1; am Bildschirm gemessen 1,36:1 über hellem Himmel).
+6. **Fenster liegen über der abgedunkelten Seite** (Scrim): gerechnet wird die Fensterfläche über dem Scrim über der
+   Seite (`windowGround`). Das helle Fenstermaterial ist seit Etappe 7 weiß (K109: farbige Schrift fiel über der
+   abgedunkelten Seite auf 3,9:1), der Desktop-Dialog nimmt dieselbe Füllung (mit eigenem, kleinerem Weichzeichner).
+7. **Fokusringe ≥ 3:1** (WCAG 1.4.11): `focus` (= Akzent-Ink) auf Karte und Seite ≥ 4,5 bei jedem Akzent (Orange hell
+   5,19 auf der Seite). Ringe, die auf einem Bild liegen (Bildleisten schneiden ab, der Ring muss nach innen): `focus` am
+   Rand, die Kartenfarbe innen und, wo die beiden weniger als 9:1 auseinanderliegen (hell, Orange 5,79), dazu innen ein
+   Band im Gegenton der Karte (`focusPair`, hell Schwarz; dunkel nicht nötig, Orange 9,54). Zwei Töne mit ≥ 9:1 sorgen
+   dafür, dass einer von ihnen sich mit ≥ 3:1 von jedem Bild abhebt (Technik C40); mit 5,79 blieben über einem mittleren
+   Grau beide darunter (≥ 2,4:1). Über dem Kamerabild liegt der Ring innen auf dem Glas des Bedienelements,
+   in dessen Schriftfarbe; auf farbigen Flächen (laufender Pool-Slot) in der Schriftfarbe der Fläche, am Griff zwischen
+   zwei Flächen zweifarbig (dunkel innen, Weiß außen).
 
 ### 2.6 Abbildung auf die bestehenden HAPulse-Namen
 
@@ -322,6 +342,7 @@ in `glas-tokens.json → classicMapping`; `smoke.mjs` prüft sie gegen den Code.
 | Filter dunkel | `blur(calc(6px + 10px*t)) saturate(180%) brightness(.9)` | gleich |
 | Glyphen | `label`, Sekundär `glassLabel2` | `onMedia` (Weiß) + `text-shadow 0 1px 2px rgba(0,0,0,.45)` |
 | Abdunklung | — | **35 %** lokal hinter hellem Bild (Verläufe §3.6) |
+| Füllung unter Text | — | `textFill` `rgba(0,0,0,.50)` (Kameranamen, Pille der NVR-Karte; seit Etappe 7, K109, §2.5 Regel 5) |
 
 `t` = `--g-glass-tint`. Regular und clear **nie mischen** (eine Steuergruppe ist entweder clear oder regular).
 Ausnahme in der Skizze: der Datum-Chip auf der (dunklen) Kameraseite ist regular (t .55), weil er über der Zeitleiste
@@ -382,12 +403,13 @@ liegt, nicht über dem Video.
 | Zurück-Knopf | .50 | .75 |
 | Datum-Chip Kameraseite | .55 | .75 |
 | Seitenleiste | .50 | .80 |
-| Desktop-Dialog, Inspector, Toast (Desktop) | .68 | .85 |
+| Desktop-Dialog (Weichzeichner; Füllung = Sheet, seit Etappe 7), Inspector, Toast (Desktop) | .68 | .85 |
 | Menüs, Popover (Kontext, Avatar, Räume, Mitteilungen) | .88 | .94 |
 | Sheet mittel (Handy) | ≥ .70, Fläche = `sheetFill` | |
 
-**Sheet-Material (Handy, mittel; auch Kontext-/Avatar-Menü):** hell `linear-gradient(180deg, rgba(246,246,250,.86),
-rgba(242,242,247,.80))` + `blur(28px) saturate(190%) brightness(1.04)`; dunkel `rgba(36,36,40,.86) → rgba(28,28,30,.80)` +
+**Sheet-Material (Handy, mittel; auch Kontext-/Avatar-/Mehr-/Räume-Menü; die Füllung auch im Desktop-Dialog):** hell
+`linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.82))` (seit Etappe 7, K109; vorher `rgba(246,246,250,.86)
+→ rgba(242,242,247,.80)`) + `blur(28px) saturate(190%) brightness(1.04)`; dunkel `rgba(36,36,40,.86) → rgba(28,28,30,.80)` +
 `blur(28px) saturate(170%) brightness(.9)`. Groß = `sheetSolid`, ohne Filter. Hinweis: 28 px liegt über dem Budget
 ≤ 16 px (Plan §5.5); erlaubt, weil vorübergehend und eine einzige Fläche – reißt das iPad-Budget, auf 16 px senken.
 
@@ -613,7 +635,7 @@ Notation: Maße in px; „Skizze H/D“ = Handy/Desktop. Gemeinsame Zustände (g
 | pressed | §6.3 (Inhalt .97, Zeile `fill`, Glas Flex + Glanz, Link .55) |
 | hover (nur Desktop/Zeiger) | Zeilen/Links `hover`, Kacheln −1 px + `cardHover`, Nav-Einträge `hover` (nicht der aktive) |
 | active/selected | Akzent nur als Auswahl (Linse, Häkchen `accentInk`, aktiver Tab `tabInk`); Zustandsfarbe für „an“ |
-| focus-visible | `outline: 2px solid var(--g-focus)` (= `accentInk`), `outline-offset: 2px` |
+| focus-visible | `outline: 2px solid var(--g-focus)` (= `accentInk`), `outline-offset: 2px`; auf Glas über einem Bild und auf Bildern nach §2.5 Regel 7 |
 | disabled | Deckkraft .4 (Knöpfe) bzw. .35 (Klima aus), kein Druckeffekt, `aria-disabled`/`disabled` |
 | loading | Wert „–“, Knopf zeigt Ring-Spinner 16–20 px (`label2`, 1 s linear) statt separatem Spinner; Banner-Symbol dreht |
 | empty | HAPulse-Leerzustand im Glas-Look (§7.31) |
@@ -630,9 +652,11 @@ Notation: Maße in px; „Skizze H/D“ = Handy/Desktop. Gemeinsame Zustände (g
   Radius `179px / 31px` (kompensiert), aktives Symbol wandert in den Kreis (`translate(26 − cx, 12.5px)`), übrige
   `opacity 0` + `scale(.5)`, Beschriftungen aus; unsichtbarer 52-px-Knopf „Tab-Leiste einblenden“; `--flex 1.1`.
   **Versteckt** (Sheet, Kontextmenü, Kamera): `translateY(14px) scale(.94)`, Glas fade + blur 8 px.
-- **Hell/Dunkel:** Glas regular; Linse `rgba(120,120,128,.16)` / `rgba(255,255,255,.14)`.
+- **Hell/Dunkel:** Glas regular; Linse deckend `#E6E6E9` / `#3C3C3D` (Skizze: `rgba(120,120,128,.16)` / `rgba(255,255,255,.14)`; Etappe 7, K109, §2.5 Regel 2).
 - **A11y:** `<nav aria-label="Hauptnavigation">`, `aria-current="page"`, Tab-Reihenfolge bleibt; minimiert nur der
-  Einblenden-Knopf fokussierbar.
+  Einblenden-Knopf fokussierbar. Fokusring innen (−2 px) in der Schriftfarbe des Eintrags (`label` auf dem Glas, `tabInk`
+  auf der Linse), beim Einblenden-Knopf ebenso: das Glas zeigt, was darunter scrollt, über einem Kamerabild hatte `focus`
+  2,5:1 (Etappe 7, K109, §2.5 Regel 7).
 
 ### 7.2 Seitenleiste (Desktop ≥ 900)
 
@@ -851,7 +875,8 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
 ### 7.18 Sheet (Handy, alle Modals)
 
 - **Mittel:** schwebend, Einzug `left/right/bottom 8`, Radius **40** rundum, Höhe = Inhalt, höchstens
-  `100dvh − 144px` (Skizze: bis 700 von 844), Material `sheetFill` + `sheetFilter`, Glas-Schatten; `label2` → `glassLabel2`.
+  `100dvh − 144px` (Skizze: bis 700 von 844), Material `sheetFill` + `sheetFilter`, Glas-Schatten; `label2` → `glassLabel2`
+  (auch das eigene `--g-label-2` der Glas-Teile, seit Etappe 7).
 - **Groß:** volle Breite, Höhe `100dvh − 52px` (Skizze 792 von 844), Radius 40 40 0 0, **deckend** `sheetSolid`, ohne
   Filter, Schatten `sheetLarge`.
 - Start-Detent: passt der Inhalt → mittel, sonst groß. *Plan §2.1 nannte `min(62dvh, Inhalt)`; die freigegebene Skizze
@@ -885,8 +910,9 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
 ### 7.19 Desktop-Dialog (900–1099 auch für Detail)
 
 - Zentriert, Breite je Inhalt (Personen 440, Wetter 500, Licht 480, Türen 460, Garage/Schlösser 560, Alarm 460, Pool 480,
-  Medien 500, Klima alle 760, Rollläden alle 780, Müll 440), max. Höhe 900, Radius **34**, Glas Tönung .68, Schatten
-  `dialog`; Scrim `scrimDesktop` (.22 / .45).
+  Medien 500, Klima alle 760, Rollläden alle 780, Müll 440), max. Höhe 900, Radius **34**, Füllung wie das Sheet
+  (`sheetFill`, seit Etappe 7, K109: auf dem Glas t .68 fiel farbige Schrift über dem Scrim auf 3,9:1), Weichzeichner
+  des Glases (Tönung .68), Schatten `dialog`; Scrim `scrimDesktop` (.22 / .45).
 - Kopf `44px 1fr 44px`, Innenabstand 12 12 6: Schließen 44/32, Titel 17/600 mit Symbol + Untertitel 13 `glassLabel2`;
   Inhalt Innenabstand 8 20 22; Gruppen `group` (Desktop-Skizze `rgba(255,255,255,.74)` / `rgba(58,58,60,.55)` auf Glas,
   deckend `#FFF`/`#2C2C2E` in Zeilen mit Wischen), Radius 18–20.
@@ -1048,7 +1074,9 @@ Ring `inset 0 0 0 2px accent` (Klima-Modi 1,5 px). Labels: Verb, Satzschreibung.
 
 ### 7.33 Kameraseite (immer dunkel)
 
-Teilbaum mit `data-glas-scheme="dark"`; Tab- und Chip-Leiste aus (E13).
+Teilbaum mit `data-glas-scheme="dark"`; Tab- und Chip-Leiste aus (E13). Fenster, Mitteilungen, Avatar-Menü und Toasts,
+die über der Kameraseite aufgehen, sind ebenfalls dunkel (seit Etappe 7, K109: das helle Datumsfenster über dem dunklen
+Scrim hatte 2,7:1 am ×). Fokus über dem Bild: Ring innen auf dem Glas des Knopfs in dessen Schriftfarbe (§2.5 Regel 7).
 
 - **Bühne** randlos, Höhe = Breite × 3/4 (293 bei 390; Vollbild 100 %), Verläufe oben 104 / unten 120 (§3.6).
 - Oben: Zurück + Extern als **clear**-Kreise 44 (`top 8`, `left/right 12`), Mitte Titel 17/22 600 Weiß + LIVE-Badge

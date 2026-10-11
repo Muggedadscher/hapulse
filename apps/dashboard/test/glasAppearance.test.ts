@@ -212,7 +212,10 @@ describe('applyAppearance', () => {
 
     G.applyAppearance(glas({ accentHue: 200, glassStrength: 'tinted' }), ENV);
     const css = darkScope()!;
-    expect(css.startsWith(":root[data-style='glas'] [data-glas-scheme='dark'] { color-scheme: dark; ")).toBe(true);
+    expect(css.startsWith(":root[data-style='glas'] [data-glas-scheme='dark'], :root[data-style='glas'][data-g-immersive] .modal-backdrop, ")).toBe(true);
+    // what floats over the camera page from <body> takes the dark scheme while it is shown (Etappe 7, K109)
+    for (const sel of G.IMMERSIVE_FLOATING) expect(css).toContain(`:root[data-style='glas'][data-g-immersive] ${sel}`);
+    expect(css).toContain(' { color-scheme: dark; ');
     // the same input in dark mode: accent, strength and contrast follow the device's appearance
     const dark = glasCssVars({ mode: 'dark', accentHue: 200, strength: 'tinted', contrastMore: false, supportsLinear: true });
     expect(css).toContain(`--bg: ${dark['--bg']};`);

@@ -131,6 +131,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* the classic card tint answers the pointer only; under a finger the tile keeps its surface after a tap (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .security-page .camera-tile--pressable:hover {
+    background-color: var(--bg-card);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   :root[data-style='glas'] .security-page .camera-tile--pressable:active {
     transform: scale(0.98);

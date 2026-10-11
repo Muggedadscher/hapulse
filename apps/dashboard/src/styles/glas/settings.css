@@ -194,12 +194,14 @@
   font: 600 15px / 20px var(--g-font);
 }
 
-:root[data-style='glas']
-  .settings-page
-  .card
-  :is(.conn-card__actions > .btn, .global-admin__actions > .btn, .backup-row > .btn):hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas']
+    .settings-page
+    .card
+    :is(.conn-card__actions > .btn, .global-admin__actions > .btn, .backup-row > .btn):hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas']
@@ -435,7 +437,12 @@
 :root[data-style='glas'] .settings-page .card .accent-row__label > .btn:hover {
   background: transparent;
   color: var(--g-accent-ink);
-  opacity: 0.7;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .settings-page .card .accent-row__label > .btn:hover {
+    opacity: 0.7;
+  }
 }
 
 :root[data-style='glas'] .settings-page .card .accent-row__label > .btn:focus-visible {
@@ -507,10 +514,9 @@
   padding: 4px 16px;
 }
 
-@media (hover: hover) {
-  :root[data-style='glas'] .settings-page .card .room-row:hover {
-    background: transparent;
-  }
+/* no tint, neither under the pointer nor after a tap (K108): the row is not a control, its buttons are */
+:root[data-style='glas'] .settings-page .card .room-row:hover {
+  background: transparent;
 }
 
 :root[data-style='glas'] .settings-page .card .room-row__name {
@@ -553,9 +559,11 @@
   height: 17px;
 }
 
-:root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn:hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .settings-page .card .room-row__controls > .icon-btn:hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .settings-page .card .room-row:has(> .room-row__name--hidden) .room-row__controls > .icon-btn:last-child,
@@ -724,6 +732,13 @@
   }
 }
 
+/* under a finger the row keeps its resting look after a tap (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .modal-body .entities-modal-content .entity-group__summary:hover {
+    background: transparent;
+  }
+}
+
 :root[data-style='glas'] .modal-body .entities-modal-content .entity-group__summary:focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: -2px;
@@ -758,10 +773,9 @@
   background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 60px 0 / calc(100% - 60px) 0.5px;
 }
 
-@media (hover: hover) {
-  :root[data-style='glas'] .modal-body .entities-modal-content .entity-row:hover {
-    background-color: transparent;
-  }
+/* no tint, neither under the pointer nor after a tap (K108): the row is not a control, its buttons are */
+:root[data-style='glas'] .modal-body .entities-modal-content .entity-row:hover {
+  background-color: transparent;
 }
 
 :root[data-style='glas'] .modal-body .entities-modal-content .entity-row__icon {
@@ -836,13 +850,15 @@
   height: 17px;
 }
 
-:root[data-style='glas']
-  .modal-body
-  .entities-modal-content
-  .entity-row__controls
-  > :is(.icon-btn--ghost, .icon-btn--default):hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas']
+    .modal-body
+    .entities-modal-content
+    .entity-row__controls
+    > :is(.icon-btn--ghost, .icon-btn--default):hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 /* the favourite: the star is the button before the eye; on = the accent variant */

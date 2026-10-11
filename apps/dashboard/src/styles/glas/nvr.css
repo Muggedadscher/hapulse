@@ -92,7 +92,10 @@
 }
 
 /* the strips clip anything outside their items: the ring goes inside — on the tile as its last layer, an outline
-   would lie under the picture */
+   would lie under the picture. On a picture the ring has the focus colour at the edge, the card's colour inside it and,
+   in light mode, a band in the card's counter-tone (`--g-focus-pair`, Etappe 7, K109): two of the tones are ≥ 9:1
+   apart, so one of them stands out against any picture (WCAG technique C40; the focus colour alone: 1.8:1 over a dark
+   one, focus and white together not over a mid-grey sky). */
 :root[data-style='glas'] .g-nvr__ev:focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: -2px;
@@ -108,7 +111,34 @@
   inset: 0;
   border: 2px solid var(--g-focus);
   border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 2px var(--g-card),
+    inset 0 0 0 4px var(--g-focus-pair);
   pointer-events: none;
+}
+
+/* below 900 px the events are a strip of pictures: the ring lies on the event's picture, in the same two tones */
+@media (max-width: 899px) {
+  :root[data-style='glas'] .g-nvr__ev {
+    position: relative;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev:focus-visible {
+    outline: none;
+  }
+
+  :root[data-style='glas'] .g-nvr__ev:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 112px;
+    border: 2px solid var(--g-focus);
+    border-radius: 16px;
+    box-shadow:
+      inset 0 0 0 2px var(--g-card),
+      inset 0 0 0 4px var(--g-focus-pair);
+    pointer-events: none;
+  }
 }
 
 /* no answer yet: a calm placeholder, not a black block */
@@ -508,50 +538,16 @@
 /* ---- The other NVR views (stage 6; plan docs/glas/PLAN-ETAPPE-6.md K105): the overview `/nvr` (its content in
    .nvr-layout, its head in .page__header-row, setup and empty states in .page), the security page's section (.nvr-sec)
    and a room's cameras (.nvr-room-cams), on the classes of the package and of the NVR module. The pieces as on the other
-   pages: head actions as filled circles 44 (K32), section and card titles 20/25 600 above the surface (K89), the hero
-   calm with its state as a quiet wash (K90), value tiles like the energy hero's, the camera tiles like the NVR card's
-   (§7.15), the events as a strip to the screen edge, the stale data as a hint capsule. ---- */
+   pages: the head's actions behind one "⋯" (stage 7 N2; before: filled circles 44, K32), section and card titles
+   20/25 600 above the surface (K89), the hero calm with its state as a quiet wash (K90), value tiles like the energy
+   hero's, the camera tiles like the NVR card's (§7.15), the events as a strip to the screen edge, the stale data as a
+   hint capsule. ---- */
 
-/* the head: the actions as filled circles 44 with their glyph 20 in `label`; the link's word stays its name
-   (aria-label and tooltip) */
+/* the head: its actions behind the "⋯" (components/glas/HeaderMenu.tsx, plan docs/glas/PLAN-ETAPPE-7.md N2; its circle
+   in shell.css); from 900 px it ends flush with the content — the avatar's cluster after it is empty there and takes
+   no gap */
 :root[data-style='glas'] .page > .page__header-row > .nvr-actions {
-  gap: 8px;
-}
-
-:root[data-style='glas'] .page > .page__header-row > .nvr-actions > :is(.btn.nvr-actions__btn, .icon-btn) {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--g-fill);
-  color: var(--g-label);
-}
-
-:root[data-style='glas'] .page > .page__header-row > .nvr-actions > :is(.btn.nvr-actions__btn, .icon-btn):hover {
-  background: var(--g-fill-2);
-  color: var(--g-label);
-}
-
-:root[data-style='glas']
-  .page
-  > .page__header-row
-  > .nvr-actions
-  > :is(.btn.nvr-actions__btn, .icon-btn):focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: 2px;
-}
-
-:root[data-style='glas'] .page > .page__header-row > .nvr-actions > :is(.btn.nvr-actions__btn, .icon-btn) > svg {
-  width: 20px;
-  height: 20px;
-  stroke-width: 2;
-}
-
-:root[data-style='glas'] .page > .page__header-row .nvr-actions__label {
-  display: none;
+  gap: 0;
 }
 
 /* the page's parts: 20 apart like the overview's sections (26 on the desktop) */
@@ -598,7 +594,8 @@
   font: 400 15px / 20px var(--g-font);
 }
 
-/* ---- Section titles ("Ereignisse", "Kameras"): like the card titles, a row of 44 with 20/25 600, no capitals ---- */
+/* ---- Section titles ("Ereignisse", "Kameras"): like the card titles, a row of 44 with the symbol bare 18 in `label2`
+   (on the overview, plan docs/glas/PLAN-ETAPPE-7.md N2) and the title 20/25 600, no capitals ---- */
 :root[data-style='glas'] .nvr-layout .nvr-section {
   gap: 6px;
 }
@@ -606,11 +603,17 @@
 :root[data-style='glas'] .nvr-layout .nvr-section > .nvr-section__label {
   display: flex;
   align-items: center;
+  gap: 8px;
   min-height: 44px;
   color: var(--g-label);
   font: 600 20px / 25px var(--g-font);
   letter-spacing: normal;
   text-transform: none;
+}
+
+:root[data-style='glas'] .nvr-layout .nvr-section__icon {
+  margin-right: 0;
+  color: var(--g-label-2);
 }
 
 @media (min-width: 900px) {
@@ -619,128 +622,121 @@
   }
 }
 
-/* ---- Hero: the title in the surface (20/25 600, its symbol bare), the state as a capsule 32 in `fill` — calm in
-   `label2` with a green dot, a problem 600 `label` with a red dot and the card's quiet red wash (K90); the figure like
-   the energy hero's, the value tiles like its tiles. ---- */
-:root[data-style='glas'] .nvr-layout .nvr-hero {
-  --hero-grad: none;
-  gap: 12px;
-  padding: 6px 16px 16px;
+/* ---- Hero (plan docs/glas/PLAN-ETAPPE-7.md N2): Glas has its own (`NvrHeroGlas`), calm like the heroes of security
+   and system (K90, pages.css): the card in the quiet wash of its state (all online green, a problem red; half the soft
+   tone), the symbol in a circle 56 in the soft tone, "Sentinel NVR" 13/18 `label2`, the state 22/28 700 in its ink, the
+   values as chips 32 in `fill` (the key 15/20 `label2`, the value 600 `label`; the retention target out of reach: a dot
+   8 in `warnInk` before it, as the system's values over a threshold). Spacing as the system's hero. ---- */
+:root[data-style='glas'] .nvr-layout .g-nvr-hero {
+  --g-hero-soft: var(--g-green-soft);
+  --g-hero-ink: var(--g-green-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 22px 18px;
+  border: 0;
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--g-hero-soft) 50%, transparent) 0%,
+    transparent 65%
+  );
 }
 
-:root[data-style='glas'] .nvr-layout .nvr-hero:has(> .nvr-hero__head > .nvr-pill--danger) {
-  --hero-grad: linear-gradient(135deg, color-mix(in srgb, var(--g-red-soft) 50%, transparent) 0%, transparent 65%);
+:root[data-style='glas'] .nvr-layout .g-nvr-hero--problem {
+  --g-hero-soft: var(--g-red-soft);
+  --g-hero-ink: var(--g-red-ink);
 }
 
 /* a content surface, not a control: no hover tint */
-:root[data-style='glas'] .nvr-layout .nvr-hero:hover {
+:root[data-style='glas'] .nvr-layout .g-nvr-hero:hover {
   background-color: var(--bg-card);
 }
 
-:root[data-style='glas'] .nvr-layout .nvr-hero__head {
-  gap: 4px 12px;
-  min-height: 44px;
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
 }
 
-:root[data-style='glas'] .nvr-layout .nvr-pill {
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--g-hero-soft);
+  color: var(--g-hero-ink);
+}
+
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__icon > svg {
+  width: 28px;
+  height: 28px;
+}
+
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__text {
+  min-width: 0;
+}
+
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__label {
+  margin: 0 0 3px;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__state {
+  margin: 0;
+  color: var(--g-hero-ink);
+  font: 700 22px / 28px var(--g-font);
+}
+
+/* one problem never breaks inside (a long one may: the storage problem) */
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__part:not(:only-child) {
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__chip {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
   min-height: 32px;
-  padding: 6px 12px 6px 10px;
-  border-radius: 16px;
+  padding: 0 12px;
+  border-radius: 999px;
   background: var(--g-fill);
   color: var(--g-label-2);
   font: 400 15px / 20px var(--g-font);
-  white-space: normal;
+  white-space: nowrap;
 }
 
-:root[data-style='glas'] .nvr-layout .nvr-pill--danger {
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__value {
   color: var(--g-label);
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-:root[data-style='glas'] .nvr-layout .nvr-pill__dot {
+:root[data-style='glas'] .nvr-layout .g-nvr-hero__chip[data-warn]::before {
+  content: '';
   flex: none;
   width: 8px;
   height: 8px;
-  background: var(--g-green-ink);
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-pill--danger > .nvr-pill__dot {
-  background: var(--g-red-ink);
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-hero__primary {
-  gap: 2px;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-hero__primary-label {
-  gap: 6px;
-  color: var(--g-label-2);
-  font: 400 15px / 20px var(--g-font);
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-hero__primary-label > svg {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  stroke-width: 2;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-hero__primary-value {
-  color: var(--g-label);
-  font: 600 34px / 41px var(--g-font);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: normal;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-hero__stats {
-  gap: 10px;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-stat {
-  gap: 10px;
-  min-height: 60px;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--g-fill);
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-stat__icon {
-  width: 32px;
-  height: 32px;
   border-radius: 50%;
+  background: var(--g-warn-ink);
 }
 
-:root[data-style='glas'] .nvr-layout .nvr-stat__icon > svg {
-  width: 18px;
-  height: 18px;
-  stroke-width: 2;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-stat__body {
-  gap: 0;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-stat__label {
-  color: var(--g-label-2);
-  font: 400 12px / 16px var(--g-font);
-  white-space: normal;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-stat__value {
-  color: var(--g-label);
-  font: 600 17px / 22px var(--g-font);
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .nvr-layout .nvr-stat__unit {
-  color: var(--g-label-2);
-  font: 600 13px / 18px var(--g-font);
-}
-
-/* ---- Card titles (hero, chart, storage): the symbol bare 18 in `label2`, the title 20/25 600, the line below it
-   13/18 `label2` ---- */
+/* ---- Card titles (chart, storage): the symbol bare 18 in `label2`, the title 20/25 600 in one line like the card
+   titles of the other pages; the line below the title ("Heute, alle Kameras", "Aufnahme-Datenträger") is left out,
+   the chart's axis and the card's rows say it (plan docs/glas/PLAN-ETAPPE-7.md N2) ---- */
 :root[data-style='glas'] .nvr-layout .nvr-ctitle {
   gap: 8px;
 }
@@ -769,11 +765,7 @@
 }
 
 :root[data-style='glas'] .nvr-layout .nvr-ctitle__sub {
-  overflow: hidden;
-  color: var(--g-label-2);
-  font: 400 13px / 18px var(--g-font);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 /* the chart and the storage: the title row above the surface (K89, as pages.css does for the other pages) */
@@ -838,7 +830,7 @@
 }
 
 /* Storage: the meter a capsule 10 in `fill`, the legend's swatches dots 8 with 13/18 `label2`, the values 15/20 (the
-   key `label2`, the value 600 `label`), the note a tinted area radius 12 */
+   key `label2`, the value 600 `label`), the note a quiet line under a hairline like a list's footnote (plan E7 N2) */
 :root[data-style='glas'] .nvr-layout .nvr-meter {
   height: 10px;
   border: 0;
@@ -884,17 +876,29 @@
 }
 
 :root[data-style='glas'] .nvr-layout .nvr-note {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--g-fill);
+  padding: 12px 0 0;
+  border-top: 1px solid var(--g-sep);
+  border-radius: 0;
+  background: none;
   color: var(--g-label-2);
   font: 400 13px / 18px var(--g-font);
 }
 
-/* the target out of reach: the warning's soft tone, the text `label` (the ink on its tone would stay below 4.5:1) */
+/* the target out of reach: a dot 8 in `warnInk` before it (as the hero's retention chip), the text `label` */
 :root[data-style='glas'] .nvr-layout .nvr-note--warn {
-  background: var(--g-warn-soft);
+  background: none;
   color: var(--g-label);
+}
+
+:root[data-style='glas'] .nvr-layout .nvr-note--warn::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--g-warn-ink);
+  vertical-align: 1px;
 }
 
 /* ---- Latest events: pictures radius 16 on `fill` without frame or shadow, the time 15/20 600 below the picture
@@ -935,13 +939,16 @@
   transform: scale(0.98);
 }
 
-/* the strip scrolls and clips: the focus ring lies inside the picture, above it */
+/* the strip scrolls and clips: the focus ring lies inside the picture, above it, in two tones like the NVR card's */
 :root[data-style='glas'] :is(.nvr-layout, .nvr-sec) .nvr-strip__item:focus-visible .nvr-strip__img::after {
   content: '';
   position: absolute;
   inset: 0;
   border: 2px solid var(--g-focus);
   border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 2px var(--g-card),
+    inset 0 0 0 4px var(--g-focus-pair);
   pointer-events: none;
 }
 
@@ -1254,6 +1261,11 @@
   gap: 8px;
 }
 
+/* a form, not a control: no tint under the pointer (the classic `.card:hover`; pages.css, K108) */
+:root[data-style='glas'] .page .nvr-setup:where(.card):hover {
+  background-color: var(--bg-card);
+}
+
 :root[data-style='glas'] .page .nvr-setup__icon {
   margin-bottom: 4px;
 }
@@ -1295,9 +1307,11 @@
   color: var(--g-label);
 }
 
-:root[data-style='glas'] .page .nvr-setup__actions > .btn--ghost:hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .page .nvr-setup__actions > .btn--ghost:hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
 }
 
 :root[data-style='glas'] .page .nvr-setup__actions > .btn:focus-visible {
@@ -1473,6 +1487,13 @@
   }
 }
 
+/* under a finger the package's tint would stay on a day after a tap (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .modal-body .nvr-dt__d:hover:not(:disabled, .nvr-dt__d--sel) {
+    background: none;
+  }
+}
+
 /* Reduced motion: the recording dot stands still, tiles and pictures do not shrink when pressed. */
 @media (prefers-reduced-motion: reduce) {
   :root[data-style='glas'] :is(.nvr-layout, .nvr-sec, .nvr-room-cams) .nvr-camtile__dot {
@@ -1490,7 +1511,6 @@
 
 /* Forced colours: the filled pieces keep an edge (their fill turns into the page colour), the dots stay as marks. */
 @media (forced-colors: active) {
-  :root[data-style='glas'] .page > .page__header-row > .nvr-actions > :is(.btn.nvr-actions__btn, .icon-btn),
   :root[data-style='glas'] :is(.nvr-layout, .nvr-sec, .nvr-room-cams) .nvr-camtile,
   :root[data-style='glas'] .page .nvr-setup__actions > .btn,
   :root[data-style='glas'] .modal-footer > .nvr-dt__foot > .nvr-btn {
@@ -1502,15 +1522,15 @@
     border: 2px solid Highlight;
   }
 
-  :root[data-style='glas'] .nvr-layout :is(.nvr-banner, .nvr-pill, .nvr-stat, .nvr-meter, .nvr-note),
+  :root[data-style='glas'] .nvr-layout :is(.nvr-banner, .nvr-meter),
   :root[data-style='glas'] :is(.nvr-layout, .nvr-sec) .nvr-strip__img,
   :root[data-style='glas'] :is(.nvr-layout, .nvr-sec, .nvr-room-cams) .nvr-camtile__offline {
     border: 1px solid CanvasText;
   }
 
-  /* every state of the dots (their state rules above are more specific than the plain dot) */
-  :root[data-style='glas'] .nvr-layout .nvr-pill__dot,
-  :root[data-style='glas'] .nvr-layout .nvr-pill--danger > .nvr-pill__dot,
+  /* every state of the dots (their state rules above are more specific than the plain dot), the warning dots of the
+     hero's retention chip and the storage note */
+  :root[data-style='glas'] .nvr-layout :is(.g-nvr-hero__chip[data-warn], .nvr-note--warn)::before,
   :root[data-style='glas'] :is(.nvr-layout, .nvr-sec, .nvr-room-cams) .nvr-camtile__dot,
   :root[data-style='glas']
     :is(.nvr-layout, .nvr-sec, .nvr-room-cams)
@@ -1605,6 +1625,33 @@
   font: 600 13px / 18px var(--g-font);
 }
 
+/* Focus over the picture (Etappe 7, K109): inside the control, in its own ink, so the ring lies on the control's glass
+   (white on clear glass, dark on the pressed sound circle) — the accent ring around it lay on the picture (1.2:1 over
+   a bright image). The timeline's events take the playhead's colour (the accent beside the blue band: 2.3:1). */
+:root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] :is(.nvr-pb, .nvr-mute):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] .nvr-vtl .vev:focus-visible {
+  outline-color: var(--g-label);
+}
+
+@media (max-width: 899px) {
+  :root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] > .nvr-cam__head .nvr-iconbtn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+}
+
+/* under a finger the capsule's buttons and the date chip's keep their resting look after a tap (the package tints
+   them under any hover; K108). A tap on the picture still shows the capsule in full, as in Sentinel. */
+@media (hover: none) {
+  :root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] :is(.nvr-pb, .nvr-datechip > button):hover:not(:disabled) {
+    background: transparent;
+  }
+}
+
 /* desktop: the header row above the columns — back and the host's actions as filled circles 44 (K32), the name as
    the large title, the badge beside it */
 @media (min-width: 900px) {
@@ -1621,9 +1668,11 @@
     color: var(--g-label);
   }
 
-  :root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] > .nvr-cam__head .nvr-iconbtn:hover {
-    background: var(--g-fill-2);
-    color: var(--g-label);
+  @media (hover: hover) {
+    :root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] > .nvr-cam__head .nvr-iconbtn:hover {
+      background: var(--g-fill-2);
+      color: var(--g-label);
+    }
   }
 
   :root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] > .nvr-cam__head .nvr-iconbtn:focus-visible {

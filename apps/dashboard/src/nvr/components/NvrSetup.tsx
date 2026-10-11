@@ -204,12 +204,19 @@ export function NvrSetupCard() {
   );
 }
 
-/** Edit an existing connection (gear button on the NVR page). */
-export function NvrSetupModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+/**
+ * Edit an existing connection (Klassisch: gear button on the NVR page; Glas: "Einrichtung" in the head's "⋯" menu).
+ * `returnFocus`: where the focus goes when the window closes (Glas: the head's "⋯", whose menu item is gone by then).
+ */
+export function NvrSetupModal({ open, onClose, returnFocus }: {
+  open: boolean;
+  onClose: () => void;
+  returnFocus?: (() => HTMLElement | null) | undefined;
+}) {
   const t = useT();
   const { fields, actions, valid, save } = useSetupForm(onClose);
   return (
-    <Modal open={open} onClose={onClose} title={t('nvr.setup.modalTitle')} icon={<Cctv size={18} strokeWidth={1.75} />} footer={actions}>
+    <Modal open={open} onClose={onClose} returnFocus={returnFocus} title={t('nvr.setup.modalTitle')} icon={<Cctv size={18} strokeWidth={1.75} />} footer={actions}>
       <p className="nvr-setup__desc nvr-setup__desc--modal">{t('nvr.setup.desc')}</p>
       {/* a form: Enter in a field saves, like on the setup card */}
       <form noValidate onSubmit={(e) => { e.preventDefault(); if (valid) void save(); }}>

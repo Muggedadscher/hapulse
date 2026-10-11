@@ -155,9 +155,18 @@
   color: var(--g-label);
 }
 
-:root[data-style='glas'] .now-playing-card__transport-btn:hover {
-  background: var(--g-hover);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .now-playing-card__transport-btn:hover {
+    background: var(--g-hover);
+    color: var(--g-label);
+  }
+}
+
+/* under a finger the buttons and rows of the music page keep their resting look after a tap (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .now-playing-card__transport-btn:hover {
+    background: transparent;
+  }
 }
 
 :root[data-style='glas'] .now-playing-card__transport-btn.now-playing-card__transport-btn--active,
@@ -180,9 +189,17 @@
   color: var(--g-label-2);
 }
 
-:root[data-style='glas'] .now-playing-card__mute-btn:hover {
-  background: var(--g-hover);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] .now-playing-card__mute-btn:hover {
+    background: var(--g-hover);
+    color: var(--g-label);
+  }
+}
+
+@media (hover: none) {
+  :root[data-style='glas'] .now-playing-card__mute-btn:hover {
+    background: transparent;
+  }
 }
 
 :root[data-style='glas'] .now-playing-card__vol-high {
@@ -220,9 +237,11 @@
   font: 400 15px / 20px var(--g-font);
 }
 
-:root[data-style='glas']
-  :is(.now-playing-card__source-select, .queue-card__player-native, .library-card__player-native):hover {
-  background-image: linear-gradient(var(--g-hover), var(--g-hover));
+@media (hover: hover) {
+  :root[data-style='glas']
+    :is(.now-playing-card__source-select, .queue-card__player-native, .library-card__player-native):hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
 }
 
 :root[data-style='glas']
@@ -372,9 +391,17 @@
   color: var(--g-label-2);
 }
 
-:root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute):hover {
-  background: var(--g-hover);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute):hover {
+    background: var(--g-hover);
+    color: var(--g-label);
+  }
+}
+
+@media (hover: none) {
+  :root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute):hover {
+    background: transparent;
+  }
 }
 
 :root[data-style='glas'] :is(.zone-row__mute, .zone-grid-card__mute):focus-visible {
@@ -432,8 +459,17 @@
   background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 68px 0 / calc(100% - 68px) 0.5px;
 }
 
-:root[data-style='glas'] .other-player-row:hover {
-  background-color: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .other-player-row:hover {
+    background-color: var(--g-hover);
+  }
+}
+
+/* the colour only: the line between the rows is the background's picture */
+@media (hover: none) {
+  :root[data-style='glas'] .other-player-row:hover {
+    background-color: transparent;
+  }
 }
 
 :root[data-style='glas'] .other-player-row.other-player-row--selected,
@@ -647,9 +683,11 @@
   color: var(--g-label-3);
 }
 
-:root[data-style='glas'] .full-queue__delete:hover {
-  background: var(--g-hover);
-  color: var(--g-red-ink);
+@media (hover: hover) {
+  :root[data-style='glas'] .full-queue__delete:hover {
+    background: var(--g-hover);
+    color: var(--g-red-ink);
+  }
 }
 
 :root[data-style='glas'] :is(.full-queue__grip, .full-queue__delete):focus-visible {
@@ -718,10 +756,20 @@
   border-radius: 50%;
 }
 
-:root[data-style='glas'] :is(.queue-card__ctl, .library-card__fav-toggle):hover,
-:root[data-style='glas'] .library-card__pager-btn:hover:not(:disabled) {
-  background: var(--g-fill-2);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.queue-card__ctl, .library-card__fav-toggle):hover,
+  :root[data-style='glas'] .library-card__pager-btn:hover:not(:disabled) {
+    background: var(--g-fill-2);
+    color: var(--g-label);
+  }
+}
+
+/* under a finger the pager keeps its fill after a tap: the upstream hover (LibraryCard.css, same specificity, loaded
+   later with the music page) would paint it in the card's hover colour (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .library-card__pager-btn:hover:not(:disabled) {
+    background: var(--g-fill);
+  }
 }
 
 :root[data-style='glas'] .queue-card__ctl.queue-card__ctl--active,
@@ -789,8 +837,18 @@
   font: 400 17px / 22px var(--g-font);
 }
 
-:root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):hover {
-  background: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):hover {
+    background: var(--g-hover);
+  }
+}
+
+/* under a finger a tapped row keeps its resting look: the group menu stays open after a tap, and the upstream hover
+   would leave the row filled (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):hover {
+    background: none;
+  }
 }
 
 :root[data-style='glas'] :is(.queue-card__transfer-row, .group-menu__row, .library-tile__menu-item):focus-visible {

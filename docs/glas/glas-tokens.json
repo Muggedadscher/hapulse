@@ -97,7 +97,7 @@
       "chartAvg": "#000000",
       "seg": "#FFFFFF",
       "segShadow": "0 3px 8px rgba(0,0,0,.12), 0 .5px 0 rgba(0,0,0,.04)",
-      "lens": "rgba(120,120,128,.16)",
+      "lens": "#E6E6E9",
       "hover": "rgba(120,120,128,.08)",
       "scrim": "rgba(0,0,0,.25)",
       "scrimDesktop": "rgba(0,0,0,.22)",
@@ -191,7 +191,7 @@
       "chartAvg": "#FFFFFF",
       "seg": "#636366",
       "segShadow": "0 3px 8px rgba(0,0,0,.30)",
-      "lens": "rgba(255,255,255,.14)",
+      "lens": "#3C3C3D",
       "hover": "rgba(255,255,255,.06)",
       "scrim": "rgba(0,0,0,.45)",
       "scrimDesktop": "rgba(0,0,0,.45)",
@@ -468,8 +468,9 @@
       }
     },
     "clear": {
-      "description": "Nur über Kamerabild/Video. Weiße Glyphen. Hinter hellem Bild lokale Abdunklung 35 % (Verlauf oder Fläche).",
+      "description": "Nur über Kamerabild/Video. Weiße Glyphen. Hinter hellem Bild lokale Abdunklung 35 % (Verlauf oder Fläche). Text auf klarem Glas (Kameranamen) mit textFill (Etappe 7, K109).",
       "fill": "rgba(0,0,0,.20)",
+      "textFill": "rgba(0,0,0,.50)",
       "filter": "blur(4px) saturate(160%)",
       "rim": "linear-gradient(135deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.2) 24%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.18) 76%, rgba(255,255,255,.52) 100%)",
       "shadow": "inset 1.5px 1.5px 1px -1px rgba(255,255,255,.35), inset 0 1px 1px rgba(255,255,255,.28), inset 0 0 12px rgba(255,255,255,.08), 0 0 0 .5px rgba(0,0,0,.25), 0 6px 20px rgba(0,0,0,.25)",
@@ -484,7 +485,7 @@
     },
     "sheet": {
       "light": {
-        "fill": "linear-gradient(180deg, rgba(246,246,250,.86), rgba(242,242,247,.80))",
+        "fill": "linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.82))",
         "filter": "blur(28px) saturate(190%) brightness(1.04)",
         "solid": "#F2F2F7",
         "largeShadow": "0 -10px 40px rgba(0,0,0,.14)"
@@ -495,7 +496,7 @@
         "solid": "#1C1C1E",
         "largeShadow": "0 -10px 40px rgba(0,0,0,.6)"
       },
-      "note": "Mittleres Sheet und Handy-Menüs (Kontext, Avatar). Großer Detent = solid, ohne backdrop-filter. 28 px Blur liegt über dem Budget aus Plan §5.5 (≤ 16 px); erlaubt, weil vorübergehend und eine einzelne Fläche – reißt das iPad-Budget, auf blur(16px) senken."
+      "note": "Mittleres Sheet, Füllung des Desktop-Dialogs (seit Etappe 7) und Handy-Menüs (Kontext, Avatar, Mehr, Räume). Hell seit Etappe 7 weiß (K109: farbige Schrift ≥ 4,5:1 über der abgedunkelten Seite). Großer Detent = solid, ohne backdrop-filter. 28 px Blur liegt über dem Budget aus Plan §5.5 (≤ 16 px); erlaubt, weil vorübergehend und eine einzelne Fläche – reißt das iPad-Budget, auf blur(16px) senken."
     },
     "scrollEdge": {
       "phone": {
@@ -1034,6 +1035,7 @@
       "--g-glass-shadow",
       "--g-glass-glow",
       "--g-glass-clear-fill",
+      "--g-glass-clear-text-fill",
       "--g-glass-clear-filter",
       "--g-glass-clear-rim",
       "--g-glass-clear-shadow",
@@ -1062,7 +1064,8 @@
       "--g-tab-ink",
       "--g-prominent",
       "--g-on-prominent",
-      "--g-focus"
+      "--g-focus",
+      "--g-focus-pair"
     ],
     "motion": [
       "--g-spring-smooth",

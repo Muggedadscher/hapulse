@@ -542,7 +542,8 @@ dienen, Klassisch pixelgleich zu halten. Ändert sich Klassisch dadurch sichtbar
 PR; Klassisch-Code wird nicht gelöscht. Der Klassisch-Pixelvergleich mit `main` läuft weiter und hält den Merge nur bei
 einem unbeabsichtigten Unterschied auf. Bis Etappe 5 galt „Klassisch bleibt pixelgleich“.
 
-Bis zur letzten Etappe heißt die Option **„Glas (Vorschau)“** (siehe E11).
+Bis Etappe 6 hieß die Option **„Glas (Vorschau)“** und war nur für Admins sichtbar (E11). Seit Etappe 7 heißt sie
+„Glas“; die Zeile „Stil“ sehen alle, ändern dürfen sie nur Admins (E1, E2, K111).
 
 ### Etappe 0 — Vorbereitung (kein Nutzer-Effekt)
 
@@ -564,7 +565,7 @@ bewusst offen bleibt: dort §3.12, Laborprüfungen §6, Randnotiz Energie-Karte 
 
 Umfang: §1 komplett. `glasTokens.ts` (+ Tests), `glasAppearance.ts` (+ Tests), Store-Felder + Scope + Migration,
 Einstellungen „Stil“ (`components/settings/StyleSettings.tsx`, in `Settings.tsx` per `// [fork]` unter „Darstellung“:
-Segment Klassisch | Glas (Vorschau); darunter in Glas „Glas-Stärke: Klar | Getönt | Deckend“, Schalter „Transparenz
+Segment Klassisch | Glas (Vorschau) (seit Etappe 7 „Glas“); darunter in Glas „Glas-Stärke: Klar | Getönt | Deckend“, Schalter „Transparenz
 reduzieren (dieses Gerät)“, „Stil auf diesem Gerät: Wie alle | Klassisch | Glas“ analog `DeviceModeRow`; Farbwelt-Karten
 in Glas ausgeblendet mit Hinweis), `styles/glas/base.css`, `material.css`, `motion.css`, `GlasRuntime` (vorerst nur
 CSS-Import + Attribute), i18n in 7 Locales.
@@ -589,7 +590,9 @@ Nicht verlieren (2026-10-06, alles noch da, in beiden Stilen):
 ### Etappe 2 — Rahmen (Shell) Handy + Desktop
 
 **Stand 2026-10-06: umgesetzt, gemergt (PR #104).** Der User hat den Merge vor dem Labor-Pflichtpunkt K39
-(Statusleiste der Home-Bildschirm-App) freigegeben; der Punkt ist offen und betrifft nur die Glas-Vorschau für Admins.
+(Statusleiste der Home-Bildschirm-App) freigegeben; der Punkt ist offen (bis Etappe 6 betraf er nur die Glas-Vorschau
+für Admins, seit Etappe 7 alle, sobald ein Admin Glas einstellt; Liste für das Gerät in
+[`glas/PLAN-ETAPPE-7.md`](glas/PLAN-ETAPPE-7.md)).
 Plan, Festlegungen K20–K45, Abweichungen der Umsetzung U1–U13, Prüfungen, Review und Laborpunkte:
 [`glas/PLAN-ETAPPE-2.md`](glas/PLAN-ETAPPE-2.md) (§1, §11, §9).
 
@@ -788,9 +791,19 @@ der Ereignisse von heute in der UI-Sprache („48.210“). Der Morph „Kamera �
 
 ### Etappe 7 — Feinschliff und Freigabe
 
-- Leistung auf dem Wandtablet (§5.5), Kontrast-Audit aller Seiten, reduzierte Bewegung, Safari/iPad-Test durch den User.
-- „(Vorschau)“ entfernen, Doku final (§6), optional Hintergrund „Bild“ (E15).
-- Abschluss-Check: komplette Top-20-Liste des Inventars in **beiden** Stilen durchklicken.
+**Stand 2026-10-10: umgesetzt (ein PR). Glas ist damit fertig.** Plan, Festlegungen K107–K114, Nachträge beim Bau und die
+Liste für das Gerät: [`glas/PLAN-ETAPPE-7.md`](glas/PLAN-ETAPPE-7.md). Die Option heißt „Glas“, die Zeile „Stil“ sehen
+alle, ändern dürfen sie nur Admins (K111); Glas wird nicht von selbst Standard. Geprüft mit `glas-shots.cjs checks --part
+polish` (Blöcke `polishTransitions`, `polishHover`, `polishContrast`, `polishPerf`, `polishPreview`, `polishReduced`), allen
+übrigen Teilen, dem Klassisch-Vergleich, dem Klick-Fuzz beider Stile und im Labor (WebKit, echtes Sentinel).
+
+- [x] Seitenwechsel und „Kamera öffnen“ als View Transition (K107, mit K62 und K106) · Hover nur mit Zeiger (K108)
+- [x] Kontrast-Audit aller Seiten am Bildschirm (K109) · reduzierte Bewegung für alles (`polishReduced`)
+- [x] Leistung gegen Klassisch unter derselben Emulation gemessen (K110); das Gerät selbst prüft Jannick (E17)
+- [x] „(Vorschau)“ entfernt (K111), Doku final (§6)
+- [x] Abschluss-Check: Top 20 des Inventars in beiden Stilen, abgebildet auf die Prüfblöcke (PLAN-ETAPPE-7)
+- [ ] Safari am iPhone und iPad durch den User (Liste in PLAN-ETAPPE-7)
+- [ ] Hintergrund „Bild“ (E15): nicht umgesetzt, bleibt optional
 
 ---
 
@@ -1022,10 +1035,10 @@ Spätere Etappen analog („Glas: schwebende Tab-Leiste und Seitenleiste“, „
 | E6 | **L = 2 Spalten + höher.** S = 1 Spalte, M = 2 Spalten; feinere Werte bleiben über „⋯ Anpassen“ erhalten. |
 | E8 | Hauptraum-Karte **immer schlicht** (Glas-3-Kopf, kein Verlauf), **auch wenn in HA ein Raumbild gesetzt ist — kein Raumbild in Glas.** Lichtkacheln wie Empfehlung (Glas-Darstellung derselben Raumlichter). |
 | E9 | Netz/Solar in beiden Stilen (folgt aus E3). |
-| E11 | Ausrollen: „Glas (Vorschau)“ **nur für HA-Admins sichtbar**, bis die wichtigsten Etappen fertig sind. |
+| E11 | Ausrollen: „Glas (Vorschau)“ **nur für HA-Admins sichtbar**, bis die wichtigsten Etappen fertig sind. (Endete mit Etappe 7, K111.) |
 | E12 | Paket-Änderungen in `@sentinel-nvr/web` wie empfohlen (Standard unverändert); Sentinels eigene UI vorerst nicht. |
 | E13 | Kameraseite am Handy als dunkles Vollbild: **Tab- und Chip-Leiste nur dort ausblenden**, überall sonst sichtbar. |
-| E15 | Hintergrund „Bild“: **später, optional** (frühestens Etappe 7). |
+| E15 | Hintergrund „Bild“: **später, optional** (frühestens Etappe 7). (Nach Etappe 7 nicht umgesetzt, bleibt optional.) |
 | E17 | Leistungsmaßstab: **iPad** (Safari/WebKit). |
 | Energie | Die Energie-Karte bekommt den Apple-Look aus der finalen Skizze (`docs/glas/Glas5*.dc.html`, Screenshots `g5e-*`): Segment Tag/Woche/Monat, schmale gerundete Balken Netz/Solar gestapelt, Hilfslinien mit Achswerten, Ø-Linie, Tipp auf Balken → Info-Blase. |
 

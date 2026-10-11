@@ -600,6 +600,15 @@
   font: 400 15px / 20px var(--g-font);
 }
 
+/* an away person: the initial in label2 on fill like the chips, without the classic dimming (.6 opacity, 2.5:1;
+   Etappe 7, K109) — away shows as the missing green ring and dot; a photo keeps its dimming (a picture, not text) */
+:root[data-style='glas'] .security-page .security-hero-avatar--away .security-hero-avatar__fallback {
+  border-color: transparent;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  opacity: 1;
+}
+
 /* Chips like the status chips (§7.5, colours K87), here on the card: a capsule 32 in fill, colour only at the symbol —
    open locks and garages redInk, open doors, open windows, motion and faults warnInk, the text then 600 label;
    closed, locked and quiet in label2. The system's values follow the same rule: their symbol is a dot before the key

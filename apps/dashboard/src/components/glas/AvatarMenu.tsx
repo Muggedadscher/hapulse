@@ -4,10 +4,11 @@
  *
  * Menu: notifications (the notifications sheet, docs/glas/PLAN-ETAPPE-3.md K57), edit (only where the page offers
  * it, K23), settings — and a host-supplied account menu (SaaS) below a separator. `role="menu"`, focus on the first
- * item, arrows/Home/End, Esc, Tab and outside click close it and the focus returns to the avatar.
+ * item, arrows/Home/End, Esc, Tab and outside click close it and the focus returns to the avatar (useGlasMenu, shared
+ * with a page head's "⋯" menu since stage 7).
  */
 
-import { useCallback, useContext, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocation, useNavigate } from 'react-router';
 import { Bell, Check, Pencil, Settings, UserRound } from 'lucide-react';
@@ -15,16 +16,10 @@ import { useNotifications } from '../notifications/NotificationsPanel';
 import { NotificationsSheet } from './NotificationsSheet';
 import { UserMenuContext, DashboardNavContext } from '../../app/userMenuContext';
 import { useCanEditHere } from '../../app/glas/shellStore';
-import { nextMenuIndex } from '../../app/glas/menuKeys';
+import { useGlasMenu } from '../../app/glas/useGlasMenu';
 import { useCurrentUserAvatar } from '../../ha/hooks';
 import { useUIStore } from '../../stores/uiStore';
 import { useT } from '../../i18n/useT';
-
-/** Longest closing animation (280 ms, reduced 200 ms) plus a margin, in case `animationend` never comes. */
-const CLOSE_FALLBACK_MS = 400;
-const FOCUSABLE = '[role="menuitem"], a[href], button:not([disabled])';
-
-type Phase = 'closed' | 'open' | 'closing';
 
 export function AvatarMenu() {
   const t = useT();
@@ -36,85 +31,18 @@ export function AvatarMenu() {
   const canEditHere = useCanEditHere();
   const editMode = useUIStore((s) => s.editMode);
   const toggleEditMode = useUIStore((s) => s.toggleEditMode);
-  const [phase, setPhase] = useState<Phase>('closed');
+  const menu = useGlasMenu();
+  const { phase, open, close: closeMenu, buttonRef } = menu;
   const [sheetOpen, setSheetOpen] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  /** Which item gets the focus once the menu is open: first or last. */
-  const focusEnd = useRef<'first' | 'last'>('first');
   const count = notifications.length;
-  const open = phase === 'open';
 
-  const items = () => [...(menuRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])];
-
-  const closeMenu = useCallback((focusAvatar: boolean) => {
-    setPhase((p) => (p === 'open' ? 'closing' : p));
-    if (focusAvatar) btnRef.current?.focus();
-  }, []);
-
-  // closing: unmount after the animation (or the fallback)
+  // a new route closes the sheet too (the menu closes itself)
   useEffect(() => {
-    if (phase !== 'closing') return undefined;
-    const id = window.setTimeout(() => setPhase('closed'), CLOSE_FALLBACK_MS);
-    return () => window.clearTimeout(id);
-  }, [phase]);
-
-  // open: focus the first (or last) item
-  useEffect(() => {
-    if (!open) return;
-    const list = items();
-    (focusEnd.current === 'last' ? list[list.length - 1] : list[0])?.focus();
-  }, [open]);
-
-  // a new route closes everything
-  useEffect(() => {
-    setPhase((p) => (p === 'open' ? 'closing' : p));
     setSheetOpen(false);
   }, [pathname]);
 
-  // outside click (also on the dim layer) and Escape — menu
-  useEffect(() => {
-    if (!open) return undefined;
-    const onDown = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (!menuRef.current?.contains(target) && !btnRef.current?.contains(target)) closeMenu(false);
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
-  }, [open, closeMenu]);
-
-  const toggle = () => {
-    focusEnd.current = 'first';
-    setPhase((p) => (p === 'open' ? 'closing' : 'open'));
-  };
-
-  const onTriggerKey = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-    e.preventDefault();
-    focusEnd.current = e.key === 'ArrowUp' ? 'last' : 'first';
-    if (open) {
-      const list = items();
-      (e.key === 'ArrowUp' ? list[list.length - 1] : list[0])?.focus();
-    } else {
-      setPhase('open');
-    }
-  };
-
-  const onMenuKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Escape' || e.key === 'Tab') {
-      e.preventDefault();
-      closeMenu(true);
-      return;
-    }
-    const list = items();
-    const next = nextMenuIndex(e.key, list.indexOf(document.activeElement as HTMLElement), list.length);
-    if (next === null) return;
-    e.preventDefault();
-    list[next]!.focus();
-  };
-
   const closeSheet = useCallback(() => setSheetOpen(false), []);
-  const avatarButton = useCallback(() => btnRef.current, []);
+  const avatarButton = useCallback(() => buttonRef.current, [buttonRef]);
 
   const run = (action: () => void) => {
     closeMenu(false);
@@ -135,14 +63,14 @@ export function AvatarMenu() {
   return (
     <div className="g-avatar">
       <button
-        ref={btnRef}
+        ref={buttonRef}
         type="button"
         className="g-avatar__btn"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={label}
-        onClick={toggle}
-        onKeyDown={onTriggerKey}
+        onClick={menu.toggle}
+        onKeyDown={menu.onButtonKeyDown}
       >
         <span className="g-avatar__glass" aria-hidden="true">
           {avatar?.pictureUrl ? (
@@ -161,14 +89,12 @@ export function AvatarMenu() {
           <>
             <div className={`g-avatar-dim${phase === 'closing' ? ' g-avatar-dim--closing' : ''}`} aria-hidden="true" />
             <div
-              ref={menuRef}
+              ref={menu.menuRef}
               className={`g-avatar-menu${phase === 'closing' ? ' g-avatar-menu--closing' : ''}`}
               role="menu"
               aria-label={t('glas.avatar.menuLabel')}
-              onKeyDown={onMenuKey}
-              onAnimationEnd={(e) => {
-                if (phase === 'closing' && e.target === e.currentTarget) setPhase('closed');
-              }}
+              onKeyDown={menu.onMenuKeyDown}
+              onAnimationEnd={menu.onMenuAnimationEnd}
             >
               <div className="g-avatar-menu__content">
                 <button

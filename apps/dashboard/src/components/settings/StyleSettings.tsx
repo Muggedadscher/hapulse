@@ -2,9 +2,10 @@
  * [fork] Settings → Appearance: the style ("Klassisch" | "Glas"), and while Glas is active its strength and
  * "Transparenz reduzieren". All three are GLOBAL customization fields: under the admin management the admin's choice
  * applies to every user and device; per device only light/dark can differ (docs/GLAS-PLAN.md §7.3, E1/E2).
- * Shown only to Home Assistant admins (E11). One exception, so that nobody is stuck in the preview: a non-admin
- * without the admin management who has Glas anyway (e.g. from an imported admin export) sees it as the way back.
- * Under the management the admin's document decides; a document without a style means Klassisch (`applyGlobal`).
+ * Shown to everybody (plan docs/glas/PLAN-ETAPPE-7.md K111); only admins change it (E1, E2): non-admins see it
+ * read-only — under the admin management (`locked`) with its hints, without it with "Den Stil legt ein Administrator
+ * fest.". Under the management the admin's document decides; a document without a style means Klassisch
+ * (`applyGlobal`). Until Etappe 7 the row was the admins' preview (E11).
  *
  * In Glas the choices are segments with manual activation (they write; plan docs/glas/PLAN-ETAPPE-5.md K92). A switch
  * of the style replaces the control under the focus, so the control of the new style takes it over (the same choice).
@@ -50,7 +51,6 @@ export function StyleSettings({ locked, managed }: { locked: boolean; managed: b
     if (document.activeElement && document.activeElement !== document.body) return;
     styleRow.current?.querySelector<HTMLElement>(`[data-glas-style-option="${uiStyle}"]`)?.focus();
   }, [uiStyle]);
-  if (!canEdit && (managed || uiStyle !== 'glas')) return null; // after all hooks
 
   const chooseStyle = (id: UiStyle) => {
     if (id !== uiStyle) refocus.current = true;
@@ -58,7 +58,7 @@ export function StyleSettings({ locked, managed }: { locked: boolean; managed: b
   };
 
   return (
-    <fieldset className="managed-fieldset" disabled={locked}>
+    <fieldset className="managed-fieldset" disabled={locked || !canEdit}>
       <div ref={styleRow} className="settings-card__row settings-card__row--inline">
         <span className="settings-card__row-label">
           <span className="settings-card__icon-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
@@ -94,6 +94,7 @@ export function StyleSettings({ locked, managed }: { locked: boolean; managed: b
         <p className="managed-row-hint">
           {t('glas.style.hint')}
           {managed && <> · {t('globalSettings.mode.hintGlobal')}</>}
+          {!managed && !canEdit && <> · {t('glas.style.adminOnly')}</>}
         </p>
       </div>
 

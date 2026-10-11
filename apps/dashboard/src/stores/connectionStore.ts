@@ -383,7 +383,11 @@ export const useConnectionStore = create<ConnectionState & ConnectionActions>()(
       teardown();
       useEntityStore.getState().setRegistries(DEMO_REGISTRIES);
       useEntityStore.getState().setEntities(DEMO_ENTITIES);
-      startDemoControl({ setUrl: (url) => set({ url }) }); // [fork] setUrl: the energy page's setup link in the lab checks
+      // [fork] lab checks: setUrl = the energy page's setup link, setAdmin = the settings as a non-admin sees them
+      startDemoControl({
+        setUrl: (url) => set({ url }),
+        setAdmin: (on) => set((s) => (s.currentUser ? { currentUser: { ...s.currentUser, is_admin: on } } : s)),
+      });
       startDemoTemperatureUnit(); // [fork]
 
       _stopDemoTicker = createDemoTicker(

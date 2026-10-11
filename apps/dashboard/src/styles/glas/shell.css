@@ -68,6 +68,12 @@
     padding-top: calc(120px + env(safe-area-inset-top, 0px));
   }
 
+  /* A control the keyboard reaches is scrolled clear of the scroll edge (96) and of the floating tab bar (its top 84
+     above the bottom inset) with its ring — focus not hidden, WCAG 2.4.11 (K109) */
+  :root[data-style='glas'] {
+    scroll-padding-block: calc(96px + env(safe-area-inset-top, 0px)) calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
   /* content runs under the floating tab bar */
   :root[data-style='glas'] .app-main {
     padding: 0 16px calc(132px + env(safe-area-inset-bottom, 0px));
@@ -82,8 +88,9 @@
     margin-bottom: -1.5rem;
   }
 
-  /* ---- Avatar (components/glas/AvatarMenu.tsx): 44 button, 40 glass circle ---- */
-  :root[data-style='glas'] .g-avatar__btn {
+  /* ---- Avatar (components/glas/AvatarMenu.tsx): 44 button, 40 glass circle; a page head's "⋯"
+     (components/glas/HeaderMenu.tsx, stage 7 N2) the same circle, left of the avatar ---- */
+  :root[data-style='glas'] :is(.g-avatar__btn, .g-hmenu__btn) {
     position: fixed;
     top: calc(8px + env(safe-area-inset-top, 0px));
     right: 14px;
@@ -99,18 +106,22 @@
     transition: scale var(--g-d-bouncy) var(--g-spring-bouncy);
   }
 
-  :root[data-style='glas'] .g-avatar__btn:active {
+  :root[data-style='glas'] .app-layout:has(.g-avatar) .g-hmenu__btn {
+    right: 66px;
+  }
+
+  :root[data-style='glas'] :is(.g-avatar__btn, .g-hmenu__btn):active {
     scale: 1.08;
     transition-duration: var(--g-d-snappy);
     transition-timing-function: var(--g-spring-snappy);
   }
 
-  :root[data-style='glas'] .g-avatar__btn:focus-visible {
+  :root[data-style='glas'] :is(.g-avatar__btn, .g-hmenu__btn):focus-visible {
     outline: 2px solid var(--g-focus);
     outline-offset: 0;
   }
 
-  :root[data-style='glas'] .g-avatar__glass {
+  :root[data-style='glas'] :is(.g-avatar__glass, .g-hmenu__glass) {
     --g-surface-tint: var(--g-tint-avatar-button);
     position: absolute;
     inset: 2px;
@@ -302,9 +313,15 @@
     padding: 0;
   }
 
+  /* The list scrolls when the panel is short (an iPad in landscape, the entries of all pages): it fades out over its
+     last 16 px, reaching into the footer's gap, instead of being cut at the footer, and keeps 16 under its last entry,
+     so the end and an entry the keyboard reaches (scroll padding) stand clear of the fade (K109) */
   :root[data-style='glas'] .sidebar-nav {
-    margin: 0 -12px;
-    padding: 0 12px;
+    margin: 0 -12px -8px;
+    padding: 0 12px 16px;
+    scroll-padding-bottom: 16px;
+    -webkit-mask: linear-gradient(black calc(100% - 16px), transparent);
+    mask: linear-gradient(black calc(100% - 16px), transparent);
   }
 
   :root[data-style='glas'] .sidebar-nav__list,
@@ -336,9 +353,18 @@
     color: var(--g-glass-label-2);
   }
 
-  :root[data-style='glas'] .sidebar-nav__item:not(.sidebar-nav__item--active):hover {
-    background-color: var(--g-hover);
-    color: var(--g-label);
+  @media (hover: hover) {
+    :root[data-style='glas'] .sidebar-nav__item:not(.sidebar-nav__item--active):hover {
+      background-color: var(--g-hover);
+      color: var(--g-label);
+    }
+  }
+
+  /* an iPad's finger: the entries, the collapse button and the avatar keep their resting look after a tap (K108) */
+  @media (hover: none) {
+    :root[data-style='glas'] .sidebar-nav__item:not(.sidebar-nav__item--active):hover {
+      background-color: transparent;
+    }
   }
 
   /* active: the lens (GlasNavGroups) instead of a fill; symbol in the ink made for the lens, as in the tab bar
@@ -476,8 +502,10 @@
     color: var(--g-label);
   }
 
-  :root[data-style='glas'] .home-status-pill:hover {
-    background: var(--g-fill-2);
+  @media (hover: hover) {
+    :root[data-style='glas'] .home-status-pill:hover {
+      background: var(--g-fill-2);
+    }
   }
 
   :root[data-style='glas'] .home-status-pill:focus-visible {
@@ -550,9 +578,17 @@
     color: var(--g-glass-label-2);
   }
 
-  :root[data-style='glas'] .app-sidebar__collapse:hover {
-    background-color: var(--g-hover);
-    color: var(--g-label);
+  @media (hover: hover) {
+    :root[data-style='glas'] .app-sidebar__collapse:hover {
+      background-color: var(--g-hover);
+      color: var(--g-label);
+    }
+  }
+
+  @media (hover: none) {
+    :root[data-style='glas'] .app-sidebar__collapse:hover {
+      background-color: transparent;
+    }
   }
 
   :root[data-style='glas'] .app-sidebar__collapse:focus-visible {
@@ -573,6 +609,12 @@
 
   :root[data-style='glas'] .app-content:has(> .app-banner) .app-main {
     padding-top: calc(136px + env(safe-area-inset-top, 0px));
+  }
+
+  /* A control the keyboard reaches is scrolled clear of the head row and its scroll edge (104) — focus not hidden,
+     WCAG 2.4.11 (K109) */
+  :root[data-style='glas'] {
+    scroll-padding-top: calc(104px + env(safe-area-inset-top, 0px));
   }
 
   /* ---- Header row: fixed, flush with the content (same width rule as .app-main) ---- */
@@ -600,6 +642,33 @@
     gap: 10px;
   }
 
+  /* a page head's "⋯" (components/glas/HeaderMenu.tsx, stage 7 N2): a filled circle 44 in the head row like the
+     head's actions (K32) */
+  :root[data-style='glas'] .g-hmenu__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--g-fill);
+    color: var(--g-label);
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    :root[data-style='glas'] .g-hmenu__btn:hover {
+      background: var(--g-fill-2);
+    }
+  }
+
+  :root[data-style='glas'] .g-hmenu__btn:focus-visible {
+    outline: 2px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
   /* back on room pages: round, filled, no glass (K32) */
   :root[data-style='glas'] .g-head-back,
   :root[data-style='glas'] .g-head-back:hover {
@@ -608,33 +677,45 @@
     color: var(--g-label);
   }
 
-  :root[data-style='glas'] .g-head-back:hover {
-    background: var(--g-fill-2);
+  @media (hover: hover) {
+    :root[data-style='glas'] .g-head-back:hover {
+      background: var(--g-fill-2);
+    }
   }
 
-  /* chips: scroll with a soft mask at the edges (K37); room above and below for their shadow */
+  /* chips: scroll with a soft mask at the edges (K37); room above and below for their shadow. A chip the keyboard
+     reaches comes in clear of the mask with its ring (scroll padding = mask + ring), and while one has the ring the
+     mask goes, so no ring fades at an end (K109) */
   :root[data-style='glas'] .header-cluster__chips {
     align-self: stretch;
     margin: 0 -12px;
     padding: 0 12px;
+    scroll-padding-inline: 16px;
     -webkit-mask: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
     mask: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+  }
+
+  :root[data-style='glas'] .header-cluster__chips:has(:focus-visible) {
+    -webkit-mask: none;
+    mask: none;
   }
 
   :root[data-style='glas'] .header-cluster__chips .summary-chips {
     flex-wrap: nowrap;
   }
 
-  /* Too narrow for a chip (the inspector open on an iPad in landscape): no sliver of the first one; the strip stays
-     as the spacer that keeps the capsules on the right. Its width comes from the free space (flex 1, basis 0), so being
-     a container changes nothing else; the chips' windows are portals. */
+  /* Too narrow for a whole chip with its ring (the inspector open on an iPad in landscape or a laptop): no chip at all,
+     as a toolbar drops what does not fit instead of cutting it; the widest chip of the summary is about 180. The strip
+     stays as the spacer that keeps the capsules on the right, with nothing to scroll (no empty tab stop). Its width
+     comes from the free space (flex 1, basis 0), so being a container changes nothing else; the chips' windows are
+     portals (Etappe 7, K109). */
   :root[data-style='glas'] .header-cluster__chips {
     container: g-head-chips / inline-size;
   }
 
-  @container g-head-chips (max-width: 95px) {
+  @container g-head-chips (max-width: 199px) {
     :root[data-style='glas'] .header-cluster__chips .summary-chips {
-      visibility: hidden;
+      display: none;
     }
   }
 
@@ -683,6 +764,26 @@
     color: var(--g-label-2);
   }
 
+  /* A narrow head row (the inspector open beside it on an iPad in landscape): the weather pill gives way first, as a
+     toolbar drops its least important item — below 600 (content box) it shows the temperature only, below 480 it
+     goes; the capsules on the right stay whole and the button's name keeps the condition. The row's width comes from
+     the window, never from its content, so being a container changes nothing else. */
+  :root[data-style='glas'] .header-cluster-wrapper {
+    container: g-head-row / inline-size;
+  }
+
+  @container g-head-row (max-width: 600px) {
+    :root[data-style='glas'] .header-cluster__weather-condition {
+      display: none;
+    }
+  }
+
+  @container g-head-row (max-width: 480px) {
+    :root[data-style='glas'] .header-cluster__weather {
+      display: none;
+    }
+  }
+
   /* notifications: glass capsule 48 around the 44 bell (K41) */
   :root[data-style='glas'] .header-cluster .notifications-wrap {
     --g-surface-tint: var(--g-tint-header-capsule);
@@ -708,9 +809,11 @@
     color: var(--g-label);
   }
 
-  :root[data-style='glas'] .header-cluster .notifications-trigger:hover {
-    background: var(--g-hover);
-    color: var(--g-label);
+  @media (hover: hover) {
+    :root[data-style='glas'] .header-cluster .notifications-trigger:hover {
+      background: var(--g-hover);
+      color: var(--g-label);
+    }
   }
 
   :root[data-style='glas'] .header-cluster .notifications-trigger:active {
@@ -799,6 +902,13 @@
     outline-color: var(--g-focus);
   }
 
+  /* the classic ring answers the pointer only */
+  @media (hover: none) {
+    :root[data-style='glas'] .header-cluster .user-avatar--interactive:hover {
+      box-shadow: none;
+    }
+  }
+
   /* ---- Scroll edge: 104 from the sidebar's edge, fades in once scrolled (no small title on the desktop) ---- */
   :root[data-style='glas'] .g-edge {
     left: calc(12px + var(--g-sidebar-w));
@@ -828,6 +938,13 @@
    sidebar and the header row stay. ---- */
 :root[data-style='glas'][data-g-immersive] {
   background: var(--g-media-bg);
+}
+
+/* the body too: WebKit takes the document colour from base, html and then body (an opaque body wins) and paints the
+   status bar band of the home-screen app, the soft edge under it and the overscroll with it; a light body made a light
+   band over the picture that faded into it (iPhone, plan docs/glas/PLAN-ETAPPE-7.md N1) */
+:root[data-style='glas'][data-g-immersive] body {
+  background-color: var(--g-media-bg);
 }
 
 :root[data-style='glas'][data-g-immersive] .app-content {
@@ -860,7 +977,7 @@
 /* Reduced motion (GLAS-DESIGN §6.4, plan K38): no flex, no stretch; the capsule switch, the edge and the small title
    cross-fade 200 ms (upstream shortens every duration with !important, these need it too). */
 @media (prefers-reduced-motion: reduce) {
-  :root[data-style='glas'] :is(.g-avatar__btn, .g-back, .g-done .g-done__capsule, .g-edit-capsule):active,
+  :root[data-style='glas'] :is(.g-avatar__btn, .g-hmenu__btn, .g-back, .g-done .g-done__capsule, .g-edit-capsule):active,
   :root[data-style='glas'] .header-cluster .notifications-wrap:active,
   :root[data-style='glas'] .g-done:active .g-done__capsule {
     scale: none;
@@ -869,7 +986,7 @@
   /* the avatar dims its children: opacity on the button would cut its glass off from the page */
   :root[data-style='glas'] :is(.g-back, .g-done, .g-edit-capsule):active,
   :root[data-style='glas'] .header-cluster .notifications-wrap:active,
-  :root[data-style='glas'] .g-avatar__btn:active > * {
+  :root[data-style='glas'] :is(.g-avatar__btn, .g-hmenu__btn):active > * {
     opacity: 0.6;
   }
 
@@ -892,5 +1009,13 @@
     translate: none;
     transition-property: opacity !important;
     transition-duration: 200ms !important;
+  }
+}
+
+/* Forced colours: the "⋯" from 900 px keeps an edge (its fill turns into the page colour; the phone's glass circle
+   gets one from material.css) */
+@media (forced-colors: active) and (min-width: 900px) {
+  :root[data-style='glas'] .g-hmenu__btn {
+    border: 1px solid ButtonText;
   }
 }

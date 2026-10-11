@@ -138,7 +138,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `packages/core/src/{hints,locks,activeScene,glasEnergy,sizePresets,roomGlance}.ts` | Etappe 4 (DOM-frei, Tests in `smoke.mjs`): Hinweise, Schloss-Regel (aus `lockLogic.ts` nach Core gezogen), aktive Szene (Heuristik), Glas-Energiediagramm (Zeiträume, Balken, Achse, Ø, Vergleich), Größen S/M/L ↔ Spalten/Höhe/`tallSections`, Werte des Hauptraums und der Geräte |
 | `apps/dashboard/src/components/home/{HintsCard.tsx,HintsCard.css,useHints.ts}` | Karte „Hinweise“ in beiden Stilen, ihre Fenster (`HintWindows`, außerhalb des Rasters) und das Sammeln der Eingaben (Tür nach 10 min, Tonne um Mitternacht neu) |
 | `apps/dashboard/src/ha/useEnergyWindow.ts` | Glas-Energie: Zeitraum und Vergleich laden, je Zeitraum gemerkt, beim Wechsel das vorige Ergebnis gedimmt; ein gemerktes Ergebnis gilt nur für das Fenster, in dem es liegt (nach Mitternacht ist „heute“ neu) |
-| `apps/dashboard/src/ha/demoControl.ts`, `{demoCalls,demoEnergy}.ts` | Nur im Demo-Modus `window.__hapulseDemo` (`patch`, `patchArea`, `placeEntity`, `openDetail`, `entity`; seit Etappe 5 `calls`/`clearCalls` = Protokoll der Dienstaufrufe, `energyConfigured`, `energyHold`, `energyLoads` = Energie nicht eingerichtet, zurückgehalten, gezählte Abrufe, `setUrl`) für die Prüfungen |
+| `apps/dashboard/src/ha/demoControl.ts`, `{demoCalls,demoEnergy}.ts` | Nur im Demo-Modus `window.__hapulseDemo` (`patch`, `patchArea`, `placeEntity`, `openDetail`, `entity`; seit Etappe 5 `calls`/`clearCalls` = Protokoll der Dienstaufrufe, `energyConfigured`, `energyHold`, `energyLoads` = Energie nicht eingerichtet, zurückgehalten, gezählte Abrufe, `setUrl`; seit Etappe 7 `admin` = die Einstellungen, wie ein Nicht-Admin sie sieht) für die Prüfungen |
 | `apps/dashboard/src/stores/keptOffStore.ts` | Glas: in der Geräte-Karte ausgeschaltete Geräte bleiben bis zum Neuladen als „Aus“ stehen |
 | `apps/dashboard/src/components/glas/{Segment,RollingValue,GlasMenuTarget}.tsx`, `useGlasContextMenu.ts` | Glas-Bausteine (Etappe 4): Segment mit Linse (`role="radiogroup"`), rollende Zahl, Kontextmenü an beliebigen Elementen (Szenen, Geräte) |
 | `apps/dashboard/src/components/glas/home/*` | Glas-Übersicht: `EnergyGlas` (Zahl `energyFigure.ts`, auch im Mehr-Menü), Hauptraum (`HeroLights`, `HeroGlance`), Geräte (`GlasDeviceItem`), Klima/Rollläden (`GlasClimateBody`, `GlasBlindsBody`, `GlasArc`, `GlasRoomPicker`), Räume (`GlasRoomTile`), Szenen (`SceneRing`, `sceneTone.ts`) |
@@ -149,6 +149,8 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/scripts/glas-checks-pages.cjs` | Etappe 5 (übrige Seiten): `checks --part pages` für `glas-shots.cjs` (Schalter, Regler/Stepper/Pillen/Play, Felder, Abschnitts- und Kartentitel, Rahmen, Bearbeiten S/M/L, Segmente, das Verhalten jeder Seite `pagesKeep`, Leerzustände, Menüs `pagesMenus`) und die Szenen `<seite>-edit` für den Klassisch-Vergleich |
 | `apps/dashboard/src/app/glas/useGlasImmersive.ts` | Etappe 6 (E13): die Kameraseite meldet sich als immersiv (`glasUiStore.immersive`); daraus setzt `GlasRuntime` `data-g-immersive` an `:root` (unter 900 px ohne Rahmen, `shell.css`) und `AppLayout` den dunklen Teilbaum |
 | `apps/dashboard/scripts/glas-checks-nvr.cjs` | Etappe 6 (NVR): nachgestelltes Sentinel (`192.0.2.10`, Playwright-Route, Aufnahme-Segmente mit ffmpeg), Szenen `nvr-*` und `checks --part nvr` (`nvrImmersive`, `nvrKeep`, `nvrPages`, reduzierte Bewegung, erzwungene Farben, deckend) |
+| `apps/dashboard/src/app/glas/{glasNavigate,routeChunks}.ts`, `apps/dashboard/test/glasNavigate.test.ts` | Etappe 7 (K107): Seitenwechsel in Glas als View Transition (Tab-Leiste, Seitenleiste, Mehr-Menü, Kamera öffnen und ihr Zurück; die Entscheidung „welcher Übergang“ ist getestet); das Chunk der Zielseite lädt beim Drücken (dieselben Module wie `Router.tsx`, der Test vergleicht beide Listen) |
+| `apps/dashboard/scripts/glas-checks-polish.cjs` | Etappe 7: `checks --part polish` für `glas-shots.cjs` (Übergänge, Hover nur mit Zeiger, Kontrast am Bildschirm, Leistung gegen Klassisch, Stil-Zeile, reduzierte Bewegung) |
 | `packages/core/src/chipCounts.ts` | Etappe 5 (K97, DOM-frei, Test in `smoke.mjs`): die Zählung der Home-Chips (Personen, Licht, Türen/Fenster, Alarm, Medien, Pool, Garagen, Schlösser) für die Chips in beiden Stilen und die Untertitel ihrer Fenster |
 | `apps/dashboard/src/components/home/chipLabels.ts` | Texte der Chips aus `chipCounts` (beide Stile); `useChipWindow` = Untertitel der Chip-Fenster (nur solange offen), nur in Glas |
 | `packages/core/locales/case/*.json`, `packages/core/src/textCase.ts` | Schreibweise der Upstream-Texte (`docs/glas/PLAN-TEXTE.md`): je Sprache nur die Schlüssel, deren Text Upstream klein beginnt, einen Satz oder (Deutsch) ein Nomen klein schreibt oder einen Namen falsch schreibt, gleicher Text bis auf große Buchstaben; `withCase` legt sie über das Wörterbuch (beide Stile) |
@@ -158,7 +160,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
-| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`), 5 (`docs/glas/PLAN-ETAPPE-5.md`) und 6 (`docs/glas/PLAN-ETAPPE-6.md`), Schreibweise der Texte (`docs/glas/PLAN-TEXTE.md`) |
+| `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`), 5 (`docs/glas/PLAN-ETAPPE-5.md`), 6 (`docs/glas/PLAN-ETAPPE-6.md`) und 7 (`docs/glas/PLAN-ETAPPE-7.md`), Schreibweise der Texte (`docs/glas/PLAN-TEXTE.md`) |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -219,8 +221,9 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/home/chipmodals/{People,Lights,Doors,Alarm,Media}Modal.tsx` | Stil Glas (Etappe 5, K97): Untertitel aus `useChipWindow`, nur in Glas |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 5, K97): Werte und Fuß im Mehr-Menü (`GlasMoreValue`, `GlasMoreFoot`) |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 6, K103): `data-glas-scheme="dark"` an `.app-content`, solange die Kameraseite offen ist (dunkler Teilbaum, am Desktop auch Kopf und Ränder) |
+| `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 7, K107): Tab-Leiste, Seitenleiste und Mehr-Menü navigieren in Glas über `glasLinkClick` (View Transition); Klassisch, Zusatztasten und die Seite, auf der man ist, bleiben beim `NavLink` |
 | `apps/dashboard/src/components/nav/RoomsMenu.tsx` | Stil Glas (Etappe 5, K97): Zustand je Raum (Symbol wie die Raumkachel, `data-tone`, der Zustand im `aria-label`); Klassisch unverändert |
-| `apps/dashboard/src/ha/{energy,service}.ts`, `stores/connectionStore.ts` | Nur Demo (Etappe 5, für die Prüfungen): Energie-Einstellungen und -Abrufe über `demoEnergy.ts`, Dienstaufrufe ins Protokoll `demoCalls.ts`, `setUrl` an die Demo-Steuerung |
+| `apps/dashboard/src/ha/{energy,service}.ts`, `stores/connectionStore.ts` | Nur Demo (Etappe 5, für die Prüfungen): Energie-Einstellungen und -Abrufe über `demoEnergy.ts`, Dienstaufrufe ins Protokoll `demoCalls.ts`, `setUrl` an die Demo-Steuerung; seit Etappe 7 `setAdmin` (die Einstellungen als Nicht-Admin) |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
 | `apps/dashboard/src/pages/Security.tsx` | Section `'nvr'` (Sentinel-Kameras + Ereignisse unter der HA-Kamera-Sektion) |
 | `packages/core/src/domain.ts` | `formatEntityState`: Zahl über `formatNumber` (Sprache), numerische Zustände ohne Einheit (sensor/number/input_number/counter) formatiert statt `humanizeState` (Minus ging verloren) |
@@ -336,7 +339,7 @@ State-History via `dailyRuntimeBars` zu Laufzeit-Balken pro Tag.
 ## Feature: Stil Glas
 
 Zweiter Stil neben Klassisch, nur Aussehen und Bewegung (Plan `docs/GLAS-PLAN.md`, Design `docs/GLAS-DESIGN.md`, Stand
-und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md`, `docs/glas/PLAN-ETAPPE-4.md`, `docs/glas/PLAN-ETAPPE-5.md`, `docs/glas/PLAN-ETAPPE-6.md` und `docs/glas/PLAN-TEXTE.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
+und Abweichungen `docs/glas/PLAN-ETAPPE-0-1.md`, `docs/glas/PLAN-ETAPPE-2.md`, `docs/glas/PLAN-ETAPPE-3.md`, `docs/glas/PLAN-ETAPPE-4.md`, `docs/glas/PLAN-ETAPPE-5.md`, `docs/glas/PLAN-ETAPPE-6.md`, `docs/glas/PLAN-ETAPPE-7.md` und `docs/glas/PLAN-TEXTE.md`). Klassisch bleibt Upstream-Stand: Glas schreibt seine Werte nur, wenn
 `<html data-style="glas">` gesetzt ist, und jede Regel in `styles/glas/` beginnt mit `:root[data-style='glas']`.
 
 Nach jedem Upstream-Merge:
@@ -410,3 +413,11 @@ Nach jedem Upstream-Merge:
     (`[data-glas-scheme='dark']`) nimmt dieselben `glasCssVars` und bekommt neue Tokens von selbst. Danach
     `checks --part nvr` laufen lassen (braucht ffmpeg mit VP9 für Bilder und Aufnahme-Segmente des nachgestellten
     Sentinels; ohne ist der Teil rot).
+13. Seit Etappe 7 (Feinschliff): Tab-Leiste, Seitenleiste, Mehr-Menü und die Kamerakacheln wechseln die Seite in
+    Glas als View Transition (`app/glas/glasNavigate.ts`, Aussehen in `styles/glas/motion.css`). Eine neue Seite in
+    `Router.tsx` gehört auch nach `app/glas/routeChunks.ts` (`test/glasNavigate.test.ts` vergleicht beide Listen, sonst
+    wartet der Übergang bis zur Kappe auf ihr Chunk). Ändert Upstream die `NavLink`s in `AppLayout.tsx`, das `onClick`
+    mit `glasLinkClick` mitziehen. Glas-eigene Hover-Regeln stehen unter `@media (hover: hover)`; der Selektor-Wächter
+    (`styleRules`) meldet eine Tönung unter `:hover` außerhalb davon. Nach Änderungen an Farben, Flächen oder Texten
+    `checks --part polish` laufen lassen (`polishContrast` misst jeden sichtbaren Text gegen seinen Grund,
+    `polishHover` den Ruhezustand nach einem Tipp, `polishTransitions` die Übergänge).

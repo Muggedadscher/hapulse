@@ -38,6 +38,54 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 41,
+    date: '2026-10-10',
+    title: { de: 'Stil Glas', en: 'Glass style' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas ist fertig: der Stil heißt nur noch „Glas“, nicht mehr „Glas (Vorschau)“; die Stil-Zeile sehen alle, ändern dürfen Stil, Stärke und „Transparenz reduzieren“ nur Admins',
+            en: 'Glass is done: the style is just called “Glass”, no longer “Glass (preview)”; everybody sees the style row, only admins change the style, the strength and “Reduce transparency”',
+          },
+          {
+            de: 'Glas: Seitenwechsel über Tab-Leiste, Seitenleiste und Mehr-Menü blenden weich über, die neue Seite steigt leicht auf; eine Kamera öffnet sich aus ihrer Kachel heraus; bei reduzierter Bewegung nur eine kurze Überblendung',
+            en: 'Glass: page changes from the tab bar, the sidebar and the More menu cross-fade while the new page rises a little; a camera opens out of its tile; with reduced motion only a short cross-fade',
+          },
+          {
+            de: 'Glas auf Handy und iPad: nach einem Tipp bleibt keine Hover-Tönung mehr stehen',
+            en: 'Glass on the phone and the iPad: no hover tint stays behind after a tap',
+          },
+          {
+            de: 'Glas besser lesbar: Fenster im hellen Modus weiß, der aktive Tab auf einer deckenden Linse, Kameranamen auf einer dunkleren Kapsel, Fenster über der Kameraseite dunkel, Fokusringe auch auf Bildern und farbigen Flächen deutlich',
+            en: 'Glass easier to read: windows white in light mode, the active tab on an opaque lens, camera names on a darker capsule, windows over the camera page dark, focus rings clear also on pictures and coloured surfaces',
+          },
+          {
+            de: 'Glas am Handy: die Kameraseite ist auch unter der Statusleiste dunkel, oben schimmert nichts Helles mehr über dem Bild',
+            en: 'Glass on the phone: the camera page is dark under the status bar too, no light shimmer above the picture any more',
+          },
+          {
+            de: 'Glas: die Sentinel-Übersicht beginnt mit einem ruhigen Kopf (Zustand groß, Werte als Kapseln), „Ereignisse“ und „Kameras“ tragen ihr Symbol im Titel, der Speicherhinweis steht als Fußnote; „Sentinel öffnen“, „Räume“ und „Einrichtung“ liegen im Menü „⋯“',
+            en: 'Glass: the Sentinel overview starts with a calm header (the state large, the values as capsules), “Events” and “Cameras” carry their symbol in the title, the storage notice is a footnote; “Open Sentinel”, “Rooms” and “Setup” are in the “⋯” menu',
+          },
+          {
+            de: 'Glas: „Clip herunterladen“ ist eine schwebende Glasleiste über dem Bild mit „Von“ und „Bis“ als Segment und rundem Schließen-Knopf; am Handy bleibt das Bild randlos',
+            en: 'Glass: “Download clip” is a floating glass bar over the picture with “From” and “To” as a segment and a round close button; on the phone the picture stays edge to edge',
+          },
+          {
+            de: 'Clip-Leiste in beiden Stilen: das × bleibt in seiner Zeile, auch bei breiten Uhrzeiten (12-Stunden-Uhr)',
+            en: 'Clip bar in both styles: the × stays on its line, also with wide times (12-hour clock)',
+          },
+          {
+            de: 'Glas am iPad quer: neben dem offenen Detail bleiben die Knöpfe oben ganz, die Wetteranzeige wird kürzer oder weicht, die Chip-Leiste zeigt keine angeschnittenen Chips',
+            en: 'Glass on the iPad in landscape: beside the open detail the buttons at the top stay whole, the weather pill gets shorter or gives way, the chip strip shows no cut-off chips',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 40,
     date: '2026-10-10',
     title: { de: 'Vorschau Glas: Kameras', en: 'Glass preview: cameras' },

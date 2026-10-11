@@ -13,7 +13,8 @@
  *
  * Dark subtree (GLAS-PLAN §1.2 point 5, plan docs/glas/PLAN-ETAPPE-6.md K103): in Glas a `<style id="glas-dark-scope">`
  * holds the same variables in dark mode for `[data-glas-scheme="dark"]` — while the camera page (always dark) is shown,
- * AppLayout puts that attribute on the content column, which then gets the dark palette whatever this device's mode.
+ * AppLayout puts that attribute on the content column, which then gets the dark palette whatever this device's mode;
+ * windows, panels and toasts opened meanwhile get it too (`IMMERSIVE_FLOATING`, Etappe 7).
  * Klassisch removes it. Meanwhile the browser colour is the dark page's too (`setImmersiveThemeColor`, GlasRuntime).
  */
 
@@ -112,10 +113,21 @@ export function effectiveStrength(a: Pick<AppearanceInput, 'glassStrength' | 're
 /** Id of the style element with the dark subtree's variables. */
 export const DARK_SCOPE_ID = 'glas-dark-scope';
 
-/** Pure: the rule for the dark subtree — the Glas variables of dark mode on `[data-glas-scheme='dark']`. */
+/**
+ * What floats over the page from `<body>` (windows, the header's panels, toasts): while the camera page is shown it lies
+ * over that dark page, so it takes the dark scheme too (Etappe 7, K109 — the light date window over the black page fell
+ * to 2.7:1).
+ */
+export const IMMERSIVE_FLOATING = ['.modal-backdrop', '.notifications-panel', '.user-avatar-menu__panel', '.g-avatar-menu', '.toaster'] as const;
+
+/**
+ * Pure: the rule for the dark subtree — the Glas variables of dark mode on `[data-glas-scheme='dark']` and, while the
+ * camera page is shown (`data-g-immersive`), on the floating surfaces.
+ */
 export function darkScopeCss(vars: Readonly<Record<string, string>>): string {
   const decls = Object.entries(vars).map(([name, value]) => `${name}: ${value};`);
-  return `:root[data-style='glas'] [data-glas-scheme='dark'] { color-scheme: dark; ${decls.join(' ')} }`;
+  const floating = IMMERSIVE_FLOATING.map((sel) => `:root[data-style='glas'][data-g-immersive] ${sel}`).join(', ');
+  return `:root[data-style='glas'] [data-glas-scheme='dark'], ${floating} { color-scheme: dark; ${decls.join(' ')} }`;
 }
 
 /** theme-color of index.html, remembered on the first call so Klassisch gets exactly it back. */

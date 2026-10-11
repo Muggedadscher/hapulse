@@ -2,8 +2,9 @@
 //
 //   node apps/dashboard/scripts/glas-shots.cjs shoot   <base-url | --serve <dist>> <out-dir> [options]
 //   node apps/dashboard/scripts/glas-shots.cjs compare <dir-a> <dir-b> [<diff-dir>] [--expect <regex>]
-//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>> [--part stage1|frame|sheets|gestures|home|pages|nvr]
-//     [--dom-out <file>] [--only <block>,…] [--no-media]
+//   node apps/dashboard/scripts/glas-shots.cjs checks  <base-url | --serve <dist>>
+//     [--part stage1|frame|sheets|gestures|home|pages|nvr|polish]
+//     [--dom-out <file>] [--only <block>,…] [--no-media] [--engine chromium|webkit]
 //
 // shoot options: --style classic|glas  --strength clear|tinted|opaque  --reduce  --modes light,dark
 //   --devices phone,ipad,desktop  --scenes home,room,…  --contrast  --forced-colors  --engine chromium|webkit
@@ -21,19 +22,22 @@
 //   size and are not part of the default list. The edit scenes of stage 5 (security-edit, energy-edit, …,
 //   glas-checks-pages.cjs) take a page in edit mode at full length; they are not in the default list either. The NVR
 //   scenes of stage 6 (nvr-overview, nvr-cam, nvr-cam-night, nvr-cam-events, nvr-cam-date, nvr-cam-rec, nvr-security,
-//   nvr-room, nvr-error, nvr-trouble, nvr-setup, nvr-setup-login, nvr-setup-window, nvr-rooms; glas-checks-nvr.cjs)
+//   nvr-room, nvr-error, nvr-trouble, nvr-setup, nvr-setup-login, nvr-setup-window, nvr-rooms, and of stage 7 nvr-menu
+//   (Glas: the overview head's "⋯" menu open) and nvr-cam-clip (clip mode on the recording); glas-checks-nvr.cjs)
 //   answer Sentinel's routes with a stand-in (pictures and recordings made with ffmpeg and libvpx-vp9; without them the
-//   run fails, with --no-media they are skipped and listed); all but nvr-cam-rec (the playing time moves) are in the
-//   default list.
+//   run fails, with --no-media they are skipped and listed); all but nvr-cam-rec and nvr-cam-clip (the playing time
+//   moves) and nvr-menu (Glas only) are in the default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
 //   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
 //   (glas-checks-gestures.cjs), the overview's content of stage 4 (PLAN-ETAPPE-4.md §3, glas-checks-home.cjs), the
-//   other pages of stage 5 (PLAN-ETAPPE-5.md §3, glas-checks-pages.cjs) and the NVR views of stage 6
-//   (PLAN-ETAPPE-6.md §3, glas-checks-nvr.cjs); --part runs one. --dom-out: the Klassisch DOM of every window as JSON,
-//   to compare a build with main's. --only runs some blocks of the window, gesture, overview, page or NVR checks
-//   (e.g. sheetsDrag, gesturesInspector, homeHints, pagesSwitches, nvrImmersive). --no-media: without ffmpeg (VP9) the
-//   NVR checks are skipped and reported instead of failing the run.
+//   other pages of stage 5 (PLAN-ETAPPE-5.md §3, glas-checks-pages.cjs), the NVR views of stage 6 (PLAN-ETAPPE-6.md
+//   §3, glas-checks-nvr.cjs) and the polish of stage 7 (PLAN-ETAPPE-7.md §3, glas-checks-polish.cjs); --part runs one.
+//   --dom-out: the Klassisch DOM of every window as JSON, to compare a build with main's. --only runs some blocks of the
+//   window, gesture, overview, page, NVR or polish checks (e.g. sheetsDrag, gesturesInspector, homeHints, pagesSwitches,
+//   nvrImmersive, polishHover). --no-media: without ffmpeg (VP9) the NVR checks are skipped and reported instead of
+//   failing the run. --engine webkit (Playwright's WebKit, Etappe 7 K112): the blocks that need CDP (touch drags, safe
+//   areas, forced hover, frame times) are skipped and listed in `skippedNoCdp`, never counted as green.
 //
 // HA demo mode as in click-fuzz-test.cjs. Deterministic on purpose, so that two runs of the same build give the same
 // pixels: fixed clock (Playwright `clock`, paused right after it is installed; timers only move with `run`, at most
@@ -301,8 +305,10 @@ Object.assign(SCENES, HOME.scenes);
 const PAGES = require('./glas-checks-pages.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, run, isGlas });
 Object.assign(SCENES, PAGES.scenes);
 // stage 6: the NVR views with a Sentinel stand-in — scenes nvr-… and `checks --part nvr`
-const NVR = require('./glas-checks-nvr.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, run, FIXED, pageHelpers });
+const NVR = require('./glas-checks-nvr.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, run, FIXED, pageHelpers, textsOf });
 Object.assign(SCENES, NVR.scenes);
+// stage 7: the polish — `checks --part polish`
+const POLISH = require('./glas-checks-polish.cjs')({ DE, DEVICES, ABORTED, settleAnimations, seedScript, SCENES, NVR, textsOf });
 
 /** Click the first visible match, let menus and their animations settle; returns why it could not ('' = done). */
 async function tap(page, sel) {
@@ -758,6 +764,8 @@ function pageHelpers() {
       if ([cs.maskImage, cs.webkitMaskImage].some((v) => v && v !== 'none')) why.push('mask');
       if (cs.clipPath !== 'none') why.push('clip-path');
       if (cs.mixBlendMode !== 'normal') why.push('mix-blend-mode');
+      // a named element is painted on its own during a view transition (stage 7, K107): glass in it sees nothing
+      if (cs.viewTransitionName && cs.viewTransitionName !== 'none') why.push('view-transition-name');
       const anims = a.getAnimations().filter((x) => x.playState === 'running' && x.effect
         && x.effect.getKeyframes().some((k) => MOVES.some((p) => p in k)));
       if (anims.length) why.push('animation ' + anims.map((x) => x.animationName || x.transitionProperty).join('/'));
@@ -1396,8 +1404,9 @@ async function frameChecks(browser, url, out) {
   });
 
   // 13. Keyboard walk: every Tab stop is visible (the EditToggles Glas hides are never reached), and the frame's stops
-  //     draw a 2-px ring in the focus colour (--g-focus). Forward from the top, backwards from the end (tab bar);
-  //     on the phone also in edit mode ("Fertig" comes first) and on a room (Zurück).
+  //     draw a 2-px ring in the focus colour (--g-focus), the tab bar's in its entry's text colour (stage 7, K109: the
+  //     bar's glass shows what scrolls under it). Forward from the top, backwards from the end (tab bar); on the phone
+  //     also in edit mode ("Fertig" comes first) and on a room (Zurück).
   await block('focusWalk', async () => {
     const walk = async (device, p, key, n, edit = false) => {
       const { page, close } = await open(device, 'glas', p);
@@ -1429,9 +1438,10 @@ async function frameChecks(browser, url, out) {
             const cs = getComputedStyle(x);
             return cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2;
           });
+          const ink = el.closest('.app-tabs') ? getComputedStyle(ringEl ?? el).color : focus;
           return { el: __g.desc(el).slice(0, 60), visible: __g.visible(el),
             frame: !!el.closest('.app-sidebar, .app-header-cluster-wrapper, .app-tabs, .g-avatar, .g-back, .g-done'),
-            ring: !!ringEl && getComputedStyle(ringEl).outlineColor === focus };
+            ring: !!ringEl && getComputedStyle(ringEl).outlineColor === ink };
         }));
       }
       await close();
@@ -1478,6 +1488,7 @@ async function checks() {
   if (part === 'all' || part === 'home') ok = (await HOME.homeChecks(browser, url, out, { only: list('only', '') })) && ok;
   if (part === 'all' || part === 'pages') ok = (await PAGES.pagesChecks(browser, url, out, { only: list('only', '') })) && ok;
   if (part === 'all' || part === 'nvr') ok = (await NVR.nvrChecks(browser, url, out, { only: list('only', ''), noMedia: flag('no-media') })) && ok;
+  if (part === 'all' || part === 'polish') ok = (await POLISH.polishChecks(browser, url, out, { only: list('only', '') })) && ok;
   await browser.close();
   if (srv) srv.close();
   console.log(JSON.stringify({ ok, ...out }, null, 1));

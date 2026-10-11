@@ -15,7 +15,8 @@
  * `energyHold(true)` keeps its statistics back until `energyHold(false)` (a period that loads), `energyLoads()` counts
  * its statistics requests (the More menu's figure, K97), and `setUrl(url)` gives
  * the demo connection an HA address (the demo has none), so the energy page's empty state shows its link to the HA
- * energy settings (plan docs/glas/PLAN-ETAPPE-5.md K92, §7.31).
+ * energy settings (plan docs/glas/PLAN-ETAPPE-5.md K92, §7.31). `admin(false)` makes the demo user a non-admin, so a
+ * check sees the settings as a non-admin does (the style row, plan docs/glas/PLAN-ETAPPE-7.md K111).
  * Outside demo mode the object does not exist.
  */
 
@@ -44,12 +45,14 @@ interface DemoControl {
   energyHold: (on: boolean) => void;
   energyLoads: () => number;
   setUrl: (url: string) => void;
+  admin: (on: boolean) => void;
 }
 
 type DemoWindow = Window & { __hapulseDemo?: DemoControl };
 
-/** `conn.setUrl` writes the connection's HA address (handed in by connectionStore, which starts the control). */
-export function startDemoControl(conn: { setUrl: (url: string) => void }): void {
+/** `conn.setUrl` writes the connection's HA address, `conn.setAdmin` the demo user's admin flag (handed in by
+ *  connectionStore, which starts the control). */
+export function startDemoControl(conn: { setUrl: (url: string) => void; setAdmin: (on: boolean) => void }): void {
   if (typeof window === 'undefined') return;
   (window as DemoWindow).__hapulseDemo = {
     patch(id, patch) {
@@ -107,6 +110,7 @@ export function startDemoControl(conn: { setUrl: (url: string) => void }): void 
     energyHold: setDemoEnergyHold,
     energyLoads: demoEnergyLoads,
     setUrl: conn.setUrl,
+    admin: conn.setAdmin,
   };
 }
 

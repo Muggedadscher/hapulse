@@ -5,7 +5,8 @@
  * sit side by side (phone: to swipe). Then the latest events — on the phone a strip to the screen edge, from 900 px
  * rows beside the tile — each opens the camera at that moment. Data, refresh and targets are the classic body's in
  * NvrHomeCard; the recording state reads as on the classic tiles (dot only while recording is on, offline and stalled
- * named). Looks in styles/glas/nvr.css.
+ * named). A tile opens its camera with the picture growing into the camera page (plan docs/glas/PLAN-ETAPPE-7.md
+ * K107). Looks in styles/glas/nvr.css.
  */
 
 import React from 'react';
@@ -19,6 +20,7 @@ import { useNvrT } from './ui';
 import { fmtRelative, fmtTime } from './format';
 import { cameraPath } from './paths';
 import { HomeSnapshot } from './HomeSnapshot';
+import { glasGo } from '../app/glas/glasNavigate';
 
 interface NvrHomeGlasProps {
   client: SentinelClient;
@@ -63,7 +65,7 @@ export function NvrHomeGlas({ client, cameras, events, tick, loading }: NvrHomeG
                   type="button"
                   className="g-nvr__cam"
                   data-state={rec}
-                  onClick={() => void navigate(cameraPath(c.id))}
+                  onClick={() => glasGo(navigate, cameraPath(c.id), 'camera')}
                   aria-label={[c.name, state, today].filter(Boolean).join(', ')}
                 >
                   <HomeSnapshot

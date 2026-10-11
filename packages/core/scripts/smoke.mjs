@@ -123,8 +123,10 @@ import {
   contrastRatio,
   glassOver,
   sheetOver,
+  windowGround,
   resolveMix,
   glasAccent,
+  focusPair,
   glasThemeTokens,
   classicTokenVar,
   glasColorVar,
@@ -1789,6 +1791,8 @@ console.log('\n── glas tokens ──');
     assertEqual(w['--g-sheet-fill'], json.glass.sheet[m].fill, `sheet fill ${m} = glas-tokens.json`);
     assertEqual(w['--g-sheet-filter'], json.glass.sheet[m].filter, `sheet filter ${m} = glas-tokens.json`);
     assertEqual(w['--g-sheet-solid'], json.glass.sheet[m].solid, `sheet solid ${m} = glas-tokens.json`);
+    assertEqual(w['--g-glass-clear-fill'], json.glass.clear.fill, `clear fill ${m} = glas-tokens.json`);
+    assertEqual(w['--g-glass-clear-text-fill'], json.glass.clear.textFill, `clear text fill ${m} = glas-tokens.json (K109)`);
   }
   const elevation = { menu: 'menuDesktop', popover: 'popoverDesktop', banner: 'banner', toast: 'toastPhone', prominent: 'prominent', chip: 'chipDesktop',
     live: 'live' };
@@ -1823,11 +1827,19 @@ console.log('\n── glas tokens ──');
   near(contrastRatio('#000000', glassOver('#333333', 'light', 0.6)), 5.5, 'tab bar light t.6: label over #333');
   near(contrastRatio('#3A3A3C', glassOver('#808080', 'light', 0.5)), 5.25, 'sidebar light t.5: glassLabel2 over grey');
   near(contrastRatio('#FFFFFF', glassOver('#808080', 'dark', 0.6)), 7.78, 'glass dark t.6: label over grey');
-  // (the §2.5 table has 15.24 / 8.24 over grey: computed without the filter's brightness(1.04))
-  near(contrastRatio('#000000', sheetOver('#808080', 'light')), 15.36, 'sheet light: label over grey');
-  near(contrastRatio('#3A3A3C', sheetOver('#808080', 'light')), 8.3, 'sheet light: glassLabel2 over grey');
-  near(contrastRatio('#5F5F64', sheetOver('#000000', 'light')), 3.56, 'sheet light: label2 over black (why glassLabel2)');
+  // the white sheet of Etappe 7 (K109); before: 15.36 / 8.3 / 3.56
+  near(contrastRatio('#000000', sheetOver('#808080', 'light')), 17.3, 'sheet light: label over grey');
+  near(contrastRatio('#3A3A3C', sheetOver('#808080', 'light')), 9.35, 'sheet light: glassLabel2 over grey');
+  near(contrastRatio('#5F5F64', sheetOver('#000000', 'light')), 4.16, 'sheet light: label2 over black (why glassLabel2)');
+  // a window rests over the scrimmed page (GLAS-DESIGN §2.5 table "Fenster"): the sheet over #F2F2F7 under .25
+  near(contrastRatio('#A64B00', windowGround('light', 'rgba(0,0,0,.25)', '#F2F2F7')), 5.22, 'window light: accent ink over the scrimmed page');
+  near(contrastRatio('#B25000', windowGround('light', 'rgba(0,0,0,.25)', '#F2F2F7')), 4.69, 'window light: orangeInk over the scrimmed page');
   near(contrastRatio('#D1D1D6', sheetOver('#FFFFFF', 'dark')), 6.35, 'sheet dark: glassLabel2 over white');
+
+  // a focus ring on a picture (C40): light needs the counter-tone band inside the white one, dark not (orange 9.54:1)
+  assertEqual(focusPair('#A64B00', '#FFFFFF'), '#000000', 'focus pair light: a black band inside the white one');
+  assertEqual(focusPair('#FFB340', '#1C1C1E'), 'transparent', 'focus pair dark: focus and card colour are enough');
+  assertEqual(glasCssVars({ mode: 'light', strength: 'tinted' })['--g-focus-pair'], '#000000', 'focus pair written (light)');
 
   // every text/glyph pair ≥ its minimum — modes × strengths × more contrast × accent hues (none + 0…345)
   const hues = [undefined];

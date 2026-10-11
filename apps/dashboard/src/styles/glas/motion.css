@@ -76,3 +76,69 @@
     animation: none;
   }
 }
+
+/* Page changes as view transitions (plan docs/glas/PLAN-ETAPPE-7.md K107, §6.3): `data-g-vt` on the root while one
+   runs (app/glas/glasNavigate.ts). Only the root and the camera picture carry a name: the root fades (old out, new in,
+   160 ms) and keeps equal pixels in place, so the frame stays calm; opening a camera from its tile, the tile's picture
+   grows into the camera page's still (`g-cam`, 540 ms smooth, both pictures cover the moving box, the corners round
+   from the tile's radius to the stage's). Reduced motion: a 200-ms fade only (§6.4). */
+@keyframes g-vt-rise {
+  from {
+    transform: translateY(6px);
+  }
+}
+
+@keyframes g-vt-round {
+  from {
+    clip-path: inset(0 round var(--g-vt-r0, 0px));
+  }
+  to {
+    clip-path: inset(0 round var(--g-vt-r1, 0px));
+  }
+}
+
+:root[data-style='glas'][data-g-vt]::view-transition-group(root),
+:root[data-style='glas'][data-g-vt]::view-transition-old(root),
+:root[data-style='glas'][data-g-vt]::view-transition-new(root) {
+  animation-duration: 160ms;
+}
+
+:root[data-style='glas'][data-g-vt='fade']::view-transition-group(root),
+:root[data-style='glas'][data-g-vt='fade']::view-transition-old(root),
+:root[data-style='glas'][data-g-vt='fade']::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease;
+}
+
+:root[data-style='glas'][data-g-vt='camera']::view-transition-group(g-cam) {
+  animation-duration: 540ms;
+  animation-timing-function: var(--g-spring-smooth);
+}
+
+:root[data-style='glas'][data-g-vt='camera']::view-transition-image-pair(g-cam) {
+  animation: g-vt-round 540ms var(--g-spring-smooth) both;
+}
+
+:root[data-style='glas'][data-g-vt='camera']::view-transition-old(g-cam),
+:root[data-style='glas'][data-g-vt='camera']::view-transition-new(g-cam) {
+  block-size: 100%;
+  object-fit: cover;
+  animation-duration: 270ms;
+}
+
+/* The new page of a transition (`data-g-entry` on its page element, set in the transition): its sections rise 6 px
+   instead of the screen entry (only transform, without the stagger — the root's fade already brings them in). The
+   mark stays with the element; the header rows keep their exception from above. */
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-style='glas'] .stagger-rise[data-g-entry] > *,
+  :root[data-style='glas']
+    .stagger-rise[data-g-entry]
+    > :is(.page__header-row, .home-page__header, .room-page__header)
+    > :not(.page-header-actions, :has(.page-header-actions), .g-back) {
+    animation: g-vt-rise var(--g-d-smooth) var(--g-spring-smooth) backwards;
+  }
+
+  :root[data-style='glas'] .stagger-rise[data-g-entry] > :is(.page__header-row, .home-page__header, .room-page__header) {
+    animation-name: none;
+  }
+}

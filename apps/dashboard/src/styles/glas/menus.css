@@ -3,6 +3,8 @@
 
    - phone: avatar menu (components/glas/AvatarMenu.tsx) with its dim layer; More and rooms menu as a sheet look with
      a scrim, closing animated since stage 3 (they stay upstream menus, not windows);
+   - both: a page head's "⋯" menu (components/glas/HeaderMenu.tsx, stage 7 N2): on the phone the avatar menu's look,
+     from 900 px the context menu's desktop look;
    - both: the notifications panel as a glass popover, the host's account menu;
    - desktop: the rooms popover next to the sidebar.
    The material comes from material.css (these surfaces are in its list); the rules here set position, size, radius
@@ -30,8 +32,8 @@
   }
 }
 
-/* ---- Avatar menu (phone) ---- */
-:root[data-style='glas'] .g-avatar-dim {
+/* ---- Avatar menu (phone) and a page head's "⋯" menu (phone; from 900 px further down) ---- */
+:root[data-style='glas'] :is(.g-avatar-dim, .g-hmenu__dim) {
   position: fixed;
   inset: 0;
   z-index: 910;
@@ -41,25 +43,23 @@
   animation: g-fade-in 300ms ease backwards;
 }
 
-:root[data-style='glas'] .g-avatar-dim--closing {
+:root[data-style='glas'] :is(.g-avatar-dim--closing, .g-hmenu__dim--closing) {
   animation: g-fade-out 280ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 /* opaque, "Transparenz reduzieren", more contrast: scrims without blur (GLAS-DESIGN §3.7) */
-:root[data-style='glas'][data-glass='opaque'] .g-avatar-dim {
+:root[data-style='glas'][data-glass='opaque'] :is(.g-avatar-dim, .g-hmenu__dim) {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
 
-:root[data-style='glas'] .g-avatar-menu {
+:root[data-style='glas'] :is(.g-avatar-menu, .g-hmenu__menu) {
   --g-surface-tint: var(--g-tint-menu);
   --g-surface-fill: var(--g-sheet-fill);
   --g-surface-filter: var(--g-sheet-filter);
   --g-surface-solid: var(--g-sheet-solid);
   --g-surface-shadow: var(--g-shadow-menu);
   position: fixed;
-  top: calc(58px + env(safe-area-inset-top, 0px));
-  right: 16px;
   z-index: 910;
   /* 250 wide, wider when a text needs it ("Benachrichtigungen (12)") */
   width: max-content;
@@ -68,24 +68,30 @@
   border-radius: 22px;
   overflow: hidden;
   color: var(--g-label);
-  /* grows out of the avatar: its centre is 22 px left of the menu's right edge, 28 px above the menu */
-  transform-origin: calc(100% - 22px) -28px;
   animation: g-avatar-in 460ms var(--g-spring-snappy) backwards;
 }
 
-:root[data-style='glas'] .g-avatar-menu--closing {
+/* under the avatar, growing out of it: its centre is 22 px left of the menu's right edge, 28 px above the menu (the
+   "⋯" menu's place and growth point come from code, under its circle) */
+:root[data-style='glas'] .g-avatar-menu {
+  top: calc(58px + env(safe-area-inset-top, 0px));
+  right: 16px;
+  transform-origin: calc(100% - 22px) -28px;
+}
+
+:root[data-style='glas'] :is(.g-avatar-menu--closing, .g-hmenu__menu--closing) {
   pointer-events: none;
   animation: g-avatar-out 280ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
-:root[data-style='glas'] .g-avatar-menu__content {
+:root[data-style='glas'] :is(.g-avatar-menu__content, .g-hmenu__content) {
   max-height: calc(100dvh - 74px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overscroll-behavior: contain;
   animation: g-fade-in 200ms ease 110ms backwards;
 }
 
-:root[data-style='glas'] .g-avatar-menu__item {
+:root[data-style='glas'] :is(.g-avatar-menu__item, .g-hmenu__item) {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -105,27 +111,34 @@
 }
 
 /* separators from the text start (16) to the edge */
-:root[data-style='glas'] .g-avatar-menu__item + .g-avatar-menu__item {
+:root[data-style='glas'] :is(.g-avatar-menu__item + .g-avatar-menu__item, .g-hmenu__item + .g-hmenu__item) {
   background-image: linear-gradient(var(--g-sep), var(--g-sep));
   background-repeat: no-repeat;
   background-position: 16px 0;
   background-size: calc(100% - 16px) 0.5px;
 }
 
-:root[data-style='glas'] .g-avatar-menu__item:hover {
-  background-color: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.g-avatar-menu__item, .g-hmenu__item):hover {
+    background-color: var(--g-hover);
+  }
 }
 
-:root[data-style='glas'] .g-avatar-menu__item:active {
+:root[data-style='glas'] :is(.g-avatar-menu__item, .g-hmenu__item):active {
   background-color: var(--g-fill);
 }
 
-:root[data-style='glas'] .g-avatar-menu__item:focus-visible {
+:root[data-style='glas'] :is(.g-avatar-menu__item, .g-hmenu__item):focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: -2px;
 }
 
-:root[data-style='glas'] .g-avatar-menu__text {
+/* the "⋯" menu's links (Sentinel öffnen) */
+:root[data-style='glas'] a.g-hmenu__item {
+  text-decoration: none;
+}
+
+:root[data-style='glas'] :is(.g-avatar-menu__text, .g-hmenu__text) {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -133,9 +146,13 @@
   white-space: nowrap;
 }
 
-:root[data-style='glas'] .g-avatar-menu__icon {
+:root[data-style='glas'] :is(.g-avatar-menu__icon, .g-hmenu__icon) {
   flex: none;
   color: var(--g-label);
+}
+
+:root[data-style='glas'] .g-hmenu__icon {
+  display: flex;
 }
 
 :root[data-style='glas'] .g-avatar-menu__icon--on {
@@ -153,6 +170,28 @@
   flex-direction: column;
   gap: 2px;
   padding: 6px;
+}
+
+/* "⋯" menu from 900 px: the context menu's desktop look (gestures.css) — glass, 6 inside, rows 44 with radius 14, no
+   hairlines; no dim layer (code) */
+@media (min-width: 900px) {
+  :root[data-style='glas'] .g-hmenu__menu {
+    --g-surface-fill: var(--g-glass-fill);
+    --g-surface-filter: var(--g-glass-filter);
+    --g-surface-solid: var(--g-card-solid);
+    min-width: 256px;
+    padding: 6px;
+  }
+
+  :root[data-style='glas'] .g-hmenu__item {
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 14px;
+  }
+
+  :root[data-style='glas'] .g-hmenu__item + .g-hmenu__item {
+    background-image: none;
+  }
 }
 
 /* ---- Notifications panel → glass popover under the bell (desktop; K25). The phone has a sheet since stage 3
@@ -195,8 +234,17 @@
   color: var(--g-accent-ink);
 }
 
-:root[data-style='glas'] .notifications-panel__dismiss-all:hover {
-  background: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .notifications-panel__dismiss-all:hover {
+    background: var(--g-hover);
+  }
+}
+
+/* the classic tints stay after a tap under a finger (K108) */
+@media (hover: none) {
+  :root[data-style='glas'] .notifications-panel__dismiss-all:hover {
+    background: none;
+  }
 }
 
 :root[data-style='glas'] .notifications-panel__body {
@@ -217,8 +265,16 @@
   border-radius: 18px;
 }
 
-:root[data-style='glas'] .notif-row:hover {
-  background: var(--g-hover);
+@media (hover: hover) {
+  :root[data-style='glas'] .notif-row:hover {
+    background: var(--g-hover);
+  }
+}
+
+@media (hover: none) {
+  :root[data-style='glas'] .notif-row:hover {
+    background: none;
+  }
 }
 
 :root[data-style='glas'] .notif-row__body {
@@ -248,9 +304,11 @@
   color: var(--g-label-2);
 }
 
-:root[data-style='glas'] .notif-row__dismiss:hover {
-  background: radial-gradient(circle, var(--g-red-soft) 12.5px, transparent 13px);
-  color: var(--g-red-ink);
+@media (hover: hover) {
+  :root[data-style='glas'] .notif-row__dismiss:hover {
+    background: radial-gradient(circle, var(--g-red-soft) 12.5px, transparent 13px);
+    color: var(--g-red-ink);
+  }
 }
 
 :root[data-style='glas'] .notif-row__dismiss:focus-visible {
@@ -319,9 +377,18 @@
   border-top: 0;
 }
 
-:root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):hover {
-  background: var(--g-hover);
-  color: var(--g-label);
+@media (hover: hover) {
+  :root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):hover {
+    background: var(--g-hover);
+    color: var(--g-label);
+  }
+}
+
+/* under a finger the classic row tint would stay after a tap (K108); a press still shows `fill` (:active below) */
+@media (hover: none) {
+  :root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):hover {
+    background: none;
+  }
 }
 
 :root[data-style='glas'] :is(.rooms-menu__row, .app-more-menu__row):active {
@@ -573,6 +640,8 @@
   :root[data-style='glas'] :is(
       .g-avatar-dim,
       .g-avatar-menu,
+      .g-hmenu__dim,
+      .g-hmenu__menu,
       .notifications-panel,
       .user-avatar-menu__panel,
       .rooms-menu--open,
@@ -585,7 +654,7 @@
     animation-delay: 0s !important;
   }
 
-  :root[data-style='glas'] :is(.g-avatar-dim--closing, .g-avatar-menu--closing) {
+  :root[data-style='glas'] :is(.g-avatar-dim--closing, .g-avatar-menu--closing, .g-hmenu__dim--closing, .g-hmenu__menu--closing) {
     animation-name: g-fade-out !important;
   }
 }

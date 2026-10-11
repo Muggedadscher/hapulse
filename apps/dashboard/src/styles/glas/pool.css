@@ -666,9 +666,34 @@
   background: var(--g-teal);
 }
 
+/* The ring lies inside the bar (it clips, the bar's corners too) and above the grips on the slot's edges (z 2 in
+   Pool.css): drawn on ::after, so the slot's fill stays under the grips. On a running slot in the slot's own ink like
+   its label (the focus colour on teal: 2.3:1; Etappe 7, K109) */
 :root[data-style='glas'] .pool-timeline__seg:focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: -2px;
+  outline: none;
+}
+
+:root[data-style='glas'] .pool-timeline__seg:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 2px solid var(--g-focus);
+  pointer-events: none;
+}
+
+:root[data-style='glas'] .pool-timeline__seg:first-of-type:focus-visible::after {
+  border-top-left-radius: 14px;
+  border-bottom-left-radius: 14px;
+}
+
+:root[data-style='glas'] .pool-timeline__seg:last-of-type:focus-visible::after {
+  border-top-right-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
+
+:root[data-style='glas'] .pool-timeline__seg--on:focus-visible::after {
+  border-color: var(--g-glyph-dark);
 }
 
 :root[data-style='glas'] .pool-timeline__seg-label {
@@ -692,15 +717,24 @@
   transition: transform var(--g-d-snappy) var(--g-spring-snappy);
 }
 
+/* the knob stays opaque under the pointer, after a tap and with the keyboard's ring (the classic grip, which loads
+   with the page after this file, dims there; K108) */
+:root[data-style='glas'] .pool-timeline__handle:is(:hover, :focus-visible) .pool-timeline__handle-grip {
+  opacity: 1;
+}
+
 :root[data-style='glas'] .pool-timeline__handle--active .pool-timeline__handle-grip {
   background: var(--g-knob);
   transform: scale(1.12);
 }
 
+/* the grip sits on the edge between a running slot (teal) and an idle one: a ring in two tones, dark inside and the
+   knob's white outside, so one of them stands out on either side in both modes (Etappe 7, K109) */
 :root[data-style='glas'] .pool-timeline__handle:focus-visible .pool-timeline__handle-grip {
   box-shadow:
     var(--g-shadow-knob),
-    0 0 0 2px var(--g-focus);
+    0 0 0 2px var(--g-glyph-dark),
+    0 0 0 4px var(--g-knob);
 }
 
 :root[data-style='glas'] .pool-timeline__handle-time {
@@ -862,6 +896,11 @@
     box-shadow: none;
   }
 
+  /* a running slot keeps its own colours (above): its ring in the pair's text colour */
+  :root[data-style='glas'] .pool-timeline__seg--on:focus-visible::after {
+    border-color: HighlightText;
+  }
+
   :root[data-style='glas'] .pool-bar__fill {
     opacity: 1;
   }
@@ -882,5 +921,9 @@
   :root[data-style='glas'] :is(.pool-daytoggle--active, .pool-slotaction__btn--on, .pool-slotaction__btn--off, .pool-weekchip--active) {
     outline: 2px solid Highlight;
     outline-offset: -2px;
+  }
+
+  :root[data-style='glas'] :is(.pool-editor__remove, .pool-editor__add.btn--secondary) {
+    border: 1px solid ButtonText;
   }
 }
