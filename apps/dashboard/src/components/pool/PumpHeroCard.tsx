@@ -3,7 +3,8 @@
  *
  * Shows whether the pump is running right now, a segmented control for the
  * operating mode (off / automatic / manual, straight from the input_select's
- * own options), and today's runtime as a glance stat.
+ * own options), and today's runtime as a glance stat. In Glas the top is the tafel's head (plan
+ * docs/glas/PLAN-TAFELN.md): the pump in a circle, its state in the pool's ink, the runtime below it.
  */
 
 import React, { useState } from 'react';
@@ -17,6 +18,7 @@ import { POOL_ENTITIES, poolModeTone } from './poolConfig';
 import { PumpManualModal } from './PumpManualModal';
 import { useIsGlas } from '../../app/glas/useUiStyle';
 import { POOL_SEGMENT_MAX, PoolModeSegment } from '../glas/PoolModeSegment';
+import { TafelHead } from '../glas/tafel/Tafel';
 
 function ModeIcon({ option }: { option: string }) {
   const tone = poolModeTone(option);
@@ -40,27 +42,38 @@ export function PumpHeroCard() {
   const running = pump?.state === 'on';
   const options = (mode?.attributes['options'] as string[] | undefined) ?? [];
   const activeOption = mode?.state;
+  const hasRuntime = !!runtime && !isNaN(parseFloat(runtime.state));
 
   return (
-    <Card className={`pool-hero${running ? ' pool-hero--running' : ''}`}>
-      <div className="pool-hero__top">
-        <span className="pool-hero__icon" aria-hidden="true">
-          {running ? <Waves size={26} strokeWidth={1.75} /> : <Power size={26} strokeWidth={1.75} />}
-        </span>
-        <div className="pool-hero__headings">
-          <span className="pool-hero__title">{t('pool.pump.title')}</span>
-          <span className="pool-hero__status">
-            {running ? t('pool.pump.running') : t('pool.pump.idle')}
+    <Card className={`pool-hero${running ? ' pool-hero--running' : ''}${glas ? ' g-tafel' : ''}`}>
+      {glas ? (
+        <TafelHead
+          icon={running ? <Waves size={28} strokeWidth={1.75} /> : <Power size={28} strokeWidth={1.75} />}
+          tone={running ? 'pool' : 'none'}
+          kicker={t('pool.pump.title')}
+          title={running ? t('pool.pump.running') : t('pool.pump.idle')}
+          sub={hasRuntime && runtime ? `${formatEntityState(runtime, locale)} ${t('pool.data.runtimeToday')}` : undefined}
+        />
+      ) : (
+        <div className="pool-hero__top">
+          <span className="pool-hero__icon" aria-hidden="true">
+            {running ? <Waves size={26} strokeWidth={1.75} /> : <Power size={26} strokeWidth={1.75} />}
           </span>
-        </div>
-        {runtime && !isNaN(parseFloat(runtime.state)) && (
-          <div className="pool-hero__glance">
-            <Clock size={15} strokeWidth={1.75} aria-hidden="true" />
-            <span className="pool-hero__glance-value data-font">{formatEntityState(runtime, locale)}</span>
-            <span className="pool-hero__glance-label">{t('pool.data.runtimeToday')}</span>
+          <div className="pool-hero__headings">
+            <span className="pool-hero__title">{t('pool.pump.title')}</span>
+            <span className="pool-hero__status">
+              {running ? t('pool.pump.running') : t('pool.pump.idle')}
+            </span>
           </div>
-        )}
-      </div>
+          {hasRuntime && runtime && (
+            <div className="pool-hero__glance">
+              <Clock size={15} strokeWidth={1.75} aria-hidden="true" />
+              <span className="pool-hero__glance-value data-font">{formatEntityState(runtime, locale)}</span>
+              <span className="pool-hero__glance-label">{t('pool.data.runtimeToday')}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {options.length > 0 && glas && options.length <= POOL_SEGMENT_MAX && (
         <PoolModeSegment options={options} value={activeOption} label={t('pool.mode.title')} onManual={() => setManualOpen(true)} />

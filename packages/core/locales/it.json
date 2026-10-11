@@ -1487,5 +1487,9 @@
   "hints.wasteTomorrow": "{name} domani",
   "hints.tapToClose": "Tocca per chiudere",
   "hints.tapToLock": "Tocca per bloccare",
-  "hints.more": "+{n}"
+  "hints.more": "+{n}",
+  "glas.tafel.doorsClosed": "Chiuse",
+  "glas.tafel.windowsClosed": "Chiuse",
+  "glas.tafel.garageClosed": "Chiuse",
+  "glas.tafel.noMotion": "Nessuno"
 }

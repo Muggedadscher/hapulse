@@ -1487,5 +1487,9 @@
   "hints.wasteTomorrow": "{name} morgen",
   "hints.tapToClose": "Tippen zum Schließen",
   "hints.tapToLock": "Tippen zum Verriegeln",
-  "hints.more": "+{n}"
+  "hints.more": "+{n}",
+  "glas.tafel.doorsClosed": "Geschlossen",
+  "glas.tafel.windowsClosed": "Geschlossen",
+  "glas.tafel.garageClosed": "Geschlossen",
+  "glas.tafel.noMotion": "Keine"
 }

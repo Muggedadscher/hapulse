@@ -15,7 +15,8 @@ import { GarageSummaryIcon } from '../garage/GarageIcon'; // [fork]
 import { summaryTone } from '../garage/garageText'; // [fork]
 import { lockSummary, lockTone } from './lockLogic'; // [fork]
 
-function alarmGradientClass(state: string | undefined): string {
+// [fork] exported: the Glas tafel takes its tone from the same states
+export function alarmGradientClass(state: string | undefined): string {
   if (!state || state === 'disarmed') return 'security-hero-card--disarmed';
   if (state === 'armed_home') return 'security-hero-card--armed-home';
   if (state === 'armed_night') return 'security-hero-card--armed-night';

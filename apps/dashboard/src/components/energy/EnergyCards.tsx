@@ -62,7 +62,8 @@ const PERIODS: { id: EnergyPeriod; labelKey: TKey }[] = [
   { id: 'year', labelKey: 'energy.period.year' },
 ];
 
-function PeriodSelector({
+// [fork] exported: also the period segment of the Glas tafel (components/glas/tafel/EnergyTafel.tsx)
+export function PeriodSelector({
   period,
   onChange,
 }: {

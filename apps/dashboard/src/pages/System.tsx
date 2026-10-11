@@ -12,7 +12,7 @@ import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
 import { ActivityCard } from '../components/home/ActivityCard';
-import { SystemHeroCard } from '../components/system/SystemHeroCard';
+import { SystemHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
 import { SystemMonitorCard } from '../components/system/SystemMonitorCard';
 import { BatteriesCard } from '../components/system/BatteriesCard';
 import { applyStoredOrder } from '../lib/order';

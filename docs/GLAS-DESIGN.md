@@ -1108,6 +1108,34 @@ Scrim hatte 2,7:1 am ×). Fokus über dem Bild: Ring innen auf dem Glas des Knop
   (Rot, Weiß 15/700) nur außerhalb von Live.
 - Nicht-verlieren-Liste: Inventar J / Plan §4.
 
+### 7.34 Kopf-Tafel (die Karte oben auf einer Seite)
+
+Geräte, System, Energie, Sicherheit, NVR, Automationen, Szenen und Pool tragen oben dieselbe Tafel (User-Entscheid
+2026-10-11, GLAS-PLAN §7.3 E18; Code `components/glas/tafel/`, `styles/glas/tafel.css`). Sie zeigt dieselben Fakten wie
+der klassische Hero, nur anders angeordnet. Die Karte ist schlicht `card` (kein Verlauf, kein Schleier, kein Hover),
+Innenabstand 16, Abstand der Teile 16.
+
+- **Kopf:** Symbol 28 in einem Kreis 56 (Zustand: `<ton>Soft` + Ink, sonst `fill` + `label2`), daneben eine Zeile 13/18
+  `label2` (z. B. „Zuletzt ausgeführt“, Alarmname), der Zustand 22/28 700 in seiner Ink (ok grün, Warnung `warnInk`,
+  Fehler `redInk`, Pool `tealInk`, ohne Zustand `label`), optional eine Zeile 15/20 `label2` darunter. Der Seitentitel
+  wird nicht wiederholt. Energie hat statt des Kopfs das Zeitraum-Segment und darunter den Hausverbrauch wie die
+  Energie-Karte der Übersicht (34/41 600, „kWh“ 17/22 600 `label2`).
+- **Raster:** eine Beschreibungsliste. Je Zelle Symbol 15 + Beschriftung 13/18 600 `label2`, darunter der Wert: Zahlen
+  28/34 600 (Einheit 17 600 `label2`), Zustände als Wort 17/22 600. Haarlinien 0,5 `sep` nur zwischen den Zellen, die
+  Spalten nach Platz (Mindestbreite, höchstens 3 bzw. 4). Keine Kacheln, keine Kapseln.
+- **Farbe nur, wo etwas abweicht** (§2.2, wie die Status-Chips K87): Zählwerte, Geschlossenes, Verriegeltes und Ruhe
+  `label2`; offene Türen und Fenster, Bewegung, Störungen und die nicht erreichbare Aufbewahrung (NVR) `warnInk`, offene
+  Schlösser und Garagentore `redInk`, jeweils an Symbol und Wert; Solar behält seine Diagrammfarbe am Symbol (§2.4).
+- **System:** CPU, RAM und Speicher als Ringe 64 (Spur `fill`, Bogen 7 in der Vollfarbe der klassischen Schwelle: grün,
+  gelb, rot; Wert 15/20 600 in der Mitte, Name darunter), darunter Hinweiszeilen 44 mit Haarlinie (Symbol 18 `warnInk`,
+  Text 15/20 600 `label`) für schwache Batterien und nicht verfügbare Geräte. Der gelbe Bogen hat wenig Kontrast; er
+  ist, wie die Balken des Systemmonitors darunter, nicht die einzige Angabe (die Zahl steht im Ring).
+- **Sicherheit:** unter dem Kopf die Personen als überlappende Kreise 32 (zu Hause grün mit dunklem Buchstaben, sonst
+  `fillSolid`) und ein Satz 15/20 `label2`, dann das Raster aus Wörtern.
+- **Pool:** nur der Kopf (Pumpe läuft/aus, Laufzeit heute), darunter das Modus-Segment wie bisher.
+- **Gedeckelte Höhe** (S/M/L): der Kopf bzw. das Segment bleibt oben stehen und trägt die Kartenfarbe.
+- **Kontrast erzwungen:** Abweichungen in `Highlight`, Ringe in Systemfarben, der Kreis mit Rand.
+
 ---
 
 ## 8. Do & Don’t

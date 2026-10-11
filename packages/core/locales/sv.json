@@ -1487,5 +1487,9 @@
   "hints.wasteTomorrow": "{name} i morgon",
   "hints.tapToClose": "Tryck för att stänga",
   "hints.tapToLock": "Tryck för att låsa",
-  "hints.more": "+{n}"
+  "hints.more": "+{n}",
+  "glas.tafel.doorsClosed": "Stängda",
+  "glas.tafel.windowsClosed": "Stängda",
+  "glas.tafel.garageClosed": "Stängda",
+  "glas.tafel.noMotion": "Ingen"
 }

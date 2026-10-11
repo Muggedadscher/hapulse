@@ -8,7 +8,8 @@ import './SystemHeroCard.css';
 
 type SystemHealth = 'healthy' | 'warning' | 'critical' | 'unknown';
 
-function deriveHealth(
+// [fork] exported: the Glas tafel uses the same rule (components/glas/tafel/SystemTafel.tsx)
+export function deriveHealth(
   cpu: HassEntity | undefined,
   mem: HassEntity | undefined,
   disk: HassEntity | undefined,
@@ -24,7 +25,8 @@ function deriveHealth(
   return 'healthy';
 }
 
-function metricChipClass(val: number, warnAt: number, critAt: number): string {
+// [fork] exported: the Glas tafel colours its rings by the same thresholds
+export function metricChipClass(val: number, warnAt: number, critAt: number): string {
   if (val > critAt) return 'system-hero-chip--critical';
   if (val > warnAt) return 'system-hero-chip--warn';
   return 'system-hero-chip--ok';

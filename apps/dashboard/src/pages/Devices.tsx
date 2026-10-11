@@ -5,7 +5,7 @@ import { useDevices } from '../ha/useDevices';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { useT, useLocale } from '../i18n/useT';
 import { EmptyState } from '../components/ui/EmptyState';
-import { DevicesHeroCard } from '../components/devices/DevicesHeroCard';
+import { DevicesHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
 import { DevicesToolbar, type FilterOption } from '../components/devices/DevicesToolbar';
 import { DeviceCard } from '../components/devices/DeviceCard';
 import { DeviceDetailsModal } from '../components/devices/DeviceDetailsModal';

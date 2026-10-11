@@ -721,117 +721,7 @@
   }
 }
 
-/* ---- Hero (plan docs/glas/PLAN-ETAPPE-7.md N2): Glas has its own (`NvrHeroGlas`), calm like the heroes of security
-   and system (K90, pages.css): the card in the quiet wash of its state (all online green, a problem red; half the soft
-   tone), the symbol in a circle 56 in the soft tone, "Sentinel NVR" 13/18 `label2`, the state 22/28 700 in its ink, the
-   values as chips 32 in `fill` (the key 15/20 `label2`, the value 600 `label`; the retention target out of reach: a dot
-   8 in `warnInk` before it, as the system's values over a threshold). Spacing as the system's hero. ---- */
-:root[data-style='glas'] .nvr-layout .g-nvr-hero {
-  --g-hero-soft: var(--g-green-soft);
-  --g-hero-ink: var(--g-green-ink);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 20px 22px 18px;
-  border: 0;
-  background-image: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--g-hero-soft) 50%, transparent) 0%,
-    transparent 65%
-  );
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero--problem {
-  --g-hero-soft: var(--g-red-soft);
-  --g-hero-ink: var(--g-red-ink);
-}
-
-/* a content surface, not a control: no hover tint */
-:root[data-style='glas'] .nvr-layout .g-nvr-hero:hover {
-  background-color: var(--bg-card);
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__main {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__icon {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--g-hero-soft);
-  color: var(--g-hero-ink);
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__icon > svg {
-  width: 28px;
-  height: 28px;
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__text {
-  min-width: 0;
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__label {
-  margin: 0 0 3px;
-  color: var(--g-label-2);
-  font: 400 13px / 18px var(--g-font);
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__state {
-  margin: 0;
-  color: var(--g-hero-ink);
-  font: 700 22px / 28px var(--g-font);
-}
-
-/* one problem never breaks inside (a long one may: the storage problem) */
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__part:not(:only-child) {
-  white-space: nowrap;
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: var(--g-fill);
-  color: var(--g-label-2);
-  font: 400 15px / 20px var(--g-font);
-  white-space: nowrap;
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__value {
-  color: var(--g-label);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .nvr-layout .g-nvr-hero__chip[data-warn]::before {
-  content: '';
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--g-warn-ink);
-}
+/* ---- Hero: a tafel like the other pages' heads (`NvrHeroGlas`, styles/glas/tafel.css; no hover tint, pages.css) ---- */
 
 /* ---- Card titles (chart, storage): the symbol bare 18 in `label2`, the title 20/25 600 in one line like the card
    titles of the other pages; the line below the title ("Heute, alle Kameras", "Aufnahme-Datenträger") is left out,
@@ -1627,9 +1517,9 @@
     border: 1px solid CanvasText;
   }
 
-  /* every state of the dots (their state rules above are more specific than the plain dot), the warning dots of the
-     hero's retention chip and the storage note */
-  :root[data-style='glas'] .nvr-layout :is(.g-nvr-hero__chip[data-warn], .nvr-note--warn)::before,
+  /* every state of the dots (their state rules above are more specific than the plain dot) and the warning dot of
+     the storage note */
+  :root[data-style='glas'] .nvr-layout .nvr-note--warn::before,
   :root[data-style='glas'] :is(.nvr-sec, .nvr-room-cams) .nvr-camtile__dot,
   :root[data-style='glas']
     :is(.nvr-sec, .nvr-room-cams)

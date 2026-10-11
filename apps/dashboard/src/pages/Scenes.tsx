@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { SceneHeroCard } from '../components/scenes/SceneHeroCard';
+import { SceneHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
 import { SceneActivityFeed } from '../components/scenes/SceneActivityFeed';
 import { SceneRoomCard } from '../components/scenes/SceneRoomCard';
 import { SortableGrid } from '../components/ui/SortableGrid';

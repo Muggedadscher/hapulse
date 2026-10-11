@@ -1,93 +1,11 @@
 /* [fork] Glas — the pool page (plan docs/glas/PLAN-ETAPPE-5.md K92–K94, K99; GLAS-DESIGN §7.18, §7.27–§7.30): the
-   hero like the pool window's head, the rings, the figures as a list, the runtime chart and the schedule editor's
+   hero (a tafel's head, tafel.css), the rings, the figures as a list, the runtime chart and the schedule editor's
    window. Only presentation: the contents K1–K10 stay. The card titles, the grid and the schedule card's title in the
    surface are the frame (pages.css); the mode segment's size is controls.css, its markup components/glas/
    PoolModeSegment.tsx (page and window); the switches and steppers are controls.css, the time field lists.css, the
    window's foot (Abbrechen, Speichern prominent) sheets.css. */
 
-/* ---- Hero: the pump like the pool window's head — the symbol in a circle 56 (running teal with the dark glyph), the
-   name 13 label2, the state 22/28 700 (running in tealInk); today's runtime as a capsule 32 like the heroes' chips. ---- */
-:root[data-style='glas'] .pool-hero {
-  gap: 16px;
-  padding: 16px;
-}
-
-:root[data-style='glas'] .pool-hero__top {
-  gap: 8px 14px;
-}
-
-:root[data-style='glas'] .pool-hero__icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--g-fill);
-  box-shadow: none;
-  color: var(--g-label-2);
-  transition:
-    background-color 300ms ease,
-    color 300ms ease;
-}
-
-:root[data-style='glas'] .pool-hero__icon > svg {
-  width: 28px;
-  height: 28px;
-}
-
-:root[data-style='glas'] .pool-hero--running .pool-hero__icon {
-  background: var(--g-teal);
-  box-shadow: none;
-  color: var(--g-glyph-dark);
-}
-
-:root[data-style='glas'] .pool-hero__headings {
-  gap: 0;
-}
-
-:root[data-style='glas'] .pool-hero__title {
-  color: var(--g-label-2);
-  font: 400 13px / 18px var(--g-font);
-}
-
-:root[data-style='glas'] .pool-hero__status {
-  color: var(--g-label);
-  font: 700 22px / 28px var(--g-font);
-}
-
-:root[data-style='glas'] .pool-hero--running .pool-hero__status {
-  color: var(--g-teal-ink);
-}
-
-:root[data-style='glas'] .pool-hero__glance {
-  flex-wrap: nowrap;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 12px 0 10px;
-  border-radius: 999px;
-  background: var(--g-fill);
-  color: var(--g-label-2);
-  font: 400 15px / 20px var(--g-font);
-  white-space: nowrap;
-}
-
-:root[data-style='glas'] .pool-hero__glance > svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  stroke-width: 2;
-}
-
-:root[data-style='glas'] .pool-hero__glance-value {
-  color: var(--g-label);
-  font-family: var(--g-font);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .pool-hero__glance-label {
-  color: var(--g-label-2);
-  font-size: 15px;
-  line-height: 20px;
-}
+/* ---- Hero: a tafel's head (PumpHeroCard, styles/glas/tafel.css; GLAS-DESIGN §7.34), below it the mode segment. ---- */
 
 /* More than five modes keep the classic buttons (K92): the track and the chosen one like the segment, the symbol and
    the phone's stacking stay classic. */

@@ -38,6 +38,30 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 45,
+    date: '2026-10-11',
+    title: { de: 'Kopf-Tafeln in Glas', en: 'Head panels in Glass' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Die großen Karten oben auf Geräte, System, Energie, Sicherheit, NVR, Automationen, Szenen und Pool sind jetzt einheitlich: oben der Zustand groß mit Symbol im Kreis, darunter die Werte in einem Raster mit feinen Linien statt grauer Kacheln',
+            en: 'Glass: the large cards at the top of Devices, System, Energy, Security, NVR, Automations, Scenes and Pool now share one look: the state large with its symbol in a circle on top, below it the values in a grid with fine lines instead of grey tiles',
+          },
+          {
+            de: 'Glas: Farbe nur, wo etwas abweicht, offene Türen und Fenster gelb, offene Schlösser und Garagentore rot, alles Geschlossene und alle Zählwerte grau; die Karten haben keinen farbigen Schleier mehr',
+            en: 'Glass: colour only where something differs, open doors and windows yellow, open locks and garage doors red, everything closed and every count grey; the cards no longer have a coloured wash',
+          },
+          {
+            de: 'Glas: System zeigt CPU, RAM und Speicher als Ringe, darunter Hinweise zu schwachen Batterien und nicht verfügbaren Geräten',
+            en: 'Glass: System shows CPU, RAM and storage as rings, below them notes about low batteries and unavailable devices',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 44,
     date: '2026-10-11',
     title: { de: 'NVR-Seite wie die Karte', en: 'NVR page like the card' },

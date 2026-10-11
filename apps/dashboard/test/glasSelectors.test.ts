@@ -172,7 +172,7 @@ describe('Glas stylesheets', () => {
       'styles/glas/pool.css',
       'styles/glas/security.css', 'styles/glas/settings.css',
       'styles/glas/sheet-content.css', 'styles/glas/sheets.css', 'styles/glas/shell.css', 'styles/glas/system.css',
-      'styles/glas/tabbar.css',
+      'styles/glas/tabbar.css', 'styles/glas/tafel.css',
       'styles/glas/titles.css',
     ]);
   });

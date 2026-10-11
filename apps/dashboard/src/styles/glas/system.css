@@ -1,5 +1,5 @@
-/* [fork] Glas — the system page (plan docs/glas/PLAN-ETAPPE-5.md R1–R5, K94; GLAS-DESIGN §7.30). The hero and the
-   cards' frame are pages.css, edit mode edit.css. Only presentation of the existing markup: the thresholds stay
+/* [fork] Glas — the system page (plan docs/glas/PLAN-ETAPPE-5.md R1–R5, K94; GLAS-DESIGN §7.30). The hero is a tafel
+   (tafel.css), the cards' frame pages.css, edit mode edit.css. Only presentation of the existing markup: the thresholds stay
    (monitor bars above 75 % and above 90 %; batteries at 50, 25 and 10 %), each band keeps a colour of its own, in the
    state's full colour instead of the classic ink — and the classic accent band (a battery at 50 %) becomes yellow,
    because the accent is never a state colour in Glas (GLAS-DESIGN §2.3): green, yellow, orange, red. */
@@ -228,12 +228,6 @@
   }
 
   :root[data-style='glas'] .system-page :is(.sys-metric-bar__fill, .bat-row__bar-fill) {
-    background: CanvasText;
-  }
-
-  /* the hero's dot of a value over its threshold (pages.css) */
-  :root[data-style='glas'] .system-page .system-hero-chip::before {
-    forced-color-adjust: none;
     background: CanvasText;
   }
 }

@@ -12,7 +12,8 @@ interface SceneHeroCardProps {
 }
 
 /** Takes the translator as a parameter: it runs outside any component body. */
-function formatRelativeTime(t: TFunction, iso: string | null | undefined): string {
+// [fork] exported: also the Glas tafel (components/glas/tafel/ScenesTafel.tsx)
+export function formatRelativeTime(t: TFunction, iso: string | null | undefined): string {
   if (!iso || iso === 'unknown') return t('scenes.time.never');
   try {
     const delta = Date.now() - new Date(iso).getTime();

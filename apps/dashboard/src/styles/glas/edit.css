@@ -11,8 +11,8 @@
      and above the hints while they are a row of capsules.
    - below 900 px only the eye and the phone, at the right end of the title row (the link is hidden in edit mode);
      the main room has its title inside the card there, so its bar sits above it.
-   - above a card without a title (the security hero, alarm, cameras and NVR) and above the heroes of the energy (its
-     title is inside the surface, with the period), automations, scenes and system pages — from 900 px, where such a
+   - above a card without a title (the security hero, alarm, cameras and NVR) and above the heroes (tafeln) of the
+     energy, automations, scenes and system pages — from 900 px, where such a
      card keeps the lane of its titled neighbours (pages.css), in that lane on the line of their bars.
    L ("taller", core sizePresets.ts) = a minimum height of 470 px for the cell from 900 px; Klassisch and the phone
    ignore it. */
@@ -59,8 +59,8 @@
   opacity: 0.4;
 }
 
-/* a security card without a title (hero, alarm, cameras, NVR), the energy hero (its title is inside the surface) and
-   the heroes of the automations, scenes and system pages: the bar above it — from 900 px in a shared row it moves into
+/* a security card without a title (hero, alarm, cameras, NVR) and the heroes (tafeln) of the energy, automations,
+   scenes and system pages: the bar above it — from 900 px in a shared row it moves into
    the card's lane instead (below) */
 :root[data-style='glas']
   .security-page

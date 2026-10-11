@@ -1214,9 +1214,11 @@ module.exports = function nvr(h) {
             meta: txt(t.querySelector('.nvr-camtile__meta')), radius: cs(t).borderTopLeftRadius };
         }),
         // the hero's facts: the state and the values (events today, recording, storage, retention); Glas has its own
-        // calm hero (plan E7 N2), Klassisch the package's (the pill, the figure and the tiles after the cameras online)
+        // hero, a tafel like the other pages' heads (GLAS-DESIGN §7.34), Klassisch the package's (the pill, the figure and
+        // the tiles after the cameras online)
         hero: q('.g-nvr-hero')
-          ? { state: txt(q('.g-nvr-hero__state')), values: all('.g-nvr-hero__value').map(txt).map((v) => v.replace(/\s+/g, '')),
+          ? { state: txt(q('.g-nvr-hero .g-tafel__title')),
+            values: all('.g-nvr-hero .g-tafel__value').map(txt).map((v) => v.replace(/\s+/g, '')),
             problem: !!q('.g-nvr-hero--problem') }
           : { state: txt(q('.nvr-hero .nvr-pill')),
             values: [q('.nvr-hero__primary-value'), ...all('.nvr-hero .nvr-stat__value').slice(1)].map(txt).map((v) => v.replace(/\s+/g, '')),
@@ -1299,7 +1301,7 @@ module.exports = function nvr(h) {
           const banner = await until(o.page, () => !!document.querySelector('.nvr-banner'));
           r.trouble = await ev(o.page, () => ({ banner: (document.querySelector('.nvr-banner') || {}).textContent || null,
             danger: !!document.querySelector('.nvr-hero .nvr-pill--danger, .g-nvr-hero--problem'),
-            state: ((document.querySelector('.nvr-hero .nvr-pill, .g-nvr-hero__state') || {}).textContent || '').trim() }));
+            state: ((document.querySelector('.nvr-hero .nvr-pill, .g-nvr-hero .g-tafel__title') || {}).textContent || '').trim() }));
           r.trouble.shown = banner;
         } finally {
           await o.close();
@@ -1786,8 +1788,8 @@ module.exports = function nvr(h) {
 
     // 5. Forced colours: the floating parts of the camera page keep an edge, the playhead stays drawn, the lens is a
     //    ring; the date window's chosen day keeps a ring; the overview's tiles and its head's "⋯" keep an edge; every
-    //    status dot (live, offline, hanging, the retention warning in the hero and the storage note, the home card) is
-    //    drawn in CanvasText
+    //    status dot (live, offline, hanging, the storage note, the home card) is drawn in CanvasText, the hero's
+    //    retention warning in Highlight
     await block('nvrForcedColors', async () => {
       const res = {};
       /** The dots under `sel` with their state and fill, and the value of CanvasText (from a probe). */
@@ -1798,14 +1800,14 @@ module.exports = function nvr(h) {
         const ink = getComputedStyle(probe).color;
         probe.remove();
         const state = (d) => {
-          if (d.matches('.g-nvr-hero__chip, .nvr-note')) return 'warn';
+          if (d.matches('.nvr-note')) return 'warn';
           const cam = d.closest('[data-state]');
           if (cam) return cam.getAttribute('data-state');
           if (!d.classList.contains('nvr-camtile__dot--off')) return 'ok';
           return d.closest('.nvr-camtile').querySelector(':scope > .nvr-camtile__offline > .lucide-video-off') ? 'stalled' : 'offline';
         };
-        // a warning dot is the ::before of its chip or note
-        const fill = (d) => getComputedStyle(d, d.matches('.g-nvr-hero__chip, .nvr-note') ? '::before' : null).backgroundColor;
+        // a warning dot is the ::before of its note
+        const fill = (d) => getComputedStyle(d, d.matches('.nvr-note') ? '::before' : null).backgroundColor;
         return { ink, dots: [...document.querySelectorAll(s)].map((d) => ({ state: state(d), fill: fill(d) })) };
       }, sel);
       const allInk = (r, want) => want.every((st) => r.dots.some((d) => d.state === st)) && r.dots.every((d) => d.fill === r.ink);
@@ -1825,13 +1827,23 @@ module.exports = function nvr(h) {
       } finally {
         await o.close();
       }
-      // a retention target out of reach (60 days, about 49 fit): the warning dots of the hero and the storage note
+      // a retention target out of reach (60 days, about 49 fit): the hero's warning and the storage note's dot
       const ov = await open('desktop', 'glas', '/nvr', { forced: true, sentinel: { stats: { retentionDays: 60 } } });
       try {
         await until(ov.page, () => document.querySelectorAll('.nvr-layout .g-nvr__cam').length === 4);
         res.overview = await ev(ov.page, () => [...document.querySelectorAll('.nvr-layout .g-nvr__cam, .nvr-actions .g-hmenu__btn')]
           .map((t) => getComputedStyle(t).borderTopWidth));
-        res.overviewDots = await dots(ov.page, '.nvr-layout :is(.g-nvr__dot, .g-nvr-hero__chip[data-warn], .nvr-note--warn)');
+        res.overviewDots = await dots(ov.page, '.nvr-layout :is(.g-nvr__dot, .nvr-note--warn)');
+        // the hero's retention out of reach: a tafel cell, its symbol and value in Highlight (tafel.css)
+        res.heroWarn = await ev(ov.page, () => {
+          const probe = document.createElement('span');
+          probe.style.cssText = 'position:absolute;forced-color-adjust:none;color:Highlight';
+          document.body.append(probe);
+          const ink = getComputedStyle(probe).color;
+          probe.remove();
+          const c = document.querySelector('.g-nvr-hero .g-tafel__cell[data-tone="warn"]');
+          return !!c && [c.querySelector('.g-tafel__label > svg'), c.querySelector('.g-tafel__value')].every((e) => getComputedStyle(e).color === ink);
+        });
       } finally {
         await ov.close();
       }
@@ -1845,7 +1857,7 @@ module.exports = function nvr(h) {
       out.nvrForcedColors = res;
       out.nvrForcedColorsOk = ['pill', 'tabs', 'chip', 'back', 'tool'].every((k) => res.cam[k] === '1px') && res.cam.lens === '2px'
         && res.cam.playhead === 1 && res.day === '2px' && res.overview.length === 5 && res.overview.every((w) => w === '1px')
-        && allInk(res.overviewDots, ['warn', 'ok', 'offline', 'stalled']) && allInk(res.homeDots, ['ok', 'offline', 'stalled']);
+        && allInk(res.overviewDots, ['warn', 'ok', 'offline', 'stalled']) && res.heroWarn && allInk(res.homeDots, ['ok', 'offline', 'stalled']);
     });
 
     // 6. Opaque glass ("Deckend"; more contrast alike): no backdrop-filter on the camera page and the overview, the

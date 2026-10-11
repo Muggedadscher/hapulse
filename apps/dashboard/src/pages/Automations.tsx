@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { AutomationHeroCard } from '../components/automation/AutomationHeroCard';
+import { AutomationHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
 import { AutomationActivityFeed } from '../components/automation/AutomationActivityFeed';
 import { AutomationCategoryCard } from '../components/automation/AutomationCategoryCard';
 import { SortableGrid } from '../components/ui/SortableGrid';
