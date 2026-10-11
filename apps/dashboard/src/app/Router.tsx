@@ -35,7 +35,7 @@ const Pool        = lazy(() => import('../pages/Pool').then((m) => ({ default: m
 function ScrollToTop() {
   const { pathname, state } = useLocation(); // [fork] state
   // [fork] Glas: back from a camera page returns to where the page was (app/glas/glasNavigate.ts, `glasScrollY`); the
-  // [fork] browser's back/forward and a reload (POP) start at the top as before
+  // [fork] browser's back/forward and a reload (POP) do not take that place again, they go on as before
   const kept = keptScrollY(state, useNavigationType()); // [fork]
   useEffect(() => {
     // Set scrollTop directly rather than window.scrollTo(): the app sets

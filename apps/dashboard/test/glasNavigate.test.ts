@@ -80,7 +80,7 @@ describe('keptScrollY', () => {
     }
   });
 
-  it("only for the navigation that asked: the browser's back/forward and a reload (POP) start at the top", () => {
+  it("only for the navigation that asked: the browser's back/forward and a reload (POP) do not take it again", () => {
     expect(keptScrollY({ glasScrollY: 640 }, 'PUSH')).toBe(640);
     expect(keptScrollY({ glasScrollY: 640 }, 'REPLACE')).toBe(640);
     expect(keptScrollY({ glasScrollY: 640 }, 'POP')).toBe(null);

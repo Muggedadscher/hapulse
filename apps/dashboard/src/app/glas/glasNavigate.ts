@@ -99,8 +99,8 @@ function decoded(path: string): string {
 }
 
 /** The scroll position a navigation asks the new page to keep (`state.glasScrollY`), else null: the top. Only for the
- *  navigation that asked: the browser's back/forward and a reload (`action` POP) reach that history entry again and
- *  start at the top, as on every other page. */
+ *  navigation that asked: the browser's back/forward and a reload (`action` POP) reach that history entry again and go
+ *  on as on every other page (ScrollToTop, the browser's own scroll restoration). */
 export function keptScrollY(state: unknown, action?: string): number | null {
   if (action === 'POP') return null;
   const y = state && typeof state === 'object' ? (state as Record<string, unknown>)[KEEP_SCROLL] : undefined;

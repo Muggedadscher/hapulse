@@ -91,7 +91,8 @@ Wie geplant (`app/glas/glasNavigate.ts`, `routeChunks.ts`, `styles/glas/motion.c
     (`keptScrollY`; `ScrollToTop` in `Router.tsx` springt sofort dorthin, `[fork]`, und die Tab-Leiste in `GlasRuntime`
     nimmt sie als Anker). Ohne Weg hinein (Link, Neuladen) wie bisher an den Anfang von `/nvr`. Die Stelle gilt nur
     für die Navigation von Zurück: Zurück/Vor des Browsers und Neuladen (POP) erreichen denselben Verlaufseintrag
-    wieder und beginnen oben wie jede Seite (`keptScrollY(state, useNavigationType())`). Ein zweiter Tipp auf Zurück,
+    wieder und verhalten sich wie auf jeder Seite (`keptScrollY(state, useNavigationType())`; es gelten `ScrollToTop`
+    und die Scroll-Wiederherstellung des Browsers). Ein zweiter Tipp auf Zurück,
     bevor die neue Seite steht, navigiert nicht noch einmal.
   - **Bild:** Name `g-cam` zuerst an der obersten sichtbaren Ebene der Bühne (`.nvr-stage > .nvr-stage__video`: Video,
     MJPEG oder Standbild), nach dem Commit an der Bildbox der Kachel dieser Kamera (`[data-nvr-camera]`, darin
@@ -109,12 +110,13 @@ Wie geplant (`app/glas/glasNavigate.ts`, `routeChunks.ts`, `styles/glas/motion.c
     Kamera, bis ihr frischer Schnappschuss dekodiert ist (Paket 0.19.2, ebenso `HomeSnapshot` der Home-Karte). Das ist
     auch in Klassisch sichtbar.
   - Reduzierte Bewegung: Überblendung 200 ms an dieselbe Stelle; ohne View Transitions dieselbe Stelle ohne Übergang.
-    Zurück/Vor des Browsers und das Wischen in Safari bleiben wie bisher (oben, ohne Übergang).
+    Zurück/Vor des Browsers und das Wischen in Safari bleiben wie bisher (ohne Übergang).
   - Prüfungen: `polishTransitions` (Handy: Kachel der Home-Karte, zweite Kamera der Reihe, aus einem Ereignis;
     Deep-Link → Schließen, dann Ereignis der Leiste; Desktop `/nvr`; reduzierte Bewegung; ohne API): Ziel, Scrollstelle
     auf 1 px, die Kachel dort, wo sie beim Öffnen war, Dauer, Ecken, wartende Marken, nichts bewegt sich in der Seite,
-    nichts bleibt zurück; das Zurück des Browsers danach beginnt oben, ohne Übergang. Der Klick-Test gegen ein echtes Sentinel (`nvr-sweep-test.cjs … glas`) prüft Zurück aus einem
-    Ereignis der Leiste (Landen oder Schließen).
+    nichts bleibt zurück; das Zurück des Browsers danach nimmt die gemerkte Stelle nicht noch einmal und läuft ohne
+    Übergang. Der Klick-Test gegen ein echtes Sentinel (`nvr-sweep-test.cjs … glas`) prüft Zurück aus einem Ereignis
+    der Leiste (Landen oder Schließen).
 
 ### 6.2 Hover nur mit Zeiger (K108)
 

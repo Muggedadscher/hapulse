@@ -1514,7 +1514,7 @@ module.exports = function polish(h) {
       // phone, Glas, Sentinel: an event on the Home card opens as before; the camera tile morphs, and back shrinks the
       // picture into its tile on Home, the page where it was (K107 addendum) — also for the second camera, whose tile
       // the row brings back into view; a camera opened from an event goes back to Home the same way; the browser's back to
-      // that Home page later starts at the top
+      // that Home page later does not take the kept place again
       {
         const o = await open('phone', 'glas', '/', { init: rec, sentinel: true, customization: NVR.NVR });
         try {
@@ -1579,8 +1579,11 @@ module.exports = function polish(h) {
           }
           await landingGone(o.page);
 
-          // the browser's back to that Home page starts at the top, as on every page: the place kept for the camera
-          // page's back is not taken again (keptScrollY, POP), and the tab bar is not minimised by the jump
+          // the browser's back to that Home page does not take the place kept for the camera page's back again
+          // (keptScrollY, POP): left at the top, Home comes back at the top (the browser restores where it was left),
+          // without a transition and with the tab bar as it was
+          await ev(o.page, () => window.scrollTo({ top: 0, behavior: 'instant' }));
+          await sleep(400);
           await tabLink(o.page, 'nav.pool').tap();
           pageOk((res.popPool = await settled(o.page, 6)), '/pool', 'pool tab after back', true);
           await o.page.goBack();

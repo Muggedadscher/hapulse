@@ -156,12 +156,12 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   `at`/`ev`) öffnen ohne Morph. Zurück führt dorthin, wo die Kamera geöffnet wurde (Kachel oder Ereignis auf Home,
   Sicherheit, im Raum oder auf `/nvr`), an dieselbe Scrollstelle, und das Bild der Bühne schrumpft in die Kachel
   dieser Kamera: Kacheln tragen `data-nvr-camera`, ihr Bild liegt in einer Box (`.nvr-camtile__pic` im Paket ab 0.19.2,
-  `.nvr-home__cam-pic` der Home-Karte). Liegt dort keine Kachel mit Bild auf dem Schirm, schließt das Bild an Ort und
-  Stelle. Damit beim Zurückkommen ein Bild zum Landen da ist, zeigen die Kacheln sofort das letzte Bild der Kamera, bis
+  `.nvr-home__cam-pic` der Home-Karte). Ist dort keine Kachel mit Bild mindestens zur Hälfte zu sehen, schließt das
+  Bild an Ort und Stelle. Damit beim Zurückkommen ein Bild zum Landen da ist, zeigen die Kacheln sofort das letzte Bild der Kamera, bis
   der frische Schnappschuss dekodiert ist (Paket, `HomeSnapshot`; in beiden Stilen). Klassisch öffnet wie bisher,
   Zurück führt dort an den Anfang von `/nvr`. Glas in Browsern ohne `document.startViewTransition` öffnet ohne
-  Übergang, Zurück führt dort an dieselbe Seite und Stelle. Zurück/Vor des Browsers und Neuladen beginnen oben wie
-  jede Seite.
+  Übergang, Zurück führt dort an dieselbe Seite und Stelle. Zurück/Vor des Browsers und Neuladen verhalten sich wie
+  auf jeder Seite; die gemerkte Stelle gilt nur für Zurück auf der Kameraseite.
   `test/glasNavigate.test.ts` prüft, dass das installierte Paket die Klassen von Standbild, Bühnenebenen und Bildbox
   noch hat; Ablauf und Messungen: `docs/glas/PLAN-ETAPPE-7.md` §6.1.
 - **Wächter und Prüfungen:** Der Selektor-Wächter (`test/glasSelectors.test.ts`) prüft die Paket-Klassen gegen die
