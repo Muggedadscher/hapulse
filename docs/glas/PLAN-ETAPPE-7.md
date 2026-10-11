@@ -169,9 +169,37 @@ Die `checks`-Teile laufen mit `--engine webkit`; ein Block, der eine CDP-Sitzung
 is only available in Chromium“ ab, zählt nicht als grün und steht in `skippedNoCdp` (Gesten `swipe`/`finger`, Langdruck
 der Übersicht, `safeArea` der Kameraseite, `polishHover`, `polishPerf`, Ziehen und Schließen der Fenster, `sheetsPerf`).
 
-Laborrunde mit Playwright-WebKit (Bilder und Prüfungen beider Stile) und der NVR-Klick-Durchlauf gegen das echte
-Sentinel (Desktop und Handy, je Klassisch und Glas): stehen beim Öffnen des PR noch aus, sie brauchen Jannicks Freigabe
-im Thread.
+Laborrunde am 11.10. auf dem Stand 1d23354 (Playwright-WebKit 26.6 unter Linux), das Live-HAPulse unberührt:
+
+- NVR-Klick-Durchlauf gegen das echte Sentinel (Chromium): Klassisch am Desktop und am Handy je 44/44, Glas je 46/46;
+  keine JS- oder Konsolenfehler, kein HTTP ≥ 400 (Kamera öffnen, immersive Seite und zurück, live und Aufnahme, Clip
+  herunterladen).
+- Das Labor-WebKit kann View Transitions (`polishTransitions` grün: Tab-Wechsel, „Mehr“, Kamera-Morph), erzwungene Farben,
+  mehr Kontrast, reduzierte Bewegung, `linear()`, `mask-composite`, `dvh` und `hover: none`/`pointer: coarse` am Handy.
+  `backdrop-filter` malt es gar nicht (Minimalprobe: mit und ohne Filter pixelgleich). Glasmaterial und Kontrast auf Glas
+  sind dort nicht beurteilbar.
+- `checks --engine webkit`: grün `stage1`, `frame`, `home`, in `polish` Übergänge, reduzierte Bewegung und Vorschau.
+  Übersprungen (CDP, zählt nicht als grün): die oben genannten Blöcke, in diesem Lauf zwölf. Rot, mit Ursache:
+  - `gesturesMenuDesktop`, `gesturesInspector`: WebKit löst bei der Kontextmenü-Taste und bei Shift+F10 kein
+    `contextmenu` aus (Minimalprobe; der Rechtsklick geht), ohne Zeiger öffnet sich das Kartenmenü dort also nicht.
+    Bewusst so gelassen: Klassisch verhält sich genauso (dort öffnet `contextmenu` das Detail, Upstream), die
+    Mac-Tastatur hat keine Kontextmenü-Taste, und Control-Klick oder Zwei-Finger-Klick öffnen das Menü wie in jeder
+    Mac-App.
+  - `sheetsMorph`, `sheetsGrow`, `sheetsStyleSwitch`: Zeitverhalten. Das Fenster bewegt sich bei 0, 80 und 160 ms noch
+    nicht und ist bei 320 ms fast offen; gerendert ohne Grafikchip, das Urteil fällt am Gerät (§9).
+  - `pagesFields`: Pfeil hoch ändert die Pool-Uhrzeit in WebKit nicht (natives Zeitfeld; iPhone und iPad zeigen das Rad).
+    Safari am Mac mit Tastatur steht in §9.
+  - `pagesSegments`, `pagesKeep` (Automationen am Handy): Textbreiten der Ersatzschrift unter Linux (Segment im Fenster
+    am Desktop eng, Kennzahlen im Kopf abgeschnitten); die Abläufe sind in beiden Stilen richtig. Am Gerät mit SF Pro
+    (§9).
+  - `nvrKeep`, `nvrClip`: der Prüf-Server. WebKit spielt Aufnahmen per MSE mit H.264, der nachgestellte Server liefert
+    VP9; in der Handy-Emulation fehlt `document.exitFullscreen`, das das Prüfskript selbst aufruft. Kein Befund der App.
+  - `polishContrast`: 16 Funde, fast alle auf Glas (der fehlende Weichzeichner). Zwei außerhalb von Glas (Müll-Datum
+    2,9:1, kWh-Wert 4,0:1), für die Chromium nichts findet; am Gerät ansehen (§9).
+- Bilder beider Stile in WebKit (Klassisch 166, Glas 154), von Hand durchgesehen: Aufbau und Inhalte in beiden Stilen
+  richtig. In Glas fehlen `nvr-setup-window` und `nvr-rooms`, die zwei Tipps über „⋯“ überschreiten dort das Uhr-Budget
+  des Bildskripts. „Geräte“ zeigt in beiden Stilen noch „wird geladen“; in Ganzseiten-Bildern steht die Tab-Leiste am Ende
+  des ersten Bildschirms (Eigenheit der WebKit-Aufnahme).
 
 ### 6.7 Top 20 des Inventars (K114)
 
@@ -275,9 +303,12 @@ Was kein Testbrowser zeigt, prüft Jannick am iPhone (Home-Bildschirm-App) und a
 1. **Statusleiste** (K39, N1): Inhalt unter der Statusleiste in beiden Stilen; auf der Kameraseite ist das Band schwarz mit
    weißer Schrift, ohne hellen Schimmer.
 2. **Textbreiten in SF Pro:** Kapseln, Chips und Titel brechen nicht um und werden nicht abgeschnitten (gemessen wurde
-   mit der Ersatzschrift unter Linux).
-3. **Leistung am iPad:** Scrollen der Übersicht, Öffnen von Fenstern, das „⋯“-Menü (E17).
-4. **Kontrast bei Tageslicht:** Tab-Leiste über Kamerabildern, Fenster über der abgedunkelten Seite.
+   mit der Ersatzschrift unter Linux), besonders das Segment im Pool-Fenster und die Kennzahlen im Kopf der Automationen.
+3. **Leistung am iPad:** Scrollen der Übersicht, Öffnen von Fenstern, das „⋯“-Menü (E17); ohne Grafikchip öffneten die
+   Fenster im Labor zu langsam für die Zeitprüfung (§6.6).
+4. **Kontrast bei Tageslicht:** Tab-Leiste über Kamerabildern, Fenster über der abgedunkelten Seite, Material und Text
+   auf Glas (das Labor-WebKit malt keine Unschärfe), Müll-Datum und kWh-Wert (§6.6).
 5. **Erstes Bild beim Start** der App in Glas: kein Aufblitzen von Klassisch.
 6. **Übergänge in Safari:** Tab-Wechsel, Kamera öffnen (Morph), Zurück.
 7. **Ränder der Glasflächen am iPad:** im Testbrowser scheint dort die scharfe Seite durch (§6.8).
+8. **Safari am Mac mit Tastatur:** Pfeiltasten im Zeitfeld des Pools, Kartenmenü per Control-Klick (§6.6).
