@@ -16,8 +16,8 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
   _Glass: the NVR page looks like the overview’s NVR card, first the cameras as large pictures, then the events with time, kind and camera; on the desktop the events are a list beside the cameras_
 - Glas: Ereignisse von gestern oder früher zeigen den Tag vor der Uhrzeit, auch auf der NVR-Karte  
   _Glass: events from yesterday or earlier show the day before the time, on the NVR card too_
-- Kamera-Kacheln der NVR-Karte versuchen ein fehlgeschlagenes Bild alle 30 Sekunden neu, etwa wenn eine Kamera wieder online ist  
-  _Camera tiles on the NVR card try a failed picture again every 30 seconds, for example once a camera is back online_
+- Kamera-Kacheln der NVR-Karte (und in Glas der NVR-Seite) laden ein fehlgeschlagenes Bild alle 30 Sekunden neu, etwa wenn eine Kamera wieder online ist  
+  _Camera tiles on the NVR card (and in Glass on the NVR page) load a failed picture again every 30 seconds, for example once a camera is back online_
 
 ## F43 — 2026-10-11
 

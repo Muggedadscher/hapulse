@@ -624,14 +624,10 @@
 
 /* ---- The overview's cameras and events (`.g-nvr-page`, NvrOverviewPage): the NVR card's tiles and events (top of
    this file), the cameras first, all of them, then all recent events. Below 900 px the tiles 16:10 in a column (two
-   once 300 wide fit) with the capsule, the events a strip to the screen edge. From 900 px the tiles in two columns with
+   once 300 wide fit; a single camera takes the whole width) with the capsule, the events a strip to the screen edge. From 900 px the tiles in two columns with
    the card's caption, the events as the card's rows in a card of their own that scrolls (at most 420 high); side by
    side (1.65fr / 1fr, like the card from 560) once the page is 720 wide, the events card then as tall as the cameras,
    at least 360. ---- */
-:root[data-style='glas'] .nvr-layout:has(> .g-nvr-page) {
-  container: g-nvr-page / inline-size;
-}
-
 :root[data-style='glas'] .nvr-layout .g-nvr-page {
   display: flex;
   flex-direction: column;
@@ -646,7 +642,7 @@
 :root[data-style='glas'] .nvr-layout .g-nvr-page :is(.g-nvr__cams, .g-nvr__cams[data-several]) {
   grid-auto-columns: auto;
   grid-auto-flow: row;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 12px;
   margin: 0;
   padding: 0;
@@ -659,12 +655,18 @@
   aspect-ratio: 16 / 10;
 }
 
-:root[data-style='glas'] .nvr-layout .g-nvr-page .g-nvr__ev-day {
+/* before today the day in front of the time (also on the NVR card) */
+:root[data-style='glas'] .g-nvr__ev-day {
   color: var(--g-label-2);
   font-weight: 400;
 }
 
 @media (min-width: 900px) {
+  /* a size container only from 900 px (as pages.css): it would bind fixed descendants to the page */
+  :root[data-style='glas'] .nvr-layout:has(> .g-nvr-page) {
+    container: g-nvr-page / inline-size;
+  }
+
   :root[data-style='glas'] .nvr-layout .g-nvr-page {
     gap: 26px;
   }
@@ -692,7 +694,8 @@
 /* the phone layout stays below 900 px, however wide (an upright iPad) */
 @media (min-width: 900px) {
   @container g-nvr-page (min-width: 720px) {
-    :root[data-style='glas'] .nvr-layout .g-nvr-page {
+    /* only with events beside the cameras, as the card (no empty column without events) */
+    :root[data-style='glas'] .nvr-layout .g-nvr-page:has(> .g-nvr-page__events) {
       display: grid;
       grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
       gap: 20px;
