@@ -148,7 +148,13 @@ Demo-Aktualisierung, Animationen und Cursor angehalten):
 
 ### 6.4 Leistung (K110)
 
-LEISTUNG
+`polishPerf` misst am Handy (4× CPU-Bremse) die Bildzeiten beim Scrollen der Übersicht, drei Läufe je Stil im Wechsel.
+Ergebnis im Prüf-Container: Klassisch p95 16,8 ms, Glas p95 50 ms (Verhältnis 2,98, Ziel ≤ 1,25), in Glas einzelne
+Bilder bis gut 0,5 s. Der Container hat keinen Grafikchip (WebGL-Renderer SwiftShader), die Unschärfe hinter dem Glas
+rechnet dort die CPU. main (Glas aus Etappe 6) misst unter denselben Bedingungen dasselbe (2,99), Etappe 7 macht es also
+nicht langsamer. Deshalb meldet die Probe ohne Grafikchip die Zahlen und prüft nur, dass gescrollt wurde; das Urteil
+fällt am Gerät (§9, iPad). Nachtrag beim Bau: die synthetische Touch-Geste bewegte die Seite im Headless-Chromium nicht
+(`scrollY` 0, auch auf main); die Probe scrollt jetzt mit dem Mausrad, die Bildzeiten des Compositors sind dieselben.
 
 ### 6.5 Stil-Zeile (K111)
 
@@ -163,7 +169,9 @@ Die `checks`-Teile laufen mit `--engine webkit`; ein Block, der eine CDP-Sitzung
 is only available in Chromium“ ab, zählt nicht als grün und steht in `skippedNoCdp` (Gesten `swipe`/`finger`, Langdruck
 der Übersicht, `safeArea` der Kameraseite, `polishHover`, `polishPerf`, Ziehen und Schließen der Fenster, `sheetsPerf`).
 
-WEBKIT
+Laborrunde mit Playwright-WebKit (Bilder und Prüfungen beider Stile) und der NVR-Klick-Durchlauf gegen das echte
+Sentinel (Desktop und Handy, je Klassisch und Glas): stehen beim Öffnen des PR noch aus, sie brauchen Jannicks Freigabe
+im Thread.
 
 ### 6.7 Top 20 des Inventars (K114)
 
@@ -233,11 +241,32 @@ von Jannick am 10.10.).
 
 ## 7. Review des Codes
 
-REVIEW
+Zwei unabhängige Prüfungen des Stands 608e28f gegen main: eine für CSS, Prüfskripte und Doku, eine für Laufzeit-Code
+und Tests (Typprüfung, 329 Tests des Dashboards, 708 Smoke-Prüfungen, ESLint grün). Nichts Blockierendes. Behoben:
+
+- Musik (K108): getippte Zeilen im Gruppen-, Übertragungs- und Kachelmenü und der Blätter-Knopf der Bibliothek blieben
+  unter dem Finger getönt, weil die Upstream-Hover-Regeln mit der Seite später geladen werden; jetzt je eine Ruhe-Regel
+  unter `(hover: none)` in `music.css`.
+- Seitenwechsel (K107): der Sprung nach oben im Übergang war weich (`scroll-behavior: smooth` in `global.css`), die neue
+  Seite lag beim Überblenden noch an der alten Stelle und glitt danach hoch; jetzt `window.scrollTo` mit
+  `behavior: 'instant'` in `glasNavigate.ts`. Die Dauer in `motion.css` gilt auch für `::view-transition-group(root)`.
+- Der Test der Kamera-Überblendung findet `ui.css` über den Export des Pakets; den `[data-src]`-Teil des Selektors sieht
+  nur die Browserprobe.
+- Doku: Sentinel-Übersicht in Glas (`docs/NVR-INTEGRATION.md`), `--g-glass-clear-text-fill` in `glas-tokens.json`,
+  ein Kommentar in `NvrSetup.tsx`.
+
+Bewusst so gelassen: ein Nicht-Admin ohne Verwaltung, der Glas aus einem importierten Export hat, kann den Stil nicht
+zurückstellen. K111 legt fest, dass nur Admins Stil, Stärke und „Transparenz reduzieren“ ändern.
 
 ## 8. Gesamtlauf
 
-GESAMTLAUF
+Einmal vor dem Merge, auf dem Stand mit den Befunden der Prüfung: Typprüfung, Build, Core-Tests (708 Smoke-Prüfungen),
+329 Tests des Dashboards und ESLint grün. Alle acht Prüfteile (`stage1`, `frame`, `sheets`, `gestures`, `home`,
+`pages`, `nvr`, `polish`) grün; in `polish` lief nach der Korrektur der Leistungsprobe (§6.4) nur dieser Block noch
+einmal. Klassisch gegen main, alle Szenen hell und dunkel an Handy, iPad und Desktop (416 Bilder): 401 gleich, 12 gewollt
+anders (Einstellungen: „Glas“ statt „Glas (Vorschau)“; „Was ist neu“: F41), 3 anders (Chip-Fenster am Handy hell und
+dunkel, Sentinel-Anmeldung am iPad dunkel), die beim erneuten Aufnehmen beider Stände gleich waren (Zeitfehler im langen
+Lauf). Klick-Fuzz 8 von 8 sauber (Klassisch und Glas, Desktop und Handy, je normal und im Bearbeiten-Modus).
 
 ## 9. Für Jannick am Gerät
 
