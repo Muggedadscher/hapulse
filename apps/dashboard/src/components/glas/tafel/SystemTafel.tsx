@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Battery, WifiOff } from 'lucide-react';
-import { formatNumber, pickSystemMetrics } from '@hapulse/core';
+import { pickSystemMetrics } from '@hapulse/core';
 import type { HassEntity, SystemMonitorIndex } from '@hapulse/core';
 import { Card } from '../../ui/Card';
 import { useLocale, useT } from '../../../i18n/useT';
@@ -33,7 +33,8 @@ export function SystemTafel({ systemMonitorEntities, systemMonitorIndex, lowBatt
   const { cpu, memory, disk } = pickSystemMetrics(systemMonitorEntities, systemMonitorIndex);
   const health = deriveHealth(cpu, memory, disk);
   const value = (e: HassEntity | undefined) => (e ? parseFloat(e.state) : NaN);
-  const pct = (v: number) => `${formatNumber(Math.round(v), locale, { maxDecimals: 0 })} %`;
+  // the percent sign as the UI language writes it (German "82 %", English "82%")
+  const pct = (v: number) => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(Math.round(v) / 100);
 
   const gauges: TafelGauge[] = [];
   const metrics: [string, HassEntity | undefined, 'system.hero.chip.cpu' | 'system.hero.chip.ram' | 'system.hero.chip.disk', number, number][] = [
@@ -62,7 +63,7 @@ export function SystemTafel({ systemMonitorEntities, systemMonitorIndex, lowBatt
   return (
     <Card className="system-hero-card g-tafel" data-health={health}>
       <TafelHead icon={<HealthIcon health={health} />} tone={healthTone(health)} title={status} />
-      <TafelRings items={gauges} label={t('system.title')} />
+      <TafelRings items={gauges} />
       <TafelNotes items={notes} />
       {gauges.length === 0 && notes.length === 0 && <p className="g-tafel__empty">{t('system.hero.noMetrics')}</p>}
     </Card>

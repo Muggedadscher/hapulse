@@ -122,7 +122,6 @@ export function SecurityTafel({
     items.push({
       key: 'cameras', icon: icon(Camera), label: t('home.security.camerasLabel'),
       value: formatNumber(cameraCount, locale, { maxDecimals: 0 }),
-      aria: t('security.hero.cameraCount', { count: cameraCount }),
     });
   }
 
@@ -171,7 +170,7 @@ export function SecurityTafel({
           )}
         </div>
       )}
-      <TafelGrid items={items} kind="text" min={140} max={3} label={t('security.title')} />
+      <TafelGrid items={items} kind="text" min={140} max={3} />
     </Card>
   );
 }

@@ -41,7 +41,11 @@ export function EnergyTafel({ dashboard: d, period, onPeriodChange, currency }: 
 
   return (
     <Card className="energy-hero g-tafel g-tafel--energy">
-      <PeriodSelector period={period} onChange={onPeriodChange} />
+      {/* a wrapper: a capped section keeps its first child at the top with the card's padding (tafel.css), the
+          segment's track and lens stay on its own box */}
+      <div className="g-tafel__bar">
+        <PeriodSelector period={period} onChange={onPeriodChange} />
+      </div>
       <div className="g-tafel__total">
         <span className="g-tafel__total-label">
           <House size={TAFEL_ICON} strokeWidth={2} aria-hidden="true" />
@@ -52,7 +56,7 @@ export function EnergyTafel({ dashboard: d, period, onPeriodChange, currency }: 
           <span className="g-tafel__total-unit">{' kWh'}</span>
         </span>
       </div>
-      <TafelGrid items={items} min={130} max={3} label={t('energy.title')} />
+      <TafelGrid items={items} min={130} max={3} />
     </Card>
   );
 }

@@ -628,9 +628,13 @@ module.exports = function pages(h) {
       const tafel = (page) => ev(page, () => {
         const card = document.querySelector('.page .card.g-tafel');
         if (!card) return null;
+        // energy has no head: the period segment and the home's consumption instead
         const badge = card.querySelector('.g-tafel__badge');
-        const br = badge.getBoundingClientRect();
-        const title = getComputedStyle(card.querySelector('.g-tafel__title'));
+        const br = badge && badge.getBoundingClientRect();
+        const titleEl = card.querySelector('.g-tafel__title');
+        const title = titleEl && getComputedStyle(titleEl);
+        const totalEl = card.querySelector('.g-tafel__total-value');
+        const total = totalEl && getComputedStyle(totalEl);
         const kicker = card.querySelector('.g-tafel__kicker');
         const cells = [...card.querySelectorAll('.g-tafel__cell')].map((c) => {
           const svg = c.querySelector('.g-tafel__label > svg');
@@ -640,15 +644,19 @@ module.exports = function pages(h) {
         });
         return {
           grad: getComputedStyle(card).backgroundImage, before: getComputedStyle(card, '::before').content,
-          badge: { w: Math.round(br.width), round: parseFloat(getComputedStyle(badge).borderTopLeftRadius) >= br.width / 2 - 0.5,
+          badge: badge && { w: Math.round(br.width), round: parseFloat(getComputedStyle(badge).borderTopLeftRadius) >= br.width / 2 - 0.5,
             color: getComputedStyle(badge).color },
-          title: { color: title.color, size: title.fontSize, weight: title.fontWeight },
+          title: title && { color: title.color, size: title.fontSize, weight: title.fontWeight },
+          total: total && `${total.fontWeight} ${total.fontSize}/${total.lineHeight}`,
+          seg: !!card.querySelector(':scope > .g-tafel__bar > .g-seg--energy'),
           kicker: kicker ? { caps: getComputedStyle(kicker).textTransform, size: getComputedStyle(kicker).fontSize } : null,
           cells,
         };
       });
-      const tafelOk = (t, tk) => !!t && t.grad === 'none' && t.before === 'none' && t.badge.round && Math.abs(t.badge.w - 56) <= 1
-        && t.title.size === '22px' && t.title.weight === '700' && (!t.kicker || (t.kicker.caps === 'none' && t.kicker.size === '13px'))
+      const tafelOk = (t, tk) => !!t && t.grad === 'none' && t.before === 'none'
+        && (t.badge ? t.badge.round && Math.abs(t.badge.w - 56) <= 1 && t.title.size === '22px' && t.title.weight === '700'
+          : t.seg && t.total === '600 34px/41px')
+        && (!t.kicker || (t.kicker.caps === 'none' && t.kicker.size === '13px'))
         && t.cells.every((c) => !c.cut && (
           c.tone === 'warn' ? c.svg === tk['--g-warn-ink'] && c.value === tk['--g-warn-ink'] :
           c.tone === 'danger' ? c.svg === tk['--g-red-ink'] && c.value === tk['--g-red-ink'] :

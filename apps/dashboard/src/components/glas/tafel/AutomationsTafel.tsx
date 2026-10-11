@@ -54,9 +54,8 @@ export function AutomationsTafel({ automations, categories }: AutomationsTafelPr
         />
       )}
       <TafelGrid
-        label={t('automations.hero.statsAria')}
         items={[
-          { key: 'total', icon: <Workflow size={TAFEL_ICON} strokeWidth={2} />, label: t('automations.title'), value: n(total), aria: t('automations.hero.totalAria', { count: total }) },
+          { key: 'total', icon: <Workflow size={TAFEL_ICON} strokeWidth={2} />, label: t('automations.title'), value: n(total) },
           { key: 'active', icon: <CheckCircle size={TAFEL_ICON} strokeWidth={2} />, label: t('automations.hero.statActive'), value: n(active) },
           { key: 'disabled', icon: <XCircle size={TAFEL_ICON} strokeWidth={2} />, label: t('automations.hero.statDisabled'), value: n(disabled) },
           { key: 'categories', icon: <Tag size={TAFEL_ICON} strokeWidth={2} />, label: t('automations.hero.categoryLabel', { count: categories.length }), value: n(categories.length) },

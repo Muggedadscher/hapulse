@@ -86,7 +86,7 @@ export function NvrHeroGlas({ cameras, stats }: NvrHeroGlasProps) {
           </React.Fragment>
         ))}
       />
-      <TafelGrid items={items} label={t('nvr.hero.title')} />
+      <TafelGrid items={items} />
     </Card>
   );
 }

@@ -1219,7 +1219,22 @@ module.exports = function nvr(h) {
         hero: q('.g-nvr-hero')
           ? { state: txt(q('.g-nvr-hero .g-tafel__title')),
             values: all('.g-nvr-hero .g-tafel__value').map(txt).map((v) => v.replace(/\s+/g, '')),
-            problem: !!q('.g-nvr-hero--problem') }
+            problem: !!q('.g-nvr-hero--problem'),
+            // its look as the other pages' tafeln (glas-checks-pages.cjs): no wash, the symbol in a circle 56, the state
+            // 22 700 in the problem's red ink
+            look: (() => {
+              const card = q('.g-nvr-hero');
+              const badge = card.querySelector('.g-tafel__badge');
+              const title = cs(card.querySelector('.g-tafel__title'));
+              const probe = document.createElement('span');
+              probe.style.color = 'var(--g-red-ink)';
+              card.append(probe);
+              const red = cs(probe).color;
+              probe.remove();
+              return { grad: cs(card).backgroundImage, badge: Math.round(badge.getBoundingClientRect().width),
+                round: parseFloat(cs(badge).borderTopLeftRadius) >= badge.getBoundingClientRect().width / 2 - 0.5,
+                title: `${title.fontSize} ${title.fontWeight}`, red: title.color === red && cs(badge).color === red };
+            })() }
           : { state: txt(q('.nvr-hero .nvr-pill')),
             values: [q('.nvr-hero__primary-value'), ...all('.nvr-hero .nvr-stat__value').slice(1)].map(txt).map((v) => v.replace(/\s+/g, '')),
             problem: !!q('.nvr-hero .nvr-pill--danger') },
@@ -1451,7 +1466,9 @@ module.exports = function nvr(h) {
         // Carport offline, Hof hanging (counts as online, named)
         want(ov.hero.state === `${DE['nvr.hero.offline.one'].replace('{count}', '1')} · ${DE['nvr.hero.stalled.one'].replace('{count}', '1')}`
           && ov.hero.problem && ov.hero.values.length === 4
-          && ov.hero.values.every(Boolean), `${style} hero ${j(ov.hero)}`);
+          && ov.hero.values.every(Boolean)
+          && (style === 'classic' || (ov.hero.look.grad === 'none' && ov.hero.look.badge === 56 && ov.hero.look.round
+            && ov.hero.look.title === '22px 700' && ov.hero.look.red)), `${style} hero ${j(ov.hero)}`);
         // the head: Klassisch its two buttons (and the link), Glas one "⋯" (its menu: nvrMenu)
         if (style === 'classic') want(ov.actions.length === 2 && ov.actions.every((a) => a.label && a.title === a.label) && !ov.menu, `classic head actions ${j(ov.actions)}`);
         else want(ov.actions.length === 0 && ov.menu && ov.menu.label === DE['glas.headerMenu.label'], `glas head ${j([ov.actions, ov.menu])}`);

@@ -58,10 +58,9 @@ export function ScenesTafel({ scenes, roomCount }: ScenesTafelProps) {
         />
       )}
       <TafelGrid
-        label={t('scenes.hero.statsAria')}
         max={3}
         items={[
-          { key: 'total', icon: <Sparkles size={TAFEL_ICON} strokeWidth={2} />, label: t('scenes.title'), value: n(total), aria: t('scenes.hero.totalAria', { count: total }) },
+          { key: 'total', icon: <Sparkles size={TAFEL_ICON} strokeWidth={2} />, label: t('scenes.title'), value: n(total) },
           { key: 'today', icon: <Sparkles size={TAFEL_ICON} strokeWidth={2} />, label: t('scenes.hero.statUsedToday'), value: n(usedToday) },
           { key: 'rooms', icon: <LayoutGrid size={TAFEL_ICON} strokeWidth={2} />, label: t('scenes.hero.roomLabel', { count: roomCount }), value: n(roomCount) },
         ]}

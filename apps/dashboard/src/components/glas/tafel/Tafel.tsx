@@ -51,8 +51,6 @@ export interface TafelFigure {
   unit?: string | undefined;
   /** `warn` and `danger` tint symbol and value; `solar` the symbol (chart colour, §2.4); `none` = `label2` */
   tone?: TafelTone | undefined;
-  /** accessible name of the value when the text alone is not enough */
-  aria?: string | undefined;
 }
 
 interface TafelGridProps {
@@ -62,17 +60,15 @@ interface TafelGridProps {
   /** a cell's minimum width (px) and the most columns in a row */
   min?: number;
   max?: number;
-  label?: string | undefined;
 }
 
 /** The figures as a description list; hairlines between the cells (tafel.css). */
-export function TafelGrid({ items, kind = 'number', min = 130, max = 4, label }: TafelGridProps) {
+export function TafelGrid({ items, kind = 'number', min = 130, max = 4 }: TafelGridProps) {
   if (items.length === 0) return null;
   return (
     <dl
       className="g-tafel__grid"
       data-kind={kind}
-      aria-label={label}
       style={{ '--g-tafel-min': `${min}px`, '--g-tafel-max': max } as React.CSSProperties}
     >
       {items.map((f) => (
@@ -81,7 +77,7 @@ export function TafelGrid({ items, kind = 'number', min = 130, max = 4, label }:
             {f.icon}
             <span className="g-tafel__label-text">{f.label}</span>
           </dt>
-          <dd className="g-tafel__value" aria-label={f.aria}>
+          <dd className="g-tafel__value">
             {f.value}
             {f.unit && <span className="g-tafel__unit">{` ${f.unit}`}</span>}
           </dd>
@@ -105,10 +101,10 @@ const R = 26;
 const C = 2 * Math.PI * R;
 
 /** Gauges as rings like the pool's solar ring: track `fill`, arc in the state's colour. */
-export function TafelRings({ items, label }: { items: TafelGauge[]; label?: string | undefined }) {
+export function TafelRings({ items }: { items: TafelGauge[] }) {
   if (items.length === 0) return null;
   return (
-    <dl className="g-tafel__rings" aria-label={label}>
+    <dl className="g-tafel__rings">
       {items.map((g) => {
         const pct = Math.max(0, Math.min(100, g.pct));
         return (

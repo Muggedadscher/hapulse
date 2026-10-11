@@ -29,7 +29,6 @@ export function DevicesTafel({ summary }: { summary: DevicesSummary }) {
         title={t(titleKey, titleCount !== undefined ? { count: titleCount } : undefined)}
       />
       <TafelGrid
-        label={t('devices.hero.title')}
         items={[
           { key: 'integrations', icon: <Boxes size={TAFEL_ICON} strokeWidth={2} />, label: t('devices.hero.stat.integrations'), value: n(summary.integrations) },
           { key: 'devices', icon: <Cpu size={TAFEL_ICON} strokeWidth={2} />, label: t('devices.hero.stat.devices'), value: n(summary.devices) },
