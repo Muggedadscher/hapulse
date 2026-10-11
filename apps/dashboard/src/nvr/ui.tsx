@@ -8,7 +8,7 @@ import { SentinelUiProvider, type TFn } from '@sentinel-nvr/web/ui';
 import type { SentinelClient } from './api';
 import { useT, useLocale, type TKey } from '../i18n/useT';
 import { cameraPath } from './paths';
-import { glasGo } from '../app/glas/glasNavigate';
+import { glasOpenCamera } from '../app/glas/glasNavigate';
 import '@sentinel-nvr/web/ui/ui.css';
 
 /** HAPulse's typed t() as the package's string-keyed TFn (all nvr.* keys exist in HAPulse's locales). */
@@ -24,10 +24,9 @@ export function NvrUi({ client, children }: { client: SentinelClient; children: 
   const value = useMemo(() => ({
     client, t, locale,
     // a tile opens the camera with the morph in Glas (glasNavigate, plan docs/glas/PLAN-ETAPPE-7.md K107); an event
-    // (a moment, its frame as the poster) opens as before
+    // (a moment, its frame as the poster) opens as before; both remember the way in for the camera page's back
     nav: {
-      openCamera: (id: string, at?: number, ev?: number) =>
-        at || ev ? void navigate(cameraPath(id, at, ev)) : glasGo(navigate, cameraPath(id), 'camera'),
+      openCamera: (id: string, at?: number, ev?: number) => glasOpenCamera(navigate, cameraPath(id, at, ev), !(at || ev)),
     },
   }), [client, t, locale, navigate]);
   return <SentinelUiProvider value={value}>{children}</SentinelUiProvider>;

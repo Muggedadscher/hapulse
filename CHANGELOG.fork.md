@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F43 — 2026-10-11
+
+**Zurück aus der Kamera** · _Back from a camera_
+
+### Geändert / Changed
+
+- Glas: Zurück aus einer Kamera führt dorthin, wo du sie geöffnet hast (Übersicht, Sicherheit, Raum oder NVR), an dieselbe Stelle der Seite; das Bild schrumpft dabei in seine Kachel zurück  
+  _Glass: back from a camera returns to where you opened it (overview, security, a room or NVR), at the same place on the page, with the picture shrinking back into its tile_
+- Kamera-Kacheln in beiden Stilen: beim Zurückkommen steht sofort das letzte Bild darin, bis das neue geladen ist  
+  _Camera tiles in both styles: when you come back they show the last picture at once, until the new one has loaded_
+
 ## F42 — 2026-10-11
 
 **Kameraseite oben scharf** · _Camera page sharp at the top_

@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 43,
+    date: '2026-10-11',
+    title: { de: 'Zurück aus der Kamera', en: 'Back from a camera' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Zurück aus einer Kamera führt dorthin, wo du sie geöffnet hast (Übersicht, Sicherheit, Raum oder NVR), an dieselbe Stelle der Seite; das Bild schrumpft dabei in seine Kachel zurück',
+            en: 'Glass: back from a camera returns to where you opened it (overview, security, a room or NVR), at the same place on the page, with the picture shrinking back into its tile',
+          },
+          {
+            de: 'Kamera-Kacheln in beiden Stilen: beim Zurückkommen steht sofort das letzte Bild darin, bis das neue geladen ist',
+            en: 'Camera tiles in both styles: when you come back they show the last picture at once, until the new one has loaded',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 42,
     date: '2026-10-11',
     title: { de: 'Kameraseite oben scharf', en: 'Camera page sharp at the top' },

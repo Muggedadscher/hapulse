@@ -8,7 +8,8 @@
 // `glas` = the same walk in the Glas style (docs/glas/PLAN-ETAPPE-6.md §3): Glas home card, and the camera page
 // immersive (package appearance, root flag; on the phone without tab bar, which comes back on the way back) and the
 // view transitions (docs/glas/PLAN-ETAPPE-7.md K107): a camera tile opens the camera page with the morph into its still,
-// "Back" fades; in Klassisch neither starts a transition.
+// "Back" returns to the page the camera was opened from with the picture shrinking into its tile there (or closing where
+// it is when no tile on screen shows it); in Klassisch neither starts a transition.
 const WS = require('ws'), http = require('http'), nodeFs = require('fs'), os = require('os'), pth = require('path'), { spawnSync } = require('child_process');
 const BASE = process.argv[2], NVR = process.argv[3], TOKEN = process.argv[4] || '', MOBILE = process.argv.includes('mobile');
 const NOEXPORT = process.argv.includes('noexport');
@@ -52,7 +53,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   await cmd('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: MOBILE ? 3 : 1, mobile: MOBILE, screenWidth: W, screenHeight: H });
   if (MOBILE) await cmd('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   const settings = { state: { theme: 'aurora', mode: 'light', lastSeenVersion: '99.0.0', lastSeenFork: 99, customization: { scryptedUrl: NVR, scryptedToken: TOKEN, ...(GLAS ? { uiStyle: 'glas' } : {}) } }, version: 0 };
-  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',${JSON.stringify(JSON.stringify(settings))});sessionStorage.setItem('__seeded','1');}window.__vt=[];const _vt=Document.prototype.startViewTransition;if(_vt)Document.prototype.startViewTransition=function(a){const named=()=>Array.from(document.querySelectorAll('body *')).filter(e=>getComputedStyle(e).viewTransitionName!=='none').map(e=>String(e.className||e.tagName)+(e.getAttribute('data-src')?'['+e.getAttribute('data-src')+']':''));const r={kind:document.documentElement.getAttribute('data-g-vt'),named0:named()};window.__vt.push(r);const t=_vt.call(this,a);t.ready.then(()=>{r.named=named();r.cam=document.getAnimations().filter(x=>x.effect&&x.effect.pseudoElement==='::view-transition-group(g-cam)').map(x=>x.effect.getTiming().duration);},e=>{r.err=String(e&&e.name);});return t;};window.__dl=[];const _c=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download){window.__dl.push(this.download);if(/\\.jpe?g$/i.test(this.download))return;}return _c.call(this);};` });
+  await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('hapulse:connection',JSON.stringify({demo:true,mode:'demo'}));if(!sessionStorage.getItem('__seeded')){localStorage.setItem('hapulse:settings',${JSON.stringify(JSON.stringify(settings))});sessionStorage.setItem('__seeded','1');}window.__vt=[];const _vt=Document.prototype.startViewTransition;if(_vt)Document.prototype.startViewTransition=function(a){const named=()=>Array.from(document.querySelectorAll('body *')).filter(e=>getComputedStyle(e).viewTransitionName!=='none').map(e=>String(e.className||e.tagName)+(e.getAttribute('data-src')?'['+e.getAttribute('data-src')+']':''));const r={kind:document.documentElement.getAttribute('data-g-vt'),named0:named()};window.__vt.push(r);const t=_vt.call(this,a);t.ready.then(()=>{r.named=named();r.cam=document.getAnimations().filter(x=>x.effect&&x.effect.pseudoElement==='::view-transition-group(g-cam)').map(x=>x.effect.getTiming().duration);r.close=document.getAnimations().filter(x=>x.animationName==='g-vt-close').map(x=>x.effect.getTiming().duration);r.landing=Array.from(document.querySelectorAll('[data-g-landing]')).map(e=>e.getAttribute('data-nvr-camera')+':'+e.getAttribute('data-g-landing'));},e=>{r.err=String(e&&e.name);});return t;};window.__dl=[];const _c=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download){window.__dl.push(this.download);if(/\\.jpe?g$/i.test(this.download))return;}return _c.call(this);};` });
   const steps = [];
   const step = (name, ok, info) => steps.push({ name, ok: !!ok, ...(info !== undefined ? { info } : {}) });
   const click = async (sel, re) => {
@@ -67,17 +68,25 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   const path = () => ev('location.pathname+location.search');
   const go = async (pth) => { await cmd('Page.navigate', { url: BASE + pth }); };
   // view transitions since the last reset (the init script records them): Glas opens a camera with the morph into the
-  // still (the tile's picture named first, the still at `ready`, the group 540 ms) and fades back; Klassisch: none
+  // still (the tile's picture named first, the still at `ready`, the group 540 ms); back names the stage's picture first
+  // and lands it in the camera's tile (its picture box at `ready`, the group 480 ms, the tile's marks waiting) or, with
+  // no tile on screen showing a picture, closes it where it is (270 ms); Klassisch: none
   const vtReset = () => ev('window.__vt.length=0');
   const vtStep = async (where, want) => {
     await sleep(900);
     const vt = JSON.parse(await ev('JSON.stringify(window.__vt)'));
     if (!GLAS) return step(`classic: no view transition (${where})`, vt.length === 0, vt);
     const v = vt[0] || {};
+    const named = v.named || [], close = (v.close || []).join(), landing = (v.landing || []).join();
     const ok = vt.length === 1 && v.kind === want && !v.err && (want === 'camera'
-      ? v.named0.length === 1 && (v.named || []).length === 1 && /(^|\s)nvr-stage__freeze(\s|\[).*\]$/.test(v.named[0]) && (v.cam || []).join() === '540'
-      : v.named0.length === 0 && (v.named || []).length === 0);
-    return step(`glas: ${want === 'camera' ? 'camera opens with the morph' : 'fades'} (${where})`, ok, vt);
+      ? v.named0.length === 1 && named.length === 1 && /(^|\s)nvr-stage__freeze(\s|\[).*\]$/.test(named[0]) && (v.cam || []).join() === '540'
+      : want === 'back'
+        ? v.named0.length === 1 && /(^|\s)nvr-stage__video(\s|\[|$)/.test(v.named0[0]) && (named.length === 1
+          ? /(^|\s)(nvr-camtile__pic|nvr-home__cam-pic)(\s|$)/.test(named[0]) && (v.cam || []).join() === '480' && close === '' && /^[^,]+:$/.test(landing)
+          : named.length === 0 && close === '270' && landing === '')
+        : v.named0.length === 0 && named.length === 0);
+    const what = { camera: 'camera opens with the morph', back: 'back: the picture lands in its tile or closes' }[want] || 'fades';
+    return step(`glas: ${what} (${where})`, ok, vt);
   };
   let crash = null;
   try {
@@ -104,7 +113,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
     await vtReset();
     await click('button', '^back');
     step('back → /nvr', await until(`location.pathname==='/nvr'`, 5000), { path: await path() });
-    await vtStep('back', 'page');
+    await vtStep('back', 'back');
     if (GLAS) { await sleep(300); const f = await frame(); step('glas: frame back after the camera page', !f.flag && !f.page && (!MOBILE || f.tabs), f); }
     await vtReset();
     await click('.nvr-camtile');

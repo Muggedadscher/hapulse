@@ -13,15 +13,15 @@
  * - Windows (stage 3): the pressed control as the origin a window grows out of, and the one Esc listener of all
  *   windows (plan docs/glas/PLAN-ETAPPE-3.md §3.3, K72).
  * - Gestures (stage 3b): the context menu of the entity cards (K58); a route change closes the inspector (K60).
- * - Page changes (stage 7): the commit a view transition waits for and the scroll evaluation it runs at once
- *   (glasNavigate.ts, plan docs/glas/PLAN-ETAPPE-7.md K107).
+ * - Page changes (stage 7): the commit a view transition waits for, the route a camera page was opened from (its back
+ *   leads there) and the scroll evaluation it runs at once (glasNavigate.ts, plan docs/glas/PLAN-ETAPPE-7.md K107).
  * - Camera page (stage 6, E13): `data-g-immersive` on the root while the page says it is shown (glasUiStore
  *   `immersive`, plan docs/glas/PLAN-ETAPPE-6.md K104) — shell.css takes the frame away on the phone — and the
  *   browser colour of the dark page (K103).
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigationType } from 'react-router';
 import { useIsGlas } from './useUiStyle';
 import { useShellStore } from './shellStore';
 import {
@@ -37,7 +37,7 @@ import {
   type TabsMinState,
 } from './glasScroll';
 import { nextMenuIndex } from './menuKeys';
-import { noteRouteCommit, setScrollFlush } from './glasNavigate';
+import { forgetRoute, keptScrollY, noteRouteCommit, setScrollFlush } from './glasNavigate';
 import { ContextMenu } from '../../components/glas/ContextMenu';
 import { DoneCapsule } from '../../components/glas/DoneCapsule';
 import { forgetOrigin, noteOrigin, peekOrigin } from '../../components/glas/sheet/origin';
@@ -99,7 +99,9 @@ function setFlag(el: HTMLElement, name: string, on: boolean): void {
 
 function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
   const t = useT();
-  const { pathname } = useLocation();
+  const { pathname, search, state } = useLocation();
+  // back from a camera keeps the page where it was (Router.tsx ScrollToTop): the tab bar's anchor is that position
+  const kept = keptScrollY(state, useNavigationType());
   const rooms = useRooms();
   const editMode = useUIStore((s) => s.editMode);
   const [desktop, setDesktop] = useState(() => window.matchMedia(DESKTOP).matches);
@@ -207,8 +209,9 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
       setH1(title?.textContent?.trim() || null);
       scheduleRef.current();
     };
-    // a new page starts expanded (ScrollToTop jumps to 0; if the page already was at the top no scroll event comes)
-    tabsRef.current = { min: false, anchor: window.scrollY };
+    // a new page starts expanded (ScrollToTop jumps to 0 or to the kept position; if the page already was there no
+    // scroll event comes)
+    tabsRef.current = { min: false, anchor: kept ?? window.scrollY };
     useShellStore.getState().setTabsMin(false);
     measure();
     const ro = new ResizeObserver(measure);
@@ -217,11 +220,13 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
     if (main) ro.observe(main);
     if (content) ro.observe(content, { box: 'border-box' });
     return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- on a route change, with that route's state (as ScrollToTop)
   }, [pathname]);
 
   // A page change as a view transition waits for this commit (glasNavigate.ts, K107) — after the title above was
-  // measured, so the scroll evaluation it runs then sees the new page.
-  useLayoutEffect(() => noteRouteCommit(pathname), [pathname]);
+  // measured, so the scroll evaluation it runs then sees the new page. The route is also where a camera opens from.
+  useLayoutEffect(() => noteRouteCommit(pathname, search), [pathname, search]);
+  useEffect(() => () => forgetRoute(), []);
 
   // The camera page (E13, K104): its own flag on the root before the first paint, so its frame never shows.
   const immersive = useGlasUiStore((s) => s.immersive);

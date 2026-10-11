@@ -10,8 +10,8 @@
  * Glas (docs/glas/PLAN-ETAPPE-6.md K101–K104, E13): the package's immersive appearance. The page says it is shown
  * (`useGlasImmersive`): on the phone the frame goes and the page owns the screen, the content column turns dark
  * (AppLayout). The header carries the name with LIVE or the picture's time and "open in Sentinel" as a round button;
- * no bell or avatar there; back fades to the overview (plan docs/glas/PLAN-ETAPPE-7.md K107). Klassisch renders the
- * page as before.
+ * no bell or avatar there; back leads to the page the camera was opened from, at the same place, the picture shrinking
+ * into its tile there (plan docs/glas/PLAN-ETAPPE-7.md K107). Klassisch renders the page as before.
  */
 
 import React from 'react';
@@ -29,7 +29,7 @@ import { NVR_ROOT } from './paths';
 import { useFitAboveTabs } from './useFitAboveTabs';
 import { useIsGlas } from '../app/glas/useUiStyle';
 import { useGlasImmersive } from '../app/glas/useGlasImmersive';
-import { glasGo } from '../app/glas/glasNavigate';
+import { glasCameraBack } from '../app/glas/glasNavigate';
 import './nvr.css';
 
 /** Build id from vite.config.ts (`define`); undefined outside a vite build (vitest). */
@@ -80,7 +80,7 @@ export function NvrCameraPage() {
           crossOrigin
           appearance={glas ? 'immersive' : 'default'}
           header={(at, info) => glas ? (
-            <CameraTitle name={name} onBack={() => glasGo(navigate, NVR_ROOT, 'page')} live={info.live} at={at}>
+            <CameraTitle name={name} onBack={() => glasCameraBack(navigate, camId, NVR_ROOT)} live={info.live} at={at}>
               <a className="nvr-iconbtn" href={openLink(at)} target="_blank" rel="noreferrer noopener" aria-label={t('nvr.open')} title={t('nvr.open')}>
                 <ExternalLink size={20} strokeWidth={1.75} aria-hidden="true" />
               </a>

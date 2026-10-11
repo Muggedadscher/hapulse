@@ -1,7 +1,7 @@
 # Sentinel NVR — native Integration in HAPulse
 
-Stand: 2026-10-10 (Paket `@sentinel-nvr/web` 0.18, Kameraseite im Stil Glas); Clip-Export 2026-10-06 (Paket 0.17),
-Grundgerüst 2026-09-26 (Paket 0.11). Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
+Stand: 2026-10-11 (Paket `@sentinel-nvr/web` 0.19, Zurück aus der Kamera im Stil Glas); Kameraseite im Stil Glas
+2026-10-10 (Paket 0.18); Clip-Export 2026-10-06 (Paket 0.17), Grundgerüst 2026-09-26 (Paket 0.11). Ersetzt die frühere iframe-Einbettung der Sentinel-Web-UI
 auf der NVR-Seite. Die Integration ist **bewusst als abgegrenztes Modul**
 gebaut, damit sie sich (Sentinel ist in starker Entwicklung) jederzeit
 **komplett entfernen und neu aufsetzen** lässt — siehe „Rausnehmen" unten.
@@ -148,13 +148,22 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   „Kameras“ tragen ihr Symbol im Titel (`icon` des Pakets), der Speicherhinweis ist eine Fußnote (`.nvr-note`), und
   Token/Konto der Einrichtung ist ein `Segment` (`NvrSetup.tsx`). Klassisch bleibt unverändert. Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper
   (`NvrHomeGlas.tsx`).
-- **Kamera öffnen (Etappe 7):** In Glas wächst das Bild der gedrückten Kachel in das Standbild der Kameraseite (View
-  Transition mit dem Namen `g-cam`, `app/glas/glasNavigate.ts`), ausgelöst von `nav.openCamera` ohne Zeitpunkt
-  (`nvr/ui.tsx`) und den Kacheln der Home-Karte (`NvrHomeGlas.tsx`); das NVR-Chunk lädt beim Drücken. Ziel ist das
-  Standbild des Pakets (`.nvr-stage__freeze[data-src]`, nicht `.nvr-stage`: darin liegt die Steuerkapsel mit Glas);
-  zeichnet die Seite es nicht binnen 300 ms, blendet der Übergang nur über. Ereignisse (mit `at`/`ev`) und Zurück
-  morphen nicht, Zurück blendet über. Klassisch und Browser ohne `document.startViewTransition` öffnen wie bisher.
-  `test/glasNavigate.test.ts` prüft, dass das installierte Paket die Klasse des Standbilds noch hat.
+- **Kamera öffnen und zurück (Etappe 7, Zurück seit F43):** In Glas wächst das Bild der gedrückten Kachel in das
+  Standbild der Kameraseite (View Transition mit dem Namen `g-cam`, `app/glas/glasNavigate.ts`), ausgelöst von
+  `nav.openCamera` ohne Zeitpunkt (`nvr/ui.tsx`) und den Kacheln der Home-Karte (`NvrHomeGlas.tsx`); das NVR-Chunk lädt
+  beim Drücken. Ziel ist das Standbild des Pakets (`.nvr-stage__freeze[data-src]`, nicht `.nvr-stage`: darin liegt die
+  Steuerkapsel mit Glas); zeichnet die Seite es nicht binnen 300 ms, blendet der Übergang nur über. Ereignisse (mit
+  `at`/`ev`) öffnen ohne Morph. Zurück führt dorthin, wo die Kamera geöffnet wurde (Kachel oder Ereignis auf Home,
+  Sicherheit, im Raum oder auf `/nvr`), an dieselbe Scrollstelle, und das Bild der Bühne schrumpft in die Kachel
+  dieser Kamera: Kacheln tragen `data-nvr-camera`, ihr Bild liegt in einer Box (`.nvr-camtile__pic` im Paket ab 0.19.2,
+  `.nvr-home__cam-pic` der Home-Karte). Ist dort keine Kachel mit Bild mindestens zur Hälfte zu sehen, schließt das
+  Bild an Ort und Stelle. Damit beim Zurückkommen ein Bild zum Landen da ist, zeigen die Kacheln sofort das letzte Bild der Kamera, bis
+  der frische Schnappschuss dekodiert ist (Paket, `HomeSnapshot`; in beiden Stilen). Klassisch öffnet wie bisher,
+  Zurück führt dort an den Anfang von `/nvr`. Glas in Browsern ohne `document.startViewTransition` öffnet ohne
+  Übergang, Zurück führt dort an dieselbe Seite und Stelle. Zurück/Vor des Browsers und Neuladen verhalten sich wie
+  auf jeder Seite; die gemerkte Stelle gilt nur für Zurück auf der Kameraseite.
+  `test/glasNavigate.test.ts` prüft, dass das installierte Paket die Klassen von Standbild, Bühnenebenen und Bildbox
+  noch hat; Ablauf und Messungen: `docs/glas/PLAN-ETAPPE-7.md` §6.1.
 - **Wächter und Prüfungen:** Der Selektor-Wächter (`test/glasSelectors.test.ts`) prüft die Paket-Klassen gegen die
   `ui.css` des installierten Pakets; benennt ein Paket-Update eine davon um, wird `npm test -w @hapulse/dashboard` rot.
   Das Abzeichen „Aufnahme hängt“ einer Kachel erkennt Glas am Symbol `lucide-video-off` (`MARKER_ICONS` dort).

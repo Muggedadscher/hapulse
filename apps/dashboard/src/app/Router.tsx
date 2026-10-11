@@ -3,11 +3,12 @@
  */
 
 import React, { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router';
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from 'react-router'; // [fork] useNavigationType
 import { Guard } from './Guard';
 import { AppLayout } from './AppLayout';
 import { useT } from '../i18n/useT';
 import { PageErrorBoundary } from './PageErrorBoundary'; // [fork]
+import { keptScrollY } from './glas/glasNavigate'; // [fork]
 
 // Eager import for onboarding — always shown first
 import { Onboarding } from '../pages/Onboarding';
@@ -32,13 +33,19 @@ const Pool        = lazy(() => import('../pages/Pool').then((m) => ({ default: m
  * plain window.scrollTo is the correct reset.
  */
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation(); // [fork] state
+  // [fork] Glas: back from a camera page returns to where the page was (app/glas/glasNavigate.ts, `glasScrollY`); the
+  // [fork] browser's back/forward and a reload (POP) do not take that place again, they go on as before
+  const kept = keptScrollY(state, useNavigationType()); // [fork]
   useEffect(() => {
     // Set scrollTop directly rather than window.scrollTo(): the app sets
     // `scroll-behavior: smooth` globally, which would otherwise animate the
     // reset on every navigation instead of jumping instantly to the top.
     const el = document.scrollingElement ?? document.documentElement;
-    el.scrollTop = 0;
+    // [fork] a kept position at once: setting scrollTop follows the smooth scroll-behavior (Chromium)
+    if (kept != null) window.scrollTo({ top: kept, left: 0, behavior: 'instant' }); // [fork]
+    else el.scrollTop = 0; // [fork] else
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- [fork] only on a route change, with that route's state
   }, [pathname]);
   return null;
 }
