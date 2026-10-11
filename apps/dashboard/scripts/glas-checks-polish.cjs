@@ -365,8 +365,10 @@ module.exports = function polish(h) {
       if (op < 0.05) return left('invisible');
       if (fg[3] * op < 0.02) return left('transparent', el);
       if (clippedAway(el, rects)) return left('clipped');
+      // every line box: the last line of a list item can lie under a floating button, whose own label would count as
+      // the item's glyphs on the picture with the glass targets hidden
       const pts = [];
-      for (const r of rects.slice(0, 4)) {
+      for (const r of rects) {
         for (const fy of [0.15, 0.5, 0.85]) {
           for (const fx of [0.05, 0.27, 0.5, 0.73, 0.95]) pts.push([r.l + (r.r - r.l) * fx, r.t + (r.b - r.t) * fy]);
         }
