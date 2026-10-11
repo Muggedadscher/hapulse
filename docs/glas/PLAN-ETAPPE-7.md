@@ -83,6 +83,34 @@ Wie geplant (`app/glas/glasNavigate.ts`, `routeChunks.ts`, `styles/glas/motion.c
   den Morph am Handy aus der Home-Karte und am Desktop aus der Übersicht.
 - `badAncestors` in `glas-shots.cjs` meldet jetzt auch einen Vorfahren einer Glasfläche mit `view-transition-name`
   (Wächter für später: heute trägt nur ein Bild für die Dauer des Morphs einen Namen).
+- **Nachtrag 11.10. (F43): Zurück aus der Kamera.** Jannick: „Es fehlt eine Animation oder Übergang wenn man aus einer
+  Kamera rausgeht“. Bis dahin blendete Zurück nur über und führte immer an den Anfang von `/nvr`. Jetzt wie in der
+  Fotos-App:
+  - **Wohin:** `glasOpenCamera` merkt sich beim Öffnen (Kachel oder Ereignis) Seite, Abfrage und Scrollstelle;
+    `glasCameraBack` führt dorthin zurück (`cameraBackTarget`), die Scrollstelle reist als `state.glasScrollY` mit
+    (`keptScrollY`; `ScrollToTop` in `Router.tsx` springt sofort dorthin, `[fork]`, und die Tab-Leiste in `GlasRuntime`
+    nimmt sie als Anker). Ohne Weg hinein (Link, Neuladen) wie bisher an den Anfang von `/nvr`.
+  - **Bild:** Name `g-cam` zuerst an der obersten sichtbaren Ebene der Bühne (`.nvr-stage > .nvr-stage__video`: Video,
+    MJPEG oder Standbild), nach dem Commit an der Bildbox der Kachel dieser Kamera (`[data-nvr-camera]`, darin
+    `.nvr-camtile__pic` des Pakets ab 0.19.2 bzw. `.nvr-home__cam-pic` der Home-Karte), wenn sie ein Bild zeigt und auf
+    dem Schirm liegt; eine seitlich scrollende Reihe (Home-Karte am Handy) wird vorher zur Kachel geschoben. Gruppe
+    480 ms `smooth`, Ecken vom Bühnen- zum Kachelradius, die Bilder blenden in 240 ms ineinander. Name, Zustand und
+    Schatten der Kachel warten (`data-g-landing`) und blenden danach in 200 ms ein.
+  - **Ohne Kachel** (keine Kachel dieser Kamera auf der Seite, keine auf dem Schirm oder mit Bild, Kappe erreicht):
+    das Bild schließt an Ort und Stelle, `scale(.92)` und Ausblenden in 270 ms (`g-vt-close`).
+  - **Die Seite wie verlassen:** kein Anstieg; was ihre Teile beim Erscheinen spielen (Abschnitte, wachsende
+    Energie-Balken, eine aufsteigende Kapsel: endliche Animationen bis 1,5 s in `.app-main`), steht sofort am Ende
+    (`finishEntrances`), Endlos-Animationen laufen weiter.
+  - **Kacheln mit Bild:** damit beim Zurückkommen etwas zum Landen da ist, zeigen die Kacheln sofort das letzte Bild der
+    Kamera, bis ihr frischer Schnappschuss dekodiert ist (Paket 0.19.2, ebenso `HomeSnapshot` der Home-Karte). Das ist
+    auch in Klassisch sichtbar.
+  - Reduzierte Bewegung: Überblendung 200 ms an dieselbe Stelle; ohne View Transitions dieselbe Stelle ohne Übergang.
+    Zurück/Vor des Browsers und das Wischen in Safari bleiben wie bisher.
+  - Prüfungen: `polishTransitions` (Handy: Kachel der Home-Karte, zweite Kamera der Reihe, aus einem Ereignis;
+    Deep-Link → Schließen, dann Ereignis der Leiste; Desktop `/nvr`; reduzierte Bewegung; ohne API): Ziel, Scrollstelle
+    auf 1 px, die Kachel dort, wo sie beim Öffnen war, Dauer, Ecken, wartende Marken, nichts bewegt sich in der Seite,
+    nichts bleibt zurück. Der Klick-Test gegen ein echtes Sentinel (`nvr-sweep-test.cjs … glas`) prüft Zurück aus einem
+    Ereignis der Leiste (Landen oder Schließen).
 
 ### 6.2 Hover nur mit Zeiger (K108)
 
@@ -316,6 +344,7 @@ Was kein Testbrowser zeigt, prüft Jannick am iPhone (Home-Bildschirm-App) und a
 4. **Kontrast bei Tageslicht:** Tab-Leiste über Kamerabildern, Fenster über der abgedunkelten Seite, Material und Text
    auf Glas (das Labor-WebKit malt keine Unschärfe), Müll-Datum und kWh-Wert (§6.6).
 5. **Erstes Bild beim Start** der App in Glas: kein Aufblitzen von Klassisch.
-6. **Übergänge in Safari:** Tab-Wechsel, Kamera öffnen (Morph), Zurück.
+6. **Übergänge in Safari:** Tab-Wechsel, Kamera öffnen (Morph), Zurück (das Bild schrumpft in seine Kachel, die Seite
+   steht an derselben Stelle, F43).
 7. **Ränder der Glasflächen am iPad:** im Testbrowser scheint dort die scharfe Seite durch (§6.8).
 8. **Safari am Mac mit Tastatur:** Pfeiltasten im Zeitfeld des Pools, Kartenmenü per Control-Klick (§6.6).

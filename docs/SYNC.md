@@ -222,6 +222,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 5, K97): Werte und Fuß im Mehr-Menü (`GlasMoreValue`, `GlasMoreFoot`) |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 6, K103): `data-glas-scheme="dark"` an `.app-content`, solange die Kameraseite offen ist (dunkler Teilbaum, am Desktop auch Kopf und Ränder) |
 | `apps/dashboard/src/app/AppLayout.tsx` | Stil Glas (Etappe 7, K107): Tab-Leiste, Seitenleiste und Mehr-Menü navigieren in Glas über `glasLinkClick` (View Transition); Klassisch, Zusatztasten und die Seite, auf der man ist, bleiben beim `NavLink` |
+| `apps/dashboard/src/app/Router.tsx` | Stil Glas (F43): `ScrollToTop` springt bei `state.glasScrollY` (Zurück aus einer Kamera, `keptScrollY`) sofort an diese Stelle statt nach oben |
 | `apps/dashboard/src/components/nav/RoomsMenu.tsx` | Stil Glas (Etappe 5, K97): Zustand je Raum (Symbol wie die Raumkachel, `data-tone`, der Zustand im `aria-label`); Klassisch unverändert |
 | `apps/dashboard/src/ha/{energy,service}.ts`, `stores/connectionStore.ts` | Nur Demo (Etappe 5, für die Prüfungen): Energie-Einstellungen und -Abrufe über `demoEnergy.ts`, Dienstaufrufe ins Protokoll `demoCalls.ts`, `setUrl` an die Demo-Steuerung; seit Etappe 7 `setAdmin` (die Einstellungen als Nicht-Admin) |
 | `apps/dashboard/src/pages/Home.tsx` | Sections `'waste'` und `'nvr'` (Import, ID, Toggle-Keys, Gate, `renderWidget`) |
@@ -417,7 +418,10 @@ Nach jedem Upstream-Merge:
     Glas als View Transition (`app/glas/glasNavigate.ts`, Aussehen in `styles/glas/motion.css`). Eine neue Seite in
     `Router.tsx` gehört auch nach `app/glas/routeChunks.ts` (`test/glasNavigate.test.ts` vergleicht beide Listen, sonst
     wartet der Übergang bis zur Kappe auf ihr Chunk). Ändert Upstream die `NavLink`s in `AppLayout.tsx`, das `onClick`
-    mit `glasLinkClick` mitziehen. Glas-eigene Hover-Regeln stehen unter `@media (hover: hover)`; der Selektor-Wächter
-    (`styleRules`) meldet eine Tönung unter `:hover` außerhalb davon. Nach Änderungen an Farben, Flächen oder Texten
+    mit `glasLinkClick` mitziehen. Zurück aus einer Kamera führt an die Stelle, von der aus sie geöffnet wurde
+    (`state.glasScrollY`); ändert Upstream `ScrollToTop` in `Router.tsx`, das `keptScrollY` mitziehen. Das Bild landet
+    in der Kachel mit `data-nvr-camera` (Bildbox `.nvr-camtile__pic` des Pakets, `.nvr-home__cam-pic` der Home-Karte).
+    Glas-eigene Hover-Regeln stehen unter `@media (hover: hover)`; der Selektor-Wächter (`styleRules`) meldet eine
+    Tönung unter `:hover` außerhalb davon. Nach Änderungen an Farben, Flächen oder Texten
     `checks --part polish` laufen lassen (`polishContrast` misst jeden sichtbaren Text gegen seinen Grund,
     `polishHover` den Ruhezustand nach einem Tipp, `polishTransitions` die Übergänge).

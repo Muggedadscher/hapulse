@@ -81,7 +81,8 @@
    runs (app/glas/glasNavigate.ts). Only the root and the camera picture carry a name: the root fades (old out, new in,
    160 ms) and keeps equal pixels in place, so the frame stays calm; opening a camera from its tile, the tile's picture
    grows into the camera page's still (`g-cam`, 540 ms smooth, both pictures cover the moving box, the corners round
-   from the tile's radius to the stage's). Reduced motion: a 200-ms fade only (§6.4). */
+   from the tile's radius to the stage's); back, the camera page's picture shrinks into its tile (480 ms). Reduced
+   motion: a 200-ms fade only (§6.4). */
 @keyframes g-vt-rise {
   from {
     transform: translateY(6px);
@@ -124,6 +125,49 @@
   block-size: 100%;
   object-fit: cover;
   animation-duration: 270ms;
+}
+
+/* Back from a camera: the picture shrinks into its tile on the page it was opened from, 480 ms smooth, the corners
+   round from the stage's radius to the tile's, the tile's own picture fading in over it in the first half. Without a
+   tile to land in (not on that page or not on screen, a cap reached) it closes where it is: a little smaller and
+   fading out (`--g-vt-d: 0s` keeps its corners as they are). */
+@keyframes g-vt-close {
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+:root[data-style='glas'][data-g-vt='back']::view-transition-group(g-cam) {
+  animation-duration: 480ms;
+  animation-timing-function: var(--g-spring-smooth);
+}
+
+:root[data-style='glas'][data-g-vt='back']::view-transition-image-pair(g-cam) {
+  animation: g-vt-round var(--g-vt-d, 480ms) var(--g-spring-smooth) both;
+}
+
+:root[data-style='glas'][data-g-vt='back']::view-transition-old(g-cam),
+:root[data-style='glas'][data-g-vt='back']::view-transition-new(g-cam) {
+  block-size: 100%;
+  object-fit: cover;
+  animation-duration: 240ms;
+}
+
+:root[data-style='glas'][data-g-vt='back']::view-transition-old(g-cam):only-child {
+  animation: g-vt-close 270ms var(--g-spring-smooth) both;
+}
+
+/* The tile the picture lands in (`data-g-landing`): its name, state and shades wait under the landing picture and
+   fade in once it is there, as Photos shows a cell's marks after the photo is back. */
+:root[data-style='glas'] [data-g-landing=''] > :not(.nvr-camtile__pic, .nvr-home__cam-pic),
+:root[data-style='glas'] [data-g-landing='']::before {
+  opacity: 0;
+}
+
+:root[data-style='glas'] [data-g-landing='in'] > :not(.nvr-camtile__pic, .nvr-home__cam-pic),
+:root[data-style='glas'] [data-g-landing='in']::before {
+  animation: g-fade-in 200ms ease both;
 }
 
 /* The new page of a transition (`data-g-entry` on its page element, set in the transition): its sections rise 6 px
