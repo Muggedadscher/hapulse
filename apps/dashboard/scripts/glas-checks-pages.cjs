@@ -553,9 +553,9 @@ module.exports = function pages(h) {
 
     // ---- K89/K90/K85 the frame. Columns by content width (1920/1440/1100/900: 4/3/2/2; a grid whose cards all span
     //      two columns takes four from 900 px of content), no page wider than the window; a card without a title above
-    //      (hero, alarm panel, pool schedule) starts its surface on the line of its neighbours' surfaces; heroes keep
-    //      their state as colour (security disarmed/armed/triggered, system healthy) with the symbol in a circle,
-    //      chips 32 in `fill`, no capitals; the stateless heroes lose their gradient; the camera section has neither
+    //      (hero, alarm panel, pool schedule) starts its surface on the line of its neighbours' surfaces; the heroes are
+    //      tafeln (§7.34): the state as the head's colour (security disarmed/armed/triggered, system healthy), the
+    //      symbol in a circle 56, no capitals, no wash, figures coloured only by state; the camera section has neither
     //      head nor surface; no element of a page that became a size container is fixed (windows and menus are
     //      portaled: open ones included), the notifications panel still hangs below its bell. Glas only. ----
     await block('pagesFrame', async () => {
@@ -565,7 +565,7 @@ module.exports = function pages(h) {
         const out = {};
         const d = document.createElement('div');
         document.body.appendChild(d);
-        for (const t of ['--g-label', '--g-label-2', '--g-fill', '--g-green-ink', '--g-green-soft', '--g-red-ink', '--g-warn-ink']) {
+        for (const t of ['--g-label', '--g-label-2', '--g-fill', '--g-green-ink', '--g-green-soft', '--g-red-ink', '--g-warn-ink', '--g-yellow-ink']) {
           d.style.color = `var(${t})`;
           out[t] = getComputedStyle(d).color;
         }
@@ -620,107 +620,86 @@ module.exports = function pages(h) {
         }
       }
 
-      // heroes
+      // heroes (GLAS-DESIGN §7.34): every page's head is a tafel — the plain card (no wash, no gradient), the symbol in
+      // a circle 56, the kicker 13 without capitals, the state 22/28 700 in the ink of its state; figures: a count's
+      // symbol `label2`, warn and danger in their ink at symbol and value, solar yellowInk; no value cut. Security by
+      // alarm state (disarmed `label`, armed green, triggered red), system healthy green; the camera section has
+      // neither head nor surface.
+      const tafel = (page) => ev(page, () => {
+        const card = document.querySelector('.page .card.g-tafel');
+        if (!card) return null;
+        // energy has no head: the period segment and the home's consumption instead
+        const badge = card.querySelector('.g-tafel__badge');
+        const br = badge && badge.getBoundingClientRect();
+        const titleEl = card.querySelector('.g-tafel__title');
+        const title = titleEl && getComputedStyle(titleEl);
+        const totalEl = card.querySelector('.g-tafel__total-value');
+        const total = totalEl && getComputedStyle(totalEl);
+        const kicker = card.querySelector('.g-tafel__kicker');
+        const cells = [...card.querySelectorAll('.g-tafel__cell')].map((c) => {
+          const svg = c.querySelector('.g-tafel__label > svg');
+          const v = c.querySelector('.g-tafel__value');
+          return { key: c.dataset.tafel, tone: c.dataset.tone, svg: svg ? getComputedStyle(svg).color : null,
+            value: getComputedStyle(v).color, cut: v.scrollWidth > v.clientWidth + 0.5 };
+        });
+        return {
+          grad: getComputedStyle(card).backgroundImage, before: getComputedStyle(card, '::before').content,
+          badge: badge && { w: Math.round(br.width), round: parseFloat(getComputedStyle(badge).borderTopLeftRadius) >= br.width / 2 - 0.5,
+            color: getComputedStyle(badge).color },
+          title: title && { color: title.color, size: title.fontSize, weight: title.fontWeight },
+          total: total && `${total.fontWeight} ${total.fontSize}/${total.lineHeight}`,
+          seg: !!card.querySelector(':scope > .g-tafel__bar > .g-seg--energy'),
+          kicker: kicker ? { caps: getComputedStyle(kicker).textTransform, size: getComputedStyle(kicker).fontSize } : null,
+          cells,
+        };
+      });
+      const tafelOk = (t, tk) => !!t && t.grad === 'none' && t.before === 'none'
+        && (t.badge ? t.badge.round && Math.abs(t.badge.w - 56) <= 1 && t.title.size === '22px' && t.title.weight === '700'
+          : t.seg && t.total === '600 34px/41px')
+        && (!t.kicker || (t.kicker.caps === 'none' && t.kicker.size === '13px'))
+        && t.cells.every((c) => !c.cut && (
+          c.tone === 'warn' ? c.svg === tk['--g-warn-ink'] && c.value === tk['--g-warn-ink'] :
+          c.tone === 'danger' ? c.svg === tk['--g-red-ink'] && c.value === tk['--g-red-ink'] :
+          c.tone === 'solar' ? c.svg === tk['--g-yellow-ink'] : c.svg === tk['--g-label-2'] && c.value === tk['--g-label']));
       for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        // security: disarmed, armed (green), triggered (red); chips; no capitals; the camera section
+        // security: disarmed, armed (green), triggered (red); the camera section
         {
           const { page, close } = await open(device, 'glas', '/security', { mode });
           try {
             const tk = await tokens(page);
-            const read = () => ev(page, () => {
-              const card = document.querySelector('.security-hero-card');
-              const icon = card.querySelector('.security-hero-card__alarm-icon');
-              const ir = icon.getBoundingClientRect();
-              const state = getComputedStyle(card.querySelector('.security-hero-card__alarm-state'));
-              const name = getComputedStyle(card.querySelector('.security-hero-card__alarm-name'));
-              const chips = [...card.querySelectorAll('.security-hero-chip')].map((c) => {
-                const cs = getComputedStyle(c);
-                return { h: c.getBoundingClientRect().height, r: parseFloat(cs.borderTopLeftRadius), bg: cs.backgroundColor,
-                  border: parseFloat(cs.borderTopWidth), warn: c.classList.contains('security-hero-chip--warn'),
-                  svg: c.querySelector('svg') ? getComputedStyle(c.querySelector('svg')).color : null };
-              });
-              const cam = document.querySelector('.security-page__camera-section');
-              return {
-                cls: card.className, grad: getComputedStyle(card).backgroundImage,
-                icon: { w: Math.round(ir.width), h: Math.round(ir.height), round: getComputedStyle(icon).borderTopLeftRadius === '50%'
-                  || parseFloat(getComputedStyle(icon).borderTopLeftRadius) >= ir.width / 2 - 0.5, color: getComputedStyle(icon).color },
-                state: { color: state.color, size: state.fontSize, weight: state.fontWeight },
-                name: { caps: name.textTransform, size: name.fontSize },
-                chips,
-                cam: cam ? { before: getComputedStyle(cam, '::before').content, bg: getComputedStyle(cam).backgroundColor,
-                  title: !!cam.querySelector('h2, h3, [class*="title"]:not([class*="camera"])') } : null,
-              };
-            });
-            const runs = { disarmed: await read() };
+            const runs = { disarmed: await tafel(page) };
             for (const [st, key] of [['armed_home', 'armed'], ['triggered', 'triggered']]) {
               await ev(page, (s2) => window.__hapulseDemo.patch('alarm_control_panel.home', { state: s2 }), st);
               await sleep(200);
-              runs[key] = await read();
+              runs[key] = await tafel(page);
             }
             await ev(page, () => window.__hapulseDemo.patch('alarm_control_panel.home', { state: 'disarmed' }));
+            const cam = await ev(page, () => {
+              const c = document.querySelector('.security-page__camera-section');
+              return c ? { before: getComputedStyle(c, '::before').content, bg: getComputedStyle(c).backgroundColor,
+                title: !!c.querySelector('h2, h3, [class*="title"]:not([class*="camera"])') } : null;
+            });
             const d = runs.disarmed;
-            const chipsOk = d.chips.length > 0 && d.chips.every((c) => c.h >= 32 - 0.5 && c.r >= 16 && c.bg === tk['--g-fill']
-              && c.border === 0 && (!c.warn || c.svg === tk['--g-warn-ink']));
-            const ok = d.icon.round && Math.abs(d.icon.w - 56) <= 1 && d.state.color === tk['--g-label'] && d.state.size === '22px'
-              && d.name.caps === 'none' && d.name.size === '13px'
-              && runs.armed.state.color === tk['--g-green-ink'] && runs.armed.icon.color === tk['--g-green-ink']
-              && /gradient/.test(runs.armed.grad)
-              && runs.triggered.state.color === tk['--g-red-ink'] && runs.triggered.icon.color === tk['--g-red-ink']
-              && chipsOk && !!d.cam && d.cam.before === 'none' && d.cam.bg === 'rgba(0, 0, 0, 0)' && !d.cam.title;
-            res[`hero-${device}/security`] = { ok, ...(ok ? {} : { runs }) };
+            const ok = Object.values(runs).every((r) => tafelOk(r, tk)) && d.cells.length > 0
+              && d.title.color === tk['--g-label'] && d.badge.color === tk['--g-label-2']
+              && runs.armed.title.color === tk['--g-green-ink'] && runs.armed.badge.color === tk['--g-green-ink']
+              && runs.triggered.title.color === tk['--g-red-ink'] && runs.triggered.badge.color === tk['--g-red-ink']
+              && !!cam && cam.before === 'none' && cam.bg === 'rgba(0, 0, 0, 0)' && !cam.title;
+            res[`hero-${device}/security`] = { ok, ...(ok ? {} : { runs, cam }) };
           } catch (e) {
             res[`hero-${device}/security`] = { ok: false, error: String(e.message).slice(0, 160) };
           }
           await close();
         }
-        // system: healthy = green; chips; no capitals
-        {
-          const { page, close } = await open(device, 'glas', '/system', { mode });
-          try {
-            const tk = await tokens(page);
-            const got = await ev(page, () => {
-              const card = document.querySelector('.system-hero-card');
-              const icon = card.querySelector('.system-hero-card__icon');
-              const status = getComputedStyle(card.querySelector('.system-hero-card__status'));
-              const label = getComputedStyle(card.querySelector('.system-hero-card__label'));
-              return {
-                cls: card.className,
-                icon: { w: Math.round(icon.getBoundingClientRect().width), color: getComputedStyle(icon).color },
-                status: status.color, size: status.fontSize, caps: label.textTransform,
-                chips: [...card.querySelectorAll('.system-hero-chip')].map((c) => ({
-                  h: c.getBoundingClientRect().height, bg: getComputedStyle(c).backgroundColor,
-                  r: parseFloat(getComputedStyle(c).borderTopLeftRadius) })),
-              };
-            });
-            const healthy = /system-hero-card--healthy/.test(got.cls);
-            const ok = (!healthy || (got.status === tk['--g-green-ink'] && got.icon.color === tk['--g-green-ink']))
-              && Math.abs(got.icon.w - 56) <= 1 && got.size === '22px' && got.caps === 'none' && got.chips.length > 0
-              && got.chips.every((c) => c.h >= 32 - 0.5 && c.bg === tk['--g-fill'] && c.r >= 16);
-            res[`hero-${device}/system`] = { ok, healthy, ...(ok ? {} : { got }) };
-          } catch (e) {
-            res[`hero-${device}/system`] = { ok: false, error: String(e.message).slice(0, 160) };
-          }
-          await close();
-        }
-        // the stateless heroes: plain card, eyebrow 15 label2 without capitals
-        for (const [p, sel, bg, eyebrow] of [
-          ['/energy', '.energy-hero', null, null],
-          ['/automations', '.auto-hero-card', '.auto-hero-card__bg', '.auto-hero-card__eyebrow'],
-          ['/scenes', '.scene-hero-card', '.scene-hero-card__bg', '.scene-hero-card__eyebrow'],
-        ]) {
+        // the other heads; system healthy = green
+        for (const p of ['/system', '/energy', '/automations', '/scenes', '/devices']) {
           const { page, close } = await open(device, 'glas', p, { mode });
           try {
             const tk = await tokens(page);
-            const got = await ev(page, ([s1, s2, s3]) => {
-              const card = document.querySelector(s1);
-              const b = s2 ? card.querySelector(s2) : null;
-              const e = s3 ? getComputedStyle(card.querySelector(s3)) : null;
-              return { grad: getComputedStyle(card).backgroundImage, bg: b ? getComputedStyle(b).display : 'none',
-                eyebrow: e ? { caps: e.textTransform, size: e.fontSize, color: e.color } : null };
-            }, [sel, bg, eyebrow]);
-            const ok = !/gradient/.test(got.grad) && got.bg === 'none'
-              && (!got.eyebrow || (got.eyebrow.caps === 'none' && got.eyebrow.size === '15px' && got.eyebrow.color === tk['--g-label-2']));
-            res[`hero-${device}${p}`] = { ok, ...(ok ? {} : { got }) };
+            const got = await tafel(page);
+            const healthy = p === '/system' && (await ev(page, () => document.querySelector('.system-hero-card')?.dataset.health)) === 'healthy';
+            const ok = tafelOk(got, tk) && (!healthy || (got.title.color === tk['--g-green-ink'] && got.badge.color === tk['--g-green-ink']));
+            res[`hero-${device}${p}`] = { ok, ...(p === '/system' ? { healthy } : {}), ...(ok ? {} : { got }) };
           } catch (e) {
             res[`hero-${device}${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
           }
@@ -1223,10 +1202,12 @@ module.exports = function pages(h) {
       if (segPart('energy')) {
         // The energy period: a view, so a tap and the arrows choose at once; the hero shows the figure of Klassisch's tab.
         // While a period loads (the demo holds its statistics: energyHold) Klassisch swaps the page for its loading line
-        // and the focus is gone; Glas keeps the cards and dims them (`data-g-stale`, .5, the hero's head stays), so the
+        // and the focus is gone; Glas keeps the cards and dims them (`data-g-stale`, .5; in the hero all but its period segment), so the
         // segment keeps the focus and the arrows can go on.
         const LABEL = { today: DE['energy.period.today'], week: DE['energy.period.week'], month: DE['energy.period.month'], year: DE['energy.period.year'] };
-        const figure = (page) => ev(page, () => document.querySelector('.energy-hero__primary-value')?.textContent.trim() ?? null);
+        // the home's consumption: Klassisch's figure, Glas the tafel's total (the same words, spaces normalised)
+        const figure = (page) => ev(page, () => document.querySelector('.energy-hero__primary-value, .energy-hero .g-tafel__total-value')
+          ?.textContent.replace(/\s+/g, ' ').trim() ?? null);
         const classicEnergy = {};
         {
           const { page, close } = await open('desktop', 'classic', '/energy', { fixedTime: ENERGY_AT });
@@ -1268,11 +1249,12 @@ module.exports = function pages(h) {
                 stale: document.querySelector('.energy-page')?.hasAttribute('data-g-stale') ?? null,
                 loading: !!document.querySelector('.energy-page__loading'),
                 dim: { card: cell && getComputedStyle(cell).opacity,
-                  stats: getComputedStyle(document.querySelector('.energy-hero__stats')).opacity,
-                  head: getComputedStyle(document.querySelector('.energy-hero__header')).opacity },
+                  stats: getComputedStyle(document.querySelector('.energy-hero .g-tafel__grid')).opacity,
+                  head: getComputedStyle(el).opacity },
               };
             })) });
-            const waitFigure = (want) => page.waitForFunction((w) => document.querySelector('.energy-hero__primary-value')?.textContent.trim() === w
+            const waitFigure = (want) => page.waitForFunction((w) => document.querySelector('.energy-hero .g-tafel__total-value')
+              ?.textContent.replace(/\s+/g, ' ').trim() === w
               && !document.querySelector('.energy-page[data-g-stale]'), want, { timeout: 5000 }).catch(() => {});
             const look = await state();
             // a tap on "Woche"
@@ -1881,7 +1863,7 @@ module.exports = function pages(h) {
               await patch(ALARM, { state: st });
               await sleep(200);
               hero[st] = (await ev(page, () => {
-                const e = document.querySelector('.security-page .security-hero-card__alarm-state');
+                const e = document.querySelector('.security-page .security-hero-card .g-tafel__title');
                 return e && getComputedStyle(e).color;
               })) === want;
             }
@@ -2127,7 +2109,7 @@ module.exports = function pages(h) {
           await close();
         }
 
-        // Energy N: on the same date as Klassisch the same figures, tiles, legend, totals, bars (their heights), solar
+        // Energy N: on the same date as Klassisch the same figures, the hero's values, legend, totals, bars (their heights), solar
         // rows and meter, devices (their bars) and water; the chart grey and yellow, its stacks 14 wide for 13 bars, the
         // device bars orange, the solar meter yellow; every card in the picture, no value cut, the page no wider than the
         // window; the hero does not tint under the pointer (desktop); the loading line 15/20 label2.
@@ -2137,9 +2119,10 @@ module.exports = function pages(h) {
             const all = (sel) => [...document.querySelectorAll(sel)].map(txt);
             const styles = (sel) => [...document.querySelectorAll(sel)].map((e) => e.getAttribute('style'));
             return {
-              figure: txt(document.querySelector('.energy-hero__primary-value')),
-              label: txt(document.querySelector('.energy-hero__primary-label')),
-              stats: all('.energy-stat'),
+              // the hero: Klassisch's figure and tiles, Glas the tafel's total and cells (the same words)
+              figure: txt(document.querySelector('.energy-hero__primary-value, .energy-hero .g-tafel__total-value')),
+              label: txt(document.querySelector('.energy-hero__primary-label, .energy-hero .g-tafel__total-label')),
+              stats: all('.energy-stat, .energy-hero .g-tafel__cell'),
               legend: all('.energy-legend__item'),
               totals: all('.energy-total'),
               bars: [...document.querySelectorAll('.energy-chart__col')].map((c) => [...c.querySelectorAll('.energy-chart__seg')]
@@ -2177,9 +2160,9 @@ module.exports = function pages(h) {
               const bg = (e) => getComputedStyle(e).backgroundColor;
               const each = (sel, fn) => [...document.querySelectorAll(sel)].every(fn);
               const stacks = [...document.querySelectorAll('.energy-chart__stack')];
-              const fig = getComputedStyle(document.querySelector('.energy-hero__primary-value'));
+              const fig = getComputedStyle(document.querySelector('.energy-hero .g-tafel__total-value'));
               // values: a block that clips (ellipsis) must not; an inline value must stay inside its card
-              const cut = [...document.querySelectorAll('.energy-page :is(.energy-hero__primary-value, .energy-stat__value, .energy-total__value, .energy-kv__value, .energy-device__value, .energy-card__sub, .energy-legend__item)')]
+              const cut = [...document.querySelectorAll('.energy-page :is(.g-tafel__total-value, .g-tafel__value, .g-tafel__label-text, .energy-total__value, .energy-kv__value, .energy-device__value, .energy-card__sub, .energy-legend__item)')]
                 .filter((e) => {
                   const card = e.closest('.card') || e.closest('[data-section]');
                   const r = e.getBoundingClientRect();
@@ -2207,8 +2190,9 @@ module.exports = function pages(h) {
                 deviceBars: each('.energy-device__bar', (e) => bg(e) === tok('--g-prominent')),
                 meter: bg(document.querySelector('.energy-solar__meter-fill')) === tok('--g-chart-solar'),
                 figure: `${fig.fontWeight} ${fig.fontSize}/${fig.lineHeight}`, figureColor: fig.color === tok('--g-label', 'color'),
-                tiles: each('.energy-stat', (e) => bg(e) === tok('--g-fill') && getComputedStyle(e).borderRadius === '12px'),
-                icons: each('.energy-stat__icon', (e) => Math.round(e.getBoundingClientRect().width) === 32 && getComputedStyle(e).borderRadius === '50%'),
+                // the tafel's cells: no tile of their own (the card's colour), the symbol bare
+                tiles: each('.energy-hero .g-tafel__cell', (e) => bg(e) === 'rgba(0, 0, 0, 0)'),
+                icons: each('.energy-hero .g-tafel__label > svg', (e) => Math.round(e.getBoundingClientRect().width) === 15),
                 cut, out, wide: document.documentElement.scrollWidth > innerWidth, loading,
               };
             });
@@ -2513,7 +2497,9 @@ module.exports = function pages(h) {
 
             await step('start', async () => {}, async () => {
               const all = await names();
-              return { n: all.length, first: all.slice(0, 3), sub: (await texts(page, '.devices-hero__subtitle'))[0], status: (await texts(page, '.devices-hero__status'))[0] };
+              // the hero's facts: Klassisch's status chip and figures, Glas the tafel's head and cells (Glas groups digits)
+              return { n: all.length, first: all.slice(0, 3), status: (await texts(page, '.devices-hero__status, .devices-hero .g-tafel__title'))[0],
+                figures: (await texts(page, '.devices-hero__stat-value, .devices-hero .g-tafel__value')).map((v) => v.replace(/\D/g, '')) };
             });
             await step('search', () => search('kitchen'), names);
             await step('searchNone', () => search('zzzz'), () => texts(page, '.devices-empty-filter'));
@@ -2670,7 +2656,7 @@ module.exports = function pages(h) {
 
         // Automations P1–P4, the same steps in Klassisch and Glas: the hero's figures, the activity and the categories,
         // a row's switch (a tap and Space), the search (also without a match), room (an automation placed in the
-        // living room) and category. Glas alone: rows, separators, lists to the surface's edges, the hero's stats and
+        // living room) and category. Glas alone: rows, separators, lists to the surface's edges, the hero's tafel and
         // the choices in their measures (K94).
         if (keepPart('automations')) {
           const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
@@ -2692,9 +2678,17 @@ module.exports = function pages(h) {
               const vis = (s, root = document) => [...root.querySelectorAll(s)].filter((e) => e.getClientRects().length);
               const hero = document.querySelector('.auto-hero-card');
               const parts = (e) => (e ? [...e.children].map(txt).filter(Boolean).join(' ') : null);
+              // the hero's facts in either markup: Klassisch's figure, last run and stats; Glas the tafel's cells and head
+              const tafel = hero && hero.classList.contains('g-tafel');
+              const cell = (k) => hero.querySelector(`.g-tafel__cell[data-tafel="${k}"]`);
+              const fig = (c) => `${txt(c.querySelector('.g-tafel__value'))} ${txt(c.querySelector('.g-tafel__label'))}`;
               return {
-                hero: hero && { total: txt(hero.querySelector('.auto-hero-card__total')), sub: txt(hero.querySelector('.auto-hero-card__sub')),
-                  lastRan: parts(hero.querySelector('.auto-hero-card__last-ran')), stats: vis('.auto-hero-card__stat', hero).map(parts) },
+                hero: hero && (tafel
+                  ? { total: txt(cell('total').querySelector('.g-tafel__value')),
+                    lastRan: hero.querySelector('.g-tafel__sub') ? parts(hero.querySelector('.g-tafel__head-text')) : null,
+                    stats: ['active', 'disabled', 'categories'].map((k) => fig(cell(k))) }
+                  : { total: txt(hero.querySelector('.auto-hero-card__total')),
+                    lastRan: parts(hero.querySelector('.auto-hero-card__last-ran')), stats: vis('.auto-hero-card__stat', hero).map(parts) }),
                 feed: vis('.auto-feed-row').map((r) => ['name', 'cat', 'time'].map((k) => txt(r.querySelector(`.auto-feed-row__${k}`))).join('|')),
                 cats: vis('.auto-cat-card').map((c) => [txt(c.querySelector('.auto-cat-card__title')), txt(c.querySelector('.auto-cat-card__count')),
                   ...[...c.querySelectorAll('.auto-cat-row')].map((r) => [txt(r.querySelector('.auto-cat-row__name')), txt(r.querySelector('.auto-cat-row__time')),
@@ -2728,8 +2722,8 @@ module.exports = function pages(h) {
           };
           /** Glas: a category's rows 60 and the activity's 52, the text from 60, separators from there and none above
            *  the first row, the list from the surface's top to the card's edges (a card the grid does not stretch), the
-           *  activity 5 rows high and scrolling, a disabled automation not dimmed, the stats capsule 44 with no label
-           *  cut, the figure 34/41, the activity's name whole beside its category in plain `label2`, the choices 36 in 44. */
+           *  activity 5 rows high and scrolling, a disabled automation not dimmed, nothing in the hero's tafel cut, its
+           *  figures 28/34 600, the activity's name whole beside its category in plain `label2`, the choices 36 in 44. */
           const automationsLook = (page) => ev(page, () => {
             const tok = (n) => {
               const d = document.createElement('div');
@@ -2750,8 +2744,7 @@ module.exports = function pages(h) {
             const feed = document.querySelector('.auto-feed-card__list');
             const feedRows = [...feed.querySelectorAll('.auto-feed-row')];
             const off = card.querySelector('.auto-cat-row--disabled');
-            const stats = document.querySelector('.auto-hero-card__stats');
-            const total = getComputedStyle(document.querySelector('.auto-hero-card__total'));
+            const total = getComputedStyle(document.querySelector('.auto-hero-card .g-tafel__value'));
             const fname = feedRows[0].querySelector('.auto-feed-row__name');
             const fcat = getComputedStyle(feedRows[0].querySelector('.auto-feed-row__cat'));
             const sel = document.querySelector('.automations-select__native');
@@ -2768,8 +2761,8 @@ module.exports = function pages(h) {
               top: Math.round(lb.top - cb.top - bw('Top')) === Math.round(parseFloat(getComputedStyle(card, '::before').top)),
               feedH: Math.round(feed.getBoundingClientRect().height), feedScrolls: feed.scrollHeight > feed.clientHeight,
               off: !!off && getComputedStyle(off).opacity === '1' && getComputedStyle(off.querySelector('.auto-cat-row__name')).color === tok('--g-label-2'),
-              stats: `${Math.round(stats.getBoundingClientRect().height)} ${getComputedStyle(stats).borderTopLeftRadius}`,
-              statsCut: [...document.querySelectorAll('.auto-hero-card__stat-label')].filter((e) => e.scrollWidth > e.clientWidth).length,
+              statsCut: [...document.querySelectorAll('.auto-hero-card :is(.g-tafel__label-text, .g-tafel__value, .g-tafel__title)')]
+                .filter((e) => e.scrollWidth > e.clientWidth + 0.5).length,
               total: `${total.fontWeight} ${total.fontSize}/${total.lineHeight}`,
               feedName: fname.scrollWidth <= fname.clientWidth,
               feedCat: `${fcat.fontSize}/${fcat.lineHeight} ${fcat.backgroundColor} ${fcat.color === tok('--g-label-2')}`,
@@ -2812,8 +2805,8 @@ module.exports = function pages(h) {
             && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 13;
           const measured = !!look && !look.error && look.catRows >= 60 && look.feedRows >= 52 && look.textStart === 60 && look.feedTextStart === 60
             && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none' && look.edges.join() === '0,0,0' && look.top
-            && look.feedH === 260 && look.feedScrolls && look.off && look.stats === '44 22px' && look.statsCut === 0
-            && look.total === '600 34px/41px' && look.feedName && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedCat)
+            && look.feedH === 260 && look.feedScrolls && look.off && look.statsCut === 0
+            && look.total === '600 28px/34px' && look.feedName && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedCat)
             && look.select === 44 && look.selectVisible === 36;
           res[`${device}-automations`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
             errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look };
@@ -2823,7 +2816,7 @@ module.exports = function pages(h) {
         // tiles; a tile activates its scene by tap, Enter and Space, and no tile says "Aktiv" (K88: the overview only).
         // Glas alone: the tiles in the overview's look (radius 22, circle 36 / from 900 px 40, name 15/20 600, the glyph
         // in the ink of its tone, no inline colour), two columns (four in a card two columns wide), on the phone on the
-        // page background; the activity like the automations' (K94); the hero's stats capsule.
+        // page background; the activity like the automations' (K94); nothing in the hero's tafel cut.
         if (keepPart('scenes')) {
           const calls = (page) => ev(page, () => window.__hapulseDemo.calls().map(({ domain, service, data, target }) => ({ domain, service, data, target })));
           const clear = (page) => ev(page, () => window.__hapulseDemo.clearCalls());
@@ -2841,9 +2834,17 @@ module.exports = function pages(h) {
               const vis = (s, root = document) => [...root.querySelectorAll(s)].filter((e) => e.getClientRects().length);
               const parts = (e) => (e ? [...e.children].map(txt).filter(Boolean).join(' ') : null);
               const hero = document.querySelector('.scene-hero-card');
+              // the hero's facts in either markup (as the automations')
+              const tafel = hero && hero.classList.contains('g-tafel');
+              const cell = (k) => hero.querySelector(`.g-tafel__cell[data-tafel="${k}"]`);
+              const fig = (c) => `${txt(c.querySelector('.g-tafel__value'))} ${txt(c.querySelector('.g-tafel__label'))}`;
               return {
-                hero: hero && { total: txt(hero.querySelector('.scene-hero-card__total')), sub: txt(hero.querySelector('.scene-hero-card__sub')),
-                  lastUsed: parts(hero.querySelector('.scene-hero-card__last-used')), stats: vis('.scene-hero-card__stat', hero).map(parts) },
+                hero: hero && (tafel
+                  ? { total: txt(cell('total').querySelector('.g-tafel__value')),
+                    lastUsed: hero.querySelector('.g-tafel__sub') ? parts(hero.querySelector('.g-tafel__head-text')) : null,
+                    stats: ['today', 'rooms'].map((k) => fig(cell(k))) }
+                  : { total: txt(hero.querySelector('.scene-hero-card__total')),
+                    lastUsed: parts(hero.querySelector('.scene-hero-card__last-used')), stats: vis('.scene-hero-card__stat', hero).map(parts) }),
                 feed: vis('.scene-feed-row').map((r) => ['name', 'room', 'time'].map((k) => txt(r.querySelector(`.scene-feed-row__${k}`))).join('|')),
                 rooms: vis('.scene-room-card').map((c) => [txt(c.querySelector('.scene-room-card__title')), txt(c.querySelector('.scene-room-card__count')),
                   ...vis('.scene-tile', c).map((t) => txt(t.querySelector('.scene-tile__name'))
@@ -2894,7 +2895,6 @@ module.exports = function pages(h) {
             const feedRows = [...feed.querySelectorAll('.scene-feed-row')];
             const fname = feedRows[0].querySelector('.scene-feed-row__name');
             const froom = getComputedStyle(feedRows[0].querySelector('.scene-feed-row__room'));
-            const stats = document.querySelector('.scene-hero-card__stats');
             return {
               radius: cs.borderTopLeftRadius, border: cs.borderTopWidth, bg: cs.backgroundColor === tok('--g-tile-off', 'backgroundColor'),
               h: Math.round(t0.getBoundingClientRect().height),
@@ -2914,8 +2914,8 @@ module.exports = function pages(h) {
               feedH: Math.round(flb.height), feedScrolls: feed.scrollHeight > feed.clientHeight,
               feedName: fname.scrollWidth <= fname.clientWidth,
               feedRoom: `${froom.fontSize}/${froom.lineHeight} ${froom.backgroundColor} ${froom.color === tok('--g-label-2')}`,
-              stats: `${Math.round(stats.getBoundingClientRect().height)} ${getComputedStyle(stats).borderTopLeftRadius}`,
-              statsCut: [...document.querySelectorAll('.scene-hero-card__stat-label')].filter((e) => e.scrollWidth > e.clientWidth).length,
+              statsCut: [...document.querySelectorAll('.scene-hero-card :is(.g-tafel__label-text, .g-tafel__value, .g-tafel__title)')]
+                .filter((e) => e.scrollWidth > e.clientWidth + 0.5).length,
             };
           });
           const got = {};
@@ -2959,7 +2959,7 @@ module.exports = function pages(h) {
           const lastUsed = (step, n) => !!step && !!step.dom && !!step.dom.hero && step.dom.hero.lastUsed === `${DE['scenes.hero.lastUsed']} ${n} ${DE['scenes.time.justNow']}`;
           const hourAgo = DE['scenes.time.hoursAgo.one'].replace('{count}', '1');
           const usedToday = DE['scenes.hero.statUsedToday'];
-          const fine = same && !!st.hero && st.hero.total === '11' && st.hero.sub === DE['scenes.hero.totalLabel']
+          const fine = same && !!st.hero && st.hero.total === '11'
             && st.hero.lastUsed === `${DE['scenes.hero.lastUsed']} Cooking Mode ${hourAgo}`
             && st.hero.stats.length === 2 && /^\d+ /.test(st.hero.stats[0]) && st.hero.stats[0].replace(/^\d+ /, '') === usedToday
             && st.hero.stats[1] === `5 ${DE['scenes.hero.roomLabel.other']}`
@@ -2980,15 +2980,16 @@ module.exports = function pages(h) {
             && look.cols === 2 && (phone ? look.surface === 'none' && look.gridTop === 50 : look.surface !== 'none' && look.gridTop === 66)
             && look.feedRows >= 52 && look.feedTextStart === 60 && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none'
             && look.edges.join() === '0,0,0' && look.top && look.feedH === 260 && look.feedScrolls && look.feedName
-            && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedRoom) && look.stats === '44 22px' && look.statsCut === 0
+            && /^13px\/18px rgba\(0, 0, 0, 0\) true$/.test(look.feedRoom) && look.statsCut === 0
             && (phone || wide === 4);
           res[`${device}-scenes`] = { ok: fine && measured, same, glas: g, ...(same ? {} : { classic: got.classic && (got.classic.steps || got.classic) }),
             errors: [got.classic && got.classic.error, got.glas && got.glas.error].filter(Boolean), look, wide };
         }
 
-        // System R1–R5, the same content in Klassisch and Glas under the same values: the hero's state and chips with
-        // the alerts (low batteries, unavailable), the monitor's groups, values and bar bands, the batteries with their
-        // bands and the count of low ones. Glas alone: the alerts' symbol in the state's ink, the text 600 `label`; the
+        // System R1–R5, the same content in Klassisch and Glas under the same values: the hero's state, gauges with their
+        // bands and the alerts (low batteries, unavailable), the monitor's groups, values and bar bands, the batteries with
+        // their bands and the count of low ones. Glas alone: the hero's rings in their band's colour, the alerts' symbol
+        // in warnInk (a fault, not the system's health: the head says that), the text 600 `label`; the
         // monitor's group titles 600 15/20 `label2` without a symbol, tiles in `fill` radius 12 without a border, bars 6
         // high in green / yellow / red, the groups scrolling 400 high up to the surface's edges; the batteries as an inset
         // list (rows 52, circle 32 in `fill`, text and separators from 60, none above the first, bands green / yellow /
@@ -3021,8 +3022,15 @@ module.exports = function pages(h) {
             const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
             const cls = (e, base) => (e ? ([...e.classList].find((c) => c.startsWith(`${base}--`)) || '').slice(base.length + 2) : '');
             return {
-              status: txt(document.querySelector('.system-page .system-hero-card__status')),
-              chips: [...document.querySelectorAll('.system-page .system-hero-chip')].map((c) => `${cls(c, 'system-hero-chip')}:${txt(c)}`),
+              // the hero's facts in either markup: the state; the gauges with their threshold band (Klassisch's value chips,
+              // Glas the rings: ok, warn, critical); the alerts' words (Klassisch's chips with a symbol, Glas the notes)
+              status: txt(document.querySelector('.system-page :is(.system-hero-card__status, .system-hero-card .g-tafel__title)')),
+              gauges: [...[...document.querySelectorAll('.system-page .system-hero-chip:not(:has(> svg))')]
+                .map((c) => `${cls(c, 'system-hero-chip')}:${txt(c).replace(/\s/g, '')}`),
+              ...[...document.querySelectorAll('.system-page .system-hero-card .g-tafel__ring')]
+                .map((r) => `${{ danger: 'critical' }[r.dataset.tone] || r.dataset.tone}:${txt(r.querySelector('.g-tafel__ring-label'))}`
+                  + txt(r.querySelector('.g-tafel__ring-value')).replace(/\s/g, ''))],
+              alerts: [...document.querySelectorAll('.system-page :is(.system-hero-chip:has(> svg), .system-hero-card .g-tafel__note)')].map(txt),
               groups: [...document.querySelectorAll('.system-page .sys-monitor-group')].map((g) => [txt(g.querySelector('.sys-monitor-group__label')),
                 ...[...g.querySelectorAll('.sys-metric-tile')].map((t) => {
                   const f = t.querySelector('.sys-metric-bar__fill');
@@ -3060,9 +3068,9 @@ module.exports = function pages(h) {
               return { edges: [b.left - cb.left - bw(card, 'Left'), cb.right - b.right - bw(card, 'Right'), cb.bottom - b.bottom - bw(card, 'Bottom')]
                 .map(Math.round).join(), top: Math.round(b.top - cb.top - bw(card, 'Top')) === Math.round(parseFloat(getComputedStyle(card, '::before').top)) };
             };
-            const chips = [...document.querySelectorAll('.system-page .system-hero-chip')];
-            const alert = (kind, ink) => {
-              const c = chips.find((x) => x.classList.contains(`system-hero-chip--${kind}`) && x.querySelector('svg'));
+            /** an alert in the hero's tafel: its symbol's ink and size, the text's colour and weight */
+            const alert = (key, ink) => {
+              const c = document.querySelector(`.system-page .system-hero-card .g-tafel__note[data-tafel="${key}"]`);
               if (!c) return null;
               const s = c.querySelector('svg');
               const sb = s.getBoundingClientRect();
@@ -3093,17 +3101,16 @@ module.exports = function pages(h) {
             const pct = getComputedStyle(row('Garden Sensor').querySelector('.bat-row__pct'));
             const badge = bat.querySelector('.batteries-card__low-badge');
             const bcs = getComputedStyle(badge);
-            /** a value chip (no symbol): its dot before the key and the value's colour and weight */
-            const value = (kind, ink) => {
-              const c = chips.find((x) => x.classList.contains(`system-hero-chip--${kind}`) && !x.querySelector('svg'));
-              if (!c) return null;
-              const d = getComputedStyle(c, '::before');
-              const v = getComputedStyle(c.querySelector('.system-hero-chip__val'));
-              return `${ink ? d.backgroundColor === bg(ink) : d.content} ${d.width}x${d.height} ${v.color === tok('--g-label')} ${v.fontWeight}`;
+            /** a gauge's ring: the arc in its band's full colour, the value in `label` */
+            const value = (key, full) => {
+              const r = document.querySelector(`.system-page .system-hero-card .g-tafel__ring[data-tafel="${key}"]`);
+              if (!r) return null;
+              const v = getComputedStyle(r.querySelector('.g-tafel__ring-value'));
+              return `${getComputedStyle(r.querySelector('.g-tafel__ring-arc')).stroke === tok(full)} ${v.color === tok('--g-label')} ${v.fontWeight}`;
             };
             return {
-              warn: alert('warn', '--g-warn-ink'), critical: alert('critical', '--g-red-ink'),
-              dots: [value('warn', '--g-warn-ink'), value('critical', '--g-red-ink'), value('ok', null)],
+              warn: alert('battery', '--g-warn-ink'), critical: alert('unavailable', '--g-warn-ink'),
+              dots: [value('cpu', '--g-yellow'), value('ram', '--g-red'), value('disk', '--g-green')],
               label: `${font(label)} ${getComputedStyle(label).color === tok('--g-label-2')} ${getComputedStyle(label).textTransform}`,
               symbol: getComputedStyle(label.querySelector('[aria-hidden="true"]')).display,
               tile: `${tcs.borderTopLeftRadius} ${tcs.borderTopWidth} ${tcs.backgroundColor === bg('--g-fill')}`,
@@ -3190,8 +3197,9 @@ module.exports = function pages(h) {
           const g = got.glas || {};
           const same = !!got.classic && !got.classic.error && !g.error && JSON.stringify(got.classic) === JSON.stringify(g);
           const fine = same && g.status === DE['system.hero.status.critical']
-            && g.chips.join() === ['warn:CPU82%', 'critical:RAM93%', 'ok:Speicher61%', `warn:${DE['system.hero.lowBatteryCount.other'].replace('{count}', '2')}`,
-              `critical:${DE['system.hero.unavailableCount.one'].replace('{count}', '1')}`].join()
+            && g.gauges.join() === ['warn:CPU82%', 'critical:RAM93%', 'ok:Speicher61%'].join()
+            && g.alerts.join() === [DE['system.hero.lowBatteryCount.other'].replace('{count}', '2'),
+              DE['system.hero.unavailableCount.one'].replace('{count}', '1')].join()
             && g.groups[0] === `${DE['system.monitor.group.processor']} / Processor use|82 %|warn 82% / Processor temperature|47 °C`
             && g.groups[1].startsWith(`${DE['system.monitor.group.memory']} / Memory use|93 %|critical 93% / `)
             && g.groups[2].startsWith(`${DE['system.monitor.group.disk']} / Disk use (/)|61 %|ok 61% / `)
@@ -3199,8 +3207,8 @@ module.exports = function pages(h) {
               'Bedroom Sensor|40%|medium 40%|ok|', 'Garden Sensor|80%|ok 80%|ok|'].join(' // ')
             && g.badge === DE['system.batteries.lowCount.other'].replace('{count}', '2') && g.activity > 1;
           const L = look || {};
-          const measured = !!look && !look.error && L.warn === 'true 16x16 true 600' && L.critical === 'true 16x16 true 600'
-            && L.dots.join() === ['true 8pxx8px true 600', 'true 8pxx8px true 600', 'none autoxauto true 600'].join()
+          const measured = !!look && !look.error && L.warn === 'true 18x18 true 600' && L.critical === 'true 18x18 true 600'
+            && L.dots.join() === ['true true 600', 'true true 600', 'true true 600'].join()
             && L.label === '600 15px/20px true none' && L.symbol === 'none' && L.tile === '12px 0px true' && L.tname === '400 15px/20px true'
             && L.tval === '600 15px/20px true tabular-nums' && L.bar === '6 true' && L.bands && L.bandSet === 'critical,ok,warn'
             && L.groups.edges === '0,0,0' && L.groups.top && L.groups.h === 432 && L.groups.scrolls && L.groups.gap === '16px'
@@ -3945,7 +3953,7 @@ module.exports = function pages(h) {
               const e = document.querySelector(s);
               const cs = getComputedStyle(e);
               return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
-                cards: document.querySelectorAll('.auto-cat-card').length, total: document.querySelector('.auto-hero-card__total')?.textContent.trim() };
+                cards: document.querySelectorAll('.auto-cat-card').length, total: document.querySelector('.auto-hero-card__total, .auto-hero-card .g-tafel__cell[data-tafel="total"] .g-tafel__value')?.textContent.trim() };
             }, sel);
             res[`${device}-${name}`] = { ok: got.text === DE[key] && got.font === '15px/20px' && got.color && got.cards === 0
               && (name === 'automations-noMatch' || got.total === '0'), ...got };
@@ -3974,7 +3982,7 @@ module.exports = function pages(h) {
               const e = document.querySelector('.scene-feed-card__empty');
               const cs = getComputedStyle(e);
               return { text: e.textContent.trim(), font: `${cs.fontSize}/${cs.lineHeight}`, color: cs.color === want,
-                cards: document.querySelectorAll('.scene-room-card').length, total: document.querySelector('.scene-hero-card__total')?.textContent.trim() };
+                cards: document.querySelectorAll('.scene-room-card').length, total: document.querySelector('.scene-hero-card__total, .scene-hero-card .g-tafel__cell[data-tafel="total"] .g-tafel__value')?.textContent.trim() };
             });
             res[`${device}-scenes-none`] = { ok: got.text === DE['scenes.activity.empty'] && got.font === '15px/20px' && got.color && got.cards === 0
               && got.total === '0', ...got };
@@ -4226,8 +4234,9 @@ module.exports = function pages(h) {
           const b = await read();
           // a row still leads to its page: the scenes page counts as many scenes as the menu
           await page.locator('.app-more-menu--open .app-more-menu__row[href$="/scenes"]').click();
-          await page.waitForFunction(() => document.querySelector('.scene-hero-card__total'), null, { timeout: 5000 });
-          const scenesTotal = await ev(page, () => document.querySelector('.scene-hero-card__total').textContent.trim());
+          const TOTAL = '.scene-hero-card .g-tafel__cell[data-tafel="total"] .g-tafel__value';
+          await page.waitForFunction((sel) => document.querySelector(sel), TOTAL, { timeout: 5000 });
+          const scenesTotal = await ev(page, (sel) => document.querySelector(sel).textContent.trim(), TOTAL);
           // the overview's energy card says the same for today
           await page.goto(url + '/', { waitUntil: 'load' });
           await page.waitForFunction(() => document.querySelector('.g-energy__num'), null, { timeout: 8000 });

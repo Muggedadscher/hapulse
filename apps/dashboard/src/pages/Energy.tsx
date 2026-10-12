@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
-  EnergyHeroCard,
   EnergySourcesCard,
   EnergyDevicesCard,
   EnergySolarCard,
@@ -10,6 +9,7 @@ import {
   EnergyGasCard,
   EnergyNotConfigured,
 } from '../components/energy/EnergyCards';
+import { EnergyHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
 import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { EditBadge } from '../components/ui/EditBadge';

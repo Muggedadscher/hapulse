@@ -13,7 +13,7 @@ import { useT, type TKey } from '../i18n/useT';
 import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { HeightHandle, HeightDots, heightClass, getHeightLevel } from '../components/ui/SectionResize';
-import { SecurityHeroCard } from '../components/security/SecurityHeroCard';
+import { SecurityHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
 import { AlarmPanelCard } from '../components/security/AlarmPanelCard';
 import { PeopleList } from '../components/security/PeopleList';
 import { LocksSectionCard } from '../components/security/LocksSectionCard';

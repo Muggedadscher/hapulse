@@ -1,7 +1,7 @@
 /* [fork] Glas — the devices page and a device's window (plan docs/glas/PLAN-ETAPPE-5.md K90–K94, §7.13; GLAS-DESIGN
-   §5.3, §7.27–§7.31): the loading line, the hero's figures and its state, the toolbar's choices, the devices as tiles
+   §5.3, §7.27–§7.31, §7.34): the loading line, the toolbar's choices, the devices as tiles
    and as an inset list, and in the window the chips, the groups of entities and their controls. Only presentation:
-   the contents O1–O7 stay. The hero is the frame's plain card (pages.css), grid | list is `g-seg--view`
+   the contents O1–O7 stay. The hero is a tafel (tafel.css), grid | list is `g-seg--view`
    (controls.css), its markup the [fork] switch in components/devices/DevicesToolbar.tsx; the search is lists.css, the
    rows' switches controls.css (K91), the page's empty state pages.css. */
 
@@ -34,112 +34,7 @@
   font: 400 15px / 20px var(--g-font);
 }
 
-/* ---- Hero (O2, K90): the plain card; the title 20/25 600 in the surface, the counts 15/20 `label2`; the state as a
-   chip 32 in `fill` like the security hero's, its symbol a filled circle in the state's colour with a dark glyph as
-   in the sidebar's status pill (shell.css). The figures as tiles in `fill` without a border, radius 12, like the
-   energy hero's: the symbol in a circle 32 on the card's colour in `label2` (a count has no state), value 22/28 600,
-   label 12/16 `label2`. ---- */
-:root[data-style='glas'] .devices-page .devices-hero {
-  gap: 16px;
-  padding: 14px 16px 16px;
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__head {
-  align-items: center;
-  gap: 8px 12px;
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__title {
-  color: var(--g-label);
-  font: 600 20px / 25px var(--g-font);
-  letter-spacing: normal;
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__subtitle {
-  margin-top: 2px;
-  color: var(--g-label-2);
-  font: 400 15px / 20px var(--g-font);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__status {
-  gap: 8px;
-  min-height: 32px;
-  padding: 0 12px 0 4px;
-  border-radius: 999px;
-  background: var(--g-fill);
-  color: var(--g-label);
-  font: 600 15px / 20px var(--g-font);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__status > svg {
-  box-sizing: content-box;
-  flex: none;
-  width: 14px;
-  height: 14px;
-  padding: 5px;
-  border-radius: 50%;
-  color: var(--g-glyph-dark);
-}
-
-/* the symbols' own circle outline is hidden (the circle is the background) */
-:root[data-style='glas'] .devices-page .devices-hero__status > svg circle {
-  display: none;
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__status--healthy > svg {
-  background: var(--g-green);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__status--warning > svg {
-  background: var(--g-yellow);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__status--critical > svg {
-  background: var(--g-red);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__status--unknown > svg {
-  background: var(--g-gray);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__stats {
-  gap: 10px;
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__stat {
-  gap: 10px;
-  min-height: 60px;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--g-fill);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__stat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  color: var(--g-label-2);
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__stat-icon > svg {
-  width: 18px;
-  height: 18px;
-  stroke-width: 2;
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__stat-value {
-  color: var(--g-label);
-  font: 600 22px / 28px var(--g-font);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: normal;
-}
-
-:root[data-style='glas'] .devices-page .devices-hero__stat-label {
-  color: var(--g-label-2);
-  font: 400 12px / 16px var(--g-font);
-}
+/* ---- Hero (O2): a tafel (components/glas/tafel/DevicesTafel.tsx, styles/glas/tafel.css; GLAS-DESIGN §7.34) ---- */
 
 /* ---- Toolbar (O3): the search and the room and integration choices are lists.css (fields and toolbar choices), grid |
    list the segment 88 × 44 (controls.css). On a phone the choices and the segment wrap as in Klassisch. ---- */
@@ -595,10 +490,9 @@
 /* ---- Forced colours: the surfaces' colours are gone, the tiles, the list, the window's choices and the controls keep an
    edge; the choices drop their transparent hit borders like the fields (lists.css, also the toolbar's choices) ---- */
 @media (forced-colors: active) {
-  /* as specific as the rules above that set no edge (the hero's stats, a tile's hover) */
+  /* as specific as the rules above that set no edge (a tile's hover) */
   :root[data-style='glas'] :is(.device-card--grid, .devices-results--list),
-  :root[data-style='glas'] .device-card--grid:hover,
-  :root[data-style='glas'] .devices-page .devices-hero__stat {
+  :root[data-style='glas'] .device-card--grid:hover {
     border: 1px solid CanvasText;
   }
 

@@ -1,0 +1,450 @@
+/* [fork] Glas — the pages' head cards, "Tafeln" (plan docs/glas/PLAN-TAFELN.md, GLAS-DESIGN §7.34):
+   devices, system, energy, security, NVR, automations and scenes (the pool keeps its hero, Jannick 12.10.2026). Markup
+   components/glas/tafel/ (and nvr/NvrHeroGlas). One pattern for all seven: the head (symbol 28 in a circle 56, a line 13/18 above,
+   the state 22/28 700 in its ink, a line 15/20 below), then the figures (numbers 28/34 600) as a grid with hairlines between the cells,
+   rings for gauges, note rows for faults. No tiles or capsules in the card and no wash over it (Jannick's choice of
+   draft A, 11.10.2026): colour only where something differs (GLAS-DESIGN §2.2, like the status chips K87) — a count,
+   closed, locked or quiet stays `label2`; faults and open things in warnInk or redInk at symbol and word; solar keeps
+   its chart colour (§2.4). The card keeps its classic class (devices-hero, energy-hero, …): the page grid, hover and
+   edit rules (pages.css, edit.css) find it as before. */
+
+:root[data-style='glas'] .card.g-tafel {
+  display: flex;
+  flex-direction: column;
+  /* the classic heroes' min-height and space-between (their CSS keeps applying to the class) would spread the parts */
+  justify-content: flex-start;
+  min-height: 0;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-card);
+  background-image: none;
+  /* the grid's lone last cell (below) asks the card's width */
+  container: g-tafel / inline-size;
+}
+
+/* the classic heroes paint their wash or glow from these; the tafel has none */
+:root[data-style='glas'] .card.g-tafel::before,
+:root[data-style='glas'] .card.g-tafel::after {
+  content: none;
+}
+
+/* ---- Head ---- */
+:root[data-style='glas'] .g-tafel__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-tafel__badge {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .g-tafel__badge > svg {
+  width: 28px;
+  height: 28px;
+}
+
+:root[data-style='glas'] .g-tafel__badge[data-tone='ok'] {
+  background: var(--g-green-soft);
+  color: var(--g-green-ink);
+}
+
+:root[data-style='glas'] .g-tafel__badge[data-tone='warn'] {
+  background: var(--g-warn-soft);
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .g-tafel__badge[data-tone='danger'] {
+  background: var(--g-red-soft);
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .g-tafel__head-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-tafel__kicker {
+  margin: 0;
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-tafel__title {
+  margin: 0;
+  color: var(--g-label);
+  font: 700 22px / 28px var(--g-font);
+  overflow-wrap: anywhere;
+}
+
+:root[data-style='glas'] .g-tafel__title[data-tone='ok'] {
+  color: var(--g-green-ink);
+}
+
+:root[data-style='glas'] .g-tafel__title[data-tone='warn'] {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .g-tafel__title[data-tone='danger'] {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .g-tafel__title[data-tone='danger'] .g-tafel__part:not(:only-child) {
+  /* one of several problems never breaks inside (NVR: "1 Kamera offline · 1 Aufnahme hängt") */
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-tafel__sub {
+  margin: 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- Grid: hairlines between the cells only. Each cell draws one up and one left of itself; the grid clips those
+   that fall outside it (first row, first column). Columns: as many as fit at --g-tafel-min, at most --g-tafel-max. ---- */
+:root[data-style='glas'] .g-tafel__grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(max(var(--g-tafel-min, 130px), 100% / var(--g-tafel-max, 4) - 1px), 1fr)
+  );
+  margin: 0 0 -6px -12px;
+  overflow: hidden;
+}
+
+/* two columns and an odd count (energy 5, scenes 3, security without garage doors): the last cell takes the whole row,
+   so its hairline runs across and no half row stays empty. Two columns at --g-tafel-min m: grid 2m … 3m, the card
+   (padding 2 × 16, the grid's -12 margin) 2m + 20 … 3m + 20. */
+@container g-tafel (280px <= width < 410px) {
+  :root[data-style='glas'] .g-tafel__grid[data-min='130'] > .g-tafel__cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@container g-tafel (300px <= width < 440px) {
+  :root[data-style='glas'] .g-tafel__grid[data-min='140'] > .g-tafel__cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+:root[data-style='glas'] .g-tafel__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 8px 10px 12px;
+  box-shadow: -0.5px -0.5px 0 0 var(--g-sep);
+}
+
+:root[data-style='glas'] .g-tafel__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .g-tafel__label > svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+:root[data-style='glas'] .g-tafel__label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-tafel__value {
+  margin: 0;
+  overflow: hidden;
+  color: var(--g-label);
+  font: 600 28px / 34px var(--g-font);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-style='glas'] .g-tafel__grid[data-kind='text'] .g-tafel__value {
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .g-tafel__unit {
+  color: var(--g-label-2);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .g-tafel__cell[data-tone='warn'] :is(.g-tafel__label > svg, .g-tafel__value) {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .g-tafel__cell[data-tone='danger'] :is(.g-tafel__label > svg, .g-tafel__value) {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .g-tafel__cell[data-tone='solar'] .g-tafel__label > svg {
+  color: var(--g-yellow-ink);
+}
+
+/* ---- Rings (system): track `fill`, the arc in the state's colour like the system monitor's bars below ---- */
+:root[data-style='glas'] .g-tafel__rings {
+  display: flex;
+  justify-content: space-around;
+  gap: 8px;
+  margin: 0;
+}
+
+:root[data-style='glas'] .g-tafel__ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 72px;
+}
+
+:root[data-style='glas'] .g-tafel__ring-label {
+  order: 1;
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .g-tafel__ring-pic {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0;
+}
+
+:root[data-style='glas'] .g-tafel__ring-pic > svg {
+  display: block;
+}
+
+:root[data-style='glas'] .g-tafel__ring-track {
+  fill: none;
+  stroke: var(--g-fill);
+  stroke-width: 7;
+}
+
+:root[data-style='glas'] .g-tafel__ring-arc {
+  fill: none;
+  stroke: var(--g-green);
+  stroke-linecap: round;
+  stroke-width: 7;
+}
+
+:root[data-style='glas'] .g-tafel__ring[data-tone='warn'] .g-tafel__ring-arc {
+  stroke: var(--g-yellow);
+}
+
+:root[data-style='glas'] .g-tafel__ring[data-tone='danger'] .g-tafel__ring-arc {
+  stroke: var(--g-red);
+}
+
+:root[data-style='glas'] .g-tafel__ring-value {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+/* ---- Notes (system): a hairline above each, the symbol in its ink, the text 600 label ---- */
+:root[data-style='glas'] .g-tafel__notes {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 -6px;
+  padding: 0;
+  list-style: none;
+}
+
+:root[data-style='glas'] .g-tafel__note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  border-top: 0.5px solid var(--g-sep);
+  color: var(--g-label);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-tafel__note > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-style='glas'] .g-tafel__note[data-tone='warn'] > svg {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .g-tafel__note[data-tone='danger'] > svg {
+  color: var(--g-red-ink);
+}
+
+:root[data-style='glas'] .g-tafel__empty {
+  margin: 0;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- Energy: the segment on top (in its own wrapper `__bar`), the home's consumption large like the overview's energy
+   card (34/41 600, the unit 17/22 600 label2). While another period loads, everything but the segment dims to .5 like
+   the cards and the segment stays usable (Energy.tsx `data-g-stale`, energy.css, K75). ---- */
+:root[data-style='glas'] .g-tafel__total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+:root[data-style='glas'] .g-tafel__total-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .g-tafel__total-value {
+  color: var(--g-label);
+  font: 600 34px / 41px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .g-tafel__total-unit {
+  color: var(--g-label-2);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .energy-page .g-tafel--energy > :not(.g-tafel__bar) {
+  transition: opacity 0.2s ease;
+}
+
+:root[data-style='glas'] .energy-page[data-g-stale] .g-tafel--energy > :not(.g-tafel__bar) {
+  opacity: 0.5;
+}
+
+/* ---- Security: the people as overlapping circles 32 (at home green with a dark initial, away `fill`) ---- */
+:root[data-style='glas'] .g-tafel__people {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-tafel__faces {
+  display: flex;
+  flex: none;
+}
+
+:root[data-style='glas'] .g-tafel__face {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border: 2px solid var(--bg-card);
+  border-radius: 50%;
+  background: var(--g-fill-solid);
+  color: var(--g-label-2);
+  font: 600 13px / 1 var(--g-font);
+}
+
+:root[data-style='glas'] .g-tafel__face + .g-tafel__face {
+  margin-left: -6px;
+}
+
+:root[data-style='glas'] .g-tafel__face[data-home] {
+  background: var(--g-green);
+  /* home also by shape, not only by colour (a photo covers the circle): a ring 2 around the card's gap */
+  box-shadow: 0 0 0 2px var(--g-green);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .g-tafel__face > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* away: a photo dims, as in the classic hero */
+:root[data-style='glas'] .g-tafel__face:not([data-home]) > img {
+  opacity: 0.6;
+}
+
+:root[data-style='glas'] .g-tafel__people-label {
+  overflow: hidden;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- A capped section (S/M/L, Page.css "Fallback"): the whole card scrolls under its sticky first part, which then
+   carries the top padding and the card's colour, so nothing peeks above it ---- */
+:root[data-style='glas'] .overview-grid__cell[class*='section-h-'] .card.g-tafel {
+  padding-top: 0;
+}
+
+:root[data-style='glas'] .overview-grid__cell[class*='section-h-'] .card.g-tafel > :first-child {
+  margin: 0 -16px;
+  padding: 16px 16px 0;
+  background: var(--bg-card);
+}
+
+/* ---- Forced colours: the inks are gone, so a cell, ring or note that differs keeps its mark in `Highlight`; the rings'
+   track and arc become system colours ---- */
+@media (forced-colors: active) {
+  :root[data-style='glas']
+    .g-tafel__cell:is([data-tone='warn'], [data-tone='danger'])
+    :is(.g-tafel__label > svg, .g-tafel__value),
+  :root[data-style='glas'] .g-tafel__note > svg {
+    forced-color-adjust: none;
+    color: Highlight;
+  }
+
+  :root[data-style='glas'] .g-tafel__badge {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .g-tafel__ring-track {
+    stroke: GrayText;
+  }
+
+  :root[data-style='glas'] .g-tafel__ring-arc {
+    stroke: CanvasText;
+  }
+
+  :root[data-style='glas'] .g-tafel__ring:is([data-tone='warn'], [data-tone='danger']) .g-tafel__ring-arc {
+    stroke: Highlight;
+  }
+
+  :root[data-style='glas'] .g-tafel__face {
+    forced-color-adjust: none;
+    border-color: Canvas;
+    background: Canvas;
+    color: CanvasText;
+    outline: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .g-tafel__face[data-home] {
+    background: Highlight;
+    box-shadow: 0 0 0 2px Highlight;
+    color: HighlightText;
+  }
+}
