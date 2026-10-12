@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 46,
+    date: '2026-10-12',
+    title: { de: 'Sentinel auf dem Desktop wie auf dem Handy', en: 'Sentinel on the desktop as on the phone' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Die NVR-Karte auf der Übersicht und die NVR-Seite sehen auf dem Desktop jetzt aus wie auf dem Handy: große Kamerabilder mit Glas-Kapsel (Aufnahmepunkt, Name, Zustand) und die Ereignisse als Bilderreihe',
+            en: 'Glass: the NVR card on the overview and the NVR page now look on the desktop as on the phone: large camera pictures with a glass capsule (recording dot, name, state) and the events as a row of pictures',
+          },
+          {
+            de: 'Glas: Mit der Maus blättern runde Pfeil-Knöpfe an den Enden die Kamera- und Ereignisreihe weiter',
+            en: 'Glass: with a mouse, round arrow buttons at the ends page through the camera and event rows',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 45,
     date: '2026-10-12',
     title: { de: 'Kopf-Tafeln in Glas', en: 'Head panels in Glass' },

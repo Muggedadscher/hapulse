@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F46 — 2026-10-12
+
+**Sentinel auf dem Desktop wie auf dem Handy** · _Sentinel on the desktop as on the phone_
+
+### Geändert / Changed
+
+- Glas: Die NVR-Karte auf der Übersicht und die NVR-Seite sehen auf dem Desktop jetzt aus wie auf dem Handy: große Kamerabilder mit Glas-Kapsel (Aufnahmepunkt, Name, Zustand) und die Ereignisse als Bilderreihe  
+  _Glass: the NVR card on the overview and the NVR page now look on the desktop as on the phone: large camera pictures with a glass capsule (recording dot, name, state) and the events as a row of pictures_
+- Glas: Mit der Maus blättern runde Pfeil-Knöpfe an den Enden die Kamera- und Ereignisreihe weiter  
+  _Glass: with a mouse, round arrow buttons at the ends page through the camera and event rows_
+
 ## F45 — 2026-10-12
 
 **Kopf-Tafeln in Glas** · _Head panels in Glass_

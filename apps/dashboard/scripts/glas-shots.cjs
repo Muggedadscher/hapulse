@@ -23,10 +23,11 @@
 //   glas-checks-pages.cjs) take a page in edit mode at full length; they are not in the default list either. The NVR
 //   scenes of stage 6 (nvr-overview, nvr-cam, nvr-cam-night, nvr-cam-events, nvr-cam-date, nvr-cam-rec, nvr-security,
 //   nvr-room, nvr-error, nvr-trouble, nvr-setup, nvr-setup-login, nvr-setup-window, nvr-rooms, and of stage 7 nvr-menu
-//   (Glas: the overview head's "⋯" menu open) and nvr-cam-clip (clip mode on the recording); glas-checks-nvr.cjs)
+//   (Glas: the overview head's "⋯" menu open) and nvr-cam-clip (clip mode on the recording), and nvr-home (the overview
+//   with the NVR card, F46); glas-checks-nvr.cjs)
 //   answer Sentinel's routes with a stand-in (pictures and recordings made with ffmpeg and libvpx-vp9; without them the
 //   run fails, with --no-media they are skipped and listed); all but nvr-cam-rec and nvr-cam-clip (the playing time
-//   moves) and nvr-menu (Glas only) are in the default list.
+//   moves), nvr-menu (Glas only) and nvr-home are in the default list.
 // compare --expect <regex>: files whose name matches may differ (listed, but not an error).
 // checks: stage 1 (docs/glas/PLAN-ETAPPE-0-1.md §2), the frame of stage 2 (PLAN-ETAPPE-2.md §6.3), the windows of
 //   stage 3 (PLAN-ETAPPE-3.md §6.2, glas-checks-sheets.cjs), the gestures and the inspector of stage 3b
