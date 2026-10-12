@@ -330,6 +330,7 @@ module.exports = function nvr(h) {
   const scenes = {
     // the overview: hero, events strip, camera tiles (offline, recording hangs), hourly chart, storage
     'nvr-overview': { path: '/nvr', customization: withNvr(), prepare: prepare(), media: true },
+    'nvr-home': { path: '/', customization: withNvr({ hiddenSections: [] }), prepare: prepare(), media: true },
     // the camera page live (day picture, infrared picture)
     'nvr-cam': { path: '/nvr/1', customization: withNvr(), prepare: prepare(), viewport: true, media: true, act: liveShown },
     'nvr-cam-night': { path: '/nvr/2', customization: withNvr(), prepare: prepare(), viewport: true, media: true, act: liveShown },

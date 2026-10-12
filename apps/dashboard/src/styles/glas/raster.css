@@ -1,0 +1,67 @@
+/* [fork] ENTWURF ruhiges Raster der Übersicht (nur Glas).
+   Handy (eine Spalte): zwei Höhen, Mittel und Groß. Ab zwei Spalten: eine Höhe für alle Karten, Reihen gleich hoch.
+   Hinweise und Räume sind Streifen in voller Breite und behalten ihre Höhe. */
+
+:root[data-style='glas'] .home-page {
+  --g-r-head: 50px;
+  --g-r-m: 210px;
+  --g-r-l: 380px;
+}
+
+:root[data-style='glas'] .home-page .overview-grid {
+  align-items: start;
+}
+
+:root[data-style='glas'] .home-page .overview-grid > .overview-grid__cell:not([data-section='hints'], [data-section='rooms']) {
+  height: calc(var(--g-r-head) + var(--g-r-l));
+  overflow: clip;
+  overflow-clip-margin: 24px;
+}
+
+:root[data-style='glas'] .home-page .overview-grid > .overview-grid__cell:not([data-section='hints'], [data-section='rooms']) > * {
+  max-height: none;
+  min-height: 0;
+  height: 100%;
+}
+
+/* Handy: Mittel */
+@media (max-width: 479px) {
+  :root[data-style='glas'] .home-page .overview-grid > .overview-grid__cell:is([data-section='scenes'], [data-section='hero'], [data-section='devices'], [data-section='climate'], [data-section='blinds'], [data-section='waste']) {
+    height: calc(var(--g-r-head) + var(--g-r-m));
+  }
+  /* die NVR-Bilder sind auf dem Handy die Karte: eigene Höhe */
+  :root[data-style='glas'] .home-page .overview-grid > .overview-grid__cell[data-section='nvr'] {
+    height: auto;
+    overflow: visible;
+  }
+}
+
+/* ab zwei Spalten: NVR zwei Spalten breit wie der Hauptraum */
+@media (min-width: 480px) {
+  :root[data-style='glas'] .home-page .overview-grid > .overview-grid__cell[data-section='nvr'] {
+    grid-column: span 2;
+  }
+}
+
+/* Energie: das Diagramm füllt die Fläche */
+:root[data-style='glas'] .home-page .overview-grid__cell[data-section='energy'] .g-energy__chart {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 124px;
+  max-height: none;
+}
+
+@media (max-width: 479px) {
+  /* der Raum trägt seinen Titel in der Fläche: nur die Fläche zählt */
+  :root[data-style='glas'] .home-page .overview-grid > .overview-grid__cell[data-section='hero'] {
+    height: var(--g-r-m);
+  }
+  /* Klima und Rollläden Mittel: nur die Steuerung des gewählten Raums, alle Räume über „Alle anzeigen“ */
+  :root[data-style='glas'] .home-page .overview-grid__cell:is([data-section='climate'], [data-section='blinds']) .g-pick {
+    display: none;
+  }
+  /* Müll Mittel: so viele Tonnen, wie ganz hineinpassen (Entwurf: drei) */
+  :root[data-style='glas'] .home-page .overview-grid__cell[data-section='waste'] .g-waste > li:nth-child(n + 4) {
+    display: none;
+  }
+}
