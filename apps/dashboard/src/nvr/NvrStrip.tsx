@@ -9,16 +9,16 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface NvrStripProps {
+interface NvrStripProps<T extends HTMLElement> {
   className: string;
   /** Changes with the strip's items (their number), so the buttons look again. */
   count: number;
   /** The scrolling element (the strip itself), rendered with the ref. */
-  children: (ref: React.RefObject<HTMLElement | null>) => React.ReactNode;
+  children: (ref: React.RefObject<T | null>) => React.ReactNode;
 }
 
-export function NvrStrip({ className, count, children }: NvrStripProps) {
-  const ref = React.useRef<HTMLElement | null>(null);
+export function NvrStrip<T extends HTMLElement>({ className, count, children }: NvrStripProps<T>) {
+  const ref = React.useRef<T | null>(null);
   const [ends, setEnds] = React.useState({ prev: false, next: false });
 
   React.useEffect(() => {
@@ -34,6 +34,8 @@ export function NvrStrip({ className, count, children }: NvrStripProps) {
     el.addEventListener('scroll', update, { passive: true });
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null;
     ro?.observe(el);
+    // the items' width too (the strip's own size stays when an item grows or shrinks)
+    if (ro && el.firstElementChild) ro.observe(el.firstElementChild);
     return () => {
       el.removeEventListener('scroll', update);
       ro?.disconnect();
@@ -54,6 +56,8 @@ export function NvrStrip({ className, count, children }: NvrStripProps) {
       data-dir={dir < 0 ? 'prev' : 'next'}
       tabIndex={-1}
       aria-hidden="true"
+      // a click must not focus a button hidden from screen readers (Chromium focuses it despite tabIndex -1)
+      onMouseDown={(e) => e.preventDefault()}
       onClick={() => go(dir)}
     >
       {dir < 0 ? <ChevronLeft size={20} strokeWidth={2.25} /> : <ChevronRight size={20} strokeWidth={2.25} />}

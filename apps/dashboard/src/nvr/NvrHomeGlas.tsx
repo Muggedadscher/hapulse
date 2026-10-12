@@ -50,10 +50,10 @@ export function NvrGlasCameras({ client, cameras, tick, retry, loading = false }
     );
   }
   return (
-    <NvrStrip className="g-nvr__strip--cams" count={cameras.length}>
+    <NvrStrip<HTMLDivElement> className="g-nvr__strip--cams" count={cameras.length}>
       {(ref) => (
         <div
-          ref={ref as React.RefObject<HTMLDivElement | null>}
+          ref={ref}
           className="g-nvr__cams"
           role="list" aria-label={t('nvr.cameras.title')} data-several={cameras.length > 1 ? '' : undefined}>
           {cameras.map((c) => {
@@ -127,10 +127,10 @@ export function NvrGlasEvents({ client, events, several }: NvrGlasEventsProps) {
   if (events.length === 0) return null;
   const now = Date.now();
   return (
-    <NvrStrip className="g-nvr__strip--events" count={events.length}>
+    <NvrStrip<HTMLUListElement> className="g-nvr__strip--events" count={events.length}>
       {(ref) => (
         <ul
-          ref={ref as React.RefObject<HTMLUListElement | null>}
+          ref={ref}
           className="g-nvr__events"
           aria-label={t('nvr.events.title')}
         >

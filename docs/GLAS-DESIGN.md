@@ -429,9 +429,8 @@ Genau **eine** Kante pro Ansicht; keine Trennlinie, keine Abdunklung. Auf der Ka
 
 | Ort | Verlauf |
 |---|---|
-| NVR-Karte oben (76 px) / unten (90 px) | `rgba(0,0,0,.35) → 0` / `0 → rgba(0,0,0,.6)` |
+| NVR-Karte oben (76 px) / unten (90 px), seit F46 auch auf dem Desktop (vorher dort unten 120 px) | `rgba(0,0,0,.35) → 0` / `0 → rgba(0,0,0,.6)` |
 | Kamerabühne oben (104 px) / unten (120 px) | `rgba(0,0,0,.7) → 0` / `0 → rgba(0,0,0,.35) 50 %` |
-| Desktop-NVR-Kachel unten (120 px, seit F44; vorher 110 px → .5) | `transparent → rgba(0,0,0,.45) 40 % → rgba(0,0,0,.72)` (Weiß über weißem Bild ≥ 4,5:1 am Namen 17 px, ≥ 3:1 am großen Namen 20 px fett) |
 
 ### 3.7 Barrierefreiheit und Fallbacks
 
