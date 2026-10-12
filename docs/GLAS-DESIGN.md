@@ -848,14 +848,17 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
   „63 heute · vor 19 Min.“ 15/600 Weiß mit Textschatten. Tipp → Kameraseite (Zoom aus der Kachel). Darunter
   **Ereignisse** horizontal (Abstand 10, bis zum Rand): Karte 150 breit, Bild 150 × 112 Radius 16, Zeit 15/600,
   Klasse 13 `label2` → Kamera **an diesem Moment**.
-- **Desktop:** Raster `1.65fr / 1fr` (M) bzw. 1 Spalte (S), Abstand 16; Kachel 16:10, Radius 18, unterer Verlauf 120 (§3.6):
-  „Einfahrt“ 20/25 700 + LIVE-Badge (20 hoch, `#D70015`, 12/20 700, .4 px) + „63 heute · vor 19 Min.“ 15; Ereigniszeilen
-  (Innenabstand 4, Radius 16): Bild 92 × 69 Radius 12, Zeit 17/600, „Fahrzeug · vor 19 Min.“ 13 `label2`.
+- **Desktop (seit F46, Entscheid Jannick 12.10.2026: wie das Handy):** derselbe Aufbau ohne Kartenfläche; die Streifen
+  enden am Rand der Karte, eine Kamera ist höchstens 360 breit (bei mehreren schaut die nächste herein). Mit Zeiger, der
+  schweben kann, liegt an jedem Ende, das weiter scrollen kann, ein Glas-Kreis 36 mit Pfeil (`NvrStrip.tsx`), sichtbar,
+  solange der Zeiger über dem Streifen ist, mittig auf den Bildern; er blättert 80 % der Breite (bei reduzierter
+  Bewegung ohne Animation). Er ist nur für den Zeiger (`tabIndex -1`, `aria-hidden`), per Tastatur scrollt der Fokus.
+  Vorher: Kachel 16:10 mit Name 20/700 + Badge und Ereigniszeilen mit Bild 92 × 69.
 - Link „Alle anzeigen ›“ → NVR. Offline/Fallback/REC wie HAPulse (Inventar J).
 - **NVR-Übersicht (seit F44):** dieselben Kacheln und Ereignisse als Abschnitte „Kameras“ und „Ereignisse“, alle Kameras
   und alle letzten Ereignisse. Handy: Kacheln 16:10 statt 220 hoch (zwei Spalten ab 300 px je Kachel), Ereignisse als
-  Streifen; ab 900 px Kacheln in zwei Spalten, Ereigniszeilen in einer Karte (Innenabstand 8, scrollt, höchstens 420),
-  ab 720 px Seitenbreite `1.65fr / 1fr` nebeneinander. Vor heute steht der Tag vor der Uhrzeit („gestern 22:10“,
+  Streifen bis zum Bildschirmrand; ab 900 px (seit F46) Kacheln mit Kapsel in zwei Spalten, darunter die Ereignisse als
+  Streifen bis zum Inhaltsrand mit den Pfeil-Knöpfen. Vor heute steht der Tag vor der Uhrzeit („gestern 22:10“,
   `label2` 400), auch auf der Karte.
 
 ### 7.16 Aktivität

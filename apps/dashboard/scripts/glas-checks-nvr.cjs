@@ -361,6 +361,8 @@ module.exports = function nvr(h) {
         }
         return '';
       } },
+    // the overview with the NVR card (cameras and latest events)
+    'nvr-home': { path: '/', customization: withNvr(), prepare: prepare(), media: true },
     // the security page and a room with Sentinel's cameras
     'nvr-security': { path: '/security', customization: withNvr(), prepare: prepare(), media: true },
     'nvr-room': { path: '/room/living_room', customization: withNvr({ nvrCameraRooms: { 1: 'living_room', 4: 'living_room' } }),
@@ -1289,6 +1291,20 @@ module.exports = function nvr(h) {
           await settleAnimations(o.page); // Glas: the page rises in (g-rise, opacity)
           r.overview = await overview(o.page);
           r.overview.yesterday = EVENTS.filter(([, ago]) => now - ago * MIN < berlinMidnight(now)).length;
+          // F46: from 900 px the events strip scrolls with the mouse through its glass buttons (NvrStrip), shown on hover
+          if (style === 'glas') {
+            const paddles = () => ev(o.page, () => [...document.querySelectorAll('.nvr-layout .g-nvr__strip--events .g-nvr__paddle')]
+              .map((b) => [b.dataset.dir, getComputedStyle(b).opacity]));
+            const p = { idle: await paddles() };
+            await o.page.locator('.nvr-layout .g-nvr__events').hover();
+            await until(o.page, () => [...document.querySelectorAll('.nvr-layout .g-nvr__paddle')].some((b) => getComputedStyle(b).opacity === '1'));
+            p.hover = await paddles();
+            await o.page.locator('.nvr-layout .g-nvr__strip--events .g-nvr__paddle[data-dir="next"]').click();
+            p.scrolled = await until(o.page, () => document.querySelector('.nvr-layout .g-nvr__events').scrollLeft > 100);
+            p.after = await paddles();
+            await o.page.mouse.move(0, 0);
+            r.overview.paddles = p;
+          }
           await headOpen(o.page, style, 'setup');
           await until(o.page, () => !!document.querySelector('[role="dialog"] .nvr-setup__fields'));
           r.connection = await ev(o.page, () => document.querySelector('[role="dialog"] .nvr-setup__fields input[type="url"]').value);
@@ -1493,7 +1509,7 @@ module.exports = function nvr(h) {
         want(r.hint.shown && r.hint.text === DE['cameraSource.detail.hint'] && r.hint.nav, `${style} hint ${j(r.hint)}`);
       }
       // the same outcome in both styles (looks aside)
-      const plain = (r) => j({ ...r, overview: { ...r.overview, actions: null, menu: null,
+      const plain = (r) => j({ ...r, overview: { ...r.overview, actions: null, menu: null, paddles: null,
         hero: r.overview.hero && { ...r.overview.hero, look: null },
         tiles: r.overview.tiles.map((t) => ({ ...t, radius: null })),
         strip: { ...r.overview.strip, img: null, time: null, badges: null, labels: null } },
@@ -1508,12 +1524,16 @@ module.exports = function nvr(h) {
       };
       const d = diff(JSON.parse(plain(classic)), JSON.parse(plain(glas)));
       want(!d.length, 'styles differ (classic ≠ glas): ' + d.join(' | '));
-      // K105 in Glas: the head's "⋯" a filled circle 44 (E7 N2); the NVR card's tiles 18 and, from 900 px, its event
-      // rows (pictures 12, the time 17/600)
+      // K105 in Glas: the head's "⋯" a filled circle 44 (E7 N2)
       const g = glas.overview;
       want(g.menu && same(g.menu.size, [44, 44]) && ['50%', '22px'].includes(g.menu.radius) && g.menu.fill > 0, 'glas head ' + j(g.menu));
-      want(g.tiles.every((t) => t.radius === '18px') && g.strip.img === '12px' && same(g.strip.time, ['17px', '600']),
+      // the NVR card's tiles 26 and its events strip (pictures 16, the time 15/600), on the desktop as on the phone (F46)
+      want(g.tiles.every((t) => t.radius === '26px') && g.strip.img === '16px' && same(g.strip.time, ['15px', '600']),
         'glas looks ' + j([g.tiles.map((t) => t.radius), g.strip.img, g.strip.time]));
+      // F46: no "back" button at the start, "next" only on hover, a click scrolls and brings "back"
+      const pd = g.paddles || {};
+      want(same(pd.idle, [['next', '0']]) && same(pd.hover, [['next', '1']]) && pd.scrolled
+        && (pd.after || []).some(([d]) => d === 'prev'), 'glas strip buttons ' + j(pd));
       want(classic.overview.actions.every((a) => same(a.size, [40, 40])), 'classic head actions ' + j(classic.overview.actions));
       out.nvrPages = { bad, glas: { overview: g, setup: glas.setup, security: glas.security } };
       out.nvrPagesOk = bad.length === 0;

@@ -151,9 +151,9 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   Home-Karte (`NvrGlasCameras`, `NvrGlasEvents` in `NvrHomeGlas.tsx`, auf der Seite `.g-nvr-page`), mit allen Kameras
   und allen letzten Ereignissen; die Klassen eines Ereignisses stehen als Wort unter der Uhrzeit, nicht als Symbol auf
   dem Bild (Entscheid Jannick 11.10.2026). Unter 900 px Kacheln 16:10 mit Kapsel (zwei nebeneinander, sobald 300 px
-  passen) und ein Bildstreifen bis zum Rand; ab 900 px Kacheln in zwei Spalten und die Ereignisse als Zeilen in einer
-  eigenen Karte, die scrollt, ab 720 px Seitenbreite rechts neben den Kameras und so hoch wie sie (ohne Ereignisse
-  nehmen die Kameras die ganze Breite). Die Schnappschüsse erneuern sich alle 5 s wie die des Pakets; ein
+  passen) und ein Bildstreifen bis zum Rand; ab 900 px seit F46 dasselbe wie auf dem Handy (Kacheln mit Kapsel in zwei
+  Spalten, die Ereignisse als Bildstreifen darunter, Pfeil-Knöpfe für die Maus in `NvrStrip.tsx`); die Home-Karte sieht
+  seit F46 auf dem Desktop ebenfalls aus wie auf dem Handy. Die Schnappschüsse erneuern sich alle 5 s wie die des Pakets; ein
   gescheiterter wird alle 30 s im Hintergrund neu geladen, die Kachel wechselt erst zurück, wenn er da ist
   (`useSnapshotTick`, `HomeSnapshot`, auch auf der Home-Karte in beiden Stilen).
 - **Kamera öffnen und zurück (Etappe 7, Zurück seit F43):** In Glas wächst das Bild der gedrückten Kachel in das

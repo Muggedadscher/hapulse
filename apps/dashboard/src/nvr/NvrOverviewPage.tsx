@@ -4,7 +4,7 @@
  * detail cards (events per hour, storage & retention). Fixed layout (not
  * editable — deliberately lean for upstream merges, like the Pool page).
  * In Glas the cameras and events take the Home card's look (NvrGlasCameras, NvrGlasEvents): the cameras first as
- * large pictures, the events beside them in a card from 900 px (beside once there is room), on the phone a strip.
+ * large pictures, then the events as a strip of pictures (on the desktop as on the phone, F46).
  */
 
 import React, { useCallback, useRef, useState } from 'react';

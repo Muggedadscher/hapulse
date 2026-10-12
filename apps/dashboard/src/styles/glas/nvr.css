@@ -1,14 +1,14 @@
 /* [fork] Glas — Sentinel NVR (docs/GLAS-DESIGN.md §7.15, §7.33 and §3.6, plans docs/glas/PLAN-ETAPPE-4.md K83 and
    PLAN-ETAPPE-6.md K101–K105).
 
-   Stage 4 holds the Home card's Glas body (nvr/NvrHomeGlas.tsx). Phone: no card surface — per camera a snapshot 220
-   high (radius 26, shade 76 on top and 90 at the bottom), a clear capsule top left (dot pulsing while recording runs,
-   name and state), today's events bottom left; several cameras side by side to swipe; the latest events as a strip to
-   the screen edge (150 wide, picture 150 × 112). With a capped height the card keeps its surface and both strips end
-   at its edge. From 900 px the card keeps its surface: tile 16:10 (radius 18, shade 120) with name 20, state badge and
-   today's events, then the latest three events as rows (picture 92 × 69) — beside the tile once the card is 560 px
-   wide (1.65fr / 1fr), else below it. Stage 6 adds the other NVR views (K105) and the camera page (K101–K103) further
-   down. */
+   Stage 4 holds the Home card's Glas body (nvr/NvrHomeGlas.tsx). No card surface — per camera a snapshot 220 high
+   (radius 26, shade 76 on top and 90 at the bottom), a clear capsule top left (dot pulsing while recording runs, name
+   and state), today's events bottom left; several cameras side by side to swipe; the latest events as a strip (150
+   wide, picture 150 × 112). On the phone the strips reach the screen edge. With a capped height the card keeps its
+   surface and both strips end at its edge. From 900 px the same look (Jannick 12.10.2026, F46; before: a 16:10 tile
+   with name and badge, the events as rows): the strips end at the card's edge, a camera is at most 360 wide, and with
+   a pointer that can hover a round glass button at each end scrolls the strip (nvr/NvrStrip.tsx). Stage 6 adds the
+   other NVR views (K105) and the camera page (K101–K103) further down. */
 
 @keyframes g-nvr-pulse {
   50% {
@@ -117,28 +117,26 @@
   pointer-events: none;
 }
 
-/* below 900 px the events are a strip of pictures: the ring lies on the event's picture, in the same two tones */
-@media (max-width: 899px) {
-  :root[data-style='glas'] .g-nvr__ev {
-    position: relative;
-  }
+/* the events are a strip of pictures: the ring lies on the event's picture, in the same two tones */
+:root[data-style='glas'] .g-nvr__ev {
+  position: relative;
+}
 
-  :root[data-style='glas'] .g-nvr__ev:focus-visible {
-    outline: none;
-  }
+:root[data-style='glas'] .g-nvr__ev:focus-visible {
+  outline: none;
+}
 
-  :root[data-style='glas'] .g-nvr__ev:focus-visible::after {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 112px;
-    border: 2px solid var(--g-focus);
-    border-radius: 16px;
-    box-shadow:
-      inset 0 0 0 2px var(--g-card),
-      inset 0 0 0 4px var(--g-focus-pair);
-    pointer-events: none;
-  }
+:root[data-style='glas'] .g-nvr__ev:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 112px;
+  border: 2px solid var(--g-focus);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 0 0 2px var(--g-card),
+    inset 0 0 0 4px var(--g-focus-pair);
+  pointer-events: none;
 }
 
 /* no answer yet: a calm placeholder, not a black block */
@@ -327,200 +325,100 @@
   display: none;
 }
 
-/* ---- Phone without a capped height: the pictures are the card ---- */
+/* ---- Without a capped height: the pictures are the card ---- */
 
-@media (max-width: 899px) {
-  /* the strips reach the screen edge: page gutter 16 + the card's transparent border */
-  :root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr__cams) {
-    --g-nvr-bleed: calc(16px + 1px);
-    padding: 0;
-  }
-
-  :root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr__cams)::before {
-    content: none;
-  }
-
-  :root[data-style='glas']
-    .home-page
-    .overview-grid__cell:not([class*='section-h-'])
-    .nvr-home:has(.g-nvr__cams)
-    .nvr-home__header {
-    margin: 0 0 var(--g-card-gap);
-  }
+:root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr__cams) {
+  /* the strips reach the screen edge on the phone: page gutter 16 + the card's transparent border */
+  --g-nvr-bleed: calc(16px + 1px);
+  padding: 0;
 }
 
-/* ---- From 900 px: tile and rows in the card ---- */
+:root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr__cams)::before {
+  content: none;
+}
+
+:root[data-style='glas']
+  .home-page
+  .overview-grid__cell:not([class*='section-h-'])
+  .nvr-home:has(.g-nvr__cams)
+  .nvr-home__header {
+  margin: 0 0 var(--g-card-gap);
+}
+
+/* ---- From 900 px: the phone's look; the strips end at the card's edge (the next card follows beside it), a camera
+   at most as wide as on the phone ---- */
 
 @media (min-width: 900px) {
-  :root[data-style='glas'] .home-page .nvr-home:has(.g-nvr) {
-    container: g-nvr / inline-size;
+  :root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.g-nvr__cams) {
+    --g-nvr-bleed: 0px;
   }
 
-  :root[data-style='glas'] .g-nvr__cams,
-  :root[data-style='glas'] .g-nvr__cams[data-several] {
-    grid-auto-flow: row;
-    grid-template-columns: minmax(0, 1fr);
-    align-content: start;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-    scroll-snap-type: none;
+  :root[data-style='glas'] .g-nvr__cams {
+    grid-auto-columns: min(100%, 360px);
   }
 
   :root[data-style='glas'] .g-nvr__cams[data-several] {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-
-  :root[data-style='glas'] .g-nvr__cam-item {
-    display: block;
-  }
-
-  :root[data-style='glas'] :is(.g-nvr__cam, .g-nvr__wait) {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 10;
-    border-radius: 18px;
-    background: var(--g-card-2);
-  }
-
-  :root[data-style='glas'] .g-nvr__cam .nvr-home__cam-ph {
-    color: var(--g-label-3);
-  }
-
-  /* under the caption: white text keeps 4.5:1 over a white picture (GLAS-DESIGN §2.5 rule 5, §3.6; F44: on the larger
-     overview tiles .5 over 110 px gave 2.6:1 over a light wall) */
-  :root[data-style='glas'] .g-nvr__shade {
-    background: linear-gradient(
-        transparent,
-        color-mix(in srgb, var(--g-media-bg) 45%, transparent) 40%,
-        color-mix(in srgb, var(--g-media-bg) 72%, transparent)
-      )
-      bottom / 100% 120px no-repeat;
-  }
-
-  :root[data-style='glas'] .g-nvr__pill {
-    display: none;
-  }
-
-  :root[data-style='glas'] .g-nvr__title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    max-width: 100%;
-  }
-
-  :root[data-style='glas'] .g-nvr__name {
-    min-width: 0;
-    overflow: hidden;
-    font: 700 20px / 25px var(--g-font);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :root[data-style='glas'] .g-nvr__badge {
-    flex: none;
-    height: 20px;
-    padding: 0 7px;
-    border-radius: 999px;
-    background: var(--g-live);
-    color: var(--g-on-media);
-    font: 700 12px / 20px var(--g-font);
-    letter-spacing: 0.4px;
-    text-shadow: none;
-  }
-
-  :root[data-style='glas'] .g-nvr__cam[data-state='offline'] .g-nvr__badge {
-    background: color-mix(in srgb, var(--g-media-bg) 55%, transparent);
-  }
-
-  :root[data-style='glas'] .g-nvr__cam[data-state='stalled'] .g-nvr__badge {
-    background: var(--g-yellow);
-    color: var(--g-glyph-dark);
-  }
-
-  :root[data-style='glas'] .g-nvr__today {
-    font-weight: 400;
-  }
-
-  /* several cameras: smaller tiles, smaller caption */
-  :root[data-style='glas'] .g-nvr__cams[data-several] .g-nvr__caption {
-    right: 12px;
-    bottom: 10px;
-    left: 12px;
-  }
-
-  :root[data-style='glas'] .g-nvr__cams[data-several] .g-nvr__name {
-    font-size: 17px;
-    line-height: 22px;
-  }
-
-  :root[data-style='glas'] .g-nvr__cams[data-several] .g-nvr__today {
-    font-size: 13px;
-    line-height: 18px;
-  }
-
-  :root[data-style='glas'] .g-nvr__events {
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-    scroll-snap-type: none;
-  }
-
-  :root[data-style='glas'] .g-nvr__ev-item {
-    display: block;
-  }
-
-  :root[data-style='glas'] .g-nvr__ev-item:nth-child(n + 4) {
-    display: none;
-  }
-
-  :root[data-style='glas'] .g-nvr__ev {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 4px;
-    border-radius: 16px;
-  }
-
-  :root[data-style='glas'] .g-nvr__ev-img {
-    flex: none;
-    width: 92px;
-    height: 69px;
-    border-radius: 12px;
-    background: var(--g-card-2);
-  }
-
-  :root[data-style='glas'] .g-nvr__ev-text {
-    flex: 1 1 auto;
-    padding: 0;
-  }
-
-  :root[data-style='glas'] .g-nvr__ev-time {
-    font-size: 17px;
-    line-height: 22px;
-  }
-
-  :root[data-style='glas'] .g-nvr__ev-ago {
-    display: inline;
+    grid-auto-columns: min(calc(100% - 20px), 360px);
   }
 }
 
-@container g-nvr (min-width: 560px) {
-  :root[data-style='glas'] .g-nvr:has(> .g-nvr__events) {
-    display: grid;
-    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-    gap: 16px;
-  }
+/* ---- The strips' buttons (nvr/NvrStrip.tsx): only from 900 px with a pointer that can hover, shown while it is over
+   the strip; a glass circle 36 at each end that can scroll, centred on the pictures ---- */
+
+:root[data-style='glas'] .g-nvr__strip {
+  position: relative;
+  min-width: 0;
+}
+
+:root[data-style='glas'] .g-nvr__strip--cams {
+  --g-nvr-paddle-y: 50%;
+}
+
+:root[data-style='glas'] .g-nvr__strip--events {
+  --g-nvr-paddle-y: 56px;
+}
+
+:root[data-style='glas'] .g-nvr__paddle {
+  display: none;
 }
 
 @media (min-width: 900px) and (hover: hover) {
-  :root[data-style='glas'] .g-nvr__ev:hover {
-    background: var(--g-hover);
+  :root[data-style='glas'] .g-nvr__paddle {
+    position: absolute;
+    top: var(--g-nvr-paddle-y);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: var(--g-label);
+    cursor: pointer;
+    opacity: 0;
+    translate: 0 -50%;
+    transition:
+      opacity 0.2s ease,
+      scale var(--g-d-smooth) var(--g-spring-smooth);
+  }
+
+  :root[data-style='glas'] .g-nvr__paddle[data-dir='prev'] {
+    left: 8px;
+  }
+
+  :root[data-style='glas'] .g-nvr__paddle[data-dir='next'] {
+    right: 8px;
+  }
+
+  :root[data-style='glas'] .g-nvr__strip:hover > .g-nvr__paddle {
+    opacity: 1;
+  }
+
+  :root[data-style='glas'] .g-nvr__paddle:active {
+    scale: 0.92;
+    transition-duration: 120ms;
   }
 }
 
@@ -529,14 +427,14 @@
     animation: none;
   }
 
-  :root[data-style='glas'] :is(.g-nvr__cam, .g-nvr__ev):active {
+  :root[data-style='glas'] :is(.g-nvr__cam, .g-nvr__ev, .g-nvr__paddle):active {
     scale: none;
   }
 }
 
 /* Forced colours: the tile keeps an edge (the picture is its only surface). */
 @media (forced-colors: active) {
-  :root[data-style='glas'] .g-nvr__cam {
+  :root[data-style='glas'] :is(.g-nvr__cam, .g-nvr__paddle) {
     border: 1px solid ButtonText;
   }
 }
@@ -629,11 +527,9 @@
 }
 
 /* ---- The overview's cameras and events (`.g-nvr-page`, NvrOverviewPage): the NVR card's tiles and events (top of
-   this file), the cameras first, all of them, then all recent events. Below 900 px the tiles 16:10 in a column (two
-   once 300 wide fit; a single camera takes the whole width) with the capsule, the events a strip to the screen edge. From 900 px the tiles in two columns with
-   the card's caption, the events as the card's rows in a card of their own that scrolls (at most 420 high); side by
-   side (1.65fr / 1fr, like the card from 560) once the page is 720 wide, the events card then as tall as the cameras,
-   at least 360. ---- */
+   this file), the cameras first, all of them, then all recent events. The tiles 16:10 with the capsule, in a column
+   below 900 px (two once 300 wide fit; a single camera takes the whole width), in two columns from 900 px; the events
+   the card's strip below them, to the screen edge on the phone. ---- */
 :root[data-style='glas'] .nvr-layout .g-nvr-page {
   display: flex;
   flex-direction: column;
@@ -667,57 +563,16 @@
   font-weight: 400;
 }
 
+/* from 900 px the phone's look as well (F46): the tiles in two columns, the events the strip below them, ending at the
+   content's edge, with the strip's buttons (above) */
 @media (min-width: 900px) {
-  /* a size container only from 900 px (as pages.css): it would bind fixed descendants to the page */
-  :root[data-style='glas'] .nvr-layout:has(> .g-nvr-page) {
-    container: g-nvr-page / inline-size;
-  }
-
   :root[data-style='glas'] .nvr-layout .g-nvr-page {
+    --g-nvr-bleed: 0px;
     gap: 26px;
   }
 
   :root[data-style='glas'] .nvr-layout .g-nvr-page .g-nvr__cams[data-several] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  :root[data-style='glas'] .nvr-layout .g-nvr-page__list {
-    max-height: 420px;
-    padding: 8px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    border-radius: var(--radius-card);
-    background: var(--bg-card);
-    box-shadow: var(--shadow-card);
-  }
-
-  /* the card shows the first three; the page all of them */
-  :root[data-style='glas'] .nvr-layout .g-nvr-page__list .g-nvr__ev-item:nth-child(n + 4) {
-    display: block;
-  }
-}
-
-/* the phone layout stays below 900 px, however wide (an upright iPad) */
-@media (min-width: 900px) {
-  @container g-nvr-page (min-width: 720px) {
-    /* only with events beside the cameras, as the card (no empty column without events) */
-    :root[data-style='glas'] .nvr-layout .g-nvr-page:has(> .g-nvr-page__events) {
-      display: grid;
-      grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-      gap: 20px;
-    }
-
-    /* the cameras set the row's height, the events card fills it and scrolls */
-    :root[data-style='glas'] .nvr-layout .g-nvr-page__events {
-      contain: size;
-      min-height: 360px;
-    }
-
-    :root[data-style='glas'] .nvr-layout .g-nvr-page__list {
-      flex: 1 1 0;
-      min-height: 0;
-      max-height: none;
-    }
   }
 }
 
