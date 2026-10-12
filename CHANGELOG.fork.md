@@ -6,14 +6,14 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
-## F45 — 2026-10-11
+## F45 — 2026-10-12
 
 **Kopf-Tafeln in Glas** · _Head panels in Glass_
 
 ### Geändert / Changed
 
-- Glas: Die großen Karten oben auf Geräte, System, Energie, Sicherheit, NVR, Automationen, Szenen und Pool sind jetzt einheitlich: oben der Zustand groß mit Symbol im Kreis, darunter die Werte in einem Raster mit feinen Linien statt grauer Kacheln  
-  _Glass: the large cards at the top of Devices, System, Energy, Security, NVR, Automations, Scenes and Pool now share one look: the state large with its symbol in a circle on top, below it the values in a grid with fine lines instead of grey tiles_
+- Glas: Die großen Karten oben auf Geräte, System, Energie, Sicherheit, NVR, Automationen und Szenen sind jetzt einheitlich: oben der Zustand groß mit Symbol im Kreis, darunter die Werte in einem Raster mit feinen Linien statt grauer Kacheln  
+  _Glass: the large cards at the top of Devices, System, Energy, Security, NVR, Automations and Scenes now share one look: the state large with its symbol in a circle on top, below it the values in a grid with fine lines instead of grey tiles_
 - Glas: Farbe nur, wo etwas abweicht, offene Türen und Fenster gelb, offene Schlösser und Garagentore rot, alles Geschlossene und alle Zählwerte grau; die Karten haben keinen farbigen Schleier mehr  
   _Glass: colour only where something differs, open doors and windows yellow, open locks and garage doors red, everything closed and every count grey; the cards no longer have a coloured wash_
 - Glas: System zeigt CPU, RAM und Speicher als Ringe, darunter Hinweise zu schwachen Batterien und nicht verfügbaren Geräten  

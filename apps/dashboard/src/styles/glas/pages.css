@@ -153,7 +153,7 @@
   :is(
     .g-tafel,
     .security-page .alarm-panel-card,
-    .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)),
+    .pool-layout :is(.pool-hero, .pool-card:where(:has(> .pool-card__head > .pool-switch))),
     .music-page .card,
     .settings-page .card
   ):where(.card):hover {

@@ -9,7 +9,7 @@
 import React from 'react';
 
 /** A state's colour family; `none` = no state (counts, a neutral head). */
-export type TafelTone = 'none' | 'ok' | 'warn' | 'danger' | 'pool' | 'solar';
+export type TafelTone = 'none' | 'ok' | 'warn' | 'danger' | 'solar';
 
 export const TAFEL_ICON = 15;
 
@@ -101,7 +101,7 @@ export interface TafelGauge {
 const R = 26;
 const C = 2 * Math.PI * R;
 
-/** Gauges as rings like the pool's solar ring: track `fill`, arc in the state's colour. */
+/** Gauges as rings (like the pool's solar ring): track `fill`, arc in the state's colour. */
 export function TafelRings({ items }: { items: TafelGauge[] }) {
   if (items.length === 0) return null;
   return (

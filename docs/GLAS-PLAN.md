@@ -1041,7 +1041,7 @@ Spätere Etappen analog („Glas: schwebende Tab-Leiste und Seitenleiste“, „
 | E15 | Hintergrund „Bild“: **später, optional** (frühestens Etappe 7). (Nach Etappe 7 nicht umgesetzt, bleibt optional.) |
 | E17 | Leistungsmaßstab: **iPad** (Safari/WebKit). |
 | Energie | Die Energie-Karte bekommt den Apple-Look aus der finalen Skizze (`docs/glas/Glas5*.dc.html`, Screenshots `g5e-*`): Segment Tag/Woche/Monat, schmale gerundete Balken Netz/Solar gestapelt, Hilfslinien mit Achswerten, Ø-Linie, Tipp auf Balken → Info-Blase. |
-| E18 (2026-10-11) | **Kopf-Tafeln:** Die großen Karten oben auf Geräte, System, Energie, Sicherheit, NVR, Automationen, Szenen und Pool werden in Glas einheitlich nach Entwurf A („Zusammenfassung“; der User wählte A statt der Empfehlung B, dann „Ja, alle acht“; Plan `docs/glas/PLAN-TAFELN.md`): Kopf mit Zustand, darunter die Werte als Raster mit Haarlinien, System als Ringe, Farbe nur für Abweichungen (K87), kein Verlauf mehr auf der Karte (ersetzt K90 für die Heroes). Design §7.34, Code `components/glas/tafel/`, `styles/glas/tafel.css`. |
+| E18 (2026-10-11) | **Kopf-Tafeln:** Die großen Karten oben auf Geräte, System, Energie, Sicherheit, NVR, Automationen und Szenen werden in Glas einheitlich nach Entwurf A („Zusammenfassung“; der User wählte A statt der Empfehlung B, dann „Ja, alle acht“; nach den Bildern 2026-10-12: alles bis auf Pool, die Pool-Karte bleibt wie vorher; Plan `docs/glas/PLAN-TAFELN.md`): Kopf mit Zustand, darunter die Werte als Raster mit Haarlinien, System als Ringe, Farbe nur für Abweichungen (K87), kein Verlauf mehr auf der Karte (ersetzt K90 für die Heroes). Design §7.34, Code `components/glas/tafel/`, `styles/glas/tafel.css`. |
 
 ---
 

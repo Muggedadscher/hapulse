@@ -692,7 +692,7 @@ module.exports = function pages(h) {
           await close();
         }
         // the other heads; system healthy = green
-        for (const p of ['/system', '/energy', '/automations', '/scenes', '/devices', '/pool']) {
+        for (const p of ['/system', '/energy', '/automations', '/scenes', '/devices']) {
           const { page, close } = await open(device, 'glas', p, { mode });
           try {
             const tk = await tokens(page);
@@ -2001,7 +2001,7 @@ module.exports = function pages(h) {
               };
               return {
                 running: !!document.querySelector('.pool-hero--running'),
-                status: cs('.pool-hero .g-tafel__title', 'color'),
+                status: cs('.pool-hero__status', 'color'),
                 track: cs('.pool-solar .pool-gauge__track', 'stroke'),
                 manualTrack: cs('.pool-manual .pool-gauge__track', 'stroke'),
                 solar: cs('.pool-solar .pool-gauge__value', 'stroke'),

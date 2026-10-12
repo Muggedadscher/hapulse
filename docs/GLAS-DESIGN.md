@@ -1110,14 +1110,14 @@ Scrim hatte 2,7:1 am ×). Fokus über dem Bild: Ring innen auf dem Glas des Knop
 
 ### 7.34 Kopf-Tafel (die Karte oben auf einer Seite)
 
-Geräte, System, Energie, Sicherheit, NVR, Automationen, Szenen und Pool tragen oben dieselbe Tafel (User-Entscheid
-2026-10-11, GLAS-PLAN §7.3 E18; Code `components/glas/tafel/`, `styles/glas/tafel.css`). Sie zeigt dieselben Fakten wie
-der klassische Hero, nur anders angeordnet. Die Karte ist schlicht `card` (kein Verlauf, kein Schleier, kein Hover),
+Geräte, System, Energie, Sicherheit, NVR, Automationen und Szenen tragen oben dieselbe Tafel (User-Entscheid
+2026-10-11, GLAS-PLAN §7.3 E18; Code `components/glas/tafel/`, `styles/glas/tafel.css`). Die Pool-Karte bleibt, wie sie
+war (User 2026-10-12). Die Tafel zeigt dieselben Fakten wie der klassische Hero, nur anders angeordnet. Die Karte ist schlicht `card` (kein Verlauf, kein Schleier, kein Hover),
 Innenabstand 16, Abstand der Teile 16.
 
 - **Kopf:** Symbol 28 in einem Kreis 56 (Zustand: `<ton>Soft` + Ink, sonst `fill` + `label2`), daneben eine Zeile 13/18
   `label2` (z. B. „Zuletzt ausgeführt“, Alarmname), der Zustand 22/28 700 in seiner Ink (ok grün, Warnung `warnInk`,
-  Fehler `redInk`, Pool `tealInk`, ohne Zustand `label`), optional eine Zeile 15/20 `label2` darunter. Der Seitentitel
+  Fehler `redInk`, ohne Zustand `label`), optional eine Zeile 15/20 `label2` darunter. Der Seitentitel
   wird nicht wiederholt. Energie hat statt des Kopfs das Zeitraum-Segment und darunter den Hausverbrauch wie die
   Energie-Karte der Übersicht (34/41 600, „kWh“ 17/22 600 `label2`).
 - **Raster:** eine Beschreibungsliste. Je Zelle Symbol 15 + Beschriftung 13/18 600 `label2`, darunter der Wert: Zahlen
@@ -1133,7 +1133,6 @@ Innenabstand 16, Abstand der Teile 16.
   ist, wie die Balken des Systemmonitors darunter, nicht die einzige Angabe (die Zahl steht im Ring).
 - **Sicherheit:** unter dem Kopf die Personen als überlappende Kreise 32 (zu Hause grün mit dunklem Buchstaben, sonst
   `fillSolid`) und ein Satz 15/20 `label2`, dann das Raster aus Wörtern.
-- **Pool:** nur der Kopf (Pumpe läuft/aus, Laufzeit heute), darunter das Modus-Segment wie bisher.
 - **Gedeckelte Höhe** (S/M/L): der Kopf bzw. das Segment bleibt oben stehen und trägt die Kartenfarbe.
 - **Kontrast erzwungen:** Abweichungen in `Highlight`, Ringe in Systemfarben, der Kreis mit Rand.
 
