@@ -1633,7 +1633,7 @@
     stroke: Highlight;
   }
 
-  :root[data-style='glas'] :is(.g-blinds__bar, .g-blind) {
+  :root[data-style='glas'] :is(.g-blinds__bar, .g-blind, button.g-blind) {
     border: 1px solid GrayText;
   }
 

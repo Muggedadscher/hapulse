@@ -257,7 +257,12 @@ export function BlindsCard({ entities, rooms, onSeeAll, onOpenRoom }: BlindsCard
           room={activeRoom}
           rooms={blindRooms}
           onSelect={setSelectedRoomName}
-          onOpen={onOpenRoom && ((r) => onOpenRoom({ name: r.name, entityIds: r.entities.map((e) => e.entity_id) }))}
+          onOpen={
+            // all the room's covers: the window filters them live (a cover that comes back while it is open shows up)
+            onOpenRoom &&
+            ((r) =>
+              onOpenRoom({ name: r.name, entityIds: rooms.find((x) => x.name === r.name)?.domains['cover'] ?? r.entities.map((e) => e.entity_id) }))
+          }
         />
       ) : (<>{/* [fork] */}
       {/* Controls — top, reflect selected room */}

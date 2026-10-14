@@ -9,11 +9,12 @@
  * BlindsCard's (avgPosition = % closed; garage doors and unavailable covers are already left out there).
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp } from 'lucide-react';
 import type { HassEntity } from '@hapulse/core';
 import { callService } from '../../../ha/service';
 import { GlasRoomPicker } from './GlasRoomPicker';
+import { noteOrigin } from '../sheet/origin';
 import { useLocale, useT } from '../../../i18n/useT';
 
 export interface GlasBlindsRoom {
@@ -64,6 +65,7 @@ export function GlasBlindsBody({ room, rooms, onSelect, onOpen }: GlasBlindsBody
   const closed = closedOf(room);
   const state = stateOf(room);
   const all = rooms.flatMap((r) => r.entities);
+  const pictureRef = useRef<HTMLButtonElement>(null);
   const shade = <span className="g-blind__shade" style={{ '--g-closed': closed } as React.CSSProperties} />;
 
   return (
@@ -71,8 +73,13 @@ export function GlasBlindsBody({ room, rooms, onSelect, onOpen }: GlasBlindsBody
       <div className="g-blinds__phone">
         <div className="g-ctl g-ctl--blinds">
           {onOpen ? (
-            // a bigger target for the finger; the keyboard and screen readers use the name, which does the same
-            <button type="button" className="g-blind" tabIndex={-1} aria-hidden="true" onClick={() => onOpen(room)}>
+            <button
+              ref={pictureRef}
+              type="button"
+              className="g-blind"
+              onClick={() => onOpen(room)}
+              aria-label={t('glas.blinds.openRoomAria', { room: room.name })}
+            >
               {shade}
             </button>
           ) : (
@@ -82,14 +89,17 @@ export function GlasBlindsBody({ room, rooms, onSelect, onOpen }: GlasBlindsBody
           )}
           <div className="g-ctl__side">
             {onOpen ? (
-              <button
-                type="button"
+              // the name opens the same window for the finger; it grows out of the picture and gives the focus back
+              // to it, the one control for the keyboard and screen readers (components/glas/sheet/origin.ts)
+              <span
                 className="g-ctl__title g-ctl__title--btn"
-                onClick={() => onOpen(room)}
-                aria-label={t('glas.blinds.openRoomAria', { room: room.name })}
+                onClick={() => {
+                  noteOrigin(pictureRef.current);
+                  onOpen(room);
+                }}
               >
                 {room.name}
-              </button>
+              </span>
             ) : (
               <span className="g-ctl__title">{room.name}</span>
             )}
