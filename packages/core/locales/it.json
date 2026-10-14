@@ -1456,6 +1456,7 @@
   "glas.blinds.openPercent": "{percent} aperta",
   "glas.blinds.pickAria": "Scegli la stanza delle tapparelle",
   "glas.blinds.roomAria": "Controlla tapparelle {room}",
+  "glas.blinds.openRoomAria": "Mostra le tapparelle di {room} una per una",
   "glas.blinds.openAll": "Apri tutto",
   "glas.blinds.closeAll": "Chiudi tutto",
   "glas.nvr.live": "Live",

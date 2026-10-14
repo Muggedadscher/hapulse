@@ -1456,6 +1456,7 @@
   "glas.blinds.openPercent": "{percent} abierta",
   "glas.blinds.pickAria": "Elegir la habitación de las persianas",
   "glas.blinds.roomAria": "Controlar persianas {room}",
+  "glas.blinds.openRoomAria": "Mostrar las persianas de {room} una a una",
   "glas.blinds.openAll": "Abrir todo",
   "glas.blinds.closeAll": "Cerrar todo",
   "glas.nvr.live": "En vivo",

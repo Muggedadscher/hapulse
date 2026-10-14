@@ -815,7 +815,9 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
 - **Handy:** Fenster 96 × 116 (Radius 22, `fill`) mit Rollo wie auf der Raumseite: Lamellen `label3` von oben bis zum
   geschlossenen Anteil, Unterkante 3 `label2`, offen bleibt eine Leiste von 8 oben. Daneben Raum 17/600, genau ein
   Zustand 15 `label2` („Offen“, „Geschlossen“, „40 % offen“, „In Bewegung“; gezählt wird wie überall, wie weit offen),
-  Knöpfe **Zu / Stopp / Auf** 44 (`fill`), Raumliste mit Häkchen erst ab zwei Räumen. (Bis F46 ein Bogen mit
+  Knöpfe **Zu / Stopp / Auf** 44 (`fill`), Raumliste mit Häkchen erst ab zwei Räumen. Ein Tipp auf Fenster oder
+  Raumnamen (Desktop: Raumnamen der Zeile) öffnet das Sheet „Alle anzeigen“ nur mit den Abdeckungen dieses Raums, Titel =
+  Raumname. Symbol vor dem Titel in Glas: Rollo (`Blinds`) wie Raumseite und Geräte, nicht „≡“. (Bis F46 ein Bogen mit
   „0 % geschlossen“, das neben „Offen“ widersprüchlich wirkte; Jannick 14.10.2026.)
 - **Desktop:** je Raum eine Zeile min. 64 (Einzug 20): Name 17, Positionsbalken 6 hoch (max. 120, Spur `fill2`, Füllung
   `label3`) + Zustand 13; rechts Kapsel 44 (`fill`) mit drei Knöpfen 40 (Auf / Stopp / Zu); unten „Alle öffnen“ /

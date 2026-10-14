@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F48 — 2026-10-14
+
+**Rollläden einzeln aus der Übersicht** · _Single blinds from the overview_
+
+### Geändert / Changed
+
+- Glas: Die Rollläden-Karte und das Fenster „Alle anzeigen“ zeigen das Rollo-Symbol wie die übrige App statt „≡“, das wie ein Menü-Knopf aussah  
+  _Glass: the blinds card and its "See all" window show the blind symbol like the rest of the app instead of "≡", which looked like a menu button_
+- Glas: Ein Tipp auf das Rollo-Bild oder den Raumnamen der Rollläden-Karte öffnet die Rollläden dieses Raums einzeln, jeder mit Auf, Stopp und Zu  
+  _Glass: a tap on the blinds card's picture or room name opens that room's blinds one by one, each with open, stop and close_
+
 ## F47 — 2026-10-14
 
 **Rollläden-Karte wie in Apples Home** · _Blinds card as in Apple Home_

@@ -1456,6 +1456,7 @@
   "glas.blinds.openPercent": "{percent} öppen",
   "glas.blinds.pickAria": "Välj rum för persiennerna",
   "glas.blinds.roomAria": "Styr persienner {room}",
+  "glas.blinds.openRoomAria": "Visa persiennerna i {room} en och en",
   "glas.blinds.openAll": "Öppna alla",
   "glas.blinds.closeAll": "Stäng alla",
   "glas.nvr.live": "Live",

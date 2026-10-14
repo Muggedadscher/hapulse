@@ -4,7 +4,7 @@
  * scrollable room list below.
  */
 import React, { useCallback, useState } from 'react';
-import { ChevronUp, ChevronDown, ChevronRight, Square, AlignJustify } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronRight, Square, AlignJustify, Blinds } from 'lucide-react'; // [fork] Blinds: Glas symbol
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { isGarageDoor } from '@hapulse/core'; // [fork]
@@ -19,6 +19,8 @@ interface BlindsCardProps {
   entities: HassEntityMap;
   rooms: Room[];
   onSeeAll?: (() => void) | undefined;
+  /** [fork] Glas: a room's covers one by one (a tap on the blinds picture or the room's name). */
+  onOpenRoom?: ((room: { name: string; entityIds: string[] }) => void) | undefined;
 }
 
 type BlindKey = 'open' | 'partial' | 'closed' | 'moving';
@@ -140,9 +142,11 @@ function ArcGauge({ value, size = 120, label, fillColor = 'var(--accent)' }: Arc
 
 // ── BlindsCard ────────────────────────────────────────────────────────────────
 
-export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
+export function BlindsCard({ entities, rooms, onSeeAll, onOpenRoom }: BlindsCardProps) { // [fork] onOpenRoom
   const t = useT();
   const isGlas = useIsGlas(); // [fork]
+  // [fork] Glas: the blind symbol as everywhere else in the app (CoverCard, devices); "≡" read as a menu button
+  const TitleIcon = isGlas ? Blinds : AlignJustify;
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   const blindRooms: BlindRoomEntry[] = rooms.flatMap((room) => {
@@ -194,7 +198,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
         <div className="blinds-card__header">
           <div className="blinds-card__title-row">
             <span className="blinds-card__icon-chip" aria-hidden="true">
-              <AlignJustify size={16} strokeWidth={1.75} />
+              <TitleIcon size={16} strokeWidth={1.75} /* [fork] */ />
             </span>
             <span className="blinds-card__title">{t('home.blinds.title')}</span>
           </div>
@@ -211,7 +215,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
           )}
         </div>
         <div className="blinds-card__empty">
-          <AlignJustify size={28} strokeWidth={1.5} className="blinds-card__empty-icon" />
+          <TitleIcon size={28} strokeWidth={1.5} className="blinds-card__empty-icon" /* [fork] */ />
           <p className="blinds-card__empty-text">{t('home.blinds.emptyTitle')}</p>
           <p className="blinds-card__empty-sub">
             {t('home.blinds.emptyDescription')}
@@ -231,7 +235,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
       <div className="blinds-card__header">
         <div className="blinds-card__title-row">
           <span className={`blinds-card__icon-chip blinds-card__icon-chip--${chipKey}`} aria-hidden="true">
-            <AlignJustify size={16} strokeWidth={1.75} />
+            <TitleIcon size={16} strokeWidth={1.75} /* [fork] */ />
           </span>
           <span className="blinds-card__title">{t('home.blinds.title')}</span>
         </div>
@@ -249,7 +253,17 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
       </div>
 
       {isGlas ? ( // [fork] Glas: blinds picture and rooms (phone), a row per room (desktop)
-        <GlasBlindsBody room={activeRoom} rooms={blindRooms} onSelect={setSelectedRoomName} />
+        <GlasBlindsBody
+          room={activeRoom}
+          rooms={blindRooms}
+          onSelect={setSelectedRoomName}
+          onOpen={
+            // all the room's covers: the window filters them live (a cover that comes back while it is open shows up)
+            onOpenRoom &&
+            ((r) =>
+              onOpenRoom({ name: r.name, entityIds: rooms.find((x) => x.name === r.name)?.domains['cover'] ?? r.entities.map((e) => e.entity_id) }))
+          }
+        />
       ) : (<>{/* [fork] */}
       {/* Controls — top, reflect selected room */}
       <div className="blinds-card__gauge-wrap" data-blind={colorKey}>

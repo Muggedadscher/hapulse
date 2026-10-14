@@ -9,11 +9,12 @@
  * BlindsCard's (avgPosition = % closed; garage doors and unavailable covers are already left out there).
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp } from 'lucide-react';
 import type { HassEntity } from '@hapulse/core';
 import { callService } from '../../../ha/service';
 import { GlasRoomPicker } from './GlasRoomPicker';
+import { noteOrigin } from '../sheet/origin';
 import { useLocale, useT } from '../../../i18n/useT';
 
 export interface GlasBlindsRoom {
@@ -28,6 +29,8 @@ interface GlasBlindsBodyProps {
   room: GlasBlindsRoom;
   rooms: readonly GlasBlindsRoom[];
   onSelect: (name: string) => void;
+  /** Opens the room's covers one by one ("Alle anzeigen" narrowed to the room); a tap on the picture or the name. */
+  onOpen?: ((room: GlasBlindsRoom) => void) | undefined;
 }
 
 type CoverService = 'open_cover' | 'stop_cover' | 'close_cover';
@@ -46,7 +49,7 @@ function StopGlyph() {
   );
 }
 
-export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
+export function GlasBlindsBody({ room, rooms, onSelect, onOpen }: GlasBlindsBodyProps) {
   const t = useT();
   const locale = useLocale();
   const pct = useMemo(() => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }), [locale]);
@@ -62,16 +65,44 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
   const closed = closedOf(room);
   const state = stateOf(room);
   const all = rooms.flatMap((r) => r.entities);
+  const pictureRef = useRef<HTMLButtonElement>(null);
+  const shade = <span className="g-blind__shade" style={{ '--g-closed': closed } as React.CSSProperties} />;
 
   return (
     <>
       <div className="g-blinds__phone">
         <div className="g-ctl g-ctl--blinds">
-          <span className="g-blind" aria-hidden="true">
-            <span className="g-blind__shade" style={{ '--g-closed': closed } as React.CSSProperties} />
-          </span>
+          {onOpen ? (
+            <button
+              ref={pictureRef}
+              type="button"
+              className="g-blind"
+              onClick={() => onOpen(room)}
+              aria-label={t('glas.blinds.openRoomAria', { room: room.name })}
+            >
+              {shade}
+            </button>
+          ) : (
+            <span className="g-blind" aria-hidden="true">
+              {shade}
+            </span>
+          )}
           <div className="g-ctl__side">
-            <span className="g-ctl__title">{room.name}</span>
+            {onOpen ? (
+              // the name opens the same window for the finger; it grows out of the picture and gives the focus back
+              // to it, the one control for the keyboard and screen readers (components/glas/sheet/origin.ts)
+              <span
+                className="g-ctl__title g-ctl__title--btn"
+                onClick={() => {
+                  noteOrigin(pictureRef.current);
+                  onOpen(room);
+                }}
+              >
+                {room.name}
+              </span>
+            ) : (
+              <span className="g-ctl__title">{room.name}</span>
+            )}
             <span className="g-ctl__sub">{state}</span>
             <div className="g-ctl__buttons" role="group" aria-label={t('glas.blinds.roomAria', { room: room.name })}>
               <button
@@ -118,7 +149,18 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
             return (
               <li key={r.name} className="g-blinds__row">
                 <span className="g-blinds__info">
-                  <span className="g-blinds__name">{r.name}</span>
+                  {onOpen ? (
+                    <button
+                      type="button"
+                      className="g-blinds__name g-blinds__name--btn"
+                      onClick={() => onOpen(r)}
+                      aria-label={t('glas.blinds.openRoomAria', { room: r.name })}
+                    >
+                      {r.name}
+                    </button>
+                  ) : (
+                    <span className="g-blinds__name">{r.name}</span>
+                  )}
                   <span className="g-blinds__meta">
                     <span className="g-blinds__bar" aria-hidden="true">
                       <span className="g-blinds__fill" style={{ transform: `scaleX(${open / 100})` }} />
