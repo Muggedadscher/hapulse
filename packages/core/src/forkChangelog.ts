@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 47,
+    date: '2026-10-14',
+    title: { de: 'Rollläden-Karte wie in Apples Home', en: 'Blinds card as in Apple Home' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Die Rollläden-Karte der Übersicht zeigt auf dem Handy statt des Rings ein kleines Fenster, dessen Rollo so weit unten ist wie im Raum, und daneben genau einen Zustand: „Offen“, „Geschlossen“ oder zum Beispiel „40 % offen“',
+            en: 'Glass: on the phone, the blinds card on the overview shows a little window instead of the ring, its blind drawn down as far as in the room, and beside it one state: "Open", "Closed" or for example "40% open"',
+          },
+          {
+            de: 'Glas: Die Raumliste unter der Rollläden-Karte erscheint erst ab zwei Räumen und zählt wie überall sonst, wie weit offen',
+            en: 'Glass: the room list under the blinds card only appears with two or more rooms and counts how far open, as everywhere else',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 46,
     date: '2026-10-12',
     title: { de: 'Sentinel auf dem Desktop wie auf dem Handy', en: 'Sentinel on the desktop as on the phone' },

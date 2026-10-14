@@ -1453,7 +1453,6 @@
   "glas.climate.gaugeAria": "{room}: target {target}, now {current}, {action}",
   "glas.climate.stepAria": "Target temperature {room}",
   "glas.climate.pickAria": "Choose the room for the thermostat",
-  "glas.blinds.closed": "Closed",
   "glas.blinds.openPercent": "{percent} open",
   "glas.blinds.pickAria": "Choose the room for the blinds",
   "glas.blinds.roomAria": "Control blinds {room}",

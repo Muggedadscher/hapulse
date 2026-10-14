@@ -248,7 +248,7 @@ export function BlindsCard({ entities, rooms, onSeeAll }: BlindsCardProps) {
         )}
       </div>
 
-      {isGlas ? ( // [fork] Glas: ring and rooms (phone), a row per room (desktop)
+      {isGlas ? ( // [fork] Glas: blinds picture and rooms (phone), a row per room (desktop)
         <GlasBlindsBody room={activeRoom} rooms={blindRooms} onSelect={setSelectedRoomName} />
       ) : (<>{/* [fork] */}
       {/* Controls — top, reflect selected room */}

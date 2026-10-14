@@ -1453,7 +1453,6 @@
   "glas.climate.gaugeAria": "{room}: impostata {target}, attuale {current}, {action}",
   "glas.climate.stepAria": "Temperatura impostata {room}",
   "glas.climate.pickAria": "Scegli la stanza del termostato",
-  "glas.blinds.closed": "Chiusa",
   "glas.blinds.openPercent": "{percent} aperta",
   "glas.blinds.pickAria": "Scegli la stanza delle tapparelle",
   "glas.blinds.roomAria": "Controlla tapparelle {room}",
