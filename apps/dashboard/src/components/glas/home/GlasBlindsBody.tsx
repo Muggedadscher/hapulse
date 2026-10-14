@@ -1,9 +1,10 @@
 /**
  * [fork] Body of the overview's blinds card in Glas (docs/GLAS-DESIGN.md §7.12, plan docs/glas/PLAN-ETAPPE-4.md K83).
- * Phone: a little window whose blind is drawn down as far as the chosen room's covers are closed (like the blinds on the
- * room page and in "Alle anzeigen", and like Apple's Home), beside it the room, its one state ("Offen", "Geschlossen",
- * "40 % offen", "In Bewegung") and Zu / Stopp / Auf, then the rooms (GlasRoomPicker) when there are two or more. Desktop: a row per room with a bar for how far it is open, its
- * state and an Auf / Stopp / Zu capsule, then "Alle öffnen" / "Alle schließen" for every cover of the card. Both
+ * Phone: a little window whose blind is drawn down as far as the chosen room's covers are closed (like the blinds on
+ * the room page and in "Alle anzeigen", and like Apple's Home), beside it the room, its one state ("Offen",
+ * "Geschlossen", "40 % offen", "In Bewegung") and Zu / Stopp / Auf, then the rooms (GlasRoomPicker) when there are two
+ * or more. Desktop: a row per room with a bar for how far it is open, its state and an Auf / Stopp / Zu capsule, then
+ * "Alle öffnen" / "Alle schließen" for every cover of the card. Both
  * markups are rendered and the width shows one (styles/glas/home-lists.css). The rooms and their positions are
  * BlindsCard's (avgPosition = % closed; garage doors and unavailable covers are already left out there).
  */

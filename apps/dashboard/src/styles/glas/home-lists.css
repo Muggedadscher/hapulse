@@ -23,7 +23,8 @@
 }
 
 /* ---- Control above the rooms (components/glas/home/GlasClimateBody.tsx, GlasBlindsBody.tsx) ----
-   Phone (§7.11, §7.12): ring with the value and its word, beside it the room, its state and the buttons. The tone
+   Phone (§7.11, §7.12): the climate ring with the value and its word or the blinds picture, beside it the room, its
+   state and the buttons. The tone
    (`data-tone`, what the thermostat does) colours the ring and the state; idle and off are grey. */
 
 :root[data-style='glas'] .g-ctl {
@@ -288,14 +289,19 @@
 }
 
 /* ---- The climate and blinds cards ----
-   The ring and the rooms need more than the classic 400-px cap; a height-capped cell keeps its cap (Page.css). */
+   The control and the rooms need more than the classic 400-px cap; a height-capped cell keeps its cap (Page.css).
+   On the phone the room list runs to the card's edge; blinds of one room have no list and keep the card's padding. */
 
 :root[data-style='glas'] .home-page :is(.climate-card:has(.g-ctl), .blinds-card:has(.g-ctl)) {
   max-height: none;
 }
 
 @media (max-width: 899px) {
-  :root[data-style='glas'] .home-page :is(.climate-card:has(.g-ctl), .blinds-card:has(.g-ctl)) {
+  :root[data-style='glas'] .home-page :is(.climate-card:has(.g-ctl), .blinds-card:has(.g-pick)) {
+    padding-bottom: 0;
+  }
+
+  :root[data-style='glas'] .g-ctl--blinds:last-child {
     padding-bottom: 0;
   }
 
@@ -1584,10 +1590,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-style='glas'] .g-blind__shade {
-    transition-duration: 200ms;
-  }
-
   :root[data-style='glas'] :is(.g-ctl__btn, .g-blinds__btn, .g-blinds__all-btn, .g-room):active,
   :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hint-row:active {
     scale: none;
@@ -1608,8 +1610,11 @@
     border: 1px solid GrayText;
   }
 
+  /* the blind keeps its slats in the text colour, like the little blind on the room page (cards.css) */
   :root[data-style='glas'] .g-blind__shade {
-    background: GrayText;
+    forced-color-adjust: none;
+    border-bottom-color: CanvasText;
+    background: repeating-linear-gradient(to bottom, CanvasText 0 4px, transparent 4px 9px);
   }
 
   :root[data-style='glas'] .g-blinds__fill {
