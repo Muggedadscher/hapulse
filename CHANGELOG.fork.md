@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F47 — 2026-10-14
+
+**Rollläden-Karte wie in Apples Home** · _Blinds card as in Apple Home_
+
+### Geändert / Changed
+
+- Glas: Die Rollläden-Karte der Übersicht zeigt auf dem Handy statt des Rings ein kleines Fenster, dessen Rollo so weit unten ist wie im Raum, und daneben genau einen Zustand: „Offen“, „Geschlossen“ oder zum Beispiel „40 % offen“  
+  _Glass: on the phone, the blinds card on the overview shows a little window instead of the ring, its blind drawn down as far as in the room, and beside it one state: "Open", "Closed" or for example "40% open"_
+- Glas: Die Raumliste unter der Rollläden-Karte erscheint erst ab zwei Räumen und zählt wie überall sonst, wie weit offen  
+  _Glass: the room list under the blinds card only appears with two or more rooms and counts how far open, as everywhere else_
+
 ## F46 — 2026-10-12
 
 **Sentinel auf dem Desktop wie auf dem Handy** · _Sentinel on the desktop as on the phone_

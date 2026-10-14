@@ -1453,7 +1453,6 @@
   "glas.climate.gaugeAria": "{room}: mål {target}, nu {current}, {action}",
   "glas.climate.stepAria": "Måltemperatur {room}",
   "glas.climate.pickAria": "Välj rum för termostaten",
-  "glas.blinds.closed": "Stängd",
   "glas.blinds.openPercent": "{percent} öppen",
   "glas.blinds.pickAria": "Välj rum för persiennerna",
   "glas.blinds.roomAria": "Styr persienner {room}",

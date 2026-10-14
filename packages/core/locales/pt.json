@@ -1453,7 +1453,6 @@
   "glas.climate.gaugeAria": "{room}: alvo {target}, atual {current}, {action}",
   "glas.climate.stepAria": "Temperatura alvo {room}",
   "glas.climate.pickAria": "Escolher a divisão do termóstato",
-  "glas.blinds.closed": "Fechado",
   "glas.blinds.openPercent": "{percent} aberto",
   "glas.blinds.pickAria": "Escolher a divisão das persianas",
   "glas.blinds.roomAria": "Controlar persianas {room}",

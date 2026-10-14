@@ -1453,7 +1453,6 @@
   "glas.climate.gaugeAria": "{room}: Soll {target}, aktuell {current}, {action}",
   "glas.climate.stepAria": "Sollwert {room}",
   "glas.climate.pickAria": "Raum für das Thermostat wählen",
-  "glas.blinds.closed": "Geschlossen",
   "glas.blinds.openPercent": "{percent} offen",
   "glas.blinds.pickAria": "Raum für die Rollläden wählen",
   "glas.blinds.roomAria": "Rollläden {room} steuern",

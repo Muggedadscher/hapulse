@@ -58,16 +58,27 @@
   --g-ctl-fg: var(--g-green-ink);
 }
 
-/* the blinds ring is how far closed: always grey, it follows the motor slowly */
-:root[data-style='glas'] .g-ctl--blinds {
-  --g-ctl: var(--g-label-2);
+/* the blinds picture (§7.12): a little window whose blind is drawn down as far as the room is closed, the same picture
+   as the blinds on the room page (cards.css, 40) at the size of the climate ring; it follows the motor slowly. Open
+   leaves the rolled-up blind as a thin rail at the top. */
+:root[data-style='glas'] .g-blind {
+  position: relative;
+  flex: none;
+  width: 96px;
+  height: 116px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--g-fill);
 }
 
-:root[data-style='glas'] .g-ctl--blinds .g-arc__value {
-  transition:
-    stroke-dashoffset 1.4s cubic-bezier(0.4, 0, 0.2, 1),
-    stroke 350ms ease,
-    opacity 200ms ease;
+:root[data-style='glas'] .g-blind__shade {
+  position: absolute;
+  inset: 0 0 auto;
+  box-sizing: border-box;
+  height: max(8px, calc(var(--g-closed, 0) * 1%));
+  border-bottom: 3px solid var(--g-label-2);
+  background: repeating-linear-gradient(to bottom, var(--g-label-3) 0 4px, transparent 4px 9px);
+  transition: height 1.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root[data-style='glas'] .g-ctl__gauge {
@@ -1573,6 +1584,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .g-blind__shade {
+    transition-duration: 200ms;
+  }
+
   :root[data-style='glas'] :is(.g-ctl__btn, .g-blinds__btn, .g-blinds__all-btn, .g-room):active,
   :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hint-row:active {
     scale: none;
@@ -1589,8 +1604,12 @@
     stroke: Highlight;
   }
 
-  :root[data-style='glas'] .g-blinds__bar {
+  :root[data-style='glas'] :is(.g-blinds__bar, .g-blind) {
     border: 1px solid GrayText;
+  }
+
+  :root[data-style='glas'] .g-blind__shade {
+    background: GrayText;
   }
 
   :root[data-style='glas'] .g-blinds__fill {

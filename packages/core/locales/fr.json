@@ -1453,7 +1453,6 @@
   "glas.climate.gaugeAria": "{room} : consigne {target}, actuelle {current}, {action}",
   "glas.climate.stepAria": "Consigne {room}",
   "glas.climate.pickAria": "Choisir la pièce du thermostat",
-  "glas.blinds.closed": "Fermé",
   "glas.blinds.openPercent": "{percent} ouvert",
   "glas.blinds.pickAria": "Choisir la pièce des volets",
   "glas.blinds.roomAria": "Commander les volets {room}",

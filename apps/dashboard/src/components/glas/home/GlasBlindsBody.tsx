@@ -1,7 +1,8 @@
 /**
  * [fork] Body of the overview's blinds card in Glas (docs/GLAS-DESIGN.md §7.12, plan docs/glas/PLAN-ETAPPE-4.md K83).
- * Phone: like the climate card, a ring with how far the chosen room is closed, beside it the room, its state and
- * Zu / Stopp / Auf, then the rooms (GlasRoomPicker). Desktop: a row per room with a bar for how far it is open, its
+ * Phone: a little window whose blind is drawn down as far as the chosen room's covers are closed (like the blinds on the
+ * room page and in "Alle anzeigen", and like Apple's Home), beside it the room, its one state ("Offen", "Geschlossen",
+ * "40 % offen", "In Bewegung") and Zu / Stopp / Auf, then the rooms (GlasRoomPicker) when there are two or more. Desktop: a row per room with a bar for how far it is open, its
  * state and an Auf / Stopp / Zu capsule, then "Alle öffnen" / "Alle schließen" for every cover of the card. Both
  * markups are rendered and the width shows one (styles/glas/home-lists.css). The rooms and their positions are
  * BlindsCard's (avgPosition = % closed; garage doors and unavailable covers are already left out there).
@@ -11,7 +12,6 @@ import React, { useMemo } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp } from 'lucide-react';
 import type { HassEntity } from '@hapulse/core';
 import { callService } from '../../../ha/service';
-import { GlasArc } from './GlasArc';
 import { GlasRoomPicker } from './GlasRoomPicker';
 import { useLocale, useT } from '../../../i18n/useT';
 
@@ -50,12 +50,13 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
   const locale = useLocale();
   const pct = useMemo(() => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }), [locale]);
   const closedOf = (r: GlasBlindsRoom) => Math.max(0, Math.min(100, Math.round(r.avgPosition)));
+  /** One state, counted as open like everywhere else in Glas: "Offen", "Geschlossen", "40 % offen", "In Bewegung". */
   const stateOf = (r: GlasBlindsRoom) => {
-    const closed = closedOf(r);
+    const open = 100 - closedOf(r);
     if (r.anyMoving) return t('home.blinds.state.moving');
-    if (closed <= 0) return t('home.blinds.state.open');
-    if (closed >= 100) return t('home.blinds.state.closed');
-    return t('home.blinds.state.partial');
+    if (open >= 100) return t('home.blinds.state.open');
+    if (open <= 0) return t('home.blinds.state.closed');
+    return t('glas.blinds.openPercent', { percent: pct.format(open / 100) });
   };
   const closed = closedOf(room);
   const state = stateOf(room);
@@ -65,22 +66,12 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
     <>
       <div className="g-blinds__phone">
         <div className="g-ctl g-ctl--blinds">
-          <div
-            className="g-ctl__gauge"
-            role="img"
-            aria-label={t('home.blinds.gaugeAria', { percent: closed, label: state })}
-          >
-            <GlasArc frac={closed / 100} className="g-ctl__arc" />
-            <span className="g-ctl__center" aria-hidden="true">
-              <span className="g-ctl__value">{pct.format(closed / 100)}</span>
-              <span className="g-ctl__label">{t('glas.blinds.closed')}</span>
-            </span>
-          </div>
+          <span className="g-blind" aria-hidden="true">
+            <span className="g-blind__shade" style={{ '--g-closed': closed } as React.CSSProperties} />
+          </span>
           <div className="g-ctl__side">
             <span className="g-ctl__title">{room.name}</span>
-            <span className="g-ctl__sub">
-              {state}
-            </span>
+            <span className="g-ctl__sub">{state}</span>
             <div className="g-ctl__buttons" role="group" aria-label={t('glas.blinds.roomAria', { room: room.name })}>
               <button
                 type="button"
@@ -109,25 +100,20 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
             </div>
           </div>
         </div>
-        <GlasRoomPicker
-          label={t('glas.blinds.pickAria')}
-          selected={room.name}
-          onSelect={onSelect}
-          rows={rooms.map((r) => ({
-            key: r.name,
-            name: r.name,
-            value: r.anyMoving ? t('home.blinds.state.moving') : pct.format(closedOf(r) / 100),
-          }))}
-        />
+        {/* one room has nothing to choose: the list would only repeat it */}
+        {rooms.length > 1 && (
+          <GlasRoomPicker
+            label={t('glas.blinds.pickAria')}
+            selected={room.name}
+            onSelect={onSelect}
+            rows={rooms.map((r) => ({ key: r.name, name: r.name, value: stateOf(r) }))}
+          />
+        )}
       </div>
       <div className="g-blinds__desk">
         <ul className="g-blinds__rows" aria-label={t('home.blinds.roomsAria')}>
           {rooms.map((r) => {
             const open = 100 - closedOf(r);
-            const rowState =
-              r.anyMoving || open <= 0 || open >= 100
-                ? stateOf(r)
-                : t('glas.blinds.openPercent', { percent: pct.format(open / 100) });
             return (
               <li key={r.name} className="g-blinds__row">
                 <span className="g-blinds__info">
@@ -136,7 +122,7 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
                     <span className="g-blinds__bar" aria-hidden="true">
                       <span className="g-blinds__fill" style={{ transform: `scaleX(${open / 100})` }} />
                     </span>
-                    <span className="g-blinds__state">{rowState}</span>
+                    <span className="g-blinds__state">{stateOf(r)}</span>
                   </span>
                 </span>
                 <span className="g-blinds__caps" role="group" aria-label={t('glas.blinds.roomAria', { room: r.name })}>
