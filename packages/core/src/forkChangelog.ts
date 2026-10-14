@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 48,
+    date: '2026-10-14',
+    title: { de: 'Rollläden einzeln aus der Übersicht', en: 'Single blinds from the overview' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Die Rollläden-Karte und das Fenster „Alle anzeigen“ zeigen das Rollo-Symbol wie die übrige App statt „≡“, das wie ein Menü-Knopf aussah',
+            en: 'Glass: the blinds card and its "See all" window show the blind symbol like the rest of the app instead of "≡", which looked like a menu button',
+          },
+          {
+            de: 'Glas: Ein Tipp auf das Rollo-Bild oder den Raumnamen der Rollläden-Karte öffnet die Rollläden dieses Raums einzeln, jeder mit Auf, Stopp und Zu',
+            en: 'Glass: a tap on the blinds card\'s picture or room name opens that room\'s blinds one by one, each with open, stop and close',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 47,
     date: '2026-10-14',
     title: { de: 'Rollläden-Karte wie in Apples Home', en: 'Blinds card as in Apple Home' },

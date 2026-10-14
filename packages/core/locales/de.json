@@ -1456,6 +1456,7 @@
   "glas.blinds.openPercent": "{percent} offen",
   "glas.blinds.pickAria": "Raum für die Rollläden wählen",
   "glas.blinds.roomAria": "Rollläden {room} steuern",
+  "glas.blinds.openRoomAria": "Rollläden in {room} einzeln anzeigen",
   "glas.blinds.openAll": "Alle öffnen",
   "glas.blinds.closeAll": "Alle schließen",
   "glas.nvr.live": "Live",

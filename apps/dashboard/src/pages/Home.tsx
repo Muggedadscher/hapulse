@@ -301,6 +301,8 @@ export function Home() {
 
   const [climateModalOpen, setClimateModalOpen] = useState(false);
   const [blindsModalOpen, setBlindsModalOpen] = useState(false);
+  // [fork] Glas: the window narrowed to one room's covers (BlindsCard onOpenRoom); null = all covers
+  const [blindsRoom, setBlindsRoom] = useState<{ name: string; entityIds: string[] } | null>(null);
   const [hintWindow, setHintWindow] = useState<HintWindow | null>(null); // [fork] outlives the hints card (K76)
 
   // Rooms that have domains (real devices), in the user's stored order
@@ -456,7 +458,15 @@ export function Home() {
           <BlindsCard
             entities={entities}
             rooms={rooms}
-            onSeeAll={() => setBlindsModalOpen(true)}
+            onSeeAll={() => {
+              setBlindsRoom(null); // [fork]
+              setBlindsModalOpen(true);
+            }}
+            onOpenRoom={(room) => {
+              // [fork]
+              setBlindsRoom(room);
+              setBlindsModalOpen(true);
+            }}
           />
         );
       case 'security':
@@ -589,7 +599,11 @@ export function Home() {
       </SortableGrid>
 
       <ClimateAllModal open={climateModalOpen} onClose={() => setClimateModalOpen(false)} />
-      <BlindsAllModal open={blindsModalOpen} onClose={() => setBlindsModalOpen(false)} />
+      <BlindsAllModal
+        open={blindsModalOpen}
+        onClose={() => setBlindsModalOpen(false)}
+        room={blindsRoom ?? undefined} /* [fork] */
+      />
       <HintWindows target={hintWindow} onClose={() => setHintWindow(null)} />{/* [fork] */}
       {glasEdit.sheet}{/* [fork] Glas "⋯": the classic values of one card (K78) */}
     </div>

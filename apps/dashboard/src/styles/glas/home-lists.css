@@ -72,6 +72,33 @@
   background: var(--g-fill);
 }
 
+:root[data-style='glas'] button.g-blind {
+  display: block;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: scale var(--g-d-snappy) var(--g-spring-snappy);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] button.g-blind:active {
+  scale: 0.96;
+  transition-duration: 120ms;
+}
+
+/* the room's name opens its covers one by one: a plain text button */
+:root[data-style='glas'] :is(.g-ctl__title--btn, .g-blinds__name--btn) {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 :root[data-style='glas'] .g-blind__shade {
   position: absolute;
   inset: 0 0 auto;
@@ -1590,7 +1617,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-style='glas'] :is(.g-ctl__btn, .g-blinds__btn, .g-blinds__all-btn, .g-room):active,
+  :root[data-style='glas'] :is(.g-ctl__btn, .g-blinds__btn, .g-blinds__all-btn, .g-room, button.g-blind):active,
   :root[data-style='glas'] .home-page .hints-card:has(.hints-card__list) .hint-row:active {
     scale: none;
   }

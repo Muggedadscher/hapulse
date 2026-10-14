@@ -1456,6 +1456,7 @@
   "glas.blinds.openPercent": "{percent} ouvert",
   "glas.blinds.pickAria": "Choisir la pièce des volets",
   "glas.blinds.roomAria": "Commander les volets {room}",
+  "glas.blinds.openRoomAria": "Afficher les volets de {room} un par un",
   "glas.blinds.openAll": "Tout ouvrir",
   "glas.blinds.closeAll": "Tout fermer",
   "glas.nvr.live": "En direct",

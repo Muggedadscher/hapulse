@@ -28,6 +28,8 @@ interface GlasBlindsBodyProps {
   room: GlasBlindsRoom;
   rooms: readonly GlasBlindsRoom[];
   onSelect: (name: string) => void;
+  /** Opens the room's covers one by one ("Alle anzeigen" narrowed to the room); a tap on the picture or the name. */
+  onOpen?: ((room: GlasBlindsRoom) => void) | undefined;
 }
 
 type CoverService = 'open_cover' | 'stop_cover' | 'close_cover';
@@ -46,7 +48,7 @@ function StopGlyph() {
   );
 }
 
-export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
+export function GlasBlindsBody({ room, rooms, onSelect, onOpen }: GlasBlindsBodyProps) {
   const t = useT();
   const locale = useLocale();
   const pct = useMemo(() => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }), [locale]);
@@ -62,16 +64,35 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
   const closed = closedOf(room);
   const state = stateOf(room);
   const all = rooms.flatMap((r) => r.entities);
+  const shade = <span className="g-blind__shade" style={{ '--g-closed': closed } as React.CSSProperties} />;
 
   return (
     <>
       <div className="g-blinds__phone">
         <div className="g-ctl g-ctl--blinds">
-          <span className="g-blind" aria-hidden="true">
-            <span className="g-blind__shade" style={{ '--g-closed': closed } as React.CSSProperties} />
-          </span>
+          {onOpen ? (
+            // a bigger target for the finger; the keyboard and screen readers use the name, which does the same
+            <button type="button" className="g-blind" tabIndex={-1} aria-hidden="true" onClick={() => onOpen(room)}>
+              {shade}
+            </button>
+          ) : (
+            <span className="g-blind" aria-hidden="true">
+              {shade}
+            </span>
+          )}
           <div className="g-ctl__side">
-            <span className="g-ctl__title">{room.name}</span>
+            {onOpen ? (
+              <button
+                type="button"
+                className="g-ctl__title g-ctl__title--btn"
+                onClick={() => onOpen(room)}
+                aria-label={t('glas.blinds.openRoomAria', { room: room.name })}
+              >
+                {room.name}
+              </button>
+            ) : (
+              <span className="g-ctl__title">{room.name}</span>
+            )}
             <span className="g-ctl__sub">{state}</span>
             <div className="g-ctl__buttons" role="group" aria-label={t('glas.blinds.roomAria', { room: room.name })}>
               <button
@@ -118,7 +139,18 @@ export function GlasBlindsBody({ room, rooms, onSelect }: GlasBlindsBodyProps) {
             return (
               <li key={r.name} className="g-blinds__row">
                 <span className="g-blinds__info">
-                  <span className="g-blinds__name">{r.name}</span>
+                  {onOpen ? (
+                    <button
+                      type="button"
+                      className="g-blinds__name g-blinds__name--btn"
+                      onClick={() => onOpen(r)}
+                      aria-label={t('glas.blinds.openRoomAria', { room: r.name })}
+                    >
+                      {r.name}
+                    </button>
+                  ) : (
+                    <span className="g-blinds__name">{r.name}</span>
+                  )}
                   <span className="g-blinds__meta">
                     <span className="g-blinds__bar" aria-hidden="true">
                       <span className="g-blinds__fill" style={{ transform: `scaleX(${open / 100})` }} />
