@@ -987,6 +987,12 @@
     max-width: calc(100vw - 64px);
   }
 
+  /* GlasRuntime sets data-g-frame-snap for the frame in which the flag comes or goes: the content and the bars beside
+     the panel jump instead of gliding 272 px under it (their margin and left glide for the panel's collapse) */
+  :root[data-style='glas'][data-g-frame-snap] :is(.app-content, .app-header-cluster-wrapper, .app-banner, .g-edge) {
+    transition: none;
+  }
+
   /* the page ends at the window's bottom (nvr.css sizes the picture for it) */
   :root[data-style='glas'][data-g-immersive] .app-main {
     padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));

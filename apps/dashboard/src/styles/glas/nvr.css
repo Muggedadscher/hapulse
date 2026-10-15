@@ -1548,6 +1548,11 @@
   :root[data-style='glas'][data-g-immersive] .nvr-cam[data-nvr-appearance='immersive'] .nvr-cam__body {
     --stage-maxh: calc(100dvh - 224px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
+
+  /* with the connection banner the header row's padding is 136 (shell.css) */
+  :root[data-style='glas'][data-g-immersive] .app-content:has(> .app-banner) .nvr-cam[data-nvr-appearance='immersive'] .nvr-cam__body {
+    --stage-maxh: calc(100dvh - 268px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* reduced motion: the package fades the chosen tab's fill over in 200 ms instead of sliding the lens; !important answers

@@ -809,6 +809,15 @@ module.exports = function nvr(h) {
         const o = await open(device, 'glas', '/', { mode });
         try {
           const before = await frame(o.page);
+          // the frame jumps with the sidebar instead of gliding (F49, data-g-frame-snap): no margin or left transition
+          await ev(o.page, () => {
+            window.__slides = [];
+            document.addEventListener('transitionrun', (e) => {
+              if (/^(margin-left|left)$/.test(e.propertyName) && e.target.matches('.app-content, .app-header-cluster-wrapper, .app-banner, .g-edge')) {
+                window.__slides.push(`${e.target.className} ${e.propertyName}`);
+              }
+            }, true);
+          });
           await go(o.page, '/nvr/1');
           await camReady(o.page, 'live');
           const on = await frame(o.page);
@@ -817,7 +826,10 @@ module.exports = function nvr(h) {
           await o.page.locator(`.nvr-cam__head ${L('nvr.back')}`).click();
           await until(o.page, () => !document.documentElement.hasAttribute('data-g-immersive') && !!document.querySelector('.nvr-layout'));
           const after = await frame(o.page);
+          await new Promise((r) => setTimeout(r, 700));
+          const slides = await ev(o.page, () => window.__slides);
           const b = layoutBad(lay, wide, 0, device === 'phone');
+          if (slides.length) b.push('frame slides ' + JSON.stringify(slides));
           if (!on.flag || on.scheme !== 'dark') b.push('not immersive ' + JSON.stringify(on));
           if (after.flag || after.scheme) b.push('frame stays immersive');
           if (wide) {
