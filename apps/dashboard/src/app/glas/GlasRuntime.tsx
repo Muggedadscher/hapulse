@@ -231,8 +231,21 @@ function GlasRuntimeOn({ nav }: { nav: readonly GlasNavItem[] }) {
   // The camera page (E13, K104): its own flag on the root before the first paint, so its frame never shows.
   const immersive = useGlasUiStore((s) => s.immersive);
   useLayoutEffect(() => {
-    setFlag(document.documentElement, 'data-g-immersive', immersive);
+    const root = document.documentElement;
+    const changes = immersive !== root.hasAttribute('data-g-immersive');
+    setFlag(root, 'data-g-immersive', immersive);
     setImmersiveThemeColor(immersive);
+    if (!changes) return undefined;
+    // from 900 px the sidebar comes and goes with the flag (F49): the frame jumps with it instead of sliding its
+    // margin over (shell.css, data-g-frame-snap), and gets its transitions back once that frame is drawn
+    root.setAttribute('data-g-frame-snap', '');
+    let raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => root.removeAttribute('data-g-frame-snap'));
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      root.removeAttribute('data-g-frame-snap');
+    };
   }, [immersive]);
   useEffect(() => () => {
     document.documentElement.removeAttribute('data-g-immersive');

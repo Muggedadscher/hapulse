@@ -599,6 +599,9 @@ module.exports = function nvr(h) {
         tabs: vis('.app-tabs'),
         chips: vis('.app-chips-mobile'),
         sidebar: vis('.app-sidebar'),
+        cluster: vis('.app-header-cluster-wrapper'),
+        // how far the page runs past the window's bottom (from 900 px it ends at the edge, F49)
+        overflow: document.scrollingElement.scrollHeight - innerHeight,
         lens: tabs ? tabs.getAttribute('data-g-lens') : null,
         // the lens may fade in where it is (opacity); gliding or stretching is a move
         lensMoves: __g.anims('.g-tabs__lens').filter((a) => a.ms > 1 && a.props.some((x) => x !== 'opacity')).map((a) => a.name),
@@ -748,7 +751,7 @@ module.exports = function nvr(h) {
       }
       return b;
     };
-    /** Colours in the page (the dark subtree must reach derived values, plan §5), and the sidebar's text. */
+    /** Colours in the page (the dark subtree must reach derived values, plan §5). */
     const colours = (page) => ev(page, () => {
       const q = (s) => document.querySelector(s);
       const c = (el, prop = 'color') => (el ? __n.L(getComputedStyle(el)[prop]) : null);
@@ -761,7 +764,6 @@ module.exports = function nvr(h) {
         tab: c(q('.nvr-tabs .nvr-tabs__tab--active')),
         tabIdle: c(q('.nvr-tabs button:not(.nvr-tabs__tab--active)')),
         playhead: c(q('.nvr-vtl .vcenter'), 'backgroundColor'),
-        sidebarText: q('.app-sidebar') && __g.visible(q('.app-sidebar')) ? c(q('.app-sidebar .sidebar-nav__item')) : null,
       };
     });
     /** Contrast of the first visible match: text (its colour against the pixels under its letters) or glyph (its svg). */
@@ -792,7 +794,8 @@ module.exports = function nvr(h) {
     // 1. The camera page immersive (K101–K104, E13): on the phone and an upright iPad the page owns the screen (no tab or
     //    chip bar, the picture from the top edge, the header over it; on the phone the picture's card is the top bar
     //    iOS 26 takes for the status bar, package 0.19.1) and both come back afterwards, the tab bar's lens in
-    //    place; from 900 px the sidebar stays. The page (html and body: the home-screen app's status bar band takes the
+    //    place; from 900 px the sidebar goes (F49), the header row with the chips stays and the page ends at the
+    //    window's bottom; both come back afterwards. The page (html and body: the home-screen app's status bar band takes the
     //    body's colour, plan E7 N1) and the content column are dark in both modes (also derived colours), the browser
     //    colour too. Measures of K101; safe areas (CDP) and clip mode on a recording; contrast over
     //    light grey, white (reported) and the infrared picture.
@@ -806,6 +809,15 @@ module.exports = function nvr(h) {
         const o = await open(device, 'glas', '/', { mode });
         try {
           const before = await frame(o.page);
+          // the frame jumps with the sidebar instead of gliding (F49, data-g-frame-snap): no margin or left transition
+          await ev(o.page, () => {
+            window.__slides = [];
+            document.addEventListener('transitionrun', (e) => {
+              if (/^(margin-left|left)$/.test(e.propertyName) && e.target.matches('.app-content, .app-header-cluster-wrapper, .app-banner, .g-edge')) {
+                window.__slides.push(`${e.target.className} ${e.propertyName}`);
+              }
+            }, true);
+          });
           await go(o.page, '/nvr/1');
           await camReady(o.page, 'live');
           const on = await frame(o.page);
@@ -814,11 +826,16 @@ module.exports = function nvr(h) {
           await o.page.locator(`.nvr-cam__head ${L('nvr.back')}`).click();
           await until(o.page, () => !document.documentElement.hasAttribute('data-g-immersive') && !!document.querySelector('.nvr-layout'));
           const after = await frame(o.page);
+          await new Promise((r) => setTimeout(r, 700));
+          const slides = await ev(o.page, () => window.__slides);
           const b = layoutBad(lay, wide, 0, device === 'phone');
+          if (slides.length) b.push('frame slides ' + JSON.stringify(slides));
           if (!on.flag || on.scheme !== 'dark') b.push('not immersive ' + JSON.stringify(on));
           if (after.flag || after.scheme) b.push('frame stays immersive');
           if (wide) {
-            if (!on.sidebar || !after.sidebar) b.push('sidebar');
+            if (on.sidebar || !after.sidebar) b.push('sidebar ' + JSON.stringify([on.sidebar, after.sidebar]));
+            if (!on.cluster || !after.cluster) b.push('header row ' + JSON.stringify([on.cluster, after.cluster]));
+            if (on.overflow > 1) b.push('page runs past the window ' + on.overflow);
           } else {
             if (!before.tabs || on.tabs || on.chips) b.push('bars on the page ' + JSON.stringify([before.tabs, on.tabs, on.chips]));
             if (!after.tabs || !after.chips) b.push('bars not back ' + JSON.stringify([after.tabs, after.chips]));
@@ -829,7 +846,6 @@ module.exports = function nvr(h) {
           if (after.body !== before.body) b.push(`body colour stays ${before.body} → ${after.body}`);
           if (!(col.text > 0.8 && col.tab > 0.8 && col.playhead > 0.8)) b.push('texts not light ' + JSON.stringify(col));
           if (!(col.status > 0.15 && col.status < 0.75 && col.tabIdle > 0.15 && col.tabIdle < 0.75)) b.push('secondary texts ' + JSON.stringify(col));
-          if (wide && !(mode === 'light' ? col.sidebarText < 0.1 : col.sidebarText > 0.6)) b.push('sidebar not in the device mode ' + col.sidebarText);
           res[key] = { bad: b, lay: { head: lay.head, stage: lay.stage, body: lay.body }, col, lens: [before.lens, after.lens], theme: on.themeColor };
           bad.push(...b.map((x) => `${key}: ${x}`));
         } finally {

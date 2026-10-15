@@ -466,7 +466,10 @@ module.exports = function polish(h) {
         const rects = inView([b]);
         if (!rects || !rects.length) continue;
         const s = getComputedStyle(svg);
-        const paint = [s.stroke, s.fill].find((c) => c && c !== 'none' && rgba(c)[3] > 0);
+        // the paint of the drawn shape: an MDI icon fills its path with currentColor and leaves the svg's own fill at
+        // the initial black (it read black on the dark camera page, where the header row is visible from 900 px, F49)
+        const mdi = svg.children.length === 1 && svg.firstElementChild.getAttribute('fill') === 'currentColor';
+        const paint = mdi ? s.color : [s.stroke, s.fill].find((c) => c && c !== 'none' && rgba(c)[3] > 0);
         add(svg, 'icon', rects, rgba(paint || s.color), 3, (ctl && (ctl.getAttribute('aria-label') || ctl.getAttribute('title'))) || svg.getAttribute('aria-label') || '(icon)');
       }
     } finally {

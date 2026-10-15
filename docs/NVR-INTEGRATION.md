@@ -131,10 +131,10 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   meldet sich über `useGlasImmersive` (`app/glas/useGlasImmersive.ts`, Zustand `immersive` in `stores/glasUiStore.ts`),
   `GlasRuntime` setzt daraus vor dem Zeichnen `data-g-immersive` an `:root`, und `styles/glas/shell.css` nimmt Tab-Leiste,
   Chip-Zeile und die Ränder von `.app-content`/`.app-main` weg; das Verbindungs-Banner schwebt oben über dem Bild. Ab
-  900 px bleibt die Seitenleiste. Die Seite ist immer dunkel: solange sie offen ist, trägt die Inhaltsspalte
+  900 px bleiben Kopfzeile und Chips, die Seitenleiste ist seit F49 aus (dasselbe `data-g-immersive`). Die Seite ist immer dunkel: solange sie offen ist, trägt die Inhaltsspalte
   `data-glas-scheme="dark"` (`AppLayout.tsx`, `[fork]`), und `applyAppearance` hält für diesen Teilbaum die
   Glas-Variablen des dunklen Modus bereit (`<style id="glas-dark-scope">`, `theme/glasAppearance.ts`); die Browserfarbe
-  (`theme-color`) folgt. Seitenleiste, Fenster und Menüs bleiben im Modus des Geräts. Kopfzeile: `CameraTitle` mit `live`
+  (`theme-color`) folgt. Fenster und Menüs bleiben im Modus des Geräts. Kopfzeile: `CameraTitle` mit `live`
   und `at` (Abzeichen LIVE bzw. Uhrzeit des Bilds) und „In Sentinel öffnen“ als runder `nvr-iconbtn`. Die Werte der
   Paket-Hooks (`--nvr-ctl-*` über dem Bild, `--nvr-float-*` über der Zeitleiste, `--nvr-seg-*`, `--nvr-live-*`,
   `--nvr-shade-top`/`--nvr-shade-bottom`, `--nvr-ease`/`--nvr-dur`) setzt `styles/glas/nvr.css`, deckend bei „Deckend“,

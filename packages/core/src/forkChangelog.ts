@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 49,
+    date: '2026-10-15',
+    title: { de: 'Kamera ohne Seitenleiste', en: 'Camera without the sidebar' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Auf dem Computer und dem iPad quer verschwindet die helle Seitenleiste, solange eine Kamera offen ist. Die Seite ist durchgehend dunkel und das Bild größer, die Zeile mit den Chips bleibt',
+            en: 'Glass: on a computer and a landscape iPad the light sidebar goes while a camera is open. The page is dark throughout and the picture larger; the row with the chips stays',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 48,
     date: '2026-10-14',
     title: { de: 'Rollläden einzeln aus der Übersicht', en: 'Single blinds from the overview' },

@@ -1090,6 +1090,12 @@ Teilbaum mit `data-glas-scheme="dark"`; Tab- und Chip-Leiste aus (E13). Fenster,
 die über der Kameraseite aufgehen, sind ebenfalls dunkel (seit Etappe 7, K109: das helle Datumsfenster über dem dunklen
 Scrim hatte 2,7:1 am ×). Fokus über dem Bild: Ring innen auf dem Glas des Knopfs in dessen Schriftfarbe (§2.5 Regel 7).
 
+**Ab 900 px (seit F49, Entscheid Jannick 15.10.2026):** keine Seitenleiste, solange die Kameraseite offen ist (die helle
+Leiste neben der dunklen Seite war ein zweifarbiges Fenster; Apples Home öffnet eine Kamera auf iPad und Mac ebenso
+ohne). Die Kopfzeile mit Chips, Wetter, Glocke und Avatar bleibt (User: „Chips dürfen bleiben“), beginnt am linken
+Fensterrand; die Seite endet am unteren Rand (Bildhöhe = Fenster − 224, `nvr.css`). Zurück führt wie bisher zur
+Übersicht. Der Name unter dem Bild bleibt ebenfalls (User: „der doppelte Name stört nicht“).
+
 - **Bühne** randlos, Höhe = Breite × 3/4 (293 bei 390; Vollbild 100 %), Verläufe oben 104 / unten 120 (§3.6).
 - **Statusleiste** (Home-Bildschirm-App am Handy): sie liegt auf dem Schwarz hinter dem Bild, ohne Unschärfe, wie in
   der Fotos-App. iOS 26 legt sonst eine weiche Unschärfe über den oberen Rand der Seite, hier über Bild, Knöpfe und Namen.

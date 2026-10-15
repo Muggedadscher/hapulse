@@ -967,6 +967,38 @@
   }
 }
 
+/* From 900 px the sidebar panel goes too, like a camera opened in Apple's Home on iPad and Mac (F49): the light panel
+   beside the dark page made a two-tone window. The header row (chips, weather, bell, avatar) stays, now flush with the
+   window's left edge; back leads to the overview as before. */
+@media (min-width: 900px) {
+  :root[data-style='glas'][data-g-immersive] .app-sidebar {
+    display: none;
+  }
+
+  :root[data-style='glas'][data-g-immersive] .app-content {
+    margin-left: 0;
+  }
+
+  :root[data-style='glas'][data-g-immersive] :is(.app-header-cluster-wrapper, .app-banner, .g-edge) {
+    left: 0;
+  }
+
+  :root[data-style='glas'][data-g-immersive] .app-banner {
+    max-width: calc(100vw - 64px);
+  }
+
+  /* GlasRuntime sets data-g-frame-snap for the frame in which the flag comes or goes: the content and the bars beside
+     the panel jump instead of gliding 272 px under it (their margin and left glide for the panel's collapse) */
+  :root[data-style='glas'][data-g-frame-snap] :is(.app-content, .app-header-cluster-wrapper, .app-banner, .g-edge) {
+    transition: none;
+  }
+
+  /* the page ends at the window's bottom (nvr.css sizes the picture for it) */
+  :root[data-style='glas'][data-g-immersive] .app-main {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* More contrast and "Transparenz reduzieren": the edge without blur */
 :root[data-style='glas'][data-contrast='more'] .g-edge::before,
 :root[data-style='glas'][data-glass='opaque'] .g-edge::before {
