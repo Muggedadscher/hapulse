@@ -1541,6 +1541,13 @@
   :root[data-style='glas'] .nvr-cam[data-nvr-appearance='immersive'] > .nvr-cam__head .nvr-cam__badge--time {
     color: var(--g-label-2);
   }
+
+  /* without the sidebar (shell.css, F49) the picture's height is the limit: the window less the header row (92), the
+     head (44 + 16), the info bar (48) and the bottom padding (24), so the page ends at the window's edge; the
+     package's 240 counts Sentinel's own page */
+  :root[data-style='glas'][data-g-immersive] .nvr-cam[data-nvr-appearance='immersive'] .nvr-cam__body {
+    --stage-maxh: calc(100dvh - 224px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* reduced motion: the package fades the chosen tab's fill over in 200 ms instead of sliding the lens; !important answers

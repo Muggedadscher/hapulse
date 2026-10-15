@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F49 — 2026-10-15
+
+**Kamera ohne Seitenleiste** · _Camera without the sidebar_
+
+### Geändert / Changed
+
+- Glas: Auf dem Computer und dem iPad quer verschwindet die helle Seitenleiste, solange eine Kamera offen ist. Die Seite ist durchgehend dunkel und das Bild größer, die Zeile mit den Chips bleibt  
+  _Glass: on a computer and a landscape iPad the light sidebar goes while a camera is open. The page is dark throughout and the picture larger; the row with the chips stays_
+
 ## F48 — 2026-10-14
 
 **Rollläden einzeln aus der Übersicht** · _Single blinds from the overview_
