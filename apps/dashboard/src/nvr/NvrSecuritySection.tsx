@@ -1,6 +1,6 @@
 /**
  * [fork] Security page section "Sentinel NVR": the NVR's camera tiles (live
- * snapshots, tap → timeline) plus the recent-events strip, next to Home
+ * snapshots, tap → timeline) plus the recent-events strip (all of the NVR's last 24 h), next to Home
  * Assistant's own camera grid. Section id `nvr` (reorder / hide / resize like
  * the other Security sections); Security shows it only when the NVR is
  * configured (`useNvrConfigured`).
@@ -56,7 +56,7 @@ export function NvrSecuritySection() {
       ) : (
         <NvrUi client={cfg.client}>
           <CameraTiles cameras={cameras} />
-          <EventsStrip events={recent.slice(0, 20)} />
+          <EventsStrip events={recent} />
         </NvrUi>
       )}
     </div>

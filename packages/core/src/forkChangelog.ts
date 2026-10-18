@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 51,
+    date: '2026-10-18',
+    title: { de: 'Ereignisse der letzten 24 Stunden', en: 'Events of the last 24 hours' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas: Die NVR-Karte auf der Übersicht zeigt in der Bilderreihe alle Ereignisse der letzten 24 Stunden statt nur der letzten vier',
+            en: 'Glass: the NVR card on the overview shows every event of the last 24 hours in its row of pictures instead of only the latest four',
+          },
+          {
+            de: 'Die Ereignis-Leiste auf der Sicherheitsseite zeigt ebenfalls alle Ereignisse der letzten 24 Stunden statt der letzten 20',
+            en: 'The event strip on the Security page also shows every event of the last 24 hours instead of the latest 20',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 50,
     date: '2026-10-18',
     title: { de: 'Ereignis ohne Zurückspringen', en: 'Events without the jump back' },
