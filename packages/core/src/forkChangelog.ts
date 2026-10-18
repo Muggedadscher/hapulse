@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 50,
+    date: '2026-10-18',
+    title: { de: 'Ereignis ohne Zurückspringen', en: 'Events without the jump back' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Kamera: Nach dem Tippen auf ein Ereignis zeigt das Standbild schon den Moment, an dem die Wiedergabe beginnt. Das Video springt beim Start nicht mehr ein paar Sekunden zurück',
+            en: 'Camera: after tapping an event the still picture already shows the moment the playback starts. The video no longer jumps back a few seconds when it starts',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 49,
     date: '2026-10-15',
     title: { de: 'Kamera ohne Seitenleiste', en: 'Camera without the sidebar' },

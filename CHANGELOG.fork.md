@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F50 — 2026-10-18
+
+**Ereignis ohne Zurückspringen** · _Events without the jump back_
+
+### Behoben / Fixed
+
+- Kamera: Nach dem Tippen auf ein Ereignis zeigt das Standbild schon den Moment, an dem die Wiedergabe beginnt. Das Video springt beim Start nicht mehr ein paar Sekunden zurück  
+  _Camera: after tapping an event the still picture already shows the moment the playback starts. The video no longer jumps back a few seconds when it starts_
+
 ## F49 — 2026-10-15
 
 **Kamera ohne Seitenleiste** · _Camera without the sidebar_
