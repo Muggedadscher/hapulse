@@ -23,6 +23,7 @@ import { useIsGlas } from '../app/glas/useUiStyle';
 import './nvr.css';
 
 const SNAPSHOT_MS = 10_000;
+/** Event rows in the classic card; the Glas strip shows every event the NVR lists (its last 24 h). */
 const MAX_EVENTS = 4;
 
 export function NvrHomeCard() {
@@ -42,7 +43,6 @@ export function NvrHomeCard() {
     offline ? t('nvr.hero.offline', { count: offline }) : null,
     stalled ? t('nvr.hero.stalled', { count: stalled }) : null,
   ].filter(Boolean).join(' · ');
-  const events = recent.slice(0, MAX_EVENTS);
 
   return (
     <Card className="nvr-home">
@@ -62,7 +62,7 @@ export function NvrHomeCard() {
       {status === 'error' ? (
         <p className="nvr-muted nvr-home__error"><WifiOff size={14} strokeWidth={2} />{errorStatus === 401 ? t('nvr.error.unauthorized') : t('nvr.error.unreachable')}</p>
       ) : isGlas ? (
-        <NvrHomeGlas client={client} cameras={cameras} events={events} tick={tick} retry={retry} loading={status !== 'ready'} />
+        <NvrHomeGlas client={client} cameras={cameras} events={recent} tick={tick} retry={retry} loading={status !== 'ready'} />
       ) : (
         <>
           <div className="nvr-home__meta">
@@ -84,9 +84,9 @@ export function NvrHomeCard() {
               ))}
             </div>
           )}
-          {events.length > 0 && (
+          {recent.length > 0 && (
             <ul className="nvr-home__events">
-              {events.map((e) => (
+              {recent.slice(0, MAX_EVENTS).map((e) => (
                 <li key={`${e.camera}-${e.ts}`}>
                   <button type="button" className="nvr-home__ev" onClick={() => navigate(cameraPath(e.camera, sentinelEventPlayTs(e), e.ts))}>
                     <img className="nvr-home__ev-img" src={client.eventThumbUrl(e.camera, e.ts)} alt="" loading="lazy" />
