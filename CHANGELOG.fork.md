@@ -16,6 +16,8 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
   _Glass: the NVR card on the overview shows every event of the last 24 hours in its row of pictures instead of only the latest four_
 - Die Ereignis-Leiste auf der Sicherheitsseite zeigt ebenfalls alle Ereignisse der letzten 24 Stunden statt der letzten 20  
   _The event strip on the Security page also shows every event of the last 24 hours instead of the latest 20_
+- Auch an Tagen mit mehr als 200 Ereignissen reichen die Ereignisse bis 24 Stunden zurück (mit dem aktuellen Sentinel)  
+  _Even on days with more than 200 events the events reach back 24 hours (with the current Sentinel)_
 
 ## F50 — 2026-10-18
 
