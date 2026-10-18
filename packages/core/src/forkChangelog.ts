@@ -53,6 +53,10 @@ export const FORK_RELEASES: ForkRelease[] = [
             de: 'Die Ereignis-Leiste auf der Sicherheitsseite zeigt ebenfalls alle Ereignisse der letzten 24 Stunden statt der letzten 20',
             en: 'The event strip on the Security page also shows every event of the last 24 hours instead of the latest 20',
           },
+          {
+            de: 'Auch an Tagen mit mehr als 200 Ereignissen reichen die Ereignisse bis 24 Stunden zurück (mit dem aktuellen Sentinel)',
+            en: 'Even on days with more than 200 events the events reach back 24 hours (with the current Sentinel)',
+          },
         ],
       },
     ],
