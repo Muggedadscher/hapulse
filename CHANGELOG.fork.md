@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F53 — 2026-10-19
+
+**Kameras: Zeitanzeige beim Spulen** · _Cameras: time display while scrubbing_
+
+### Behoben / Fixed
+
+- Beim schnellen Spulen durch Aufnahmen, vor allem rückwärts, springt die Zeitanzeige nicht mehr vor und zurück  
+  _When scrubbing quickly through recordings, above all backwards, the time display no longer jumps back and forth_
+
 ## F52 — 2026-10-19
 
 **Kameras: Sprünge in kurze Aufnahmelücken** · _Cameras: jumps into short recording gaps_

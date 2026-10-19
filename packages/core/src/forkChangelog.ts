@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 53,
+    date: '2026-10-19',
+    title: { de: 'Kameras: Zeitanzeige beim Spulen', en: 'Cameras: time display while scrubbing' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Beim schnellen Spulen durch Aufnahmen, vor allem rückwärts, springt die Zeitanzeige nicht mehr vor und zurück',
+            en: 'When scrubbing quickly through recordings, above all backwards, the time display no longer jumps back and forth',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 52,
     date: '2026-10-19',
     title: { de: 'Kameras: Sprünge in kurze Aufnahmelücken', en: 'Cameras: jumps into short recording gaps' },
