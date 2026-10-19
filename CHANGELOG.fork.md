@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F52 — 2026-10-19
+
+**Kameras: Sprünge in kurze Aufnahmelücken** · _Cameras: jumps into short recording gaps_
+
+### Behoben / Fixed
+
+- Ein Sprung in eine der kurzen Lücken zwischen zwei Aufnahmen spielt ab der nächsten Aufnahme, statt „Keine Aufnahme“ zu zeigen  
+  _A jump into one of the short gaps between two recordings plays from the next recording instead of showing "No recording"_
+- Die Ersatz-Wiedergabe von Aufnahmen (wenn die normale nicht verfügbar ist) bleibt beim Start nicht mehr gelegentlich stehen  
+  _The fallback playback of recordings (when the normal one is unavailable) no longer occasionally freezes at the start_
+
 ## F51 — 2026-10-18
 
 **Ereignisse der letzten 24 Stunden** · _Events of the last 24 hours_

@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 52,
+    date: '2026-10-19',
+    title: { de: 'Kameras: Sprünge in kurze Aufnahmelücken', en: 'Cameras: jumps into short recording gaps' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Ein Sprung in eine der kurzen Lücken zwischen zwei Aufnahmen spielt ab der nächsten Aufnahme, statt „Keine Aufnahme“ zu zeigen',
+            en: 'A jump into one of the short gaps between two recordings plays from the next recording instead of showing "No recording"',
+          },
+          {
+            de: 'Die Ersatz-Wiedergabe von Aufnahmen (wenn die normale nicht verfügbar ist) bleibt beim Start nicht mehr gelegentlich stehen',
+            en: 'The fallback playback of recordings (when the normal one is unavailable) no longer occasionally freezes at the start',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 51,
     date: '2026-10-18',
     title: { de: 'Ereignisse der letzten 24 Stunden', en: 'Events of the last 24 hours' },
