@@ -224,7 +224,7 @@ function BigShare({ pct, text }: { pct: number; text: string }) {
   );
 }
 
-function CardHead({ icon, title, scope }: { icon: React.ReactNode; title: string; scope: string }) {
+export function CardHead({ icon, title, scope }: { icon: React.ReactNode; title: string; scope?: string }) {
   return (
     <div className="energy-card__header">
       <div className="energy-card__title-row">
@@ -233,7 +233,7 @@ function CardHead({ icon, title, scope }: { icon: React.ReactNode; title: string
         </span>
         <span className="energy-card__title">{title}</span>
       </div>
-      <span className="energy-card__sub">{scope}</span>
+      {scope && <span className="energy-card__sub">{scope}</span>}
     </div>
   );
 }

@@ -170,6 +170,10 @@ import {
   energyPowerNow,
   energyNowSentence,
   batteryStatus,
+  energyBatteryIds,
+  combinedSoc,
+  combinedSocSeries,
+  demoBatterySoc,
   computeEnergyDashboard,
   energyStatisticIds,
 } from '../dist/index.js';
@@ -2037,7 +2041,16 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
     assertEqual(hiddenTicks(energyAxis(1.6), 0.5).join(','), '', 'axis: Ø far from the values hides nothing');
     const tiny = barPercent({ grid: 0.005, solar: 0.005, total: 0.01 }, 2);
     assert(Math.abs(tiny.grid + tiny.solar - 1.5) < 1e-9 && Math.abs(tiny.grid - 0.75) < 1e-9, 'bar: at least 1.5 %, split in proportion');
-    assertEqual(JSON.stringify(barPercent({ grid: 0, solar: 0, total: 0 }, 2)), JSON.stringify({ grid: 0, solar: 0 }), 'bar: empty stays empty');
+    assertEqual(JSON.stringify(barPercent({ grid: 0, solar: 0, total: 0 }, 2)), JSON.stringify({ grid: 0, battery: 0, solar: 0 }), 'bar: empty stays empty');
+    // [fork] the home battery as the middle part, by Home Assistant's allocation
+    const batBars = glasEnergyBars(dayWin, [
+      { start: hour(9), gridConsumed: 0.1, gridReturned: 0.2, solar: 2, batteryIn: 1, batteryOut: 0 },
+      { start: hour(20), gridConsumed: 0.3, gridReturned: 0, solar: 0, batteryIn: 0, batteryOut: 0.5 },
+    ], now);
+    assert(Math.abs(batBars[9].solar - 0.8) < 1e-9 && batBars[9].battery === 0 && Math.abs(batBars[9].total - 0.9) < 1e-9, 'energy bars: charging and export leave the solar the home used');
+    assert(batBars[20].battery === 0.5 && batBars[20].grid === 0.3 && batBars[20].total === 0.8, 'energy bars: the battery feeds the home before the grid');
+    const third = barPercent({ grid: 1, battery: 1, solar: 2, total: 4 }, 4);
+    assert(third.grid === 25 && third.battery === 25 && third.solar === 50, 'bar: three parts in proportion');
 
     const cmp = (period, n) => {
       const c = glasEnergyCompare(glasEnergyWindow(period, n), n);
@@ -2270,6 +2283,27 @@ console.log('\n── energy origins, power, battery ──');
     // the repeated hour at DST end keeps its instant: 01:45 CEST + 1 h = 02:45 CEST (00:45Z), not 02:45 CET
     b = batteryStatus(50, -2560, 5.12, new Date(Date.UTC(2026, 9, 24, 23, 45)));
     assertEqual(new Date(b.at).toISOString(), '2026-10-25T00:45:00.000Z', 'battery: quarter hour in the repeated hour');
+    // several batteries: charge weighted by capacity, else the mean; one unknown → none
+    assert(near(combinedSoc([50, 100], [10, 5]), 200 / 3), 'combined charge: weighted by capacity');
+    assert(near(combinedSoc([50, 100], null), 75), 'combined charge: without capacities the mean');
+    assertEqual(combinedSoc([50, null], [10, 5]), null, 'combined charge: one unknown → null');
+    const ser = combinedSocSeries([[{ t: 0, v: 40 }, { t: 20, v: 60 }], [{ t: 10, v: 100 }]], [3, 1], 0, 30, 10);
+    assertEqual(ser.map((p) => p.v).join(), '40,55,70,70', 'combined series: last value per battery, weighted, a battery joins when it has a value');
+    assertEqual(combinedSocSeries([[{ t: 5, v: 40 }]], null, 0, 10, 5).length, 2, 'combined series: no point before the first value');
+    const ids = energyBatteryIds({ energy_sources: [
+      { type: 'battery', stat_energy_from: 'a', stat_energy_to: 'b', stat_soc: 'sensor.soc1', stat_rate: 'sensor.p1', capacity: 5 },
+      { type: 'battery', stat_energy_from: 'c', stat_energy_to: 'd', stat_soc: 'sensor.soc2' },
+      { type: 'battery', stat_energy_from: 'e', stat_energy_to: 'f' },
+    ], device_consumption: [] });
+    assertEqual(JSON.stringify(ids), JSON.stringify({ soc: ['sensor.soc1', 'sensor.soc2'], power: [], capacities: null }),
+      'battery ids: only batteries with a charge sensor; power and capacity only when every one has them');
+    assertEqual(energyBatteryIds({ energy_sources: [{ type: 'battery', stat_energy_from: 'a', stat_energy_to: 'b' }], device_consumption: [] }), null,
+      'battery ids: no charge sensor → no battery card');
+    const dStart = at(2026, 10, 25).getTime();
+    const dNow = at(2026, 10, 25, 14, 10).getTime();
+    const demo = demoBatterySoc(dStart, dNow, 71);
+    assert(demo[0].t === dStart && demo[demo.length - 1].t === dNow && demo[demo.length - 1].v === 71
+      && Math.min(...demo.map((p) => p.v)) === 20, 'demo charge: from midnight, down to 20 %, ends at the entity value (25-hour day)');
     // a 25-hour day: 25 bars, the hour 2:00 twice
     const dst = at(2026, 10, 25, 14);
     const dstBars = energyOriginBars(energyPageWindow('today', dst), [

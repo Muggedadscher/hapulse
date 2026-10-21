@@ -1,0 +1,157 @@
+/* [fork] Energy page card "Now" (EnergyNow.tsx): the sentence and the flow. The colours come from the card's --en-*
+   (EnergyOrigin.css; Glas in styles/glas/energy.css), the bands are the node colours at half strength and stay still.
+   The card's frame (classic padding and column) is shared with the battery card. */
+
+.energy-now,
+.energy-battery {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.en-card {
+  --en-solar-edge: transparent;
+  --en-battery-edge: transparent;
+  --en-band: 0.45;
+}
+
+/* two lines reserved, so the flow does not move when the sentence gets shorter */
+.en-now__say {
+  min-height: 2.75rem;
+  margin: 0;
+  color: var(--text);
+  font-size: 1.0625rem;
+  line-height: 1.375rem;
+  font-weight: 600;
+}
+
+.en-now__wrap {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.en-now__flow {
+  position: relative;
+  height: 220px;
+}
+
+.en-now__svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.en-now__band {
+  fill-opacity: var(--en-band);
+}
+
+.en-now__stop--solar {
+  stop-color: var(--en-solar);
+}
+
+.en-now__stop--battery {
+  stop-color: var(--en-battery);
+}
+
+.en-now__stop--grid {
+  stop-color: var(--en-grid);
+}
+
+.en-now__bar--solar {
+  fill: var(--en-solar);
+  stroke: var(--en-solar-edge);
+}
+
+.en-now__bar--battery {
+  fill: var(--en-battery);
+  stroke: var(--en-battery-edge);
+}
+
+.en-now__bar--grid {
+  fill: var(--en-grid);
+}
+
+.en-now__bar {
+  stroke-width: 1px;
+}
+
+.en-now__node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 58px;
+  white-space: nowrap;
+}
+
+.en-now__node--l {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.en-now__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-now__name--solar svg {
+  color: var(--en-solar);
+}
+
+.en-now__kw {
+  color: var(--text);
+  font-family: var(--font-data);
+  font-size: 1.0625rem;
+  line-height: 1.375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.en-now__does {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+@media (forced-colors: active) {
+  .en-now__band {
+    fill-opacity: 1;
+  }
+}
+
+/* a narrow card: where the power comes from on the left, where it goes on the right, without bands */
+.en-now__compact {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-content: center;
+}
+
+.en-now__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.en-now__compact .en-now__node {
+  position: static;
+  height: auto;
+  min-width: 0;
+}
+
+.en-now__compact .en-now__node--l {
+  align-items: flex-start;
+  text-align: left;
+}

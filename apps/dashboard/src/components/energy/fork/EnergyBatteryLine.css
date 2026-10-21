@@ -1,0 +1,46 @@
+/* [fork] The overview energy card's battery line (EnergyBatteryLine.tsx): ring 20, name, charge and state, a hairline
+   above it. Klassisch colours here, Glas in styles/glas/home-cards.css. */
+
+.en-batline {
+  --en-battery: var(--positive);
+  --en-battery-ink: var(--positive);
+  --en-track: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.en-batline__ring {
+  display: flex;
+  flex: none;
+}
+
+.en-batline__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.en-batline__value {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.en-batline__soc {
+  color: var(--text);
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.en-batline__state--charging,
+.en-batline__state--full {
+  color: var(--en-battery-ink);
+  font-weight: 600;
+}
+
