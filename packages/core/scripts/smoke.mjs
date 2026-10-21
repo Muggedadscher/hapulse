@@ -171,6 +171,7 @@ import {
   energyNowSentence,
   batteryStatus,
   computeEnergyDashboard,
+  energyStatisticIds,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2188,7 +2189,12 @@ console.log('\n── energy origins, power, battery ──');
   const h1 = allocateEnergy(2, 0, 0.1, 1, 0.5);
   const h2 = allocateEnergy(0, 0.8, 0.4, 0, 0);
   const both = allocateEnergy(2, 0.8, 0.5, 1, 0.5);
-  assert(near(h1.solarHome + h2.solarHome, both.solarHome) && near(h1.batteryHome + h2.batteryHome, both.batteryHome) && near(h1.gridHome + h2.gridHome, both.gridHome), 'allocate: a sunny and a night hour add up like their sum');
+  assert(near(h1.solarHome + h2.solarHome, both.solarHome) && near(h1.batteryHome + h2.batteryHome, both.batteryHome) && near(h1.gridHome + h2.gridHome, both.gridHome), 'allocate: this sunny and this night hour happen to add up like their sum');
+  // not linear: a bar of two hours differs from its hours when the battery charged from the grid in one of them
+  const g1 = allocateEnergy(0, 0, 2, 1, 0);
+  const g2 = allocateEnergy(3, 0, 0, 0, 1);
+  const g12 = allocateEnergy(3, 0, 2, 1, 1);
+  assert(!near(g1.solarBattery + g2.solarBattery, g12.solarBattery), 'allocate: per bar, not linear (grid charging in one hour)');
   a = allocateEnergy(1, 0, 2, 2, 0);
   assert(near(a.solarBattery, 1) && near(a.gridBattery, 1) && near(a.gridHome, 1) && near(a.home, 1), 'allocate: solar first into the battery, the rest of the charge from the grid');
   a = allocateEnergy(0, 2, 0, 0, 2);
@@ -2229,6 +2235,8 @@ console.log('\n── energy origins, power, battery ──');
     assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Sep 01 2026 00:00–Oct 01 2026 00:00', 'compare: 31 Oct → all of September');
     c = energyPageCompare('month', at(2026, 10, 21, 15, 12));
     assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Sep 01 2026 00:00–Sep 21 2026 15:00', 'compare: month the same day before');
+    c = energyPageCompare('month', at(2026, 3, 30, 9, 45));
+    assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Feb 01 2026 00:00–Mar 01 2026 00:00', 'compare: 30 Mar → all of February');
     c = energyPageCompare('year', at(2028, 2, 29, 10, 30));
     assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Jan 01 2027 00:00–Mar 01 2027 00:00', 'compare: 29 Feb → up to 1 Mar the year before');
     c = energyPageCompare('today', at(2026, 10, 21, 0, 20));
@@ -2259,6 +2267,28 @@ console.log('\n── energy origins, power, battery ──');
     assertEqual(batteryStatus(55, 20, 5.12, t0).state, 'idle', 'battery: under 50 W → idle');
     assertEqual(batteryStatus(55, -800, undefined, t0).at, null, 'battery: no capacity → no time');
     assertEqual(batteryStatus(5, -60, 20, t0).at, null, 'battery: more than 24 h → no time');
+    // the repeated hour at DST end keeps its instant: 01:45 CEST + 1 h = 02:45 CEST (00:45Z), not 02:45 CET
+    b = batteryStatus(50, -2560, 5.12, new Date(Date.UTC(2026, 9, 24, 23, 45)));
+    assertEqual(new Date(b.at).toISOString(), '2026-10-25T00:45:00.000Z', 'battery: quarter hour in the repeated hour');
+    // a 25-hour day: 25 bars, the hour 2:00 twice
+    const dst = at(2026, 10, 25, 14);
+    const dstBars = energyOriginBars(energyPageWindow('today', dst), [
+      { start: Date.UTC(2026, 9, 25, 0), gridConsumed: 0.2, gridReturned: 0, solar: 0, batteryIn: 0, batteryOut: 0 },
+      { start: Date.UTC(2026, 9, 25, 1), gridConsumed: 0.3, gridReturned: 0, solar: 0, batteryIn: 0, batteryOut: 0 },
+    ], dst);
+    assert(dstBars.length === 25 && near(dstBars[2].gridHome, 0.2) && near(dstBars[3].gridHome, 0.3), 'origin bars: DST end → both 2:00 hours apart');
+  } finally {
+    if (tzBefore === undefined) delete process.env.TZ;
+    else process.env.TZ = tzBefore;
+  }
+  // a second zone with another DST date and a week that starts on a Monday in a different month
+  process.env.TZ = 'America/New_York';
+  try {
+    const at = (y, mo, d, h = 0, mi = 0) => new Date(y, mo - 1, d, h, mi);
+    assertEqual(energyPageWindow('today', at(2026, 11, 1, 12)).bounds.length - 1, 25, 'page window (New York): DST end 1 Nov → 25 hours');
+    assertEqual(energyPageWindow('week', at(2026, 11, 1, 12)).bounds[0], at(2026, 10, 26).getTime(), 'page window (New York): Sunday 1 Nov → week from Monday 26 Oct');
+    const c = energyPageCompare('today', at(2026, 11, 2, 9, 10));
+    assertEqual(new Date(c.previous.end).getHours(), 9, 'compare (New York): yesterday up to the same wall hour across DST');
   } finally {
     if (tzBefore === undefined) delete process.env.TZ;
     else process.env.TZ = tzBefore;
@@ -2278,6 +2308,9 @@ console.log('\n── energy origins, power, battery ──');
   assertEqual(JSON.stringify(ids), JSON.stringify({ solar: ['sensor.s_p'], grid: ['sensor.g_p'], battery: ['sensor.b_p'] }), 'power ids: one per source');
   assertEqual(energyPowerIds({ ...prefs, energy_sources: [...prefs.energy_sources, { type: 'solar', stat_energy_from: 'sensor.s2' }] }), null, 'power ids: a source without a sensor → none');
   assertEqual(energyPowerIds({ energy_sources: [], device_consumption: [] }), null, 'power ids: nothing configured → none');
+  const twoTariff = { ...prefs, energy_sources: [...prefs.energy_sources, { type: 'grid', stat_energy_from: 'sensor.g_in_nt', cost_adjustment_day: 0 }] };
+  assertEqual(JSON.stringify(energyPowerIds(twoTariff)?.grid), JSON.stringify(['sensor.g_p']), 'power ids: two-tariff meter → the second grid source needs no sensor');
+  assertEqual(energyPowerIds({ ...prefs, energy_sources: prefs.energy_sources.filter((x) => x.type !== 'grid') }), null, 'power ids: off grid → none');
   assertEqual(powerWatts(P('sensor.x', '2.1', 'kW'), 'sensor.x'), 2100, 'power: kW → W');
   assertEqual(powerWatts(P('sensor.x', 'unavailable'), 'sensor.x'), null, 'power: unavailable → null');
   assertEqual(powerWatts(P('sensor.x', '5', 'VA'), 'sensor.x'), null, 'power: unknown unit → null');
@@ -2299,6 +2332,13 @@ console.log('\n── energy origins, power, battery ──');
   };
   const st = { 'sensor.in': [{ start: 0, end: 1, change: 10 }], 'sensor.out': [{ start: 0, end: 1, change: 5 }] };
   assert(near(computeEnergyDashboard(flat, st).cost, 10 * 0.3 - 5 * 0.08), 'cost: flat format subtracts the export compensation');
+  const flatStat = { ...flat, energy_sources: [{ ...flat.energy_sources[0], number_energy_price_export: null, stat_compensation: 'sensor.comp' }] };
+  assert(energyStatisticIds(flatStat).includes('sensor.comp'), 'cost: the flat compensation statistic is fetched');
+  assert(near(computeEnergyDashboard(flatStat, { ...st, 'sensor.comp': [{ start: 0, end: 1, change: 0.6 }] }).cost, 3 - 0.6), 'cost: flat compensation statistic subtracted');
+  const twoGrids = { energy_sources: [flat.energy_sources[0], { type: 'grid', stat_energy_from: 'sensor.in2', stat_energy_to: null, stat_cost: null, entity_energy_price: null, number_energy_price: 0.2, stat_compensation: null, entity_energy_price_export: null, number_energy_price_export: null, cost_adjustment_day: 0 }], device_consumption: [] };
+  assert(near(computeEnergyDashboard(twoGrids, { ...st, 'sensor.in2': [{ start: 0, end: 1, change: 4 }] }).cost, 3 - 0.4 + 0.8), 'cost: two flat grid sources (two tariffs), export counted once');
+  const oldFormat = { energy_sources: [{ type: 'grid', flow_from: [{ stat_energy_from: 'sensor.in', number_energy_price: 0.3 }], flow_to: [{ stat_energy_to: 'sensor.out', number_energy_price: 0.08 }], cost_adjustment_day: 0 }], device_consumption: [] };
+  assert(near(computeEnergyDashboard(oldFormat, st).cost, 3 - 0.4), 'cost: the old flow format unchanged');
   const series = computeEnergyDashboard(prefs, { 'sensor.b_in': [{ start: 0, end: 1, change: 0.4 }], 'sensor.b_out': [{ start: 0, end: 1, change: 0.1 }] }).series;
   assert(series.length === 1 && near(series[0].batteryIn, 0.4) && near(series[0].batteryOut, 0.1), 'series: battery charge and discharge per bucket');
 }

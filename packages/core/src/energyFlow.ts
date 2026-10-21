@@ -155,14 +155,14 @@ export function energyPageCompare(period: EnergyPeriod, now: Date): {
     case 'month': {
       prevStart = shifted(startDate, 0, -1, 0);
       // the same day of the month before; past its last day (31 → 30) the month before ends at its end
-      const sameDay = new Date(endDate.getFullYear(), endDate.getMonth() - 1, endDate.getDate(), endDate.getHours());
+      const sameDay = new Date(endDate.getFullYear(), endDate.getMonth() - 1, endDate.getDate(), endDate.getHours(), endDate.getMinutes());
       prevEnd = sameDay.getMonth() === new Date(prevStart).getMonth() ? sameDay.getTime() : start;
       break;
     }
     case 'year': {
       prevStart = shifted(startDate, 0, 0, -1);
       // 29 Feb → the year before ends on 1 Mar 00:00 (its 28 Feb is complete)
-      const sameDay = new Date(endDate.getFullYear() - 1, endDate.getMonth(), endDate.getDate(), endDate.getHours());
+      const sameDay = new Date(endDate.getFullYear() - 1, endDate.getMonth(), endDate.getDate(), endDate.getHours(), endDate.getMinutes());
       prevEnd = sameDay.getMonth() === endDate.getMonth() ? sameDay.getTime() : new Date(endDate.getFullYear() - 1, 2, 1).getTime();
       break;
     }
@@ -187,7 +187,11 @@ export interface EnergyOriginBar extends EnergyAllocation {
   current: boolean;
 }
 
-/** One bar per bucket of the window; series points add to the bucket that contains their start. */
+/**
+ * One bar per bucket of the window; series points add to the bucket that contains their start. Home Assistant forms
+ * day and month buckets in its own time zone: in a browser in another zone the buckets do not line up with the local
+ * calendar, and a bucket starting before the window is left out (the household's devices share HA's zone).
+ */
 export function energyOriginBars(
   win: Pick<EnergyPageWindow, 'bounds'>,
   series: readonly EnergySeriesPoint[],
@@ -300,20 +304,21 @@ export interface EnergyPowerIds {
 }
 
 /**
- * The power sensors of the configured sources, or null when one of the grid, solar or battery sources has none (then
- * the home's power cannot be computed). Gas and water are not part of it.
+ * The power sensors of the configured sources, or null when the home's power cannot be computed: a solar or battery
+ * source without one, or no grid source with one. Grid sources without a sensor are left out when another grid source
+ * has one: Home Assistant turns a two-tariff meter (two import flows) into two grid sources and gives the connection's
+ * power sensor only to the first. Without any grid source (off grid) there is no "Now". Gas and water are not part of
+ * it.
  */
 export function energyPowerIds(prefs: EnergyPreferences | null | undefined): EnergyPowerIds | null {
   if (!prefs) return null;
   const ids: EnergyPowerIds = { solar: [], grid: [], battery: [] };
-  let any = false;
   for (const src of prefs.energy_sources) {
     if (src.type !== 'grid' && src.type !== 'solar' && src.type !== 'battery') continue;
-    if (!src.stat_rate) return null;
-    ids[src.type].push(src.stat_rate);
-    any = true;
+    if (src.stat_rate) ids[src.type].push(src.stat_rate);
+    else if (src.type !== 'grid') return null;
   }
-  return any && ids.grid.length > 0 ? ids : null;
+  return ids.grid.length > 0 ? ids : null;
 }
 
 const POWER_FACTOR: Record<string, number> = { W: 1, kW: 1000, MW: 1_000_000, GW: 1_000_000_000, mW: 0.001 };
@@ -390,7 +395,10 @@ export type EnergyNowSentence =
   | 'sunExportsOnly'
   | 'gridChargesOnly';
 
-/** Which sentence "Now" says: what feeds the home, and what the solar does besides. */
+/**
+ * Which sentence "Now" says: what feeds the home, and what the solar does besides. Sun, battery and grid together
+ * say "sunAndGrid" (the sun is not enough, the rest comes from outside); the flow shows the battery's part.
+ */
 export function energyNowSentence(f: EnergyAllocation): EnergyNowSentence {
   const on = (v: number) => v >= POWER_FLOW_MIN;
   const sun = on(f.solarHome);
@@ -434,12 +442,9 @@ export function batteryStatus(soc: number, powerW: number | null, capacityKWh: n
   if (charging && capacityKWh && capacityKWh > 0) {
     const kwh = ((100 - soc) / 100) * capacityKWh;
     const hours = kwh / (Math.abs(p) / 1000);
-    if (hours >= 0 && hours <= 24) {
-      const t = new Date(now.getTime() + hours * 3600_000);
-      const q = Math.round((t.getMinutes() + t.getSeconds() / 60) / 15) * 15;
-      t.setMinutes(q, 0, 0);
-      at = t.getTime();
-    }
+    // to the quarter hour on the epoch: every time zone's offset is a multiple of 15 min, and a repeated hour
+    // (DST end) keeps its instant
+    if (hours >= 0 && hours <= 24) at = Math.round((now.getTime() + hours * 3600_000) / 900_000) * 900_000;
   }
   return { state: charging ? 'charging' : 'discharging', at };
 }

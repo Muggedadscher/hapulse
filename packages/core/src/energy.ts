@@ -624,10 +624,14 @@ export function demoEnergyStatistics(
     let bStart = startMs;
     let i = 0;
     while (bStart < endMs) {
-      // [fork] month buckets end at the next calendar month, like Home Assistant's (was bStart + 30 days)
+      // [fork] day and month buckets end at the next local calendar day or month, like Home Assistant's (was
+      // bStart + 24 h / 30 days: after a 25-hour day every demo day started at 23:00)
+      const bDate = new Date(bStart);
       const bNext = bucket === 'month'
-        ? new Date(new Date(bStart).getFullYear(), new Date(bStart).getMonth() + 1, 1).getTime()
-        : bStart + stepMs;
+        ? new Date(bDate.getFullYear(), bDate.getMonth() + 1, 1).getTime()
+        : bucket === 'day'
+          ? new Date(bDate.getFullYear(), bDate.getMonth(), bDate.getDate() + 1).getTime()
+          : bStart + stepMs;
       const bEnd = Math.min(bNext, endMs);
       let change = 0;
       if (bucket === 'hour') {
