@@ -159,7 +159,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/components/glas/{PoolModeSegment.tsx,keepInCard.ts}` | Glas (Etappe 5): Pool-Modus als Segment (Seite und Fenster; „Manuell“ fragt bei jedem Tipp nach der Dauer); Popover der Musik öffnen zur anderen Seite, wenn sie die Karte verließen (`data-g-flip`) |
 | `apps/dashboard/src/components/settings/StyleSettings.tsx` | Einstellungen „Stil“, Glas-Stärke, Transparenz reduzieren; `GlasThemeHint` |
 | `apps/dashboard/test/{glasAppearance,glasSelectors}.test.ts` | Erscheinung (Umschalten ohne Reste, Pre-Paint-Lesen) und Selektor-Wächter der Glas-CSS (kennt auch die Klassen aus `@sentinel-nvr/web/ui/glas.css`) |
-| `apps/dashboard/test/glasParity.test.ts` | Gleichstand mit der Glas-Kopie im Paket `@sentinel-nvr/web`: Werte von `@sentinel-nvr/web/glas` gegen `glasTokens.ts`, Regeln der Paket-Tafel (`.nvr-tafel`, `.nvr-glass`) gegen `material.css`/`pages.css`/`tafel.css`. Rot nach einer Änderung an Glas-Werten oder der Tafel: dieselbe Änderung ins Paket bringen |
+| `apps/dashboard/test/glasParity.test.ts` | Gleichstand mit der Glas-Kopie im Paket `@sentinel-nvr/web`: Werte von `@sentinel-nvr/web/glas` gegen `glasTokens.ts`, Regeln der Paket-Tafel (`.nvr-tafel`, `.nvr-glass`) gegen `material.css`/`pages.css`/`tafel.css`, in beide Richtungen (auch eine neue HAPulse-Regel auf Tafel-Teilen, die das Paket hat). Rot nach einer Änderung an Glas-Werten oder der Tafel: dieselbe Änderung ins Paket bringen |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
 | `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`), 5 (`docs/glas/PLAN-ETAPPE-5.md`), 6 (`docs/glas/PLAN-ETAPPE-6.md`) und 7 (`docs/glas/PLAN-ETAPPE-7.md`), Schreibweise der Texte (`docs/glas/PLAN-TEXTE.md`) |
 | `docs/SYNC.md` | dieses Dokument |
@@ -406,10 +406,11 @@ Nach jedem Upstream-Merge:
     Upstream-Texte, die klein beginnen; korrigiert werden sie in `packages/core/locales/case/<lang>.json` (Hinweis
     „Schreibweise“ im Inventar oben, Plan `docs/glas/PLAN-TEXTE.md`).
 12. Seit Etappe 6 (NVR): die Kameraseite ist in Glas das Paket mit `appearance="immersive"`, ihre Glas-Werte setzt
-    `styles/glas/nvr.css` über die Hooks des Pakets (`--nvr-ctl-*`, `--nvr-float-*`, `--nvr-seg-*`, `--nvr-live-*`,
-    `--nvr-shade-top`/`--nvr-shade-bottom`, `--nvr-ease`/`--nvr-dur`, README des Pakets), die übrigen NVR-Ansichten
-    über die Klassen des Pakets. Nach einem Update von `@sentinel-nvr/web` meldet der Selektor-Wächter umbenannte
-    Paket-Klassen; neue Hooks im README mit `nvr.css` abgleichen. Unter 900 px nimmt `styles/glas/shell.css` bei
+    seit Paket 0.21.0 dessen `ui/glas.css` über die Hooks des Pakets (`--nvr-ctl-*`, `--nvr-float-*`, `--nvr-seg-*`, `--nvr-live-*`,
+    `--nvr-shade-top`/`--nvr-shade-bottom`, `--nvr-ease`/`--nvr-dur`, README des Pakets), HAPulses eigene NVR-Ansichten
+    `styles/glas/nvr.css` über die Klassen des Pakets. Nach einem Update von `@sentinel-nvr/web` meldet der
+    Selektor-Wächter umbenannte Paket-Klassen; die Hooks setzt das Paket selbst. `glas.css` lädt in `index.css` vor
+    `ui.css` (die liegt im NVR-Chunk); ihre Regeln gewinnen über `:root[data-style='glas']`, nicht über die Reihenfolge. Unter 900 px nimmt `styles/glas/shell.css` bei
     `data-g-immersive` den Rahmen weg (`.app-content`, `.app-main`, `.app-tabs`, `.app-chips-mobile`); bekommt der
     Rahmen bei Upstream ein neues Element, die Kameraseite am Handy in Glas ansehen. Der dunkle Teilbaum
     (`[data-glas-scheme='dark']`) nimmt dieselben `glasCssVars` und bekommt neue Tokens von selbst. Danach
@@ -421,7 +422,7 @@ Nach jedem Upstream-Merge:
     wartet der Übergang bis zur Kappe auf ihr Chunk). Ändert Upstream die `NavLink`s in `AppLayout.tsx`, das `onClick`
     mit `glasLinkClick` mitziehen. Zurück aus einer Kamera führt an die Stelle, von der aus sie geöffnet wurde
     (`state.glasScrollY`); ändert Upstream `ScrollToTop` in `Router.tsx`, das `keptScrollY` mitziehen. Das Bild landet
-    in der Kachel mit `data-nvr-camera` (Bildbox `.nvr-camtile__pic` des Pakets, `.nvr-home__cam-pic` der Home-Karte).
+    in der Kachel mit `data-nvr-camera` (Bildbox `.nvr-camtile__pic` des Pakets, in Glas auch auf der Home-Karte).
     Glas-eigene Hover-Regeln stehen unter `@media (hover: hover)`; der Selektor-Wächter (`styleRules`) meldet eine
     Tönung unter `:hover` außerhalb davon. Nach Änderungen an Farben, Flächen oder Texten
     `checks --part polish` laufen lassen (`polishContrast` misst jeden sichtbaren Text gegen seinen Grund,

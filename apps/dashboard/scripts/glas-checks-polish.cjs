@@ -774,9 +774,9 @@ module.exports = function polish(h) {
         rec.landing = landing();
         // the landing tile: its marks (everything but the picture's box) wait, the box is wholly on screen
         rec.landingHidden = [...document.querySelectorAll('[data-g-landing=""]')].every((t) => [...t.children]
-          .filter((c) => !c.matches('.nvr-camtile__pic, .nvr-home__cam-pic'))
+          .filter((c) => !c.matches('.nvr-camtile__pic'))
           .every((c) => getComputedStyle(c).opacity === '0') && getComputedStyle(t, '::before').opacity !== '1');
-        rec.landRect = [...document.querySelectorAll('[data-g-landing] :is(.nvr-camtile__pic, .nvr-home__cam-pic)')]
+        rec.landRect = [...document.querySelectorAll('[data-g-landing] .nvr-camtile__pic')]
           .map((e) => ({ ...box(e), vw: innerWidth, vh: innerHeight,
             radius: Math.max(parseFloat(getComputedStyle(e).borderTopLeftRadius) || 0,
               parseFloat(getComputedStyle(e.closest('[data-g-landing]')).borderTopLeftRadius) || 0) }));

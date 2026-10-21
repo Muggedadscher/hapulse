@@ -86,7 +86,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
       ? v.named0.length === 1 && named.length === 1 && /(^|\s)nvr-stage__freeze(\s|\[).*\]$/.test(named[0]) && (v.cam || []).join() === '540'
       : want === 'back'
         ? v.named0.length === 1 && /(^|\s)nvr-stage__video(\s|\[|$)/.test(v.named0[0]) && (named.length === 1
-          ? /(^|\s)(nvr-camtile__pic|nvr-home__cam-pic)(\s|$)/.test(named[0]) && (v.cam || []).join() === '480' && close === '' && /^[^,]+:$/.test(landing)
+          ? /(^|\s)nvr-camtile__pic(\s|$)/.test(named[0]) && (v.cam || []).join() === '480' && close === '' && /^[^,]+:$/.test(landing)
           : named.length === 0 && close === '270' && landing === '')
         : v.named0.length === 0 && named.length === 0);
     const what = { camera: 'camera opens with the morph', back: 'back: the picture lands in its tile or closes' }[want] || 'fades';

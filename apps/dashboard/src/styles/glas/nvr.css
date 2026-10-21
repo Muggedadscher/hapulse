@@ -8,11 +8,7 @@
    (.nvr-layout, the stale hint), the security page's section, a room's cameras, setup and empty states, the hint in a
    Home Assistant camera's detail and the camera page's height in HAPulse's frame. */
 
-@keyframes g-nvr-pulse {
-  50% {
-    opacity: 0.35;
-  }
-}
+/* g-nvr-pulse (the live dot) is the package's keyframe from its glas.css, one definition for both */
 
 /* the classic cap (400 px, overflow hidden) would cut the taller Glas body and the strips that reach the edge */
 :root[data-style='glas'] .home-page .overview-grid__cell:not([class*='section-h-']) .nvr-home:has(.nvr-gl) {

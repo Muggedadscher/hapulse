@@ -137,12 +137,14 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   (`theme-color`) folgt. Fenster und Menüs bleiben im Modus des Geräts. Kopfzeile: `CameraTitle` mit `live`
   und `at` (Abzeichen LIVE bzw. Uhrzeit des Bilds) und „In Sentinel öffnen“ als runder `nvr-iconbtn`. Die Werte der
   Paket-Hooks (`--nvr-ctl-*` über dem Bild, `--nvr-float-*` über der Zeitleiste, `--nvr-seg-*`, `--nvr-live-*`,
-  `--nvr-shade-top`/`--nvr-shade-bottom`, `--nvr-ease`/`--nvr-dur`) setzt `styles/glas/nvr.css`, deckend bei „Deckend“,
+  `--nvr-shade-top`/`--nvr-shade-bottom`, `--nvr-ease`/`--nvr-dur`) setzt seit Paket 0.21.0 dessen
+  `@sentinel-nvr/web/ui/glas.css` (vorher `styles/glas/nvr.css`), deckend bei „Deckend“,
   „Transparenz reduzieren“ und mehr Kontrast. `useFitAboveTabs` ist in Glas aus (dort gibt es auf dieser Seite keine
   Tab-Leiste).
-- **Übrige Ansichten:** Übersicht, Sicherheits-Sektion, Raum-Kameras, Einrichtung, das Fenster Datum/Uhrzeit und der
-  Hinweis im Detail einer HA-Kamera bekommen den Glas-Look per CSS an den Klassen des Pakets und des NVR-Moduls
-  (`styles/glas/nvr.css`, Akzentflächen in `accent.css`). Eigenes Markup nur in Glas: die Übersicht beginnt mit einem
+- **Übrige Ansichten:** Sicherheits-Sektion, Raum-Kameras, Einrichtung, der Rahmen der Übersicht und der Hinweis im
+  Detail einer HA-Kamera bekommen den Glas-Look per CSS an den Klassen des Pakets und des NVR-Moduls
+  (`styles/glas/nvr.css`); die Paket-Teile selbst (Übersicht, Home-Körper, Kopf, Karten, Fenster Datum/Uhrzeit,
+  Akzentflächen) stylt das Paket in `@sentinel-nvr/web/ui/glas.css`. Eigenes Markup nur in Glas: die Übersicht beginnt mit einem
   ruhigen Kopf, „Sentinel öffnen“, „Räume“ und „Einrichtung“ liegen im Menü „⋯“ neben dem Avatar
   (`components/glas/HeaderMenu.tsx`, beim Schließen geht der Fokus auf den Knopf zurück), der Speicherhinweis ist eine
   Fußnote (`.nvr-note`), und Token/Konto der Einrichtung ist ein `Segment` (`NvrSetup.tsx`). Klassisch bleibt
@@ -154,9 +156,9 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   (Entscheid Jannick 11.10.2026). Unter 900 px Kacheln 16:10 mit Kapsel (zwei nebeneinander, sobald 300 px passen) und
   ein Bildstreifen bis zum Rand; ab 900 px seit F46 dasselbe wie auf dem Handy (Kacheln mit Kapsel in zwei Spalten, die
   Ereignisse als Bildstreifen darunter, Pfeil-Knöpfe für die Maus); die Home-Karte sieht seit F46 auf dem Desktop
-  ebenfalls aus wie auf dem Handy. Die Schnappschüsse erneuern sich alle 5 s; ein gescheiterter wird alle 30 s im
-  Hintergrund neu geladen, die Kachel wechselt erst zurück, wenn er da ist (im Paket; in Klassisch `useSnapshotTick`,
-  `HomeSnapshot`). Die Tafel des Kopfs ist eine Kopie der HAPulse-Tafel (`tafel.css`, `material.css`);
+  ebenfalls aus wie auf dem Handy. Die Schnappschüsse erneuern sich auf der Übersicht alle 5 s, auf der Home-Karte
+  alle 10 s; ein gescheiterter wird alle 30 s im Hintergrund neu geladen, die Kachel wechselt erst zurück, wenn er da ist
+  (im Paket; die klassische Home-Karte mit `useSnapshotTick`/`HomeSnapshot`, die klassische Übersicht mit `CameraGrid`). Die Tafel des Kopfs ist eine Kopie der HAPulse-Tafel (`tafel.css`, `material.css`);
   `test/glasParity.test.ts` hält beide gleich.
 - **Kamera öffnen und zurück (Etappe 7, Zurück seit F43):** In Glas wächst das Bild der gedrückten Kachel in das
   Standbild der Kameraseite (View Transition mit dem Namen `g-cam`, `app/glas/glasNavigate.ts`), ausgelöst von
@@ -166,7 +168,7 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   `at`/`ev`) öffnen ohne Morph. Zurück führt dorthin, wo die Kamera geöffnet wurde (Kachel oder Ereignis auf Home,
   Sicherheit, im Raum oder auf `/nvr`), an dieselbe Scrollstelle, und das Bild der Bühne schrumpft in die Kachel
   dieser Kamera: Kacheln tragen `data-nvr-camera`, ihr Bild liegt in einer Box (`.nvr-camtile__pic` im Paket ab 0.19.2,
-  `.nvr-home__cam-pic` der klassischen Home-Karte). Ist dort keine Kachel mit Bild mindestens zur Hälfte zu sehen, schließt das
+  in Glas seit 0.21.0 auch auf der Home-Karte). Ist dort keine Kachel mit Bild mindestens zur Hälfte zu sehen, schließt das
   Bild an Ort und Stelle. Damit beim Zurückkommen ein Bild zum Landen da ist, zeigen die Kacheln sofort das letzte Bild der Kamera, bis
   der frische Schnappschuss dekodiert ist (Paket, `HomeSnapshot`; in beiden Stilen). Klassisch öffnet wie bisher,
   Zurück führt dort an den Anfang von `/nvr`. Glas in Browsern ohne `document.startViewTransition` öffnet ohne
@@ -271,11 +273,12 @@ git grep -n "\[fork\]" -- apps/dashboard/src/pages/Home.tsx apps/dashboard/src/p
   apps/dashboard/src/app/AppLayout.tsx apps/dashboard/src/stores/settingsStore.ts \
   packages/core/src/index.ts   # NVR-Zeilen entfernen (settingsSecrets.ts bleibt: gilt auch für Music Assistant)
 # Locales: alle Keys nvr.*, nav.nvr, home.section.*.nvr, security.section.*.nvr aus packages/core/locales/*.json löschen
-# Stil Glas: styles/glas/nvr.css (+ Import in styles/glas/index.css) und scripts/glas-checks-nvr.cjs (+ require,
+# Stil Glas: styles/glas/nvr.css und @sentinel-nvr/web/ui/glas.css (beide Importe in styles/glas/index.css),
+# test/glasParity.test.ts (+ devDependency postcss) und scripts/glas-checks-nvr.cjs (+ require,
 # Szenen und --part nvr in glas-shots.cjs) entfernen; NVR-Selektoren stehen auch in anderen Glas-Dateien
 # (git grep -n nvr -- apps/dashboard/src/styles/glas: lists, material, controls, accent, home, edit, base, sheets …).
-# Im Selektor-Wächter (test/glasSelectors.test.ts) den Eintrag für nvr.css und VideoOff in MARKER_ICONS entfernen;
-# er liest sonst die ui.css des entfernten Pakets. useGlasImmersive, glasUiStore.immersive und data-glas-scheme
+# Im Selektor-Wächter (test/glasSelectors.test.ts) den Eintrag für nvr.css, PACKAGE_GLAS_CSS und VideoOff in
+# MARKER_ICONS entfernen; er liest sonst die ui.css/glas.css des entfernten Pakets. useGlasImmersive, glasUiStore.immersive und data-glas-scheme
 # bleiben dann ungenutzt.
 npm run typecheck && npm run build && npm test -w @hapulse/core && npm test -w @hapulse/dashboard
 ```

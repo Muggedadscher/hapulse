@@ -6,7 +6,7 @@
  * - the rules HAPulse keeps for its own parts and the package holds for the NVR (tafel.css for the tafel of the other
  *   pages, the glass recipe of material.css, the tafel's no-tint of pages.css): every package rule on `.nvr-tafel` or
  *   `.nvr-glass` has its HAPulse rule, in the same at-rules, with the same declarations.
- * A change to one of them in HAPulse fails here until the package has it too (change it in the package's glas.css,
+ * Both ways: a changed, removed or new rule in HAPulse fails here until the package has it too (change it in the package's glas.css,
  * release, bump) — or the other way round after a package update.
  */
 import { describe, expect, it } from 'vitest';
@@ -135,5 +135,16 @@ describe('Glas rules: the package keeps HAPulse’s tafel and glass recipe', () 
       .filter((r) => hp.has(r.key) && !hp.get(r.key)!.some((d) => JSON.stringify(d) === JSON.stringify(r.decls)))
       .map((r) => ({ rule: r.key, package: r.decls, hapulse: hp.get(r.key) }));
     expect(differ).toEqual([]);
+  });
+
+  it('every HAPulse rule on the parts the package has is in the package (a new HAPulse rule fails here too)', () => {
+    // the package carries the tafel parts the NVR shows (not people, totals, rings, solar, …): a HAPulse rule counts when
+    // all its classes are the package's and every part and attribute value in it is one the package styles
+    const classes = (k: string) => [...k.split(' | ')[1]!.matchAll(/\.([_a-zA-Z][\w-]*)|(\[[^\]]+\])/g)].map((m) => m[1] ?? `nvr-${m[2]}`);
+    const parts = new Set(pkgRules.flatMap((r) => classes(r.key)));
+    const shared = [...hp.keys()].filter((k) => classes(k).every((c) => c.startsWith('nvr-') && parts.has(c)));
+    expect(shared.length).toBeGreaterThan(30);
+    const inPackage = new Set(pkgRules.map((r) => r.key));
+    expect(shared.filter((k) => !inPackage.has(k))).toEqual([]);
   });
 });

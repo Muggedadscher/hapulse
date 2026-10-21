@@ -215,8 +215,9 @@ sauber übernehmen können.
   `appearance="immersive"` (Klassisch: Standard); sie meldet sich über `app/glas/useGlasImmersive.ts`, `GlasRuntime`
   setzt `data-g-immersive` (unter 900 px ohne Tab- und Chip-Leiste, `shell.css`), `AppLayout` macht die Inhaltsspalte
   zum dunklen Teilbaum (`data-glas-scheme="dark"`, Variablen aus `applyAppearance`, `<style id="glas-dark-scope">`);
-  die Werte der Paket-Hooks (`--nvr-ctl-*`, `--nvr-float-*`, …) und der Look der übrigen NVR-Ansichten stehen in
-  `styles/glas/nvr.css`. Prüfungen `checks --part nvr` (`scripts/glas-checks-nvr.cjs`, nachgestelltes Sentinel, braucht
+  die Werte der Paket-Hooks (`--nvr-ctl-*`, `--nvr-float-*`, …), der Datumsdialog und der Look der Paket-Teile stehen
+  seit Paket 0.21.0 in dessen `@sentinel-nvr/web/ui/glas.css`, `styles/glas/nvr.css` hält nur HAPulses eigene
+  NVR-Ansichten. Prüfungen `checks --part nvr` (`scripts/glas-checks-nvr.cjs`, nachgestelltes Sentinel, braucht
   ffmpeg), gegen ein echtes Sentinel `scripts/nvr-sweep-test.cjs … glas`; Details `docs/NVR-INTEGRATION.md` → „Glas-Stil“.
   **Feinschliff (Etappe 7, `docs/glas/PLAN-ETAPPE-7.md`):** Seitenwechsel als View Transition nur in Glas
   (`app/glas/glasNavigate.ts`, `routeChunks.ts`, `motion.css`; Tab-Leiste, Seitenleiste, Mehr-Menü, Kamerakacheln mit
