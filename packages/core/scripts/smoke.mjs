@@ -158,6 +158,19 @@ import {
   chipCounts,
   // [fork] the fork's spelling of upstream texts
   withCase,
+  // [fork] energy page after draft v5
+  allocateEnergy,
+  energyPageWindow,
+  energyPageCompare,
+  energyOriginBars,
+  sharePercents,
+  energyShares,
+  energyPowerIds,
+  powerWatts,
+  energyPowerNow,
+  energyNowSentence,
+  batteryStatus,
+  computeEnergyDashboard,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2153,4 +2166,139 @@ console.log('\n── text case ──');
     const keys = Object.keys(fix);
     assert(keys.length > 0 && keys.every((k) => k in d), `withCase: case/${lang}.json names only keys of ${lang}.json`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Energy page after draft v5 — origins, shares, power now, battery (glas/energie-neu/umsetzung/PLAN.md)
+// ---------------------------------------------------------------------------
+console.log('\n── energy origins, power, battery ──');
+{
+  const near = (a, b) => Math.abs(a - b) < 1e-9;
+  // draft v5's day: solar 12.10 = 4.72 home + 3.10 battery + 4.28 export; battery out 2.40; grid 1.28
+  let a = allocateEnergy(12.1, 2.4, 1.28, 3.1, 4.28);
+  assert(near(a.solarHome, 4.72) && near(a.solarBattery, 3.1) && near(a.solarGrid, 4.28), 'allocate: solar → export, battery, rest home');
+  assert(near(a.batteryHome, 2.4) && near(a.gridHome, 1.28) && near(a.home, 8.4), 'allocate: home 8.40 = 4.72 + 2.40 + 1.28');
+  a = allocateEnergy(0, 0, 3, 2, 0);
+  assert(near(a.gridBattery, 2) && near(a.gridHome, 1) && near(a.home, 1), 'allocate: battery charged from the grid → grid to battery');
+  a = allocateEnergy(1, 2, 0, 0, 1.5);
+  assert(near(a.solarGrid, 1) && near(a.batteryGrid, 0.5) && near(a.batteryHome, 1.5) && near(a.home, 1.5), 'allocate: export beyond solar comes from the battery');
+  a = allocateEnergy(-1, NaN, 2, 0, 0);
+  assert(near(a.home, 2) && near(a.solarHome, 0), 'allocate: negative or missing values count as 0');
+  // linear: two hours add up like their sum (without grid charging)
+  const h1 = allocateEnergy(2, 0, 0.1, 1, 0.5);
+  const h2 = allocateEnergy(0, 0.8, 0.4, 0, 0);
+  const both = allocateEnergy(2, 0.8, 0.5, 1, 0.5);
+  assert(near(h1.solarHome + h2.solarHome, both.solarHome) && near(h1.batteryHome + h2.batteryHome, both.batteryHome) && near(h1.gridHome + h2.gridHome, both.gridHome), 'allocate: a sunny and a night hour add up like their sum');
+  a = allocateEnergy(1, 0, 2, 2, 0);
+  assert(near(a.solarBattery, 1) && near(a.gridBattery, 1) && near(a.gridHome, 1) && near(a.home, 1), 'allocate: solar first into the battery, the rest of the charge from the grid');
+  a = allocateEnergy(0, 2, 0, 0, 2);
+  assert(near(a.batteryGrid, 2) && near(a.home, 0) && near(a.gridHome, 0), 'allocate: battery export → nothing negative');
+  a = allocateEnergy(3, 0, 0, 0, 0.5);
+  const solarSum = a.solarHome + a.solarBattery + a.solarGrid;
+  assert(near(solarSum, 3), 'allocate: the solar destinations add up to the solar');
+
+  assertEqual(sharePercents([4.72, 2.4, 1.28]).join(','), '56,29,15', 'shares: draft v5 consumption → 56 / 29 / 15');
+  assertEqual(sharePercents([4.72, 3.1, 4.28]).join(','), '39,26,35', 'shares: draft v5 solar → 39 / 26 / 35');
+  assertEqual(sharePercents([1, 1, 1]).reduce((x, y) => x + y, 0), 100, 'shares: thirds still add up to 100');
+  assertEqual(sharePercents([0, 0, 0]).join(','), '0,0,0', 'shares: nothing → all 0');
+
+  const tzBefore = process.env.TZ;
+  process.env.TZ = 'Europe/Berlin';
+  try {
+    const at = (y, mo, d, h = 0, mi = 0) => new Date(y, mo - 1, d, h, mi);
+    const day = (t) => new Date(t).toString().slice(4, 21);
+    assertEqual(energyPageWindow('today', at(2026, 10, 25, 14)).bounds.length - 1, 25, 'page window: DST end → 25 hours');
+    assertEqual(energyPageWindow('today', at(2026, 3, 29, 14)).bounds.length - 1, 23, 'page window: DST start → 23 hours');
+    const week = energyPageWindow('week', at(2026, 10, 21, 20)); // a Wednesday
+    assertEqual(`${day(week.bounds[0])} → ${day(week.bounds[7])}`, 'Oct 19 2026 00:00 → Oct 26 2026 00:00', 'page window: week from Monday, 7 days');
+    assertEqual(energyPageWindow('week', at(2026, 10, 25, 9)).bounds[0], at(2026, 10, 19).getTime(), 'page window: Sunday belongs to the week from Monday');
+    assertEqual(energyPageWindow('month', at(2026, 2, 10)).bounds.length - 1, 28, 'page window: February 2026 → 28 days');
+    assertEqual(energyPageWindow('month', at(2026, 10, 10)).bucket, 'day', 'page window: month asks for days');
+    const year = energyPageWindow('year', at(2026, 10, 10));
+    assertEqual(year.bounds.length - 1, 12, 'page window: year → 12 months');
+    assertEqual(year.bucket, 'month', 'page window: year asks for months');
+
+    let c = energyPageCompare('today', at(2026, 10, 21, 15, 12));
+    assertEqual(`${day(c.current.start)}–${day(c.current.end)}`, 'Oct 21 2026 00:00–Oct 21 2026 15:00', 'compare: today up to the last full hour');
+    assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Oct 20 2026 00:00–Oct 20 2026 15:00', 'compare: yesterday the same hours');
+    c = energyPageCompare('today', at(2026, 10, 26, 10, 30)); // the day after DST end
+    assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Oct 25 2026 00:00–Oct 25 2026 10:00', 'compare: across DST at the same wall times');
+    c = energyPageCompare('week', at(2026, 10, 21, 15, 12));
+    assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Oct 12 2026 00:00–Oct 14 2026 15:00', 'compare: last week the same span');
+    c = energyPageCompare('month', at(2026, 10, 31, 18, 5));
+    assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Sep 01 2026 00:00–Oct 01 2026 00:00', 'compare: 31 Oct → all of September');
+    c = energyPageCompare('month', at(2026, 10, 21, 15, 12));
+    assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Sep 01 2026 00:00–Sep 21 2026 15:00', 'compare: month the same day before');
+    c = energyPageCompare('year', at(2028, 2, 29, 10, 30));
+    assertEqual(`${day(c.previous.start)}–${day(c.previous.end)}`, 'Jan 01 2027 00:00–Mar 01 2027 00:00', 'compare: 29 Feb → up to 1 Mar the year before');
+    c = energyPageCompare('today', at(2026, 10, 21, 0, 20));
+    assertEqual(c.current.end - c.current.start, 0, 'compare: before the first full hour nothing to compare');
+
+    // bars: hourly series into today's window, future stubs, running hour
+    const now = at(2026, 10, 21, 15, 12);
+    const win = energyPageWindow('today', now);
+    const pt = (h, o) => ({ start: at(2026, 10, 21, h).getTime(), gridConsumed: 0, gridReturned: 0, solar: 0, batteryIn: 0, batteryOut: 0, ...o });
+    const bars = energyOriginBars(win, [pt(2, { batteryOut: 0.3, gridConsumed: 0.05 }), pt(12, { solar: 2, batteryIn: 0.4, gridReturned: 0.8 }), pt(15, { solar: 0.4 })], now);
+    assertEqual(bars.length, 24, 'origin bars: one per hour');
+    assert(near(bars[2].batteryHome, 0.3) && near(bars[2].gridHome, 0.05) && bars[2].hasData, 'origin bars: night hour from battery and grid');
+    assert(near(bars[12].solarHome, 0.8) && near(bars[12].solarBattery, 0.4) && near(bars[12].produced, 2), 'origin bars: midday solar split');
+    assert(bars[15].current && !bars[15].future && bars[16].future && !bars[14].hasData, 'origin bars: running hour, future stubs, empty hours');
+    const sh = energyShares(bars);
+    assert(near(sh.home, 0.3 + 0.05 + 0.8 + 0.4) && sh.homePct.own === sh.homePct.solar + sh.homePct.battery, 'energy shares: home total and own = solar + battery');
+    assertEqual(sh.homePct.solar + sh.homePct.battery + sh.homePct.grid, 100, 'energy shares: origins add up to 100');
+    assertEqual(sh.solarPct.self, sh.solarPct.home + sh.solarPct.battery, 'energy shares: self used = home + battery');
+
+    // battery status
+    const t0 = at(2026, 10, 21, 15, 12);
+    let b = batteryStatus(70.5, -1200, 5.12, t0);
+    assertEqual(`${b.state} ${day(b.at)}`, 'charging Oct 21 2026 16:30', 'battery: draft v5 → full at about 16:30');
+    b = batteryStatus(40, 500, 5.12, t0);
+    assertEqual(`${b.state} ${b.at}`, 'discharging null', 'battery: discharging → no time (the reserve is unknown)');
+    assertEqual(batteryStatus(100, -30, 5.12, t0).state, 'full', 'battery: 100 % → full');
+    assertEqual(batteryStatus(100, 400, 5.12, t0).state, 'discharging', 'battery: 100 % but discharging → discharging');
+    assertEqual(batteryStatus(55, 20, 5.12, t0).state, 'idle', 'battery: under 50 W → idle');
+    assertEqual(batteryStatus(55, -800, undefined, t0).at, null, 'battery: no capacity → no time');
+    assertEqual(batteryStatus(5, -60, 20, t0).at, null, 'battery: more than 24 h → no time');
+  } finally {
+    if (tzBefore === undefined) delete process.env.TZ;
+    else process.env.TZ = tzBefore;
+  }
+
+  // power now: Home Assistant's signs (grid + = import, battery + = discharge), units
+  const P = (id, state, unit = 'W') => ({ [id]: { entity_id: id, state, attributes: { unit_of_measurement: unit }, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null } } });
+  const prefs = {
+    energy_sources: [
+      { type: 'grid', stat_energy_from: 'sensor.g_in', stat_energy_to: 'sensor.g_out', stat_rate: 'sensor.g_p', cost_adjustment_day: 0 },
+      { type: 'solar', stat_energy_from: 'sensor.s', stat_rate: 'sensor.s_p' },
+      { type: 'battery', stat_energy_from: 'sensor.b_out', stat_energy_to: 'sensor.b_in', stat_rate: 'sensor.b_p' },
+    ],
+    device_consumption: [],
+  };
+  const ids = energyPowerIds(prefs);
+  assertEqual(JSON.stringify(ids), JSON.stringify({ solar: ['sensor.s_p'], grid: ['sensor.g_p'], battery: ['sensor.b_p'] }), 'power ids: one per source');
+  assertEqual(energyPowerIds({ ...prefs, energy_sources: [...prefs.energy_sources, { type: 'solar', stat_energy_from: 'sensor.s2' }] }), null, 'power ids: a source without a sensor → none');
+  assertEqual(energyPowerIds({ energy_sources: [], device_consumption: [] }), null, 'power ids: nothing configured → none');
+  assertEqual(powerWatts(P('sensor.x', '2.1', 'kW'), 'sensor.x'), 2100, 'power: kW → W');
+  assertEqual(powerWatts(P('sensor.x', 'unavailable'), 'sensor.x'), null, 'power: unavailable → null');
+  assertEqual(powerWatts(P('sensor.x', '5', 'VA'), 'sensor.x'), null, 'power: unknown unit → null');
+  const noon = energyPowerNow(ids, { ...P('sensor.s_p', '2.1', 'kW'), ...P('sensor.g_p', '-300'), ...P('sensor.b_p', '-1200') });
+  assert(near(noon.home, 600) && near(noon.flows.solarBattery, 1200) && near(noon.flows.solarGrid, 300), 'power now: draft v5 noon → home 0.6 kW');
+  assertEqual(energyNowSentence(noon.flows), 'sunBattery', 'sentence: the sun supplies the home and charges the battery');
+  const evening = energyPowerNow(ids, { ...P('sensor.s_p', '0'), ...P('sensor.g_p', '10'), ...P('sensor.b_p', '500') });
+  assertEqual(energyNowSentence(evening.flows), 'battery', 'sentence: grid under 50 W → the battery supplies the home');
+  const clouds = energyPowerNow(ids, { ...P('sensor.s_p', '800'), ...P('sensor.g_p', '1400'), ...P('sensor.b_p', '0') });
+  assertEqual(energyNowSentence(clouds.flows), 'sunAndGrid', 'sentence: not enough sun → the rest from the grid');
+  assertEqual(energyPowerNow(ids, { ...P('sensor.s_p', '800'), ...P('sensor.g_p', 'unknown'), ...P('sensor.b_p', '0') }), null, 'power now: a sensor without a number → none');
+  assertEqual(energyNowSentence(allocateEnergy(0, 0, 30, 0, 0)), 'idle', 'sentence: everything under 50 W → idle');
+  assertEqual(energyNowSentence(allocateEnergy(0, 0, 1500, 1000, 0)), 'gridBattery', 'sentence: the grid supplies the home and charges the battery');
+
+  // cost: Home Assistant's flat grid format with an export price
+  const flat = {
+    energy_sources: [{ type: 'grid', stat_energy_from: 'sensor.in', stat_energy_to: 'sensor.out', stat_cost: null, entity_energy_price: null, number_energy_price: 0.3, stat_compensation: null, entity_energy_price_export: null, number_energy_price_export: 0.08, cost_adjustment_day: 0 }],
+    device_consumption: [],
+  };
+  const st = { 'sensor.in': [{ start: 0, end: 1, change: 10 }], 'sensor.out': [{ start: 0, end: 1, change: 5 }] };
+  assert(near(computeEnergyDashboard(flat, st).cost, 10 * 0.3 - 5 * 0.08), 'cost: flat format subtracts the export compensation');
+  const series = computeEnergyDashboard(prefs, { 'sensor.b_in': [{ start: 0, end: 1, change: 0.4 }], 'sensor.b_out': [{ start: 0, end: 1, change: 0.1 }] }).series;
+  assert(series.length === 1 && near(series[0].batteryIn, 0.4) && near(series[0].batteryOut, 0.1), 'series: battery charge and discharge per bucket');
 }

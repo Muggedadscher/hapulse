@@ -159,6 +159,7 @@ export type {
   EnergyDeviceUsage,
   EnergyWaterUsage,
   EnergySeriesPoint,
+  PowerConfig, // [fork]
 } from './energy.js';
 
 // [fork] Sensor history — numeric sample parsing + demo data for the Pool
@@ -284,6 +285,32 @@ export {
   energyChange,
 } from './glasEnergy.js';
 export type { GlasEnergyPeriod, GlasEnergyWindow, GlasEnergyBar, GlasEnergyAxis } from './glasEnergy.js';
+// [fork] Energy page after draft v5: origins, destinations, power now, battery (glas/energie-neu/umsetzung/PLAN.md)
+export {
+  allocateEnergy,
+  energyPageWindow,
+  energyPageCompare,
+  energyOriginBars,
+  sharePercents,
+  energyShares,
+  energyPowerIds,
+  powerWatts,
+  energyPowerNow,
+  energyNowSentence,
+  batteryStatus,
+  POWER_FLOW_MIN,
+} from './energyFlow.js';
+export type {
+  EnergyAllocation,
+  EnergyPageWindow,
+  EnergyOriginBar,
+  EnergyShares,
+  EnergyPowerIds,
+  EnergyPowerNow,
+  EnergyNowSentence,
+  BatteryState,
+  BatteryStatus,
+} from './energyFlow.js';
 export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './sizePresets.js';
 export type { SizePreset, SectionSize } from './sizePresets.js';
 export { roomGlances, lightPercent, climateTone } from './roomGlance.js';

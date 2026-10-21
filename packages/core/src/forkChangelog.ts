@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 54,
+    date: '2026-10-21',
+    title: { de: 'Energie: Netzkosten mit Einspeisevergütung', en: 'Energy: grid cost with feed-in compensation' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Die Netzkosten ziehen die Einspeisevergütung auch im aktuellen Format der Home-Assistant-Energieeinstellungen ab',
+            en: 'The grid cost subtracts the feed-in compensation also in the current format of the Home Assistant energy settings',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 53,
     date: '2026-10-19',
     title: { de: 'Kameras: Zeitanzeige beim Spulen', en: 'Cameras: time display while scrubbing' },
