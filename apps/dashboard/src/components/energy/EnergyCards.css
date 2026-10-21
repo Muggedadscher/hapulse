@@ -470,3 +470,14 @@
 
 .energy-empty-state__btn:hover { opacity: 0.9; }
 .energy-empty-state__btn:active { transform: scale(0.98); }
+
+/* [fork] draft v5: the comparison with the period before, below the home's consumption */
+.energy-hero__compare {
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+/* [fork] draft v5: a long label ("Battery discharged") wraps instead of running out of its tile */
+.energy-stat__label {
+  white-space: normal;
+}

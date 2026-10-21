@@ -479,6 +479,8 @@ module.exports = function pages(h) {
         ['/energy', '.energy-sources', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-devices', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-solar', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-now', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-battery', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'above', false, ['.energy-kv-list', '.energy-card__sub']],
         ['/pool', '.pool-card:not(.pool-schedule, .pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
         ['/pool', ':is(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above', true],
@@ -2109,26 +2111,44 @@ module.exports = function pages(h) {
           await close();
         }
 
-        // Energy N: on the same date as Klassisch the same figures, the hero's values, legend, totals, bars (their heights), solar
-        // rows and meter, devices (their bars) and water; the chart grey and yellow, its stacks 14 wide for 13 bars, the
-        // device bars orange, the solar meter yellow; every card in the picture, no value cut, the page no wider than the
-        // window; the hero does not tint under the pointer (desktop); the loading line 15/20 label2.
+        // Energy N (since draft v5, plan glas/energie-neu/umsetzung): on the same date as Klassisch the same figures — the
+        // hero's consumption, comparison and amounts (Glas shows the solar yield as the line under the consumption,
+        // Klassisch as a tile), the big shares, the share rows, the bars of "Consumption" and "Solar" (their heights and
+        // parts), "Now" (sentence, nodes, bands) and "Battery" (state line, chart), devices and water; in Glas the chart
+        // grey, green and yellow, the flow's columns and the battery ring in their colours, 24 columns of today at most 14 wide, the
+        // device bars orange; every card in the picture, no value cut, the page no wider than the window; the hero does not
+        // tint under the pointer (desktop); the loading line 15/20 label2.
         if (keepPart('energy')) {
           const texts = (page) => ev(page, () => {
             const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : null);
+            const flat = (e) => (e ? e.textContent.replace(/\s+/g, '') : null);
             const all = (sel) => [...document.querySelectorAll(sel)].map(txt);
             const styles = (sel) => [...document.querySelectorAll(sel)].map((e) => e.getAttribute('style'));
+            const bars = (card) => [...document.querySelectorAll(`${card} .en-chart__bar`)].map((b) => {
+              const col = b.querySelector('.en-chart__col');
+              if (!col) return b.querySelector('.en-chart__stub') ? 'stub' : 'empty';
+              return `${col.style.height}:${[...col.children].map((p) => `${p.className.replace(/.*--/, '')}=${p.style.flexGrow}`).join(',')}`;
+            });
+            // the hero's amounts without the solar yield (Glas: the line under the consumption), spaces removed
+            const cells = [...document.querySelectorAll('.energy-stat, .energy-hero .g-tafel__cell')]
+              .filter((e) => !e.querySelector('.lucide-sun')).map(flat).sort();
+            const solarTile = [...document.querySelectorAll('.energy-stat')].find((e) => e.querySelector('.lucide-sun'));
             return {
-              // the hero: Klassisch's figure and tiles, Glas the tafel's total and cells (the same words)
               figure: txt(document.querySelector('.energy-hero__primary-value, .energy-hero .g-tafel__total-value')),
               label: txt(document.querySelector('.energy-hero__primary-label, .energy-hero .g-tafel__total-label')),
-              stats: all('.energy-stat, .energy-hero .g-tafel__cell'),
-              legend: all('.energy-legend__item'),
-              totals: all('.energy-total'),
-              bars: [...document.querySelectorAll('.energy-chart__col')].map((c) => [...c.querySelectorAll('.energy-chart__seg')]
-                .map((g) => g.getAttribute('style')).join('|')),
-              solar: all('.energy-solar .energy-kv').concat(all('.energy-solar__meter-label')),
-              solarFill: styles('.energy-solar__meter-fill'),
+              compare: txt(document.querySelector('.energy-hero__compare, .energy-hero .g-tafel__compare')),
+              cells,
+              pv: solarTile ? txt(solarTile.querySelector('.energy-stat__value')) : txt(document.querySelector('.energy-hero .g-tafel__pv-value')),
+              bigs: all('.en-big'),
+              shares: all('.en-shares__row'),
+              usage: bars('.en-card--usage'),
+              solar: bars('.en-card--solar'),
+              nowSay: all('.en-now__say'),
+              nowNodes: all('.en-now__node'),
+              bands: document.querySelectorAll('.en-now__band').length,
+              batSub: all('.en-bat__sub'),
+              batChart: [...document.querySelectorAll('.en-bat__chart')].map((e) => e.getAttribute('aria-label')),
+              foot: all('.en-chart__foot'),
               devices: all('.energy-device'),
               deviceBars: styles('.energy-device__bar'),
               heads: all('.energy-card__sub'),
@@ -2139,6 +2159,7 @@ module.exports = function pages(h) {
           {
             const { page, close } = await open(device, 'classic', '/energy', { mode, fixedTime: ENERGY_AT });
             try {
+              await page.waitForSelector('.energy-hero__compare', { timeout: 5000 }).catch(() => {});
               classicTexts = await texts(page);
             } catch (e) {
               classicTexts = { error: String(e.message).slice(0, 160) };
@@ -2147,6 +2168,7 @@ module.exports = function pages(h) {
           }
           const { page, close } = await open(device, 'glas', '/energy', { mode, fixedTime: ENERGY_AT });
           try {
+            await page.waitForSelector('.energy-hero .g-tafel__compare', { timeout: 5000 }).catch(() => {});
             const glasTexts = await texts(page);
             const look = await ev(page, () => {
               const tok = (n, prop = 'backgroundColor') => {
@@ -2159,10 +2181,10 @@ module.exports = function pages(h) {
               };
               const bg = (e) => getComputedStyle(e).backgroundColor;
               const each = (sel, fn) => [...document.querySelectorAll(sel)].every(fn);
-              const stacks = [...document.querySelectorAll('.energy-chart__stack')];
+              const cols = [...document.querySelectorAll('.en-card--usage .en-chart__col')];
               const fig = getComputedStyle(document.querySelector('.energy-hero .g-tafel__total-value'));
               // values: a block that clips (ellipsis) must not; an inline value must stay inside its card
-              const cut = [...document.querySelectorAll('.energy-page :is(.g-tafel__total-value, .g-tafel__value, .g-tafel__label-text, .energy-total__value, .energy-kv__value, .energy-device__value, .energy-card__sub, .energy-legend__item)')]
+              const cut = [...document.querySelectorAll('.energy-page :is(.g-tafel__total-value, .g-tafel__value, .g-tafel__label-text, .g-tafel__pv, .g-tafel__compare, .en-big, .en-shares__row, .en-chart__tick, .en-chart__foot, .en-now__say, .en-now__node, .en-bat__sub, .energy-device__value, .energy-card__sub)')]
                 .filter((e) => {
                   const card = e.closest('.card') || e.closest('[data-section]');
                   const r = e.getBoundingClientRect();
@@ -2182,13 +2204,17 @@ module.exports = function pages(h) {
               const loading = `${ld.fontSize}/${ld.lineHeight}` === '15px/20px' && ld.color === tok('--g-label-2', 'color');
               box.remove();
               return {
-                grid: each('.energy-chart__seg--grid', (e) => bg(e) === tok('--g-chart-netz')),
-                solar: each('.energy-chart__seg--solar', (e) => bg(e) === tok('--g-chart-solar')),
-                legend: bg(document.querySelector('.energy-legend__swatch--grid')) === tok('--g-chart-netz')
-                  && bg(document.querySelector('.energy-legend__swatch--solar')) === tok('--g-chart-solar'),
-                stacks: stacks.length, widths: [...new Set(stacks.map((e) => Math.round(e.getBoundingClientRect().width)))],
+                grid: each('.en-chart__part--grid, .en-dot--grid', (e) => bg(e) === tok('--g-chart-netz')),
+                battery: each('.en-chart__part--battery, .en-dot--battery', (e) => bg(e) === tok('--g-chart-battery')),
+                solar: each('.en-chart__part--solar, .en-dot--solar', (e) => bg(e) === tok('--g-chart-solar')),
+                flow: each('.en-now__bar--solar', (e) => getComputedStyle(e).fill === tok('--g-chart-solar'))
+                  && each('.en-now__bar--battery', (e) => getComputedStyle(e).fill === tok('--g-chart-battery'))
+                  && each('.en-now__bar--grid', (e) => getComputedStyle(e).fill === tok('--g-chart-netz')),
+                ring: each('.en-bat__ring-fill', (e) => getComputedStyle(e).stroke === tok('--g-chart-battery'))
+                  && each('.en-bat__line', (e) => getComputedStyle(e).stroke === tok('--g-green-ink')),
+                bars: document.querySelectorAll('.en-card--usage .en-chart__bar').length,
+                widths: [...new Set(cols.map((e) => Math.round(e.getBoundingClientRect().width)))],
                 deviceBars: each('.energy-device__bar', (e) => bg(e) === tok('--g-prominent')),
-                meter: bg(document.querySelector('.energy-solar__meter-fill')) === tok('--g-chart-solar'),
                 figure: `${fig.fontWeight} ${fig.fontSize}/${fig.lineHeight}`, figureColor: fig.color === tok('--g-label', 'color'),
                 // the tafel's cells: no tile of their own (the card's colour), the symbol bare
                 tiles: each('.energy-hero .g-tafel__cell', (e) => bg(e) === 'rgba(0, 0, 0, 0)'),
@@ -2213,9 +2239,11 @@ module.exports = function pages(h) {
               await page.mouse.move(0, 0);
             }
             const same = JSON.stringify(glasTexts) === JSON.stringify(classicTexts);
-            const ok = same && glasTexts.sections.join() === 'hero,usage,solar,devices,water' && glasTexts.bars.length === 13
-              && look.grid && look.solar && look.legend && look.stacks === 13 && look.widths.length === 1 && look.widths[0] === 14
-              && look.deviceBars && look.meter && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
+            const ok = same && glasTexts.sections.join() === 'hero,now,battery,usage,solar,devices,water' && glasTexts.usage.length === 24
+              && glasTexts.compare !== null && glasTexts.pv !== null && glasTexts.bigs.length === 3
+              && glasTexts.nowSay.length === 1 && glasTexts.nowNodes.length === 4 && glasTexts.bands === 3 && glasTexts.batSub.length === 1
+              && look.grid && look.battery && look.solar && look.flow && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14
+              && look.deviceBars && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
               && look.cut.length === 0 && look.out.length === 0 && !look.wide && look.loading && hover !== false;
             res[`${device}-energy`] = { ok, same, ...(same ? {} : { glas: glasTexts, classic: classicTexts }), look, hover };
           } catch (e) {

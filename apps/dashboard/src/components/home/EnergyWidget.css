@@ -181,6 +181,11 @@
   background: var(--accent);
 }
 
+/* [fork] the home battery (draft v5) */
+.energy-widget__seg--battery {
+  background: var(--positive);
+}
+
 .energy-widget__seg--grid {
   background: var(--info);
   flex-shrink: 1;

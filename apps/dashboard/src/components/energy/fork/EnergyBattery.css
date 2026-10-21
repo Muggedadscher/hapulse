@@ -1,0 +1,128 @@
+/* [fork] Energy page card "Battery" (EnergyBattery.tsx): ring with the charge, the state line and the charge today.
+   Colours from the card's --en-battery (EnergyOrigin.css; Glas in styles/glas/energy.css); the line and the state
+   word in --en-battery-ink, the area in --en-battery-soft. */
+
+.en-card--battery {
+  --en-battery-ink: var(--positive);
+  --en-battery-soft: color-mix(in srgb, var(--positive) 16%, transparent);
+  --en-track: var(--bg-subtle);
+}
+
+.en-bat__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.en-bat__ring {
+  position: relative;
+  flex: none;
+  width: 64px;
+  height: 64px;
+}
+
+.en-bat__ring-svg {
+  display: block;
+}
+
+.en-bat__ring-track {
+  stroke: var(--en-track);
+}
+
+.en-bat__ring-fill {
+  stroke: var(--en-battery);
+}
+
+.en-bat__glyph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--en-battery-ink);
+}
+
+.en-bat__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.en-bat__sub {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.en-bat__state {
+  font-weight: 600;
+}
+
+.en-bat__state--charging,
+.en-bat__state--full {
+  color: var(--en-battery-ink);
+}
+
+.en-bat__label {
+  margin: 0.25rem 0 0;
+  color: var(--en-label);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat__chart {
+  min-height: 118px;
+}
+
+.en-bat__chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.en-bat__rule {
+  stroke: var(--en-rule);
+  stroke-width: 0.5px;
+}
+
+.en-bat__rule--base {
+  stroke-width: 1px;
+}
+
+.en-bat__tick {
+  fill: var(--en-label);
+  font-size: 12px;
+}
+
+.en-bat__area {
+  fill: var(--en-battery-soft);
+}
+
+.en-bat__line {
+  fill: none;
+  stroke: var(--en-battery-ink);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+
+.en-bat__rest {
+  stroke: var(--en-track);
+  stroke-width: 3px;
+}
+
+.en-bat__dot {
+  fill: var(--en-battery-ink);
+  stroke: var(--bg-card);
+  stroke-width: 2px;
+}
+
+@media (forced-colors: active) {
+  .en-bat__ring-fill,
+  .en-bat__line {
+    stroke: LinkText;
+  }
+
+  .en-bat__dot {
+    fill: LinkText;
+  }
+}

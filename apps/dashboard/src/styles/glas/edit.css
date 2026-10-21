@@ -234,7 +234,7 @@
   :root[data-style='glas']
     .energy-page
     .overview-grid__cell--editing
-    :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas)
+    :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas)
     > .energy-card__header,
   :root[data-style='glas']
     .energy-page
@@ -275,7 +275,7 @@
     .energy-page
     .overview-grid__cell--editing[class*='section-h-']:has(
       > .edit-section-outline
-        > :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas)
+        > :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas)
     )
     > .g-size-bar,
   :root[data-style='glas']
@@ -317,6 +317,8 @@
       .energy-sources,
       .energy-devices,
       .energy-solar,
+      .energy-now,
+      .energy-battery,
       .energy-water,
       .energy-gas,
       .auto-feed-card,
@@ -373,7 +375,7 @@
   :root[data-style='glas']
     .energy-page
     .overview-grid__cell--editing
-    :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
+    :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
   :root[data-style='glas'] .automations-page .overview-grid__cell--editing :is(.auto-feed-card, .auto-cat-card),
   :root[data-style='glas'] .scenes-page .overview-grid__cell--editing :is(.scene-feed-card, .scene-room-card),
   :root[data-style='glas']

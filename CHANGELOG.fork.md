@@ -6,6 +6,41 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F56 — 2026-10-21
+
+**Energie: jetzt und Batterie** · _Energy: now and battery_
+
+### Neu / Added
+
+- Die Karte „Jetzt“ sagt in einem Satz, was gerade passiert, und zeigt den Fluss von Solar, Batterie und Netz zum Haus, zur Batterie und ins Netz  
+  _The card “Now” says in one sentence what is happening and shows the flow from solar, battery and grid to the home, the battery and the grid_
+- Die Karte „Batterie“ zeigt den Ladezustand, ob sie lädt oder entlädt, wann sie ungefähr voll ist und den Ladezustand des Tages  
+  _The card “Battery” shows the charge, whether it charges or discharges, when it will be about full and the charge of the day_
+- Die Energiekarte der Übersicht rechnet ihre Balken wie die Energieseite, zeigt die Batterie als Teil der Balken und darunter ihren Ladezustand  
+  _The overview’s energy card computes its bars like the energy page, shows the battery as part of the bars and its charge below them_
+
+## F55 — 2026-10-21
+
+**Energie: Verbrauch nach Herkunft, Solar nach Ziel** · _Energy: consumption by origin, solar by destination_
+
+### Geändert / Changed
+
+- Die Karte „Verbrauch“ ersetzt „Quellen“: wie viel Prozent aus eigenem Strom kamen, die Anteile Solar, Batterie und Netz und die Balken nach Herkunft  
+  _The card “Consumption” replaces “Sources”: how much came from your own power, the shares of solar, battery and grid and the bars by origin_
+- Die Karte „Solar“ zeigt, wie viel Prozent selbst genutzt wurden und wohin der Solarstrom ging (Haus, Batterie, Netz), auch je Stunde  
+  _The card “Solar” shows how much was used yourself and where the solar power went (home, battery, grid), also per hour_
+- Der Kopf der Energieseite vergleicht mit dem Vorzeitraum, zeigt die Batterie als Paar geladen und entladen und in Glas den PV-Ertrag unter dem Hausverbrauch  
+  _The head of the energy page compares with the period before, shows the battery as a pair charged and discharged and, in Glas, the solar yield below the home consumption_
+
+## F54 — 2026-10-21
+
+**Energie: Netzkosten mit Einspeisevergütung** · _Energy: grid cost with feed-in compensation_
+
+### Behoben / Fixed
+
+- Die Netzkosten ziehen die Einspeisevergütung auch im aktuellen Format der Home-Assistant-Energieeinstellungen ab  
+  _The grid cost subtracts the feed-in compensation also in the current format of the Home Assistant energy settings_
+
 ## F53 — 2026-10-19
 
 **Kameras: Zeitanzeige beim Spulen** · _Cameras: time display while scrubbing_

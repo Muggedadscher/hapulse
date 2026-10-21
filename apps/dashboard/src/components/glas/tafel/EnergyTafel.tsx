@@ -1,16 +1,19 @@
 /**
- * [fork] The energy page's head in Glas (plan docs/glas/PLAN-TAFELN.md): the period segment, the home's
- * consumption large, the sources as the tafel's grid. Only solar is coloured (its chart colour, GLAS-DESIGN §2.4); the
- * other amounts have no state. While another period loads the figures dim (Energy.tsx `data-g-stale`, tafel.css). The
- * facts and their order are the classic EnergyHeroCard's, which Klassisch keeps.
+ * [fork] The energy page's head in Glas (plan docs/glas/PLAN-TAFELN.md; since draft v5, glas/energie-neu/umsetzung):
+ * the period segment, the home's consumption large with the solar yield and the comparison below it like the
+ * overview's energy card, then the amounts in pairs (battery charged / discharged, from the grid / exported) and the
+ * grid's cost, at most two columns. Only the sun is coloured (its chart colour, GLAS-DESIGN §2.4); the amounts have no
+ * state. While another period loads the figures dim (Energy.tsx `data-g-stale`, tafel.css). The classic
+ * EnergyHeroCard shows the same facts.
  */
 
 import React from 'react';
-import { ArrowDownToLine, ArrowUpFromLine, BatteryCharging, House, Sun, Zap } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Battery, BatteryPlus, House, Sun } from 'lucide-react';
 import type { EnergyDashboard, EnergyPeriod } from '@hapulse/core';
 import { Card } from '../../ui/Card';
 import { useLocale, useT } from '../../../i18n/useT';
 import { PeriodSelector, fmtCost, fmtEnergy } from '../../energy/EnergyCards';
+import { CostIcon, useEnergyCompareText } from '../../energy/fork/energyHead';
 import { TafelGrid, TAFEL_ICON } from './Tafel';
 import type { TafelFigure } from './Tafel';
 
@@ -19,24 +22,25 @@ interface EnergyTafelProps {
   period: EnergyPeriod;
   onPeriodChange: (p: EnergyPeriod) => void;
   currency: string | null;
+  /** the period `dashboard` belongs to while the next one loads (default `period`) */
+  dataPeriod?: EnergyPeriod;
 }
 
-export function EnergyTafel({ dashboard: d, period, onPeriodChange, currency }: EnergyTafelProps) {
+export function EnergyTafel({ dashboard: d, period, onPeriodChange, currency, dataPeriod }: EnergyTafelProps) {
   const t = useT();
   const locale = useLocale();
+  const compare = useEnergyCompareText(dataPeriod ?? period);
   const items: TafelFigure[] = [];
+  if (d.hasBattery) {
+    items.push({ key: 'batteryIn', icon: <BatteryPlus size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.tafel.batteryIn'), value: fmtEnergy(d.batteryIn, locale), unit: 'kWh' });
+    items.push({ key: 'battery', icon: <Battery size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.tafel.batteryOut'), value: fmtEnergy(d.batteryOut, locale), unit: 'kWh' });
+  }
   if (d.hasGrid) {
     items.push({ key: 'grid', icon: <ArrowDownToLine size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.hero.fromGrid'), value: fmtEnergy(d.gridConsumed, locale), unit: 'kWh' });
     items.push({ key: 'returned', icon: <ArrowUpFromLine size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.hero.returned'), value: fmtEnergy(d.gridReturned, locale), unit: 'kWh' });
   }
-  if (d.hasSolar) {
-    items.push({ key: 'solar', icon: <Sun size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.hero.solar'), value: fmtEnergy(d.solarProduced, locale), unit: 'kWh', tone: 'solar' });
-  }
-  if (d.hasBattery) {
-    items.push({ key: 'battery', icon: <BatteryCharging size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.hero.batteryOut'), value: fmtEnergy(d.batteryOut, locale), unit: 'kWh' });
-  }
   if (d.cost != null) {
-    items.push({ key: 'cost', icon: <Zap size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.hero.gridCost'), value: fmtCost(d.cost, currency, locale) });
+    items.push({ key: 'cost', icon: <CostIcon currency={currency} size={TAFEL_ICON} strokeWidth={2} />, label: t('energy.hero.gridCost'), value: fmtCost(d.cost, currency, locale) });
   }
 
   return (
@@ -55,8 +59,19 @@ export function EnergyTafel({ dashboard: d, period, onPeriodChange, currency }: 
           {fmtEnergy(d.homeConsumption, locale)}
           <span className="g-tafel__total-unit">{' kWh'}</span>
         </span>
+        {d.hasSolar && (
+          <span className="g-tafel__pv">
+            <Sun className="g-tafel__pv-sun" size={TAFEL_ICON} strokeWidth={2} aria-hidden="true" />
+            <span className="g-tafel__pv-value">
+              {fmtEnergy(d.solarProduced, locale)}
+              {'\u00a0kWh'}
+            </span>{' '}
+            {t('home.energy.solarProduced')}
+          </span>
+        )}
+        {compare !== null && <span className="g-tafel__compare">{compare}</span>}
       </div>
-      <TafelGrid items={items} min={130} max={3} />
+      <TafelGrid items={items} min={130} max={2} />
     </Card>
   );
 }

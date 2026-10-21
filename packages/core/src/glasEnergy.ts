@@ -2,14 +2,15 @@
  * [fork] Chart math of the Glas energy card (docs/GLAS-DESIGN.md §7.9, docs/glas/PLAN-ETAPPE-4.md K75, variant V4).
  *
  * Periods like the sketch: Tag = today hourly, Woche = the last 7 days up to today, Monat = the last 30 days up to
- * today (daily, the last column is today). A bar is what the home used in that hour or day: grid import at the
- * bottom, the solar it used itself on top (`max(0, produced − exported)` per bar, like Home Assistant's usage graph
- * without a battery). The comparison stops at the last full hour in both periods: Home Assistant writes an hour's
+ * today (daily, the last column is today). A bar is what the home used in that hour or day: grid at the bottom, the
+ * home battery in the middle, the solar it used itself on top (Home Assistant's allocation, `allocateEnergy`; without a
+ * battery the solar part is `max(0, produced − exported)`). The comparison stops at the last full hour in both periods: Home Assistant writes an hour's
  * statistics row only after the hour. Pure and time-zone aware (local calendar, 23/25-hour days) — tested in
  * scripts/smoke.mjs.
  */
 
 import type { EnergySeriesPoint, StatisticsMap } from './energy.js';
+import { allocateEnergy } from './energyFlow.js';
 
 export type GlasEnergyPeriod = 'day' | 'week' | 'month';
 
@@ -25,8 +26,10 @@ export interface GlasEnergyBar {
   /** Bucket start and end (epoch ms, local calendar boundaries). */
   start: number;
   end: number;
-  /** Grid import (kWh). */
+  /** Grid import the home used (kWh). */
   grid: number;
+  /** Home battery the home used (kWh). */
+  battery: number;
   /** Solar the home used itself (kWh). */
   solar: number;
   total: number;
@@ -82,15 +85,14 @@ export function glasEnergyBars(win: GlasEnergyWindow, series: readonly EnergySer
   const { bounds } = win;
   const t = now.getTime();
   const bars: GlasEnergyBar[] = [];
-  const produced: number[] = [];
-  const exported: number[] = [];
+  const raw: { gi: number; go: number; s: number; bi: number; bo: number }[] = [];
   for (let i = 0; i < bounds.length - 1; i++) {
     const start = bounds[i]!;
     const end = bounds[i + 1]!;
-    bars.push({ start, end, grid: 0, solar: 0, total: 0, hasData: false, future: start > t, current: start <= t && t < end });
-    produced.push(0);
-    exported.push(0);
+    bars.push({ start, end, grid: 0, battery: 0, solar: 0, total: 0, hasData: false, future: start > t, current: start <= t && t < end });
+    raw.push({ gi: 0, go: 0, s: 0, bi: 0, bo: 0 });
   }
+  const pos = (v: number) => (Number.isFinite(v) && v > 0 ? v : 0);
   for (const p of series) {
     let lo = 0;
     let hi = bars.length - 1;
@@ -103,13 +105,20 @@ export function glasEnergyBars(win: GlasEnergyWindow, series: readonly EnergySer
     const bar = bars[lo];
     if (!bar || p.start < bar.start || p.start >= bar.end) continue;
     bar.hasData = true;
-    bar.grid += Math.max(0, p.gridConsumed);
-    produced[lo] = produced[lo]! + Math.max(0, p.solar);
-    exported[lo] = exported[lo]! + Math.max(0, p.gridReturned);
+    const r = raw[lo]!;
+    r.gi += pos(p.gridConsumed);
+    r.go += pos(p.gridReturned);
+    r.s += pos(p.solar);
+    r.bi += pos(p.batteryIn);
+    r.bo += pos(p.batteryOut);
   }
   bars.forEach((bar, i) => {
-    bar.solar = Math.max(0, produced[i]! - exported[i]!);
-    bar.total = bar.grid + bar.solar;
+    const r = raw[i]!;
+    const a = allocateEnergy(r.s, r.bo, r.gi, r.bi, r.go);
+    bar.grid = a.gridHome;
+    bar.battery = a.batteryHome;
+    bar.solar = a.solarHome;
+    bar.total = a.home;
   });
   return bars;
 }
@@ -145,10 +154,17 @@ export function hiddenTicks(axis: GlasEnergyAxis, average: number | null): numbe
 }
 
 /** Bar heights in % of the axis top; a non-empty bar is at least 1.5 % tall, split in proportion. */
-export function barPercent(bar: Pick<GlasEnergyBar, 'grid' | 'solar' | 'total'>, top: number): { grid: number; solar: number } {
-  if (bar.total <= 0 || top <= 0) return { grid: 0, solar: 0 };
+export function barPercent(
+  bar: Pick<GlasEnergyBar, 'grid' | 'solar' | 'total'> & { battery?: number },
+  top: number,
+): { grid: number; battery: number; solar: number } {
+  if (bar.total <= 0 || top <= 0) return { grid: 0, battery: 0, solar: 0 };
   const total = Math.max(1.5, Math.min(100, (bar.total / top) * 100));
-  return { grid: (total * bar.grid) / bar.total, solar: (total * bar.solar) / bar.total };
+  return {
+    grid: (total * bar.grid) / bar.total,
+    battery: (total * (bar.battery ?? 0)) / bar.total,
+    solar: (total * bar.solar) / bar.total,
+  };
 }
 
 /**

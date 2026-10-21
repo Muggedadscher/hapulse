@@ -37,7 +37,7 @@
 :root[data-style='glas']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
     .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
@@ -56,7 +56,7 @@
 :root[data-style='glas']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
     .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
@@ -83,7 +83,7 @@
         .sensor-section-card__header
       ),
     .energy-page
-      :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list)))
+      :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water:where(:has(> .energy-kv-list)))
       > .energy-card__header,
     .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))) > .pool-card__head,
     .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
@@ -110,7 +110,7 @@
           .sensor-section-card__header
         ),
       .energy-page
-        :is(.energy-sources, .energy-devices, .energy-solar, .energy-water:where(:has(> .energy-kv-list)))
+        :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water:where(:has(> .energy-kv-list)))
         > .energy-card__header,
       .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))) > .pool-card__head,
       .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
@@ -337,7 +337,7 @@
   .overview-grid__cell[class*='section-h-']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)
@@ -350,7 +350,7 @@
   .overview-grid__cell[class*='section-h-']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)
@@ -363,7 +363,7 @@
   .overview-grid__cell[class*='section-h-']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
-    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-water, .energy-gas),
+    .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)

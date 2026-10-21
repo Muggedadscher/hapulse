@@ -727,6 +727,7 @@ export const DEMO_ENTITIES: HassEntityMap = {
   // [fork] Pool pump — the entities the fork's Pool page is wired to (poolConfig.ts), so the
   // public demo (and the lab screenshots) show the page. A manual run of 2 h with 1.5 h left.
   ...demoPoolEntities(),
+  ...demoEnergyEntities(), // [fork] power and charge for the energy page's "Now" and battery
 };
 
 // [fork] Scene members (`attributes.entity_id`, as HA reports them) so the Home scenes card can show
@@ -770,6 +771,23 @@ function demoWasteSensors(): HassEntityMap {
     'sensor.gelbersack_komplett': bin('sensor.gelbersack_komplett', 'Gelber Sack', 'mdi:recycle-variant', [9, 23, 37]),
     'sensor.papiertonne_komplett': bin('sensor.papiertonne_komplett', 'Papiertonne', 'mdi:newspaper-variant-outline', [27, 55]),
     'sensor.schadstoffsammlung': bin('sensor.schadstoffsammlung', 'Schadstoffsammlung', 'mdi:alert-octagon-outline', [30]),
+  };
+}
+
+/**
+ * [fork] Power sensors and the battery's charge of the demo's energy preferences (DEMO_ENERGY_PREFS `stat_rate`,
+ * `stat_soc`): a sunny afternoon like draft v5 — solar 2.1 kW, the home 0.6 kW, the battery charging with 1.2 kW at
+ * 71 %, 0.3 kW exported.
+ */
+function demoEnergyEntities(): HassEntityMap {
+  const e = (id: string, state: string, attributes: HassEntityAttributes) => ({ [id]: makeEntity(id, state, attributes) });
+  const power = (name: string) => ({ unit_of_measurement: 'W', device_class: 'power', state_class: 'measurement', friendly_name: name });
+  return {
+    ...e('sensor.demo_solar_power', '2100', power('Solar Power')),
+    ...e('sensor.demo_grid_power', '-300', power('Grid Power')),
+    ...e('sensor.demo_battery_power', '-1200', power('Battery Power')),
+    // no device_class 'battery': the System page would list the home battery among the device batteries
+    ...e('sensor.demo_battery_soc', '71', { unit_of_measurement: '%', state_class: 'measurement', friendly_name: 'Battery State of Charge' }),
   };
 }
 
