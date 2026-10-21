@@ -854,7 +854,7 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
   Klasse 13 `label2` → Kamera **an diesem Moment**.
 - **Desktop (seit F46, Entscheid Jannick 12.10.2026: wie das Handy):** derselbe Aufbau ohne Kartenfläche; die Streifen
   enden am Rand der Karte, eine Kamera ist höchstens 360 breit (bei mehreren schaut die nächste herein). Mit Zeiger, der
-  schweben kann, liegt an jedem Ende, das weiter scrollen kann, ein Glas-Kreis 36 mit Pfeil (`NvrStrip.tsx`), sichtbar,
+  schweben kann, liegt an jedem Ende, das weiter scrollen kann, ein Glas-Kreis 36 mit Pfeil (seit Paket 0.21.0 im Paket `@sentinel-nvr/web`, `GlassNvr`), sichtbar,
   solange der Zeiger über dem Streifen ist, mittig auf den Bildern; er blättert 80 % der Breite (bei reduzierter
   Bewegung ohne Animation). Er ist nur für den Zeiger (`tabIndex -1`, `aria-hidden`), per Tastatur scrollt der Fokus.
   Vorher: Kachel 16:10 mit Name 20/700 + Badge und Ereigniszeilen mit Bild 92 × 69.

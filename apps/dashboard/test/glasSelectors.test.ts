@@ -11,6 +11,8 @@ import { Cpu, DoorOpen, Fan, Home, LayoutGrid, Lightbulb, MoreHorizontal, Monito
 const SRC = join(__dirname, '../src');
 const GLAS = join(SRC, 'styles/glas');
 const PACKAGE_CSS = join(__dirname, '../../../node_modules/@sentinel-nvr/web/dist/ui/ui.css');
+/** The Glas look of the package's parts (@sentinel-nvr/web ≥ 0.21.0), imported by index.css; its own test keeps it under the prefix. */
+const PACKAGE_GLAS_CSS = join(__dirname, '../../../node_modules/@sentinel-nvr/web/dist/ui/glas.css');
 const PREFIX = ":root[data-style='glas']";
 
 function files(dir: string, ext: RegExp): string[] {
@@ -192,7 +194,9 @@ describe('Glas stylesheets', () => {
       // a registered property, a font face or a foreign stylesheet would act in Klassisch too
       expect(css.match(/@(property|font-face)\b/g) ?? [], f.name).toEqual([]);
       const imports = [...css.matchAll(/@import\s+([^;]+);/g)].map((m) => m[1]!.trim());
-      expect(imports.filter((i) => !/^'\.\/[\w-]+\.css'$/.test(i)), f.name).toEqual([]);
+      // index.css also imports the package's Glas stylesheet (every rule of it under the prefix, checked in the package)
+      const own = (i: string) => /^'\.\/[\w-]+\.css'$/.test(i) || (f.name === 'styles/glas/index.css' && i === "'@sentinel-nvr/web/ui/glas.css'");
+      expect(imports.filter((i) => !own(i)), f.name).toEqual([]);
     }
   });
 
@@ -262,6 +266,8 @@ describe('Glas stylesheets', () => {
     const otherCss = [
       ...files(SRC, /\.css$/).filter((p) => !p.startsWith(GLAS)).map((p) => readFileSync(p, 'utf8')),
       readFileSync(PACKAGE_CSS, 'utf8'),
+      // classes only Glas renders (the package's Glas parts) are defined by its Glas stylesheet
+      readFileSync(PACKAGE_GLAS_CSS, 'utf8'),
     ].map(stripComments).join('\n');
     const defined = new Set([...otherCss.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]));
     const used = new Set(

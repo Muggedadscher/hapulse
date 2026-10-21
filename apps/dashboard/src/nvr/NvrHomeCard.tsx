@@ -2,7 +2,8 @@
  * [fork] Home overview card "Sentinel NVR": camera snapshots (tap → timeline)
  * and the latest events (tap → timeline at the event). Rendered only when the
  * NVR is configured (Home gates the section on `useNvrConfigured()`). In Glas the
- * body is NvrHomeGlas (docs/GLAS-DESIGN.md §7.15), header and error stay.
+ * body is the package's GlassNvr (docs/GLAS-DESIGN.md §7.15; @sentinel-nvr/web ≥ 0.21.0, moved there from HAPulse's
+ * NvrHomeGlas so Sentinel's own UI shows the same), header and error stay.
  */
 
 import React from 'react';
@@ -13,12 +14,11 @@ import { Card } from '../components/ui/Card';
 import { useT, useLocale } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { fmtTime, fmtRelative } from './format';
-import { EventBadges, eventLabel, tileSnapshotWidth } from '@sentinel-nvr/web/ui';
-import { useNvrT } from './ui';
+import { EventBadges, eventLabel, GlassNvr, tileSnapshotWidth } from '@sentinel-nvr/web/ui';
+import { NvrUi, useNvrT } from './ui';
 import { cameraPath, NVR_ROOT } from './paths';
 import { HomeSnapshot } from './HomeSnapshot';
 import { useSnapshotTick } from './useSnapshotTick';
-import { NvrHomeGlas } from './NvrHomeGlas';
 import { useIsGlas } from '../app/glas/useUiStyle';
 import './nvr.css';
 
@@ -62,7 +62,9 @@ export function NvrHomeCard() {
       {status === 'error' ? (
         <p className="nvr-muted nvr-home__error"><WifiOff size={14} strokeWidth={2} />{errorStatus === 401 ? t('nvr.error.unauthorized') : t('nvr.error.unreachable')}</p>
       ) : isGlas ? (
-        <NvrHomeGlas client={client} cameras={cameras} events={recent} tick={tick} retry={retry} loading={status !== 'ready'} />
+        <NvrUi client={client}>
+          <GlassNvr cameras={cameras} events={recent} loading={status !== 'ready'} refreshMs={SNAPSHOT_MS} />
+        </NvrUi>
       ) : (
         <>
           <div className="nvr-home__meta">

@@ -1,6 +1,7 @@
 /* [fork] Glas — the pages' head cards, "Tafeln" (plan docs/glas/PLAN-TAFELN.md, GLAS-DESIGN §7.34):
    devices, system, energy, security, NVR, automations and scenes (the pool keeps its hero, Jannick 12.10.2026). Markup
-   components/glas/tafel/ (and nvr/NvrHeroGlas). One pattern for all seven: the head (symbol 28 in a circle 56, a line 13/18 above,
+   components/glas/tafel/ (the NVR's is the Sentinel package's Hero appearance="glass", its rules a copy of these in the
+   package's ui/glas.css with .nvr-tafel for .g-tafel; test/glasParity.test.ts keeps them alike). One pattern for all seven: the head (symbol 28 in a circle 56, a line 13/18 above,
    the state 22/28 700 in its ink, a line 15/20 below), then the figures (numbers 28/34 600) as a grid with hairlines between the cells,
    rings for gauges, note rows for faults. No tiles or capsules in the card and no wash over it (Jannick's choice of
    draft A, 11.10.2026): colour only where something differs (GLAS-DESIGN §2.2, like the status chips K87) — a count,

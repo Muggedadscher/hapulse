@@ -14,10 +14,10 @@ const WS = require('ws'), http = require('http'), nodeFs = require('fs'), os = r
 const BASE = process.argv[2], NVR = process.argv[3], TOKEN = process.argv[4] || '', MOBILE = process.argv.includes('mobile');
 const NOEXPORT = process.argv.includes('noexport');
 const GLAS = process.argv.includes('glas');
-const HOME = GLAS ? { card: '.g-nvr', cam: '.g-nvr__cam', ev: '.g-nvr__ev' } : { card: '.nvr-home', cam: '.nvr-home__cam', ev: '.nvr-home__ev' };
+const HOME = GLAS ? { card: '.nvr-gl', cam: '.nvr-gl__cam', ev: '.nvr-gl__ev' } : { card: '.nvr-home', cam: '.nvr-home__cam', ev: '.nvr-home__ev' };
 // the overview /nvr: in Glas the NVR card's tiles and events, in Klassisch the package's
 const OV = GLAS
-  ? { tile: '.nvr-layout .g-nvr__cam', ev: '.nvr-layout .g-nvr__ev', img: '.nvr-layout :is(img.nvr-home__cam-img,.g-nvr__ev-img)' }
+  ? { tile: '.nvr-layout .nvr-gl__cam', ev: '.nvr-layout .nvr-gl__ev', img: '.nvr-layout :is(img.nvr-camtile__img,.nvr-gl__ev-img)' }
   : { tile: '.nvr-camtile', ev: '.nvr-strip__item', img: '.nvr-camtile__img,.nvr-strip__img img' };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = ''; r.on('data', (c) => (d += c)); r.on('end', () => { try { res(JSON.parse(d)); } catch (e) { rej(e); } }); }).on('error', rej); });

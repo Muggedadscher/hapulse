@@ -223,7 +223,9 @@ sauber übernehmen können.
   Morph `g-cam` ins Standbild, Zurück der Kameraseite; alles andere navigiert wie Klassisch), Hover nur mit Zeiger
   (Glas-Hover unter `@media (hover: hover)`, Ruhe-Regeln unter `(hover: none)`, Wächter `styleRules` in
   `test/glasSelectors.test.ts`), Kontrast am Bildschirm (Regeln GLAS-DESIGN §2.5; Fenster über der Kameraseite dunkel,
-  `IMMERSIVE_FLOATING` in `glasAppearance.ts`). Sentinel-Übersicht in Glas: ruhiger Kopf `nvr/NvrHeroGlas.tsx`,
+  `IMMERSIVE_FLOATING` in `glasAppearance.ts`). Sentinel-Übersicht in Glas: ruhiger Kopf (seit Paket 0.21.0 `Hero appearance="glass"`, Kacheln und Ereignisse
+  `GlassNvr`/`GlassSections` aus `@sentinel-nvr/web`, CSS `@sentinel-nvr/web/ui/glas.css`, Gleichstand der Tafel
+  `test/glasParity.test.ts`),
   Aktionen hinter „⋯“ (`components/glas/HeaderMenu.tsx`; Tasten, Fokus und Schließen teilt es mit dem Avatar-Menü über
   `app/glas/useGlasMenu.ts`). Prüfungen `checks --part polish` (`scripts/glas-checks-polish.cjs`:
   Übergänge, Hover, Kontrast, Leistung, Stil-Zeile, reduzierte Bewegung); `--engine webkit` für Playwright-WebKit im

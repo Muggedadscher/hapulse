@@ -143,28 +143,30 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
 - **Übrige Ansichten:** Übersicht, Sicherheits-Sektion, Raum-Kameras, Einrichtung, das Fenster Datum/Uhrzeit und der
   Hinweis im Detail einer HA-Kamera bekommen den Glas-Look per CSS an den Klassen des Pakets und des NVR-Moduls
   (`styles/glas/nvr.css`, Akzentflächen in `accent.css`). Eigenes Markup nur in Glas: die Übersicht beginnt mit einem
-  ruhigen Kopf (`nvr/NvrHeroGlas.tsx`), „Sentinel öffnen“, „Räume“ und „Einrichtung“ liegen im Menü „⋯“ neben dem
-  Avatar (`components/glas/HeaderMenu.tsx`, beim Schließen geht der Fokus auf den Knopf zurück), der Speicherhinweis
-  ist eine Fußnote (`.nvr-note`), und Token/Konto der Einrichtung ist ein `Segment` (`NvrSetup.tsx`). Klassisch bleibt
-  unverändert. Die Home-Karte hat seit Etappe 4 einen eigenen Glas-Körper (`NvrHomeGlas.tsx`). Seit F44 nimmt die
-  Übersicht in Glas deren Aufbau: erst „Kameras“, dann „Ereignisse“ (Titel mit Symbol), beide aus den Hälften der
-  Home-Karte (`NvrGlasCameras`, `NvrGlasEvents` in `NvrHomeGlas.tsx`, auf der Seite `.g-nvr-page`), mit allen Kameras
-  und allen letzten Ereignissen; die Klassen eines Ereignisses stehen als Wort unter der Uhrzeit, nicht als Symbol auf
-  dem Bild (Entscheid Jannick 11.10.2026). Unter 900 px Kacheln 16:10 mit Kapsel (zwei nebeneinander, sobald 300 px
-  passen) und ein Bildstreifen bis zum Rand; ab 900 px seit F46 dasselbe wie auf dem Handy (Kacheln mit Kapsel in zwei
-  Spalten, die Ereignisse als Bildstreifen darunter, Pfeil-Knöpfe für die Maus in `NvrStrip.tsx`); die Home-Karte sieht
-  seit F46 auf dem Desktop ebenfalls aus wie auf dem Handy. Die Schnappschüsse erneuern sich alle 5 s wie die des Pakets; ein
-  gescheiterter wird alle 30 s im Hintergrund neu geladen, die Kachel wechselt erst zurück, wenn er da ist
-  (`useSnapshotTick`, `HomeSnapshot`, auch auf der Home-Karte in beiden Stilen).
+  ruhigen Kopf, „Sentinel öffnen“, „Räume“ und „Einrichtung“ liegen im Menü „⋯“ neben dem Avatar
+  (`components/glas/HeaderMenu.tsx`, beim Schließen geht der Fokus auf den Knopf zurück), der Speicherhinweis ist eine
+  Fußnote (`.nvr-note`), und Token/Konto der Einrichtung ist ein `Segment` (`NvrSetup.tsx`). Klassisch bleibt
+  unverändert. **Seit Paket 0.21.0 sind die Glas-Teile Paket-Code** (damit Sentinels eigene UI denselben Stil nutzen
+  kann): der Kopf ist `Hero appearance="glass"` (Tafel `.nvr-tafel`), der Körper der Home-Karte `GlassNvr`, die
+  Übersicht `GlassSections` (erst „Kameras“, dann „Ereignisse“, `.nvr-gl-page`), ihr Aussehen steht in
+  `@sentinel-nvr/web/ui/glas.css` (in `styles/glas/index.css` vor `nvr.css` geladen); HAPulse liefert nur Daten, Texte
+  und die Seitenrahmen. Die Klassen eines Ereignisses stehen als Wort unter der Uhrzeit, nicht als Symbol auf dem Bild
+  (Entscheid Jannick 11.10.2026). Unter 900 px Kacheln 16:10 mit Kapsel (zwei nebeneinander, sobald 300 px passen) und
+  ein Bildstreifen bis zum Rand; ab 900 px seit F46 dasselbe wie auf dem Handy (Kacheln mit Kapsel in zwei Spalten, die
+  Ereignisse als Bildstreifen darunter, Pfeil-Knöpfe für die Maus); die Home-Karte sieht seit F46 auf dem Desktop
+  ebenfalls aus wie auf dem Handy. Die Schnappschüsse erneuern sich alle 5 s; ein gescheiterter wird alle 30 s im
+  Hintergrund neu geladen, die Kachel wechselt erst zurück, wenn er da ist (im Paket; in Klassisch `useSnapshotTick`,
+  `HomeSnapshot`). Die Tafel des Kopfs ist eine Kopie der HAPulse-Tafel (`tafel.css`, `material.css`);
+  `test/glasParity.test.ts` hält beide gleich.
 - **Kamera öffnen und zurück (Etappe 7, Zurück seit F43):** In Glas wächst das Bild der gedrückten Kachel in das
   Standbild der Kameraseite (View Transition mit dem Namen `g-cam`, `app/glas/glasNavigate.ts`), ausgelöst von
-  `nav.openCamera` ohne Zeitpunkt (`nvr/ui.tsx`) und den Kacheln der Home-Karte und der Übersicht (`NvrHomeGlas.tsx`); das NVR-Chunk lädt
+  `nav.openCamera` ohne Zeitpunkt (`nvr/ui.tsx`; so öffnen auch die Glas-Kacheln des Pakets); das NVR-Chunk lädt
   beim Drücken. Ziel ist das Standbild des Pakets (`.nvr-stage__freeze[data-src]`, nicht `.nvr-stage`: darin liegt die
   Steuerkapsel mit Glas); zeichnet die Seite es nicht binnen 300 ms, blendet der Übergang nur über. Ereignisse (mit
   `at`/`ev`) öffnen ohne Morph. Zurück führt dorthin, wo die Kamera geöffnet wurde (Kachel oder Ereignis auf Home,
   Sicherheit, im Raum oder auf `/nvr`), an dieselbe Scrollstelle, und das Bild der Bühne schrumpft in die Kachel
   dieser Kamera: Kacheln tragen `data-nvr-camera`, ihr Bild liegt in einer Box (`.nvr-camtile__pic` im Paket ab 0.19.2,
-  `.nvr-home__cam-pic` der Home-Karte). Ist dort keine Kachel mit Bild mindestens zur Hälfte zu sehen, schließt das
+  `.nvr-home__cam-pic` der klassischen Home-Karte). Ist dort keine Kachel mit Bild mindestens zur Hälfte zu sehen, schließt das
   Bild an Ort und Stelle. Damit beim Zurückkommen ein Bild zum Landen da ist, zeigen die Kacheln sofort das letzte Bild der Kamera, bis
   der frische Schnappschuss dekodiert ist (Paket, `HomeSnapshot`; in beiden Stilen). Klassisch öffnet wie bisher,
   Zurück führt dort an den Anfang von `/nvr`. Glas in Browsern ohne `document.startViewTransition` öffnet ohne
@@ -180,7 +182,9 @@ beim Öffnen `docs/glas/PLAN-ETAPPE-7.md` (K107).
   Bilder und Aufnahme-Segmente erzeugt es mit ffmpeg; ohne ffmpeg mit VP9 ist der Teil rot, `--no-media` überspringt ihn
   und meldet das). Echte Wiedergabe (Relay,
   Scrub, Ton, WebRTC) prüft der Klick-Test gegen ein echtes Sentinel mit dem Zusatz `glas` (unten).
-- Sentinels eigene UI bekommt kein Glas; sie rendert die Kameraseite im Standard.
+- Die Glas-Teile liegen seit Paket 0.21.0 im Paket (Komponenten, `ui/glas.css`, Werte und `applyAppearance` in
+  `@sentinel-nvr/web/glas`), damit Sentinels eigene UI denselben Stil bekommen kann; ob sie Glas zeigt, stellt Sentinel
+  selbst ein.
 
 ## Clip-Export (seit Paket 0.17.0, Oktober 2026)
 

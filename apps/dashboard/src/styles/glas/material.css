@@ -148,9 +148,9 @@
   text-shadow: var(--g-glass-clear-text-shadow);
 }
 
-/* text on clear glass (the camera tiles' names, the NVR card's pill): the clear fill dims more, so the white text keeps
+/* text on clear glass (the camera tiles' names; the NVR card's pill in the package's ui/glas.css): the clear fill dims more, so the white text keeps
    4.5:1 over a white picture together with the tile's top shade (GLAS-DESIGN §2.5 rule 5; Etappe 7, K109) */
-:root[data-style='glas'] :is(.nvr-camtile__name, .g-nvr__pill) {
+:root[data-style='glas'] .nvr-camtile__name {
   --g-glass-fill: var(--g-glass-clear-text-fill);
 }
 
