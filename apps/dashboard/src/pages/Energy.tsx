@@ -2,14 +2,14 @@ import React, { useCallback, useState } from 'react';
 import { Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
-  EnergySourcesCard,
+  // [fork] EnergySourcesCard and EnergySolarCard: replaced by the draft-v5 cards below (components/energy/fork)
   EnergyDevicesCard,
-  EnergySolarCard,
   EnergyWaterCard,
   EnergyGasCard,
   EnergyNotConfigured,
 } from '../components/energy/EnergyCards';
 import { EnergyHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
+import { EnergySolarShareCard, EnergyUsageCard } from '../components/energy/fork/EnergyOrigin'; // [fork] draft v5
 import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { EditBadge } from '../components/ui/EditBadge';
@@ -131,11 +131,11 @@ const SECTION_TOGGLE_KEYS = {
     hideMobile: 'energy.section.hideMobile.hero',
     showMobile: 'energy.section.showMobile.hero',
   },
-  usage: {
-    hide: 'energy.section.hide.usage',
-    show: 'energy.section.show.usage',
-    hideMobile: 'energy.section.hideMobile.usage',
-    showMobile: 'energy.section.showMobile.usage',
+  usage: { // [fork] the card is "Consumption" now (draft v5); the id stays, so order and hiding are kept
+    hide: 'energy.section.hide.consumption',
+    show: 'energy.section.show.consumption',
+    hideMobile: 'energy.section.hideMobile.consumption',
+    showMobile: 'energy.section.showMobile.consumption',
   },
   solar: {
     hide: 'energy.section.hide.solar',
@@ -171,7 +171,7 @@ type SectionId = keyof typeof SECTION_TOGGLE_KEYS;
 // words as the hide labels above (the hero is their "Overview")
 const SECTION_NAME_KEYS: Record<SectionId, TKey> = {
   hero: 'nav.overview',
-  usage: 'energy.sources.title',
+  usage: 'energy.usage.title', // [fork] draft v5
   solar: 'energy.solar.title',
   devices: 'energy.devices.title',
   water: 'energy.water.title',
@@ -195,7 +195,7 @@ export function Energy() {
   const t = useT();
   const isGlas = useIsGlas(); // [fork]
   const [period, setPeriod] = useState<EnergyPeriod>('today');
-  const { state, dashboard, currency } = useEnergy(period);
+  const { state, dashboard, currency, loadedPeriod } = useEnergy(period); // [fork] loadedPeriod
   const editMode = useUIStore((s) => s.editMode);
   const haUrl = useConnectionStore((s) => s.url);
 
@@ -269,11 +269,11 @@ export function Energy() {
   function renderWidget(id: string, d: EnergyDashboard) {
     switch (id) {
       case 'hero':
-        return <EnergyHeroCard dashboard={d} period={period} onPeriodChange={setPeriod} currency={currency} />;
+        return <EnergyHeroCard dashboard={d} period={period} onPeriodChange={setPeriod} currency={currency} dataPeriod={loadedPeriod} />; // [fork] dataPeriod
       case 'usage':
-        return <EnergySourcesCard dashboard={d} />;
+        return <EnergyUsageCard dashboard={d} period={loadedPeriod} />; // [fork] draft v5: consumption by origin (the data's period)
       case 'solar':
-        return <EnergySolarCard dashboard={d} />;
+        return <EnergySolarShareCard dashboard={d} period={loadedPeriod} />; // [fork] draft v5: solar by destination
       case 'devices':
         return <EnergyDevicesCard dashboard={d} />;
       case 'water':

@@ -93,6 +93,9 @@ const LIGHT = {
   chartNetz: '#8E8E93',
   chartSolar: '#FFCC00',
   chartSolarEdge: '#A67C00',
+  // the home battery in the energy charts (draft v5): the ok green, in the light mode with a darker edge like solar
+  chartBattery: '#34C759',
+  chartBatteryEdge: '#1F7A35',
   chartBar: 'rgba(120,120,128,.32)',
   chartLine: '#3A3A3C',
   chartArea: 'rgba(120,120,128,.14)',
@@ -190,6 +193,8 @@ const DARK: Record<GlasColorKey, string> = {
   chartNetz: '#8E8E93',
   chartSolar: '#FFD60A',
   chartSolarEdge: 'rgba(0,0,0,0)',
+  chartBattery: '#30D158',
+  chartBatteryEdge: 'rgba(0,0,0,0)',
   chartBar: 'rgba(120,120,128,.48)',
   chartLine: '#D1D1D6',
   chartArea: 'rgba(120,120,128,.24)',
@@ -889,6 +894,8 @@ function homeContrastPairs(c: Record<GlasColorKey, string>, a: GlasAccent): Cont
   pairs.push({ name: 'grid bars on card', fg: c.chartNetz, bg: c.card, min: 3 });
   const solarEdge = (parseColor(c.chartSolarEdge)?.a ?? 0) > 0 ? c.chartSolarEdge : c.chartSolar;
   pairs.push({ name: 'solar bars (their edge) on card', fg: solarEdge, bg: c.card, min: 3 });
+  const batteryEdge = (parseColor(c.chartBatteryEdge)?.a ?? 0) > 0 ? c.chartBatteryEdge : c.chartBattery;
+  pairs.push({ name: 'battery bars (their edge) on card', fg: batteryEdge, bg: c.card, min: 3 });
   pairs.push({ name: 'average line on card', fg: compositeOver(atAlpha(c.chartAvg, 0.7), c.card), bg: c.card, min: 3 });
   for (const [name, fill, ink] of [['accent', a.accent, a.accentInk], ['orange', c.orange, c.orangeInk], ['blue', c.blue, c.blueInk]] as const) {
     pairs.push({ name: `${name} chart line on group`, fg: ink, bg: c.group, min: 3 });

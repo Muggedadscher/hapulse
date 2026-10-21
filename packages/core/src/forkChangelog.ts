@@ -38,6 +38,30 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 55,
+    date: '2026-10-21',
+    title: { de: 'Energie: Verbrauch nach Herkunft, Solar nach Ziel', en: 'Energy: consumption by origin, solar by destination' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Karte „Verbrauch“ ersetzt „Quellen“: wie viel Prozent aus eigenem Strom kamen, die Anteile Solar, Batterie und Netz und die Balken nach Herkunft',
+            en: 'The card “Consumption” replaces “Sources”: how much came from your own power, the shares of solar, battery and grid and the bars by origin',
+          },
+          {
+            de: 'Die Karte „Solar“ zeigt, wie viel Prozent selbst genutzt wurden und wohin der Solarstrom ging (Haus, Batterie, Netz), auch je Stunde',
+            en: 'The card “Solar” shows how much was used yourself and where the solar power went (home, battery, grid), also per hour',
+          },
+          {
+            de: 'Der Kopf der Energieseite vergleicht mit dem Vorzeitraum, zeigt die Batterie als Paar geladen und entladen und in Glas den PV-Ertrag unter dem Hausverbrauch',
+            en: 'The head of the energy page compares with the period before, shows the battery as a pair charged and discharged and, in Glas, the solar yield below the home consumption',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 54,
     date: '2026-10-21',
     title: { de: 'Energie: Netzkosten mit Einspeisevergütung', en: 'Energy: grid cost with feed-in compensation' },

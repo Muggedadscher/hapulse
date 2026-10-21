@@ -165,13 +165,15 @@ Grün `#34C759` → Ink `#1F7A35`, Tab hell `#1D7131`; Lila `#AF52DE` → Ink `#
 Skizze: Handy nutzte für Orange `#B25000` + separat gerechnete Tab-Ink; `#B25000` hat auf der Linse nur 4,17:1 →
 verbindlich `#A64B00` als Akzent-Ink. `#B25000` bleibt die Heizen-Ink.
 
-### 2.4 Diagrammfarben (Energie Netz/Solar)
+### 2.4 Diagrammfarben (Energie Netz/Solar/Batterie)
 
 | Token | Hell | Dunkel | Regel |
 |---|---|---|---|
 | `chartNetz` | `#8E8E93` (3,26:1 auf Weiß) | `#8E8E93` (5,22:1) | Netz unten, neutralgrau |
 | `chartSolar` | `#FFCC00` (1,51:1!) | `#FFD60A` (12,05:1) | Solar oben, gelb |
 | `chartSolarEdge` | `#A67C00` als `inset 0 0 0 1px` (3,82:1) | transparent | **Pflicht im Hellen**, sonst ist Gelb auf Weiß unsichtbar |
+| `chartBattery` | `#34C759` (ok-Grün) | `#30D158` | Batterie in der Mitte (Netz unten, Solar oben); Klassisch `--positive` |
+| `chartBatteryEdge` | `#1F7A35` als `inset 0 0 0 1px` (5,39:1) | transparent | im Hellen Pflicht wie bei Solar (Grün allein 2,22:1 auf Weiß) |
 | `chartGrid` | `sepStrong` | `sepStrong` | Grundlinie durchgezogen, weitere gestrichelt 2 px / 3 px Lücke |
 | `chartAvg` | `label`, Deckkraft .7 | `label` | Ø-Linie gestrichelt 4 px / 3 px |
 | Zukunft | `fill`, 3 px hoch | `fill` | noch nicht erreichte Stunden |
