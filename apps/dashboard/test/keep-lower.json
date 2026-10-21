@@ -111,5 +111,13 @@
       "sv"
     ],
     "reason": "put after a comma into the chart's description; German capitalises the noun"
+  },
+  "energy.usage.own": {
+    "langs": "all",
+    "reason": "follows the big percentage on the same line (\"85 % aus eigenem Strom\")"
+  },
+  "energy.solarShare.self": {
+    "langs": "all",
+    "reason": "follows the big percentage on the same line (\"65 % selbst genutzt\")"
   }
 }

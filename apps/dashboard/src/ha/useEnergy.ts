@@ -29,6 +29,8 @@ export interface UseEnergyResult {
   dashboard: EnergyDashboard | null;
   prefs: EnergyPreferences | null;
   currency: string | null;
+  /** [fork] The period `dashboard` was computed for (it lags `period` while the next one loads). */
+  loadedPeriod: EnergyPeriod;
   /** Force a re-fetch (e.g. after a manual refresh). */
   reload: () => void;
 }
@@ -42,6 +44,7 @@ export function useEnergy(period: EnergyPeriod): UseEnergyResult {
   const [prefs, setPrefs] = useState<EnergyPreferences | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
   const [nonce, setNonce] = useState(0);
+  const [loadedPeriod, setLoadedPeriod] = useState<EnergyPeriod>(period); // [fork]
 
   useEffect(() => {
     if (status !== 'connected') {
@@ -81,6 +84,7 @@ export function useEnergy(period: EnergyPeriod): UseEnergyResult {
 
         setCurrency(curr);
         setDashboard(computed);
+        setLoadedPeriod(period); // [fork]
         setState('ready');
       } catch (err) {
         if (cancelled) return;
@@ -94,5 +98,5 @@ export function useEnergy(period: EnergyPeriod): UseEnergyResult {
     };
   }, [status, mode, period, nonce]);
 
-  return { state, dashboard, prefs, currency, reload: () => setNonce((n) => n + 1) };
+  return { state, dashboard, prefs, currency, loadedPeriod /* [fork] */, reload: () => setNonce((n) => n + 1) };
 }

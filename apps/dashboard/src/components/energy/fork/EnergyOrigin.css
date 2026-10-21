@@ -1,0 +1,228 @@
+/* [fork] Energy page cards "Consumption" and "Solar" (EnergyOrigin.tsx): the big share, the share list and the chart
+   by origin. Klassisch colours: solar = accent, battery = positive, grid = info. Glas overrides the colours and type
+   in styles/glas/energy.css. */
+
+.en-card {
+  --en-solar: var(--accent);
+  --en-battery: var(--positive);
+  --en-grid: var(--info);
+  --en-rule: var(--line);
+  --en-label: var(--text-dim);
+}
+
+/* ---- big share ---- */
+.en-big {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin: 0;
+  color: var(--text);
+}
+
+.en-big__num {
+  font-family: var(--font-data);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.en-big__unit {
+  font-size: 0.9375rem;
+  color: var(--text-dim);
+}
+
+/* ---- shares ---- */
+.en-shares {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.en-shares__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.en-shares__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.en-shares__value {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.en-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.en-dot--solar,
+.en-chart__part--solar {
+  background: var(--en-solar);
+}
+
+.en-dot--battery,
+.en-chart__part--battery {
+  background: var(--en-battery);
+}
+
+.en-dot--grid,
+.en-chart__part--grid {
+  background: var(--en-grid);
+}
+
+/* ---- chart ---- */
+/* the chart takes the card's free height (a tall card next to the tafel on the desktop), 132 to 210 */
+.en-chart {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.en-chart__area {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 132px;
+  max-height: 210px;
+  margin-top: 0.5rem;
+}
+
+.en-chart__rule {
+  position: absolute;
+  left: 0;
+  right: 44px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--en-rule) 0 2px, transparent 2px 5px);
+}
+
+.en-chart__rule--base {
+  background: var(--en-rule);
+}
+
+.en-chart__tick {
+  position: absolute;
+  right: 0;
+  text-align: right;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--en-label);
+  white-space: nowrap;
+  transform: translateY(50%);
+}
+
+.en-chart__tick--hidden {
+  visibility: hidden;
+}
+
+.en-chart__tick--avg {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.en-chart__plot {
+  position: absolute;
+  inset: 0 44px 0 0;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--en-gap);
+}
+
+.en-chart__bar {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.en-chart__col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  max-width: var(--en-max);
+  overflow: hidden;
+  border-radius: var(--en-r) var(--en-r) 0 0;
+}
+
+.en-chart__part {
+  display: block;
+  flex-basis: 0;
+  min-height: 0;
+}
+
+.en-chart__stub {
+  display: block;
+  width: 100%;
+  max-width: var(--en-max);
+  height: 3px;
+  border-radius: 1.5px;
+  background: var(--bg-subtle);
+}
+
+.en-chart__avg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--text) 0 4px, transparent 4px 7px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.en-chart__x {
+  position: relative;
+  height: 16px;
+  margin: 6px 44px 0 0;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--en-label);
+}
+
+.en-chart__xl {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  translate: -50% 0;
+}
+
+.en-chart__foot {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--en-label);
+}
+
+@media (forced-colors: active) {
+  .en-chart__part--grid,
+  .en-dot--grid {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .en-chart__part--solar,
+  .en-dot--solar {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  .en-chart__part--battery,
+  .en-dot--battery {
+    forced-color-adjust: none;
+    background: LinkText;
+  }
+}

@@ -6,6 +6,19 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F55 — 2026-10-21
+
+**Energie: Verbrauch nach Herkunft, Solar nach Ziel** · _Energy: consumption by origin, solar by destination_
+
+### Geändert / Changed
+
+- Die Karte „Verbrauch“ ersetzt „Quellen“: wie viel Prozent aus eigenem Strom kamen, die Anteile Solar, Batterie und Netz und die Balken nach Herkunft  
+  _The card “Consumption” replaces “Sources”: how much came from your own power, the shares of solar, battery and grid and the bars by origin_
+- Die Karte „Solar“ zeigt, wie viel Prozent selbst genutzt wurden und wohin der Solarstrom ging (Haus, Batterie, Netz), auch je Stunde  
+  _The card “Solar” shows how much was used yourself and where the solar power went (home, battery, grid), also per hour_
+- Der Kopf der Energieseite vergleicht mit dem Vorzeitraum, zeigt die Batterie als Paar geladen und entladen und in Glas den PV-Ertrag unter dem Hausverbrauch  
+  _The head of the energy page compares with the period before, shows the battery as a pair charged and discharged and, in Glas, the solar yield below the home consumption_
+
 ## F54 — 2026-10-21
 
 **Energie: Netzkosten mit Einspeisevergütung** · _Energy: grid cost with feed-in compensation_

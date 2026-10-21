@@ -11,6 +11,7 @@ import {
   Flame,
   Droplets,
   BatteryCharging,
+  BatteryPlus, // [fork] draft v5
   ArrowDownToLine,
   ArrowUpFromLine,
   House,
@@ -21,6 +22,7 @@ import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
 import { formatNumber } from '@hapulse/core'; // [fork]
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas period segment (K92)
 import { Segment } from '../glas/Segment'; // [fork]
+import { CostIcon, useEnergyCompareText } from './fork/energyHead'; // [fork] draft v5: comparison, cost symbol
 import type { TKey } from '../../i18n/useT';
 import type { EnergyDashboard, EnergyPeriod } from '@hapulse/core';
 import './EnergyCards.css';
@@ -135,14 +137,18 @@ export function EnergyHeroCard({
   period,
   onPeriodChange,
   currency,
+  dataPeriod, // [fork]
 }: {
   dashboard: EnergyDashboard;
   period: EnergyPeriod;
   onPeriodChange: (p: EnergyPeriod) => void;
   currency: string | null;
+  /** [fork] the period `dashboard` belongs to while the next one loads (default `period`) */
+  dataPeriod?: EnergyPeriod;
 }) {
   const t = useT();
   const locale = useLocale(); // [fork] number formatting
+  const compare = useEnergyCompareText(dataPeriod ?? period); // [fork] draft v5
   return (
     <Card className="energy-hero">
       <div className="energy-hero__header">
@@ -163,9 +169,28 @@ export function EnergyHeroCard({
           {fmtEnergy(dashboard.homeConsumption, locale)}
           <span className="energy-hero__primary-unit"> kWh</span>
         </span>
+        {compare !== null && <span className="energy-hero__compare">{compare}</span>}{/* [fork] draft v5 */}
       </div>
 
       <div className="energy-hero__stats">
+        {dashboard.hasBattery && ( // [fork] draft v5: the battery pair first (charged, discharged), as in Glas
+          <StatTile
+            icon={<BatteryPlus size={16} strokeWidth={1.75} />}
+            label={t('energy.tafel.batteryIn')}
+            value={fmtEnergy(dashboard.batteryIn, locale)}
+            unit="kWh"
+            tone="positive"
+          />
+        )}
+        {dashboard.hasBattery && (
+          <StatTile
+            icon={<BatteryCharging size={16} strokeWidth={1.75} />}
+            label={t('energy.tafel.batteryOut') /* [fork] draft v5: was energy.hero.batteryOut */}
+            value={fmtEnergy(dashboard.batteryOut, locale)}
+            unit="kWh"
+            tone="neutral"
+          />
+        )}
         {dashboard.hasGrid && (
           <StatTile
             icon={<ArrowDownToLine size={16} strokeWidth={1.75} />}
@@ -184,7 +209,7 @@ export function EnergyHeroCard({
             tone="positive"
           />
         )}
-        {dashboard.hasSolar && (
+        {dashboard.hasSolar && ( // [fork] draft v5: after the battery and grid pairs, so the pairs stay together
           <StatTile
             icon={<Sun size={16} strokeWidth={1.75} />}
             label={t('energy.hero.solar')}
@@ -193,18 +218,9 @@ export function EnergyHeroCard({
             tone="accent"
           />
         )}
-        {dashboard.hasBattery && (
-          <StatTile
-            icon={<BatteryCharging size={16} strokeWidth={1.75} />}
-            label={t('energy.hero.batteryOut')}
-            value={fmtEnergy(dashboard.batteryOut, locale)}
-            unit="kWh"
-            tone="neutral"
-          />
-        )}
         {dashboard.cost != null && (
           <StatTile
-            icon={<Zap size={16} strokeWidth={1.75} />}
+            icon={<CostIcon currency={currency} size={16} strokeWidth={1.75} /> /* [fork] draft v5: € instead of Zap */}
             label={t('energy.hero.gridCost')}
             value={fmtCost(dashboard.cost, currency, locale)}
             tone="danger"

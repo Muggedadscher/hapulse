@@ -448,3 +448,35 @@
     color: HighlightText;
   }
 }
+
+/* Energy since draft v5: below the consumption the solar yield 15/20 (the sun in its chart ink, the value 600 label)
+   and the comparison 13/18 label2, as on the overview's energy card (GLAS-DESIGN §7.9). */
+:root[data-style='glas'] .g-tafel__pv {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-tafel__pv-sun {
+  flex: none;
+  color: var(--g-yellow-ink);
+}
+
+:root[data-style='glas'] .g-tafel__pv-value {
+  color: var(--g-label);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .g-tafel__compare {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+/* Energy since draft v5: at most two columns at any width, so an odd last cell (the cost) always takes the row. */
+:root[data-style='glas'] .g-tafel--energy .g-tafel__grid > .g-tafel__cell:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
