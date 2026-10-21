@@ -44,18 +44,45 @@ export interface GridSource {
   stat_cost?: string | null;
   entity_energy_price?: string | null;
   number_energy_price?: number | null;
+  // [fork] Home Assistant's current grid format: one flat object per grid connection, the export's compensation
+  // beside it (frontend src/data/energy.ts GridSourceTypeEnergyPreference)
+  stat_compensation?: string | null;
+  entity_energy_price_export?: string | null;
+  number_energy_price_export?: number | null;
+  /** [fork] Power sensor (W), positive = import. HA sets it also when only `power_config` is given. */
+  stat_rate?: string;
+  power_config?: PowerConfig;
+  name?: string;
+}
+
+/** [fork] How a power sensor is wired (HA 2025.12+); HA resolves it into the source's `stat_rate`. */
+export interface PowerConfig {
+  stat_rate?: string;
+  stat_rate_inverted?: string;
+  stat_rate_from?: string;
+  stat_rate_to?: string;
 }
 
 export interface SolarSource {
   type: 'solar';
   stat_energy_from: string;
   config_entry_solar_forecast?: string[] | null;
+  stat_rate?: string; // [fork] power sensor (W)
+  name?: string; // [fork]
 }
 
 export interface BatterySource {
   type: 'battery';
   stat_energy_from: string;
   stat_energy_to: string;
+  /** [fork] Power sensor (W), positive = discharging. */
+  stat_rate?: string;
+  power_config?: PowerConfig; // [fork]
+  /** [fork] State of charge sensor (%). */
+  stat_soc?: string;
+  /** [fork] Usable capacity (kWh). */
+  capacity?: number;
+  name?: string; // [fork]
 }
 
 export interface GasSource {
@@ -190,6 +217,18 @@ function gridFlowToIds(g: GridSource): string[] {
   return g.stat_energy_to ? [g.stat_energy_to] : [];
 }
 
+/** [fork] The export legs: the old `flow_to` list, or the flat format's export with its compensation. */
+function gridFlowToLegs(g: GridSource): FlowToGridSourceEnergy[] {
+  if (g.flow_to && g.flow_to.length) return g.flow_to;
+  if (!g.stat_energy_to) return [];
+  return [{
+    stat_energy_to: g.stat_energy_to,
+    stat_compensation: g.stat_compensation ?? null,
+    entity_energy_price: g.entity_energy_price_export ?? null,
+    number_energy_price: g.number_energy_price_export ?? null,
+  }];
+}
+
 /** All statistic IDs referenced by the prefs — used to drive the stats fetch. */
 export function energyStatisticIds(prefs: EnergyPreferences): string[] {
   const ids = new Set<string>();
@@ -199,7 +238,7 @@ export function energyStatisticIds(prefs: EnergyPreferences): string[] {
       for (const id of gridFlowToIds(src)) ids.add(id);
       // cost statistics
       for (const f of src.flow_from ?? []) if (f.stat_cost) ids.add(f.stat_cost);
-      for (const f of src.flow_to ?? []) if (f.stat_compensation) ids.add(f.stat_compensation);
+      for (const f of gridFlowToLegs(src)) if (f.stat_compensation) ids.add(f.stat_compensation); // [fork] flat format
       if (src.stat_cost) ids.add(src.stat_cost);
     } else if (src.type === 'solar') {
       ids.add(src.stat_energy_from);
@@ -290,6 +329,8 @@ export interface EnergySeriesPoint {
   gridConsumed: number;
   gridReturned: number;
   solar: number;
+  batteryIn: number; // [fork] charged (kWh)
+  batteryOut: number; // [fork] discharged (kWh)
 }
 
 export interface EnergyWaterUsage {
@@ -409,7 +450,7 @@ export function computeEnergyDashboard(
       }
     }
     // export legs (compensation reduces cost)
-    const toLegs = g.flow_to ?? [];
+    const toLegs = gridFlowToLegs(g); // [fork] also the flat format (was g.flow_to ?? [])
     for (const leg of toLegs) {
       if (leg.stat_compensation) {
         cost = (cost ?? 0) - sumChange(stats, leg.stat_compensation);
@@ -424,10 +465,14 @@ export function computeEnergyDashboard(
   const fromSeries = seriesSum(stats, fromIds);
   const toSeries = seriesSum(stats, toIds);
   const solarSeries = seriesSum(stats, solarSources.map((s) => s.stat_energy_from));
+  const batInSeries = seriesSum(stats, batterySources.map((s) => s.stat_energy_to)); // [fork]
+  const batOutSeries = seriesSum(stats, batterySources.map((s) => s.stat_energy_from)); // [fork]
   const starts = new Set<number>([
     ...fromSeries.keys(),
     ...toSeries.keys(),
     ...solarSeries.keys(),
+    ...batInSeries.keys(), // [fork]
+    ...batOutSeries.keys(), // [fork]
   ]);
   const series: EnergySeriesPoint[] = [...starts]
     .sort((a, b) => a - b)
@@ -436,6 +481,8 @@ export function computeEnergyDashboard(
       gridConsumed: fromSeries.get(start) ?? 0,
       gridReturned: toSeries.get(start) ?? 0,
       solar: solarSeries.get(start) ?? 0,
+      batteryIn: batInSeries.get(start) ?? 0, // [fork]
+      batteryOut: batOutSeries.get(start) ?? 0, // [fork]
     }));
 
   return {
@@ -488,9 +535,18 @@ export const DEMO_ENERGY_PREFS: EnergyPreferences = {
           number_energy_price: 0.08,
         },
       ],
+      stat_rate: 'sensor.demo_grid_power', // [fork] power now (demo.ts demoEnergyEntities)
     },
-    { type: 'solar', stat_energy_from: 'sensor.demo_solar_production', config_entry_solar_forecast: null },
-    { type: 'battery', stat_energy_from: 'sensor.demo_battery_out', stat_energy_to: 'sensor.demo_battery_in' },
+    { type: 'solar', stat_energy_from: 'sensor.demo_solar_production', config_entry_solar_forecast: null, stat_rate: 'sensor.demo_solar_power' }, // [fork] stat_rate
+    {
+      type: 'battery',
+      stat_energy_from: 'sensor.demo_battery_out',
+      stat_energy_to: 'sensor.demo_battery_in',
+      // [fork] power, charge and usable capacity
+      stat_rate: 'sensor.demo_battery_power',
+      stat_soc: 'sensor.demo_battery_soc',
+      capacity: 5.12,
+    },
     { type: 'water', stat_energy_from: 'sensor.demo_water', number_energy_price: 0.004 },
   ],
   device_consumption: [
@@ -568,7 +624,15 @@ export function demoEnergyStatistics(
     let bStart = startMs;
     let i = 0;
     while (bStart < endMs) {
-      const bEnd = Math.min(bStart + stepMs, endMs);
+      // [fork] day and month buckets end at the next local calendar day or month, like Home Assistant's (was
+      // bStart + 24 h / 30 days: after a 25-hour day every demo day started at 23:00)
+      const bDate = new Date(bStart);
+      const bNext = bucket === 'month'
+        ? new Date(bDate.getFullYear(), bDate.getMonth() + 1, 1).getTime()
+        : bucket === 'day'
+          ? new Date(bDate.getFullYear(), bDate.getMonth(), bDate.getDate() + 1).getTime()
+          : bStart + stepMs;
+      const bEnd = Math.min(bNext, endMs);
       let change = 0;
       if (bucket === 'hour') {
         const hour = new Date(bStart).getHours();

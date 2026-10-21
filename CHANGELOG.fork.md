@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F54 — 2026-10-21
+
+**Energie: Netzkosten mit Einspeisevergütung** · _Energy: grid cost with feed-in compensation_
+
+### Behoben / Fixed
+
+- Die Netzkosten ziehen die Einspeisevergütung auch im aktuellen Format der Home-Assistant-Energieeinstellungen ab  
+  _The grid cost subtracts the feed-in compensation also in the current format of the Home Assistant energy settings_
+
 ## F53 — 2026-10-19
 
 **Kameras: Zeitanzeige beim Spulen** · _Cameras: time display while scrubbing_
