@@ -299,6 +299,10 @@ export {
   energyNowSentence,
   batteryStatus,
   POWER_FLOW_MIN,
+  energyBatteryIds,
+  combinedSoc,
+  combinedSocSeries,
+  demoBatterySoc,
 } from './energyFlow.js';
 export type {
   EnergyAllocation,
@@ -310,6 +314,7 @@ export type {
   EnergyNowSentence,
   BatteryState,
   BatteryStatus,
+  EnergyBatteryIds,
 } from './energyFlow.js';
 export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './sizePresets.js';
 export type { SizePreset, SectionSize } from './sizePresets.js';

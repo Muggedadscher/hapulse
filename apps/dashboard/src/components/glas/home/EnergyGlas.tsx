@@ -4,8 +4,9 @@
  * instead of EnergyWidget while the style is Glas.
  *
  * Title above the card, the segment Tag | Woche | Monat, the consumption with the comparison and the PV yield below
- * it, then the chart: grid import (grey) at the bottom and the solar the home used itself (yellow) on top, axis on
- * the right with fine solid lines, the dashed Ø line, hours still to come as stubs. Tap or hover a bar for the
+ * it, then the chart: grid import (grey) at the bottom, the home battery (green, draft v5) in the middle and the
+ * solar the home used itself (yellow) on top, axis on the right with fine solid lines, the dashed Ø line, hours still
+ * to come as stubs; below it the battery line (EnergyBatteryLine). Tap or hover a bar for the
  * bubble; arrow keys, Home and End walk the bars, Esc closes. Data from `useEnergyWindow`; without an energy setup in
  * Home Assistant the classic card with its setup prompt shows instead (§7.9 "Leer/nicht eingerichtet").
  */
@@ -15,6 +16,7 @@ import { ChevronRight, Sun, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { barPercent, energyAverage, energyAxis, formatNumber, hiddenTicks } from '@hapulse/core';
 import type { GlasEnergyBar, GlasEnergyPeriod } from '@hapulse/core';
+import { EnergyBatteryLine } from '../../energy/fork/EnergyBatteryLine';
 import { Card } from '../../ui/Card';
 import { EnergyWidget } from '../../home/EnergyWidget';
 import { Segment } from '../Segment';
@@ -225,6 +227,7 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
   const lit = hovIndex ?? selIndex;
   const tabAt = selIndex ?? reachable[reachable.length - 1] ?? -1;
   const solarSource = dashboard.hasSolar;
+  const batterySource = dashboard.hasBattery; // draft v5: the home battery as the bars' middle part
   const labels = xLabels(data, f, t);
   const labelKey = labels.map((l) => l.text).join('|');
 
@@ -277,7 +280,13 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
 
   // ---- accessible description of the chart ----
   const chartAria = [
-    `${t(CHART[data.period])}${solarSource && dashboard.hasGrid ? `, ${t('glas.energy.chartAriaStacked')}` : ''}.`,
+    `${t(CHART[data.period])}${
+      batterySource
+        ? `, ${t(solarSource ? 'glas.energy.chartAriaStackedBattery' : 'glas.energy.chartAriaStackedGridBattery')}`
+        : solarSource && dashboard.hasGrid
+          ? `, ${t('glas.energy.chartAriaStacked')}`
+          : ''
+    }.`,
     avg === null
       ? ''
       : t(data.period === 'day' ? 'glas.energy.chartAriaAvgHour' : 'glas.energy.chartAriaAvgDay', {
@@ -293,9 +302,10 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
     const when = whenOf(data, i, f, t);
     const label = bar.current ? t('glas.energy.running', { when }) : when;
     if (!bar.hasData) return t('glas.energy.barAriaNoData', { when: label });
-    return solarSource
+    const base = solarSource
       ? t('glas.energy.barAria', { when: label, value: one(bar.total, locale), solar: one(bar.solar, locale) })
       : t('glas.energy.barAriaGrid', { when: label, value: one(bar.total, locale) });
+    return batterySource ? `${base}, ${t('glas.energy.barAriaBatteryPart', { battery: one(bar.battery, locale) })}` : base;
   }
 
   /** Centre of column i in the plot, exact with the gaps between the columns. */
@@ -305,7 +315,7 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
   /** Column height in % of the axis top (a data bar is at least 1.5 % tall, also at 0 kWh, like the sketch). */
   const colPct = (bar: GlasEnergyBar) => {
     const p = barPercent(bar, axis.top);
-    return bar.total > 0 ? p.grid + p.solar : 1.5;
+    return bar.total > 0 ? p.grid + p.battery + p.solar : 1.5;
   };
 
   const litBar = lit === null ? undefined : bars[lit];
@@ -426,7 +436,9 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
                     );
                   }
                   const dim = lit !== null && lit !== i;
-                  const both = bar.solar > 0 && bar.grid > 0;
+                  // top to bottom: solar, home battery, grid; every part but the last has its share as height
+                  const parts = (['solar', 'battery', 'grid'] as const).filter((k) => bar[k] > 0);
+                  const both = parts.length > 1;
                   return (
                     <button
                       key={i}
@@ -448,13 +460,14 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
                           className={both ? 'g-energy__col g-energy__col--both' : 'g-energy__col'}
                           style={{ height: `${colPct(bar)}%`, '--i': i } as React.CSSProperties}
                         >
-                          {bar.solar > 0 && (
+                          {parts.map((k, j) => (
                             <span
-                              className="g-energy__solar"
-                              style={both ? { height: `${(bar.solar / bar.total) * 100}%` } : undefined}
+                              key={k}
+                              className={`g-energy__${k}`}
+                              style={both && j < parts.length - 1 ? { height: `${(bar[k] / bar.total) * 100}%` } : undefined}
                             />
-                          )}
-                          {(bar.grid > 0 || bar.total <= 0) && <span className="g-energy__grid" />}
+                          ))}
+                          {bar.total <= 0 && <span className="g-energy__grid" />}
                         </span>
                       )}
                     </button>
@@ -489,6 +502,12 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
                           {t('glas.energy.solarShort', { value: one(litBar.solar, locale) })}
                         </span>
                       )}
+                      {litBar.hasData && batterySource && (
+                        <span className="g-energy__bubble-solar">
+                          {' · '}
+                          {t('glas.energy.batteryShort', { value: one(litBar.battery, locale) })}
+                        </span>
+                      )}
                     </span>
                   </span>
                 </>
@@ -521,6 +540,12 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
                 {t('energy.sources.legendGrid')}
               </span>
             )}
+            {batterySource && (
+              <span className="g-energy__key">
+                <span className="g-energy__swatch g-energy__swatch--battery" aria-hidden="true" />
+                {t('energy.sources.legendBattery')}
+              </span>
+            )}
             {solarSource && (
               <span className="g-energy__key">
                 <span className="g-energy__swatch g-energy__swatch--solar" aria-hidden="true" />
@@ -533,6 +558,7 @@ function EnergyGlasCard({ data, stale, period, switched, onPeriod }: CardProps) 
               </span>
             )}
           </div>
+          <EnergyBatteryLine prefs={data.prefs} />
         </div>
       </Card>
     </div>

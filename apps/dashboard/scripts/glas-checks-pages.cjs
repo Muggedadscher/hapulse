@@ -479,6 +479,8 @@ module.exports = function pages(h) {
         ['/energy', '.energy-sources', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-devices', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-solar', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-now', '.energy-card__title', '.energy-card__icon-chip', 'above'],
+        ['/energy', '.energy-battery', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'above', false, ['.energy-kv-list', '.energy-card__sub']],
         ['/pool', '.pool-card:not(.pool-schedule, .pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
         ['/pool', ':is(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above', true],
@@ -2112,7 +2114,8 @@ module.exports = function pages(h) {
         // Energy N (since draft v5, plan glas/energie-neu/umsetzung): on the same date as Klassisch the same figures — the
         // hero's consumption, comparison and amounts (Glas shows the solar yield as the line under the consumption,
         // Klassisch as a tile), the big shares, the share rows, the bars of "Consumption" and "Solar" (their heights and
-        // parts), devices and water; in Glas the chart grey, green and yellow, 24 columns of today at most 14 wide, the
+        // parts), "Now" (sentence, nodes, bands) and "Battery" (state line, chart), devices and water; in Glas the chart
+        // grey, green and yellow, the flow's columns and the battery ring in their colours, 24 columns of today at most 14 wide, the
         // device bars orange; every card in the picture, no value cut, the page no wider than the window; the hero does not
         // tint under the pointer (desktop); the loading line 15/20 label2.
         if (keepPart('energy')) {
@@ -2140,6 +2143,11 @@ module.exports = function pages(h) {
               shares: all('.en-shares__row'),
               usage: bars('.en-card--usage'),
               solar: bars('.en-card--solar'),
+              nowSay: all('.en-now__say'),
+              nowNodes: all('.en-now__node'),
+              bands: document.querySelectorAll('.en-now__band').length,
+              batSub: all('.en-bat__sub'),
+              batChart: [...document.querySelectorAll('.en-bat__chart')].map((e) => e.getAttribute('aria-label')),
               foot: all('.en-chart__foot'),
               devices: all('.energy-device'),
               deviceBars: styles('.energy-device__bar'),
@@ -2176,7 +2184,7 @@ module.exports = function pages(h) {
               const cols = [...document.querySelectorAll('.en-card--usage .en-chart__col')];
               const fig = getComputedStyle(document.querySelector('.energy-hero .g-tafel__total-value'));
               // values: a block that clips (ellipsis) must not; an inline value must stay inside its card
-              const cut = [...document.querySelectorAll('.energy-page :is(.g-tafel__total-value, .g-tafel__value, .g-tafel__label-text, .g-tafel__pv, .g-tafel__compare, .en-big, .en-shares__row, .en-chart__tick, .en-chart__foot, .energy-device__value, .energy-card__sub)')]
+              const cut = [...document.querySelectorAll('.energy-page :is(.g-tafel__total-value, .g-tafel__value, .g-tafel__label-text, .g-tafel__pv, .g-tafel__compare, .en-big, .en-shares__row, .en-chart__tick, .en-chart__foot, .en-now__say, .en-now__node, .en-bat__sub, .energy-device__value, .energy-card__sub)')]
                 .filter((e) => {
                   const card = e.closest('.card') || e.closest('[data-section]');
                   const r = e.getBoundingClientRect();
@@ -2199,6 +2207,11 @@ module.exports = function pages(h) {
                 grid: each('.en-chart__part--grid, .en-dot--grid', (e) => bg(e) === tok('--g-chart-netz')),
                 battery: each('.en-chart__part--battery, .en-dot--battery', (e) => bg(e) === tok('--g-chart-battery')),
                 solar: each('.en-chart__part--solar, .en-dot--solar', (e) => bg(e) === tok('--g-chart-solar')),
+                flow: each('.en-now__bar--solar', (e) => getComputedStyle(e).fill === tok('--g-chart-solar'))
+                  && each('.en-now__bar--battery', (e) => getComputedStyle(e).fill === tok('--g-chart-battery'))
+                  && each('.en-now__bar--grid', (e) => getComputedStyle(e).fill === tok('--g-chart-netz')),
+                ring: each('.en-bat__ring-fill', (e) => getComputedStyle(e).stroke === tok('--g-chart-battery'))
+                  && each('.en-bat__line', (e) => getComputedStyle(e).stroke === tok('--g-green-ink')),
                 bars: document.querySelectorAll('.en-card--usage .en-chart__bar').length,
                 widths: [...new Set(cols.map((e) => Math.round(e.getBoundingClientRect().width)))],
                 deviceBars: each('.energy-device__bar', (e) => bg(e) === tok('--g-prominent')),
@@ -2226,9 +2239,10 @@ module.exports = function pages(h) {
               await page.mouse.move(0, 0);
             }
             const same = JSON.stringify(glasTexts) === JSON.stringify(classicTexts);
-            const ok = same && glasTexts.sections.join() === 'hero,usage,solar,devices,water' && glasTexts.usage.length === 24
-              && glasTexts.compare !== null && glasTexts.pv !== null && glasTexts.bigs.length === 2
-              && look.grid && look.battery && look.solar && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14
+            const ok = same && glasTexts.sections.join() === 'hero,now,battery,usage,solar,devices,water' && glasTexts.usage.length === 24
+              && glasTexts.compare !== null && glasTexts.pv !== null && glasTexts.bigs.length === 3
+              && glasTexts.nowSay.length === 1 && glasTexts.nowNodes.length === 4 && glasTexts.bands === 3 && glasTexts.batSub.length === 1
+              && look.grid && look.battery && look.solar && look.flow && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14
               && look.deviceBars && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
               && look.cut.length === 0 && look.out.length === 0 && !look.wide && look.loading && hover !== false;
             res[`${device}-energy`] = { ok, same, ...(same ? {} : { glas: glasTexts, classic: classicTexts }), look, hover };

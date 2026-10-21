@@ -448,3 +448,81 @@ export function batteryStatus(soc: number, powerW: number | null, capacityKWh: n
   }
   return { state: charging ? 'charging' : 'discharging', at };
 }
+
+/** The batteries Home Assistant knows a charge sensor for: their `stat_soc`, `stat_rate` and `capacity`. */
+export interface EnergyBatteryIds {
+  soc: string[];
+  /** power sensors (W, positive = discharging); empty when one battery has none */
+  power: string[];
+  /** usable capacities (kWh), one per battery, or null when one battery has none */
+  capacities: number[] | null;
+}
+
+export function energyBatteryIds(prefs: EnergyPreferences | null | undefined): EnergyBatteryIds | null {
+  const list = (prefs?.energy_sources ?? []).filter((s) => s.type === 'battery' && !!s.stat_soc);
+  if (list.length === 0) return null;
+  const batteries = list as Extract<(typeof list)[number], { type: 'battery' }>[];
+  const power = batteries.every((b) => !!b.stat_rate) ? batteries.map((b) => b.stat_rate!) : [];
+  const caps = batteries.map((b) => b.capacity);
+  return {
+    soc: batteries.map((b) => b.stat_soc!),
+    power,
+    capacities: caps.every((c) => typeof c === 'number' && c > 0) ? (caps as number[]) : null,
+  };
+}
+
+/**
+ * The batteries' charge together (%): weighted by capacity when every battery has one, else the plain mean. Null when
+ * a battery's charge is unknown (the card says "not reachable" instead of a figure that leaves one out).
+ */
+export function combinedSoc(values: readonly (number | null)[], capacities: readonly number[] | null): number | null {
+  if (values.length === 0 || values.some((v) => v === null || !Number.isFinite(v))) return null;
+  const w = capacities && capacities.length === values.length ? capacities : values.map(() => 1);
+  const total = w.reduce((s, x) => s + x, 0);
+  return values.reduce<number>((s, v, i) => s + (v as number) * w[i]!, 0) / total;
+}
+
+/**
+ * The combined charge over time, one point every `stepMs` from `start` to `end`: each battery's last value at or
+ * before the point (a battery without one yet is left out of that point; no battery with a value, no point).
+ */
+export function combinedSocSeries(
+  series: readonly (readonly { t: number; v: number }[])[],
+  capacities: readonly number[] | null,
+  start: number,
+  end: number,
+  stepMs: number,
+): { t: number; v: number }[] {
+  const sorted = series.map((s) => [...s].filter((p) => Number.isFinite(p.v)).sort((a, b) => a.t - b.t));
+  const at = sorted.map(() => -1);
+  const out: { t: number; v: number }[] = [];
+  for (let t = start; t <= end; t += stepMs) {
+    let sum = 0;
+    let weight = 0;
+    sorted.forEach((s, i) => {
+      while (at[i]! + 1 < s.length && s[at[i]! + 1]!.t <= t) at[i]!++;
+      if (at[i]! < 0) return;
+      const w = capacities && capacities.length === sorted.length ? capacities[i]! : 1;
+      sum += s[at[i]!]!.v * w;
+      weight += w;
+    });
+    if (weight > 0) out.push({ t, v: sum / weight });
+  }
+  return out;
+}
+
+/**
+ * The demo's charge today: down overnight to 20 % at 09:00, then charging with the sun up to `nowSoc` at `now` (the
+ * demo's battery entity). Deterministic; a point every 15 min from `start`, the last one at `now`.
+ */
+export function demoBatterySoc(start: number, now: number, nowSoc: number): { t: number; v: number }[] {
+  const day = new Date(start);
+  const low = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9).getTime();
+  const line = (t: number, t0: number, v0: number, t1: number, v1: number) => v0 + ((v1 - v0) * (t - t0)) / Math.max(1, t1 - t0);
+  const value = (t: number) =>
+    now <= low ? line(t, start, 48, now, nowSoc) : t <= low ? line(t, start, 48, low, 20) : line(t, low, 20, now, nowSoc);
+  const out: { t: number; v: number }[] = [];
+  for (let t = start; t < now; t += 900_000) out.push({ t, v: Math.round(value(t) * 10) / 10 });
+  out.push({ t: now, v: nowSoc });
+  return out;
+}

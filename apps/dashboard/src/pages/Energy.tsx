@@ -10,6 +10,9 @@ import {
 } from '../components/energy/EnergyCards';
 import { EnergyHeroCard } from '../components/glas/tafel/heroes'; // [fork] Glas tafel or the classic hero
 import { EnergySolarShareCard, EnergyUsageCard } from '../components/energy/fork/EnergyOrigin'; // [fork] draft v5
+import { EnergyNowCard } from '../components/energy/fork/EnergyNow'; // [fork] draft v5
+import { EnergyBatteryCard } from '../components/energy/fork/EnergyBattery'; // [fork] draft v5
+import { energyDefaultSlots, useEnergyLiveSections } from '../components/energy/fork/sections'; // [fork]
 import { SortableGrid } from '../components/ui/SortableGrid';
 import { SortableItem } from '../components/ui/SortableItem';
 import { EditBadge } from '../components/ui/EditBadge';
@@ -35,6 +38,7 @@ const MAX_COLS = 4;
 const DEFAULT_SPANS: Record<string, number> = {
   hero:  2,
   usage: 2,
+  now: 2, // [fork] draft v5: the flow needs the width
 };
 
 function getSpan(id: string, stored: Record<string, number>): number {
@@ -137,6 +141,18 @@ const SECTION_TOGGLE_KEYS = {
     hideMobile: 'energy.section.hideMobile.consumption',
     showMobile: 'energy.section.showMobile.consumption',
   },
+  now: { // [fork] draft v5
+    hide: 'energy.section.hide.now',
+    show: 'energy.section.show.now',
+    hideMobile: 'energy.section.hideMobile.now',
+    showMobile: 'energy.section.showMobile.now',
+  },
+  battery: { // [fork] draft v5
+    hide: 'energy.section.hide.battery',
+    show: 'energy.section.show.battery',
+    hideMobile: 'energy.section.hideMobile.battery',
+    showMobile: 'energy.section.showMobile.battery',
+  },
   solar: {
     hide: 'energy.section.hide.solar',
     show: 'energy.section.show.solar',
@@ -172,6 +188,8 @@ type SectionId = keyof typeof SECTION_TOGGLE_KEYS;
 const SECTION_NAME_KEYS: Record<SectionId, TKey> = {
   hero: 'nav.overview',
   usage: 'energy.usage.title', // [fork] draft v5
+  now: 'energy.now.title', // [fork] draft v5
+  battery: 'energy.battery.title', // [fork] draft v5
   solar: 'energy.solar.title',
   devices: 'energy.devices.title',
   water: 'energy.water.title',
@@ -179,8 +197,10 @@ const SECTION_NAME_KEYS: Record<SectionId, TKey> = {
 };
 
 /** Which sections exist depends on what the user configured in HA. */
-function availableSections(d: EnergyDashboard): SectionId[] {
+function availableSections(d: EnergyDashboard, live: { now: boolean; battery: boolean }): SectionId[] { // [fork] live
   const ids: SectionId[] = ['hero'];
+  if (live.now) ids.push('now'); // [fork] draft v5
+  if (live.battery) ids.push('battery'); // [fork] draft v5
   if (d.hasGrid || d.hasSolar) ids.push('usage');
   if (d.hasSolar) ids.push('solar');
   if (d.devices.length > 0) ids.push('devices');
@@ -195,11 +215,13 @@ export function Energy() {
   const t = useT();
   const isGlas = useIsGlas(); // [fork]
   const [period, setPeriod] = useState<EnergyPeriod>('today');
-  const { state, dashboard, currency, loadedPeriod } = useEnergy(period); // [fork] loadedPeriod
+  const { state, dashboard, prefs, currency, loadedPeriod } = useEnergy(period); // [fork] prefs, loadedPeriod
+  const live = useEnergyLiveSections(prefs); // [fork] draft v5: cards "Now" and "Battery"
   const editMode = useUIStore((s) => s.editMode);
   const haUrl = useConnectionStore((s) => s.url);
 
-  const energySectionOrder = useSettingsStore(useShallow((s) => s.customization.energySectionOrder));
+  const storedEnergyOrder = useSettingsStore(useShallow((s) => s.customization.energySectionOrder)); // [fork] renamed
+  const energySectionOrder = energyDefaultSlots(storedEnergyOrder); // [fork] new cards after the tafel
   const hiddenEnergySections = useSettingsStore(useShallow((s) => s.customization.hiddenEnergySections));
   const mobileHiddenEnergySections = useSettingsStore(useShallow((s) => s.customization.mobileHiddenEnergySections));
   const energySectionSpans = useSettingsStore(useShallow((s) => s.customization.energySectionSpans));
@@ -250,7 +272,7 @@ export function Energy() {
   // [fork] Glas edit bar (plan docs/glas/PLAN-ETAPPE-5.md K96): S / M / L, ‹ › and "⋯" as on the overview. The hook
   // runs before the gates below, so it gets the cards of edit mode here: every available card in the stored order, as
   // the grid further down shows them while editing.
-  const glasEditIds = dashboard ? applyStoredOrder(availableSections(dashboard), energySectionOrder) : [];
+  const glasEditIds = dashboard ? applyStoredOrder(availableSections(dashboard, live), energySectionOrder) : [];
   const glasEdit = useGlasSectionEdit({
     page: 'energy',
     spansField: 'energySectionSpans',
@@ -272,6 +294,10 @@ export function Energy() {
         return <EnergyHeroCard dashboard={d} period={period} onPeriodChange={setPeriod} currency={currency} dataPeriod={loadedPeriod} />; // [fork] dataPeriod
       case 'usage':
         return <EnergyUsageCard dashboard={d} period={loadedPeriod} />; // [fork] draft v5: consumption by origin (the data's period)
+      case 'now': // [fork] draft v5
+        return <EnergyNowCard prefs={prefs} />;
+      case 'battery': // [fork] draft v5
+        return <EnergyBatteryCard prefs={prefs} />;
       case 'solar':
         return <EnergySolarShareCard dashboard={d} period={loadedPeriod} />; // [fork] draft v5: solar by destination
       case 'devices':
@@ -323,7 +349,7 @@ export function Energy() {
   }
 
   // ---- Ready ----
-  const allSectionIds = availableSections(dashboard);
+  const allSectionIds = availableSections(dashboard, live); // [fork] live
   // applyStoredOrder (lib/order.ts) is a generic string[] reorder utility shared
   // with other pages, so it widens to string[] — but it only ever returns a
   // permutation of its `ids` input, so every element is still a SectionId.

@@ -119,5 +119,31 @@
   "energy.solarShare.self": {
     "langs": "all",
     "reason": "follows the big percentage on the same line (\"65 % selbst genutzt\")"
+  },
+  "glas.energy.chartAriaStackedBattery": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "put after a comma into the chart's description; German capitalises the noun"
+  },
+  "energy.battery.fullAt": {
+    "langs": "all",
+    "reason": "follows the battery's state on the same line (\"Lädt · voll um ca. 16:30\")"
+  },
+  "glas.energy.chartAriaStackedGridBattery": {
+    "langs": [
+      "en",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "sv"
+    ],
+    "reason": "put after a comma into the chart's description; German capitalises the noun"
   }
 }

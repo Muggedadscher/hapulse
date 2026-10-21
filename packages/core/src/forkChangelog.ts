@@ -38,6 +38,30 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 56,
+    date: '2026-10-21',
+    title: { de: 'Energie: jetzt und Batterie', en: 'Energy: now and battery' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Die Karte „Jetzt“ sagt in einem Satz, was gerade passiert, und zeigt den Fluss von Solar, Batterie und Netz zum Haus, zur Batterie und ins Netz',
+            en: 'The card “Now” says in one sentence what is happening and shows the flow from solar, battery and grid to the home, the battery and the grid',
+          },
+          {
+            de: 'Die Karte „Batterie“ zeigt den Ladezustand, ob sie lädt oder entlädt, wann sie ungefähr voll ist und den Ladezustand des Tages',
+            en: 'The card “Battery” shows the charge, whether it charges or discharges, when it will be about full and the charge of the day',
+          },
+          {
+            de: 'Die Energiekarte der Übersicht rechnet ihre Balken wie die Energieseite, zeigt die Batterie als Teil der Balken und darunter ihren Ladezustand',
+            en: 'The overview’s energy card computes its bars like the energy page, shows the battery as part of the bars and its charge below them',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 55,
     date: '2026-10-21',
     title: { de: 'Energie: Verbrauch nach Herkunft, Solar nach Ziel', en: 'Energy: consumption by origin, solar by destination' },

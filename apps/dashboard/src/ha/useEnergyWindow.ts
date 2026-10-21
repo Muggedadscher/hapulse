@@ -25,7 +25,7 @@ import {
   isEnergyConfigured,
   trimStatistics,
 } from '@hapulse/core';
-import type { EnergyDashboard, GlasEnergyBar, GlasEnergyPeriod, GlasEnergyWindow } from '@hapulse/core';
+import type { EnergyDashboard, EnergyPreferences, GlasEnergyBar, GlasEnergyPeriod, GlasEnergyWindow } from '@hapulse/core';
 import { getEnergyPrefs, getStatistics } from './energy';
 import { useConnectionStore } from '../stores/connectionStore';
 import { useEntityStore } from '../stores/entityStore';
@@ -36,6 +36,8 @@ export interface EnergyWindowData {
   /** The moment the bars were computed for (epoch ms). */
   now: number;
   dashboard: EnergyDashboard;
+  /** Home Assistant's energy settings the result was computed from (the battery line reads its sensors). */
+  prefs: EnergyPreferences;
   bars: GlasEnergyBar[];
   /** Consumption against the period before in whole percent; null when there is nothing to compare with. */
   change: number | null;
@@ -92,7 +94,7 @@ async function load(period: GlasEnergyPeriod): Promise<Result> {
       )
     : null;
   const bars = glasEnergyBars(win, dashboard.series, now);
-  return { state: 'ready', data: { period, window: win, now: now.getTime(), dashboard, bars, change } };
+  return { state: 'ready', data: { period, window: win, now: now.getTime(), dashboard, prefs, bars, change } };
 }
 
 export function useEnergyWindow(period: GlasEnergyPeriod): UseEnergyWindowResult {
