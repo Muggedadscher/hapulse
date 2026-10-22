@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F57 — 2026-10-22
+
+**Energie: Balken stehen wieder unten** · _Energy: bars stand on the base again_
+
+### Behoben / Fixed
+
+- Die Balken der Karten „Verbrauch“ und „Solar“ füllen ihre Spalte auch unter 1 kWh je Stunde und schweben nicht mehr über der Grundlinie  
+  _The bars of the cards “Consumption” and “Solar” fill their column also below 1 kWh per hour and no longer float above the base line_
+
 ## F56 — 2026-10-21
 
 **Energie: jetzt und Batterie** · _Energy: now and battery_

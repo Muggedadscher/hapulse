@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 57,
+    date: '2026-10-22',
+    title: { de: 'Energie: Balken stehen wieder unten', en: 'Energy: bars stand on the base again' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Die Balken der Karten „Verbrauch“ und „Solar“ füllen ihre Spalte auch unter 1 kWh je Stunde und schweben nicht mehr über der Grundlinie',
+            en: 'The bars of the cards “Consumption” and “Solar” fill their column also below 1 kWh per hour and no longer float above the base line',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 56,
     date: '2026-10-21',
     title: { de: 'Energie: jetzt und Batterie', en: 'Energy: now and battery' },

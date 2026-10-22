@@ -157,7 +157,9 @@ function OriginChart({ bars, period, average, label }: OriginChartProps) {
                     <span
                       key={p.kind}
                       className={`en-chart__part en-chart__part--${p.kind}`}
-                      style={{ flexGrow: p.value }}
+                      // the parts' shares of the column (they sum to 1): raw kWh below 1 would leave the column
+                      // partly empty, since flex hands out only that fraction of the space
+                      style={{ flexGrow: p.value / bar.total }}
                     />
                   ))}
                 </span>
