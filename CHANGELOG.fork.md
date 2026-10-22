@@ -12,8 +12,8 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 ### Behoben / Fixed
 
-- Die Balken der Karten „Verbrauch“ und „Solar“ füllen ihre Spalte auch unter 1 kWh je Stunde und schweben nicht mehr über der Grundlinie  
-  _The bars of the cards “Consumption” and “Solar” fill their column also below 1 kWh per hour and no longer float above the base line_
+- Die Balken der Karten „Verbrauch“ und „Solar“ füllen ihre Spalte auch bei kleinen Werten unter 1 kWh und schweben nicht mehr über der Grundlinie  
+  _The bars of the cards “Consumption” and “Solar” fill their column also for small values below 1 kWh and no longer float above the base line_
 
 ## F56 — 2026-10-21
 
