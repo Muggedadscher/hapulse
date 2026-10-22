@@ -2214,6 +2214,14 @@ module.exports = function pages(h) {
                   && each('.en-bat__line', (e) => getComputedStyle(e).stroke === tok('--g-green-ink')),
                 bars: document.querySelectorAll('.en-card--usage .en-chart__bar').length,
                 widths: [...new Set(cols.map((e) => Math.round(e.getBoundingClientRect().width)))],
+                // every column filled by its parts from the base up, also below 1 kWh (fractional flex-grow left it hollow)
+                hollow: [...document.querySelectorAll('.energy-page .en-chart__col')].filter((c) => {
+                  const kids = [...c.children];
+                  const gap = parseFloat(getComputedStyle(c).rowGap) || 0;
+                  const sum = kids.reduce((a, k) => a + k.getBoundingClientRect().height, 0) + gap * (kids.length - 1);
+                  // empty space left in the column (a 2-px column of three parts is all gaps, not hollow)
+                  return sum < c.getBoundingClientRect().height - 0.5;
+                }).length,
                 deviceBars: each('.energy-device__bar', (e) => bg(e) === tok('--g-prominent')),
                 figure: `${fig.fontWeight} ${fig.fontSize}/${fig.lineHeight}`, figureColor: fig.color === tok('--g-label', 'color'),
                 // the tafel's cells: no tile of their own (the card's colour), the symbol bare
@@ -2242,7 +2250,7 @@ module.exports = function pages(h) {
             const ok = same && glasTexts.sections.join() === 'hero,now,battery,usage,solar,devices,water' && glasTexts.usage.length === 24
               && glasTexts.compare !== null && glasTexts.pv !== null && glasTexts.bigs.length === 3
               && glasTexts.nowSay.length === 1 && glasTexts.nowNodes.length === 4 && glasTexts.bands === 3 && glasTexts.batSub.length === 1
-              && look.grid && look.battery && look.solar && look.flow && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14
+              && look.grid && look.battery && look.solar && look.flow && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14 && look.hollow === 0
               && look.deviceBars && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
               && look.cut.length === 0 && look.out.length === 0 && !look.wide && look.loading && hover !== false;
             res[`${device}-energy`] = { ok, same, ...(same ? {} : { glas: glasTexts, classic: classicTexts }), look, hover };
