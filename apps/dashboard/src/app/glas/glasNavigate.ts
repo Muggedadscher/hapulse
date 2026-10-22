@@ -37,9 +37,9 @@ export const CAMERA_NAME = 'g-cam';
 export const CAMERA_STILL = '.nvr-stage__freeze[data-src]';
 /** The layers of the camera page's picture, bottom to top: video, MJPEG image, still (the package's stage). */
 export const STAGE_LAYERS = '.nvr-stage > .nvr-stage__video';
-/** The box that holds a camera tile's picture (the package's tiles from 0.19.2, the Home card); a tile carries its
- *  camera's id as `data-nvr-camera`. */
-export const TILE_PICTURE = '.nvr-camtile__pic, .nvr-home__cam-pic';
+/** The box that holds a camera tile's picture (the package's tiles from 0.19.2, in Glas also the Home card's since
+ *  @sentinel-nvr/web 0.21.0); a tile carries its camera's id as `data-nvr-camera`. */
+export const TILE_PICTURE = '.nvr-camtile__pic';
 /** The fade of a tile's name, state and shades once the picture has landed in it (motion.css, `data-g-landing`). */
 const LAND_FADE_MS = 200;
 /** The longest entrance a part of a page plays when it appears (sections rising, energy bars growing in, ~1 s). */

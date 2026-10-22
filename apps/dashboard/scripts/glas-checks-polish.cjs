@@ -774,9 +774,9 @@ module.exports = function polish(h) {
         rec.landing = landing();
         // the landing tile: its marks (everything but the picture's box) wait, the box is wholly on screen
         rec.landingHidden = [...document.querySelectorAll('[data-g-landing=""]')].every((t) => [...t.children]
-          .filter((c) => !c.matches('.nvr-camtile__pic, .nvr-home__cam-pic'))
+          .filter((c) => !c.matches('.nvr-camtile__pic'))
           .every((c) => getComputedStyle(c).opacity === '0') && getComputedStyle(t, '::before').opacity !== '1');
-        rec.landRect = [...document.querySelectorAll('[data-g-landing] :is(.nvr-camtile__pic, .nvr-home__cam-pic)')]
+        rec.landRect = [...document.querySelectorAll('[data-g-landing] .nvr-camtile__pic')]
           .map((e) => ({ ...box(e), vw: innerWidth, vh: innerHeight,
             radius: Math.max(parseFloat(getComputedStyle(e).borderTopLeftRadius) || 0,
               parseFloat(getComputedStyle(e.closest('[data-g-landing]')).borderTopLeftRadius) || 0) }));
@@ -1529,22 +1529,22 @@ module.exports = function polish(h) {
       {
         const o = await open('phone', 'glas', '/', { init: rec, sentinel: true, customization: NVR.NVR });
         try {
-          await tileReady(o.page, '.g-nvr__cam img');
-          await o.page.locator('.g-nvr__ev').first().tap();
+          await tileReady(o.page, '.nvr-gl__cam img');
+          await o.page.locator('.nvr-gl__ev').first().tap();
           res.event = { transitions: await quiet(o.page, 0), url: await ev(o.page, () => location.pathname + location.search) };
           want(res.event.transitions === 0 && /^\/nvr\/[^/]+\?at=/.test(res.event.url), `event ${JSON.stringify(res.event)}`);
           await o.page.goBack();
-          await tileReady(o.page, '.g-nvr__cam[data-nvr-camera="1"] img');
+          await tileReady(o.page, '.nvr-gl__cam[data-nvr-camera="1"] img');
           await sleep(300);
           // the card a little down the page: back must find it at that place
-          await ev(o.page, () => document.querySelector('.g-nvr__cam[data-nvr-camera="1"]').scrollIntoView({ block: 'center', behavior: 'instant' }));
+          await ev(o.page, () => document.querySelector('.nvr-gl__cam[data-nvr-camera="1"]').scrollIntoView({ block: 'center', behavior: 'instant' }));
           await sleep(300);
-          await o.page.locator('.g-nvr__cam[data-nvr-camera="1"]').tap();
+          await o.page.locator('.nvr-gl__cam[data-nvr-camera="1"]').tap();
           const cam = (res.camera = await settled(o.page, 1));
           want(cam && cam.y0 > 0, `camera: the Home page did not scroll (${cam && cam.y0})`);
           want(cam && !cam.error && /^\/nvr\/[^/]+$/.test(cam.path), `camera: page ${JSON.stringify(cam && [cam.path, cam.error])}`);
           if (cam) {
-            want(cam.kind === 'camera' && cam.named0.join() === 'nvr-home__cam-pic', `camera: tile picture named ${JSON.stringify([cam.kind, cam.named0])}`);
+            want(cam.kind === 'camera' && cam.named0.join() === 'nvr-camtile__pic', `camera: tile picture named ${JSON.stringify([cam.kind, cam.named0])}`);
             want(cam.named.length === 1 && /^nvr-stage__video\[\w+\]$/.test(cam.named[0]), `camera: still named ${JSON.stringify(cam.named)}`);
             want(cam.cam.join() === '540' && cam.round.join() === '540', `camera: morph ${JSON.stringify([cam.cam, cam.round])}`);
             want(fades(cam, 160) && cam.after.named === 0 && cam.after.attr === null && cam.y === 0,
@@ -1553,31 +1553,31 @@ module.exports = function polish(h) {
           await stageReady(o.page);
           await backButton(o.page).tap();
           backOk((res.cameraBack = await settled(o.page, 2)), 'camera back',
-            { path: '/', y0: cam && cam.y0, camId: '1', pic: 'nvr-home__cam-pic', box0: cam && cam.box0[0] });
+            { path: '/', y0: cam && cam.y0, camId: '1', pic: 'nvr-camtile__pic', box0: cam && cam.box0[0] });
           res.cameraBackGone = await landingGone(o.page);
           want(res.cameraBackGone, 'camera back: the tile keeps its landing mark');
 
           // the second camera: its tile peeks in at the row's edge — back brings it into the row before it lands
-          const row = '.g-nvr__cams';
-          await ev(o.page, () => document.querySelector('.g-nvr__cam[data-nvr-camera="2"]').scrollIntoView({ block: 'center', inline: 'start', behavior: 'instant' }));
+          const row = '.nvr-gl__cams';
+          await ev(o.page, () => document.querySelector('.nvr-gl__cam[data-nvr-camera="2"]').scrollIntoView({ block: 'center', inline: 'start', behavior: 'instant' }));
           await sleep(400);
-          await o.page.locator('.g-nvr__cam[data-nvr-camera="2"]').tap();
+          await o.page.locator('.nvr-gl__cam[data-nvr-camera="2"]').tap();
           const cam2 = (res.secondCamera = await settled(o.page, 3));
           await stageReady(o.page);
           await backButton(o.page).tap();
           const second = (res.secondBack = await settled(o.page, 4));
           backOk(second, 'second camera back',
-            { path: '/', y0: cam2 && cam2.y0, camId: '2', pic: 'nvr-home__cam-pic', box0: cam2 && cam2.box0[0] });
+            { path: '/', y0: cam2 && cam2.y0, camId: '2', pic: 'nvr-camtile__pic', box0: cam2 && cam2.box0[0] });
           res.secondRow = await ev(o.page, (sel) => Math.round(document.querySelector(sel).scrollLeft), row);
           want(res.secondRow > 0, `second camera back: the row did not bring the tile in (${res.secondRow})`);
           await landingGone(o.page);
 
           // a camera opened from an event: back goes to Home too, to the same place, and lands in that camera's tile
           // when it shows a picture there (the offline and stalled stand-ins show a thumbnail the card does not keep)
-          await ev(o.page, () => document.querySelector('.g-nvr__ev').scrollIntoView({ block: 'center', inline: 'start', behavior: 'instant' }));
+          await ev(o.page, () => document.querySelector('.nvr-gl__ev').scrollIntoView({ block: 'center', inline: 'start', behavior: 'instant' }));
           await sleep(300);
           const yEv = await ev(o.page, () => Math.round(scrollY));
-          await o.page.locator('.g-nvr__ev').first().tap();
+          await o.page.locator('.nvr-gl__ev').first().tap();
           await o.page.waitForFunction(() => /^\/nvr\/[^/]+$/.test(location.pathname), null, { timeout: 8000 });
           const evCam = await ev(o.page, () => decodeURIComponent(location.pathname.split('/')[2]));
           await stageReady(o.page);
@@ -1586,7 +1586,7 @@ module.exports = function polish(h) {
           want(evBack && evBack.path === '/', `event back: to Home ${JSON.stringify(evBack && [evBack.path, evCam])}`);
           if (evBack) {
             backOk(evBack, 'event back', { path: '/', y0: yEv, camId: evCam,
-              pic: ['1', '2'].includes(evCam) ? 'nvr-home__cam-pic' : null });
+              pic: ['1', '2'].includes(evCam) ? 'nvr-camtile__pic' : null });
           }
           await landingGone(o.page);
 
@@ -1616,7 +1616,7 @@ module.exports = function polish(h) {
           await stageReady(o.page);
           await backButton(o.page).tap();
           backOk((res.linkBack = await settled(o.page, 1)), 'link back', { path: '/nvr', y0: 0, camId: '1', pic: null });
-          await o.page.locator('.nvr-layout .g-nvr__ev').first().tap();
+          await o.page.locator('.nvr-layout .nvr-gl__ev').first().tap();
           res.stripEvent = await quiet(o.page, 1);
           want(res.stripEvent === 0, 'event of the overview strip started a transition');
         } finally {
@@ -1629,21 +1629,21 @@ module.exports = function polish(h) {
       {
         const o = await open('desktop', 'glas', '/nvr', { init: rec, sentinel: true, customization: NVR.NVR });
         try {
-          await tileReady(o.page, '.nvr-layout .g-nvr__cam[data-nvr-camera="1"] img.nvr-home__cam-img');
+          await tileReady(o.page, '.nvr-layout .nvr-gl__cam[data-nvr-camera="1"] img.nvr-camtile__img');
           // the tile is the page's first: the page scrolled to its end (the tile still wholly in sight) for back to keep
           await ev(o.page, () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
           await sleep(300);
-          await o.page.locator('.nvr-layout .g-nvr__cam[data-nvr-camera="1"]').click();
+          await o.page.locator('.nvr-layout .nvr-gl__cam[data-nvr-camera="1"]').click();
           const cam = (res.desktopCamera = await settled(o.page, 1));
           want(cam && cam.y0 > 0, `desktop camera: the overview did not scroll (${cam && cam.y0})`);
           if (cam) {
-            want(cam.kind === 'camera' && cam.named0.join() === 'nvr-home__cam-pic' && cam.named.length === 1, `desktop camera: names ${JSON.stringify([cam.named0, cam.named])}`);
+            want(cam.kind === 'camera' && cam.named0.join() === 'nvr-camtile__pic' && cam.named.length === 1, `desktop camera: names ${JSON.stringify([cam.named0, cam.named])}`);
             want(cam.cam.join() === '540' && cam.radii[1] === '18px', `desktop camera: morph ${JSON.stringify([cam.cam, cam.radii])}`);
           }
           await stageReady(o.page);
           await backButton(o.page).click();
           backOk((res.desktopBack = await settled(o.page, 2)), 'desktop back',
-            { path: '/nvr', y0: cam && cam.y0, camId: '1', pic: 'nvr-home__cam-pic', box0: cam && cam.box0[0] });
+            { path: '/nvr', y0: cam && cam.y0, camId: '1', pic: 'nvr-camtile__pic', box0: cam && cam.box0[0] });
           await landingGone(o.page);
           await sideLink(o.page, 'nav.energy').click();
           pageOk((res.sidebar = await settled(o.page, 3)), '/energy', 'sidebar', true);
@@ -1668,11 +1668,11 @@ module.exports = function polish(h) {
           if (tab) want(tab.kind === 'fade' && fades(tab, 200) && tab.rise === 0 && !tab.entry
             && tab.transforms.length === 0, `reduced tab ${JSON.stringify([tab.kind, tab.root, tab.rise, tab.entry, tab.transforms])}`);
           await o.page.goBack();
-          await tileReady(o.page, '.g-nvr__cam img');
-          await ev(o.page, () => document.querySelector('.g-nvr__cam').scrollIntoView({ block: 'center', behavior: 'instant' }));
+          await tileReady(o.page, '.nvr-gl__cam img');
+          await ev(o.page, () => document.querySelector('.nvr-gl__cam').scrollIntoView({ block: 'center', behavior: 'instant' }));
           await sleep(300);
           const y0 = await ev(o.page, () => Math.round(scrollY));
-          await o.page.locator('.g-nvr__cam').first().tap();
+          await o.page.locator('.nvr-gl__cam').first().tap();
           const cam = (res.reducedCamera = await settled(o.page, 2));
           if (cam) want(cam.kind === 'fade' && cam.named0.length === 0 && cam.named.length === 0 && cam.cam.length === 0
             && fades(cam, 200) && cam.transforms.length === 0, `reduced camera ${JSON.stringify(cam)}`);
@@ -1692,13 +1692,13 @@ module.exports = function polish(h) {
       {
         const o = await open('phone', 'glas', '/', { init: [recordTransitions, true], sentinel: true, customization: NVR.NVR });
         try {
-          await tileReady(o.page, '.g-nvr__cam img');
-          await ev(o.page, () => document.querySelector('.g-nvr__cam').scrollIntoView({ block: 'center', behavior: 'instant' }));
+          await tileReady(o.page, '.nvr-gl__cam img');
+          await ev(o.page, () => document.querySelector('.nvr-gl__cam').scrollIntoView({ block: 'center', behavior: 'instant' }));
           await sleep(300);
-          const top = () => ev(o.page, () => Math.round(document.querySelector('.g-nvr__cam').getBoundingClientRect().top));
+          const top = () => ev(o.page, () => Math.round(document.querySelector('.nvr-gl__cam').getBoundingClientRect().top));
           const y0 = await ev(o.page, () => Math.round(scrollY));
           const top0 = await top();
-          await o.page.locator('.g-nvr__cam').first().tap();
+          await o.page.locator('.nvr-gl__cam').first().tap();
           await o.page.waitForFunction(() => /^\/nvr\/[^/]+$/.test(location.pathname), null, { timeout: 8000 });
           await stageReady(o.page);
           await backButton(o.page).tap();

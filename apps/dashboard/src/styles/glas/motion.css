@@ -160,12 +160,12 @@
 
 /* The tile the picture lands in (`data-g-landing`): its name, state and shades wait under the landing picture and
    fade in once it is there, as Photos shows a cell's marks after the photo is back. */
-:root[data-style='glas'] [data-g-landing=''] > :not(.nvr-camtile__pic, .nvr-home__cam-pic),
+:root[data-style='glas'] [data-g-landing=''] > :not(.nvr-camtile__pic),
 :root[data-style='glas'] [data-g-landing='']::before {
   opacity: 0;
 }
 
-:root[data-style='glas'] [data-g-landing='in'] > :not(.nvr-camtile__pic, .nvr-home__cam-pic),
+:root[data-style='glas'] [data-g-landing='in'] > :not(.nvr-camtile__pic),
 :root[data-style='glas'] [data-g-landing='in']::before {
   animation: g-fade-in 200ms ease both;
 }

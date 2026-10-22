@@ -3,27 +3,24 @@
  * HAPulse page: hero summary, recent-events strip, camera grid, and the two
  * detail cards (events per hour, storage & retention). Fixed layout (not
  * editable — deliberately lean for upstream merges, like the Pool page).
- * In Glas the cameras and events take the Home card's look (NvrGlasCameras, NvrGlasEvents): the cameras first as
- * large pictures, then the events as a strip of pictures (on the desktop as on the phone, F46).
+ * In Glas the cameras and events take the Home card's look: the cameras first as large pictures, then the events as a
+ * strip of pictures (on the desktop as on the phone, F46). Since @sentinel-nvr/web 0.21.0 these parts and the hero's
+ * tafel are the package's (GlassSections, Hero appearance="glass"; Sentinel's own UI shows the same), looks in
+ * @sentinel-nvr/web/ui/glas.css. `nvr-overview` names this page's content for it.
  */
 
 import React, { useCallback, useRef, useState } from 'react';
-import { Cctv, ExternalLink, MapPin, RefreshCw, Settings2, WifiOff, Zap } from 'lucide-react';
+import { Cctv, ExternalLink, MapPin, RefreshCw, Settings2, WifiOff } from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
 import { IconButton } from '../components/ui/IconButton';
 import { PageHeaderActions } from '../components/ui/PageHeaderActions';
 import { HeaderMenu } from '../components/glas/HeaderMenu';
 import { useT } from '../i18n/useT';
 import { useNvrOverview } from './store';
-import type { SentinelClient } from './api';
-import type { SentinelCamera, SentinelRecentEvent } from '@sentinel-nvr/web/api';
 import { NvrSetupCard, NvrSetupModal } from './components/NvrSetup';
 import { NvrCameraRoomsModal } from './components/NvrCameraRoomsModal';
-import { Hero, EventsStrip, CameraGrid, HistogramCard, StorageCard } from '@sentinel-nvr/web/ui';
+import { Hero, EventsStrip, CameraGrid, GlassSections, HistogramCard, StorageCard } from '@sentinel-nvr/web/ui';
 import { NvrUi } from './ui';
-import { NvrHeroGlas } from './NvrHeroGlas';
-import { NvrGlasCameras, NvrGlasEvents } from './NvrHomeGlas';
-import { useSnapshotTick } from './useSnapshotTick';
 import { useSettingsLocked } from '../ha/managedHooks';
 import { useIsGlas } from '../app/glas/useUiStyle';
 import './nvr.css';
@@ -125,15 +122,15 @@ export function NvrOverviewPage() {
         </div>
       ) : (
         <NvrUi client={cfg.client}>
-          <div className="nvr-layout">
+          <div className="nvr-layout nvr-overview">
             {errorStatus != null && (
               <p className="nvr-banner" role="status"><WifiOff size={14} strokeWidth={2} />{t('nvr.error.stale')}</p>
             )}
             {/* Glas: a calm hero like security and system (plan docs/glas/PLAN-ETAPPE-7.md N2) */}
-            {glas ? <NvrHeroGlas cameras={cameras} stats={stats} /> : <Hero cameras={cameras} stats={stats} />}
-            {/* Glas: the Home card's cameras and events (NvrGlasSections below) */}
+            <Hero cameras={cameras} stats={stats} appearance={glas ? 'glass' : undefined} />
+            {/* Glas: the Home card's cameras and events */}
             {glas ? (
-              <NvrGlasSections client={cfg.client} cameras={cameras} recent={recent} />
+              <GlassSections cameras={cameras} events={recent} />
             ) : (
               <>
                 <EventsStrip events={recent} />
@@ -150,39 +147,6 @@ export function NvrOverviewPage() {
 
       <NvrSetupModal open={setupOpen} onClose={() => setSetupOpen(false)} returnFocus={glas ? toMenu : undefined} />
       {!locked && <NvrCameraRoomsModal open={roomsOpen} onClose={() => setRoomsOpen(false)} cameras={cameras} returnFocus={glas ? toMenu : undefined} />}
-    </div>
-  );
-}
-
-/** Glas: the cameras first, then the events, both as on the Home card; the section titles carry their symbol (plan E7
- *  N2). The tiles refresh like the package's (CameraGrid, every 5 s). Looks in styles/glas/nvr.css (`.g-nvr-page`). */
-function NvrGlasSections({ client, cameras, recent }: {
-  client: SentinelClient;
-  cameras: SentinelCamera[];
-  recent: SentinelRecentEvent[];
-}) {
-  const t = useT();
-  const { tick, retry } = useSnapshotTick(5_000);
-  return (
-    <div className="g-nvr-page">
-      <section className="nvr-section g-nvr-page__cams">
-        <h2 className="nvr-section__label">
-          <span className="nvr-section__icon" aria-hidden="true"><Cctv size={18} strokeWidth={2} /></span>
-          {t('nvr.cameras.title')}
-        </h2>
-        <NvrGlasCameras client={client} cameras={cameras} tick={tick} retry={retry} />
-      </section>
-      {recent.length > 0 && (
-        <section className="nvr-section g-nvr-page__events">
-          <h2 className="nvr-section__label">
-            <span className="nvr-section__icon" aria-hidden="true"><Zap size={18} strokeWidth={2} /></span>
-            {t('nvr.events.title')}
-          </h2>
-          <div className="g-nvr-page__list">
-            <NvrGlasEvents client={client} events={recent} several={cameras.length > 1} />
-          </div>
-        </section>
-      )}
     </div>
   );
 }

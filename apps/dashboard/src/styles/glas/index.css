@@ -30,6 +30,9 @@
 @import './home.css';
 @import './home-cards.css';
 @import './home-lists.css';
+/* [fork] the Glas look of the Sentinel package's parts (@sentinel-nvr/web ≥ 0.21.0; HAPulse leads it, Sentinel's own UI
+   loads the same file), then HAPulse's own NVR frame */
+@import '@sentinel-nvr/web/ui/glas.css';
 @import './nvr.css';
 @import './detail.css';
 @import './edit.css';

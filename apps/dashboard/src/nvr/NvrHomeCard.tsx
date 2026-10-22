@@ -2,23 +2,23 @@
  * [fork] Home overview card "Sentinel NVR": camera snapshots (tap → timeline)
  * and the latest events (tap → timeline at the event). Rendered only when the
  * NVR is configured (Home gates the section on `useNvrConfigured()`). In Glas the
- * body is NvrHomeGlas (docs/GLAS-DESIGN.md §7.15), header and error stay.
+ * body is the package's GlassNvr (docs/GLAS-DESIGN.md §7.15; @sentinel-nvr/web ≥ 0.21.0, moved there from HAPulse's
+ * NvrHomeGlas so Sentinel's own UI shows the same), header and error stay.
  */
 
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Cctv, ChevronRight, WifiOff } from 'lucide-react';
-import { sentinelEventPlayTs, sentinelRecordingState } from '@sentinel-nvr/web/api';
+import { sentinelEventPlayTs, sentinelRecordingState, type SentinelCamera, type SentinelClient } from '@sentinel-nvr/web/api';
 import { Card } from '../components/ui/Card';
 import { useT, useLocale } from '../i18n/useT';
 import { useNvrOverview } from './store';
 import { fmtTime, fmtRelative } from './format';
-import { EventBadges, eventLabel, tileSnapshotWidth } from '@sentinel-nvr/web/ui';
-import { useNvrT } from './ui';
+import { EventBadges, eventLabel, GlassNvr, tileSnapshotWidth } from '@sentinel-nvr/web/ui';
+import { NvrUi, useNvrT } from './ui';
 import { cameraPath, NVR_ROOT } from './paths';
 import { HomeSnapshot } from './HomeSnapshot';
 import { useSnapshotTick } from './useSnapshotTick';
-import { NvrHomeGlas } from './NvrHomeGlas';
 import { useIsGlas } from '../app/glas/useUiStyle';
 import './nvr.css';
 
@@ -33,7 +33,6 @@ export function NvrHomeCard() {
   const navigate = useNavigate();
   const { cfg, status, cameras, recent, stats, errorStatus } = useNvrOverview(15_000);
   const isGlas = useIsGlas();
-  const { tick, retry } = useSnapshotTick(SNAPSHOT_MS);
   if (!cfg) return null;
   const client = cfg.client;
   // recording hangs (Sentinel's watchdog restarts it) outranks offline — see sentinelRecordingState
@@ -62,7 +61,9 @@ export function NvrHomeCard() {
       {status === 'error' ? (
         <p className="nvr-muted nvr-home__error"><WifiOff size={14} strokeWidth={2} />{errorStatus === 401 ? t('nvr.error.unauthorized') : t('nvr.error.unreachable')}</p>
       ) : isGlas ? (
-        <NvrHomeGlas client={client} cameras={cameras} events={recent} tick={tick} retry={retry} loading={status !== 'ready'} />
+        <NvrUi client={client}>
+          <GlassNvr cameras={cameras} events={recent} loading={status !== 'ready'} refreshMs={SNAPSHOT_MS} />
+        </NvrUi>
       ) : (
         <>
           <div className="nvr-home__meta">
@@ -71,19 +72,7 @@ export function NvrHomeCard() {
               {problem || t('nvr.cameras.count', { count: cameras.length })}
             </span>
           </div>
-          {cameras.length > 0 && (
-            <div className="nvr-home__cams">
-              {cameras.map((c) => (
-                <button key={c.id} type="button" className="nvr-home__cam" onClick={() => navigate(cameraPath(c.id))} aria-label={c.name}>
-                  <HomeSnapshot camId={c.id} src={client.snapshotUrl(c.id, tick, tileSnapshotWidth())} fallback={c.latestThumbId ? client.segmentThumbUrl(c.latestThumbId) : null} retry={retry} />
-                  <span className="nvr-home__cam-name">
-                    {c.name}
-                    {c.recording && <i className={`nvr-camtile__dot${sentinelRecordingState(c) === 'ok' ? '' : ' nvr-camtile__dot--off'}`} aria-hidden="true" />}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          {cameras.length > 0 && <ClassicCams cameras={cameras} client={client} onOpen={(id) => navigate(cameraPath(id))} />}
           {recent.length > 0 && (
             <ul className="nvr-home__events">
               {recent.slice(0, MAX_EVENTS).map((e) => (
@@ -103,5 +92,23 @@ export function NvrHomeCard() {
         </>
       )}
     </Card>
+  );
+}
+
+/** The classic card's camera tiles, with their own snapshot refresh (in Glas GlassNvr has its own). */
+function ClassicCams({ cameras, client, onOpen }: { cameras: SentinelCamera[]; client: SentinelClient; onOpen: (id: string) => void }) {
+  const { tick, retry } = useSnapshotTick(SNAPSHOT_MS);
+  return (
+    <div className="nvr-home__cams">
+      {cameras.map((c) => (
+        <button key={c.id} type="button" className="nvr-home__cam" onClick={() => onOpen(c.id)} aria-label={c.name}>
+          <HomeSnapshot camId={c.id} src={client.snapshotUrl(c.id, tick, tileSnapshotWidth())} fallback={c.latestThumbId ? client.segmentThumbUrl(c.latestThumbId) : null} retry={retry} />
+          <span className="nvr-home__cam-name">
+            {c.name}
+            {c.recording && <i className={`nvr-camtile__dot${sentinelRecordingState(c) === 'ok' ? '' : ' nvr-camtile__dot--off'}`} aria-hidden="true" />}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }

@@ -1,12 +1,12 @@
 /**
- * [fork] A camera snapshot on the Home NVR card (NvrHomeCard, and its Glas body NvrHomeGlas): the live snapshot, else
+ * [fork] A camera snapshot on the classic Home NVR card (NvrHomeCard; the Glas body is the package's GlassNvr): the live snapshot, else
  * the newest segment thumbnail, else a camera symbol. The loaded snapshot is also the camera page's poster (drawn at
  * once instead of a grey stage) — crossOrigin keeps the poster canvas untainted, the plugin answers with ACAO *.
  *
  * The picture sits in one box (`.nvr-home__cam-pic`), like the package's tiles from 0.19.2: back on the card (the
  * snapshot is `no-store`, a new image loads again) the box shows the camera's last picture at once (a canvas,
  * `.nvr-home__cam-img--last`, drawn by the package from the image a tile remembered or its copy), until its own snapshot
- * is decoded — and in Glas the camera page's picture lands in that box (app/glas/glasNavigate.ts).
+ * is decoded.
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';

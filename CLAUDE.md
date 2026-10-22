@@ -215,15 +215,18 @@ sauber übernehmen können.
   `appearance="immersive"` (Klassisch: Standard); sie meldet sich über `app/glas/useGlasImmersive.ts`, `GlasRuntime`
   setzt `data-g-immersive` (unter 900 px ohne Tab- und Chip-Leiste, `shell.css`), `AppLayout` macht die Inhaltsspalte
   zum dunklen Teilbaum (`data-glas-scheme="dark"`, Variablen aus `applyAppearance`, `<style id="glas-dark-scope">`);
-  die Werte der Paket-Hooks (`--nvr-ctl-*`, `--nvr-float-*`, …) und der Look der übrigen NVR-Ansichten stehen in
-  `styles/glas/nvr.css`. Prüfungen `checks --part nvr` (`scripts/glas-checks-nvr.cjs`, nachgestelltes Sentinel, braucht
+  die Werte der Paket-Hooks (`--nvr-ctl-*`, `--nvr-float-*`, …), der Datumsdialog und der Look der Paket-Teile stehen
+  seit Paket 0.21.0 in dessen `@sentinel-nvr/web/ui/glas.css`, `styles/glas/nvr.css` hält nur HAPulses eigene
+  NVR-Ansichten. Prüfungen `checks --part nvr` (`scripts/glas-checks-nvr.cjs`, nachgestelltes Sentinel, braucht
   ffmpeg), gegen ein echtes Sentinel `scripts/nvr-sweep-test.cjs … glas`; Details `docs/NVR-INTEGRATION.md` → „Glas-Stil“.
   **Feinschliff (Etappe 7, `docs/glas/PLAN-ETAPPE-7.md`):** Seitenwechsel als View Transition nur in Glas
   (`app/glas/glasNavigate.ts`, `routeChunks.ts`, `motion.css`; Tab-Leiste, Seitenleiste, Mehr-Menü, Kamerakacheln mit
   Morph `g-cam` ins Standbild, Zurück der Kameraseite; alles andere navigiert wie Klassisch), Hover nur mit Zeiger
   (Glas-Hover unter `@media (hover: hover)`, Ruhe-Regeln unter `(hover: none)`, Wächter `styleRules` in
   `test/glasSelectors.test.ts`), Kontrast am Bildschirm (Regeln GLAS-DESIGN §2.5; Fenster über der Kameraseite dunkel,
-  `IMMERSIVE_FLOATING` in `glasAppearance.ts`). Sentinel-Übersicht in Glas: ruhiger Kopf `nvr/NvrHeroGlas.tsx`,
+  `IMMERSIVE_FLOATING` in `glasAppearance.ts`). Sentinel-Übersicht in Glas: ruhiger Kopf (seit Paket 0.21.0 `Hero appearance="glass"`, Kacheln und Ereignisse
+  `GlassNvr`/`GlassSections` aus `@sentinel-nvr/web`, CSS `@sentinel-nvr/web/ui/glas.css`, Gleichstand der Tafel
+  `test/glasParity.test.ts`),
   Aktionen hinter „⋯“ (`components/glas/HeaderMenu.tsx`; Tasten, Fokus und Schließen teilt es mit dem Avatar-Menü über
   `app/glas/useGlasMenu.ts`). Prüfungen `checks --part polish` (`scripts/glas-checks-polish.cjs`:
   Übergänge, Hover, Kontrast, Leistung, Stil-Zeile, reduzierte Bewegung); `--engine webkit` für Playwright-WebKit im

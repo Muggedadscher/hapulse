@@ -1,5 +1,5 @@
 /**
- * [fork] The refresh of camera snapshots on the NVR tiles of the Home card and, in Glas, the NVR page (NvrHomeGlas):
+ * [fork] The refresh of camera snapshots on the classic NVR tiles of the Home card (in Glas the package's GlassNvr has its own):
  * `tick` changes every `ms` while the page is visible (a new snapshot URL), `retry` every 30 s — a tile whose snapshot
  * failed (a camera offline, the plugin restarting) tries it again then, as the package's tiles do.
  */
