@@ -1,8 +1,10 @@
 /**
  * [fork] HAPulse leads the Glas look, the Sentinel package carries a copy for the parts both apps show (@sentinel-nvr/web
  * ≥ 0.21.0, plan PLAN-SENTINEL-GLAS S2). This keeps the copy equal to HAPulse:
- * - the values: the package's `@sentinel-nvr/web/glas` (a verbatim copy of `packages/core/src/glasTokens.ts`) gives the
- *   same constants and the same results;
+ * - the values: the package's `@sentinel-nvr/web/glas` (a copy of `packages/core/src/glasTokens.ts` as of its release)
+ *   gives the same constants and the same results — for everything the package has: values HAPulse adds later for its
+ *   own pages (e.g. the energy charts' battery colours) may be missing in the package until its next release, a value
+ *   the package has must be HAPulse's;
  * - the rules HAPulse keeps for its own parts and the package holds for the NVR (tafel.css for the tafel of the other
  *   pages, the glass recipe of material.css, the tafel's no-tint of pages.css): every package rule on `.nvr-tafel` or
  *   `.nvr-glass` has its HAPulse rule, in the same at-rules, with the same declarations.
@@ -20,7 +22,17 @@ import * as pkg from '@sentinel-nvr/web/glas';
 const GLAS = join(__dirname, '../src/styles/glas');
 const PACKAGE_GLAS_CSS = join(__dirname, '../../../node_modules/@sentinel-nvr/web/dist/ui/glas.css');
 
-describe('Glas values: @sentinel-nvr/web/glas = @hapulse/core', () => {
+/** every key the package has, with HAPulse's value (objects key by key, arrays element by element) */
+function expectSubset(pkgValue: unknown, coreValue: unknown, path: string) {
+  if (pkgValue && typeof pkgValue === 'object' && !Array.isArray(pkgValue) && coreValue && typeof coreValue === 'object' && !Array.isArray(coreValue)) {
+    for (const [k, v] of Object.entries(pkgValue)) {
+      expect(coreValue, `${path}.${k}`).toHaveProperty([k]);
+      expectSubset(v, (coreValue as Record<string, unknown>)[k], `${path}.${k}`);
+    }
+  } else expect(pkgValue, path).toEqual(coreValue);
+}
+
+describe('Glas values: @sentinel-nvr/web/glas ⊆ @hapulse/core', () => {
   const shared = Object.keys(pkg).filter((k) => k in core) as (keyof typeof pkg & keyof typeof core)[];
 
   it('shares the values module (constants equal)', () => {
@@ -29,7 +41,7 @@ describe('Glas values: @sentinel-nvr/web/glas = @hapulse/core', () => {
     expect(Object.keys(pkg).filter((k) => !(k in core) && /^[A-Z_]+$|^glas|^[a-z]+[A-Z]/.test(k) && !['applyAppearance', 'watchAppearance', 'setAppearanceHost', 'setImmersiveThemeColor', 'darkScopeCss', 'effectiveStrength', 'normalizeUiStyle', 'normalizeGlassStrength', 'styleFields', 'readMediaEnv', 'CLASSIC_STYLE', 'DARK_SCOPE_ID'].includes(k))).toEqual([]);
     for (const k of shared) {
       const v = (pkg as Record<string, unknown>)[k];
-      if (typeof v !== 'function') expect(v, k).toEqual((core as Record<string, unknown>)[k]);
+      if (typeof v !== 'function') expectSubset(v, (core as Record<string, unknown>)[k], k);
     }
   });
 
@@ -40,14 +52,16 @@ describe('Glas values: @sentinel-nvr/web/glas = @hapulse/core', () => {
         for (const contrastMore of [false, true]) {
           for (const supportsLinear of [false, true]) {
             const input = { mode, strength, contrastMore, supportsLinear };
-            expect(p.glasCssVars(input)).toEqual(core.glasCssVars(input));
+            const vars = p.glasCssVars(input);
+            expect(Object.keys(vars).length, 'variables').toBeGreaterThan(100);
+            expectSubset(vars, core.glasCssVars(input), `glasCssVars ${JSON.stringify(input)}`);
           }
         }
       }
       for (const hue of [undefined, 0, 30, 140, 210, 300]) {
         expect(p.glasAccent(hue, mode)).toEqual(core.glasAccent(hue, mode));
         const input = { mode, strength: 'tinted', contrastMore: false, supportsLinear: true, accentHue: hue } as Parameters<typeof core.glasThemeTokens>[0];
-        expect(p.glasThemeTokens(input)).toEqual(core.glasThemeTokens(input));
+        expectSubset(p.glasThemeTokens(input), core.glasThemeTokens(input), `glasThemeTokens ${hue}`);
       }
     }
   });
