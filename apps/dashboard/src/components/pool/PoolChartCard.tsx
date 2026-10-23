@@ -16,6 +16,7 @@ import type { PoolDayRuntime } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
 import { getHistory } from '../../ha/history';
+import { useIsGlas } from '../../app/glas/useUiStyle';
 import { POOL_ENTITIES } from './poolConfig';
 
 const DAYS = 14;
@@ -25,6 +26,7 @@ type LoadState = 'loading' | 'ready' | 'empty' | 'error';
 export function PoolChartCard() {
   const t = useT();
   const locale = useLocale();
+  const glas = useIsGlas();
   const runtime = useEntity(POOL_ENTITIES.runtimeToday);
   const unit = (runtime?.attributes['unit_of_measurement'] as string | undefined) ?? 'h';
   const runtimeDay = runtime?.last_updated ? new Date(runtime.last_updated).toDateString() : ''; // [fork]
@@ -75,6 +77,19 @@ export function PoolChartCard() {
   const shownIdx = activeIdx != null && activeIdx >= 0 && activeIdx <= lastIdx ? activeIdx : lastIdx;
   const shown = bars[shownIdx];
 
+  // The shown day's runtime: in Klassisch at the end of the head row; in Glas the head is the title above the surface,
+  // so the figure opens the surface instead (day 13 label2 above, the value big, like the energy page's cards)
+  const readout = state === 'ready' && shown ? (
+    <div className="pool-chart__readout">
+      <span className="pool-chart__readout-value data-font">
+        {fmtVal(shown.value)}<span className="pool-chart__readout-unit"> {unit}</span>
+      </span>
+      <span className="pool-chart__readout-day">
+        {shownIdx === lastIdx ? t('pool.chart.today') : fmtDay.format(new Date(shown.start))}
+      </span>
+    </div>
+  ) : null;
+
   return (
     <Card className="pool-card pool-chart">
       <div className="pool-card__head">
@@ -82,17 +97,10 @@ export function PoolChartCard() {
           <BarChart3 size={16} strokeWidth={1.75} />
         </span>
         <h2 className="pool-card__title">{t('pool.chart.title')}</h2>
-        {state === 'ready' && shown && (
-          <div className="pool-chart__readout">
-            <span className="pool-chart__readout-value data-font">
-              {fmtVal(shown.value)}<span className="pool-chart__readout-unit"> {unit}</span>
-            </span>
-            <span className="pool-chart__readout-day">
-              {shownIdx === lastIdx ? t('pool.chart.today') : fmtDay.format(new Date(shown.start))}
-            </span>
-          </div>
-        )}
+        {!glas && readout}
       </div>
+
+      {glas && readout}
 
       <div className="pool-chart__body">
         {state === 'loading' && <p className="pool-chart__msg">{t('common.loading')}</p>}

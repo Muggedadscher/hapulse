@@ -483,17 +483,24 @@
 
 /* ---- Runtime chart (K99): the bars in the pool's teal — in the light mode with a 1 px edge in tealInk (teal on
    white is too light, like the yellow solar part of the energy chart) — the shown day full, the others at .35 like
-   the energy chart's dimmed bars; the readout at the end of the title row, the days 11 label2 ---- */
+   the energy chart's dimmed bars; the readout opens the surface like the energy cards' big figure (the day 13 label2
+   above, the value 34/41 600 with its unit 17/22 label2), the days 11 label2 ---- */
+:root[data-style='glas'] .pool-chart > .pool-chart__readout {
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  gap: 0;
+  text-align: left;
+}
+
 :root[data-style='glas'] .pool-chart__readout-value {
   color: var(--g-label);
-  font: 600 17px / 22px var(--g-font);
+  font: 600 34px / 41px var(--g-font);
   font-variant-numeric: tabular-nums;
 }
 
 :root[data-style='glas'] .pool-chart__readout-unit {
   color: var(--g-label-2);
-  font-size: 13px;
-  font-weight: 400;
+  font: 600 17px / 22px var(--g-font);
 }
 
 :root[data-style='glas'] .pool-chart__readout-day {
