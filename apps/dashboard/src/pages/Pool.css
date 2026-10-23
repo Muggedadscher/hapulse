@@ -399,13 +399,14 @@
 
 /* Too narrow for the side next to the ring (a column of four on the desktop): everything in one centred column like
    the manual run beside it, instead of the side wrapping under the ring flush left (or its stepper reaching past the
-   card's edge). 326 = ring 132 + gap 16 + the stepper row 178 in Glas (44 + 10 + 70 + 10 + 44); Klassisch needs 320
-   (gap 18, buttons 40) and takes the same line. The query measures the card's content box. */
+   card's edge). 320 = ring 132 + gap 18 + the stepper row 170 (40 + 10 + 70 + 10 + 40). Glas's row is 178 (buttons
+   44): from 320 to 326 its "+" reaches up to 6 px into the 16 px padding, still on the surface, so the phone (325 inside
+   at 390) keeps the ring and the side next to each other. The query measures the card's content box. */
 .pool-solar {
   container: pool-solar / inline-size;
 }
 
-@container pool-solar (max-width: 325.98px) {
+@container pool-solar (max-width: 319.98px) {
   .pool-solar__body {
     flex-direction: column;
   }
