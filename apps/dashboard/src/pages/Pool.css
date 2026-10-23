@@ -10,10 +10,30 @@
 }
 
 .pool-grid {
+  container: pool-grid / inline-size; /* the chart's span below asks how many columns there are */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
   align-items: start;
+}
+
+/* The runtime chart takes two columns as soon as there are two (14 days need the room), from four columns on the rest
+   of its row: three next to the admin card, all four without it. 620 / 1260 = two / four columns of 300 with the
+   widest column gap (Glas 20; Klassisch's 16 has them from 616 / 1248 on, so the span never adds a column). */
+@container pool-grid (min-width: 620px) {
+  .pool-chart {
+    grid-column: span 2;
+  }
+}
+
+@container pool-grid (min-width: 1260px) {
+  .pool-grid:has(> .pool-admin) > .pool-chart {
+    grid-column: span 3;
+  }
+
+  .pool-grid:not(:has(> .pool-admin)) > .pool-chart {
+    grid-column: span 4;
+  }
 }
 
 /* ---- Shared card scaffolding ---- */
@@ -375,6 +395,36 @@
   gap: 12px;
   flex: 1;
   min-width: 150px;
+}
+
+/* Too narrow for the side next to the ring (a column of four on the desktop): everything in one centred column like
+   the manual run beside it, instead of the side wrapping under the ring flush left (or its stepper reaching past the
+   card's edge). 320 = ring 132 + gap 18 + the stepper row 170 (40 + 10 + 70 + 10 + 40). Glas's row is 178 (buttons
+   44): from 320 to 326 its "+" reaches up to 6 px into the 16 px padding, still on the surface, so the phone (325 inside
+   at 390) keeps the ring and the side next to each other. The query measures the card's content box. */
+.pool-solar {
+  container: pool-solar / inline-size;
+}
+
+@container pool-solar (max-width: 319.98px) {
+  .pool-solar__body {
+    flex-direction: column;
+  }
+
+  .pool-solar__side {
+    flex: none;
+    align-items: center;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .pool-solar__side .pool-chip {
+    align-self: center;
+  }
+
+  .pool-solar__side .pool-stepper {
+    align-items: center;
+  }
 }
 
 .pool-chip {

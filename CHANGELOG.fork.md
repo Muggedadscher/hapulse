@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F58 — 2026-10-23
+
+**Pool: aufgeräumt auf breiten Bildschirmen** · _Pool: tidy on wide screens_
+
+### Geändert / Changed
+
+- Die Karte „Solar-Automatik“ steht in einer schmalen Spalte mittig untereinander wie „Manueller Betrieb“, statt mit leerer rechter Hälfte  
+  _The card “Solar automation” stacks centred in a narrow column like “Manual run”, instead of leaving its right half empty_
+- „Laufzeit pro Tag“ ist auf Tablet und Desktop zwei Spalten breit, auf sehr breiten Bildschirmen der Rest der Zeile; im Stil Glas steht der Wert des Tages groß oben in der Karte  
+  _“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in Glass the day’s value stands large at the top of the card_
+
 ## F57 — 2026-10-22
 
 **Energie: Balken stehen wieder unten** · _Energy: bars stand on the base again_
