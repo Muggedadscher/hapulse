@@ -77,16 +77,22 @@ export function PoolChartCard() {
   const shownIdx = activeIdx != null && activeIdx >= 0 && activeIdx <= lastIdx ? activeIdx : lastIdx;
   const shown = bars[shownIdx];
 
-  // The shown day's runtime: in Klassisch at the end of the head row; in Glas the head is the title above the surface,
-  // so the figure opens the surface instead (day 13 label2 above, the value big, like the energy page's cards)
+  // The shown day's runtime: in Klassisch at the end of the head row (value over day); in Glas the head is the title
+  // above the surface, so the figure opens the surface instead (the day 13 label2 above the big value, like the energy
+  // page's cards)
+  const readoutValue = shown ? (
+    <span className="pool-chart__readout-value data-font">
+      {fmtVal(shown.value)}<span className="pool-chart__readout-unit"> {unit}</span>
+    </span>
+  ) : null;
+  const readoutDay = shown ? (
+    <span className="pool-chart__readout-day">
+      {shownIdx === lastIdx ? t('pool.chart.today') : fmtDay.format(new Date(shown.start))}
+    </span>
+  ) : null;
   const readout = state === 'ready' && shown ? (
     <div className="pool-chart__readout">
-      <span className="pool-chart__readout-value data-font">
-        {fmtVal(shown.value)}<span className="pool-chart__readout-unit"> {unit}</span>
-      </span>
-      <span className="pool-chart__readout-day">
-        {shownIdx === lastIdx ? t('pool.chart.today') : fmtDay.format(new Date(shown.start))}
-      </span>
+      {glas ? <>{readoutDay}{readoutValue}</> : <>{readoutValue}{readoutDay}</>}
     </div>
   ) : null;
 

@@ -486,7 +486,6 @@
    the energy chart's dimmed bars; the readout opens the surface like the energy cards' big figure (the day 13 label2
    above, the value 34/41 600 with its unit 17/22 label2), the days 11 label2 ---- */
 :root[data-style='glas'] .pool-chart > .pool-chart__readout {
-  flex-direction: column-reverse;
   align-items: flex-start;
   gap: 0;
   text-align: left;

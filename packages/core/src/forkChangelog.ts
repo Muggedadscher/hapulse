@@ -51,7 +51,7 @@ export const FORK_RELEASES: ForkRelease[] = [
           },
           {
             de: '„Laufzeit pro Tag“ ist auf Tablet und Desktop zwei Spalten breit, auf sehr breiten Bildschirmen der Rest der Zeile; im Stil Glas steht der Wert des Tages groß oben in der Karte',
-            en: '“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in the style Glas the day’s value stands large at the top of the card',
+            en: '“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in Glass the day’s value stands large at the top of the card',
           },
         ],
       },

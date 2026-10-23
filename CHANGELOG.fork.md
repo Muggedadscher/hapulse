@@ -15,7 +15,7 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 - Die Karte „Solar-Automatik“ steht in einer schmalen Spalte mittig untereinander wie „Manueller Betrieb“, statt mit leerer rechter Hälfte  
   _The card “Solar automation” stacks centred in a narrow column like “Manual run”, instead of leaving its right half empty_
 - „Laufzeit pro Tag“ ist auf Tablet und Desktop zwei Spalten breit, auf sehr breiten Bildschirmen der Rest der Zeile; im Stil Glas steht der Wert des Tages groß oben in der Karte  
-  _“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in the style Glas the day’s value stands large at the top of the card_
+  _“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in Glass the day’s value stands large at the top of the card_
 
 ## F57 — 2026-10-22
 
