@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 58,
+    date: '2026-10-23',
+    title: { de: 'Pool: aufgeräumt auf breiten Bildschirmen', en: 'Pool: tidy on wide screens' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Karte „Solar-Automatik“ steht in einer schmalen Spalte mittig untereinander wie „Manueller Betrieb“, statt mit leerer rechter Hälfte',
+            en: 'The card “Solar automation” stacks centred in a narrow column like “Manual run”, instead of leaving its right half empty',
+          },
+          {
+            de: '„Laufzeit pro Tag“ ist auf Tablet und Desktop zwei Spalten breit, auf sehr breiten Bildschirmen der Rest der Zeile; im Stil Glas steht der Wert des Tages groß oben in der Karte',
+            en: '“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in the style Glas the day’s value stands large at the top of the card',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 57,
     date: '2026-10-22',
     title: { de: 'Energie: Balken stehen wieder unten', en: 'Energy: bars stand on the base again' },
