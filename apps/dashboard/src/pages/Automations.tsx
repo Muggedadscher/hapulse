@@ -31,12 +31,27 @@ function categoryToId(cat: string): string {
   return `cat_${cat.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}`;
 }
 
-function idToCategory(sectionId: string, categories: string[]): string {
+function idToCategory(sectionId: string, sectionIds: Map<string, string>): string { // [fork] unique ids (below)
   const slug = sectionId.slice('cat_'.length);
   return (
-    categories.find((c) => categoryToId(c) === sectionId) ?? // [fork] same slug as categoryToId (umlauts, punctuation)
+    [...sectionIds].find(([, id]) => id === sectionId)?.[0] ?? // [fork]
     (slug.charAt(0).toUpperCase() + slug.slice(1))
   );
+}
+
+/** [fork] Category → section id. HA category names are free text, so two of them can share a slug ("Heizung alt",
+ *  "Heizung (alt)", any two emoji-only names): later ones get `_2`, `_3`, … in the (sorted) list order. */
+function categorySectionIds(categories: string[]): Map<string, string> {
+  const ids = new Map<string, string>();
+  const used = new Set<string>();
+  for (const c of categories) {
+    const base = categoryToId(c);
+    let id = base;
+    for (let n = 2; used.has(id); n++) id = `${base}_${n}`;
+    used.add(id);
+    ids.set(c, id);
+  }
+  return ids;
 }
 
 /** Display-only translation of the `'General'` fallback category. The raw
@@ -199,8 +214,9 @@ export function Automations() {
   }, [registries, categoryNames]);
 
   // Derive categories from live automation entities
-  const categories = [...new Set(automations.map(getCategory))].sort();
-  const categoryIds = categories.map(categoryToId);
+  const categories = [...new Set(automations.map(getCategory))].sort((a, b) => a.localeCompare(b, locale)); // [fork] locale order (HA names)
+  const sectionIdOf = categorySectionIds(categories); // [fork] unique ids
+  const categoryIds = categories.map((c) => sectionIdOf.get(c) ?? categoryToId(c)); // [fork]
 
   // ── Search / filter state ─────────────────────────────────────────────────
   const [search, setSearch]               = useState('');
@@ -317,7 +333,7 @@ export function Automations() {
         ? t('nav.overview')
         : id === 'activity'
           ? t('automations.activity.title')
-          : categoryDisplayLabel(t, idToCategory(id, categories)),
+          : categoryDisplayLabel(t, idToCategory(id, sectionIdOf)),
   });
 
   function getToggleLabels(id: string) {
@@ -330,7 +346,7 @@ export function Automations() {
         showMobile: t(fixed.showMobile),
       };
     }
-    const label = categoryDisplayLabel(t, idToCategory(id, categories));
+    const label = categoryDisplayLabel(t, idToCategory(id, sectionIdOf));
     return {
       hide: t('automations.section.hideCategory', { label }),
       show: t('automations.section.showCategory', { label }),
@@ -346,7 +362,7 @@ export function Automations() {
     if (id === 'activity') {
       return <AutomationActivityFeed automations={automations} />;
     }
-    const catName  = idToCategory(id, categories);
+    const catName  = idToCategory(id, sectionIdOf);
     const catAutos = automations.filter((e) => getCategory(e) === catName);
     return <AutomationCategoryCard category={categoryDisplayLabel(t, catName)} automations={catAutos} />;
   }

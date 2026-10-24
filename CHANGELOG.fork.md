@@ -14,6 +14,8 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 - Die Gruppen unter Automationen tragen die Kategorie, die eine Automation in Home Assistant hat, wie dessen eigene Automationsliste; Automationen ohne Kategorie bleiben nach dem ersten Wort ihres Namens gruppiert  
   _The groups on the automations page carry the category an automation has in Home Assistant, like its own automation list; automations without a category stay grouped by the first word of their name_
+- Eine Gruppe, die dadurch einen neuen Namen bekommt, steht einmalig wieder sichtbar an ihrem Standardplatz, auch wenn sie vorher ausgeblendet oder verschoben war; ebenso nach dem Umbenennen einer Kategorie in Home Assistant  
+  _A group that gets a new name this way shows up once more at its default place, even if it was hidden or moved before; the same after renaming a category in Home Assistant_
 
 ## F59 — 2026-10-24
 
