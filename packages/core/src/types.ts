@@ -133,6 +133,8 @@ export interface EntityRegistryEntry {
   config_entry_id?: string | null;
   /** [fork] HA categories by scope (`{ automation: '<category_id>' }`), as HA's own automation list groups them. */
   categories?: Record<string, string | null>;
+  /** [fork] HA label ids; `heizplan` marks a room's heating plan entries (heatingPlanLabel.ts). */
+  labels?: string[];
 }
 
 export interface Registries {
