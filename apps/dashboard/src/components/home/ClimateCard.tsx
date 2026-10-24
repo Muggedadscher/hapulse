@@ -1,15 +1,15 @@
 /**
  * ClimateCard — per-room climate overview with selectable room controls.
  */
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Minus, Plus, Thermometer, ChevronRight } from 'lucide-react';
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
-import { callService } from '../../ha/service';
 import { useT, useStateLabel, useLocale } from '../../i18n/useT'; // [fork] useLocale
 import { formatNumber } from '@hapulse/core'; // [fork]
 import './ClimateCard.css';
-import { climateSetpoint, gaugeRange, stepSetpoint } from './climateLogic'; // [fork]
+import { climateSetpoint, gaugeRange } from './climateLogic'; // [fork]
+import { useClimateStepper } from './useClimateStepper'; // [fork] sends set_temperature (upstream's callService import dropped)
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (docs/glas/PLAN-ETAPPE-4.md K83)
 import { GlasClimateBody } from '../glas/home/GlasClimateBody'; // [fork]
 import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
@@ -184,27 +184,13 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
     (activeEntity?.attributes.current_temperature as number | undefined) ??
     null;
   const sp = climateSetpoint((activeEntity?.attributes ?? {}) as Record<string, unknown>, temperatureUnit); // [fork] unit
-  // the last value sent, synchronously (a ref: two taps before a re-render must still be two steps) + state to re-render
-  const pendingRef = useRef<{ entity: string; value: number; at: number } | null>(null);
-  const [, setPendingTick] = useState(0);
-  const pendingValid = (e: string | undefined) => {
-    const pd = pendingRef.current;
-    return pd && pd.entity === e && Date.now() - pd.at < 4000 ? pd : null;
-  };
-  const shownPending = pendingValid(activeEntity?.entity_id);
-  const setpointTemp = shownPending && shownPending.value !== sp.value ? shownPending.value : sp.value;
+  // the value just sent shows at once and quick taps build on it (shared with the room hero card: useClimateStepper)
+  const stepper = useClimateStepper();
+  const setpointTemp = stepper.shownSetpoint(activeEntity?.entity_id, sp);
 
   const stepBy = useCallback((dir: 1 | -1) => {
     if (!activeEntity) return;
-    const pd = pendingValid(activeEntity.entity_id);
-    const base = pd ? pd.value : sp.value;
-    if (base == null) return;
-    const next = stepSetpoint(base, dir, sp);
-    if (next === base) return;
-    pendingRef.current = { entity: activeEntity.entity_id, value: next, at: Date.now() };
-    setPendingTick((n) => n + 1);
-    void callService('climate', 'set_temperature', { temperature: next }, { entity_id: activeEntity.entity_id })
-      .catch(() => { pendingRef.current = null; setPendingTick((n) => n + 1); });
+    stepper.step(activeEntity.entity_id, sp, dir);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeEntity, sp.value, sp.step, sp.min, sp.max]);
   const handleDown = useCallback(() => stepBy(-1), [stepBy]);

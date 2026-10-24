@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 59,
+    date: '2026-10-24',
+    title: { de: 'Thermostat in der Raumkarte zählt jeden Tipp', en: 'Thermostat in the room card counts every tap' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Plus und Minus an der Thermostat-Pille der Raumkarte zählen jeden Tipp und zeigen den neuen Wert sofort, wie die Klima-Karte; vorher schickten schnelle Tipps immer denselben Wert, bis das Thermostat geantwortet hatte',
+            en: 'Plus and minus on the room card’s thermostat pill count every tap and show the new value at once, like the climate card; quick taps used to send the same value until the thermostat had answered',
+          },
+          {
+            de: 'Die Pille hält Schrittweite, Mindest- und Höchstwert des Thermostats ein und ist gesperrt, wenn es keine einzelne Solltemperatur meldet (etwa im Bereichsmodus)',
+            en: 'The pill keeps to the thermostat’s step, minimum and maximum and is disabled when it reports no single target temperature (e.g. in range mode)',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 58,
     date: '2026-10-23',
     title: { de: 'Pool: aufgeräumt auf breiten Bildschirmen', en: 'Pool: tidy on wide screens' },
