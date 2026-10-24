@@ -192,6 +192,10 @@ import {
   emptyHeatingWeek,
   DEMO_HEATING,
   demoHeatingWeek,
+  heatingWindowSensors,
+  heatingThermostatDeviates,
+  HEATING_FOLLOW_GRACE_MS,
+  tickDemoHeating,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2552,4 +2556,58 @@ console.log('\n── heating plan ──');
   assertEqual(setValue(DEMO_HEATING.comfort, 22.5), '22.5', 'demo: comfort helper takes a value');
   assertEqual(setValue(DEMO_HEATING.eco, 40), DEMO_ENTITIES[DEMO_HEATING.eco].state, 'demo: a value above max is refused');
   assertEqual(setValue('input_number.poolpumpe_manuell_dauer', 30), DEMO_ENTITIES['input_number.poolpumpe_manuell_dauer'].state, 'demo: other helpers unchanged as before');
+}
+
+// [fork] Heating plan, Etappe 2a: the room's windows, whether the thermostat follows, the demo schedule on the clock
+console.log('\n── heating plan: room ──');
+{
+  const S = (entity_id, state, attributes = {}) => ({
+    entity_id, state, attributes, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null },
+  });
+  const entities = {
+    'binary_sensor.w': S('binary_sensor.w', 'off', { device_class: 'window' }),
+    'binary_sensor.d': S('binary_sensor.d', 'on', { device_class: 'door' }),
+    'binary_sensor.o': S('binary_sensor.o', 'off', { device_class: 'opening' }),
+    'binary_sensor.m': S('binary_sensor.m', 'on', { device_class: 'motion' }),
+    'sensor.w': S('sensor.w', '1', { device_class: 'window' }),
+  };
+  const ids = ['binary_sensor.w', 'binary_sensor.d', 'binary_sensor.o', 'binary_sensor.m', 'sensor.w', 'binary_sensor.gone'];
+  assertEqual(heatingWindowSensors(ids, entities).join(), 'binary_sensor.w,binary_sensor.d,binary_sensor.o', 'windows: window, door and opening contacts only');
+
+  const now = Date.UTC(2026, 9, 24, 12);
+  const T = (state, temperature, step) => S('climate.t', state, { temperature, ...(step ? { target_temp_step: step } : {}) });
+  const dev = (thermostats, extra = {}) =>
+    heatingThermostatDeviates({ phase: 'comfort', expected: 21, thermostats, changedAt: now - HEATING_FOLLOW_GRACE_MS, now, ...extra });
+  assert(!dev([T('heat', 21)]), 'follow: holds the value');
+  assert(!dev([T('heat', 21.2)]), 'follow: within half a step');
+  assert(dev([T('heat', 22)]), 'follow: set by hand');
+  assert(!dev([T('heat', 21.5, 1)]), 'follow: a whole-degree thermostat rounds half a degree');
+  assert(dev([T('heat', 22, 1)]), 'follow: a whole-degree thermostat a degree off');
+  assert(dev([T('off')]), 'follow: switched off');
+  assert(!dev([T('unavailable'), undefined]), 'follow: an unavailable thermostat says nothing');
+  assert(dev([T('heat', 21), T('heat', 18)]), 'follow: one of two thermostats is enough');
+  assert(!dev([T('heat', 22)], { changedAt: now - HEATING_FOLLOW_GRACE_MS + 1 }), 'follow: grace after a change');
+  assert(!dev([T('heat', 22)], { phase: 'window' }), 'follow: not with the window open');
+  assert(!dev([T('off')], { phase: 'off' }), 'follow: not with the plan off');
+  assert(!dev([T('heat', 22)], { expected: null }), 'follow: no expected value');
+  assert(!dev([T('heat', '22')]), 'follow: no numeric target');
+  assert(dev([T('heat', 16)], { phase: 'eco', expected: 18 }), 'follow: eco too');
+
+  // demo: the schedule's state and next_event follow the clock (Monday 26 Oct 2026, the day after the 25-hour day)
+  const first = demoHeatingWeek(DEMO_ENTITIES, DEMO_HEATING.schedule).monday[0];
+  const [fh, fm] = first.from.split(':').map(Number);
+  const map = { ...DEMO_ENTITIES };
+  const original = map[DEMO_HEATING.schedule];
+  const before = new Date(2026, 9, 26, fh, fm - 1);
+  tickDemoHeating(map, before);
+  assertEqual(map[DEMO_HEATING.schedule].state, 'off', 'demo tick: off before the first period');
+  assertEqual(new Date(map[DEMO_HEATING.schedule].attributes.next_event).getTime(), new Date(2026, 9, 26, fh, fm).getTime(), 'demo tick: next_event = start of the period');
+  const inside = new Date(2026, 9, 26, fh, fm + 1);
+  tickDemoHeating(map, inside);
+  assertEqual(map[DEMO_HEATING.schedule].state, 'on', 'demo tick: on inside the period');
+  assertEqual(map[DEMO_HEATING.schedule].last_changed, inside.toISOString(), 'demo tick: last_changed moves with the state');
+  const kept = map[DEMO_HEATING.schedule];
+  tickDemoHeating(map, new Date(inside.getTime() + 1000));
+  assert(map[DEMO_HEATING.schedule] === kept, 'demo tick: nothing changed → the same entity');
+  assert(DEMO_ENTITIES[DEMO_HEATING.schedule] === original, 'demo tick: the demo map itself is untouched');
 }

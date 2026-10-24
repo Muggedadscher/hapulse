@@ -1,8 +1,8 @@
 # Heizplan je Raum — Einrichtung in Home Assistant
 
-Stand: 2026-10-24 (Etappe 1: Core, Demo, Aufrufe; die Karte in der Raumseite kommt mit Etappe 2). Logik:
-`packages/core/src/heatingPlan.ts`, Aufrufe: `apps/dashboard/src/ha/heatingPlan.ts`, Demo:
-`packages/core/src/heatingPlanDemo.ts`.
+Stand: 2026-10-24 (Etappe 2a: Karte und Fenster in der Raumseite, Zeiten nur lesend; das Ändern der Zeiten kommt mit
+Etappe 2b). Logik: `packages/core/src/heatingPlan.ts`, Aufrufe: `apps/dashboard/src/ha/heatingPlan.ts`, Oberfläche:
+`apps/dashboard/src/components/heating/*` (Glas: `styles/glas/heating.css`), Demo: `packages/core/src/heatingPlanDemo.ts`.
 
 In jedem Raum mit Thermostat schaltet HAPulse den Heizplan an und aus, stellt Komfort und Eco und ändert die Zeiten.
 **Jeder HA-Benutzer** kann das, auch ohne Admin-Rechte (Standard-Rechte vorausgesetzt; eine Nur-lesen-Gruppe scheitert).
@@ -84,7 +84,32 @@ Speichern den Zeitplan neu und vergleicht (`saveHeatingWeek`); stimmt er nicht, 
 Eine Änderung direkt am Thermostat hält bei laufendem Plan bis zum nächsten Wechsel: Zeitplan, Fenster, Helfer,
 HA-Neustart oder Neuladen der Automationen (jede gespeicherte Automation lädt alle neu).
 
+## In HAPulse
+Karte „Heizplan“ in der Raumseite unter „Klima“ nach den Thermostaten (`HeatingPlanCard`), auch wenn der Raum sonst keine
+Klima-Geräte zeigt; nicht im Bearbeiten-Modus. Kopf mit Statuszeile und Schalter, heute als Balken mit den Komfortzeiten
+und einer Marke für jetzt, Komfort und Eco (die gerade gültige umrandet), „Zeitplan und Temperaturen“ öffnet das Fenster
+(`HeatingPlanSheet`: Schalter, Komfort/Eco mit − und +, Zeiten nach gleichen Tagen gruppiert, in 2a nur lesend).
+
+- **Schalter:** An wirkt sofort. Aus fragt vorher und sagt, dass Fenster- und Frostschutz dann aus sind.
+- **Fenster:** Im Fenster wartet alles auf ✓ (Glas) bzw. „Speichern“ (Klassisch). Beim Einschalten zuerst die
+  Temperaturen, dann der Schalter; beim Ausschalten zuerst der Schalter (`heatingSave.ts`). Scheitert ein Aufruf, bleibt
+  das Fenster offen mit „Nicht gespeichert … Erneut versuchen“.
+- **Fenster offen:** Die Fenster- und Türkontakte des Raums (`binary_sensor` der Klassen window, door, opening;
+  `heatingWindowSensors`). Die Fenster-Eingaben der Automation kann ein Benutzer ohne Admin-Rechte nicht lesen; in jedem
+  Raum sind es diese Kontakte.
+- **„Thermostat folgt dem Plan nicht“:** Läuft Komfort oder Eco und hält ein erreichbares Thermostat länger als 3 min
+  nach der letzten Änderung an Plan, Zeitplan, Helfern oder Fenstern einen anderen Wert als der gültige Helfer (mehr als
+  ein halber Schritt des Thermostats daneben) oder ist es aus (`heatingThermostatDeviates`). Das passt, weil der Blueprint
+  die Abweichung des Raumsensors über die Kalibrierung ausgleicht und nicht über den Sollwert. Ursachen: eine Änderung
+  von Hand (hält bis zum nächsten Wechsel) oder die Automation tut nichts (Raumsensor nicht erreichbar). Geprüft werden
+  alle `climate.*` im Bereich des Raums (die Thermostat-Eingabe der Automation kann ein Benutzer ohne Admin-Rechte
+  nicht lesen); ein zweites Klimagerät im Raum, das der Plan nicht steuert, gehört deshalb in einen anderen Bereich.
+- **Schließen:** Solange ✓ läuft, bleibt das Fenster offen (×, Esc, Wischen und „Abbrechen“ warten), damit eine
+  Ablehnung sichtbar bleibt. Der Zeitplan wird neu gelesen, wenn sich die Zeitplan-Entität ändert und wenn die
+  Verbindung zu Home Assistant wieder steht.
+
 ## Demo
 Im Demo-Wohnzimmer: Automation, Zeitplan (Mo–Fr 06:00–08:30 und 16:30–22:00, Sa/So 08:00–22:30), Helfer 21/18 °C und
 „Save Heating Plan“. Die Zeiten liegen im Attribut `demo_week` des Zeitplans; `get_schedule` und das Speichern wirken
-darauf, mit derselben Prüfung wie in HA. Das Thermostat folgt dem Plan in der Demo nicht.
+darauf, mit derselben Prüfung wie in HA. Zustand und `next_event` des Zeitplans folgen der Uhr (`tickDemoHeating` im
+Demo-Takt). Das Thermostat folgt dem Plan in der Demo nicht, deshalb zeigt die Demo den Hinweis „folgt dem Plan nicht“ nie.

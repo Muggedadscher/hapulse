@@ -1,0 +1,523 @@
+/* [fork] Glas — the heating plan per room (components/heating/*, classic components/heating/heating.css; plan
+   glas/heizung-zeitplan/PLAN.md Etappe 2a, draft LIESMICH.md).
+
+   The card in "Klima" stands like the room's tiles (cards.css): opaque `card`, the circle 36 in `orangeSoft` while the
+   plan runs (`warnSoft` at an open window like doors and windows, `fill` when off), "Heizplan" 17/22 600, the status
+   15/20 with the phase in its ink, the iOS switch (controls.css), today as a bar 28 with the comfort periods in orange
+   and the line for now, the two temperatures as tiles in `card2` (the one that holds now ringed in orange) and the row
+   to the window. The card is content, not a control: no tint under the pointer, its row answers.
+
+   The window: lists in `group` like the other windows (sheet-content.css), the steppers as a capsule 36, the days as
+   circles 24 (the chosen ones in the accent, a choice, §2.3), the periods 22/28 600; ✓ in the head is the prominent
+   circle 32 like the iOS 26 sheets. One column in the sheet, two in the dialog from 900 px. */
+
+/* ---- Card ---- */
+:root[data-style='glas'] .heating-card {
+  gap: 14px;
+  padding: 16px 16px 0;
+  font-family: var(--g-font);
+}
+
+:root[data-style='glas'] .heating-card:hover {
+  background-color: var(--bg-card);
+}
+
+:root[data-style='glas'] .heating-card__head {
+  gap: 12px;
+}
+
+:root[data-style='glas'] .heating-card:is([data-phase='comfort'], [data-phase='eco']) .heating-card__chip {
+  --g-chip: var(--g-orange-soft);
+  --g-chip-glyph: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .heating-card[data-phase='window'] .heating-card__chip {
+  --g-chip: var(--g-warn-soft);
+  --g-chip-glyph: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .heating-card__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+  letter-spacing: 0;
+}
+
+:root[data-style='glas'] .heating-card__status {
+  margin-top: 1px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-status__phase {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .heating-status--comfort .heating-status__phase {
+  color: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .heating-status--window .heating-status__phase,
+:root[data-style='glas'] .heating-status--deviates {
+  color: var(--g-warn-ink);
+}
+
+/* today */
+:root[data-style='glas'] .heating-card__today {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .heating-card__today-row {
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-card__today-day {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .heating-card__today-sum {
+  color: var(--g-label-2);
+}
+
+/* ---- Day bar: 28 high with radius 9 on the card, 10 with radius 5 in the window's groups ---- */
+:root[data-style='glas'] .heating-bar__track {
+  height: 28px;
+  border-radius: 9px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .heating-bar--thin .heating-bar__track {
+  height: 10px;
+  border-radius: 5px;
+}
+
+:root[data-style='glas'] .heating-bar__fill {
+  background: var(--g-orange);
+}
+
+:root[data-style='glas'] .heating-bar--muted .heating-bar__fill {
+  background: var(--g-fill-2);
+  opacity: 1;
+}
+
+:root[data-style='glas'] .heating-bar__now,
+:root[data-style='glas'] .heating-bar__now::before {
+  background: var(--g-label);
+}
+
+:root[data-style='glas'] .heating-bar__now::before {
+  top: -3px;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+}
+
+:root[data-style='glas'] .heating-bar__ticks {
+  height: 16px;
+  margin-top: 4px;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+/* ---- Temperatures ---- */
+:root[data-style='glas'] .heating-card__temps {
+  gap: 10px;
+}
+
+:root[data-style='glas'] .heating-temp {
+  gap: 2px;
+  padding: 10px 12px 9px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--g-card-2);
+  transition: box-shadow 300ms ease;
+}
+
+:root[data-style='glas'] .heating-temp--active {
+  background: var(--g-card-2);
+  box-shadow: inset 0 0 0 1.5px var(--g-orange);
+}
+
+:root[data-style='glas'] .heating-temp__label {
+  gap: 5px;
+  color: var(--g-label-2);
+  font: 600 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-temp__label > svg {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .heating-card:is([data-phase='comfort'], [data-phase='eco']) .heating-temp--comfort .heating-temp__label > svg {
+  color: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .heating-temp__value {
+  color: var(--g-label);
+  font: 600 22px / 28px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-temp__unit {
+  margin-left: 2px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- Row to the window: 48 high across the card, hairline above ---- */
+:root[data-style='glas'] .heating-card__open {
+  min-height: 48px;
+  margin: 0 -16px;
+  padding: 0 14px 0 16px;
+  border-top: 0.5px solid var(--g-sep);
+  color: var(--g-label);
+  font: 400 15px / 20px var(--g-font);
+  transition: background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .heating-card__open > svg {
+  color: var(--g-label-3);
+}
+
+/* the classic hover tint stays off after a tap (K108), the tint only with a pointer that hovers */
+:root[data-style='glas'] .heating-card__open:hover {
+  background: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .heating-card__open:hover {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .heating-card__open:active {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .heating-card__open:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+/* ---- The question before switching off ---- */
+:root[data-style='glas'] .heating-confirm__text {
+  font: 400 15px / 20px var(--g-font);
+}
+
+/* ---- ✓ in the window's head: the prominent circle 32 in a hit area 44 ---- */
+:root[data-style='glas'] .g-heating-done {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-heating-done__circle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-prominent);
+  color: var(--g-on-prominent);
+  transition: opacity 150ms ease;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .g-heating-done:hover:not(:disabled) .g-heating-done__circle {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
+}
+
+:root[data-style='glas'] .g-heating-done:disabled {
+  cursor: default;
+}
+
+:root[data-style='glas'] .g-heating-done:disabled .g-heating-done__circle {
+  opacity: 0.5;
+}
+
+:root[data-style='glas'] .g-heating-done:focus-visible {
+  outline: none;
+}
+
+:root[data-style='glas'] .g-heating-done:focus-visible .g-heating-done__circle {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Window ---- */
+:root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.heating-sheet) {
+  max-width: 780px;
+}
+
+:root[data-style='glas'] .heating-sheet {
+  gap: 0 22px;
+  font-family: var(--g-font);
+}
+
+/* the sheet is at most 560 wide: one column up to the dialog */
+@media (max-width: 899px) {
+  :root[data-style='glas'] .heating-sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .heating-sheet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+:root[data-style='glas'] .heating-sheet__col {
+  gap: 0;
+}
+
+:root[data-style='glas'] .heating-sheet__title {
+  margin: 20px 4px 7px 16px;
+  color: var(--text-dim);
+  font: 600 15px / 20px var(--g-font);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* the first title sits 4 under the head; in the dialog the second column starts level with the first */
+:root[data-style='glas'] .heating-sheet__col:first-child > :first-child {
+  margin-top: 4px;
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .heating-sheet__col > :first-child {
+    margin-top: 2px;
+  }
+}
+
+:root[data-style='glas'] .heating-sheet__list {
+  --text-dim: var(--g-label-2);
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .heating-sheet__list {
+    border-radius: 20px;
+  }
+}
+
+:root[data-style='glas'] .heating-sheet__row {
+  position: relative;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 16px;
+  font: 400 17px / 22px var(--g-font);
+}
+
+/* the hairline starts at the text, after the symbol (16 + 30 + 12) */
+:root[data-style='glas'] .heating-sheet__row + .heating-sheet__row {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .heating-sheet__row + .heating-sheet__row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 58px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .heating-sheet__row-label {
+  color: var(--g-label);
+  font-size: 17px;
+}
+
+:root[data-style='glas'] .heating-sheet__note {
+  margin: 7px 16px 0;
+  padding: 0;
+  color: var(--text-dim);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-sheet__temp-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .heating-sheet__temp--comfort .heating-sheet__temp-icon {
+  background: var(--g-orange);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .heating-sheet__temp-name {
+  color: var(--g-label);
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] .heating-sheet__temp-hint {
+  color: var(--g-label-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* stepper: one capsule 36 in `fill`, − and + 44 wide (hit area 44 high), the value 17/22 600 */
+:root[data-style='glas'] .heating-stepper {
+  gap: 0;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .heating-stepper__btn {
+  position: relative;
+  width: 44px;
+  height: 36px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--g-label);
+  transition: background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .heating-stepper__btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+
+:root[data-style='glas'] .heating-stepper__btn:hover:not(:disabled) {
+  background: transparent;
+  color: var(--g-label);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .heating-stepper__btn:hover:not(:disabled) {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .heating-stepper__btn:active:not(:disabled) {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .heating-stepper__btn:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .heating-stepper__value {
+  min-width: 58px;
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+/* the times, grouped by equal days */
+:root[data-style='glas'] .heating-group {
+  position: relative;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+:root[data-style='glas'] .heating-group + .heating-group {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .heating-group + .heating-group::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 16px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .heating-group__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-group__none {
+  padding: 14px 16px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-group > .heating-group__none {
+  padding: 0;
+}
+
+:root[data-style='glas'] .heating-days {
+  gap: 4px;
+}
+
+:root[data-style='glas'] .heating-days__day {
+  width: 24px;
+  height: 24px;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  font: 600 12px / 1 var(--g-font);
+}
+
+:root[data-style='glas'] .heating-days__day--on {
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .heating-period__range {
+  gap: 6px;
+}
+
+:root[data-style='glas'] .heating-period__time {
+  color: var(--g-label);
+  font: 600 22px / 28px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .heating-period__word {
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-period__len {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-sheet__error {
+  gap: 6px;
+  margin: 14px 16px 0;
+  color: var(--g-red-ink);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-sheet__retry {
+  font-weight: 600;
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] :is(.heating-stepper, .heating-temp, .heating-bar__track) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .heating-temp--active {
+    border: 2px solid Highlight;
+  }
+
+  :root[data-style='glas'] .heating-bar__fill {
+    background: Highlight;
+  }
+}

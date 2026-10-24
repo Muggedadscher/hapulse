@@ -29,6 +29,8 @@ import { isGarageDoor } from '@hapulse/core'; // [fork]
 import { withDefaultSlot } from '../lib/defaultSlot'; // [fork]
 import { useIsGlas } from '../app/glas/useUiStyle'; // [fork] Glas: back as a glass circle 44 (docs/glas/PLAN-ETAPPE-2.md K41)
 import { glasSceneTone } from '../components/glas/home/sceneTone'; // [fork] Glas: scene tiles like the overview (K95)
+import { HeatingPlanCard } from '../components/heating/HeatingPlanCard'; // [fork] heating plan per room (docs/HEIZPLAN.md)
+import { useAreaHasHeatingPlan } from '../components/heating/useHeatingPlan'; // [fork]
 
 // ── Entity name helpers ───────────────────────────────────────────────────────
 
@@ -292,6 +294,7 @@ export function Room() {
   const cameraSource = useCameraSource(); // [fork] Sentinel replaces HA's camera entities
   const areaCameraIds = useAreaCameraIds(areaId ?? ''); // [fork]
   const glas = useIsGlas(); // [fork]
+  const heatingPlan = useAreaHasHeatingPlan(areaId ?? ''); // [fork] the plan card stands in "Klima" (not while arranging)
   const handleReorderSections = useCallback(
     (newKeys: string[]) => {
       if (!areaId) return;
@@ -523,7 +526,7 @@ export function Room() {
     { key: 'other',        label: t(SECTION_LABEL_KEYS['other']!),        ids: orderedOtherIds },
   ];
 
-  const activeSectionDefs = allSectionDefs.filter((s) => s.ids.length > 0);
+  const activeSectionDefs = allSectionDefs.filter((s) => s.ids.length > 0 || (s.key === 'climate' && heatingPlan)); // [fork] "Klima" also for the plan alone, in edit mode too (keeps its place)
 
   // [fork] a stored order predating the garage section: put it where the blinds were
   const storedRoomSectionOrder = withDefaultSlot(roomSectionOrder[areaId], 'garage', 'cover');
@@ -555,6 +558,7 @@ export function Room() {
         className={gridClass}
       >
         {ids.map((entityId, idx) => renderCard(key, entityId, isSensor ?? false, idx))}
+        {key === 'climate' && heatingPlan && !editMode && room && <HeatingPlanCard areaId={room.id} roomName={room.name} roomEntityIds={room.entityIds} />}{/* [fork] after the thermostats */}
       </SortableGrid>
     );
   }

@@ -25,7 +25,7 @@
 import { domainOf } from './domain.js';
 import { isHeatingPlanEntry } from './heatingPlanLabel.js';
 import { buildDeviceAreaMap, resolveEntityAreaId } from './rooms.js';
-import type { EntityRegistryEntry, Registries } from './types.js';
+import type { EntityRegistryEntry, HassEntity, HassEntityMap, Registries } from './types.js';
 
 export { HEATING_PLAN_LABEL, isHeatingPlanEntry } from './heatingPlanLabel.js';
 
@@ -373,4 +373,54 @@ function untilFromIso(iso: string | null, now: Date): HeatingUntil | null {
     minutes = DAY_MINUTES;
   }
   return untilAt((now.getDay() + 6) % 7, dayOffset, minutes);
+}
+
+// ---------------------------------------------------------------------------
+// The room around the plan: windows, does the thermostat follow
+// ---------------------------------------------------------------------------
+
+/** Device classes of the binary sensors that count as the room's windows and doors. */
+const WINDOW_CLASSES = new Set(['window', 'door', 'opening']);
+
+/**
+ * The room's window and door contacts among `entityIds`: binary sensors of class window, door or opening. The
+ * automation's own window inputs are not readable without admin rights; in every room they are these sensors.
+ */
+export function heatingWindowSensors(entityIds: readonly string[], entities: HassEntityMap): string[] {
+  return entityIds.filter(
+    (id) => domainOf(id) === 'binary_sensor' && WINDOW_CLASSES.has(String(entities[id]?.attributes['device_class'] ?? '')),
+  );
+}
+
+/** How long after the last change of the plan (or a window) a thermostat may still differ from it. */
+export const HEATING_FOLLOW_GRACE_MS = 3 * 60_000;
+
+export interface HeatingFollowInput {
+  phase: HeatingPhase;
+  /** The temperature the plan wants now: comfort or eco helper; null when unknown. */
+  expected: number | null;
+  thermostats: readonly (HassEntity | undefined)[];
+  /** Latest change of the plan's entities and the room's windows (ms since the epoch). */
+  changedAt: number;
+  now: number;
+}
+
+/**
+ * True when a thermostat does not hold what the plan wants, longer than the grace time after the last change: it
+ * was set by hand (that holds until the next change of the plan) or the automation does nothing (room sensor gone).
+ * Only while comfort or eco runs; an unavailable thermostat says nothing. "Holds" allows half the thermostat's step
+ * (a whole-degree thermostat shows 21 for 20.5).
+ */
+export function heatingThermostatDeviates(input: HeatingFollowInput): boolean {
+  const { phase, expected } = input;
+  if ((phase !== 'comfort' && phase !== 'eco') || expected === null || !Number.isFinite(expected)) return false;
+  if (input.now - input.changedAt < HEATING_FOLLOW_GRACE_MS) return false;
+  return input.thermostats.some((t) => {
+    if (!t || t.state === 'unavailable' || t.state === 'unknown') return false;
+    if (t.state === 'off') return true;
+    const target = t.attributes['temperature'];
+    if (typeof target !== 'number') return false;
+    const step = typeof t.attributes['target_temp_step'] === 'number' ? (t.attributes['target_temp_step'] as number) : 0.5;
+    return Math.abs(target - expected) > step / 2 + 0.01;
+  });
 }

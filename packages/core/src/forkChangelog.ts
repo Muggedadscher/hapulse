@@ -38,6 +38,34 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 61,
+    date: '2026-10-24',
+    title: { de: 'Heizplan in jedem Raum', en: 'Heating plan in every room' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'In Räumen mit Heizplan steht unter „Klima“ die Karte „Heizplan“: was gerade gilt und bis wann, der heutige Tag als Balken mit den Komfortzeiten, Komfort- und Eco-Temperatur und ein Schalter für den Plan',
+            en: 'Rooms with a heating plan show the card “Heating plan” under “Climate”: what applies now and until when, today as a bar with the comfort times, the comfort and eco temperatures and a switch for the plan',
+          },
+          {
+            de: '„Zeitplan und Temperaturen“ öffnet ein Fenster mit dem Schalter, Komfort und Eco zum Einstellen und den Komfortzeiten, nach gleichen Tagen gruppiert',
+            en: '“Schedule and temperatures” opens a window with the switch, comfort and eco to set and the comfort times grouped by equal days',
+          },
+          {
+            de: 'Ausschalten fragt vorher, denn dann sind auch Fenster- und Frostschutz des Raums aus; die Karte sagt, wenn ein Fenster offen ist oder das Thermostat dem Plan nicht folgt',
+            en: 'Switching off asks first, as the room’s window and frost protection are off then too; the card says when a window is open or the thermostat does not follow the plan',
+          },
+          {
+            de: 'Alle Benutzer können das bedienen, auch ohne Administratorrechte in Home Assistant',
+            en: 'Every user can do this, also without administrator rights in Home Assistant',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 60,
     date: '2026-10-24',
     title: { de: 'Automationen nach den Kategorien aus Home Assistant', en: 'Automations grouped by Home Assistant’s categories' },

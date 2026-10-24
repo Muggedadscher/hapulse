@@ -6,6 +6,21 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F61 — 2026-10-24
+
+**Heizplan in jedem Raum** · _Heating plan in every room_
+
+### Neu / Added
+
+- In Räumen mit Heizplan steht unter „Klima“ die Karte „Heizplan“: was gerade gilt und bis wann, der heutige Tag als Balken mit den Komfortzeiten, Komfort- und Eco-Temperatur und ein Schalter für den Plan  
+  _Rooms with a heating plan show the card “Heating plan” under “Climate”: what applies now and until when, today as a bar with the comfort times, the comfort and eco temperatures and a switch for the plan_
+- „Zeitplan und Temperaturen“ öffnet ein Fenster mit dem Schalter, Komfort und Eco zum Einstellen und den Komfortzeiten, nach gleichen Tagen gruppiert  
+  _“Schedule and temperatures” opens a window with the switch, comfort and eco to set and the comfort times grouped by equal days_
+- Ausschalten fragt vorher, denn dann sind auch Fenster- und Frostschutz des Raums aus; die Karte sagt, wenn ein Fenster offen ist oder das Thermostat dem Plan nicht folgt  
+  _Switching off asks first, as the room’s window and frost protection are off then too; the card says when a window is open or the thermostat does not follow the plan_
+- Alle Benutzer können das bedienen, auch ohne Administratorrechte in Home Assistant  
+  _Every user can do this, also without administrator rights in Home Assistant_
+
 ## F60 — 2026-10-24
 
 **Automationen nach den Kategorien aus Home Assistant** · _Automations grouped by Home Assistant’s categories_

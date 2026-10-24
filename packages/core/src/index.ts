@@ -349,6 +349,9 @@ export {
   heatingDayGroupKind,
   heatingWeekday,
   heatingPlanStatus,
+  heatingWindowSensors,
+  heatingThermostatDeviates,
+  HEATING_FOLLOW_GRACE_MS,
 } from './heatingPlan.js';
 export type {
   HeatingWeekday,
@@ -362,5 +365,6 @@ export type {
   HeatingUntil,
   HeatingPlanStatus,
   HeatingStatusInput,
+  HeatingFollowInput,
 } from './heatingPlan.js';
-export { DEMO_HEATING, demoHeatingWeek } from './heatingPlanDemo.js';
+export { DEMO_HEATING, demoHeatingWeek, tickDemoHeating } from './heatingPlanDemo.js';
