@@ -30,6 +30,7 @@ import { startGlobalSettings, stopGlobalSettings } from '../ha/globalSettings'; 
 import { startDemoControl, stopDemoControl } from '../ha/demoControl'; // [fork] lab checks, demo only
 import { isDefaultPersistenceAdapter } from '../persistence'; // [fork]
 import { startTemperatureUnit, startDemoTemperatureUnit, stopTemperatureUnit } from '../ha/temperatureUnit'; // [fork] climate unit
+import { startAutomationCategories, stopAutomationCategories } from '../ha/automationCategories'; // [fork] HA categories
 
 // ---------------------------------------------------------------------------
 // Module-scope connection state (not in Zustand state — mutable references)
@@ -223,6 +224,7 @@ function teardown(): void {
   _unsubEntities?.();
   _unsubEntities = null;
   stopTemperatureUnit(); // [fork]
+  stopAutomationCategories(); // [fork]
 
   _unsubStatus?.();
   _unsubStatus = null;
@@ -262,6 +264,7 @@ async function wireConnection(
 
   const registries = await conn.fetchRegistries();
   useEntityStore.getState().setRegistries(registries);
+  startAutomationCategories(conn); // [fork] automation groups = HA categories (ha/automationCategories.ts)
 
   // Fetch the signed-in user — non-fatal; leave null on failure
   let user: HAUser | null = null; // [fork]

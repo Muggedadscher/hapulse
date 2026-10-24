@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 60,
+    date: '2026-10-24',
+    title: { de: 'Automationen nach den Kategorien aus Home Assistant', en: 'Automations grouped by Home Assistant’s categories' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Gruppen unter Automationen tragen die Kategorie, die eine Automation in Home Assistant hat, wie dessen eigene Automationsliste; Automationen ohne Kategorie bleiben nach dem ersten Wort ihres Namens gruppiert',
+            en: 'The groups on the automations page carry the category an automation has in Home Assistant, like its own automation list; automations without a category stay grouped by the first word of their name',
+          },
+          {
+            de: 'Eine Gruppe, die dadurch einen neuen Namen bekommt, steht einmalig wieder sichtbar an ihrem Standardplatz, auch wenn sie vorher ausgeblendet oder verschoben war; ebenso nach dem Umbenennen einer Kategorie in Home Assistant',
+            en: 'A group that gets a new name this way shows up once more at its default place, even if it was hidden or moved before; the same after renaming a category in Home Assistant',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 59,
     date: '2026-10-24',
     title: { de: 'Thermostat in der Raumkarte zählt jeden Tipp', en: 'Thermostat in the room card counts every tap' },
