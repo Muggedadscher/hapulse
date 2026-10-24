@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F60 — 2026-10-24
+
+**Automationen nach den Kategorien aus Home Assistant** · _Automations grouped by Home Assistant’s categories_
+
+### Geändert / Changed
+
+- Die Gruppen unter Automationen tragen die Kategorie, die eine Automation in Home Assistant hat, wie dessen eigene Automationsliste; Automationen ohne Kategorie bleiben nach dem ersten Wort ihres Namens gruppiert  
+  _The groups on the automations page carry the category an automation has in Home Assistant, like its own automation list; automations without a category stay grouped by the first word of their name_
+
 ## F59 — 2026-10-24
 
 **Thermostat in der Raumkarte zählt jeden Tipp** · _Thermostat in the room card counts every tap_

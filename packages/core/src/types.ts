@@ -131,6 +131,8 @@ export interface EntityRegistryEntry {
   /** Config entry the entity belongs to — resolves an integration's services
    *  (e.g. Music Assistant's get_library) without an admin-only lookup. */
   config_entry_id?: string | null;
+  /** [fork] HA categories by scope (`{ automation: '<category_id>' }`), as HA's own automation list groups them. */
+  categories?: Record<string, string | null>;
 }
 
 export interface Registries {

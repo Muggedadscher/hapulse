@@ -19,20 +19,13 @@ import { AutomationsToolbar, type FilterOption } from '../components/automation/
 import { applyStoredOrder } from '../lib/order';
 import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K96)
 import type { HassEntity } from '@hapulse/core';
+import { automationCategory, useAutomationCategoryNames } from '../ha/automationCategories'; // [fork] HA categories
 import './Page.css';
 import './Automations.css';
 
 // ── Category helpers ──────────────────────────────────────────────────────────
 
-function getCategory(entity: HassEntity): string {
-  const cat = entity.attributes.category as string | undefined;
-  if (cat) return cat;
-  const suffix = entity.entity_id.slice('automation.'.length);
-  const first  = suffix.split('_')[0] ?? '';
-  return first.length > 1
-    ? first.charAt(0).toUpperCase() + first.slice(1)
-    : 'General';
-}
+// [fork] getCategory moved to ha/automationCategories.ts (automationCategory): HA's own categories come first.
 
 function categoryToId(cat: string): string {
   return `cat_${cat.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}`;
@@ -41,7 +34,7 @@ function categoryToId(cat: string): string {
 function idToCategory(sectionId: string, categories: string[]): string {
   const slug = sectionId.slice('cat_'.length);
   return (
-    categories.find((c) => c.toLowerCase().replace(/\s+/g, '_') === slug) ??
+    categories.find((c) => categoryToId(c) === sectionId) ?? // [fork] same slug as categoryToId (umlauts, punctuation)
     (slug.charAt(0).toUpperCase() + slug.slice(1))
   );
 }
@@ -198,6 +191,13 @@ export function Automations() {
   );
   const updateCustomization = useSettingsStore((s) => s.updateCustomization);
 
+  // [fork] Group by HA's categories (entity registry + category registry), else as upstream (ha/automationCategories.ts)
+  const categoryNames = useAutomationCategoryNames();
+  const getCategory = useMemo(() => {
+    const entById = new Map((registries?.entities ?? []).map((e) => [e.entity_id, e]));
+    return (entity: HassEntity) => automationCategory(entity, entById.get(entity.entity_id), categoryNames);
+  }, [registries, categoryNames]);
+
   // Derive categories from live automation entities
   const categories = [...new Set(automations.map(getCategory))].sort();
   const categoryIds = categories.map(categoryToId);
@@ -253,7 +253,7 @@ export function Automations() {
       }
       return true;
     });
-  }, [automations, search, roomFilter, categoryFilter, automationArea]);
+  }, [automations, search, roomFilter, categoryFilter, automationArea, getCategory]); // [fork] getCategory
 
   const allSectionIds = ['hero', 'activity', ...categoryIds];
   const orderedIds    = applyStoredOrder(allSectionIds, automationSectionOrder);

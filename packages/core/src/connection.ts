@@ -143,6 +143,18 @@ export class HAConnection {
   }
 
   /**
+   * [fork] HA's categories of one scope (`config/category_registry/list`, e.g. scope `automation`): id → name.
+   * Throws on failure — callers decide their fallback.
+   */
+  async fetchCategories(scope: string): Promise<Record<string, string>> {
+    const list = await this.#conn.sendMessagePromise<{ category_id: string; name: string }[]>({
+      type: 'config/category_registry/list',
+      scope,
+    });
+    return Object.fromEntries((list ?? []).map((c) => [c.category_id, c.name]));
+  }
+
+  /**
    * Fetch the Energy dashboard preferences (`energy/get_prefs`).
    *
    * Returns `null` when energy is not set up (the integration isn't loaded, so
