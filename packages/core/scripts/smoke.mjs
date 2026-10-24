@@ -196,6 +196,18 @@ import {
   heatingThermostatDeviates,
   HEATING_FOLLOW_GRACE_MS,
   tickDemoHeating,
+  heatingTimeOf,
+  heatingEdgeRange,
+  moveHeatingEdge,
+  heatingRingMinutes,
+  addHeatingBlock,
+  removeHeatingBlock,
+  heatingBlockMinutes,
+  heatingFieldMinutes,
+  heatingFieldValue,
+  heatingWeekWith,
+  heatingChangedDays,
+  HEATING_MAX_BLOCKS,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2610,4 +2622,66 @@ console.log('\n── heating plan: room ──');
   tickDemoHeating(map, new Date(inside.getTime() + 1000));
   assert(map[DEMO_HEATING.schedule] === kept, 'demo tick: nothing changed → the same entity');
   assert(DEMO_ENTITIES[DEMO_HEATING.schedule] === original, 'demo tick: the demo map itself is untouched');
+}
+
+console.log('\n── heating plan: editing the periods ──');
+{
+  const B = (from, to) => ({ from, to });
+  const day = [B('06:00', '08:30'), B('16:30', '22:00')];
+  assertEqual(heatingTimeOf(0), '00:00', 'edit: 0 = 00:00');
+  assertEqual(heatingTimeOf(1440), '24:00', 'edit: 1440 = 24:00');
+  assertEqual(heatingTimeOf(1500), '24:00', 'edit: beyond the day = 24:00');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 0, 'from')), JSON.stringify({ min: 0, max: 505 }), 'edit: first start from midnight to 5 min before its end');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 0, 'to')), JSON.stringify({ min: 365, max: 990 }), 'edit: first end up to the next start');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 1, 'to')), JSON.stringify({ min: 995, max: 1440 }), 'edit: last end up to 24:00');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 1, 'from')), JSON.stringify({ min: 510, max: 1315 }), 'edit: second start after the first end');
+  assertEqual(moveHeatingEdge(day, 0, 'from', 333)[0].from, '05:35', 'edit: snapped to 5 minutes');
+  assertEqual(moveHeatingEdge(day, 0, 'to', 1200)[0].to, '16:30', 'edit: an end stops at the next start (touching)');
+  assertEqual(moveHeatingEdge(day, 1, 'from', 0)[1].from, '08:30', 'edit: a start stops at the previous end');
+  assertEqual(moveHeatingEdge(day, 1, 'to', 2000)[1].to, '24:00', 'edit: the last end stops at 24:00');
+  {
+    // A period shorter than a step (set outside HAPulse) keeps a range around its own value and never flips
+    const odd = [{ from: '05:00', to: '06:00' }, { from: '06:00', to: '06:03' }];
+    assertEqual(JSON.stringify(heatingEdgeRange(odd, 1, 'from')), JSON.stringify({ min: 360, max: 360 }), 'edit: a too short period keeps its start in range');
+    const moved = moveHeatingEdge(odd, 1, 'from', 400);
+    assertEqual(moved[1].from, '06:00', 'edit: a too short period does not flip its start past its end');
+    assertEqual(validHeatingBlocks(moveHeatingEdge(odd, 1, 'to', 500)), true, 'edit: a too short period can grow');
+  }
+  assertEqual(moveHeatingEdge(day, 0, 'from', 900)[0].from, '08:25', 'edit: a start stays a step before its end');
+  assert(moveHeatingEdge(day, 0, 'from', 900)[1] === day[1], 'edit: the other periods stay the same objects');
+  assert(validHeatingBlocks(moveHeatingEdge(day, 0, 'to', 1200)), 'edit: a moved day stays valid');
+  // ring: the side of midnight closest to the current value
+  assertEqual(heatingRingMinutes(90, 300), 360, 'ring: 90° = 06:00');
+  assertEqual(heatingRingMinutes(355, 1380), 1440 - 20, 'ring: just before the top from the evening = late evening');
+  assertEqual(heatingRingMinutes(5, 1420), 1440 + 20, 'ring: past the top from the evening runs beyond the end (clamped later)');
+  assertEqual(heatingRingMinutes(355, 30), -20, 'ring: before the top from the morning runs below 0 (clamped later)');
+  assertEqual(moveHeatingEdge(day, 1, 'to', heatingRingMinutes(5, 1320))[1].to, '24:00', 'ring: dragging the last end past the top stops at 24:00');
+  assertEqual(moveHeatingEdge(day, 0, 'from', heatingRingMinutes(355, 360))[0].from, '00:00', 'ring: dragging the first start past the top stops at 00:00');
+  // adding and removing
+  assertEqual(JSON.stringify(addHeatingBlock([])), JSON.stringify([B('06:00', '22:00')]), 'add: a day without periods gets 06:00–22:00');
+  const added = addHeatingBlock(day);
+  assert(added && added.length === 3 && validHeatingBlocks(added), 'add: a third period fits and stays valid');
+  assertEqual(JSON.stringify(added[1]), JSON.stringify(B('09:30', '11:30')), 'add: in the largest stretch (08:30–16:30), an hour in, two hours long');
+  assertEqual(addHeatingBlock([B('00:00', '23:50')]), null, 'add: no room for 15 minutes with space around → null');
+  const full = Array.from({ length: HEATING_MAX_BLOCKS }, (_, i) => B(`${String(i * 2).padStart(2, '0')}:00`, `${String(i * 2).padStart(2, '0')}:30`));
+  assertEqual(addHeatingBlock(full), null, 'add: at most HEATING_MAX_BLOCKS periods');
+  assertEqual(JSON.stringify(removeHeatingBlock(day, 0)), JSON.stringify([B('16:30', '22:00')]), 'remove: the period goes');
+  assertEqual(heatingBlockMinutes(B('05:30', '20:00')), 870, 'length: 14 h 30 min');
+  assertEqual(heatingBlockMinutes(B('22:00', '24:00')), 120, 'length: up to 24:00');
+  // time fields
+  assertEqual(heatingFieldMinutes('05:32', 'from'), 330, 'field: snapped');
+  assertEqual(heatingFieldMinutes('00:00', 'to'), 1440, 'field: 00:00 as an end = 24:00');
+  assertEqual(heatingFieldMinutes('00:00', 'from'), 0, 'field: 00:00 as a start = midnight');
+  assertEqual(heatingFieldMinutes('', 'from'), null, 'field: empty = null');
+  assertEqual(heatingFieldMinutes('25:00', 'to'), null, 'field: no time = null');
+  assertEqual(heatingFieldValue('24:00'), '00:00', 'field: 24:00 shows as 00:00');
+  // the week
+  const week = { ...emptyHeatingWeek(), monday: day, tuesday: day, saturday: [B('08:00', '22:30')] };
+  const blocks = [B('07:00', '21:00')];
+  const next = heatingWeekWith(week, ['monday', 'saturday'], blocks);
+  assertEqual(next.monday[0].from, '07:00', 'week: the chosen days get the periods');
+  assert(next.tuesday === day, 'week: the other days keep theirs');
+  assert(week.monday === day, 'week: the old week is untouched');
+  assertEqual(heatingChangedDays(week, ['sunday', 'monday', 'tuesday'], day).join(), 'sunday', 'changed days: only those that differ');
+  assertEqual(heatingChangedDays(week, ['saturday', 'monday'], blocks).join(), 'monday,saturday', 'changed days: in week order');
 }

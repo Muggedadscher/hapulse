@@ -9,7 +9,12 @@
 
    The window: lists in `group` like the other windows (sheet-content.css), the steppers as a capsule 36, the days as
    circles 24 (the chosen ones in the accent, a choice, §2.3), the periods 22/28 600; ✓ in the head is the prominent
-   circle 32 like the iOS 26 sheets. One column in the sheet, two in the dialog from 900 px. */
+   circle 32 like the iOS 26 sheets. One column in the sheet, two in the dialog from 900 px.
+
+   The times page (Etappe 2b, draft handy-zeiten-*.png) is a page on the window: the days as circles 42 (the chosen ones
+   in the accent), the ring 310 like the sleep schedule of the Health app (track in `fill`, the periods in orange, the
+   other ones paler, white knobs 38 with sun and leaf), "Komfort ab | Eco ab" 28/34 700 in a group, the rows to add a
+   time in the accent ink and to delete in red, each in a group of its own. */
 
 /* ---- Card ---- */
 :root[data-style='glas'] .heating-card {
@@ -508,6 +513,266 @@
   font-weight: 600;
 }
 
+/* ---- Groups open their times; "add another time" (Etappe 2b) ---- */
+:root[data-style='glas'] .heating-group--edit {
+  transition: background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .heating-group--edit:hover {
+  background: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .heating-group--edit:hover {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .heating-group--edit:active {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .heating-group__edit:focus-visible::after {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .heating-group__chevron {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .heating-add {
+  color: var(--g-accent-ink);
+  font: 400 17px / 22px var(--g-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .heating-add:hover:not(:disabled) {
+  background: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .heating-add:hover:not(:disabled) {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .heating-add:active:not(:disabled) {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] :is(.heating-group, .heating-group__none) + .heating-add {
+  border-top: 0;
+}
+
+:root[data-style='glas'] :is(.heating-group, .heating-group__none) + .heating-add::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 16px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] :is(.heating-add, .heating-times__clear):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+/* ---- Times page ---- */
+:root[data-style='glas'] .heating-times {
+  gap: 0;
+  font-family: var(--g-font);
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .heating-times {
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
+  }
+}
+
+:root[data-style='glas'] .heating-times__days {
+  gap: 8px;
+  margin-top: 4px;
+}
+
+:root[data-style='glas'] .heating-times__day {
+  border: 0;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  font: 600 15px / 1 var(--g-font);
+  transition: background-color 150ms ease, color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .heating-times__day[aria-pressed='true'] {
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .heating-times__day:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .heating-times__pick {
+  margin-top: 10px;
+}
+
+:root[data-style='glas'] .heating-ring {
+  margin: 22px auto 18px;
+}
+
+:root[data-style='glas'] .heating-ring__track {
+  stroke: var(--g-fill);
+}
+
+:root[data-style='glas'] .heating-ring__arc {
+  stroke: var(--g-orange);
+}
+
+:root[data-style='glas'] .heating-ring__tick {
+  stroke: var(--g-label-3);
+}
+
+:root[data-style='glas'] .heating-ring__hour {
+  fill: var(--g-label-2);
+  font: 600 15px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-ring__len {
+  color: var(--g-label);
+  font: 700 26px / 31px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-ring__len2 {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-ring__caption {
+  margin-top: 2px;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-ring__knob {
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .heating-ring__knob--from {
+  color: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .heating-ring__knob:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .heating-times__period + .heating-times__period {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .heating-times__period + .heating-times__period::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 16px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .heating-times__period--selected {
+  background: var(--g-orange-soft);
+}
+
+:root[data-style='glas'] .heating-times__field {
+  position: relative;
+  gap: 2px;
+  padding: 12px 16px 14px;
+}
+
+:root[data-style='glas'] .heating-times__field--eco {
+  border-left: 0;
+}
+
+:root[data-style='glas'] .heating-times__field--eco::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  border-left: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .heating-times__label {
+  gap: 6px;
+  color: var(--g-label-2);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-times__field:not(.heating-times__field--eco) .heating-times__label > svg {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .heating-times__input {
+  -webkit-appearance: none;
+  appearance: none;
+  color: var(--g-label);
+  font: 700 28px / 34px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Narrow phones: a 12-hour time with AM/PM still fits half the row */
+@media (max-width: 359px) {
+  :root[data-style='glas'] .heating-times__input {
+    font-size: 22px;
+    line-height: 28px;
+  }
+}
+
+:root[data-style='glas'] .heating-times__input:focus-visible {
+  outline: 2px solid var(--g-focus);
+}
+
+:root[data-style='glas'] .heating-times__actions {
+  margin-top: 20px;
+}
+
+:root[data-style='glas'] .heating-times__actions + .heating-times__actions {
+  margin-top: 12px;
+}
+
+:root[data-style='glas'] .heating-times__clear {
+  color: var(--g-red-ink);
+  font: 400 17px / 22px var(--g-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .heating-times__clear + .heating-times__clear::before {
+  left: 16px;
+}
+
+:root[data-style='glas'] .heating-times__clear:hover:not(:disabled) {
+  background: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .heating-times__clear:hover:not(:disabled) {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .heating-times__clear:active:not(:disabled) {
+  background: var(--g-hover);
+}
+
 @media (forced-colors: active) {
   :root[data-style='glas'] :is(.heating-stepper, .heating-temp, .heating-bar__track) {
     border: 1px solid CanvasText;
@@ -519,5 +784,19 @@
 
   :root[data-style='glas'] .heating-bar__fill {
     background: Highlight;
+  }
+
+  :root[data-style='glas'] .heating-ring__arc {
+    stroke: Highlight;
+  }
+
+  :root[data-style='glas'] :is(.heating-ring__knob, .heating-times__day) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .heating-times__day[aria-pressed='true'],
+  :root[data-style='glas'] .heating-times__period--selected {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }

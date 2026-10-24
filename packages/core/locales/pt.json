@@ -1627,5 +1627,21 @@
   "heatingPlan.sheet.retry": "Tentar novamente",
   "heatingPlan.group.daily": "Todos os dias",
   "heatingPlan.group.weekdays": "Dias úteis",
-  "heatingPlan.group.weekend": "Fim de semana"
+  "heatingPlan.group.weekend": "Fim de semana",
+  "heatingPlan.times.title": "Horas de conforto",
+  "heatingPlan.times.edit": "Editar {group}",
+  "heatingPlan.times.addDays": "Horários para outros dias",
+  "heatingPlan.times.addFirst": "Adicionar hora de conforto",
+  "heatingPlan.times.addSecond": "Segundo horário do dia",
+  "heatingPlan.times.addMore": "Outro horário do dia",
+  "heatingPlan.times.days": "Dias",
+  "heatingPlan.times.comfortFrom": "Conforto a partir das",
+  "heatingPlan.times.ecoFrom": "Eco a partir das",
+  "heatingPlan.times.hint": "Arraste no anel ou toque numa hora. Passos de 5 minutos.",
+  "heatingPlan.times.pickDays": "Escolha pelo menos um dia.",
+  "heatingPlan.times.remove": "Remover horário {range}",
+  "heatingPlan.times.clear": "Apagar horários ({days})",
+  "heatingPlan.times.clearAll": "Apagar horários",
+  "heatingPlan.times.ring": "Horas de conforto do dia",
+  "heatingPlan.times.nth": "{label}, horário {n}"
 }
