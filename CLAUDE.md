@@ -233,6 +233,12 @@ sauber übernehmen können.
   Labor (Blöcke mit CDP werden übersprungen und gelistet). Glas ist nicht Standard; ob es das für alle wird, entscheidet
   der User.
 
+- **Heizplan je Raum (in Arbeit, Etappe 1 von 3)**: je Raum mit Thermostat Plan an/aus, Komfort/Eco und Zeiten, für
+  jeden HA-Benutzer ohne Admin-Rechte (Speichern über die Automation `automation.heizplan_speichern`, danach
+  Nachlesen). Bisher Core (`packages/core/src/heatingPlan.ts`, Tests in `smoke.mjs`), Aufrufe
+  (`apps/dashboard/src/ha/heatingPlan.ts`), Demo im Wohnzimmer; Einträge mit dem Label `heizplan` erscheinen nicht unter
+  den Geräten eines Raums. Einrichtung in Home Assistant und Aufrufe: **`docs/HEIZPLAN.md`**. Karte und Fenster folgen.
+
 ## Optionales Folge-Feature — HA-Kameras live
 
 `docs/NVR-NATIVE-PLAN.md` beschreibt einen **anderen**, noch nicht gebauten

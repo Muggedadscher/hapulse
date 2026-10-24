@@ -327,3 +327,40 @@ export type { ChipCounts, ChipCountOptions } from './chipCounts.js';
 
 // [fork] The fork's spelling of upstream texts, laid over the dictionaries (docs/glas/PLAN-TEXTE.md)
 export { withCase } from './textCase.js';
+
+// [fork] Heating plan per room: entities, schedule periods, status line (glas/heizung-zeitplan/PLAN.md)
+export {
+  HEATING_PLAN_LABEL,
+  HEATING_PLAN_SAVE_AUTOMATION,
+  HEATING_MAX_BLOCKS,
+  HEATING_WEEKDAYS,
+  isHeatingPlanEntry,
+  findHeatingPlans,
+  normalizeHeatingTime,
+  heatingMinutes,
+  sortHeatingBlocks,
+  emptyHeatingWeek,
+  parseHeatingWeek,
+  validHeatingBlocks,
+  sameHeatingBlocks,
+  heatingWeekMatches,
+  heatingSaveDays,
+  heatingDayGroups,
+  heatingDayGroupKind,
+  heatingWeekday,
+  heatingPlanStatus,
+} from './heatingPlan.js';
+export type {
+  HeatingWeekday,
+  HeatingBlock,
+  HeatingWeek,
+  HeatingPlanEntities,
+  HeatingSaveDay,
+  HeatingDayGroup,
+  HeatingDayGroupKind,
+  HeatingPhase,
+  HeatingUntil,
+  HeatingPlanStatus,
+  HeatingStatusInput,
+} from './heatingPlan.js';
+export { DEMO_HEATING, demoHeatingWeek } from './heatingPlanDemo.js';
