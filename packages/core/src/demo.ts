@@ -17,7 +17,7 @@ import type {
   EntityRegistryEntry,
   DeviceRegistryEntry,
 } from './types.js';
-import { applyDemoHeatingService, demoHeatingEntities, demoHeatingRegistryEntries } from './heatingPlanDemo.js'; // [fork]
+import { applyDemoHeatingService, demoHeatingEntities, demoHeatingRegistryEntries, tickDemoHeating } from './heatingPlanDemo.js'; // [fork]
 
 /** Plausible manufacturer/model per demo device, keyed by name keyword. */
 function withDemoDeviceMeta(d: DeviceRegistryEntry): DeviceRegistryEntry {
@@ -907,6 +907,8 @@ export function createDemoTicker(
         last_updated: now,
       };
     }
+
+    tickDemoHeating(current, new Date(now)); // [fork] the demo schedule follows the clock (heatingPlanDemo.ts)
 
     onChange(current);
     const delay = 4000 + Math.random() * 3000;

@@ -369,6 +369,7 @@
   :is(
     .lock-confirm__actions,
     .garage-confirm__actions,
+    .heating-confirm__actions,
     .global-admin__actions,
     .nvr-setup__actions,
     .pool-editor__footer,

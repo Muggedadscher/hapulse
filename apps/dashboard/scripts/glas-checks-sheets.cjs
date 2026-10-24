@@ -77,6 +77,9 @@ module.exports = function sheets(h) {
     'win-keypad': { act: seq(chip('alarm'), sel('.modal-body .alarm-btn--away')) },
     'win-keypad-security': { path: '/security', act: sel('.alarm-btn--away') },
     'win-pool-restart': { path: '/pool', act: glasOnly(sel('.pool-admin__restart')) },
+    // the heating plan of the demo living room (Etappe 2a): its window and the question before switching off
+    'win-heating': { path: '/room/living_room', act: sel('.heating-card__open') },
+    'win-heating-off': { path: '/room/living_room', act: sel('.heating-card__head .heating-switch') },
   };
   for (const sc of Object.values(scenes)) {
     sc.path = sc.path || '/';
@@ -312,7 +315,8 @@ module.exports = function sheets(h) {
       res.ipad = await openWin(ipad.page, 'win-people');
       await ipad.close();
       const widths = { 'win-people': 440, 'win-weather': 500, 'win-lights': 480, 'win-doors': 460, 'win-garage': 560, 'win-locks': 560,
-        'win-alarm': 460, 'win-pool': 480, 'win-media': 500, 'win-climate': 760, 'win-blinds': 780, 'win-waste': 440 };
+        'win-alarm': 460, 'win-pool': 480, 'win-media': 500, 'win-climate': 760, 'win-blinds': 780, 'win-waste': 440,
+        'win-heating': 780 };
       res.desktop = {};
       for (const [name, want] of Object.entries(widths)) {
         const d = await open('desktop', 'glas', scenes[name].path, scenes[name]);
@@ -1039,6 +1043,55 @@ module.exports = function sheets(h) {
       }
       out.sheetsPerf = res;
       out.sheetsPerfOk = Object.values(res.budget).every((b) => b.ok);
+    });
+
+    // 11b. The heating plan of the demo living room (Etappe 2a, glas/heizung-zeitplan/PLAN.md) in both styles: switching
+    //      off asks and then switches the automation off, on acts at once; + in the window changes nothing until ✓ (Glas)
+    //      or "Speichern" (Klassisch), which saves and closes; × or "Abbrechen" discards.
+    await block('sheetsHeating', async () => {
+      const res = {};
+      const card = (page) => ev(page, () => ({
+        on: document.querySelector('.heating-card__head .heating-switch')?.getAttribute('aria-checked') ?? null,
+        comfort: document.querySelector('.heating-temp--comfort .heating-temp__value')?.textContent ?? null,
+        status: document.querySelector('.heating-card__status')?.textContent ?? null,
+      }));
+      const plus = () => __s.panel().querySelectorAll('.heating-sheet__temp--comfort .heating-stepper__btn')[1];
+      for (const style of ['glas', 'classic']) {
+        const r = {};
+        const w = await open('phone', style, '/room/living_room');
+        r.before = await card(w.page);
+        await openWin(w.page, 'win-heating-off');
+        r.asked = await ev(w.page, () => !!__s.panel().querySelector('.heating-confirm__text'));
+        await press(w.page, () => __s.panel().querySelector('.modal-footer .btn--danger'));
+        await until(w.page, () => !__s.panels().length
+          && document.querySelector('.heating-card__head .heating-switch')?.getAttribute('aria-checked') === 'false');
+        r.off = await card(w.page);
+        await press(w.page, () => document.querySelector('.heating-card__head .heating-switch'));
+        await until(w.page, () => document.querySelector('.heating-card__head .heating-switch')?.getAttribute('aria-checked') === 'true');
+        r.on = { ...(await card(w.page)), windows: await ev(w.page, () => __s.panels().length) };
+        await openWin(w.page, 'win-heating');
+        await press(w.page, plus);
+        r.draft = await ev(w.page, () => __s.panel().querySelector('.heating-sheet__temp--comfort .heating-stepper__value')?.textContent);
+        r.cardWhileDraft = (await card(w.page)).comfort;
+        await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close') || __s.panel().querySelector('.modal-footer .btn--secondary'));
+        await until(w.page, () => !__s.panels().length);
+        await settleAnimations(w.page);
+        r.discarded = (await card(w.page)).comfort;
+        await openWin(w.page, 'win-heating');
+        await press(w.page, plus);
+        await press(w.page, () => __s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await until(w.page, () => !__s.panels().length);
+        await settleAnimations(w.page);
+        r.saved = (await card(w.page)).comfort;
+        await w.close();
+        res[style] = r;
+      }
+      out.sheetsHeating = res;
+      const clean = (t) => (t || '').replace(/\s/g, ' ');
+      out.sheetsHeatingOk = Object.values(res).every((r) => r.before.on === 'true' && clean(r.before.comfort) === '21°C'
+        && r.asked && r.off.on === 'false' && /^Aus/.test(r.off.status || '') && r.on.on === 'true' && r.on.windows === 0
+        && clean(r.draft) === '21,5 °C' && clean(r.cardWhileDraft) === '21°C' && clean(r.discarded) === '21°C'
+        && clean(r.saved) === '21,5°C');
     });
 
     // 12. Every window of §6.0 opens in Glas on the phone and the desktop without an error, with one window on top and

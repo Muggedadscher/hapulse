@@ -177,3 +177,23 @@ export function applyDemoHeatingService(
   }
   return null;
 }
+
+/**
+ * The demo ticker's step: the demo schedule's state and `next_event` follow the clock as in HA (a period starts or
+ * ends while the demo runs). Changes `entities` in place (the ticker's own copy).
+ */
+export function tickDemoHeating(entities: HassEntityMap, now: Date): void {
+  const schedule = entities[DEMO_HEATING.schedule];
+  const week = demoHeatingWeek(entities, DEMO_HEATING.schedule);
+  if (!schedule || !week) return;
+  const next = scheduleState(week, now);
+  if (next.state === schedule.state && next.next_event === schedule.attributes['next_event']) return;
+  const iso = now.toISOString();
+  entities[DEMO_HEATING.schedule] = {
+    ...schedule,
+    state: next.state,
+    last_updated: iso,
+    last_changed: next.state !== schedule.state ? iso : schedule.last_changed,
+    attributes: { ...schedule.attributes, next_event: next.next_event },
+  };
+}
