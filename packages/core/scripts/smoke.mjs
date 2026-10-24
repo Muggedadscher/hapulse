@@ -176,6 +176,22 @@ import {
   demoBatterySoc,
   computeEnergyDashboard,
   energyStatisticIds,
+  // [fork] heating plan
+  HEATING_PLAN_LABEL,
+  HEATING_PLAN_SAVE_AUTOMATION,
+  findHeatingPlans,
+  normalizeHeatingTime,
+  parseHeatingWeek,
+  validHeatingBlocks,
+  heatingWeekMatches,
+  heatingSaveDays,
+  heatingDayGroups,
+  heatingDayGroupKind,
+  heatingWeekday,
+  heatingPlanStatus,
+  emptyHeatingWeek,
+  DEMO_HEATING,
+  demoHeatingWeek,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2375,4 +2391,156 @@ console.log('\n── energy origins, power, battery ──');
   assert(near(computeEnergyDashboard(oldFormat, st).cost, 3 - 0.4), 'cost: the old flow format unchanged');
   const series = computeEnergyDashboard(prefs, { 'sensor.b_in': [{ start: 0, end: 1, change: 0.4 }], 'sensor.b_out': [{ start: 0, end: 1, change: 0.1 }] }).series;
   assert(series.length === 1 && near(series[0].batteryIn, 0.4) && near(series[0].batteryOut, 0.1), 'series: battery charge and discharge per bucket');
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Heating plan per room (heatingPlan.ts, glas/heizung-zeitplan/PLAN.md)
+//
+// Room → entities from area + label, the schedule as HA's get_schedule returns it (seconds, end of day as
+// 23:59:59.999999), the check that mirrors the save automation in HA, groups of equal days and the status line,
+// also on the 23- and 25-hour days (run in Europe/Berlin).
+// ---------------------------------------------------------------------------
+console.log('\n── heating plan ──');
+{
+  const E = (entity_id, extra = {}) => ({
+    entity_id, area_id: null, device_id: null, entity_category: null, hidden_by: null, disabled_by: null,
+    original_name: null, icon: null, ...extra,
+  });
+  const L = [HEATING_PLAN_LABEL];
+  const reg = {
+    areas: [{ area_id: 'bad', name: 'Bad' }, { area_id: 'flur', name: 'Flur' }, { area_id: 'kueche', name: 'Küche' }],
+    devices: [{ id: 'd1', area_id: 'bad', name: 'TRV Bad' }, { id: 'd2', area_id: 'flur', name: 'TRV Flur' }],
+    entities: [
+      E('input_number.heizplan_bad_komfort', { area_id: 'bad', labels: L, hidden_by: 'user' }),
+      E('climate.bad', { device_id: 'd1' }),
+      E('automation.advanced_heating_bad', { area_id: 'bad', labels: L }),
+      E('schedule.zeitplan_heizung_bad', { area_id: 'bad', labels: L }),
+      E('input_number.heizplan_bad_eco', { area_id: 'bad', labels: L }),
+      E(HEATING_PLAN_SAVE_AUTOMATION),
+      E('climate.flur', { device_id: 'd2' }),
+      E('schedule.zeitplan_heizung_flur', { area_id: 'flur', labels: L }),
+      E('automation.advanced_heating_kueche', { area_id: 'kueche', labels: L, disabled_by: 'user' }),
+      E('automation.advanced_heating_nowhere', { labels: L }),
+    ],
+  };
+  const plans = findHeatingPlans(reg);
+  assertEqual(Object.keys(plans).join(','), 'bad', 'plans: only rooms with a labelled, enabled automation');
+  assertEqual(JSON.stringify(plans.bad), JSON.stringify({
+    areaId: 'bad', automation: 'automation.advanced_heating_bad', schedule: 'schedule.zeitplan_heizung_bad',
+    comfort: 'input_number.heizplan_bad_komfort', eco: 'input_number.heizplan_bad_eco', thermostats: ['climate.bad'],
+  }), 'plans: automation, schedule, hidden helper by suffix, thermostat via its device');
+  assertEqual(findHeatingPlans({ ...reg, entities: [...reg.entities].reverse() }).bad.automation, 'automation.advanced_heating_bad', 'plans: independent of the registry order');
+
+  const states = Object.fromEntries(reg.entities.map((e) => [e.entity_id, { entity_id: e.entity_id, state: 'on', attributes: {} }]));
+  const bad = buildRooms(reg, states).find((r) => r.id === 'bad');
+  assertEqual(Object.keys(bad.domains).sort().join(','), 'climate', 'buildRooms: labelled entries are not in the room\'s domains');
+  assert(bad.entityIds.includes('schedule.zeitplan_heizung_bad'), 'buildRooms: labelled entries stay in entityIds');
+  const lr = buildRooms(DEMO_REGISTRIES, DEMO_ENTITIES).find((r) => r.id === 'living_room');
+  assert(!lr.domains.automation && !lr.domains.schedule && !lr.domains.input_number, 'demo living room: no heating plan entries among its devices');
+  const demoPlan = findHeatingPlans(DEMO_REGISTRIES).living_room;
+  assert(demoPlan?.automation === DEMO_HEATING.automation && demoPlan.schedule === DEMO_HEATING.schedule && demoPlan.comfort === DEMO_HEATING.comfort && demoPlan.eco === DEMO_HEATING.eco, 'demo living room: heating plan found');
+  assertEqual(demoPlan?.thermostats.join(','), 'climate.living_room', 'demo living room: its thermostat');
+
+  const times = { '06:00:00': '06:00', '7:05': '07:05', '06:00:30': '06:00', '23:59': '23:59', '23:59:59.999999': '24:00', '24:00:00': '24:00', '24:00': '24:00', '24:01': null, '25:00': null, '12:60': null, 'x': null, '': null };
+  for (const [input, expected] of Object.entries(times)) assertEqual(normalizeHeatingTime(input), expected, `time ${JSON.stringify(input)}`);
+  assertEqual(normalizeHeatingTime(360), null, 'time: a number is not a time');
+
+  const response = {
+    'schedule.k': {
+      monday: [{ from: '17:00:00', to: '23:59:59.999999' }, { from: '06:00:00', to: '08:00:00', data: { x: 1 } }],
+      tuesday: [],
+    },
+  };
+  const week = parseHeatingWeek(response, 'schedule.k');
+  assertEqual(JSON.stringify(week.monday), JSON.stringify([{ from: '06:00', to: '08:00' }, { from: '17:00', to: '24:00' }]), 'get_schedule: sorted, seconds cut, end of day 24:00, data dropped');
+  assertEqual(week.sunday.length, 0, 'get_schedule: a day left out has no periods');
+  assertEqual(parseHeatingWeek(response, 'schedule.other'), null, 'get_schedule: other entity → null');
+  assertEqual(parseHeatingWeek({ 'schedule.k': { monday: [{ from: '06:00:00' }] } }, 'schedule.k'), null, 'get_schedule: a period without end → null');
+  assertEqual(parseHeatingWeek({ 'schedule.k': { monday: [{ from: '24:00:00', to: '24:00:00' }] } }, 'schedule.k'), null, 'get_schedule: a period from 24:00 → null');
+  assertEqual(parseHeatingWeek(null, 'schedule.k'), null, 'get_schedule: no response → null');
+
+  const B = (from, to) => ({ from, to });
+  assert(validHeatingBlocks([B('17:00', '24:00'), B('06:00', '08:00'), B('08:00', '09:00')]), 'valid: unsorted, touching, until 24:00');
+  assert(validHeatingBlocks([]), 'valid: a day without periods');
+  assert(!validHeatingBlocks([B('06:00', '08:00'), B('07:30', '09:00')]), 'invalid: overlap');
+  assert(!validHeatingBlocks([B('08:00', '08:00')]), 'invalid: empty period');
+  assert(!validHeatingBlocks([B('09:00', '08:00')]), 'invalid: from after to');
+  assert(!validHeatingBlocks([B('24:00', '24:00')]), 'invalid: from 24:00');
+  assert(!validHeatingBlocks([B('6:00', '08:00')]), 'invalid: from without leading zero');
+  assert(!validHeatingBlocks([B('06:00:00', '08:00')]), 'invalid: seconds (HAPulse sends HH:MM)');
+  assert(!validHeatingBlocks(Array.from({ length: 11 }, (_, i) => B(`${String(i).padStart(2, '0')}:00`, `${String(i).padStart(2, '0')}:30`))), 'invalid: more than 10 periods');
+
+  const days = heatingSaveDays({ ...emptyHeatingWeek(), monday: [{ from: '17:00', to: '24:00', extra: 1 }, B('06:00', '08:00')] }, ['tuesday', 'monday']);
+  assertEqual(JSON.stringify(days), JSON.stringify([{ tag: 'monday', bloecke: [B('06:00', '08:00'), B('17:00', '24:00')] }, { tag: 'tuesday', bloecke: [] }]), 'save days: week order, sorted, only from/to');
+  const changed = { ...week, tuesday: [B('06:30', '22:00')] };
+  assert(heatingWeekMatches(changed, { ...week, tuesday: [B('06:30', '22:00')] }, ['monday', 'tuesday']), 'read back: equal');
+  assert(!heatingWeekMatches(changed, week, ['tuesday']), 'read back: the change is missing');
+  assert(heatingWeekMatches(changed, week, ['monday']), 'read back: only the sent days count');
+
+  const badWeek = { ...emptyHeatingWeek() };
+  for (const d of ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']) badWeek[d] = [B('05:30', '20:00')];
+  for (const d of ['saturday', 'sunday']) badWeek[d] = [B('07:00', '20:00')];
+  const groups = heatingDayGroups(badWeek);
+  assertEqual(groups.map((g) => heatingDayGroupKind(g.days)).join(','), 'weekdays,weekend', 'groups: workdays and weekend');
+  assertEqual(groups[0].blocks[0].from, '05:30', 'groups: periods of the group');
+  assertEqual(heatingDayGroups(emptyHeatingWeek()).map((g) => `${heatingDayGroupKind(g.days)}:${g.blocks.length}`).join(), 'daily:0', 'groups: empty week = one group without periods');
+  const mixed = { ...badWeek, wednesday: [B('05:30', '12:00')] };
+  assertEqual(heatingDayGroups(mixed).map((g) => g.days.join('+')).join(' | '), 'monday+tuesday+thursday+friday | wednesday | saturday+sunday', 'groups: a different Wednesday');
+  assertEqual(heatingDayGroupKind(['wednesday']), 'custom', 'group kind: single day');
+
+  const tzBefore = process.env.TZ;
+  process.env.TZ = 'Europe/Berlin';
+  try {
+    const at = (...a) => new Date(...a);
+    const status = (now, scheduleOn, w = badWeek, extra = {}) => heatingPlanStatus({ automationOn: true, scheduleOn, week: w, now, ...extra });
+    const fmt = (s) => `${s.phase}${s.until ? ` ${s.until.time}+${s.until.dayOffset} ${s.until.weekday}` : ''}`;
+    assertEqual(heatingWeekday(at(2026, 9, 24, 12)), 'saturday', 'weekday: 24.10.2026 is a Saturday');
+    assertEqual(fmt(status(at(2026, 9, 24, 12, 30), true)), 'comfort 20:00+0 saturday', 'status: comfort until 20:00');
+    assertEqual(fmt(status(at(2026, 9, 24, 21, 0), false)), 'eco 07:00+1 sunday', 'status: eco until tomorrow 07:00');
+    assertEqual(fmt(status(at(2026, 9, 23, 21, 0), false)), 'eco 07:00+1 saturday', 'status: Friday evening → Saturday 07:00');
+    assertEqual(fmt(status(at(2026, 9, 25, 2, 30), false)), 'eco 07:00+0 sunday', 'status: 25-hour day (25.10.), 02:30 → 07:00 today');
+    assertEqual(fmt(status(at(2026, 9, 25, 19, 59), true)), 'comfort 20:00+0 sunday', 'status: 25-hour day, comfort until 20:00');
+    assertEqual(fmt(status(at(2026, 2, 29, 3, 30), false)), 'eco 07:00+0 sunday', 'status: 23-hour day (29.03.), 03:30 → 07:00 today');
+    assertEqual(fmt(status(at(2026, 2, 29, 20, 0), false)), 'eco 05:30+1 monday', 'status: 23-hour day, at the end of the period → eco');
+    assertEqual(fmt(status(at(2026, 9, 26, 5, 29, 59), false)), 'eco 05:30+0 monday', 'status: a second before the start → eco');
+    const night = { ...emptyHeatingWeek(), monday: [B('17:00', '24:00')], tuesday: [B('00:00', '06:00'), B('06:00', '08:00')] };
+    assertEqual(fmt(status(at(2026, 9, 26, 18, 0), true, night)), 'comfort 08:00+1 tuesday', 'status: touching periods count as one, across midnight');
+    assertEqual(fmt(status(at(2026, 9, 27, 9, 0), false, night)), 'eco 17:00+6 monday', 'status: next period next Monday');
+    const once = { ...emptyHeatingWeek(), monday: [B('06:00', '07:00')] };
+    assertEqual(fmt(status(at(2026, 9, 26, 8, 0), false, once)), 'eco 06:00+7 monday', 'status: the only period was earlier today → in a week');
+    const always = Object.fromEntries(Object.keys(emptyHeatingWeek()).map((d) => [d, [B('00:00', '24:00')]]));
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, always)), 'comfort', 'status: comfort all week → no end');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), false, emptyHeatingWeek())), 'eco', 'status: no periods → eco without end');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), null)), 'comfort 20:00+0 saturday', 'status: schedule state unknown → from the periods');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), null, null)), 'unknown', 'status: nothing known');
+    assertEqual(fmt(heatingPlanStatus({ automationOn: false, scheduleOn: true, week: badWeek, now: at(2026, 9, 24, 12) })), 'off', 'status: automation off');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, badWeek, { windowOpen: true })), 'window', 'status: window open');
+    const ev = at(2026, 9, 26, 5, 30).toISOString();
+    assertEqual(fmt(status(at(2026, 9, 24, 22, 0), true, badWeek, { nextEvent: ev })), 'comfort 05:30+2 monday', 'status: state and periods disagree → next_event, across the 25-hour day');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, null, { nextEvent: at(2026, 9, 25, 0, 0).toISOString() })), 'comfort 24:00+0 saturday', 'status: next_event at midnight = 24:00 today');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, null, { nextEvent: 'garbage' })), 'comfort', 'status: unreadable next_event → no end');
+  } finally {
+    if (tzBefore === undefined) delete process.env.TZ;
+    else process.env.TZ = tzBefore;
+  }
+
+  // demo: get_schedule and the save automation work on the schedule entity's demo periods
+  const demoWeek = demoHeatingWeek(DEMO_ENTITIES, DEMO_HEATING.schedule);
+  assertEqual(heatingDayGroups(demoWeek).map((g) => `${heatingDayGroupKind(g.days)}:${g.blocks.length}`).join(), 'weekdays:2,weekend:1', 'demo: weekdays with two periods, weekend with one');
+  const save = (tage, zeitplan = DEMO_HEATING.schedule) =>
+    applyDemoService(DEMO_ENTITIES, 'automation', 'trigger', { variables: { zeitplan, tage } }, { entity_id: HEATING_PLAN_SAVE_AUTOMATION });
+  const saved = save([{ tag: 'monday', bloecke: [B('07:00', '09:00')] }, { tag: 'sunday', bloecke: [] }]);
+  const savedWeek = demoHeatingWeek(saved, DEMO_HEATING.schedule);
+  assert(JSON.stringify(savedWeek.monday) === JSON.stringify([B('07:00', '09:00')]) && savedWeek.sunday.length === 0 && savedWeek.tuesday.length === 2, 'demo save: the sent days change, the others stay');
+  assert(saved[HEATING_PLAN_SAVE_AUTOMATION].attributes.last_triggered, 'demo save: the automation ran');
+  assertEqual(JSON.stringify(demoHeatingWeek(DEMO_ENTITIES, DEMO_HEATING.schedule)), JSON.stringify(demoWeek), 'demo save: the input map is unchanged');
+  const refused = (tage, zeitplan, label) => assertEqual(JSON.stringify(demoHeatingWeek(save(tage, zeitplan), DEMO_HEATING.schedule)), JSON.stringify(demoWeek), label);
+  refused([{ tag: 'monday', bloecke: [B('07:00', '09:00')] }, { tag: 'tuesday', bloecke: [B('09:00', '08:00')] }], undefined, 'demo save: one invalid day → nothing saved');
+  refused([{ tag: 'funday', bloecke: [] }], undefined, 'demo save: unknown weekday → nothing saved');
+  refused([{ tag: 'monday', bloecke: [] }], 'input_number.heating_plan_living_room_eco', 'demo save: not a schedule → nothing saved');
+  refused([], undefined, 'demo save: no days → nothing saved');
+  const setValue = (id, value) => applyDemoService(DEMO_ENTITIES, 'input_number', 'set_value', { value }, { entity_id: id })[id].state;
+  assertEqual(setValue(DEMO_HEATING.comfort, 22.5), '22.5', 'demo: comfort helper takes a value');
+  assertEqual(setValue(DEMO_HEATING.eco, 40), DEMO_ENTITIES[DEMO_HEATING.eco].state, 'demo: a value above max is refused');
+  assertEqual(setValue('input_number.poolpumpe_manuell_dauer', 30), DEMO_ENTITIES['input_number.poolpumpe_manuell_dauer'].state, 'demo: other helpers unchanged as before');
 }

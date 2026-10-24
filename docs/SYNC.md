@@ -162,6 +162,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/test/glasParity.test.ts` | Gleichstand mit der Glas-Kopie im Paket `@sentinel-nvr/web`: Werte von `@sentinel-nvr/web/glas` gegen `glasTokens.ts`, Regeln der Paket-Tafel (`.nvr-tafel`, `.nvr-glass`) gegen `material.css`/`pages.css`/`tafel.css`, in beide Richtungen (auch eine neue HAPulse-Regel auf Tafel-Teilen, die das Paket hat). Rot nach einer Änderung an Glas-Werten oder der Tafel: dieselbe Änderung ins Paket bringen |
 | `apps/dashboard/scripts/glas-shots.cjs` | Screenshot-Matrix beider Stile, Pixelvergleich, Laufzeitprüfungen (siehe „Feature: Stil Glas“) |
 | `docs/GLAS-DESIGN.md`, `docs/GLAS-PLAN.md`, `docs/glas/**` | Designsystem, Etappenplan, Skizze/Screenshots, Umsetzungspläne Etappe 0/1 (`docs/glas/PLAN-ETAPPE-0-1.md`), 2 (`docs/glas/PLAN-ETAPPE-2.md`), 3 (`docs/glas/PLAN-ETAPPE-3.md`), 4 (`docs/glas/PLAN-ETAPPE-4.md`), 5 (`docs/glas/PLAN-ETAPPE-5.md`), 6 (`docs/glas/PLAN-ETAPPE-6.md`) und 7 (`docs/glas/PLAN-ETAPPE-7.md`), Schreibweise der Texte (`docs/glas/PLAN-TEXTE.md`) |
+| `packages/core/src/heatingPlan{,Label,Demo}.ts`, `apps/dashboard/src/ha/heatingPlan.ts`, `apps/dashboard/test/heatingPlan.test.ts`, `docs/HEIZPLAN.md` | Heizplan je Raum (Etappe 1): Raum → Automation/Zeitplan/Helfer über Bereich + Label `heizplan`, Zeitplan lesen/normalisieren, Gruppen gleicher Tage, Statuszeile (Test in `smoke.mjs`), Aufrufe ohne Admin-Rechte (Speichern über `automation.heizplan_speichern`, Nachlesen), Demo im Wohnzimmer; Einrichtung in HA: `docs/HEIZPLAN.md` |
 | `docs/SYNC.md` | dieses Dokument |
 
 ### Geänderte Upstream-Dateien (alle mit `[fork]`-Marker)
@@ -185,7 +186,7 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/pages/Room.tsx` | Sektion `nvrCameras`, keine HA-Kameras bei Kameraquelle Sentinel |
 | `apps/dashboard/src/pages/Home.tsx` | keine HA-Kamera-Favoriten bei Kameraquelle Sentinel |
 | `apps/dashboard/src/ha/useDevices.ts` | `camera.*` ausblenden bei Kameraquelle Sentinel |
-| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls; seit Etappe 4 `locks`, `hints`, `activeScene`, `glasEnergy`, `sizePresets`, `roomGlance`; seit Etappe 5 `chipCounts`; `textCase` (`withCase`) |
+| `packages/core/src/index.ts` | Export des `sensorHistory`-, `pool`-, `waste`-, `sentinel`-, `garage`-, `forkChangelog`- und `glasTokens`-Moduls; seit Etappe 4 `locks`, `hints`, `activeScene`, `glasEnergy`, `sizePresets`, `roomGlance`; seit Etappe 5 `chipCounts`; `textCase` (`withCase`); `heatingPlan`, `heatingPlanDemo` (Heizplan) |
 | `apps/dashboard/src/components/ui/Modal.{tsx,css}` | Anfangsfokus auf ein Element mit `data-autofocus` (sonst das Panel); kein Fokusrahmen um das Panel selbst |
 | `apps/dashboard/src/components/changelog/ChangelogModal.{tsx,css}` | `ReleaseEntry` exportiert (+ optionales `badge`), Stile für Abzeichen und Kompaktliste |
 | `apps/dashboard/src/app/AppLayout.tsx`, `pages/Settings.tsx` | `ForkChangelogModal` statt `ChangelogModal`; Auslöser auch bei neuen Fork-Releases; Über: „Version 1.3.2 · F11“ |
@@ -213,6 +214,8 @@ Damit bei einem Upstream-Merge klar ist, wo Konflikte entstehen können.
 | `apps/dashboard/src/stores/connectionStore.ts` | Demo-Steuerung starten und stoppen (nur im Demo-Modus) |
 | `apps/dashboard/src/stores/settingsStore.ts` | Etappe 4: `hintsSectionMigrated` (+ `migrateHintsSection`), `tallSections` (GLOBAL, Glas L) |
 | `packages/core/src/demo.ts` | Etappe 4: Szenen mit Mitgliedern (`attributes.entity_id`) |
+| `packages/core/src/demo.ts` | Heizplan im Demo-Wohnzimmer: Einträge und Register-Einträge aus `heatingPlanDemo.ts`, deren Aufrufe zuerst in `applyDemoService` |
+| `packages/core/src/rooms.ts`, `packages/core/src/types.ts` | `EntityRegistryEntry.labels`; Einträge mit dem Label `heizplan` bleiben in `entityIds`, aber nicht in `domains` (wie Diagnose-Entitäten: nicht unter „Sonstiges“, zählen nicht als Gerät) |
 | `apps/dashboard/src/components/cards/{ClimateCard,CoverCard,LightCard,ToggleCard}.tsx` | Stil Glas (Etappe 5): Klima mit `data-tone` (was es tut), Rollladen mit `--g-pos` (Position für das Mini-Rollo), Licht- und Schalter-Kachel mit Zustandszeile (die Pille ist ausgeblendet); Klassisch unverändert |
 | `apps/dashboard/src/components/{devices/DevicesToolbar,energy/EnergyCards,music/ZonesCard}.tsx`, `pages/Settings.tsx` | Stil Glas (Etappe 5): `Segment` statt der Knöpfe (Raster/Liste, Zeitraum, Hell/Dunkel/Auto); Inline-Größen nur noch in Klassisch |
 | `apps/dashboard/src/components/music/{LibraryCard,SpeakerGroupMenu}.tsx` | Stil Glas (Etappe 5): Popover bleiben in ihrer Karte (`keepInCard`) |
