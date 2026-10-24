@@ -23,6 +23,7 @@ import { HeroGlance } from '../glas/home/HeroGlance'; // [fork]
 import { HeroLights } from '../glas/home/HeroLights'; // [fork]
 import { RollingValue } from '../glas/RollingValue'; // [fork]
 import { climateSetpoint } from './climateLogic'; // [fork]
+import { useClimateStepper } from './useClimateStepper'; // [fork]
 import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
 
 /** Resolve an HA area picture path against the connection URL. */
@@ -89,6 +90,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   const locale = useLocale(); // [fork]
   const temperatureUnit = useTemperatureUnit(); // [fork] HA's unit: the default step when the thermostat has none
   const [lightsPulse, setLightsPulse] = useState(0); // [fork] Glas: the light pill pulses when tapped
+  const climateStepper = useClimateStepper(); // [fork] +/− like the climate card (quick taps count, step/min/max)
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -197,21 +199,17 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
     void callService('light', service, {}, { entity_id: visibleLightIds });
   };
 
-  const handleClimateDown = (e: React.MouseEvent) => {
+  // [fork] each tap built on HA's setpoint (+1 from a fallback of 20, no step/min/max): until a Zigbee thermostat
+  // reported back, every tap sent the same value (six taps on 5° = "6" six times). Now as the climate card does.
+  const climateSp = climateEntity ? climateSetpoint(climateEntity.attributes, temperatureUnit) : null;
+  const stepClimate = (e: React.MouseEvent, dir: 1 | -1) => {
     e.stopPropagation();
-    if (!climateEntity) return;
-    const cur = (climateEntity.attributes.temperature as number | undefined) ?? 20;
-    holdRoom(); // [fork]
-    void callService('climate', 'set_temperature', { temperature: cur - 1 }, { entity_id: climateEntity.entity_id });
+    if (!climateEntity || !climateSp) return;
+    if (climateStepper.step(climateEntity.entity_id, climateSp, dir)) holdRoom();
   };
-
-  const handleClimateUp = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!climateEntity) return;
-    const cur = (climateEntity.attributes.temperature as number | undefined) ?? 20;
-    holdRoom(); // [fork]
-    void callService('climate', 'set_temperature', { temperature: cur + 1 }, { entity_id: climateEntity.entity_id });
-  };
+  const handleClimateDown = (e: React.MouseEvent) => stepClimate(e, -1);
+  const handleClimateUp = (e: React.MouseEvent) => stepClimate(e, 1);
+  const climateCanStep = climateSp?.value != null; // [fork] no single setpoint (off, range mode): nothing to step
 
   const handleMediaToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -221,10 +219,11 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   };
 
   const climateTemp = climateEntity
-    ? ((climateEntity.attributes.temperature as number | undefined) ?? (climateEntity.attributes.current_temperature as number | undefined))
+    ? ((climateSp ? climateStepper.shownSetpoint(climateEntity.entity_id, climateSp) : null) ?? // [fork] value just sent
+      (climateEntity.attributes.temperature as number | undefined) ?? (climateEntity.attributes.current_temperature as number | undefined))
     : undefined;
   // [fork] Glas: the setpoint with the decimals of the thermostat's step ("22,0 °"), rolling when it changes
-  const setpointDecimals = climateEntity ? climateSetpoint(climateEntity.attributes, temperatureUnit).decimals : 0;
+  const setpointDecimals = climateSp?.decimals ?? 0;
   const setpointText = climateTemp != null
     ? `${formatNumber(climateTemp, locale, { minDecimals: setpointDecimals, maxDecimals: setpointDecimals })} °`
     : '';
@@ -319,6 +318,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
               <button
                 className="hero-pill__step-btn"
                 onClick={handleClimateDown}
+                disabled={!climateCanStep /* [fork] */}
                 aria-label={t('home.hero.lowerTempAria')}
                 type="button"
               >
@@ -327,6 +327,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
               <button
                 className="hero-pill__step-btn"
                 onClick={handleClimateUp}
+                disabled={!climateCanStep /* [fork] */}
                 aria-label={t('home.hero.raiseTempAria')}
                 type="button"
               >

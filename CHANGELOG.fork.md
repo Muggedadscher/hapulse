@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F59 — 2026-10-24
+
+**Thermostat in der Raumkarte zählt jeden Tipp** · _Thermostat in the room card counts every tap_
+
+### Behoben / Fixed
+
+- Plus und Minus an der Thermostat-Pille der Raumkarte zählen jeden Tipp und zeigen den neuen Wert sofort, wie die Klima-Karte; vorher schickten schnelle Tipps immer denselben Wert, bis das Thermostat geantwortet hatte  
+  _Plus and minus on the room card’s thermostat pill count every tap and show the new value at once, like the climate card; quick taps used to send the same value until the thermostat had answered_
+- Die Pille hält Schrittweite, Mindest- und Höchstwert des Thermostats ein und ist gesperrt, wenn es keine einzelne Solltemperatur meldet (etwa im Bereichsmodus)  
+  _The pill keeps to the thermostat’s step, minimum and maximum and is disabled when it reports no single target temperature (e.g. in range mode)_
+
 ## F58 — 2026-10-23
 
 **Pool: aufgeräumt auf breiten Bildschirmen** · _Pool: tidy on wide screens_
