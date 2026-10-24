@@ -175,7 +175,8 @@ export function parseHeatingWeek(response: unknown, scheduleId: string): Heating
       const from = normalizeHeatingTime((item as Record<string, unknown>)['from']);
       const to = normalizeHeatingTime((item as Record<string, unknown>)['to']);
       if (from === null || to === null || from === '24:00') return null;
-      blocks.push({ from, to });
+      // a period shorter than a minute (HA allows seconds) is empty once the seconds are cut: left out
+      if (heatingMinutes(from) < heatingMinutes(to)) blocks.push({ from, to });
     }
     week[day] = sortHeatingBlocks(blocks);
   }
@@ -315,8 +316,9 @@ export function heatingPlanStatus(input: HeatingStatusInput): HeatingPlanStatus 
   return { phase: on ? 'comfort' : 'eco', until };
 }
 
+/** A day's periods, sorted; empty ones are left out (comfortEnd only ends because every period moves `end` on). */
 function dayBlocks(week: HeatingWeek, day: number): HeatingBlock[] {
-  return sortHeatingBlocks(week[HEATING_WEEKDAYS[day % 7]!]);
+  return sortHeatingBlocks(week[HEATING_WEEKDAYS[day % 7]!].filter((b) => heatingMinutes(b.from) < heatingMinutes(b.to)));
 }
 
 function blockAt(week: HeatingWeek, day: number, minute: number): HeatingBlock | null {
@@ -342,7 +344,7 @@ function comfortEnd(week: HeatingWeek, day: number, block: HeatingBlock): Heatin
     const first = dayBlocks(week, day + offset + 1).find((b) => heatingMinutes(b.from) === 0);
     if (!first) return untilAt(day, offset, end);
     offset++;
-    if (offset >= 7) return null;
+    if (offset > 7) return null; // past the same weekday a week on: comfort without a gap all week
     end = heatingMinutes(first.to);
   }
 }

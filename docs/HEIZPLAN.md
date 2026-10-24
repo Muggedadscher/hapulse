@@ -25,8 +25,8 @@ Eingaben der Automation: `input_trvs` = Thermostat(e), `input_schedulers` = der 
 Rückfall, `input_physical_change: false` (sonst schriebe jede verspätete Meldung des Thermostats ohne Benutzer in den
 Helfer). Ohne Zeitplan setzt der Blueprint nie eine Temperatur, mit leerem Zeitplan gilt immer Eco.
 
-Die Thermostate findet HAPulse als `climate.*` im selben Bereich. Einträge mit dem Label erscheinen nicht unter den
-Geräten des Raums und zählen dort nicht mit (`buildRooms`).
+Die Thermostate findet HAPulse als `climate.*` im selben Bereich. Automation, Zeitplan und Helfer mit dem Label erscheinen
+nicht unter den Geräten des Raums und zählen dort nicht mit (`buildRooms`); das Label an anderen Einträgen ändert nichts.
 
 Einmal für alle Räume, **ohne Label und ohne Bereich**: die Automation `automation.heizplan_speichern` (so in HA,
 im YAML-Modus des Automations-Editors einfügen; die Prüfung steht absichtlich als Aktion und nicht als Bedingung:
