@@ -3,8 +3,8 @@
  * starts with, the ring's keys and geometry. The rules of the periods themselves are in @hapulse/core heatingEdit.ts.
  */
 
-import { HEATING_NEW_DAY_BLOCK, HEATING_STEP_MINUTES, HEATING_WEEKDAYS } from '@hapulse/core';
-import type { HeatingBlock, HeatingDayGroup, HeatingWeek, HeatingWeekday } from '@hapulse/core';
+import { HEATING_NEW_DAY_BLOCK, HEATING_STEP_MINUTES, HEATING_WEEKDAYS, heatingEdgeRange, heatingMinutes } from '@hapulse/core';
+import type { HeatingBlock, HeatingDayGroup, HeatingEdge, HeatingWeek, HeatingWeekday } from '@hapulse/core';
 
 /** What the times page edits: the chosen days and the periods they get. */
 export interface HeatingTimesDraft {
@@ -72,6 +72,22 @@ export function heatingArcPath(from: number, to: number, c: number, r: number): 
   if (to - from >= 24 * 60) return `M ${point(0)} A ${r} ${r} 0 1 1 ${point(720)} A ${r} ${r} 0 1 1 ${point(0)}`;
   const large = to - from > 720 ? 1 : 0;
   return `M ${point(from)} A ${r} ${r} 0 ${large} 1 ${point(to)}`;
+}
+
+/**
+ * Which knob a drag moves when it starts where both knobs lie (a whole day: both at midnight; a period of a few
+ * minutes): the end in the direction of the drag while it can still move that way, so the period grows first.
+ * Clockwise is the direction of the day.
+ */
+export function heatingOverlapEdge(blocks: readonly HeatingBlock[], index: number, clockwise: boolean): HeatingEdge {
+  const block = blocks[index]!;
+  if (clockwise) return heatingMinutes(block.to) < heatingEdgeRange(blocks, index, 'to').max ? 'to' : 'from';
+  return heatingMinutes(block.from) > heatingEdgeRange(blocks, index, 'from').min ? 'from' : 'to';
+}
+
+/** The signed turn in degrees from angle `from` to angle `to` (both 0–360), the short way round: + is clockwise. */
+export function heatingTurn(from: number, to: number): number {
+  return ((((to - from + 540) % 360) + 360) % 360) - 180;
 }
 
 /** The index in `after` of the period that `before` did not have; -1 when there is none. */

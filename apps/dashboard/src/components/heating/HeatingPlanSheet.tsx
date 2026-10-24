@@ -4,8 +4,9 @@
  * dialog in two columns (Modal); × discards, ✓ saves, like sheets in iOS 26. Klassisch: Cancel / Save in the foot.
  *
  * Changes of the switch and the temperatures wait for ✓, which sets them in the order of heatingSave.ts. A failed call
- * keeps the window open with "Not saved … Try again" (callService has shown the error). A group of days, and "add
- * another time", open the times page on this window (HeatingTimesPage), which saves the times on its own ✓.
+ * keeps the window open with "Not saved … Try again" (callService has shown the error). A group of days, and "times
+ * for other days" while some days have none, open the times page on this window (HeatingTimesPage), which saves the
+ * times on its own ✓.
  */
 
 import { useRef, useState } from 'react';
@@ -83,14 +84,14 @@ function TempRow({
 }
 
 /** A group of days; the whole group opens its times (a button over the group, the times stay readable as text). */
-function DayGroup({ group, onEdit }: { group: HeatingDayGroup; onEdit: () => void }) {
+function DayGroup({ group, onEdit }: { group: HeatingDayGroup; onEdit: (from: HTMLElement) => void }) {
   const t = useT();
   const locale = useLocale();
   const name = heatingDaysName(t, locale, group.days);
   return (
     <div className="heating-group heating-group--edit">
       <div className="heating-group__head">
-        <button type="button" className="heating-group__edit" aria-label={t('heatingPlan.times.edit', { group: name })} onClick={onEdit}>
+        <button type="button" className="heating-group__edit" aria-label={t('heatingPlan.times.edit', { group: name })} onClick={(e) => onEdit(e.currentTarget)}>
           <span className="heating-group__name">{name}</span>
         </button>
         <span className="heating-days" role="img" aria-label={group.days.map((d) => heatingDayName(d, locale, 'long')).join(', ')}>
@@ -153,9 +154,19 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
   const close = () => {
     if (!busyRef.current && !timesOpen.current) onClose();
   };
-  const openTimes = (group: HeatingDayGroup | null) => {
+  // Where the focus goes back when the times page closes: the row that opened it, or, when a save has grouped the
+  // days anew and that row is gone, the first row of the times
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const timesFrom = useRef<HTMLElement | null>(null);
+  const timesReturn = () => {
+    const from = timesFrom.current;
+    if (from?.isConnected) return from;
+    return sheetRef.current?.querySelector<HTMLElement>('.heating-group__edit, .heating-add') ?? null;
+  };
+  const openTimes = (group: HeatingDayGroup | null, from: HTMLElement) => {
     if (!view.week || busyRef.current) return;
     timesOpen.current = true;
+    timesFrom.current = from;
     const start = heatingTimesDraft(view.week, group);
     setTimes((cur) => ({ key: (cur?.key ?? 0) + 1, open: true, start }));
   };
@@ -163,6 +174,9 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
     setTimes((cur) => (cur ? { ...cur, open: false } : cur));
     window.setTimeout(() => {
       timesOpen.current = false;
+      // Klassisch gives the focus back to the opener only while it is there (Glas asks timesReturn itself)
+      const active = document.activeElement;
+      if (!active || active === document.body) timesReturn()?.focus({ preventScroll: true });
     }, 0);
   };
 
@@ -193,10 +207,12 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
 
   const groups = view.week ? heatingDayGroups(view.week) : [];
   const noTimes = groups.every((g) => g.blocks.length === 0);
+  // "Times for other days" only while some day has none: the other days open from their group
+  const daysWithout = groups.some((g) => g.blocks.length === 0);
   const whole = [view.comfort, view.eco].every((h) => !h || h.step >= 1);
 
   const body = (
-    <div className="heating-sheet">
+    <div className="heating-sheet" ref={sheetRef}>
       <div className="heating-sheet__col">
         <div className="heating-sheet__list">
           <div className="heating-sheet__row heating-sheet__switch-row">
@@ -230,12 +246,14 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
               {noTimes ? (
                 <div className="heating-group__none">{t('heatingPlan.sheet.noTimes')}</div>
               ) : (
-                groups.map((g) => <DayGroup key={g.days.join()} group={g} onEdit={() => openTimes(g)} />)
+                groups.map((g) => <DayGroup key={g.days.join()} group={g} onEdit={(from) => openTimes(g, from)} />)
               )}
-              <button type="button" className="heating-sheet__row heating-add" disabled={busy} onClick={() => openTimes(null)}>
-                <Plus size={20} strokeWidth={2} aria-hidden="true" />
-                <span>{t(noTimes ? 'heatingPlan.times.addFirst' : 'heatingPlan.times.addDays')}</span>
-              </button>
+              {daysWithout && (
+                <button type="button" className="heating-sheet__row heating-add" disabled={busy} onClick={(e) => openTimes(null, e.currentTarget)}>
+                  <Plus size={20} strokeWidth={2} aria-hidden="true" />
+                  <span>{t(noTimes ? 'heatingPlan.times.addFirst' : 'heatingPlan.times.addDays')}</span>
+                </button>
+              )}
             </>
           )}
         </div>
@@ -254,14 +272,16 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
         </p>
       )}
 
-      {times && view.plan.schedule && (
+      {/* Stays while the schedule cannot be read (✓ waits), so back still closes it */}
+      {times && (
         <HeatingTimesPage
           key={times.key}
           open={times.open}
-          scheduleId={view.plan.schedule}
-          week={view.week}
+          scheduleId={view.plan.schedule ?? ''}
+          week={view.plan.schedule ? view.week : null}
           start={times.start}
           roomName={roomName}
+          returnFocus={timesReturn}
           onSaved={view.adoptWeek}
           onClose={closeTimes}
         />

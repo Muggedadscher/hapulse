@@ -33,8 +33,17 @@ const {
   HEATING_MARK,
   splitMarked,
 } = await import('../src/components/heating/heatingFormat');
-const { heatingAddedIndex, heatingArcPath, heatingKeyValue, heatingPointerAngle, heatingRingPoint, heatingTimesDraft, toggleHeatingDay } =
-  await import('../src/components/heating/heatingTimes');
+const {
+  heatingAddedIndex,
+  heatingArcPath,
+  heatingKeyValue,
+  heatingOverlapEdge,
+  heatingPointerAngle,
+  heatingRingPoint,
+  heatingTimesDraft,
+  heatingTurn,
+  toggleHeatingDay,
+} = await import('../src/components/heating/heatingTimes');
 const { heatingDraftChanged, saveHeatingDraft, stepHeatingValue } = await import('../src/components/heating/heatingSave');
 const { heatingStatusText } = await import('../src/components/heating/HeatingStatus');
 
@@ -208,5 +217,17 @@ describe('heating plan times page', () => {
   it('finds the period that was added', () => {
     expect(heatingAddedIndex([W], [{ from: '01:00', to: '03:00' }, W])).toBe(0);
     expect(heatingAddedIndex([W], [W])).toBe(-1);
+  });
+
+  it('knobs on each other: the drag direction picks the end that can still move', () => {
+    const day = [{ from: '00:00', to: '24:00' }];
+    expect(heatingOverlapEdge(day, 0, true)).toBe('from');
+    expect(heatingOverlapEdge(day, 0, false)).toBe('to');
+    const short = [{ from: '06:00', to: '06:05' }];
+    expect(heatingOverlapEdge(short, 0, true)).toBe('to');
+    expect(heatingOverlapEdge(short, 0, false)).toBe('from');
+    expect(heatingTurn(350, 10)).toBeCloseTo(20);
+    expect(heatingTurn(10, 350)).toBeCloseTo(-20);
+    expect(heatingTurn(90, 89)).toBeCloseTo(-1);
   });
 });

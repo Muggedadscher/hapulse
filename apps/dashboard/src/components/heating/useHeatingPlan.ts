@@ -123,22 +123,31 @@ export function useHeatingPlan(areaId: string, roomEntityIds: readonly string[])
   const [loaded, setLoaded] = useState<{ id: string; week: HeatingWeek | null } | null>(null);
   // Each read and each adopted save counts up; a read whose answer comes after a newer one is dropped
   const generation = useRef(0);
+  // An adopted save drops the reads still under way, so one more read follows it; when that one fails, the saved
+  // week stays
+  const [confirm, setConfirm] = useState(0);
+  const confirming = useRef(false);
   useEffect(() => {
     if (!scheduleId || !connected) return;
     const mine = ++generation.current;
+    const keep = confirming.current;
+    confirming.current = false;
     let live = true;
     void getHeatingWeek(scheduleId).then((week) => {
-      if (live && generation.current === mine) setLoaded({ id: scheduleId, week });
+      if (!live || generation.current !== mine || (keep && week === null)) return;
+      setLoaded({ id: scheduleId, week });
     });
     return () => {
       live = false;
     };
-  }, [scheduleId, scheduleStamp, connected]);
+  }, [scheduleId, scheduleStamp, connected, confirm]);
   const adoptWeek = useCallback(
     (week: HeatingWeek) => {
       if (!scheduleId) return;
       generation.current++;
+      confirming.current = true;
       setLoaded({ id: scheduleId, week });
+      setConfirm((n) => n + 1);
     },
     [scheduleId],
   );

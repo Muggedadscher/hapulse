@@ -50,8 +50,8 @@ export const FORK_RELEASES: ForkRelease[] = [
             en: 'In the window “Schedule and temperatures” a tap on a group of days opens its times: choose the days, drag on the 24-hour ring or type the time, in steps of 5 minutes',
           },
           {
-            de: 'Eine zweite Zeit am Tag hinzufügen, eine Zeit entfernen oder alle Zeiten der gewählten Tage löschen; „Weitere Zeit hinzufügen“ legt Zeiten für andere Tage an',
-            en: 'Add a second time of the day, remove a time or delete all times of the chosen days; “Add another time” sets times for other days',
+            de: 'Eine zweite Zeit am Tag hinzufügen, eine Zeit entfernen oder alle Zeiten der gewählten Tage löschen; „Zeiten für weitere Tage“ legt Zeiten für Tage ohne Komfortzeit an',
+            en: 'Add a second time of the day, remove a time or delete all times of the chosen days; “Times for other days” sets times for days without a comfort time',
           },
           {
             de: 'Der Haken speichert die Zeiten sofort in Home Assistant, auch ohne Administratorrechte; nimmt Home Assistant sie nicht an, bleibt die Seite offen mit „Erneut versuchen“',

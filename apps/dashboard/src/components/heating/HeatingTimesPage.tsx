@@ -40,6 +40,8 @@ interface HeatingTimesPageProps {
   week: HeatingWeek | null;
   start: HeatingTimesDraft;
   roomName: string;
+  /** Where the focus goes when the page closes (the opener may be gone after a save). */
+  returnFocus: () => HTMLElement | null;
   onSaved: (week: HeatingWeek) => void;
   onClose: () => void;
 }
@@ -49,7 +51,21 @@ interface HeatingTimesPageProps {
  * period takes it within its limits (a value the limits refuse snaps back): a field that took every keystroke would
  * jump while the hours are typed.
  */
-function TimeField({ time, edge, label, onCommit, onFocus }: { time: string; edge: HeatingEdge; label: string; onCommit: (minutes: number) => void; onFocus: () => void }) {
+function TimeField({
+  time,
+  edge,
+  label,
+  readOnly,
+  onCommit,
+  onFocus,
+}: {
+  time: string;
+  edge: HeatingEdge;
+  label: string;
+  readOnly: boolean;
+  onCommit: (minutes: number) => void;
+  onFocus: () => void;
+}) {
   const [typed, setTyped] = useState<string | null>(null);
   const commit = () => {
     if (typed === null) return;
@@ -63,6 +79,7 @@ function TimeField({ time, edge, label, onCommit, onFocus }: { time: string; edg
       className="heating-times__input"
       step={300}
       aria-label={label}
+      readOnly={readOnly}
       value={typed ?? heatingFieldValue(time)}
       onChange={(e) => setTyped(e.target.value)}
       onFocus={onFocus}
@@ -77,7 +94,7 @@ function TimeField({ time, edge, label, onCommit, onFocus }: { time: string; edg
   );
 }
 
-export function HeatingTimesPage({ open, scheduleId, week, start, roomName, onSaved, onClose }: HeatingTimesPageProps) {
+export function HeatingTimesPage({ open, scheduleId, week, start, roomName, returnFocus, onSaved, onClose }: HeatingTimesPageProps) {
   const t = useT();
   const locale = useLocale();
   const glas = useIsGlas();
@@ -126,6 +143,9 @@ export function HeatingTimesPage({ open, scheduleId, week, start, roomName, onSa
     setBlocks(next);
     setFailed(false);
   };
+  // With more than one period, the fields say which one they set
+  const fieldLabel = (key: 'heatingPlan.times.comfortFrom' | 'heatingPlan.times.ecoFrom', i: number) =>
+    blocks.length > 1 ? t('heatingPlan.times.nth', { label: t(key), n: i + 1 }) : t(key);
 
   const body = (
     <div className="heating-times">
@@ -149,7 +169,7 @@ export function HeatingTimesPage({ open, scheduleId, week, start, roomName, onSa
       </div>
       {days.length === 0 && <p className="heating-sheet__note heating-times__pick">{t('heatingPlan.times.pickDays')}</p>}
 
-      <HeatingRing blocks={blocks} selected={sel} onSelect={setSelected} onChange={edit} />
+      <HeatingRing blocks={blocks} selected={sel} disabled={busy} onSelect={setSelected} onChange={edit} />
 
       {blocks.length > 0 && (
         <>
@@ -168,7 +188,8 @@ export function HeatingTimesPage({ open, scheduleId, week, start, roomName, onSa
                   <TimeField
                     time={b.from}
                     edge="from"
-                    label={t('heatingPlan.times.comfortFrom')}
+                    label={fieldLabel('heatingPlan.times.comfortFrom', i)}
+                    readOnly={busy}
                     onFocus={() => setSelected(i)}
                     onCommit={(m) => edit(moveHeatingEdge(blocks, i, 'from', m))}
                   />
@@ -181,7 +202,8 @@ export function HeatingTimesPage({ open, scheduleId, week, start, roomName, onSa
                   <TimeField
                     time={b.to}
                     edge="to"
-                    label={t('heatingPlan.times.ecoFrom')}
+                    label={fieldLabel('heatingPlan.times.ecoFrom', i)}
+                    readOnly={busy}
                     onFocus={() => setSelected(i)}
                     onCommit={(m) => edit(moveHeatingEdge(blocks, i, 'to', m))}
                   />
@@ -254,6 +276,7 @@ export function HeatingTimesPage({ open, scheduleId, week, start, roomName, onSa
       title={title}
       subtitle={t('heatingPlan.sheet.titleRoom', { room: roomName })}
       className="heating-times-panel"
+      returnFocus={returnFocus}
       swipeToClose={!changed && !busy}
       trailing={
         glas ? (

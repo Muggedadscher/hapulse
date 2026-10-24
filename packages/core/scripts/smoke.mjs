@@ -2639,6 +2639,14 @@ console.log('\n── heating plan: editing the periods ──');
   assertEqual(moveHeatingEdge(day, 0, 'to', 1200)[0].to, '16:30', 'edit: an end stops at the next start (touching)');
   assertEqual(moveHeatingEdge(day, 1, 'from', 0)[1].from, '08:30', 'edit: a start stops at the previous end');
   assertEqual(moveHeatingEdge(day, 1, 'to', 2000)[1].to, '24:00', 'edit: the last end stops at 24:00');
+  {
+    // A period shorter than a step (set outside HAPulse) keeps a range around its own value and never flips
+    const odd = [{ from: '05:00', to: '06:00' }, { from: '06:00', to: '06:03' }];
+    assertEqual(JSON.stringify(heatingEdgeRange(odd, 1, 'from')), JSON.stringify({ min: 360, max: 360 }), 'edit: a too short period keeps its start in range');
+    const moved = moveHeatingEdge(odd, 1, 'from', 400);
+    assertEqual(moved[1].from, '06:00', 'edit: a too short period does not flip its start past its end');
+    assertEqual(validHeatingBlocks(moveHeatingEdge(odd, 1, 'to', 500)), true, 'edit: a too short period can grow');
+  }
   assertEqual(moveHeatingEdge(day, 0, 'from', 900)[0].from, '08:25', 'edit: a start stays a step before its end');
   assert(moveHeatingEdge(day, 0, 'from', 900)[1] === day[1], 'edit: the other periods stay the same objects');
   assert(validHeatingBlocks(moveHeatingEdge(day, 0, 'to', 1200)), 'edit: a moved day stays valid');

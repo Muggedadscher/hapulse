@@ -853,6 +853,10 @@
   cursor: grabbing;
 }
 
+.heating-ring__knob[aria-disabled='true'] {
+  cursor: default;
+}
+
 .heating-ring__knob:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

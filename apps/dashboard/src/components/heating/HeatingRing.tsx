@@ -7,6 +7,8 @@
  *
  * The drawing is SVG; the knobs and the middle are HTML on top, so they take the focus ring and the shadow of the
  * style. The arcs are for the pointer only: the time fields under the ring choose and set the same periods by keys.
+ * Where both knobs lie on each other (a whole day, a few minutes), the first move of a drag picks the knob
+ * (heatingOverlapEdge).
  */
 
 import { useRef } from 'react';
@@ -16,12 +18,14 @@ import { heatingEdgeRange, heatingMinutes, heatingRingMinutes, moveHeatingEdge }
 import type { HeatingBlock, HeatingEdge } from '@hapulse/core';
 import { useLocale, useT } from '../../i18n/useT';
 import { formatHeatingTime, heatingDurationParts } from './heatingFormat';
-import { heatingArcPath, heatingKeyValue, heatingPointerAngle, heatingRingPoint } from './heatingTimes';
+import { heatingArcPath, heatingKeyValue, heatingOverlapEdge, heatingPointerAngle, heatingRingPoint, heatingTurn } from './heatingTimes';
 
 const SIZE = 310;
 const C = SIZE / 2;
 const R = 120;
 const DAY = 24 * 60;
+/** How far a drag that starts on both knobs turns before it picks one, in degrees. */
+const PICK_TURN = 1.5;
 
 interface HeatingRingProps {
   blocks: readonly HeatingBlock[];
@@ -29,6 +33,8 @@ interface HeatingRingProps {
   selected: number;
   onSelect: (index: number) => void;
   onChange: (blocks: HeatingBlock[]) => void;
+  /** While a save runs: shown, not moved. */
+  disabled?: boolean;
 }
 
 /** Ticks every half hour, longer every hour, the longest at 0, 6, 12 and 18. */
@@ -43,10 +49,13 @@ const LABELS = [0, 6, 12, 18].map((h) => {
   return { h, x, y };
 });
 
-export function HeatingRing({ blocks, selected, onSelect, onChange }: HeatingRingProps) {
+export function HeatingRing({ blocks, selected, onSelect, onChange, disabled = false }: HeatingRingProps) {
   const t = useT();
   const locale = useLocale();
   const ringRef = useRef<HTMLDivElement>(null);
+  const knobRefs = useRef<Record<HeatingEdge, HTMLDivElement | null>>({ from: null, to: null });
+  // The drag in progress: its pointer, the knob it moves (null until the first move picks one) and where it started
+  const drag = useRef<{ id: number; edge: HeatingEdge | null; angle: number } | null>(null);
   const block = blocks[selected];
 
   const setEdge = (edge: HeatingEdge, minutes: number) => {
@@ -54,8 +63,23 @@ export function HeatingRing({ blocks, selected, onSelect, onChange }: HeatingRin
     if (next[selected]![edge] !== blocks[selected]![edge]) onChange(next);
   };
 
-  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (!e.isPrimary || e.button !== 0) return;
+  const pointerAngle = (e: PointerEvent<HTMLDivElement>): number | null => {
+    const box = ringRef.current?.getBoundingClientRect();
+    if (!box) return null;
+    return heatingPointerAngle(e.clientX, e.clientY, box.left + box.width / 2, box.top + box.height / 2);
+  };
+
+  /** Whether the pointer also lies on the other knob, so the press alone does not say which one is meant. */
+  const onBoth = (e: PointerEvent<HTMLDivElement>, edge: HeatingEdge): boolean => {
+    const other = knobRefs.current[edge === 'from' ? 'to' : 'from'];
+    if (!other) return false;
+    const box = other.getBoundingClientRect();
+    const reach = box.width / 2 + 4; // the knob and its wider touch area (::after)
+    return Math.hypot(e.clientX - (box.left + box.width / 2), e.clientY - (box.top + box.height / 2)) <= reach;
+  };
+
+  const onPointerDown = (edge: HeatingEdge) => (e: PointerEvent<HTMLDivElement>) => {
+    if (disabled || !block || !e.isPrimary || e.button !== 0) return;
     e.preventDefault(); // no text selection, no scrolling; the focus moves by hand
     e.currentTarget.focus({ preventScroll: true });
     try {
@@ -63,18 +87,29 @@ export function HeatingRing({ blocks, selected, onSelect, onChange }: HeatingRin
     } catch {
       // the pointer is already gone
     }
+    drag.current = { id: e.pointerId, edge: onBoth(e, edge) ? null : edge, angle: pointerAngle(e) ?? 0 };
   };
 
-  const onPointerMove = (edge: HeatingEdge) => (e: PointerEvent<HTMLDivElement>) => {
-    if (!block || !e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    const box = ringRef.current?.getBoundingClientRect();
-    if (!box) return;
-    const angle = heatingPointerAngle(e.clientX, e.clientY, box.left + box.width / 2, box.top + box.height / 2);
-    setEdge(edge, heatingRingMinutes(angle, heatingMinutes(block[edge])));
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!block || !d || d.id !== e.pointerId) return;
+    const angle = pointerAngle(e);
+    if (angle === null) return;
+    if (!d.edge) {
+      const turn = heatingTurn(d.angle, angle);
+      if (Math.abs(turn) < PICK_TURN) return;
+      d.edge = heatingOverlapEdge(blocks, selected, turn > 0);
+      knobRefs.current[d.edge]?.focus({ preventScroll: true });
+    }
+    setEdge(d.edge, heatingRingMinutes(angle, heatingMinutes(block[d.edge])));
+  };
+
+  const onPointerEnd = (e: PointerEvent<HTMLDivElement>) => {
+    if (drag.current?.id === e.pointerId) drag.current = null;
   };
 
   const onKeyDown = (edge: HeatingEdge) => (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!block) return;
+    if (disabled || !block) return;
     const value = heatingKeyValue(e.key, heatingMinutes(block[edge]), heatingEdgeRange(blocks, selected, edge));
     if (value === null) return;
     e.preventDefault();
@@ -86,20 +121,28 @@ export function HeatingRing({ blocks, selected, onSelect, onChange }: HeatingRin
     const minutes = heatingMinutes(block[edge]);
     const range = heatingEdgeRange(blocks, selected, edge);
     const [x, y] = heatingRingPoint(minutes, C, R);
+    const label = t(edge === 'from' ? 'heatingPlan.times.comfortFrom' : 'heatingPlan.times.ecoFrom');
     return (
       <div
         key={edge}
+        ref={(el) => {
+          knobRefs.current[edge] = el;
+        }}
         className={`heating-ring__knob heating-ring__knob--${edge}`}
         role="slider"
         tabIndex={0}
-        aria-label={t(edge === 'from' ? 'heatingPlan.times.comfortFrom' : 'heatingPlan.times.ecoFrom')}
+        aria-label={blocks.length > 1 ? t('heatingPlan.times.nth', { label, n: selected + 1 }) : label}
         aria-valuemin={range.min}
         aria-valuemax={range.max}
         aria-valuenow={minutes}
         aria-valuetext={formatHeatingTime(block[edge], locale)}
+        aria-disabled={disabled || undefined}
         style={{ left: `${(x / SIZE) * 100}%`, top: `${(y / SIZE) * 100}%` }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove(edge)}
+        onPointerDown={onPointerDown(edge)}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        onLostPointerCapture={onPointerEnd}
         onKeyDown={onKeyDown(edge)}
       >
         {edge === 'from' ? <Sun size={18} strokeWidth={2.2} aria-hidden="true" /> : <Leaf size={18} strokeWidth={2.2} aria-hidden="true" />}
@@ -121,7 +164,7 @@ export function HeatingRing({ blocks, selected, onSelect, onChange }: HeatingRin
               key={`${b.from}-${b.to}`}
               className={`heating-ring__arc${i === selected ? ' heating-ring__arc--selected' : ''}`}
               d={heatingArcPath(from, Math.min(to, DAY), C, R)}
-              onClick={i === selected ? undefined : () => onSelect(i)}
+              onClick={i === selected || disabled ? undefined : () => onSelect(i)}
             />
           );
         })}

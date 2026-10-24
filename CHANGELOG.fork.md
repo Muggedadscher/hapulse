@@ -14,8 +14,8 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 - Im Fenster „Zeitplan und Temperaturen“ öffnet ein Tipp auf eine Gruppe von Tagen ihre Zeiten: Tage wählen, am 24-Stunden-Ring ziehen oder die Uhrzeit eintippen, in Schritten von 5 Minuten  
   _In the window “Schedule and temperatures” a tap on a group of days opens its times: choose the days, drag on the 24-hour ring or type the time, in steps of 5 minutes_
-- Eine zweite Zeit am Tag hinzufügen, eine Zeit entfernen oder alle Zeiten der gewählten Tage löschen; „Weitere Zeit hinzufügen“ legt Zeiten für andere Tage an  
-  _Add a second time of the day, remove a time or delete all times of the chosen days; “Add another time” sets times for other days_
+- Eine zweite Zeit am Tag hinzufügen, eine Zeit entfernen oder alle Zeiten der gewählten Tage löschen; „Zeiten für weitere Tage“ legt Zeiten für Tage ohne Komfortzeit an  
+  _Add a second time of the day, remove a time or delete all times of the chosen days; “Times for other days” sets times for days without a comfort time_
 - Der Haken speichert die Zeiten sofort in Home Assistant, auch ohne Administratorrechte; nimmt Home Assistant sie nicht an, bleibt die Seite offen mit „Erneut versuchen“  
   _The check mark saves the times in Home Assistant at once, also without administrator rights; when Home Assistant does not take them, the page stays open with “Try again”_
 

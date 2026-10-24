@@ -729,6 +729,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Narrow phones: a 12-hour time with AM/PM still fits half the row */
+@media (max-width: 359px) {
+  :root[data-style='glas'] .heating-times__input {
+    font-size: 22px;
+    line-height: 28px;
+  }
+}
+
 :root[data-style='glas'] .heating-times__input:focus-visible {
   outline: 2px solid var(--g-focus);
 }

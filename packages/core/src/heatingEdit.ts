@@ -31,15 +31,20 @@ export function snapHeatingMinutes(minutes: number): number {
   return Math.round(minutes / HEATING_STEP_MINUTES) * HEATING_STEP_MINUTES;
 }
 
-/** The range one edge of period `index` can move in without crossing its own other edge or a neighbour. */
+/**
+ * The range one edge of period `index` can move in without crossing its own other edge or a neighbour. It always holds
+ * the edge's own value: a period HA keeps shorter than a step (set elsewhere, 06:00–06:03) can grow, never flip.
+ */
 export function heatingEdgeRange(blocks: readonly HeatingBlock[], index: number, edge: HeatingEdge): { min: number; max: number } {
   const block = blocks[index]!;
+  const cur = heatingMinutes(block[edge]);
+  const within = (min: number, max: number) => ({ min: Math.min(min, cur), max: Math.max(max, cur) });
   if (edge === 'from') {
     const prev = blocks[index - 1];
-    return { min: prev ? heatingMinutes(prev.to) : 0, max: heatingMinutes(block.to) - HEATING_STEP_MINUTES };
+    return within(prev ? heatingMinutes(prev.to) : 0, heatingMinutes(block.to) - HEATING_STEP_MINUTES);
   }
   const next = blocks[index + 1];
-  return { min: heatingMinutes(block.from) + HEATING_STEP_MINUTES, max: next ? heatingMinutes(next.from) : DAY };
+  return within(heatingMinutes(block.from) + HEATING_STEP_MINUTES, next ? heatingMinutes(next.from) : DAY);
 }
 
 /**

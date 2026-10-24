@@ -1630,7 +1630,7 @@
   "heatingPlan.group.weekend": "Fine settimana",
   "heatingPlan.times.title": "Orari comfort",
   "heatingPlan.times.edit": "Modifica {group}",
-  "heatingPlan.times.addDays": "Aggiungi un altro orario",
+  "heatingPlan.times.addDays": "Orari per altri giorni",
   "heatingPlan.times.addFirst": "Aggiungi un orario comfort",
   "heatingPlan.times.addSecond": "Secondo orario del giorno",
   "heatingPlan.times.addMore": "Altro orario del giorno",
@@ -1642,5 +1642,6 @@
   "heatingPlan.times.remove": "Rimuovi orario {range}",
   "heatingPlan.times.clear": "Elimina orari ({days})",
   "heatingPlan.times.clearAll": "Elimina orari",
-  "heatingPlan.times.ring": "Orari comfort del giorno"
+  "heatingPlan.times.ring": "Orari comfort del giorno",
+  "heatingPlan.times.nth": "{label}, orario {n}"
 }

@@ -1101,7 +1101,10 @@ module.exports = function sheets(h) {
     // 11c. Editing the times (Etappe 2b) in both styles: a group opens its page on the window (Glas: a page with
     //      "Zurück"); the start knob moves by keys, the end knob by dragging along the ring; back or Esc discards and
     //      closes only the page; another period is added and removed; ✓ saves into the demo schedule and the window
-    //      under it shows the new time; "add another time" with every day taken starts without days and cannot save.
+    //      under it shows the new time. "Times for other days" shows only while a day has no times: after Saturday's
+    //      times are deleted (Sunday deselected keeps its own, so the weekend group and its row are gone and the focus
+    //      goes to the first group) it opens with Sa and a first period; made a whole day, a drag from midnight against
+    //      the clock moves its end (both knobs lie on each other there).
     await block('sheetsHeatingTimes', async () => {
       const res = {};
       const fields = () => [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value);
@@ -1153,21 +1156,53 @@ module.exports = function sheets(h) {
         for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
         await pressIn(w.page, '.heating-times .heating-add');
         r.added = await ev(w.page, () => __s.panel().querySelectorAll('.heating-times__period').length);
+        r.label = await ev(w.page, () => __s.panel().querySelector('.heating-times__input')?.getAttribute('aria-label'));
         await pressIn(w.page, '.heating-times__clear');
         r.removed = await ev(w.page, fields);
         await press(w.page, () => __s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
         await until(w.page, () => __s.panels().length === 1, null, 6000);
         await settleAnimations(w.page);
         r.saved = await ev(w.page, below);
-        // "add another time": every demo day has times, so no day is chosen and ✓ waits
+        r.noAdd = await ev(w.page, () => !__s.panel().querySelector('.heating-sheet .heating-add'));
+        // delete Saturday's times, then "times for other days" starts with Sa
+        await pressIn(w.page, '.heating-group__edit[aria-label^="Wochenende"]');
+        await until(w.page, () => __s.panels().length === 2);
+        await settleAnimations(w.page);
+        await pressIn(w.page, '.heating-times__day[aria-label="Sonntag"]');
+        await pressIn(w.page, '.heating-times__clear');
+        await press(w.page, () => __s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await until(w.page, () => __s.panels().length === 1, null, 6000);
+        await settleAnimations(w.page);
+        r.addRow = await ev(w.page, () => __s.panel().querySelector('.heating-sheet .heating-add')?.textContent ?? null);
+        r.focusBack = await ev(w.page, () => document.activeElement === __s.panel().querySelector('.heating-group__edit'));
         await pressIn(w.page, '.heating-sheet .heating-add');
         await until(w.page, () => __s.panels().length === 2);
         await settleAnimations(w.page);
         r.addDays = await ev(w.page, () => ({
-          pressed: __s.panel().querySelectorAll('.heating-times__day[aria-pressed="true"]').length,
-          pick: !!__s.panel().querySelector('.heating-times__pick'),
+          pressed: [...__s.panel().querySelectorAll('.heating-times__day[aria-pressed="true"]')].map((b) => b.textContent),
           disabled: !!(__s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary')).disabled,
           fields: [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value),
+        }));
+        // a whole day: both knobs at midnight; a drag against the clock takes the end
+        await w.page.focus('.heating-ring__knob--from');
+        await w.page.keyboard.press('Home');
+        await w.page.focus('.heating-ring__knob--to');
+        await w.page.keyboard.press('End');
+        r.whole = await ev(w.page, fields);
+        const top = await ev(w.page, () => {
+          const ring = __s.panel().querySelector('.heating-ring').getBoundingClientRect();
+          return { cx: ring.left + ring.width / 2, cy: ring.top + ring.height / 2, r: (ring.width * 120) / 310 };
+        });
+        await w.page.mouse.move(top.cx, top.cy - top.r);
+        await w.page.mouse.down();
+        for (let a = 357.5; a >= 330; a -= 2.5) {
+          const rad = (a * Math.PI) / 180;
+          await w.page.mouse.move(top.cx + top.r * Math.sin(rad), top.cy - top.r * Math.cos(rad));
+        }
+        await w.page.mouse.up();
+        r.overlap = await ev(w.page, () => ({
+          fields: [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value),
+          focus: document.activeElement?.classList.contains('heating-ring__knob--to') ?? false,
         }));
         await w.close();
       }
@@ -1177,9 +1212,11 @@ module.exports = function sheets(h) {
         : r.page.dialogs === 2) && r.page.title === 'Werktags'
         && two(r.start, '06:00', '08:30') && two(r.keys, '06:30', '08:30') && two(r.drag, '06:30', '10:00')
         && r.back.dialogs === 1 && r.back.first === '06:00'
-        && r.added === 3 && r.removed.length === 4 && r.removed[0] === '06:30'
-        && r.saved.dialogs === 1 && r.saved.first === '06:30'
-        && r.addDays.pressed === 0 && r.addDays.pick && r.addDays.disabled && two(r.addDays.fields, '06:00', '22:00'));
+        && r.added === 3 && r.label === 'Komfort ab, Zeit 1' && r.removed.length === 4 && r.removed[0] === '06:30'
+        && r.saved.dialogs === 1 && r.saved.first === '06:30' && r.noAdd
+        && r.addRow === 'Zeiten für weitere Tage' && r.focusBack && r.addDays.pressed.join() === 'Sa' && !r.addDays.disabled
+        && two(r.addDays.fields, '06:00', '22:00') && two(r.whole, '00:00', '00:00')
+        && two(r.overlap.fields, '00:00', '22:00') && r.overlap.focus);
     });
 
     // 12. Every window of §6.0 opens in Glas on the phone and the desktop without an error, with one window on top and

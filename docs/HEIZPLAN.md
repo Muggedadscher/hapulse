@@ -88,7 +88,8 @@ Karte „Heizplan“ in der Raumseite unter „Klima“ nach den Thermostaten (`
 Klima-Geräte zeigt; nicht im Bearbeiten-Modus. Kopf mit Statuszeile und Schalter, heute als Balken mit den Komfortzeiten
 und einer Marke für jetzt, Komfort und Eco (die gerade gültige umrandet), „Zeitplan und Temperaturen“ öffnet das Fenster
 (`HeatingPlanSheet`: Schalter, Komfort/Eco mit − und +, Zeiten nach gleichen Tagen gruppiert). Ein Tipp auf eine Gruppe
-oder „Weitere Zeit hinzufügen“ öffnet die Seite mit den Zeiten (`HeatingTimesPage`, siehe unten).
+oder „Zeiten für weitere Tage“ (nur solange ein Tag keine Komfortzeit hat) öffnet die Seite mit den Zeiten
+(`HeatingTimesPage`, siehe unten).
 
 - **Schalter:** An wirkt sofort. Aus fragt vorher und sagt, dass Fenster- und Frostschutz dann aus sind.
 - **Fenster:** Im Fenster wartet alles auf ✓ (Glas) bzw. „Speichern“ (Klassisch). Beim Einschalten zuerst die
@@ -112,22 +113,24 @@ oder „Weitere Zeit hinzufügen“ öffnet die Seite mit den Zeiten (`HeatingTi
 Die Seite liegt als eigenes Fenster auf dem Fenster: in Glas eine Seite mit „‹ Zurück“ und ✓, in Klassisch ein Dialog mit
 „Abbrechen“/„Speichern“. Esc schließt nur die Seite.
 
-- **Tage:** Die Gruppe bringt ihre Tage mit, „Weitere Zeit hinzufügen“ die Tage ohne Komfortzeit (keine, wenn jeder Tag
-  eine hat). Die gewählten Tage bekommen die Zeiten der Seite, abgewählte behalten ihre. Ohne gewählten Tag wartet ✓.
+- **Tage:** Die Gruppe bringt ihre Tage mit, „Zeiten für weitere Tage“ die Tage ohne Komfortzeit. Die gewählten Tage
+  bekommen die Zeiten der Seite, abgewählte behalten ihre. Ohne gewählten Tag wartet ✓.
 - **Ring:** 24 Stunden, Mitternacht oben, im Uhrzeigersinn (`HeatingRing`). Die gewählte Zeit hat zwei Knöpfe, die Sonne
   für „Komfort ab“ und das Blatt für „Eco ab“; beide sind Schieberegler (Ziehen, Pfeile ±5 min, Bild auf/ab ±1 h,
-  Pos1/Ende). Ein Tipp auf einen anderen Bogen wählt diese Zeit. Mitte: Dauer der gewählten Zeit.
+  Pos1/Ende). Ein Tipp auf einen anderen Bogen wählt diese Zeit. Mitte: Dauer der gewählten Zeit. Liegen beide Knöpfe
+  übereinander (ganzer Tag, wenige Minuten), wählt die erste Bewegung den Knopf: der in Zugrichtung, solange er sich
+  dorthin noch bewegen kann.
 - **Uhrzeiten:** „Komfort ab“/„Eco ab“ je Zeit als Uhrzeit-Feld; es übernimmt beim Verlassen oder mit Enter. `00:00` als
   „Eco ab“ heißt Mitternacht am Ende des Tages.
 - **Regeln** (`packages/core/src/heatingEdit.ts`): Schritte von 5 Minuten; eine Zeit ist mindestens 5 Minuten lang,
   überquert nie Mitternacht, ihre eigene andere Kante oder eine Nachbarzeit (sich berührende Zeiten bleiben getrennt).
   Eine neue Zeit liegt in der größten freien Spanne des Tages, eine Stunde (höchstens ein Viertel der Spanne) nach
   deren Anfang und bis zu zwei Stunden lang; passt keine mehr (oder sind es 10), fehlt die Zeile. Ein leerer Tag
-  bekommt 06:00–22:00.
+  bekommt 06:00–22:00. Eine kürzere Zeit aus Home Assistant (anderswo gesetzt) kann wachsen, nie kippen.
 - **Speichern:** ✓ schickt nur die Tage, die sich ändern, in einem Aufruf an „Heizplan speichern“ und liest nach
   (`saveHeatingWeek`). Danach zeigt das Fenster darunter den nachgelesenen Zeitplan (`adoptWeek`; ein älterer
-  Lesevorgang überschreibt ihn nicht). Nimmt Home Assistant die Zeiten nicht an, bleibt die Seite offen mit „Nicht
-  gespeichert … Erneut versuchen“. Die Zeiten speichern sich also mit dem ✓ der Seite, Schalter und Temperaturen
+  Lesevorgang überschreibt ihn nicht, ein weiterer bestätigt ihn). Nimmt Home Assistant die Zeiten nicht an, bleibt die
+  Seite offen mit „Nicht gespeichert … Erneut versuchen“; solange ✓ läuft, stehen Ring, Felder und Tage still. Die Zeiten speichern sich also mit dem ✓ der Seite, Schalter und Temperaturen
   weiter mit dem ✓ des Fensters.
 
 ## Demo

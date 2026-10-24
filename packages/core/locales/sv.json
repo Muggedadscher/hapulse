@@ -1630,7 +1630,7 @@
   "heatingPlan.group.weekend": "Helg",
   "heatingPlan.times.title": "Komforttider",
   "heatingPlan.times.edit": "Redigera {group}",
-  "heatingPlan.times.addDays": "Lägg till en tid till",
+  "heatingPlan.times.addDays": "Tider för andra dagar",
   "heatingPlan.times.addFirst": "Lägg till en komforttid",
   "heatingPlan.times.addSecond": "Andra tiden på dagen",
   "heatingPlan.times.addMore": "Ytterligare en tid på dagen",
@@ -1642,5 +1642,6 @@
   "heatingPlan.times.remove": "Ta bort tiden {range}",
   "heatingPlan.times.clear": "Ta bort tider för {days}",
   "heatingPlan.times.clearAll": "Ta bort tider",
-  "heatingPlan.times.ring": "Komforttider under dagen"
+  "heatingPlan.times.ring": "Komforttider under dagen",
+  "heatingPlan.times.nth": "{label}, tid {n}"
 }
