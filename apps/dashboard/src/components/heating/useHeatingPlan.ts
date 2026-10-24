@@ -1,10 +1,11 @@
 /**
  * [fork] Heating plan of one room for the card and its window: the entities (label `heizplan` + the room's area,
  * @hapulse/core findHeatingPlans), the schedule's periods (read with schedule.get_schedule, again whenever the
- * schedule entity changes or the connection is back), the status line and whether the thermostat follows.
+ * schedule entity changes or the connection is back, or taken from a save that read them back), the status line and
+ * whether the thermostat follows.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { findHeatingPlans, heatingPlanStatus, heatingThermostatDeviates, heatingWindowSensors } from '@hapulse/core';
 import type { HassEntity, HeatingPlanEntities, HeatingPlanStatus, HeatingWeek, Registries } from '@hapulse/core';
@@ -33,6 +34,8 @@ export interface HeatingPlanView {
   week: HeatingWeek | null;
   /** The periods could not be read (no schedule, error). */
   weekFailed: boolean;
+  /** Take the periods a save has read back; a read still under way no longer overwrites them. */
+  adoptWeek: (week: HeatingWeek) => void;
   status: HeatingPlanStatus;
   /** The thermostat does not hold what the plan wants (heatingThermostatDeviates). */
   deviates: boolean;
@@ -118,16 +121,27 @@ export function useHeatingPlan(areaId: string, roomEntityIds: readonly string[])
   const scheduleId = plan?.schedule ?? null;
   const scheduleStamp = schedule?.last_updated ?? '';
   const [loaded, setLoaded] = useState<{ id: string; week: HeatingWeek | null } | null>(null);
+  // Each read and each adopted save counts up; a read whose answer comes after a newer one is dropped
+  const generation = useRef(0);
   useEffect(() => {
     if (!scheduleId || !connected) return;
+    const mine = ++generation.current;
     let live = true;
     void getHeatingWeek(scheduleId).then((week) => {
-      if (live) setLoaded({ id: scheduleId, week });
+      if (live && generation.current === mine) setLoaded({ id: scheduleId, week });
     });
     return () => {
       live = false;
     };
   }, [scheduleId, scheduleStamp, connected]);
+  const adoptWeek = useCallback(
+    (week: HeatingWeek) => {
+      if (!scheduleId) return;
+      generation.current++;
+      setLoaded({ id: scheduleId, week });
+    },
+    [scheduleId],
+  );
 
   if (!plan || !automation) return null;
 
@@ -166,6 +180,7 @@ export function useHeatingPlan(areaId: string, roomEntityIds: readonly string[])
     eco,
     week,
     weekFailed,
+    adoptWeek,
     status,
     deviates,
     now,

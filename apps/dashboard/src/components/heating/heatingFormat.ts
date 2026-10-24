@@ -5,8 +5,9 @@
  * (Intl); a 24-hour locale keeps `24:00` for the end of a day ("bis 24:00"), a 12-hour one shows midnight.
  */
 
-import { HEATING_WEEKDAYS, heatingMinutes } from '@hapulse/core';
+import { HEATING_WEEKDAYS, heatingDayGroupKind, heatingMinutes } from '@hapulse/core';
 import type { HeatingBlock, HeatingWeekday } from '@hapulse/core';
+import type { TFunction } from '../../i18n/useT';
 
 /** A Monday, for the weekday names (Intl has no "name of weekday n"). */
 const MONDAY = new Date(2026, 0, 5);
@@ -35,15 +36,53 @@ export function formatHeatingRange(block: HeatingBlock, locale: string): string 
   return `${formatHeatingTime(block.from, locale)}–${formatHeatingTime(block.to, locale)}`;
 }
 
-/** Length of a period with the units of the locale ("14 Std. 30 Min.", "14 hr 30 min"). */
-export function formatHeatingDuration(block: HeatingBlock, locale: string): string {
+/**
+ * Length of a period as its hours and its minutes with the units of the locale (["14 Std.", "30 Min."]); a part that
+ * is zero is left out, except the minutes of a period under an hour.
+ */
+export function heatingDurationParts(block: HeatingBlock, locale: string): string[] {
   const total = heatingMinutes(block.to) - heatingMinutes(block.from);
   const hours = Math.floor(total / 60);
   const minutes = total % 60;
   const unit = (value: number, u: 'hour' | 'minute') =>
     new Intl.NumberFormat(locale, { style: 'unit', unit: u, unitDisplay: 'short' }).format(value);
-  if (hours === 0) return unit(minutes, 'minute');
-  return minutes === 0 ? unit(hours, 'hour') : `${unit(hours, 'hour')} ${unit(minutes, 'minute')}`;
+  if (hours === 0) return [unit(minutes, 'minute')];
+  return minutes === 0 ? [unit(hours, 'hour')] : [unit(hours, 'hour'), unit(minutes, 'minute')];
+}
+
+/** Length of a period with the units of the locale ("14 Std. 30 Min.", "14 hr 30 min"). */
+export function formatHeatingDuration(block: HeatingBlock, locale: string): string {
+  return heatingDurationParts(block, locale).join(' ');
+}
+
+/** The name of a group of days: "Täglich", "Werktags", "Wochenende", one long day name or short ones in a list. */
+export function heatingDaysName(t: TFunction, locale: string, days: readonly HeatingWeekday[]): string {
+  const kind = heatingDayGroupKind(days);
+  if (kind === 'daily') return t('heatingPlan.group.daily');
+  if (kind === 'weekdays') return t('heatingPlan.group.weekdays');
+  if (kind === 'weekend') return t('heatingPlan.group.weekend');
+  if (days.length === 1) return heatingDayName(days[0]!, locale, 'long');
+  return days.map((d) => heatingDayName(d, locale, 'short')).join(', ');
+}
+
+/** Days with short names, three and more in a row as a span ("Mo–Fr", "Sa, So", "Mo, Mi–Fr"), in week order. */
+export function heatingDaySpan(days: readonly HeatingWeekday[], locale: string): string {
+  const idx = HEATING_WEEKDAYS.map((d, i) => (days.includes(d) ? i : -1)).filter((i) => i >= 0);
+  const runs: number[][] = [];
+  for (const i of idx) {
+    const run = runs[runs.length - 1];
+    if (run && run[run.length - 1] === i - 1) run.push(i);
+    else runs.push([i]);
+  }
+  const name = (i: number) => heatingDayName(HEATING_WEEKDAYS[i]!, locale, 'short');
+  return runs
+    .map((run) => (run.length >= 3 ? `${name(run[0]!)}–${name(run[run.length - 1]!)}` : run.map(name).join(', ')))
+    .join(', ');
+}
+
+/** The short day name for a round day chip, without an abbreviation dot ("lun." → "lun"). */
+export function heatingChipName(day: HeatingWeekday, locale: string): string {
+  return heatingDayName(day, locale, 'short').replace(/\.$/u, '');
 }
 
 /** Temperature of a helper: whole degrees without a decimal, halves with one ("21", "20,5"). */

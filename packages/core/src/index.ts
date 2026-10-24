@@ -368,3 +368,22 @@ export type {
   HeatingFollowInput,
 } from './heatingPlan.js';
 export { DEMO_HEATING, demoHeatingWeek, tickDemoHeating } from './heatingPlanDemo.js';
+// [fork] Editing the comfort periods (Etappe 2b)
+export {
+  HEATING_STEP_MINUTES,
+  HEATING_NEW_DAY_BLOCK,
+  heatingTimeOf,
+  snapHeatingMinutes,
+  heatingEdgeRange,
+  moveHeatingEdge,
+  heatingRingMinutes,
+  heatingRingAngle,
+  addHeatingBlock,
+  removeHeatingBlock,
+  heatingBlockMinutes,
+  heatingFieldMinutes,
+  heatingFieldValue,
+  heatingWeekWith,
+  heatingChangedDays,
+} from './heatingEdit.js';
+export type { HeatingEdge } from './heatingEdit.js';

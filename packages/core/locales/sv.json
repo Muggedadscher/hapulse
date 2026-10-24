@@ -1627,5 +1627,20 @@
   "heatingPlan.sheet.retry": "Försök igen",
   "heatingPlan.group.daily": "Varje dag",
   "heatingPlan.group.weekdays": "Vardagar",
-  "heatingPlan.group.weekend": "Helg"
+  "heatingPlan.group.weekend": "Helg",
+  "heatingPlan.times.title": "Komforttider",
+  "heatingPlan.times.edit": "Redigera {group}",
+  "heatingPlan.times.addDays": "Lägg till en tid till",
+  "heatingPlan.times.addFirst": "Lägg till en komforttid",
+  "heatingPlan.times.addSecond": "Andra tiden på dagen",
+  "heatingPlan.times.addMore": "Ytterligare en tid på dagen",
+  "heatingPlan.times.days": "Dagar",
+  "heatingPlan.times.comfortFrom": "Komfort från",
+  "heatingPlan.times.ecoFrom": "Eco från",
+  "heatingPlan.times.hint": "Dra i ringen eller tryck på en tid. Steg om 5 minuter.",
+  "heatingPlan.times.pickDays": "Välj minst en dag.",
+  "heatingPlan.times.remove": "Ta bort tiden {range}",
+  "heatingPlan.times.clear": "Ta bort tider för {days}",
+  "heatingPlan.times.clearAll": "Ta bort tider",
+  "heatingPlan.times.ring": "Komforttider under dagen"
 }

@@ -80,6 +80,8 @@ module.exports = function sheets(h) {
     // the heating plan of the demo living room (Etappe 2a): its window and the question before switching off
     'win-heating': { path: '/room/living_room', act: sel('.heating-card__open') },
     'win-heating-off': { path: '/room/living_room', act: sel('.heating-card__head .heating-switch') },
+    // its times page (Etappe 2b), a window on the window: Esc closes only the page (`escapes`)
+    'win-heating-times': { path: '/room/living_room', escapes: 2, act: seq(sel('.heating-card__open'), sel('.modal-body .heating-group__edit')) },
   };
   for (const sc of Object.values(scenes)) {
     sc.path = sc.path || '/';
@@ -246,8 +248,10 @@ module.exports = function sheets(h) {
           const r = await ev(w.page, () => ({ dialogs: document.querySelectorAll('[role="dialog"]').length, remnants: __g.remnants().count,
             overflow: document.body.style.overflow, dom: __s.classicDom() }));
           res.dom[`${device} ${name}`] = r.dom;
-          await w.page.keyboard.press('Escape');
-          await sleep(150);
+          for (let i = 0; i < (sc.escapes || 1); i++) {
+            await w.page.keyboard.press('Escape');
+            await sleep(150);
+          }
           const after = await ev(w.page, () => ({ dialogs: document.querySelectorAll('[role="dialog"]').length, overflow: document.body.style.overflow }));
           res.windows[`${device} ${name}`] = { dialogs: r.dialogs, remnants: r.remnants, after };
           await w.close();
@@ -1092,6 +1096,90 @@ module.exports = function sheets(h) {
         && r.asked && r.off.on === 'false' && /^Aus/.test(r.off.status || '') && r.on.on === 'true' && r.on.windows === 0
         && clean(r.draft) === '21,5 °C' && clean(r.cardWhileDraft) === '21°C' && clean(r.discarded) === '21°C'
         && clean(r.saved) === '21,5°C');
+    });
+
+    // 11c. Editing the times (Etappe 2b) in both styles: a group opens its page on the window (Glas: a page with
+    //      "Zurück"); the start knob moves by keys, the end knob by dragging along the ring; back or Esc discards and
+    //      closes only the page; another period is added and removed; ✓ saves into the demo schedule and the window
+    //      under it shows the new time; "add another time" with every day taken starts without days and cannot save.
+    await block('sheetsHeatingTimes', async () => {
+      const res = {};
+      const fields = () => [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value);
+      const below = () => ({ dialogs: __s.panels().length, first: __s.panel().querySelector('.heating-period__time')?.textContent ?? null });
+      /** Press a part of the top window after scrolling it into view (the page is longer than the phone). */
+      const pressIn = async (page, q) => {
+        await ev(page, (sq) => __s.panel().querySelector(sq)?.scrollIntoView({ block: 'center', behavior: 'instant' }), q);
+        await sleep(100);
+        await press(page, (sq) => __s.panel().querySelector(sq), q);
+      };
+      out.sheetsHeatingTimes = res; // partial results stay visible when a step fails
+      for (const style of ['glas', 'classic']) {
+        const r = {};
+        res[style] = r;
+        const w = await open('phone', style, '/room/living_room');
+        await openWin(w.page, 'win-heating-times');
+        r.page = await ev(w.page, () => ({ ...__s.stack(), dialogs: __s.panels().length,
+          title: (__s.panel().querySelector('.g-sheet-header__title, .modal-header__title') || {}).textContent }));
+        r.start = await ev(w.page, fields);
+        await w.page.focus('.heating-ring__knob--from');
+        for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
+        r.keys = await ev(w.page, fields);
+        // drag the end knob to 10:00 (150°) along the ring
+        const g = await ev(w.page, () => {
+          const ring = __s.panel().querySelector('.heating-ring').getBoundingClientRect();
+          const knob = __s.panel().querySelector('.heating-ring__knob--to').getBoundingClientRect();
+          return { cx: ring.left + ring.width / 2, cy: ring.top + ring.height / 2, r: (ring.width * 120) / 310,
+            kx: knob.left + knob.width / 2, ky: knob.top + knob.height / 2 };
+        });
+        await w.page.mouse.move(g.kx, g.ky);
+        await w.page.mouse.down();
+        for (let a = 127.5; a <= 150; a += 2.5) {
+          const rad = (a * Math.PI) / 180;
+          await w.page.mouse.move(g.cx + g.r * Math.sin(rad), g.cy - g.r * Math.cos(rad));
+        }
+        await w.page.mouse.up();
+        r.drag = await ev(w.page, fields);
+        // back (Glas) or Esc (Klassisch) discards and leaves the window under it
+        if (style === 'glas') await press(w.page, () => __s.panel().querySelector('.g-sheet-header__back'));
+        else await w.page.keyboard.press('Escape');
+        await until(w.page, () => __s.panels().length === 1);
+        await settleAnimations(w.page);
+        r.back = await ev(w.page, below);
+        // again: +30 min, a third period, remove it, save
+        await press(w.page, () => __s.panel().querySelector('.heating-group__edit'));
+        await until(w.page, () => __s.panels().length === 2);
+        await settleAnimations(w.page);
+        await w.page.focus('.heating-ring__knob--from');
+        for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
+        await pressIn(w.page, '.heating-times .heating-add');
+        r.added = await ev(w.page, () => __s.panel().querySelectorAll('.heating-times__period').length);
+        await pressIn(w.page, '.heating-times__clear');
+        r.removed = await ev(w.page, fields);
+        await press(w.page, () => __s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await until(w.page, () => __s.panels().length === 1, null, 6000);
+        await settleAnimations(w.page);
+        r.saved = await ev(w.page, below);
+        // "add another time": every demo day has times, so no day is chosen and ✓ waits
+        await pressIn(w.page, '.heating-sheet .heating-add');
+        await until(w.page, () => __s.panels().length === 2);
+        await settleAnimations(w.page);
+        r.addDays = await ev(w.page, () => ({
+          pressed: __s.panel().querySelectorAll('.heating-times__day[aria-pressed="true"]').length,
+          pick: !!__s.panel().querySelector('.heating-times__pick'),
+          disabled: !!(__s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary')).disabled,
+          fields: [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value),
+        }));
+        await w.close();
+      }
+      const two = (f, a, b) => Array.isArray(f) && f[0] === a && f[1] === b;
+      out.sheetsHeatingTimesOk = Object.entries(res).every(([style, r]) => (style === 'glas'
+        ? r.page.windows === 2 && r.page.top.pres === 'page' && r.page.top.back && r.page.below.inert
+        : r.page.dialogs === 2) && r.page.title === 'Werktags'
+        && two(r.start, '06:00', '08:30') && two(r.keys, '06:30', '08:30') && two(r.drag, '06:30', '10:00')
+        && r.back.dialogs === 1 && r.back.first === '06:00'
+        && r.added === 3 && r.removed.length === 4 && r.removed[0] === '06:30'
+        && r.saved.dialogs === 1 && r.saved.first === '06:30'
+        && r.addDays.pressed === 0 && r.addDays.pick && r.addDays.disabled && two(r.addDays.fields, '06:00', '22:00'));
     });
 
     // 12. Every window of §6.0 opens in Glas on the phone and the desktop without an error, with one window on top and

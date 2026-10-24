@@ -1,26 +1,28 @@
 /**
- * [fork] The heating plan's window (plan: glas/heizung-zeitplan/PLAN.md, Etappe 2a; draft LIESMICH.md): the switch,
- * comfort and eco with steppers, and the comfort times grouped by equal days. Glas: a sheet, from 900 px a dialog in
- * two columns (Modal); × discards, ✓ saves, like sheets in iOS 26. Klassisch: Cancel / Save in the foot.
+ * [fork] The heating plan's window (plan: glas/heizung-zeitplan/PLAN.md, Etappe 2a/2b; draft LIESMICH.md): the
+ * switch, comfort and eco with steppers, and the comfort times grouped by equal days. Glas: a sheet, from 900 px a
+ * dialog in two columns (Modal); × discards, ✓ saves, like sheets in iOS 26. Klassisch: Cancel / Save in the foot.
  *
- * Changes wait for ✓, which sets the temperatures and switches in the order of heatingSave.ts. A failed call keeps
- * the window open with "Not saved … Try again" (callService has shown the error). Editing the times follows in
- * Etappe 2b; here they are read only.
+ * Changes of the switch and the temperatures wait for ✓, which sets them in the order of heatingSave.ts. A failed call
+ * keeps the window open with "Not saved … Try again" (callService has shown the error). A group of days, and "add
+ * another time", open the times page on this window (HeatingTimesPage), which saves the times on its own ✓.
  */
 
 import { useRef, useState } from 'react';
-import { CalendarClock, Check, CircleAlert, Leaf, Minus, Plus, Sun } from 'lucide-react';
-import { HEATING_WEEKDAYS, heatingDayGroupKind, heatingDayGroups } from '@hapulse/core';
+import { CalendarClock, Check, ChevronRight, CircleAlert, Leaf, Minus, Plus, Sun } from 'lucide-react';
+import { HEATING_WEEKDAYS, heatingDayGroups } from '@hapulse/core';
 import type { HeatingDayGroup } from '@hapulse/core';
 import { Modal } from '../ui/Modal';
 import { useLocale, useT } from '../../i18n/useT';
-import type { TFunction } from '../../i18n/useT';
 import { useIsGlas } from '../../app/glas/useUiStyle';
 import type { HeatingHelper, HeatingPlanView } from './useHeatingPlan';
 import { heatingDraftChanged, saveHeatingDraft, stepHeatingValue } from './heatingSave';
 import { HeatingSwitch } from './HeatingSwitch';
 import { HeatingDayBar } from './HeatingDayBar';
-import { formatHeatingDuration, formatHeatingTime, heatingDayName, heatingTempParts, HEATING_MARK, splitMarked } from './heatingFormat';
+import { HeatingTimesPage } from './HeatingTimesPage';
+import { heatingTimesDraft } from './heatingTimes';
+import type { HeatingTimesDraft } from './heatingTimes';
+import { formatHeatingDuration, formatHeatingTime, heatingDayName, heatingDaysName, heatingTempParts, HEATING_MARK, splitMarked } from './heatingFormat';
 
 interface HeatingPlanSheetProps {
   open: boolean;
@@ -80,23 +82,17 @@ function TempRow({
   );
 }
 
-function groupName(t: TFunction, locale: string, group: HeatingDayGroup): string {
-  const kind = heatingDayGroupKind(group.days);
-  if (kind === 'daily') return t('heatingPlan.group.daily');
-  if (kind === 'weekdays') return t('heatingPlan.group.weekdays');
-  if (kind === 'weekend') return t('heatingPlan.group.weekend');
-  if (group.days.length === 1) return heatingDayName(group.days[0]!, locale, 'long');
-  return group.days.map((d) => heatingDayName(d, locale, 'short')).join(', ');
-}
-
-function DayGroup({ group }: { group: HeatingDayGroup }) {
+/** A group of days; the whole group opens its times (a button over the group, the times stay readable as text). */
+function DayGroup({ group, onEdit }: { group: HeatingDayGroup; onEdit: () => void }) {
   const t = useT();
   const locale = useLocale();
-  const name = groupName(t, locale, group);
+  const name = heatingDaysName(t, locale, group.days);
   return (
-    <div className="heating-group">
+    <div className="heating-group heating-group--edit">
       <div className="heating-group__head">
-        <span className="heating-group__name">{name}</span>
+        <button type="button" className="heating-group__edit" aria-label={t('heatingPlan.times.edit', { group: name })} onClick={onEdit}>
+          <span className="heating-group__name">{name}</span>
+        </button>
         <span className="heating-days" role="img" aria-label={group.days.map((d) => heatingDayName(d, locale, 'long')).join(', ')}>
           {HEATING_WEEKDAYS.map((d) => (
             <span key={d} className={`heating-days__day${group.days.includes(d) ? ' heating-days__day--on' : ''}`}>
@@ -106,24 +102,30 @@ function DayGroup({ group }: { group: HeatingDayGroup }) {
         </span>
       </div>
       {group.blocks.length === 0 ? (
-        <div className="heating-group__none">{t('heatingPlan.sheet.ecoAllDay')}</div>
+        <div className="heating-period">
+          <span className="heating-group__none">{t('heatingPlan.sheet.ecoAllDay')}</span>
+          <ChevronRight className="heating-group__chevron" size={18} strokeWidth={2} aria-hidden="true" />
+        </div>
       ) : (
-        group.blocks.map((b) => (
+        group.blocks.map((b, i) => (
           <div key={`${b.from}-${b.to}`} className="heating-period">
             <span className="heating-period__range">
-              {splitMarked(t('heatingPlan.sheet.range', { from: HEATING_MARK[0], to: HEATING_MARK[1] })).map((p, i) =>
+              {splitMarked(t('heatingPlan.sheet.range', { from: HEATING_MARK[0], to: HEATING_MARK[1] })).map((p, j) =>
                 p.mark === null ? (
-                  <span key={i} className="heating-period__word">
+                  <span key={j} className="heating-period__word">
                     {p.text}
                   </span>
                 ) : (
-                  <span key={i} className="heating-period__time">
+                  <span key={j} className="heating-period__time">
                     {formatHeatingTime(p.mark === 0 ? b.from : b.to, locale)}
                   </span>
                 ),
               )}
             </span>
-            <span className="heating-period__len">{formatHeatingDuration(b, locale)}</span>
+            <span className="heating-period__len">
+              {formatHeatingDuration(b, locale)}
+              {i === 0 && <ChevronRight className="heating-group__chevron" size={18} strokeWidth={2} aria-hidden="true" />}
+            </span>
           </div>
         ))
       )}
@@ -143,8 +145,25 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
   const [failed, setFailed] = useState(false);
   // While ✓ runs, the window stays: × would not undo the calls already sent, and a refusal must stay visible
   const busyRef = useRef(false);
+  // The times page on this window; kept after closing (open false) so its window can leave animated
+  const [times, setTimes] = useState<{ key: number; open: boolean; start: HeatingTimesDraft } | null>(null);
+  // In Klassisch every open dialog listens for Esc: the one that closes the times page must not close this window
+  // too. Cleared only after that event (the listeners run in either order, React may render in between).
+  const timesOpen = useRef(false);
   const close = () => {
-    if (!busyRef.current) onClose();
+    if (!busyRef.current && !timesOpen.current) onClose();
+  };
+  const openTimes = (group: HeatingDayGroup | null) => {
+    if (!view.week || busyRef.current) return;
+    timesOpen.current = true;
+    const start = heatingTimesDraft(view.week, group);
+    setTimes((cur) => ({ key: (cur?.key ?? 0) + 1, open: true, start }));
+  };
+  const closeTimes = () => {
+    setTimes((cur) => (cur ? { ...cur, open: false } : cur));
+    window.setTimeout(() => {
+      timesOpen.current = false;
+    }, 0);
   };
 
   const shownOn = on ?? view.on;
@@ -206,10 +225,18 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
             <div className="heating-group__none">{t('heatingPlan.noSchedule')}</div>
           ) : view.week === null ? (
             <div className="heating-group__none">{t('heatingPlan.sheet.loading')}</div>
-          ) : noTimes ? (
-            <div className="heating-group__none">{t('heatingPlan.sheet.noTimes')}</div>
           ) : (
-            groups.map((g) => <DayGroup key={g.days.join()} group={g} />)
+            <>
+              {noTimes ? (
+                <div className="heating-group__none">{t('heatingPlan.sheet.noTimes')}</div>
+              ) : (
+                groups.map((g) => <DayGroup key={g.days.join()} group={g} onEdit={() => openTimes(g)} />)
+              )}
+              <button type="button" className="heating-sheet__row heating-add" disabled={busy} onClick={() => openTimes(null)}>
+                <Plus size={20} strokeWidth={2} aria-hidden="true" />
+                <span>{t(noTimes ? 'heatingPlan.times.addFirst' : 'heatingPlan.times.addDays')}</span>
+              </button>
+            </>
           )}
         </div>
         <p className="heating-sheet__note">{t('heatingPlan.sheet.scheduleHint')}</p>
@@ -225,6 +252,19 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
             </button>
           </span>
         </p>
+      )}
+
+      {times && view.plan.schedule && (
+        <HeatingTimesPage
+          key={times.key}
+          open={times.open}
+          scheduleId={view.plan.schedule}
+          week={view.week}
+          start={times.start}
+          roomName={roomName}
+          onSaved={view.adoptWeek}
+          onClose={closeTimes}
+        />
       )}
     </div>
   );

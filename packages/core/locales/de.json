@@ -1627,5 +1627,20 @@
   "heatingPlan.sheet.retry": "Erneut versuchen",
   "heatingPlan.group.daily": "Täglich",
   "heatingPlan.group.weekdays": "Werktags",
-  "heatingPlan.group.weekend": "Wochenende"
+  "heatingPlan.group.weekend": "Wochenende",
+  "heatingPlan.times.title": "Komfortzeiten",
+  "heatingPlan.times.edit": "{group} bearbeiten",
+  "heatingPlan.times.addDays": "Weitere Zeit hinzufügen",
+  "heatingPlan.times.addFirst": "Komfortzeit hinzufügen",
+  "heatingPlan.times.addSecond": "Zweite Zeit am Tag",
+  "heatingPlan.times.addMore": "Weitere Zeit am Tag",
+  "heatingPlan.times.days": "Tage",
+  "heatingPlan.times.comfortFrom": "Komfort ab",
+  "heatingPlan.times.ecoFrom": "Eco ab",
+  "heatingPlan.times.hint": "Am Ring ziehen oder auf eine Uhrzeit tippen. Schritte von 5 Minuten.",
+  "heatingPlan.times.pickDays": "Wähle mindestens einen Tag.",
+  "heatingPlan.times.remove": "Zeit {range} entfernen",
+  "heatingPlan.times.clear": "Zeiten für {days} löschen",
+  "heatingPlan.times.clearAll": "Zeiten löschen",
+  "heatingPlan.times.ring": "Komfortzeiten am Tag"
 }
