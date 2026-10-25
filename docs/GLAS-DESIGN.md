@@ -903,7 +903,8 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
   `grabber`, 6 von oben; Tipp wechselt mittel ↔ groß; `aria-label` „Blatt vergrößern/verkleinern“.
 - **Inhalt:** scrollt (Innenabstand 8 16 28); Gruppen `group`, Radius 22; Gruppentitel 15/20 600 `label2` mit Zählung rechts.
 - **Ziehen (Skizze 844 px):** mittel → groß bei dy < −50; mittel schließt bei dy > 110; groß → mittel bei dy > 80; groß
-  schließt bei dy > 360. Allgemein (`sheetMath`): Schließen ab 25 % der Sheet-Höhe oder Wurf > 0,8 px/ms.
+  schließt bei dy > 360 (45 %; seit dem Abstand 8 oben sind es 376 von 836). Groß lässt oben nur 8 px frei: dort
+  schließt ein Tipp daneben weiter, sonst × oder Ziehen, wie bei iOS. Allgemein (`sheetMath`): Schließen ab 25 % der Sheet-Höhe oder Wurf > 0,8 px/ms.
 - **Morph** aus dem angetippten Element und zurück (§6.3); **Scrim** `scrim` (.25 / .45), Tipp schließt.
 - **Gestapelte Bestätigung (D14):** Rückfrage erscheint **im** Sheet: als Bestätigungsblock in der Zeile (Fläche `fill`,
   Radius 18, Titel 17/600 zentriert, Hinweis 13 „Öffnen fragt immer nach.“, Knöpfe 44: „Abbrechen“ `group` + „Öffnen“/

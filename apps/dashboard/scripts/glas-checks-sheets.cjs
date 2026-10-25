@@ -460,7 +460,7 @@ module.exports = function sheets(h) {
         }
         if (how === 'close') await w.page.locator('.g-sheet-header__close').click();
         else if (how === 'escape') await w.page.keyboard.press('Escape');
-        else await w.page.mouse.click(195, 30);
+        else await w.page.mouse.click(195, 3); // above the large sheet (it starts 8 from the top)
         await sleep(60);
         const ghost = await ev(w.page, () => __s.ghost());
         await until(w.page, () => !document.querySelector('.g-sheet-ghost'), null, 3000);

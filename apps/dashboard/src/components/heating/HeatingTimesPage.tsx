@@ -2,7 +2,7 @@
  * [fork] The times page of the heating plan's window (plan glas/heizung-zeitplan/PLAN.md Etappe 2b; draft
  * handy-zeiten-*.png): the days as round chips, the 24-hour ring, "Komfort ab" / "Eco ab" for each period, another
  * period, deleting the times. It opens from a group of days in the window (or from "add another time") as a window of
- * its own: in Glas a page on the window with "‹ Zurück" and ✓, in Klassisch a dialog with Cancel / Save.
+ * its own: in Glas a page on the window with a round back button and ✓, in Klassisch a dialog with Cancel / Save.
  *
  * The chosen period (tinted; chosen by its fields or a tap on its arc) can be removed while there are more. The chosen
  * days get the periods shown; days left out keep theirs. ✓ saves at once through "Heizplan speichern"

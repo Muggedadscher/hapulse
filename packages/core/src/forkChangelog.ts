@@ -46,8 +46,8 @@ export const FORK_RELEASES: ForkRelease[] = [
         kind: 'changed',
         items: [
           {
-            de: 'Eine Seite in einem Fenster (etwa die Zeiten im Heizplan, „Entriegeln?“ oder „Garage öffnen?“) geht mit einem runden Zurück-Knopf zurück, wie das × daneben',
-            en: 'A page in a window (such as the times of a heating plan, “Unlock?” or “Open garage?”) goes back with a round back button, like the × next to it',
+            de: 'Eine Seite in einem Fenster (etwa die Zeiten im Heizplan, „Entriegeln?“ oder „Garage öffnen?“) geht mit einem runden Zurück-Knopf zurück, so wie das × ein Fenster schließt',
+            en: 'A page in a window (such as the times of a heating plan, “Unlock?” or “Open garage?”) goes back with a round back button, the way the × closes a window',
           },
           {
             de: 'Ein großes Fenster reicht bis knapp unter den oberen Rand; der Kopf der Seite dahinter mit seinem Zurück-Knopf ist nicht mehr zu sehen',
