@@ -351,8 +351,8 @@ module.exports = function pages(h) {
     });
 
     // ---- K94 fields: fill, 36 visible in a hit area of 44, text 17; a click 2 px inside the hit area but outside the
-    //      visible field still focuses it, and typing still reaches it (the pool editor's time field: the arrow up moves
-    //      its hour). Glas only. ----
+    //      visible field still focuses it, and typing still reaches it. Glas only. (The pool's time fields are those of
+    //      the times page, components/schedule, checked in the pool block.) ----
     await block('pagesFields', async () => {
       const res = {};
       const FIELDS = [
@@ -360,13 +360,11 @@ module.exports = function pages(h) {
         ['automations', '/automations', '.automations-toolbar__search-input', '.automations-toolbar__search'],
         ['settings', '/settings', '.settings-text-input', null],
         ['library', '/music', '.library-card__search-input', null],
-        ['poolTime', '/pool', '[role="dialog"] .pool-time-input', null, (page) => click(page, '.pool-schedule__edit')],
       ];
       for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        for (const [name, p, input, bar, opener] of FIELDS) {
+        for (const [name, p, input, bar] of FIELDS) {
           const { page, close } = await open(device, 'glas', p, { mode });
           try {
-            if (opener) await opener(page);
             const field = page.locator(input).filter({ visible: true }).first();
             if (!(await field.count())) throw new Error('not visible: ' + input);
             await field.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
@@ -389,12 +387,10 @@ module.exports = function pages(h) {
             await page.mouse.click(a.x, a.visTop - 2);
             await sleep(100);
             const focused = await ev(page, (sel) => document.activeElement && document.activeElement.matches(sel), input);
-            const before = await field.inputValue();
-            if (name === 'poolTime') await page.keyboard.press('ArrowUp');
-            else await page.keyboard.type('ab');
+            await page.keyboard.type('ab');
             await sleep(100);
             const typed = await field.inputValue();
-            const reached = name === 'poolTime' ? typed !== before : typed.endsWith('ab');
+            const reached = typed.endsWith('ab');
             const ok = Math.abs(a.hit - 44) < 0.6 && Math.abs(a.visible - 36) < 0.6 && a.bg === a.fill && a.font === '17px' && focused && reached;
             res[`${device}-${name}`] = { ok, hit: a.hit, visible: a.visible, bg: a.bg, font: a.font, focused, typed };
           } catch (e) {

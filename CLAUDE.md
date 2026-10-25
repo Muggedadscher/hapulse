@@ -74,11 +74,12 @@ sauber übernehmen können.
   Hero-Pumpenstatus + Modus-Umschalter, Solar-Gauge mit editierbarer Schwelle,
   Manuell-Timer-Ring, Laufzeit/Verbrauch (Kacheln öffnen Upstreams
   Entity-Detail-Modal), einen
-  **vollen Zeitplan-Editor** (grafische Tages-Timeline, schreibt via
+  **Zeitplan-Editor** (`PoolTimesPage.tsx`: Tages-Chips, 24-h-Ring und Zeitfelder aus dem gemeinsamen Bauteil
+  `components/schedule/` wie beim Heizplan, Ton `sched--pool`; ein Satz Laufzeiten für alle gewählten Tage, schreibt via
   `scheduler.edit`), einen **Laufzeit-Chart** (`PoolChartCard`: Balken der
   Pumpen-Laufzeit pro Tag aus der State-History, Tages-Max) und eine
   Admin-Sektion (nur HA-Admins). Scheduler-/Slot-Konvertierung (Timeslots ↔
-  On-Fenster ↔ Tages-Slots) und das Tages-Bucketing (`dailyRuntimeBars`) liegen
+  On-Fenster ↔ Laufzeiten `poolWindowsToPeriods`/`poolPeriodsToWindows`) und das Tages-Bucketing (`dailyRuntimeBars`) liegen
   DOM-frei in `packages/core/src/pool.ts` (getestet in
   `packages/core/scripts/smoke.mjs`). Die Seite ist ein **festes Layout**
   (Hero + fließendes Karten-Grid, NICHT editierbar — bewusst schlank für

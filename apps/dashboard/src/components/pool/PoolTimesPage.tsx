@@ -37,7 +37,7 @@ import { POOL_ENTITIES } from './poolConfig';
 
 interface PoolTimesPageProps {
   open: boolean;
-  /** The schedule as the card read it when the page opened. */
+  /** The schedule as the card reads it now; the draft takes it once, when the page mounts (a new key each opening). */
   initial: PoolScheduleModel;
   /** False while the scheduler entity is missing or has no timeslots: ✓ stays off. */
   readable: boolean;
