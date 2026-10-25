@@ -6,6 +6,21 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F66 — 2026-10-25
+
+**Pool-Zeiten wie im Heizplan** · _Pool times like the heating plan_
+
+### Geändert / Changed
+
+- Die Zeiten des Pool-Zeitplans stellt man jetzt so ein wie die Zeiten im Heizplan: die Tage als runde Knöpfe, ein 24-Stunden-Ring zum Ziehen und „An ab“ / „Aus ab“ für jede Laufzeit  
+  _The pool schedule’s times are now set like the times of a heating plan: the days as round buttons, a 24-hour ring to drag and “On from” / “Off from” for each run_
+- Laufzeiten, die aneinanderstoßen, werden beim Speichern zu einer; höchstens 10 Laufzeiten am Tag  
+  _Runs that touch become one when saved; at most 10 runs a day_
+- In Glas ist das ein Fenster mit × und ✓, in Klassisch ein Dialog mit Abbrechen und „Zeitplan speichern“  
+  _In Glass it is a window with × and ✓, in Classic a dialog with Cancel and “Save schedule”_
+- Die Karte „Zeitplan“ zeigt die Laufzeit pro Tag in Stunden und Minuten statt als Dezimalzahl  
+  _The “Schedule” card shows the run time per day in hours and minutes instead of a decimal number_
+
 ## F65 — 2026-10-25
 
 **Große Fenster wieder mit Abstand oben** · _Large windows with their gap at the top again_
