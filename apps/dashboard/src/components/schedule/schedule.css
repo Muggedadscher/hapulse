@@ -161,6 +161,10 @@
   text-align: center;
 }
 
+.sched__summary {
+  text-align: center;
+}
+
 .sched__actions {
   margin-top: 0.25rem;
 }

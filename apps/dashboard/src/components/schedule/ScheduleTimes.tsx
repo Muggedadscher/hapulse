@@ -31,6 +31,8 @@ export interface ScheduleTimesLabels extends ScheduleRingText {
   pickDays: string;
   /** Under the chips always (the pool: what a day left out means); none for the heating plan. */
   daysNote?: string;
+  /** Under the ring, centred (the pool with more than one run: how long it runs a day); none for the heating plan. */
+  summary?: string | undefined;
   /** Under the time fields. */
   hint: string;
   /** "Add" with the number of periods there are (0, 1, more). */
@@ -145,6 +147,7 @@ export function ScheduleTimes({ tone, days, onToggleDay, periods, onChange, addT
       {noDays && <p className="sched__note sched__pick">{labels.pickDays}</p>}
 
       <ScheduleRing periods={periods} selected={sel} disabled={busy} onSelect={setSelected} onChange={onChange} text={labels} />
+      {labels.summary && <p className="sched__note sched__summary">{labels.summary}</p>}
 
       {periods.length > 0 && (
         <>

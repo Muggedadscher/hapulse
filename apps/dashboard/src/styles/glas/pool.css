@@ -1,9 +1,9 @@
 /* [fork] Glas — the pool page (plan docs/glas/PLAN-ETAPPE-5.md K92–K94, K99; GLAS-DESIGN §7.18, §7.27–§7.30): the
-   hero like the pool window's head, the rings, the figures as a list, the runtime chart and the schedule editor's
-   window. Only presentation: the contents K1–K10 stay. The card titles, the grid and the schedule card's title in the
-   surface are the frame (pages.css); the mode segment's size is controls.css, its markup components/glas/
-   PoolModeSegment.tsx (page and window); the switches and steppers are controls.css, the time field lists.css, the
-   window's foot (Abbrechen, Speichern prominent) sheets.css. */
+   hero like the pool window's head, the rings, the figures as a list and the runtime chart. Only presentation: the
+   contents K1–K10 stay. The card titles, the grid and the schedule card's title in the surface are the frame
+   (pages.css); the mode segment's size is controls.css, its markup components/glas/PoolModeSegment.tsx (page and
+   window); the switches and steppers are controls.css. The schedule's times are the shared period editor
+   (components/pool/PoolTimesPage, styles/glas/schedule.css). */
 
 /* ---- Hero: the pump like the pool window's head — the symbol in a circle 56 (running teal with the dark glyph), the
    name 13 label2, the state 22/28 700 (running in tealInk); today's runtime as a capsule 32 like the heroes' chips. ---- */
@@ -574,319 +574,14 @@
   color: var(--g-on-badge);
 }
 
-/* ---- Schedule editor (its window; plan K99): group titles 15/20 600 label2 without capitals (13/18 in the desktop
-   dialog), the weekdays as choice pills 44 in one row (chosen accentSoft, accentInk, ring 2), the day as a timeline
-   56 in `fill` with the on-windows teal and their times in the dark glyph colour, the boundaries as white knobs with
-   the switch's shadow (dragging scales them, the time shows as an inverted capsule), each switch point as a field,
-   on/off as a capsule pair like the mode, the remove button round 44 with the glyph in redInk ---- */
-:root[data-style='glas'] .pool-editor {
-  gap: 24px;
-}
-
-:root[data-style='glas'] .pool-editor__section {
-  gap: 10px;
-}
-
-:root[data-style='glas'] .pool-editor__label {
-  color: var(--g-label-2);
-  font: 600 15px / 20px var(--g-font);
-  letter-spacing: normal;
-  text-transform: none;
-}
-
-@media (min-width: 900px) {
-  :root[data-style='glas'] .pool-editor__label {
-    font-size: 13px;
-    line-height: 18px;
-  }
-}
-
-:root[data-style='glas'] .pool-editor__total {
-  color: var(--g-label);
-  font: 600 15px / 20px var(--g-font);
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .pool-editor__days {
-  flex-wrap: nowrap;
-  gap: 6px;
-}
-
-:root[data-style='glas'] .pool-daytoggle {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  border-radius: 22px;
-  background: var(--g-fill);
-  color: var(--g-label);
-  font: 400 15px / 20px var(--g-font);
-  transition:
-    background-color 200ms ease,
-    color 200ms ease,
-    box-shadow 200ms ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-:root[data-style='glas'] .pool-daytoggle:active {
-  transform: none;
-}
-
-:root[data-style='glas'] .pool-daytoggle--active {
-  background: var(--g-accent-soft);
-  box-shadow: inset 0 0 0 2px var(--g-accent);
-  color: var(--g-accent-ink);
-  font-weight: 600;
-}
-
-:root[data-style='glas'] .pool-daytoggle:focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: 2px;
-}
-
-:root[data-style='glas'] .pool-timeline {
-  gap: 6px;
-}
-
-:root[data-style='glas'] .pool-timeline__bar {
-  border: 0;
-  border-radius: 14px;
-  background: var(--g-fill);
-}
-
-:root[data-style='glas'] .pool-timeline__seg {
-  border-right: 1px solid var(--g-group);
-  transition: background-color 200ms ease;
-}
-
-:root[data-style='glas'] .pool-timeline__seg:last-child {
-  border-right: 0;
-}
-
-:root[data-style='glas'] .pool-timeline__seg--off {
-  background: transparent;
-}
-
-:root[data-style='glas'] .pool-timeline__seg--on {
-  background: var(--g-teal);
-}
-
-/* The ring lies inside the bar (it clips, the bar's corners too) and above the grips on the slot's edges (z 2 in
-   Pool.css): drawn on ::after, so the slot's fill stays under the grips. On a running slot in the slot's own ink like
-   its label (the focus colour on teal: 2.3:1; Etappe 7, K109) */
-:root[data-style='glas'] .pool-timeline__seg:focus-visible {
-  outline: none;
-}
-
-:root[data-style='glas'] .pool-timeline__seg:focus-visible::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  border: 2px solid var(--g-focus);
-  pointer-events: none;
-}
-
-:root[data-style='glas'] .pool-timeline__seg:first-of-type:focus-visible::after {
-  border-top-left-radius: 14px;
-  border-bottom-left-radius: 14px;
-}
-
-:root[data-style='glas'] .pool-timeline__seg:last-of-type:focus-visible::after {
-  border-top-right-radius: 14px;
-  border-bottom-right-radius: 14px;
-}
-
-:root[data-style='glas'] .pool-timeline__seg--on:focus-visible::after {
-  border-color: var(--g-glyph-dark);
-}
-
-:root[data-style='glas'] .pool-timeline__seg-label {
-  padding: 6px 8px;
-  color: var(--g-label-2);
-  font: 600 11px / 13px var(--g-font);
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .pool-timeline__seg--on .pool-timeline__seg-label {
-  color: var(--g-glyph-dark);
-}
-
-:root[data-style='glas'] .pool-timeline__handle-grip {
-  width: 8px;
-  height: 30px;
-  border-radius: 4px;
-  background: var(--g-knob);
-  box-shadow: var(--g-shadow-knob);
-  opacity: 1;
-  transition: transform var(--g-d-snappy) var(--g-spring-snappy);
-}
-
-/* the knob stays opaque under the pointer, after a tap and with the keyboard's ring (the classic grip, which loads
-   with the page after this file, dims there; K108) */
-:root[data-style='glas'] .pool-timeline__handle:is(:hover, :focus-visible) .pool-timeline__handle-grip {
-  opacity: 1;
-}
-
-:root[data-style='glas'] .pool-timeline__handle--active .pool-timeline__handle-grip {
-  background: var(--g-knob);
-  transform: scale(1.12);
-}
-
-/* the grip sits on the edge between a running slot (teal) and an idle one: a ring in two tones, dark inside and the
-   knob's white outside, so one of them stands out on either side in both modes (Etappe 7, K109) */
-:root[data-style='glas'] .pool-timeline__handle:focus-visible .pool-timeline__handle-grip {
-  box-shadow:
-    var(--g-shadow-knob),
-    0 0 0 2px var(--g-glyph-dark),
-    0 0 0 4px var(--g-knob);
-}
-
-:root[data-style='glas'] .pool-timeline__handle-time {
-  top: 4px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: var(--g-label);
-  color: var(--g-group);
-  font: 600 11px / 13px var(--g-font);
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .pool-timeline__scale {
-  color: var(--g-label-2);
-  font: 400 11px / 13px var(--g-font);
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .pool-editor__hint {
-  color: var(--g-label-2);
-  font: 400 13px / 18px var(--g-font);
-}
-
-:root[data-style='glas'] .pool-editor__hint--warn {
-  color: var(--g-red-ink);
-}
-
-:root[data-style='glas'] .pool-editor__slots {
-  gap: 8px;
-}
-
-:root[data-style='glas'] .pool-editor__slot {
-  gap: 8px;
-}
-
-/* the field and the fixed 00:00 equally wide (Klassisch lets the field grow, `.pool-time-input { flex: 1 }`); 144 holds
-   a 12-hour time with its clock symbol at 17 px ("12:00 PM", Chrome needs 141) */
-:root[data-style='glas'] .pool-editor__slot-time {
-  flex: 0 0 144px;
-  width: 144px;
-}
-
-:root[data-style='glas'] .pool-time-input {
-  font-family: var(--g-font);
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .pool-editor__slot-time--fixed {
-  min-height: 44px;
-  padding: 0 12px;
-  border-radius: 0;
-  background: none;
-  color: var(--g-label-2);
-  font: 400 17px / 22px var(--g-font);
-  font-variant-numeric: tabular-nums;
-}
-
-:root[data-style='glas'] .pool-slotaction {
-  gap: 0;
-  padding: 3px;
-  border-radius: 22px;
-  background: var(--g-fill);
-}
-
-:root[data-style='glas'] .pool-slotaction__btn {
-  min-height: 38px;
-  border-radius: 19px;
-  color: var(--g-label-2);
-  font: 400 15px / 20px var(--g-font);
-  transition:
-    background-color 200ms ease,
-    color 200ms ease,
-    box-shadow 200ms ease;
-}
-
-:root[data-style='glas'] :is(.pool-slotaction__btn--on, .pool-slotaction__btn--off) {
-  background: var(--g-seg);
-  box-shadow: var(--g-seg-shadow);
-  color: var(--g-label);
-  font-weight: 600;
-}
-
-:root[data-style='glas'] .pool-slotaction__btn:focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: -2px;
-}
-
-:root[data-style='glas'] .pool-editor__remove,
-:root[data-style='glas'] .pool-editor__slot-spacer {
-  width: 44px;
-  height: 44px;
-}
-
-:root[data-style='glas'] .pool-editor__remove {
-  border: 0;
-  border-radius: 50%;
-  background: var(--g-fill);
-  color: var(--g-red-ink);
-}
-
-@media (hover: hover) {
-  :root[data-style='glas'] .pool-editor__remove:hover {
-    background: var(--g-fill-2);
-    color: var(--g-red-ink);
-  }
-}
-
-:root[data-style='glas'] .pool-editor__remove:focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: 2px;
-}
-
-:root[data-style='glas'] .pool-editor__add.btn--secondary {
-  gap: 6px;
-  min-height: 44px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 22px;
-  background: var(--g-fill);
-  color: var(--g-label);
-  font: 600 15px / 20px var(--g-font);
-}
-
-@media (hover: hover) {
-  :root[data-style='glas'] .pool-editor__add.btn--secondary:hover {
-    background: var(--g-fill-2);
-  }
-}
-
-:root[data-style='glas'] .pool-editor__add.btn--secondary:focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: 2px;
-}
-
-/* Reduced motion: nothing grows or scales; colours and the ring's sweep stay as plain changes. */
+/* Reduced motion: colours and the ring's sweep stay as plain changes. */
 @media (prefers-reduced-motion: reduce) {
-  :root[data-style='glas'] .pool-timeline__handle--active .pool-timeline__handle-grip {
-    transform: none;
-  }
-
-  :root[data-style='glas'] :is(.pool-bar__fill, .pool-timeline__handle-grip) {
+  :root[data-style='glas'] .pool-bar__fill {
     transition: none;
   }
 }
 
-/* Forced colours: the rings, the bars and the timeline keep their parts in system colours, the capsules a frame. */
+/* Forced colours: the rings and the bars keep their parts in system colours, the capsules a frame. */
 @media (forced-colors: active) {
   :root[data-style='glas'] .pool-gauge__track {
     stroke: GrayText;
@@ -896,15 +591,10 @@
     stroke: Highlight;
   }
 
-  :root[data-style='glas'] :is(.pool-bar__fill, .pool-timeline__seg--on) {
+  :root[data-style='glas'] .pool-bar__fill {
     forced-color-adjust: none;
     background: Highlight;
     box-shadow: none;
-  }
-
-  /* a running slot keeps its own colours (above): its ring in the pair's text colour */
-  :root[data-style='glas'] .pool-timeline__seg--on:focus-visible::after {
-    border-color: HighlightText;
   }
 
   :root[data-style='glas'] .pool-bar__fill {
@@ -915,21 +605,12 @@
     background: GrayText;
   }
 
-  :root[data-style='glas'] :is(.pool-timeline__bar, .pool-chip, .pool-weekchip, .pool-window-chip, .pool-daytoggle, .pool-slotaction) {
+  :root[data-style='glas'] :is(.pool-chip, .pool-weekchip, .pool-window-chip) {
     border: 1px solid CanvasText;
   }
 
-  :root[data-style='glas'] .pool-timeline__handle-grip {
-    forced-color-adjust: none;
-    background: CanvasText;
-  }
-
-  :root[data-style='glas'] :is(.pool-daytoggle--active, .pool-slotaction__btn--on, .pool-slotaction__btn--off, .pool-weekchip--active) {
+  :root[data-style='glas'] .pool-weekchip--active {
     outline: 2px solid Highlight;
     outline-offset: -2px;
-  }
-
-  :root[data-style='glas'] :is(.pool-editor__remove, .pool-editor__add.btn--secondary) {
-    border: 1px solid ButtonText;
   }
 }

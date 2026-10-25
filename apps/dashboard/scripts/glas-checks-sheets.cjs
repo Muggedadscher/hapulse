@@ -1085,7 +1085,7 @@ module.exports = function sheets(h) {
         r.discarded = (await card(w.page)).comfort;
         await openWin(w.page, 'win-heating');
         await press(w.page, plus);
-        await press(w.page, () => __s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await press(w.page, () => __s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
         await until(w.page, () => !__s.panels().length);
         await settleAnimations(w.page);
         r.saved = (await card(w.page)).comfort;

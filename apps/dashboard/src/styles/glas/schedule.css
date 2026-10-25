@@ -20,7 +20,7 @@
   --sched-g-soft: var(--g-teal-soft);
 }
 
-/* ---- ✓ in the window's head: the prominent circle 32 in a hit area 44 ---- */
+/* ---- ✓ in the head (the times pages, the heating plan's window): the prominent circle 32 in a hit area 44 ---- */
 :root[data-style='glas'] .g-sched-done {
   display: grid;
   place-items: center;
@@ -192,6 +192,11 @@
 
 :root[data-style='glas'] .sched-ring {
   margin: 22px auto 18px;
+}
+
+:root[data-style='glas'] .sched__summary {
+  margin: -6px 16px 16px;
+  text-align: center;
 }
 
 :root[data-style='glas'] .sched-ring__track {
