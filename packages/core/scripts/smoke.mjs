@@ -2775,8 +2775,21 @@ console.log('\n── heating plan: set up ──');
   assertEqual(heatingRelatedIds({ automation: ['automation.a', 3, 'automation.b'] }, 'automation').join(), 'automation.a,automation.b', 'related: strings under the key');
   assertEqual(heatingRelatedIds(null, 'automation').length, 0, 'related: no answer → nothing');
   assertEqual(heatingRelatedIds({ entity: 'x' }, 'entity').length, 0, 'related: not a list → nothing');
-  assertEqual([...heatingCoveredThermostats([{ entity: ['climate.a', 'schedule.s', 'input_number.k'] }, { entity: ['climate.b', 'climate.a'] }, {}])].sort().join(),
+  const covReg = {
+    areas: [{ area_id: 'k1', name: 'Küche' }, { area_id: 'b1', name: 'Bad' }],
+    devices: [],
+    entities: [
+      { entity_id: 'climate.a', area_id: 'k1' },
+      { entity_id: 'climate.b', area_id: 'b1' },
+      { entity_id: 'automation.x', platform: 'automation', unique_id: '1700000000000' },
+      { entity_id: 'automation.heizplan_k1', platform: 'automation', unique_id: 'heizplan_k1' },
+    ],
+  };
+  assertEqual([...heatingCoveredThermostats(['automation.x', 'automation.y', 'automation.z'], [{ entity: ['climate.a', 'schedule.s', 'input_number.k'] }, { entity: ['climate.b', 'climate.a'] }, {}], covReg)].sort().join(),
     'climate.a,climate.b', 'covered: only thermostats, from all automations');
+  assertEqual([...heatingCoveredThermostats(['automation.heizplan_k1'], [{ entity: ['climate.a', 'climate.b'] }], covReg)].join(),
+    'climate.b', 'covered: the room\'s own setup automation does not cover its room (a half setup can be finished)');
+  assertEqual(heatingRoomSlug('Ku\u0308che'), 'kueche', 'slug: a decomposed umlaut too');
 
   // contacts
   const bs = (id, dc) => [id, { entity_id: id, state: 'off', attributes: { device_class: dc } }];
@@ -2800,6 +2813,8 @@ console.log('\n── heating plan: set up ──');
     JSON.stringify({ comfort: 'heizplan_kueche_komfort', eco: 'heizplan_kueche_eco', schedule: 'zeitplan_heizung_kueche' }), 'ids: entries of this room or of none are taken over');
   assertEqual(ids([{ id: 'heizplan_kueche_eco', areaId: 'k2' }], []),
     JSON.stringify({ comfort: 'heizplan_kueche_2_komfort', eco: 'heizplan_kueche_2_eco', schedule: 'zeitplan_heizung_kueche_2' }), 'ids: one taken by another room → all with _2');
+  assertEqual(ids([], [{ id: 'zeitplan_heizung_kueche', areaId: null, yaml: true }]),
+    JSON.stringify({ comfort: 'heizplan_kueche_2_komfort', eco: 'heizplan_kueche_2_eco', schedule: 'zeitplan_heizung_kueche_2' }), 'ids: one from YAML is never taken over → all with _2');
   const taken = new Set(['input_number.heizplan_kueche_2_komfort']);
   assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_komfort', '_komfort', taken), null, 'entity id: ends right → keep');
   assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_komfort_2', '_komfort', taken), 'input_number.heizplan_kueche_3_komfort', 'entity id: HA\'s _2 → number before the ending, the next free one');

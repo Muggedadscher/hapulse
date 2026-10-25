@@ -30,6 +30,12 @@ class FakeHa {
   failPost: number | null = null;
   restStatus: number | null = null;
   corsBlocked = false;
+  /** Ids HA's id manager already knows (a YAML helper): a new one gets `_2`. */
+  reserved = new Set<string>();
+  /** A registry update of this entity fails once (the connection dropped). */
+  failUpdateOf: string | null = null;
+  blueprintError: unknown = null;
+  related: Record<string, unknown> = {};
   private pendingAutomation: { entry: EntityRegistryEntry; lists: number } | null = null;
 
   private register(entity_id: string, platform: string, unique_id: string) {
@@ -76,7 +82,9 @@ class FakeHa {
       case 'schedule/create': {
         const domain = msg.type.split('/')[0]!;
         const { type: _t, ...fields } = msg;
-        const item = { ...fields, id: slug(String(msg['name'])), name: String(msg['name']) } as Stored;
+        let id = slug(String(msg['name']));
+        for (let n = 2; this.reserved.has(id); n++) id = `${slug(String(msg['name']))}_${n}`;
+        const item = { ...fields, id, name: String(msg['name']) } as Stored;
         (domain === 'input_number' ? this.numbers : this.schedules).push(item);
         this.entries.push(this.register(`${domain}.${item.id}`, domain, item.id));
         return item;
@@ -96,6 +104,10 @@ class FakeHa {
       case 'config/entity_registry/update': {
         const e = this.entries.find((x) => x.entity_id === msg['entity_id']);
         if (!e) throw new Error('not found');
+        if (this.failUpdateOf === e.entity_id) {
+          this.failUpdateOf = null;
+          throw { code: 3, message: 'Connection lost' };
+        }
         if (typeof msg['new_entity_id'] === 'string') {
           if (this.entries.some((x) => x.entity_id === msg['new_entity_id'])) throw new Error('taken');
           e.entity_id = msg['new_entity_id'];
@@ -106,7 +118,10 @@ class FakeHa {
         return { entity_entry: e };
       }
       case 'blueprint/list':
+        if (this.blueprintError) throw this.blueprintError;
         return { [HEATING_BLUEPRINT_PATH]: { metadata: {} } };
+      case 'search/related':
+        return this.related[String(msg['item_id'])] ?? {};
     }
     throw new Error(`unexpected ${msg.type}`);
   }
@@ -135,6 +150,7 @@ let ha = new FakeHa();
 let demo = false;
 let connected = true;
 let entities: Record<string, { entity_id: string; state: string; attributes: Record<string, unknown> }> = {};
+let restAuthFails = false;
 const setRegistries = vi.fn();
 
 const conn = {
@@ -142,7 +158,10 @@ const conn = {
   callService: vi.fn(async (...args: unknown[]) => {
     ha.services.push(args);
   }),
-  restAuth: async () => ({ hassUrl: 'http://ha.test', accessToken: 'token' }),
+  restAuth: async () => {
+    if (restAuthFails) throw new Error('refresh failed');
+    return { hassUrl: 'http://ha.test', accessToken: 'token' };
+  },
   fetchRegistries: async () => ({ areas: [], devices: [], entities: ha.entries }),
 };
 
@@ -155,7 +174,7 @@ vi.mock('../src/stores/entityStore', () => ({
 }));
 vi.stubGlobal('fetch', (url: string, init: { method: string; body?: string }) => ha.fetch(url, init));
 
-const { checkHeatingSetup, HeatingSetupError, runHeatingSetup, setHeatingSetupSkipped } = await import('../src/ha/heatingSetup');
+const { checkHeatingSetup, HeatingSetupError, loadHeatingCoverage, runHeatingSetup, setHeatingSetupSkipped } = await import('../src/ha/heatingSetup');
 
 const REQUEST = {
   areaId: 'k1',
@@ -182,6 +201,7 @@ beforeEach(() => {
   });
   demo = false;
   connected = true;
+  restAuthFails = false;
   entities = { [HEATING_PLAN_SAVE_AUTOMATION]: { entity_id: HEATING_PLAN_SAVE_AUTOMATION, state: 'on', attributes: {} } };
   setRegistries.mockClear();
   conn.callService.mockClear();
@@ -247,7 +267,7 @@ describe('runHeatingSetup', () => {
     );
   });
 
-  it('a setup that stopped at the automation continues there without doubles and keeps the values', async () => {
+  it('a setup that stopped before saving the automation continues there without doubles, with the window\'s values', async () => {
     ha.failPost = 500;
     const err = await runHeatingSetup(REQUEST).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(HeatingSetupError);
@@ -260,6 +280,31 @@ describe('runHeatingSetup', () => {
     expect(ha.numbers.map((n) => n.id)).toEqual(['heizplan_kueche_komfort', 'heizplan_kueche_eco']);
     expect(ha.schedules).toHaveLength(1);
     expect(ha.log.filter((t) => t === 'input_number/create')).toHaveLength(2);
+    // nothing reads the helpers before the automation is saved: they take the values of this attempt
+    expect(ha.services).toEqual([
+      ['input_number', 'set_value', { value: 22 }, { entity_id: 'input_number.heizplan_kueche_komfort' }],
+      ['input_number', 'set_value', { value: 20 }, { entity_id: 'input_number.heizplan_kueche_eco' }],
+      ['automation', 'trigger', undefined, { entity_id: 'automation.advanced_heating_kuche' }],
+    ]);
+    expect(ha.entries.filter((e) => e.platform === 'automation')).toHaveLength(1);
+  });
+
+  it('a setup that stopped after saving the automation places it without touching the values', async () => {
+    // the automation's entry appears with the POST; its first registry update fails
+    const post = ha.fetch.bind(ha);
+    let posts = 0;
+    ha.fetch = async (url, init) => {
+      const res = await post(url, init);
+      if (init.method === 'POST' && posts++ === 0) ha.failUpdateOf = 'automation.advanced_heating_kuche';
+      return res;
+    };
+    const err = (await runHeatingSetup(REQUEST).catch((e: unknown) => e)) as InstanceType<typeof HeatingSetupError>;
+    expect(err.step).toBe('automation');
+    expect(entry('automation.advanced_heating_kuche')?.area_id).toBeNull();
+
+    ha.services.length = 0;
+    await runHeatingSetup({ ...REQUEST, comfort: 22 });
+    expect(entry('automation.advanced_heating_kuche')).toMatchObject({ area_id: 'k1', labels: ['heizplan'] });
     expect(ha.services).toEqual([['automation', 'trigger', undefined, { entity_id: 'automation.advanced_heating_kuche' }]]);
     expect(ha.entries.filter((e) => e.platform === 'automation')).toHaveLength(1);
   });
@@ -273,6 +318,26 @@ describe('runHeatingSetup', () => {
     await runHeatingSetup(REQUEST);
     expect(ha.numbers.find((n) => n.id === 'heizplan_kueche_komfort')?.name).toBe('Heizplan Küche Komfort');
     expect(ha.log.filter((t) => t === 'input_number/create')).toHaveLength(1);
+    // created without `initial`, it would start at its minimum
+    expect(ha.services).toContainEqual(['input_number', 'set_value', { value: 20 }, { entity_id: 'input_number.heizplan_kueche_komfort' }]);
+  });
+
+  it('a helper from YAML with the same id is left alone, the room takes the next ids', async () => {
+    ha.entries.push({
+      entity_id: 'input_number.heizplan_kueche_komfort', area_id: null, device_id: null, entity_category: null, hidden_by: null,
+      disabled_by: null, original_name: null, icon: null, platform: 'input_number', unique_id: 'heizplan_kueche_komfort', labels: [],
+    });
+    await runHeatingSetup(REQUEST);
+    expect(ha.numbers.map((n) => n.id)).toEqual(['heizplan_kueche_2_komfort', 'heizplan_kueche_2_eco']);
+    expect(ha.schedules.map((x) => x.id)).toEqual(['zeitplan_heizung_kueche_2']);
+    expect(entry('input_number.heizplan_kueche_komfort')).toMatchObject({ area_id: null, labels: [] });
+  });
+
+  it('follows the id HA stored when its id manager gave a number', async () => {
+    ha.reserved.add('heizplan_kueche_komfort');
+    await runHeatingSetup(REQUEST);
+    expect(ha.numbers.map((n) => n.id)).toEqual(['heizplan_kueche_komfort_2', 'heizplan_kueche_eco']);
+    expect(entry('input_number.heizplan_kueche_2_komfort')).toMatchObject({ unique_id: 'heizplan_kueche_komfort_2', area_id: 'k1' });
   });
 
   it('without REST from this address nothing is created', async () => {
@@ -303,9 +368,43 @@ describe('checkHeatingSetup', () => {
     ha.restStatus = 401;
     expect(await checkHeatingSetup('k1')).toEqual(['denied']);
   });
+  it('any other answer means REST works (the save names its own error)', async () => {
+    ha.restStatus = 500;
+    expect(await checkHeatingSetup('k1')).toEqual([]);
+  });
+  it('a token that cannot be refreshed and a dropped connection are no connection, not CORS or rights', async () => {
+    restAuthFails = true;
+    ha.blueprintError = { code: 3, message: 'Connection lost' };
+    expect(await checkHeatingSetup('k1')).toEqual(['offline']);
+  });
+  it('blueprint/list refused = no admin', async () => {
+    ha.blueprintError = { code: 'unauthorized', message: 'Unauthorized' };
+    expect(await checkHeatingSetup('k1')).toEqual(['denied']);
+  });
   it('offline without a connection', async () => {
     connected = false;
     expect(await checkHeatingSetup('k1')).toEqual(['offline']);
+  });
+});
+
+describe('loadHeatingCoverage', () => {
+  it('the thermostats of the blueprint\'s automations, but not a room\'s own unfinished setup automation', async () => {
+    const registries = {
+      areas: [{ area_id: 'k1', name: 'Küche' }],
+      devices: [{ id: 'dk', area_id: 'k1' }],
+      entities: [
+        ...ha.entries,
+        { ...ha.entries[0]!, entity_id: 'climate.bad', device_id: null, area_id: 'b1' },
+        { ...ha.entries[0]!, entity_id: 'automation.advanced_heating_kuche', platform: 'automation', unique_id: 'heizplan_k1' },
+        { ...ha.entries[0]!, entity_id: 'automation.advanced_heating_bad', platform: 'automation', unique_id: '1700000000000' },
+      ],
+    } as unknown as Parameters<typeof loadHeatingCoverage>[0];
+    ha.related = {
+      [HEATING_BLUEPRINT_PATH]: { automation: ['automation.advanced_heating_kuche', 'automation.advanced_heating_bad'] },
+      'automation.advanced_heating_kuche': { entity: ['climate.kueche', 'schedule.zeitplan_heizung_kueche'] },
+      'automation.advanced_heating_bad': { entity: ['climate.bad'] },
+    };
+    expect([...((await loadHeatingCoverage(registries)) ?? [])]).toEqual(['climate.bad']);
   });
 });
 

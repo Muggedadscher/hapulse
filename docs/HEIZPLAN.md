@@ -82,7 +82,8 @@ Fehler meldet eine Automation nicht an den Aufrufer, nur in ihre Ablaufverfolgun
 Speichern den Zeitplan neu und vergleicht (`saveHeatingWeek`); stimmt er nicht, bleibt der Editor offen.
 
 Eine Änderung direkt am Thermostat hält bei laufendem Plan bis zum nächsten Wechsel: Zeitplan, Fenster, Helfer,
-HA-Neustart oder Neuladen der Automationen (jede gespeicherte Automation lädt alle neu).
+HA-Neustart oder Neuladen der Automationen (auch das Speichern irgendeiner Automation: HA lädt dann nur sie neu, meldet
+aber `automation_reloaded`).
 
 ## In HAPulse
 Karte „Heizplan“ in der Raumseite unter „Klima“ nach den Thermostaten (`HeatingPlanCard`), auch wenn der Raum sonst keine
@@ -157,9 +158,10 @@ Oberfläche: `HeatingSetupCard`, `HeatingSetupSheet`, `useHeatingSetup.ts`; Hinw
   Adresse erlaubt (GET auf die Automation des Raums). Fehlt etwas, sagt das Fenster was und bietet den Knopf nicht an.
 - **Was entsteht** (Reihenfolge, jeder Schritt sieht erst nach, ob es seinen Eintrag schon gibt):
   1. Label „Heizplan“, Kategorie „Heizung Zeitplan“ (Automationen) und „Zeitplan“ (Helfer), falls sie fehlen.
-  2. Helfer `input_number.heizplan_<raum>_komfort` und `_eco` (Raum ohne Umlaute: `kueche`; gehört der Name einem
-     anderen Raum, mit `_2`, `_3` …): angelegt mit der Kennung als Namen, dann „Heizplan <Raum> Komfort/Eco“ genannt,
-     Wert per `set_value` (nie `initial`, das setzte ihn bei jedem Neustart zurück). Hat HA die Entity-ID nummeriert
+  2. Helfer `input_number.heizplan_<raum>_komfort` und `_eco` (Raum ohne Umlaute: `kueche`; gehört die Kennung einem
+     anderen Raum oder einem Helfer aus YAML, mit `_2`, `_3` …): angelegt mit der Kennung als Namen, dann
+     „Heizplan <Raum> Komfort/Eco“ genannt; weiter geht es mit der Kennung, die HA zurückgibt. Wert per `set_value`, solange
+     die Automation des Raums noch nicht gespeichert ist (nie `initial`, das setzte ihn bei jedem Neustart zurück). Hat HA die Entity-ID nummeriert
      (`…_komfort_2`), benennt HAPulse sie um, damit sie auf `_komfort`/`_eco` endet. Bereich, Label, Kategorie.
   3. Zeitplan `schedule.zeitplan_heizung_<raum>`, leer (= immer Eco), „Zeitplan Heizung <Raum>“, Bereich, Label, Kategorie.
   4. Automation „Advanced Heating <Raum>“ über REST `POST /api/config/automation/config/heizplan_<bereichs-id>` (feste
@@ -167,8 +169,10 @@ Oberfläche: `HeatingSetupCard`, `HeatingSetupSheet`, `useHeatingSetup.ts`; Hinw
      dem Zustand der Thermostate vorher. Bereich, Label, Kategorie, dann `automation.trigger`.
   5. Label „Ohne Heizplan“ von den Thermostaten nehmen, Register neu laden: der Raum zeigt seine Heizplan-Karte.
 - **Abbruch:** Das Fenster nennt den Schritt; ein neuer Versuch übernimmt, was schon da ist (Helfer und Zeitplan ohne
-  Bereich oder in diesem Raum, ein Helfer, der noch seine Kennung als Namen trägt, wird benannt).
-- **Nebenwirkung:** Jede gespeicherte Automation lädt alle Automationen neu, alle Räume stellen ihren Planwert einmal
+  Bereich oder in diesem Raum, ein Helfer, der noch seine Kennung als Namen trägt, wird benannt). Auch nach einem
+  Neuladen der Seite: die Automation `heizplan_<bereichs-id>` zählt für die Thermostate ihres eigenen Raums nicht als
+  Plan, der Raum behält den Knopf, bis sie Bereich und Label hat.
+- **Nebenwirkung:** Jede gespeicherte Automation meldet `automation_reloaded`, alle Räume stellen ihren Planwert einmal
   neu ein; von Hand gestellte Thermostate springen zurück. Das Fenster sagt es.
 - **REST aus dem Browser:** Automationen speichert Home Assistant nur über REST, und das erlaubt ein Browser nur, wenn
   die Adresse von HAPulse (so wie sie oben im Browser steht; welche IP der DNS liefert, ist egal) zu den erlaubten

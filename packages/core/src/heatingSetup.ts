@@ -36,6 +36,7 @@ export const HEATING_SETUP_MAX = 30;
  */
 export function heatingRoomSlug(name: string): string {
   const slug = name
+    .normalize('NFC')
     .toLowerCase()
     .replace(/ä/g, 'ae')
     .replace(/ö/g, 'oe')
@@ -122,10 +123,27 @@ export function heatingRelatedIds(result: unknown, key: string): string[] {
   return Array.isArray(list) ? list.filter((x): x is string => typeof x === 'string') : [];
 }
 
-/** The thermostats in the `search/related` answers of the blueprint's automations. */
-export function heatingCoveredThermostats(results: readonly unknown[]): Set<string> {
+/**
+ * The thermostats in the `search/related` answers of the blueprint's automations (`related[i]` belongs to
+ * `automations[i]`). The room's own setup automation (`heizplan_<area>`) does not cover the thermostats of its room: a
+ * setup that stopped before giving it label and area keeps the room's button, and pressing it finishes the setup (a
+ * finished one makes the room a plan room anyway).
+ */
+export function heatingCoveredThermostats(automations: readonly string[], related: readonly unknown[], registries: Registries): Set<string> {
+  const deviceAreas = buildDeviceAreaMap(registries.devices);
+  const byId = new Map(registries.entities.map((e) => [e.entity_id, e]));
   const covered = new Set<string>();
-  for (const r of results) for (const id of heatingRelatedIds(r, 'entity')) if (domainOf(id) === 'climate') covered.add(id);
+  automations.forEach((automation, i) => {
+    const own = byId.get(automation);
+    const configId = own?.platform === 'automation' ? own.unique_id : undefined;
+    for (const id of heatingRelatedIds(related[i], 'entity')) {
+      if (domainOf(id) !== 'climate') continue;
+      const entry = byId.get(id);
+      const areaId = entry ? resolveEntityAreaId(entry, deviceAreas) : null;
+      if (configId && areaId !== null && heatingSetupAutomationId(areaId) === configId) continue;
+      covered.add(id);
+    }
+  });
   return covered;
 }
 
@@ -200,12 +218,14 @@ export interface HeatingSetupIds {
 export interface HeatingStoredItem {
   id: string;
   areaId: string | null;
+  /** A helper from YAML: shares the id space with the stored ones, but is never taken over. */
+  yaml?: boolean;
 }
 
 /**
  * The ids for a room: `heizplan_<slug>_komfort`, `heizplan_<slug>_eco`, `zeitplan_heizung_<slug>`, or with `_2`, `_3`, …
- * after the slug while one of them belongs to another room. An existing one in this room or in none (an earlier setup
- * that stopped halfway) is taken over.
+ * after the slug while one of them belongs to another room or comes from YAML. An existing stored one in this room or in
+ * none (an earlier setup that stopped halfway) is taken over.
  */
 export function heatingSetupIds(
   slug: string,
@@ -215,7 +235,7 @@ export function heatingSetupIds(
 ): HeatingSetupIds {
   const free = (list: readonly HeatingStoredItem[], id: string) => {
     const item = list.find((x) => x.id === id);
-    return !item || item.areaId === null || item.areaId === areaId;
+    return !item || (item.yaml !== true && (item.areaId === null || item.areaId === areaId));
   };
   for (let n = 1; n < 100; n++) {
     const sfx = n === 1 ? '' : `_${n}`;

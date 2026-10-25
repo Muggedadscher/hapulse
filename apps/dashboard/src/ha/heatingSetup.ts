@@ -8,8 +8,9 @@
  * `http: cors_allowed_origins` in configuration.yaml); `checkHeatingSetup` tries a harmless GET
  * first, so a setup without it never leaves half an entry behind. Every step looks first whether its entry exists:
  * a setup that stopped halfway finishes on the next press without doubles (fixed automation id per area, helpers by
- * their storage id). Saving an automation makes HA send `automation_reloaded`, and every room's automation sets its
- * plan value again; the window says so.
+ * their storage id; the room keeps its button until its automation has label and area, heatingCoveredThermostats).
+ * Saving an automation makes HA send `automation_reloaded`, and every room's automation sets its plan value again;
+ * the window says so.
  *
  * In demo mode the setup creates the entries locally (demoHeatingSetup).
  */
@@ -87,10 +88,8 @@ function liveConnection(): HAConnection {
  * The thermostats an automation from the blueprint uses: one `search/related` for the blueprint, one per automation
  * (every user may ask). Null when HA does not answer, then no room counts as missing a plan.
  */
-export async function loadHeatingCoverage(): Promise<Set<string> | null> {
+export async function loadHeatingCoverage(registries: Registries): Promise<Set<string> | null> {
   if (isDemo()) {
-    const registries = useEntityStore.getState().registries;
-    if (!registries) return null;
     const plans = findHeatingPlans(registries);
     return new Set(Object.values(plans).flatMap((p) => p.thermostats));
   }
@@ -102,7 +101,7 @@ export async function loadHeatingCoverage(): Promise<Set<string> | null> {
     const related = await Promise.all(
       automations.map((id) => conn.sendMessage({ type: 'search/related', item_type: 'automation', item_id: id })),
     );
-    return heatingCoveredThermostats(related);
+    return heatingCoveredThermostats(automations, related, registries);
   } catch (err) {
     console.warn('[HAPulse] heating setup: search/related failed:', err);
     return null;
@@ -113,9 +112,15 @@ export async function loadHeatingCoverage(): Promise<Set<string> | null> {
 // REST
 // ---------------------------------------------------------------------------
 
-async function rest(conn: HAConnection, method: 'GET' | 'POST', path: string, body?: unknown): Promise<Response> {
-  const auth = await conn.restAuth();
-  if (!auth) throw new HeatingSetupError('prepare', 'cors');
+async function rest(conn: HAConnection, at: HeatingSetupStep, method: 'GET' | 'POST', path: string, body?: unknown): Promise<Response> {
+  let auth: Awaited<ReturnType<HAConnection['restAuth']>>;
+  try {
+    auth = await conn.restAuth();
+  } catch (err) {
+    // the token could not be refreshed
+    throw new HeatingSetupError(at, 'offline', err);
+  }
+  if (!auth) throw new HeatingSetupError(at, 'offline');
   const headers: Record<string, string> = { Authorization: `Bearer ${auth.accessToken}` };
   if (body === undefined) return fetch(`${auth.hassUrl}${path}`, { method, headers });
   headers['Content-Type'] = 'application/json';
@@ -124,18 +129,23 @@ async function rest(conn: HAConnection, method: 'GET' | 'POST', path: string, bo
 
 const automationPath = (areaId: string) => `/api/config/automation/config/${encodeURIComponent(heatingSetupAutomationId(areaId))}`;
 
-/** A GET on the room's automation config: 200 or 404 = REST works; a network error with a live WebSocket = CORS. */
-async function probeRest(conn: HAConnection, areaId: string): Promise<HeatingSetupProblem | null> {
+/**
+ * A GET on the room's automation config. Any answer means the browser may call REST (a blocked origin gives no answer,
+ * only a network error, while the WebSocket is live); 401/403 = no admin. `exists`: the automation is already saved.
+ */
+async function probeRest(conn: HAConnection, areaId: string): Promise<{ problem: HeatingSetupProblem | null; exists: boolean }> {
   let res: Response;
   try {
-    res = await rest(conn, 'GET', automationPath(areaId));
+    res = await rest(conn, 'prepare', 'GET', automationPath(areaId));
   } catch (err) {
-    if (err instanceof HeatingSetupError) return err.problem;
-    return 'cors';
+    return { problem: err instanceof HeatingSetupError ? err.problem : 'cors', exists: false };
   }
-  if (res.status === 401 || res.status === 403) return 'denied';
-  return res.ok || res.status === 404 ? null : 'cors';
+  if (res.status === 401 || res.status === 403) return { problem: 'denied', exists: false };
+  return { problem: null, exists: res.ok };
 }
+
+/** HA's error for a user without admin rights (home-assistant-js-websocket rejects with `{code, message}`). */
+const isUnauthorized = (err: unknown) => (err as { code?: unknown } | null)?.code === 'unauthorized';
 
 /** What keeps the window from offering the button; empty = ready. */
 export async function checkHeatingSetup(areaId: string): Promise<HeatingSetupProblem[]> {
@@ -148,10 +158,10 @@ export async function checkHeatingSetup(areaId: string): Promise<HeatingSetupPro
     const blueprints = await conn.sendMessage<Record<string, { error?: unknown }>>({ type: 'blueprint/list', domain: 'automation' });
     const entry = blueprints?.[HEATING_BLUEPRINT_PATH];
     if (!entry || entry.error !== undefined) problems.push('blueprint');
-  } catch {
-    problems.push('denied');
+  } catch (err) {
+    problems.push(isUnauthorized(err) ? 'denied' : 'offline');
   }
-  const restProblem = await probeRest(conn, areaId);
+  const { problem: restProblem } = await probeRest(conn, areaId);
   if (restProblem && !problems.includes(restProblem)) problems.push(restProblem);
   return problems;
 }
@@ -182,11 +192,18 @@ async function ensureCategory(conn: HAConnection, scope: string, name: string): 
 
 const entityList = (conn: HAConnection) => conn.sendMessage<EntityRegistryEntry[]>({ type: 'config/entity_registry/list' });
 
+/** The stored entries of `platform` with their area, and the YAML ones (in the registry, not in the list). */
 function storedItems(items: NamedEntry[], platform: string, entries: readonly EntityRegistryEntry[]): HeatingStoredItem[] {
-  return items.map((item) => ({
-    id: item.id,
-    areaId: entries.find((e) => e.platform === platform && e.unique_id === item.id)?.area_id ?? null,
-  }));
+  const stored = new Set(items.map((item) => item.id));
+  return [
+    ...items.map((item) => ({
+      id: item.id,
+      areaId: entries.find((e) => e.platform === platform && e.unique_id === item.id)?.area_id ?? null,
+    })),
+    ...entries
+      .filter((e) => e.platform === platform && e.unique_id && !stored.has(e.unique_id))
+      .map((e) => ({ id: e.unique_id as string, areaId: e.area_id ?? null, yaml: true })),
+  ];
 }
 
 /** The registry entry of `platform`/`uniqueId`; waits while HA is still adding it. */
@@ -233,7 +250,7 @@ export async function runHeatingSetup(req: HeatingSetupRequest, onStep?: (s: Hea
   const slug = heatingRoomSlug(req.roomName);
 
   const prep = await step('prepare', onStep, async () => {
-    const problem = await probeRest(conn, req.areaId);
+    const { problem, exists } = await probeRest(conn, req.areaId);
     if (problem) throw new HeatingSetupError('prepare', problem);
     const label = await ensureLabel(conn, HEATING_PLAN_LABEL, HEATING_PLAN_LABEL_NAME);
     const automationCategory = await ensureCategory(conn, 'automation', HEATING_AUTOMATION_CATEGORY);
@@ -244,21 +261,31 @@ export async function runHeatingSetup(req: HeatingSetupRequest, onStep?: (s: Hea
       entityList(conn),
     ]);
     const ids: HeatingSetupIds = heatingSetupIds(slug, req.areaId, storedItems(numbers, 'input_number', entries), storedItems(schedules, 'schedule', entries));
-    return { label, automationCategory, helperCategory, ids, numbers: new Map(numbers.map((n) => [n.id, n])), schedules: new Map(schedules.map((s) => [s.id, s])) };
+    return {
+      label,
+      automationCategory,
+      helperCategory,
+      ids,
+      automationExists: exists,
+      numbers: new Map(numbers.map((n) => [n.id, n])),
+      schedules: new Map(schedules.map((s) => [s.id, s])),
+    };
   });
 
-  // Helpers: created with the id as name (umlauts as ae/…), then named; a value only for a new one
+  // Helpers: created with the id as name (umlauts as ae/…), then named. The start value as long as the room's automation
+  // is not saved yet (nothing reads the helper before; a helper created without `initial` starts at its minimum, also
+  // when an earlier setup stopped before setting it)
   const helperIds = await step('helpers', onStep, async () => {
     const out: Record<'comfort' | 'eco', string> = { comfort: '', eco: '' };
     for (const kind of ['comfort', 'eco'] as const) {
-      const id = prep.ids[kind];
+      let id = prep.ids[kind];
       const fields = { min: req.min, max: req.max, step: req.step, mode: 'slider', unit_of_measurement: '°C', icon: kind === 'comfort' ? 'mdi:sun-thermometer' : 'mdi:leaf' };
       const existing = prep.numbers.get(id);
-      const created = !existing;
       // still named by its id: an earlier setup stopped before naming it
       if (!existing || existing.name === id) {
         const item = existing ?? (await conn.sendMessage<NamedEntry>({ type: 'input_number/create', name: id, ...fields }));
-        await conn.sendMessage({ type: 'input_number/update', input_number_id: item.id, name: displayName(kind, req.roomName), ...fields });
+        id = item.id;
+        await conn.sendMessage({ type: 'input_number/update', input_number_id: id, name: displayName(kind, req.roomName), ...fields });
       }
       let entry = await waitForEntry(conn, 'input_number', id);
       const suffix = kind === 'comfort' ? '_komfort' : '_eco';
@@ -270,17 +297,18 @@ export async function runHeatingSetup(req: HeatingSetupRequest, onStep?: (s: Hea
         entry = { ...entry, entity_id: rename };
       }
       await placeEntry(conn, entry, req.areaId, prep.label, 'helpers', prep.helperCategory);
-      if (created) await conn.callService('input_number', 'set_value', { value: kind === 'comfort' ? req.comfort : req.eco }, { entity_id: entry.entity_id });
+      if (!prep.automationExists) await conn.callService('input_number', 'set_value', { value: kind === 'comfort' ? req.comfort : req.eco }, { entity_id: entry.entity_id });
       out[kind] = entry.entity_id;
     }
     return out;
   });
 
   const scheduleId = await step('schedule', onStep, async () => {
-    const id = prep.ids.schedule;
+    let id = prep.ids.schedule;
     const existing = prep.schedules.get(id);
     if (!existing || existing.name === id) {
       const item = existing ?? (await conn.sendMessage<NamedEntry>({ type: 'schedule/create', name: id, icon: 'mdi:calendar-clock' }));
+      id = item.id;
       // a schedule's update takes the whole schedule (missing days become empty): its periods go along
       const { id: _id, name: _name, ...periods } = item as NamedEntry & Record<string, unknown>;
       await conn.sendMessage({ type: 'schedule/update', ...periods, schedule_id: item.id, name: displayName('schedule', req.roomName), icon: 'mdi:calendar-clock' });
@@ -302,7 +330,7 @@ export async function runHeatingSetup(req: HeatingSetupRequest, onStep?: (s: Hea
       comfortValue: req.comfort,
       ecoValue: req.eco,
     });
-    const res = await rest(conn, 'POST', automationPath(req.areaId), config);
+    const res = await rest(conn, 'automation', 'POST', automationPath(req.areaId), config);
     if (res.status === 401 || res.status === 403) throw new HeatingSetupError('automation', 'denied');
     if (!res.ok) throw new Error(`automation config: HTTP ${res.status} ${await res.text().catch(() => '')}`);
     const entry = await waitForEntry(conn, 'automation', heatingSetupAutomationId(req.areaId));

@@ -17,15 +17,17 @@ const coverageCache = new WeakMap<Registries, Promise<Set<string> | null>>();
 function coverageOf(registries: Registries): Promise<Set<string> | null> {
   let p = coverageCache.get(registries);
   if (!p) {
-    p = loadHeatingCoverage();
+    p = loadHeatingCoverage(registries);
     coverageCache.set(registries, p);
   }
   return p;
 }
 
-/** The thermostats a plan controls; null for users without admin rights, while loading or when HA does not answer. */
-function useHeatingCoverage(registries: Registries | null): Set<string> | null {
-  const admin = useConnectionStore((s) => s.currentUser?.is_admin === true);
+/**
+ * The thermostats a plan controls; null for users without admin rights, before the first answer or when HA does not
+ * answer. While new registries load, the last answer stays (else the card would blink after "Nicht einrichten").
+ */
+function useHeatingCoverage(registries: Registries | null, admin: boolean): Set<string> | null {
   const connected = useConnectionStore((s) => s.status === 'connected' || s.demo);
   const [loaded, setLoaded] = useState<{ registries: Registries; covered: Set<string> | null } | null>(null);
   useEffect(() => {
@@ -38,17 +40,18 @@ function useHeatingCoverage(registries: Registries | null): Set<string> | null {
       live = false;
     };
   }, [admin, connected, registries]);
-  return admin && registries && loaded?.registries === registries ? loaded.covered : null;
+  return admin && registries && loaded ? loaded.covered : null;
 }
 
 /** All rooms without a plan (also the skipped ones), sorted by name; empty for users without admin rights. */
 export function useHeatingSetupRooms(): HeatingSetupRoom[] {
   const registries = useEntityStore((s) => s.registries);
-  const covered = useHeatingCoverage(registries);
-  // only the thermostats' reachability and modes matter, not every state tick
+  const admin = useConnectionStore((s) => s.currentUser?.is_admin === true);
+  const covered = useHeatingCoverage(registries, admin);
+  // only the thermostats' reachability and modes matter, not every state tick (nothing to read for other users)
   const key = useEntityStore(
     useShallow((s) =>
-      registries
+      registries && admin
         ? registries.entities
             .filter((e) => domainOf(e.entity_id) === 'climate')
             .map((e) => {
