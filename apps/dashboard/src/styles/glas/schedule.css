@@ -1,0 +1,358 @@
+/* [fork] Glas — the period editor (components/schedule/ScheduleTimes, ScheduleRing; classic
+   components/schedule/schedule.css; plan glas/pool-zeiten/PLAN.md), shared by the heating plan's times page and the
+   pool schedule. First built for the heating plan (glas/heizung-zeitplan/PLAN.md Etappe 2b, draft handy-zeiten-*.png).
+
+   The days as circles 42 (the chosen ones in the accent), the ring 310 like the sleep schedule of the Health app (track
+   in `fill`, the periods in the tone, the other ones paler, white knobs 38 with the two symbols), the start and end
+   28/34 700 in a group, the rows to add a time in the accent ink and to delete in red, each in a group of its own; ✓ in
+   the head is the prominent circle 32 like the iOS 26 sheets. The tone: orange for the heating plan's comfort, teal for
+   the pool's runs (as its timeline before). */
+
+:root[data-style='glas'] .sched--heat {
+  --sched-g-tone: var(--g-orange);
+  --sched-g-ink: var(--g-orange-ink);
+  --sched-g-soft: var(--g-orange-soft);
+}
+
+:root[data-style='glas'] .sched--pool {
+  --sched-g-tone: var(--g-teal);
+  --sched-g-ink: var(--g-teal-ink);
+  --sched-g-soft: var(--g-teal-soft);
+}
+
+/* ---- ✓ in the window's head: the prominent circle 32 in a hit area 44 ---- */
+:root[data-style='glas'] .g-sched-done {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .g-sched-done__circle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--g-prominent);
+  color: var(--g-on-prominent);
+  transition: opacity 150ms ease;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .g-sched-done:hover:not(:disabled) .g-sched-done__circle {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
+}
+
+:root[data-style='glas'] .g-sched-done:disabled {
+  cursor: default;
+}
+
+:root[data-style='glas'] .g-sched-done:disabled .g-sched-done__circle {
+  opacity: 0.5;
+}
+
+:root[data-style='glas'] .g-sched-done:focus-visible {
+  outline: none;
+}
+
+:root[data-style='glas'] .g-sched-done:focus-visible .g-sched-done__circle {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Lists and rows ---- */
+:root[data-style='glas'] .sched__list {
+  --text-dim: var(--g-label-2);
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .sched__list {
+    border-radius: 20px;
+  }
+}
+
+:root[data-style='glas'] .sched__row {
+  position: relative;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 16px;
+  font: 400 17px / 22px var(--g-font);
+}
+
+/* the hairline starts at the text, after the symbol (16 + 30 + 12) */
+:root[data-style='glas'] .sched__row + .sched__row {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .sched__row + .sched__row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 58px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .sched__note {
+  margin: 7px 16px 0;
+  padding: 0;
+  color: var(--text-dim);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .sched__error {
+  gap: 6px;
+  margin: 14px 16px 0;
+  color: var(--g-red-ink);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .sched__retry {
+  font-weight: 600;
+}
+
+:root[data-style='glas'] .sched__add {
+  color: var(--g-accent-ink);
+  font: 400 17px / 22px var(--g-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .sched__add:hover:not(:disabled) {
+  background: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .sched__add:hover:not(:disabled) {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .sched__add:active:not(:disabled) {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] :is(.sched__add, .sched__clear):focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+/* ---- Times page ---- */
+:root[data-style='glas'] .sched {
+  gap: 0;
+  font-family: var(--g-font);
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .sched {
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
+  }
+}
+
+:root[data-style='glas'] .sched__days {
+  gap: 8px;
+  margin-top: 4px;
+}
+
+:root[data-style='glas'] .sched__day {
+  border: 0;
+  background: var(--g-fill);
+  color: var(--g-label-2);
+  font: 600 15px / 1 var(--g-font);
+  transition: background-color 150ms ease, color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .sched__day[aria-pressed='true'] {
+  background: var(--g-accent-soft);
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .sched__day:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .sched__pick {
+  margin-top: 10px;
+}
+
+:root[data-style='glas'] .sched-ring {
+  margin: 22px auto 18px;
+}
+
+:root[data-style='glas'] .sched-ring__track {
+  stroke: var(--g-fill);
+}
+
+:root[data-style='glas'] .sched-ring__arc {
+  stroke: var(--sched-g-tone);
+}
+
+:root[data-style='glas'] .sched-ring__tick {
+  stroke: var(--g-label-3);
+}
+
+:root[data-style='glas'] .sched-ring__hour {
+  fill: var(--g-label-2);
+  font: 600 15px var(--g-font);
+}
+
+:root[data-style='glas'] .sched-ring__len {
+  color: var(--g-label);
+  font: 700 26px / 31px var(--g-font);
+}
+
+:root[data-style='glas'] .sched-ring__len2 {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .sched-ring__caption {
+  margin-top: 2px;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .sched-ring__knob {
+  border: 0;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .sched-ring__knob--from {
+  color: var(--sched-g-ink);
+}
+
+:root[data-style='glas'] .sched-ring__knob:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .sched__period + .sched__period {
+  border-top: 0;
+}
+
+:root[data-style='glas'] .sched__period + .sched__period::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 16px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .sched__period--selected {
+  background: var(--sched-g-soft);
+}
+
+:root[data-style='glas'] .sched__field {
+  position: relative;
+  gap: 2px;
+  padding: 12px 16px 14px;
+}
+
+:root[data-style='glas'] .sched__field--to {
+  border-left: 0;
+}
+
+:root[data-style='glas'] .sched__field--to::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  border-left: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .sched__label {
+  gap: 6px;
+  color: var(--g-label-2);
+  font: 600 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .sched__field:not(.sched__field--to) .sched__label > svg {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .sched__input {
+  -webkit-appearance: none;
+  appearance: none;
+  color: var(--g-label);
+  font: 700 28px / 34px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Narrow phones: a 12-hour time with AM/PM still fits half the row */
+@media (max-width: 359px) {
+  :root[data-style='glas'] .sched__input {
+    font-size: 22px;
+    line-height: 28px;
+  }
+}
+
+:root[data-style='glas'] .sched__input:focus-visible {
+  outline: 2px solid var(--g-focus);
+}
+
+:root[data-style='glas'] .sched__actions {
+  margin-top: 20px;
+}
+
+:root[data-style='glas'] .sched__actions + .sched__actions {
+  margin-top: 12px;
+}
+
+:root[data-style='glas'] .sched__clear {
+  color: var(--g-red-ink);
+  font: 400 17px / 22px var(--g-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .sched__clear + .sched__clear::before {
+  left: 16px;
+}
+
+:root[data-style='glas'] .sched__clear:hover:not(:disabled) {
+  background: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .sched__clear:hover:not(:disabled) {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .sched__clear:active:not(:disabled) {
+  background: var(--g-hover);
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .sched-ring__arc {
+    stroke: Highlight;
+  }
+
+  :root[data-style='glas'] :is(.sched-ring__knob, .sched__day) {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .sched__day[aria-pressed='true'],
+  :root[data-style='glas'] .sched__period--selected {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}

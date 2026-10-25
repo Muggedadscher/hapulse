@@ -240,8 +240,10 @@ sauber übernehmen können.
   den Geräten eines Raums. Seit Etappe 2a die Karte in „Klima“ (`components/heating/HeatingPlanCard.tsx`, eine
   `[fork]`-Stelle in `Room.tsx`) und ihr Fenster (`HeatingPlanSheet.tsx`, Speicherreihenfolge in `heatingSave.ts`,
   Test `test/heatingCard.test.ts`), Glas in `styles/glas/heating.css`. Seit Etappe 2b die Seite mit den Zeiten
-  (`HeatingTimesPage.tsx` als Fenster auf dem Fenster, Ring `HeatingRing.tsx`, Regeln DOM-frei in Core
-  `heatingEdit.ts`, Seiten-Logik in `heatingTimes.ts`); Prüfung `checks --part sheets --only sheetsHeatingTimes`.
+  (`HeatingTimesPage.tsx` als Fenster auf dem Fenster; ihr Körper ist das gemeinsame Bauteil
+  `components/schedule/` — `ScheduleTimes`, Ring `ScheduleRing`, CSS `schedule.css` + `styles/glas/schedule.css`, Klassen
+  `sched*`, Ton per `sched--heat`/`sched--pool` —, Regeln DOM-frei in Core `timePeriods.ts` (Heizungs-Namen in
+  `heatingEdit.ts`), Seiten-Logik in `heatingTimes.ts`); Prüfung `checks --part sheets --only sheetsHeatingTimes`.
   Seit Etappe 4 „Einrichten per Knopf“ für Admins: Räume mit Thermostat ohne Plan (Core `heatingSetup.ts`,
   `search/related` auf den Blueprint), Karte `HeatingSetupCard` (zweite `[fork]`-Stelle in `Room.tsx`), Fenster
   `HeatingSetupSheet`, Hinweis `heating-missing` (Core `hints.ts`), Aufrufe `ha/heatingSetup.ts` (WebSocket für Helfer,
