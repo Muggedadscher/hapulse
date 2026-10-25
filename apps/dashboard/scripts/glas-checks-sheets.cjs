@@ -1110,7 +1110,7 @@ module.exports = function sheets(h) {
     //      the clock moves its end (both knobs lie on each other there).
     await block('sheetsHeatingTimes', async () => {
       const res = {};
-      const fields = () => [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value);
+      const fields = () => [...__s.panel().querySelectorAll('.sched__input')].map((i) => i.value);
       const below = () => ({ dialogs: __s.panels().length, first: __s.panel().querySelector('.heating-period__time')?.textContent ?? null });
       /** Press a part of the top window after scrolling it into view (the page is longer than the phone). */
       const pressIn = async (page, q) => {
@@ -1140,13 +1140,13 @@ module.exports = function sheets(h) {
           });
         }
         r.start = await ev(w.page, fields);
-        await w.page.focus('.heating-ring__knob--from');
+        await w.page.focus('.sched-ring__knob--from');
         for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
         r.keys = await ev(w.page, fields);
         // drag the end knob to 10:00 (150°) along the ring
         const g = await ev(w.page, () => {
-          const ring = __s.panel().querySelector('.heating-ring').getBoundingClientRect();
-          const knob = __s.panel().querySelector('.heating-ring__knob--to').getBoundingClientRect();
+          const ring = __s.panel().querySelector('.sched-ring').getBoundingClientRect();
+          const knob = __s.panel().querySelector('.sched-ring__knob--to').getBoundingClientRect();
           return { cx: ring.left + ring.width / 2, cy: ring.top + ring.height / 2, r: (ring.width * 120) / 310,
             kx: knob.left + knob.width / 2, ky: knob.top + knob.height / 2 };
         });
@@ -1168,14 +1168,14 @@ module.exports = function sheets(h) {
         await press(w.page, () => __s.panel().querySelector('.heating-group__edit'));
         await until(w.page, () => __s.panels().length === 2);
         await settleAnimations(w.page);
-        await w.page.focus('.heating-ring__knob--from');
+        await w.page.focus('.sched-ring__knob--from');
         for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
-        await pressIn(w.page, '.heating-times .heating-add');
-        r.added = await ev(w.page, () => __s.panel().querySelectorAll('.heating-times__period').length);
-        r.label = await ev(w.page, () => __s.panel().querySelector('.heating-times__input')?.getAttribute('aria-label'));
-        await pressIn(w.page, '.heating-times__clear');
+        await pressIn(w.page, '.sched .sched__add');
+        r.added = await ev(w.page, () => __s.panel().querySelectorAll('.sched__period').length);
+        r.label = await ev(w.page, () => __s.panel().querySelector('.sched__input')?.getAttribute('aria-label'));
+        await pressIn(w.page, '.sched__clear');
         r.removed = await ev(w.page, fields);
-        await press(w.page, () => __s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await press(w.page, () => __s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
         await until(w.page, () => __s.panels().length === 1, null, 6000);
         await settleAnimations(w.page);
         r.saved = await ev(w.page, below);
@@ -1184,9 +1184,9 @@ module.exports = function sheets(h) {
         await pressIn(w.page, '.heating-group__edit[aria-label^="Wochenende"]');
         await until(w.page, () => __s.panels().length === 2);
         await settleAnimations(w.page);
-        await pressIn(w.page, '.heating-times__day[aria-label="Sonntag"]');
-        await pressIn(w.page, '.heating-times__clear');
-        await press(w.page, () => __s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await pressIn(w.page, '.sched__day[aria-label="Sonntag"]');
+        await pressIn(w.page, '.sched__clear');
+        await press(w.page, () => __s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
         await until(w.page, () => __s.panels().length === 1, null, 6000);
         await settleAnimations(w.page);
         r.addRow = await ev(w.page, () => __s.panel().querySelector('.heating-sheet .heating-add')?.textContent ?? null);
@@ -1195,18 +1195,18 @@ module.exports = function sheets(h) {
         await until(w.page, () => __s.panels().length === 2);
         await settleAnimations(w.page);
         r.addDays = await ev(w.page, () => ({
-          pressed: [...__s.panel().querySelectorAll('.heating-times__day[aria-pressed="true"]')].map((b) => b.textContent),
-          disabled: !!(__s.panel().querySelector('.g-heating-done') || __s.panel().querySelector('.modal-footer .btn--primary')).disabled,
-          fields: [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value),
+          pressed: [...__s.panel().querySelectorAll('.sched__day[aria-pressed="true"]')].map((b) => b.textContent),
+          disabled: !!(__s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary')).disabled,
+          fields: [...__s.panel().querySelectorAll('.sched__input')].map((i) => i.value),
         }));
         // a whole day: both knobs at midnight; a drag against the clock takes the end
-        await w.page.focus('.heating-ring__knob--from');
+        await w.page.focus('.sched-ring__knob--from');
         await w.page.keyboard.press('Home');
-        await w.page.focus('.heating-ring__knob--to');
+        await w.page.focus('.sched-ring__knob--to');
         await w.page.keyboard.press('End');
         r.whole = await ev(w.page, fields);
         const top = await ev(w.page, () => {
-          const ring = __s.panel().querySelector('.heating-ring').getBoundingClientRect();
+          const ring = __s.panel().querySelector('.sched-ring').getBoundingClientRect();
           return { cx: ring.left + ring.width / 2, cy: ring.top + ring.height / 2, r: (ring.width * 120) / 310 };
         });
         await w.page.mouse.move(top.cx, top.cy - top.r);
@@ -1217,8 +1217,8 @@ module.exports = function sheets(h) {
         }
         await w.page.mouse.up();
         r.overlap = await ev(w.page, () => ({
-          fields: [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value),
-          focus: document.activeElement?.classList.contains('heating-ring__knob--to') ?? false,
+          fields: [...__s.panel().querySelectorAll('.sched__input')].map((i) => i.value),
+          focus: document.activeElement?.classList.contains('sched-ring__knob--to') ?? false,
         }));
         await w.close();
       }

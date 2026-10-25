@@ -186,6 +186,10 @@ export {
   daySlotsToWindows,
   dailyRuntimeBars,
   poolDayStarts, // [fork]
+  poolWindowsToPeriods, // [fork]
+  poolPeriodsToWindows, // [fork]
+  POOL_MAX_PERIODS, // [fork]
+  POOL_FIRST_PERIOD, // [fork]
   POOL_MANUAL_MIN_MINUTES,
   POOL_MANUAL_MAX_MINUTES,
   POOL_MANUAL_PRESETS_MIN,
@@ -422,3 +426,22 @@ export type {
 } from './heatingSetup.js';
 export { demoHeatingSetup, DEMO_SETUP_ATTRIBUTE } from './heatingPlanDemo.js';
 export type { DemoHeatingSetup } from './heatingPlanDemo.js';
+// [fork] Periods of a day and the rules of the ring/time-field editor (heating plan + pool schedule)
+export {
+  PERIOD_STEP_MINUTES,
+  periodMinutes,
+  periodTimeOf,
+  snapPeriodMinutes,
+  sortPeriods,
+  periodEdgeRange,
+  movePeriodEdge,
+  periodRingMinutes,
+  periodRingAngle,
+  addPeriod,
+  removePeriod,
+  periodLength,
+  periodFieldMinutes,
+  periodFieldValue,
+  samePeriods,
+} from './timePeriods.js';
+export type { TimePeriod, PeriodEdge, AddPeriodOptions } from './timePeriods.js';
