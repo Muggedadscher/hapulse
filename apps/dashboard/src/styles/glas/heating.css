@@ -207,54 +207,7 @@
   font: 400 15px / 20px var(--g-font);
 }
 
-/* ---- ✓ in the window's head: the prominent circle 32 in a hit area 44 ---- */
-:root[data-style='glas'] .g-heating-done {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-:root[data-style='glas'] .g-heating-done__circle {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--g-prominent);
-  color: var(--g-on-prominent);
-  transition: opacity 150ms ease;
-}
-
-@media (hover: hover) {
-  :root[data-style='glas'] .g-heating-done:hover:not(:disabled) .g-heating-done__circle {
-    background-image: linear-gradient(var(--g-hover), var(--g-hover));
-  }
-}
-
-:root[data-style='glas'] .g-heating-done:disabled {
-  cursor: default;
-}
-
-:root[data-style='glas'] .g-heating-done:disabled .g-heating-done__circle {
-  opacity: 0.5;
-}
-
-:root[data-style='glas'] .g-heating-done:focus-visible {
-  outline: none;
-}
-
-:root[data-style='glas'] .g-heating-done:focus-visible .g-heating-done__circle {
-  outline: 2px solid var(--g-focus);
-  outline-offset: 2px;
-}
+/* ---- ✓ in the window's head: .g-sched-done in schedule.css (shared with the times pages) ---- */
 
 /* ---- Window ---- */
 :root[data-style='glas'] .modal-backdrop[data-g-pres='dialog'] > .modal-panel:has(.heating-sheet) {

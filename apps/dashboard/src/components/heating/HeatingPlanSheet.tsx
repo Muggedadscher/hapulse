@@ -299,8 +299,8 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
       swipeToClose={!changed && !busy}
       trailing={
         glas ? (
-          <button type="button" className="g-heating-done" aria-label={t('heatingPlan.save')} disabled={busy} onClick={() => void save()}>
-            <span className="g-heating-done__circle" aria-hidden="true">
+          <button type="button" className="g-sched-done" aria-label={t('heatingPlan.save')} disabled={busy} onClick={() => void save()}>
+            <span className="g-sched-done__circle" aria-hidden="true">
               <Check size={18} strokeWidth={2.5} />
             </span>
           </button>
