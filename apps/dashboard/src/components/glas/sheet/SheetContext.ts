@@ -1,7 +1,7 @@
 /**
  * [fork] Glas sheets (stage 3) — what an open Glas window gives its content (plan docs/glas/PLAN-ETAPPE-3.md K48).
  * React context flows through portals: a window rendered inside it is a page in that window (same rectangle, slides
- * in from the right, "‹ Zurück"). In Klassisch and while closed the value is null.
+ * in from the right, a round back button). In Klassisch and while closed the value is null.
  */
 
 import { createContext } from 'react';

@@ -110,8 +110,9 @@ oder „Zeiten für weitere Tage“ (nur solange ein Tag keine Komfortzeit hat) 
   Verbindung zu Home Assistant wieder steht.
 
 ### Zeiten ändern (Etappe 2b)
-Die Seite liegt als eigenes Fenster auf dem Fenster: in Glas eine Seite mit „‹ Zurück“ und ✓, in Klassisch ein Dialog mit
-„Abbrechen“/„Speichern“. Esc schließt nur die Seite.
+Die Seite liegt als eigenes Fenster auf dem Fenster: in Glas eine Seite mit rundem Zurück-Knopf (Pfeil, wie das ×) und ✓,
+Titel = die Gruppe („Werktags“) ohne Untertitel, groß bis 8 px unter den oberen Rand (der Kopf der Raumseite bleibt
+verdeckt); in Klassisch ein Dialog mit „Abbrechen“/„Speichern“. Esc schließt nur die Seite.
 
 - **Tage:** Die Gruppe bringt ihre Tage mit, „Zeiten für weitere Tage“ die Tage ohne Komfortzeit. Die gewählten Tage
   bekommen die Zeiten der Seite, abgewählte behalten ihre. Ohne gewählten Tag wartet ✓.

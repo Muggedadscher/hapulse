@@ -6,6 +6,19 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F63 — 2026-10-25
+
+**Fenster in Glas wie in iOS 26** · _Windows in Glass like in iOS 26_
+
+### Geändert / Changed
+
+- Eine Seite in einem Fenster (etwa die Zeiten im Heizplan, „Entriegeln?“ oder „Garage öffnen?“) geht mit einem runden Zurück-Knopf zurück, wie das × daneben  
+  _A page in a window (such as the times of a heating plan, “Unlock?” or “Open garage?”) goes back with a round back button, like the × next to it_
+- Ein großes Fenster reicht bis knapp unter den oberen Rand; der Kopf der Seite dahinter mit seinem Zurück-Knopf ist nicht mehr zu sehen  
+  _A large window reaches just below the top edge; the head of the page behind it with its back button no longer shows_
+- Die Zeiten im Heizplan zeigen nur noch die Tage als Titel, ohne „Heizplan · Raum“ darunter  
+  _The times of a heating plan show only the days as their title, without “Heating plan · room” below_
+
 ## F62 — 2026-10-24
 
 **Komfortzeiten im Heizplan ändern** · _Change the comfort times of a heating plan_

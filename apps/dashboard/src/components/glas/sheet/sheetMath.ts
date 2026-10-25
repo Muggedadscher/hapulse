@@ -14,8 +14,10 @@ export const INSPECTOR_FROM = 1100;
 /** Medium: inset 8 on the left, right and bottom; at most `100dvh − 144px` tall. */
 export const MEDIUM_INSET = 8;
 export const MEDIUM_TOP_GAP = 144;
-/** Large: docked at the bottom, `100dvh − 52px` tall. */
-export const LARGE_TOP = 52;
+/** Large: docked at the bottom, `100dvh − 8px` tall. The app's viewport starts below the status bar
+ * (`black-translucent` without `viewport-fit=cover`), so 8 leaves the strip iOS leaves above a large sheet and covers
+ * the page's own head (its circles start 8 from the top); 52 left that head visible above every large sheet. */
+export const LARGE_TOP = 8;
 /** Below this viewport height only the large detent exists (390 px landscape would leave 246 px for medium). */
 export const LARGE_ONLY_BELOW = 560;
 

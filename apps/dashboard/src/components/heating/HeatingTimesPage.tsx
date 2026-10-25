@@ -39,7 +39,6 @@ interface HeatingTimesPageProps {
   /** The schedule as HAPulse knows it now; null while it cannot be read (✓ waits). */
   week: HeatingWeek | null;
   start: HeatingTimesDraft;
-  roomName: string;
   /** Where the focus goes when the page closes (the opener may be gone after a save). */
   returnFocus: () => HTMLElement | null;
   onSaved: (week: HeatingWeek) => void;
@@ -94,7 +93,7 @@ function TimeField({
   );
 }
 
-export function HeatingTimesPage({ open, scheduleId, week, start, roomName, returnFocus, onSaved, onClose }: HeatingTimesPageProps) {
+export function HeatingTimesPage({ open, scheduleId, week, start, returnFocus, onSaved, onClose }: HeatingTimesPageProps) {
   const t = useT();
   const locale = useLocale();
   const glas = useIsGlas();
@@ -274,7 +273,6 @@ export function HeatingTimesPage({ open, scheduleId, week, start, roomName, retu
       open={open}
       onClose={close}
       title={title}
-      subtitle={t('heatingPlan.sheet.titleRoom', { room: roomName })}
       className="heating-times-panel"
       returnFocus={returnFocus}
       swipeToClose={!changed && !busy}
