@@ -233,7 +233,7 @@ sauber übernehmen können.
   Labor (Blöcke mit CDP werden übersprungen und gelistet). Glas ist nicht Standard; ob es das für alle wird, entscheidet
   der User.
 
-- **Heizplan je Raum (Etappen 1, 2a, 2b fertig; offen: Einrichten per Knopf)**: je Raum mit Thermostat Plan an/aus, Komfort/Eco und Zeiten, für
+- **Heizplan je Raum (Etappen 1, 2a, 2b, 4 fertig; offen: Thermostat aufnehmen/tauschen)**: je Raum mit Thermostat Plan an/aus, Komfort/Eco und Zeiten, für
   jeden HA-Benutzer ohne Admin-Rechte (Speichern über die Automation `automation.heizplan_speichern`, danach
   Nachlesen). Core (`packages/core/src/heatingPlan.ts`, Tests in `smoke.mjs`), Aufrufe
   (`apps/dashboard/src/ha/heatingPlan.ts`), Demo im Wohnzimmer; Einträge mit dem Label `heizplan` erscheinen nicht unter
@@ -242,7 +242,14 @@ sauber übernehmen können.
   Test `test/heatingCard.test.ts`), Glas in `styles/glas/heating.css`. Seit Etappe 2b die Seite mit den Zeiten
   (`HeatingTimesPage.tsx` als Fenster auf dem Fenster, Ring `HeatingRing.tsx`, Regeln DOM-frei in Core
   `heatingEdit.ts`, Seiten-Logik in `heatingTimes.ts`); Prüfung `checks --part sheets --only sheetsHeatingTimes`.
-  Einrichtung in Home Assistant, Aufrufe und Regeln der Karte: **`docs/HEIZPLAN.md`**.
+  Seit Etappe 4 „Einrichten per Knopf“ für Admins: Räume mit Thermostat ohne Plan (Core `heatingSetup.ts`,
+  `search/related` auf den Blueprint), Karte `HeatingSetupCard` (zweite `[fork]`-Stelle in `Room.tsx`), Fenster
+  `HeatingSetupSheet`, Hinweis `heating-missing` (Core `hints.ts`), Aufrufe `ha/heatingSetup.ts` (WebSocket für Helfer,
+  Zeitplan, Register; die Automation über REST, braucht die HAPulse-Adresse in den CORS-Ursprüngen von HA, seit 2026.8 unter
+  Einstellungen → System → Netzwerk; dafür
+  `HAConnection.sendMessage`/`restAuth`), Test `test/heatingSetup.test.ts` (nachgebautes HA), Prüfung
+  `--only sheetsHeatingSetup` (Demo-Schlafzimmer). Einrichtung in Home Assistant, Aufrufe und Regeln der Karte:
+  **`docs/HEIZPLAN.md`**.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

@@ -82,6 +82,8 @@ module.exports = function sheets(h) {
     'win-heating-off': { path: '/room/living_room', act: sel('.heating-card__head .heating-switch') },
     // its times page (Etappe 2b), a window on the window: Esc closes only the page (`escapes`)
     'win-heating-times': { path: '/room/living_room', escapes: 2, act: seq(sel('.heating-card__open'), sel('.modal-body .heating-group__edit')) },
+    // setting up a plan (Etappe 4): the demo bedroom has a thermostat but no plan
+    'win-heating-setup': { path: '/room/bedroom', act: sel('.heating-setup-card__actions .btn--primary') },
   };
   for (const sc of Object.values(scenes)) {
     sc.path = sc.path || '/';
@@ -1233,6 +1235,85 @@ module.exports = function sheets(h) {
         && r.addRow === 'Zeiten für weitere Tage' && r.focusBack && r.addDays.pressed.join() === 'Sa' && !r.addDays.disabled
         && two(r.addDays.fields, '06:00', '22:00') && two(r.whole, '00:00', '00:00')
         && two(r.overlap.fields, '00:00', '22:00') && r.overlap.focus);
+    });
+
+    // 11d. Setting up a plan (Etappe 4) in both styles, in the demo bedroom (thermostat off at 18 °C, can also cool, a
+    //      window contact): Home shows the hint, a tap opens the room; "Nicht einrichten" leaves one line with "Doch
+    //      einrichten" and takes the hint away; the window has the thermostat not chosen (it can cool) and the window
+    //      contact chosen, the button waits for a thermostat; "Einrichten" closes the window and the plan card takes the
+    //      place, starting at the lowest value (the thermostat was off). A user without admin rights sees none of it.
+    await block('sheetsHeatingSetup', async () => {
+      const res = {};
+      out.sheetsHeatingSetup = res;
+      const card = () => ({
+        setup: !!document.querySelector('.heating-setup-card:not(.heating-setup-card--skipped)'),
+        skipped: !!document.querySelector('.heating-setup-card--skipped'),
+        plan: !!document.querySelector('.heating-card__open'),
+        comfort: document.querySelector('.heating-temp--comfort .heating-temp__value')?.textContent ?? null,
+      });
+      const hint = () => !!document.querySelector('.hint-row[data-kind="heating-missing"]');
+      const pressOn = async (page, q) => {
+        await ev(page, (sq) => document.querySelector(sq)?.scrollIntoView({ block: 'center', behavior: 'instant' }), q);
+        await sleep(150);
+        await press(page, (sq) => document.querySelector(sq), q);
+      };
+      for (const style of ['glas', 'classic']) {
+        const r = {};
+        res[style] = r;
+        const w = await open('phone', style, '/');
+        r.hint = await until(w.page, hint);
+        r.hintText = await ev(w.page, () => document.querySelector('.hint-row[data-kind="heating-missing"]')?.textContent ?? null);
+        await pressOn(w.page, '.hint-row[data-kind="heating-missing"]');
+        r.toRoom = await until(w.page, () => location.pathname === '/room/bedroom' && !!document.querySelector('.heating-setup-card'), null, 6000);
+        await settleAnimations(w.page);
+        r.start = await ev(w.page, card);
+        await pressOn(w.page, '.heating-setup-card:not(.heating-setup-card--skipped) .btn--secondary');
+        await until(w.page, () => !!document.querySelector('.heating-setup-card--skipped'));
+        r.skip = await ev(w.page, card);
+        await pressOn(w.page, '.heating-setup-card__unskip');
+        await until(w.page, () => !!document.querySelector('.heating-setup-card:not(.heating-setup-card--skipped)'));
+        r.unskip = await ev(w.page, card);
+        await openWin(w.page, 'win-heating-setup');
+        const sheet = () => ({
+          checks: [...__s.panel().querySelectorAll('.heating-setup__check')].map((c) => `${c.querySelector('.heating-setup__check-name')?.textContent}:${c.getAttribute('aria-checked')}`),
+          go: !!__s.panel().querySelector('.heating-setup__go')?.disabled,
+          temps: [...__s.panel().querySelectorAll('.heating-sheet__temp .heating-stepper__value')].map((v) => v.textContent),
+          problems: __s.panel().querySelectorAll('.heating-setup__problem').length,
+        });
+        await until(w.page, () => !__s.panel().querySelector('.heating-setup [role="status"]'));
+        r.sheet = await ev(w.page, sheet);
+        await press(w.page, () => __s.panel().querySelector('.heating-setup__check'));
+        r.picked = await ev(w.page, sheet);
+        await press(w.page, () => __s.panel().querySelector('.heating-setup__go'));
+        await until(w.page, () => !__s.panels().length, null, 6000);
+        await settleAnimations(w.page);
+        r.done = await ev(w.page, card);
+        // back to Home inside the app (a reload starts the demo afresh); at the top, where Glas shows the whole tab bar
+        await ev(w.page, () => scrollTo({ top: 0, behavior: 'instant' }));
+        await sleep(400);
+        await press(w.page, () => document.querySelector('.app-tabs a.app-tabs__item[href="/"]'));
+        r.home = await until(w.page, () => location.pathname === '/' && !!document.querySelector('.home-page'), null, 6000);
+        await sleep(300);
+        r.hintAfter = await ev(w.page, hint);
+        await w.close();
+        // a user without admin rights
+        const n = await open('phone', style, '/room/bedroom');
+        await ev(n.page, () => window.__hapulseDemo.admin(false));
+        await sleep(300);
+        r.nonAdmin = { ...(await ev(n.page, card)), hint: false };
+        await press(n.page, () => document.querySelector('.app-tabs a.app-tabs__item[href="/"]'));
+        r.nonAdmin.home = await until(n.page, () => location.pathname === '/' && !!document.querySelector('.home-page'), null, 6000);
+        await sleep(300);
+        r.nonAdmin.hint = await ev(n.page, hint);
+        await n.close();
+      }
+      const clean = (t) => (t || '').replace(/\s/g, ' ');
+      out.sheetsHeatingSetupOk = Object.values(res).every((r) => r.hint && /Heizplan fehlt/.test(r.hintText || '') && /Bedroom/.test(r.hintText || '')
+        && r.toRoom && r.start.setup && !r.start.plan && r.skip.skipped && !r.skip.setup && r.unskip.setup
+        && r.sheet.checks.join() === 'Bedroom Thermostat:false,Bedroom Window:true' && r.sheet.go && r.sheet.problems === 0
+        && r.sheet.temps.map(clean).join() === '5 °C,5 °C' && !r.picked.go && r.picked.checks[0].endsWith(':true')
+        && !r.done.setup && r.done.plan && clean(r.done.comfort) === '5°C' && r.home && !r.hintAfter
+        && !r.nonAdmin.setup && !r.nonAdmin.skipped && r.nonAdmin.home && !r.nonAdmin.hint);
     });
 
     // 12. Every window of §6.0 opens in Glas on the phone and the desktop without an error, with one window on top and

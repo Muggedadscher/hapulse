@@ -6,6 +6,21 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F64 — 2026-10-25
+
+**Heizplan per Knopf einrichten** · _Set up a heating plan with one button_
+
+### Neu / Added
+
+- Für Administratoren: Hat ein Raum ein Thermostat, aber keinen Heizplan, steht unter „Klima“ die Karte „Heizplan einrichten“, und die Übersicht zeigt den Hinweis „Heizplan fehlt“  
+  _For administrators: when a room has a thermostat but no heating plan, “Climate” shows the card “Set up heating plan” and the overview shows the hint “Heating plan missing”_
+- „Einrichten“ legt in Home Assistant die Automation, den Zeitplan und die Temperaturen Komfort und Eco an, mit Bereich, Label und Kategorie wie in den übrigen Räumen; Thermostate und Fenster sind wählbar, ein Gerät, das auch kühlen kann, ist nicht vorgewählt  
+  _“Set up” creates the automation, the schedule and the comfort and eco temperatures in Home Assistant, with area, label and category as in the other rooms; thermostats and windows can be chosen, a device that can also cool is not chosen in advance_
+- „Nicht einrichten“ merkt sich, dass der Raum keinen Plan haben soll, und nimmt den Hinweis weg; „Doch einrichten“ macht das rückgängig  
+  _“Don’t set up” remembers that the room should have no plan and removes the hint; “Set up anyway” undoes it_
+- Fehlt in Home Assistant etwas für die Einrichtung, nennt das Fenster es vorher; bricht sie ab, macht ein neuer Versuch dort weiter, ohne etwas doppelt anzulegen  
+  _When Home Assistant lacks something for the setup, the window says so first; when a setup stops, trying again continues there without creating anything twice_
+
 ## F63 — 2026-10-25
 
 **Fenster in Glas wie in iOS 26** · _Windows in Glass like in iOS 26_

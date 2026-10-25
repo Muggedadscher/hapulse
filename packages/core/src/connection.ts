@@ -527,6 +527,25 @@ export class HAConnection {
   }
 
   /**
+   * [fork] Any WebSocket command (setting up a heating plan: registries, helpers, `search/related`). Throws HA's
+   * error, e.g. `unauthorized` for a user without admin rights.
+   */
+  sendMessage<T = unknown>(msg: { type: string; [key: string]: unknown }): Promise<T> {
+    return this.#conn.sendMessagePromise<T>(msg);
+  }
+
+  /**
+   * [fork] HA's address and a valid access token for a REST call (an automation can only be saved over REST). An OAuth
+   * token lives about 30 minutes, so an expired one is refreshed first. Null without auth.
+   */
+  async restAuth(): Promise<{ hassUrl: string; accessToken: string } | null> {
+    const auth = this.#auth;
+    if (!auth) return null;
+    if (auth.expired) await auth.refreshAccessToken();
+    return { hassUrl: auth.data.hassUrl.replace(/\/+$/, ''), accessToken: auth.accessToken };
+  }
+
+  /**
    * Revoke the OAuth refresh token and clear stored tokens.
    * Call this on sign-out when using the OAuth / getAuth flow.
    * Best-effort — network errors are caught and logged.

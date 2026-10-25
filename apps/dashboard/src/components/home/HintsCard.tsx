@@ -2,7 +2,8 @@
  * [fork] Home "Hinweise" — only what deviates from normal (docs/GLAS-PLAN.md §2.11, GLAS-DESIGN §7.6, user decisions
  * E3/E4, docs/glas/PLAN-ETAPPE-4.md K76). A normal, hideable Home section in both styles; Home renders it while there
  * is a hint, and always in edit mode (then empty: "nothing deviates"), so it can be hidden and shown again. Every row
- * opens what already exists: the garage, locks, doors or alarm window, the bin, the sensor's detail or the NVR page.
+ * opens what already exists: the garage, locks, doors or alarm window, the bin, the sensor's detail, the NVR page or,
+ * for a room without a heating plan (admins only), the room.
  * The windows live in Home (`HintWindows`), outside the grid: when an action in a window resolves the last hint, the
  * card goes away but the window stays open.
  * Klassisch: a card with rows. Glas: a list card on the phone, a row of capsules from 900 px (styles/glas/home.css).
@@ -11,7 +12,7 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  Bell, ChevronRight, Droplets, Flame, Grid2x2, DoorOpen, Lock, LockOpen, ShieldAlert, Cctv, Trash2,
+  Bell, CalendarClock, ChevronRight, Droplets, Flame, Grid2x2, DoorOpen, Lock, LockOpen, ShieldAlert, Cctv, Trash2,
 } from 'lucide-react';
 import type { Hint, WasteBin } from '@hapulse/core';
 import { Card } from '../ui/Card';
@@ -60,6 +61,8 @@ function HintIcon({ kind }: { kind: Hint['kind'] }) {
       return <DoorOpen {...p} />;
     case 'camera-not-recording':
       return <Cctv {...p} />;
+    case 'heating-missing':
+      return <CalendarClock {...p} />;
     case 'waste-soon':
       return <Trash2 {...p} />;
   }
@@ -119,6 +122,8 @@ export function HintsCard({ hints, cameraNames, onOpen }: HintsCardProps) {
         return { title: t('hints.doorOpen', { count: h.count }), sub: places };
       case 'camera-not-recording':
         return { title: t('hints.cameraNotRecording', { count: h.count }), sub: nameList(cameraNames, t) };
+      case 'heating-missing':
+        return { title: t('hints.heatingMissing'), sub: h.room?.name ?? places };
       case 'waste-soon': {
         const b = h.bin;
         const name = b?.name ?? '';
@@ -155,6 +160,9 @@ export function HintsCard({ hints, cameraNames, onOpen }: HintsCardProps) {
       case 'camera-not-recording':
         void navigate(NVR_ROOT);
         break;
+      case 'heating-missing':
+        if (h.room) void navigate(`/room/${h.room.areaId}`);
+        break;
       case 'waste-soon':
         if (h.bin) onOpen({ kind: 'bin', bin: h.bin });
         break;
@@ -182,7 +190,7 @@ export function HintsCard({ hints, cameraNames, onOpen }: HintsCardProps) {
                   className={`hint-row hint-row--${h.severity}`}
                   data-kind={h.kind}
                   onClick={() => act(h)}
-                  aria-haspopup={h.kind === 'camera-not-recording' ? undefined : 'dialog'}
+                  aria-haspopup={h.kind === 'camera-not-recording' || h.kind === 'heating-missing' ? undefined : 'dialog'}
                 >
                   <span className="hint-row__icon" aria-hidden="true"><HintIcon kind={h.kind} /></span>
                   <span className="hint-row__text">

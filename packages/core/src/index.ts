@@ -387,3 +387,38 @@ export {
   heatingChangedDays,
 } from './heatingEdit.js';
 export type { HeatingEdge } from './heatingEdit.js';
+// [fork] Setting up a room's plan with one button (Etappe 4)
+export {
+  HEATING_BLUEPRINT_PATH,
+  HEATING_SKIP_LABEL,
+  HEATING_SKIP_LABEL_NAME,
+  HEATING_PLAN_LABEL_NAME,
+  HEATING_AUTOMATION_CATEGORY,
+  HEATING_HELPER_CATEGORY,
+  heatingRoomSlug,
+  heatingSetupAutomationId,
+  heatingCanHeat,
+  heatingCanCool,
+  findHeatingSetupRooms,
+  heatingRelatedIds,
+  heatingCoveredThermostats,
+  heatingSetupContacts,
+  heatingSnapTemp,
+  heatingSetupTemps,
+  heatingSetupIds,
+  heatingSuffixedEntityId,
+  heatingAutomationConfig,
+  heatingPriorStates,
+} from './heatingSetup.js';
+export type {
+  HeatingSetupRoom,
+  HeatingSetupInput,
+  HeatingSetupContact,
+  HeatingSetupTemps,
+  HeatingSetupIds,
+  HeatingStoredItem,
+  HeatingAutomationInput,
+  HeatingPriorState,
+} from './heatingSetup.js';
+export { demoHeatingSetup, DEMO_SETUP_ATTRIBUTE } from './heatingPlanDemo.js';
+export type { DemoHeatingSetup } from './heatingPlanDemo.js';

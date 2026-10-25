@@ -32,7 +32,7 @@ interface HeatingPlanSheetProps {
   onClose: () => void;
 }
 
-function TempRow({
+export function TempRow({
   kind,
   helper,
   value,
