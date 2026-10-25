@@ -2829,13 +2829,13 @@ module.exports = function pages(h) {
           const st = g.start ? g.start.dom : {};
           const stats = (v) => (v && v.hero ? v.hero.stats.join() : '');
           const counts = (on, off) => `${on} ${DE['automations.hero.statActive']},${off} ${DE['automations.hero.statDisabled']},5 ${DE['automations.hero.categoryLabel.other']}`;
-          const fine = same && !!st.hero && st.hero.total === '13' && st.feed.length === 8 && st.cats.length === 5
-            && stats(st) === counts(11, 2)
-            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === counts(12, 1)
-            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === counts(11, 2)
+          const fine = same && !!st.hero && st.hero.total === '15' && st.feed.length === 8 && st.cats.length === 5
+            && stats(st) === counts(13, 2)
+            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === counts(14, 1)
+            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === counts(13, 2)
             && g.search.dom.join() === 'Evening Lights,Morning Lights' && g.searchNone.dom.join() === DE['automations.emptyFilter']
-            && g.searchOff.dom === 13 && g.room.dom.join() === 'Evening Lights'
-            && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 13;
+            && g.searchOff.dom === 15 && g.room.dom.join() === 'Advanced Heating Living Room,Evening Lights'
+            && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 15;
           const measured = !!look && !look.error && look.catRows >= 60 && look.feedRows >= 52 && look.textStart === 60 && look.feedTextStart === 60
             && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none' && look.edges.join() === '0,0,0' && look.top
             && look.feedH === 260 && look.feedScrolls && look.off && look.statsCut === 0
