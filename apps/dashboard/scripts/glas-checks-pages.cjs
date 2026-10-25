@@ -1980,7 +1980,7 @@ module.exports = function pages(h) {
         }
 
         // Pool K: the hero's word and the rings in their Glas colours (K99); the solar stepper writes the threshold,
-        // "Stopp" the automatic mode; the schedule: a handle moved by 5 min and saved sends scheduler.edit with the new
+        // "Stopp" the automatic mode; the schedule: the ring's start knob moved by 5 min and saved sends scheduler.edit with the new
         // switch point; a figure opens its detail; the restart asks first (Escape: nothing is sent, the danger button
         // presses). The demo applies none of these calls: they are read from its call log (demoCalls.ts).
         if (keepPart('pool')) {
@@ -2036,34 +2036,35 @@ module.exports = function pages(h) {
             const stopOk = stop.length === 1 && stop[0].domain === 'input_select' && stop[0].service === 'select_option'
               && stop[0].data.option === 'Automatik' && stop[0].target.entity_id === 'input_select.modus_poolpumpe';
 
-            // the schedule: the handle at 12:00 moved to 12:05 and saved
+            // the schedule (the shared period editor, glas/pool-zeiten/PLAN.md): the ring's start knob at 12:00 moved
+            // to 12:05 with a key and saved with ✓ sends scheduler.edit with the new switch point and closes the window
             await page.locator('.pool-schedule__edit').click();
             await sleep(400);
             await settleAnimations(page);
-            const handle = page.locator('[role="dialog"] .pool-timeline__handle').first();
-            await handle.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            const knob = page.locator('[role="dialog"] .sched-ring__knob--from');
+            await knob.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
             await settleAnimations(page);
-            const h0 = Number(await handle.getAttribute('aria-valuenow'));
-            const bar = await page.locator('[role="dialog"] .pool-timeline__bar').boundingBox();
-            const hb = await handle.boundingBox();
-            await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
-            await page.mouse.down();
-            const tx = bar.x + (bar.width * (h0 + 5)) / 1440;
-            for (let k = 1; k <= 4; k++) await page.mouse.move(hb.x + hb.width / 2 + (tx - hb.x - hb.width / 2) * (k / 4), hb.y + hb.height / 2);
-            await page.mouse.up();
+            const h0 = Number(await knob.getAttribute('aria-valuenow'));
+            await knob.focus();
+            await page.keyboard.press('ArrowRight');
             await sleep(200);
-            const moved = { now: Number(await handle.getAttribute('aria-valuenow')), time: (await handle.locator('.pool-timeline__handle-time').textContent()).trim() };
+            const moved = {
+              now: Number(await knob.getAttribute('aria-valuenow')),
+              time: await page.locator('[role="dialog"] .sched__input').first().inputValue(),
+              tone: await ev(page, () => getComputedStyle(document.querySelector('[role="dialog"] .sched-ring__arc--selected')).stroke),
+            };
             await clear();
-            await page.locator('[role="dialog"] .pool-editor__footer .btn--primary').click();
+            await page.locator('[role="dialog"] .g-sched-done').click();
             await sleep(500);
             await settleAnimations(page);
             const saved = await calls();
             const edit = saved[0];
             const slot = edit && Array.isArray(edit.data.timeslots) ? edit.data.timeslots.find((s) => s.start === '12:05') : null;
-            const scheduleOk = h0 === 720 && moved.now === 725 && moved.time === '12:05' && saved.length === 1
+            const scheduleOk = h0 === 720 && moved.now === 725 && moved.time === '12:05' && moved.tone === (await tok('--g-teal'))
+              && saved.length === 1
               && edit.domain === 'scheduler' && edit.service === 'edit' && edit.data.entity_id === 'switch.schedule_zeitplan_poolpumpe'
               && !!slot && slot.actions[0].service === 'input_boolean.turn_on' && Array.isArray(edit.data.weekdays) && edit.data.weekdays.length > 0
-              && (await page.locator('[role="dialog"] .pool-editor').count()) === 0;
+              && (await page.locator('[role="dialog"] .sched').count()) === 0;
 
             // a figure opens its detail (the inspector from 1100 px, the sheet on the phone)
             const tile = page.locator('.pool-data .pool-tile--clickable').first();

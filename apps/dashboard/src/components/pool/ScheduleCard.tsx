@@ -12,20 +12,22 @@ import { Card } from '../ui/Card';
 import {
   parseScheduleAttributes,
   minutesToHHMM,
-  scheduleOnMinutes,
   POOL_WEEKDAYS,
+  poolWindowsToPeriods,
 } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
 import { setSwitch } from '../../ha/pool';
 import { POOL_ENTITIES, POOL_WEEKDAY_KEYS } from './poolConfig';
-import { ScheduleEditorModal } from './ScheduleEditorModal';
+import { PoolTimesPage, poolDayLength } from './PoolTimesPage';
 
 export function ScheduleCard() {
   const t = useT();
   const locale = useLocale();
   const scheduleSwitch = useEntity(POOL_ENTITIES.scheduleSwitch);
   const [editorOpen, setEditorOpen] = useState(false);
+  // A fresh draft every time the page opens (PoolTimesPage takes its start once)
+  const [opened, setOpened] = useState(0);
 
   const enabled = scheduleSwitch?.state === 'on';
   const model = useMemo(
@@ -33,7 +35,8 @@ export function ScheduleCard() {
     [scheduleSwitch?.attributes],
   );
 
-  const onHours = scheduleOnMinutes(model.windows) / 60;
+  // Saving needs the scheduler's own timeslots: without them the model is "every day, no run" and ✓ would write that
+  const readable = Array.isArray(scheduleSwitch?.attributes?.['timeslots']);
 
   // Next action, derived from the scheduler entity's own next_trigger/next_slot.
   const nextAction = useMemo(() => {
@@ -100,19 +103,24 @@ export function ScheduleCard() {
                 {minutesToHHMM(w.start)}–{minutesToHHMM(w.stop)}
               </span>
             ))}
-            <span className="pool-schedule__perday">{t('pool.schedule.perDay', { hours: Math.round(onHours * 10) / 10 })}</span>
+            <span className="pool-schedule__perday">{t('pool.times.perDay', { duration: poolDayLength(poolWindowsToPeriods(model.windows), locale) })}</span>
           </div>
         ) : (
           <p className="pool-schedule__empty">{t('pool.schedule.noWindows')}</p>
         )}
       </div>
 
-      <button type="button" className="btn btn--ghost pool-schedule__edit" onClick={() => setEditorOpen(true)}>
+      <button type="button" className="btn btn--ghost pool-schedule__edit" onClick={() => {
+          setOpened((n) => n + 1);
+          setEditorOpen(true);
+        }}>
         <Pencil size={16} strokeWidth={1.75} />
         {t('pool.schedule.edit')}
       </button>
 
-      <ScheduleEditorModal open={editorOpen} onClose={() => setEditorOpen(false)} initial={model} />
+      {opened > 0 && (
+        <PoolTimesPage key={opened} open={editorOpen} onClose={() => setEditorOpen(false)} initial={model} readable={readable} />
+      )}
     </Card>
   );
 }

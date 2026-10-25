@@ -346,7 +346,6 @@
     .heating-confirm__actions,
     .global-admin__actions,
     .nvr-setup__actions,
-    .pool-editor__footer,
     .g-confirm__actions
   ) {
   display: flex;

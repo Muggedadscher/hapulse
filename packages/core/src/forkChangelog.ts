@@ -38,6 +38,34 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 66,
+    date: '2026-10-25',
+    title: { de: 'Pool-Zeiten wie im Heizplan', en: 'Pool times like the heating plan' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Zeiten des Pool-Zeitplans stellt man jetzt so ein wie die Zeiten im Heizplan: die Tage als runde Knöpfe, ein 24-Stunden-Ring zum Ziehen und „An ab“ / „Aus ab“ für jede Laufzeit',
+            en: 'The pool schedule’s times are now set like the times of a heating plan: the days as round buttons, a 24-hour ring to drag and “On from” / “Off from” for each run',
+          },
+          {
+            de: 'Laufzeiten, die aneinanderstoßen, werden beim Speichern zu einer; höchstens 10 Laufzeiten am Tag',
+            en: 'Runs that touch become one when saved; at most 10 runs a day',
+          },
+          {
+            de: 'In Glas ist das ein Fenster mit × und ✓, in Klassisch ein Dialog mit Abbrechen und „Zeitplan speichern“',
+            en: 'In Glass it is a window with × and ✓, in Classic a dialog with Cancel and “Save schedule”',
+          },
+          {
+            de: 'Die Karte „Zeitplan“ zeigt die Laufzeit pro Tag in Stunden und Minuten statt als Dezimalzahl',
+            en: 'The “Schedule” card shows the run time per day in hours and minutes instead of a decimal number',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 65,
     date: '2026-10-25',
     title: { de: 'Große Fenster wieder mit Abstand oben', en: 'Large windows with their gap at the top again' },
