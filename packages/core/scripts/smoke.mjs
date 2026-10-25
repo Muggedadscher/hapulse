@@ -227,6 +227,13 @@ import {
   heatingPriorStates,
   demoHeatingSetup,
   DEMO_SETUP_ATTRIBUTE,
+  poolWindowsToPeriods,
+  poolPeriodsToWindows,
+  POOL_MAX_PERIODS,
+  POOL_FIRST_PERIOD,
+  addPeriod,
+  movePeriodEdge,
+  samePeriods,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1315,6 +1322,29 @@ assertEqual(JSON.stringify(buildScheduleTimeslots([{ start: 0, stop: 1440 }], { 
   'full-day window → one all-day on slot');
 
 assertEqual(scheduleOnMinutes(model.windows), 120, 'scheduleOnMinutes counts the on-window (2h = 120min)');
+
+// [fork] Periods (ring editor, shared with the heating plan) ↔ on-windows
+assertEqual(JSON.stringify(poolWindowsToPeriods(model.windows)), JSON.stringify([{ from: '12:00', to: '14:00' }]),
+  'poolWindowsToPeriods: 720–840 → 12:00–14:00');
+assertEqual(JSON.stringify(poolWindowsToPeriods([{ start: 1380, stop: 1440 }, { start: 0, stop: 60 }])),
+  JSON.stringify([{ from: '00:00', to: '01:00' }, { from: '23:00', to: '24:00' }]),
+  'poolWindowsToPeriods: a run over midnight is two periods in day order, the end of the day is 24:00');
+assertEqual(JSON.stringify(poolPeriodsToWindows([{ from: '14:00', to: '16:00' }, { from: '12:00', to: '14:00' }])),
+  JSON.stringify([{ start: 720, stop: 960 }]),
+  'poolPeriodsToWindows: touching runs become one window');
+assertEqual(JSON.stringify(poolPeriodsToWindows([{ from: '22:00', to: '24:00' }])), JSON.stringify([{ start: 1320, stop: 1440 }]),
+  'poolPeriodsToWindows: 24:00 = 1440');
+assertEqual(JSON.stringify(buildScheduleTimeslots(poolPeriodsToWindows([{ from: '22:00', to: '24:00' }]), { entityId: 'x' }).map((s) => [s.start, s.stop])),
+  JSON.stringify([['00:00', '22:00'], ['22:00', '00:00']]),
+  'a run up to 24:00 ends the timeslots at 00:00');
+assertEqual(JSON.stringify(poolPeriodsToWindows(poolWindowsToPeriods([{ start: 603, stop: 777 }]))), JSON.stringify([{ start: 603, stop: 777 }]),
+  'periods ↔ windows keep minutes off the 5-minute step');
+assertEqual(movePeriodEdge(poolWindowsToPeriods([{ start: 603, stop: 777 }]), 0, 'from', 610)[0].from, '10:10',
+  'a time off the step snaps once it is moved');
+assertEqual(JSON.stringify(addPeriod([], { max: POOL_MAX_PERIODS, first: POOL_FIRST_PERIOD })), JSON.stringify([{ from: '12:00', to: '14:00' }]),
+  'addPeriod: a schedule without runs gets the pool first run');
+assert(samePeriods([{ from: '12:00', to: '14:00' }, { from: '06:00', to: '07:00' }], [{ from: '06:00', to: '07:00' }, { from: '12:00', to: '14:00' }]),
+  'samePeriods ignores the order');
 
 // Day-slot model (graphical editor) — round-trips with the on-window model.
 const daySlots = windowsToDaySlots(model.windows);

@@ -118,14 +118,14 @@ verdeckt); in Klassisch ein Dialog mit „Abbrechen“/„Speichern“. Esc schl
 
 - **Tage:** Die Gruppe bringt ihre Tage mit, „Zeiten für weitere Tage“ die Tage ohne Komfortzeit. Die gewählten Tage
   bekommen die Zeiten der Seite, abgewählte behalten ihre. Ohne gewählten Tag wartet ✓.
-- **Ring:** 24 Stunden, Mitternacht oben, im Uhrzeigersinn (`HeatingRing`). Die gewählte Zeit hat zwei Knöpfe, die Sonne
+- **Ring:** 24 Stunden, Mitternacht oben, im Uhrzeigersinn (`ScheduleRing`, gemeinsam mit dem Pool-Zeitplan). Die gewählte Zeit hat zwei Knöpfe, die Sonne
   für „Komfort ab“ und das Blatt für „Eco ab“; beide sind Schieberegler (Ziehen, Pfeile ±5 min, Bild auf/ab ±1 h,
   Pos1/Ende). Ein Tipp auf einen anderen Bogen wählt diese Zeit. Mitte: Dauer der gewählten Zeit. Liegen beide Knöpfe
   übereinander (ganzer Tag, wenige Minuten), wählt die erste Bewegung den Knopf: der in Zugrichtung, solange er sich
   dorthin noch bewegen kann.
 - **Uhrzeiten:** „Komfort ab“/„Eco ab“ je Zeit als Uhrzeit-Feld; es übernimmt beim Verlassen oder mit Enter. `00:00` als
   „Eco ab“ heißt Mitternacht am Ende des Tages.
-- **Regeln** (`packages/core/src/heatingEdit.ts`): Schritte von 5 Minuten; eine Zeit ist mindestens 5 Minuten lang,
+- **Regeln** (`packages/core/src/timePeriods.ts`, Heizungs-Namen in `heatingEdit.ts`): Schritte von 5 Minuten; eine Zeit ist mindestens 5 Minuten lang,
   überquert nie Mitternacht, ihre eigene andere Kante oder eine Nachbarzeit (sich berührende Zeiten bleiben getrennt).
   Eine neue Zeit liegt in der größten freien Spanne des Tages, eine Stunde (höchstens ein Viertel der Spanne) nach
   deren Anfang und bis zu zwei Stunden lang; passt keine mehr (oder sind es 10), fehlt die Zeile. Ein leerer Tag
