@@ -113,8 +113,7 @@ oder „Zeiten für weitere Tage“ (nur solange ein Tag keine Komfortzeit hat) 
 
 ### Zeiten ändern (Etappe 2b)
 Die Seite liegt als eigenes Fenster auf dem Fenster: in Glas eine Seite mit rundem Zurück-Knopf (Pfeil, wie das ×) und ✓,
-Titel = die Gruppe („Werktags“) ohne Untertitel, groß bis 8 px unter den oberen Rand (der Kopf der Raumseite bleibt
-verdeckt); in Klassisch ein Dialog mit „Abbrechen“/„Speichern“. Esc schließt nur die Seite.
+Titel = die Gruppe („Werktags“) ohne Untertitel, so hoch wie jedes große Glas-Fenster; in Klassisch ein Dialog mit „Abbrechen“/„Speichern“. Esc schließt nur die Seite.
 
 - **Tage:** Die Gruppe bringt ihre Tage mit, „Zeiten für weitere Tage“ die Tage ohne Komfortzeit. Die gewählten Tage
   bekommen die Zeiten der Seite, abgewählte behalten ihre. Ohne gewählten Tag wartet ✓.

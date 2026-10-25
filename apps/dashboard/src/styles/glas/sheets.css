@@ -91,7 +91,7 @@
   left: max(0px, calc(50% - 280px));
   right: max(0px, calc(50% - 280px));
   bottom: var(--g-kb, 0px);
-  height: calc(100dvh - 8px - var(--g-kb, 0px));
+  height: calc(100dvh - 52px - var(--g-kb, 0px));
   max-height: none;
   padding-bottom: max(0px, calc(env(safe-area-inset-bottom, 0px) - var(--g-kb, 0px)));
   border-radius: 40px 40px 0 0;

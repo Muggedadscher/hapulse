@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F65 — 2026-10-25
+
+**Große Fenster wieder mit Abstand oben** · _Large windows with their gap at the top again_
+
+### Geändert / Changed
+
+- Große Fenster in Glas beginnen wieder mit etwas Abstand unter dem oberen Rand, wie vor F63; der runde Zurück-Knopf bleibt  
+  _Large windows in Glass start a little below the top edge again, as before F63; the round back button stays_
+
 ## F64 — 2026-10-25
 
 **Heizplan per Knopf einrichten** · _Set up a heating plan with one button_

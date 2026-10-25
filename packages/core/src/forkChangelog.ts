@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 65,
+    date: '2026-10-25',
+    title: { de: 'Große Fenster wieder mit Abstand oben', en: 'Large windows with their gap at the top again' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Große Fenster in Glas beginnen wieder mit etwas Abstand unter dem oberen Rand, wie vor F63; der runde Zurück-Knopf bleibt',
+            en: 'Large windows in Glass start a little below the top edge again, as before F63; the round back button stays',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 64,
     date: '2026-10-25',
     title: { de: 'Heizplan per Knopf einrichten', en: 'Set up a heating plan with one button' },
