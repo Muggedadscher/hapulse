@@ -91,7 +91,7 @@
   left: max(0px, calc(50% - 280px));
   right: max(0px, calc(50% - 280px));
   bottom: var(--g-kb, 0px);
-  height: calc(100dvh - 52px - var(--g-kb, 0px));
+  height: calc(100dvh - 8px - var(--g-kb, 0px));
   max-height: none;
   padding-bottom: max(0px, calc(env(safe-area-inset-bottom, 0px) - var(--g-kb, 0px)));
   border-radius: 40px 40px 0 0;
@@ -162,7 +162,7 @@
   filter: brightness(0.86);
 }
 
-/* ---- Head (K53): close left, title in the middle; "‹ Zurück" on a page ---- */
+/* ---- Head (K53): close left, title in the middle; on a page the same circle with a chevron (iOS 26 back) ---- */
 :root[data-style='glas'] .g-sheet-header {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
@@ -172,29 +172,22 @@
   padding: 16px 14px 6px;
 }
 
-:root[data-style='glas'] .g-sheet-header--page {
-  grid-template-columns: 1fr minmax(0, max-content) 1fr;
-}
-
 :root[data-style='glas'] .g-sheet-header__close,
 :root[data-style='glas'] .g-sheet-header__back {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 44px;
   height: 44px;
   margin: 0;
+  padding: 0;
   border: 0;
+  border-radius: 50%;
   background: none;
+  color: var(--g-label-2);
   font-family: var(--g-font);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-}
-
-:root[data-style='glas'] .g-sheet-header__close {
-  justify-content: center;
-  width: 44px;
-  padding: 0;
-  border-radius: 50%;
-  color: var(--g-label-2);
 }
 
 :root[data-style='glas'] .g-sheet-header__close-circle {
@@ -208,40 +201,21 @@
 }
 
 @media (hover: hover) {
-  :root[data-style='glas'] .g-sheet-header__close:hover .g-sheet-header__close-circle {
+  :root[data-style='glas'] .g-sheet-header__close:hover .g-sheet-header__close-circle,
+  :root[data-style='glas'] .g-sheet-header__back:hover .g-sheet-header__close-circle {
     background: var(--g-fill-2);
   }
 }
 
-:root[data-style='glas'] .g-sheet-header__close:focus-visible {
+:root[data-style='glas'] .g-sheet-header__close:focus-visible,
+:root[data-style='glas'] .g-sheet-header__back:focus-visible {
   outline: none;
 }
 
-:root[data-style='glas'] .g-sheet-header__close:focus-visible .g-sheet-header__close-circle {
+:root[data-style='glas'] .g-sheet-header__close:focus-visible .g-sheet-header__close-circle,
+:root[data-style='glas'] .g-sheet-header__back:focus-visible .g-sheet-header__close-circle {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
-}
-
-:root[data-style='glas'] .g-sheet-header__back {
-  justify-self: start;
-  gap: 2px;
-  padding: 0 10px 0 2px;
-  border-radius: 22px;
-  color: var(--g-accent-ink);
-  font-size: 17px;
-  line-height: 22px;
-  white-space: nowrap;
-}
-
-@media (hover: hover) {
-  :root[data-style='glas'] .g-sheet-header__back:hover {
-    background: var(--g-hover);
-  }
-}
-
-:root[data-style='glas'] .g-sheet-header__back:focus-visible {
-  outline: 2px solid var(--g-focus);
-  outline-offset: -2px;
 }
 
 :root[data-style='glas'] .g-sheet-header__titles {

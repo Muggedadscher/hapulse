@@ -95,7 +95,7 @@ export interface GlasSheet {
   onRef: { readonly current: boolean };
   /** The element the window opened from, taken in either style (stable; Modal: focus back after a style switch). */
   openedFrom: { readonly current: HTMLElement | null };
-  /** Rendered inside another open Glas window: a page with "‹ Zurück", no grabber (K48). */
+  /** Rendered inside another open Glas window: a page with a round back button, no grabber (K48). */
   page: boolean;
   /** For the window's content (`SheetContext`); null in Klassisch. */
   context: SheetParent | null;

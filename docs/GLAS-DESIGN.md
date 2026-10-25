@@ -891,8 +891,10 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
 - **Mittel:** schwebend, Einzug `left/right/bottom 8`, Radius **40** rundum, Höhe = Inhalt, höchstens
   `100dvh − 144px` (Skizze: bis 700 von 844), Material `sheetFill` + `sheetFilter`, Glas-Schatten; `label2` → `glassLabel2`
   (auch das eigene `--g-label-2` der Glas-Teile, seit Etappe 7).
-- **Groß:** volle Breite, Höhe `100dvh − 52px` (Skizze 792 von 844), Radius 40 40 0 0, **deckend** `sheetSolid`, ohne
-  Filter, Schatten `sheetLarge`.
+- **Groß:** volle Breite, Höhe `100dvh − 8px`, Radius 40 40 0 0, **deckend** `sheetSolid`, ohne Filter, Schatten
+  `sheetLarge`. *Die Skizze (792 von 844) zählte die Statusleiste mit; das Fenster der App beginnt aber darunter
+  (`black-translucent` ohne `viewport-fit=cover`). Mit 52 blieb der Kopf der Seite darunter sichtbar (Jannick 25.10.2026:
+  doppelter Zurück-Weg über dem Heizplan); seitdem 8 wie der Streifen, den iOS über einem großen Blatt lässt.*
 - Start-Detent: passt der Inhalt → mittel, sonst groß. *Plan §2.1 nannte `min(62dvh, Inhalt)`; die freigegebene Skizze
   nutzt Inhaltshöhe bis 700/844 – `sheetMath.pickDetent` danach ausrichten.*
 - **Kopf:** Raster `44px 1fr 44px`, Innenabstand 16 14 6: links **Schließen** (Trefferfläche 44, Kreis 32 `fill`, ×
@@ -901,11 +903,14 @@ Automatisch aktivster Raum (Licht ×10, Medien ×5, Bewegung ×3). **Immer schli
   `grabber`, 6 von oben; Tipp wechselt mittel ↔ groß; `aria-label` „Blatt vergrößern/verkleinern“.
 - **Inhalt:** scrollt (Innenabstand 8 16 28); Gruppen `group`, Radius 22; Gruppentitel 15/20 600 `label2` mit Zählung rechts.
 - **Ziehen (Skizze 844 px):** mittel → groß bei dy < −50; mittel schließt bei dy > 110; groß → mittel bei dy > 80; groß
-  schließt bei dy > 360. Allgemein (`sheetMath`): Schließen ab 25 % der Sheet-Höhe oder Wurf > 0,8 px/ms.
+  schließt bei dy > 360 (45 %; seit dem Abstand 8 oben sind es 376 von 836). Groß lässt oben nur 8 px frei: dort
+  schließt ein Tipp daneben weiter, sonst × oder Ziehen, wie bei iOS. Allgemein (`sheetMath`): Schließen ab 25 % der Sheet-Höhe oder Wurf > 0,8 px/ms.
 - **Morph** aus dem angetippten Element und zurück (§6.3); **Scrim** `scrim` (.25 / .45), Tipp schließt.
 - **Gestapelte Bestätigung (D14):** Rückfrage erscheint **im** Sheet: als Bestätigungsblock in der Zeile (Fläche `fill`,
   Radius 18, Titel 17/600 zentriert, Hinweis 13 „Öffnen fragt immer nach.“, Knöpfe 44: „Abbrechen“ `group` + „Öffnen“/
-  „Entriegeln“ `actDel` + Weiß) bzw. als von rechts eingeschobene Seite mit **‹ Zurück** führend (Plan §2.2).
+  „Entriegeln“ `actDel` + Weiß) bzw. als von rechts eingeschobene Seite mit **Zurück** führend (Plan §2.2): seit
+  25.10.2026 derselbe Kreis wie das × (Trefferfläche 44, Kreis 32 `fill`), darin ein Pfeil nach links, ohne Text
+  (`aria-label` „Zurück“), wie der runde Glas-Knopf in iOS 26; der Kopf behält `44px 1fr 44px`.
   *Skizze zeigt den Zurück-Knopf rechts im Kopf; verbindlich ist führend (links), weil × dann entfällt.*
 - `swipeToClose={false}` für den Alarm-Ziffernblock.
 - **A11y:** `role="dialog"`, `aria-modal`, Fokus ins Sheet und zurück, Esc schließt das oberste; Wischen ist nie der einzige Weg.

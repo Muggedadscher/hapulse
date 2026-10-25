@@ -38,6 +38,30 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 63,
+    date: '2026-10-25',
+    title: { de: 'Fenster in Glas wie in iOS 26', en: 'Windows in Glass like in iOS 26' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Eine Seite in einem Fenster (etwa die Zeiten im Heizplan, „Entriegeln?“ oder „Garage öffnen?“) geht mit einem runden Zurück-Knopf zurück, so wie das × ein Fenster schließt',
+            en: 'A page in a window (such as the times of a heating plan, “Unlock?” or “Open garage?”) goes back with a round back button, the way the × closes a window',
+          },
+          {
+            de: 'Ein großes Fenster reicht bis knapp unter den oberen Rand; der Kopf der Seite dahinter mit seinem Zurück-Knopf ist nicht mehr zu sehen',
+            en: 'A large window reaches just below the top edge; the head of the page behind it with its back button no longer shows',
+          },
+          {
+            de: 'Die Zeiten im Heizplan zeigen nur noch die Tage als Titel, ohne „Heizplan · Raum“ darunter',
+            en: 'The times of a heating plan show only the days as their title, without “Heating plan · room” below',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 62,
     date: '2026-10-24',
     title: { de: 'Komfortzeiten im Heizplan ändern', en: 'Change the comfort times of a heating plan' },

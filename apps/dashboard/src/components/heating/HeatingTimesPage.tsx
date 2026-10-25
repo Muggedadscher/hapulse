@@ -2,7 +2,7 @@
  * [fork] The times page of the heating plan's window (plan glas/heizung-zeitplan/PLAN.md Etappe 2b; draft
  * handy-zeiten-*.png): the days as round chips, the 24-hour ring, "Komfort ab" / "Eco ab" for each period, another
  * period, deleting the times. It opens from a group of days in the window (or from "add another time") as a window of
- * its own: in Glas a page on the window with "‹ Zurück" and ✓, in Klassisch a dialog with Cancel / Save.
+ * its own: in Glas a page on the window with a round back button and ✓, in Klassisch a dialog with Cancel / Save.
  *
  * The chosen period (tinted; chosen by its fields or a tap on its arc) can be removed while there are more. The chosen
  * days get the periods shown; days left out keep theirs. ✓ saves at once through "Heizplan speichern"
@@ -39,7 +39,6 @@ interface HeatingTimesPageProps {
   /** The schedule as HAPulse knows it now; null while it cannot be read (✓ waits). */
   week: HeatingWeek | null;
   start: HeatingTimesDraft;
-  roomName: string;
   /** Where the focus goes when the page closes (the opener may be gone after a save). */
   returnFocus: () => HTMLElement | null;
   onSaved: (week: HeatingWeek) => void;
@@ -94,7 +93,7 @@ function TimeField({
   );
 }
 
-export function HeatingTimesPage({ open, scheduleId, week, start, roomName, returnFocus, onSaved, onClose }: HeatingTimesPageProps) {
+export function HeatingTimesPage({ open, scheduleId, week, start, returnFocus, onSaved, onClose }: HeatingTimesPageProps) {
   const t = useT();
   const locale = useLocale();
   const glas = useIsGlas();
@@ -274,7 +273,6 @@ export function HeatingTimesPage({ open, scheduleId, week, start, roomName, retu
       open={open}
       onClose={close}
       title={title}
-      subtitle={t('heatingPlan.sheet.titleRoom', { room: roomName })}
       className="heating-times-panel"
       returnFocus={returnFocus}
       swipeToClose={!changed && !busy}

@@ -280,7 +280,6 @@ export function HeatingPlanSheet({ open, view, roomName, onClose }: HeatingPlanS
           scheduleId={view.plan.schedule ?? ''}
           week={view.plan.schedule ? view.week : null}
           start={times.start}
-          roomName={roomName}
           returnFocus={timesReturn}
           onSaved={view.adoptWeek}
           onClose={closeTimes}

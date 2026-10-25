@@ -336,7 +336,7 @@ module.exports = function sheets(h) {
         && near(m.grabber.barW, 36) && near(m.grabber.barH, 5) && !m.grabber.hidden
         && res.mediumHead.closeW >= 44 && res.mediumHead.closeH >= 44 && res.mediumHead.titleOff <= 1
         && res.panelStyle.anim === 'none' && res.panelStyle.arrived
-        && l.sheet === 'large' && near(l.rect.y, 52) && near(l.rect.x, 0) && near(l.rect.w, 390) && l.mat === 'solid' && !l.glass
+        && l.sheet === 'large' && near(l.rect.y, 8) && near(l.rect.x, 0) && near(l.rect.w, 390) && l.mat === 'solid' && !l.glass
         && l.radius === '40px 40px 0px 0px'
         && res.landscape.sheet === 'large' && res.landscape.grabber.hidden && res.landscape.grabber.tabIndex === -1
         && near(res.ipad.rect.w, 560) && near(res.ipad.rect.x, 130)
@@ -426,7 +426,7 @@ module.exports = function sheets(h) {
       out.sheetsDrag = res;
       out.sheetsDragOk = res.mediumCloses.before === 'medium' && !res.mediumCloses.open
         && res.mediumStays.open && res.mediumStays.sheet === 'medium' && near(res.mediumStays.y, res.mediumStays.y0)
-        && res.mediumGrows.sheet === 'large' && near(res.mediumGrows.top, 52)
+        && res.mediumGrows.sheet === 'large' && near(res.mediumGrows.top, 8)
         && res.largeShrinks.before === 'large' && res.largeShrinks.sheet === 'medium'
         && !res.largeCloses.open && !res.fling.open
         && res.grabberTap.grown === 'large' && res.grabberTap.back === 'medium'
@@ -460,7 +460,7 @@ module.exports = function sheets(h) {
         }
         if (how === 'close') await w.page.locator('.g-sheet-header__close').click();
         else if (how === 'escape') await w.page.keyboard.press('Escape');
-        else await w.page.mouse.click(195, 30);
+        else await w.page.mouse.click(195, 3); // above the large sheet (it starts 8 from the top)
         await sleep(60);
         const ghost = await ev(w.page, () => __s.ghost());
         await until(w.page, () => !document.querySelector('.g-sheet-ghost'), null, 3000);
@@ -470,7 +470,7 @@ module.exports = function sheets(h) {
       await w.close();
       out.sheetsMorph = res;
       const f = res.frames;
-      const grows = f[0] && f[3] && f[0].w < res.end.w * 0.6 && f[1].w > f[0].w && f[3].w >= f[1].w && near(res.end.y, 52);
+      const grows = f[0] && f[3] && f[0].w < res.end.w * 0.6 && f[1].w > f[0].w && f[3].w >= f[1].w && near(res.end.y, 8);
       const startsAtChip = f[0] && Math.abs(f[0].x - res.chip.x) < 40 && Math.abs(f[0].y - res.chip.y) < 60;
       out.sheetsMorphOk = !!grows && !!startsAtChip
         && ['close', 'escape', 'beside'].every((k) => res[k].ghost.count === 1 && !res[k].ghost.role && res[k].after.clean
@@ -1098,8 +1098,9 @@ module.exports = function sheets(h) {
         && clean(r.saved) === '21,5°C');
     });
 
-    // 11c. Editing the times (Etappe 2b) in both styles: a group opens its page on the window (Glas: a page with
-    //      "Zurück"); the start knob moves by keys, the end knob by dragging along the ring; back or Esc discards and
+    // 11c. Editing the times (Etappe 2b) in both styles: a group opens its page on the window (Glas: a page with a
+    //      round back button like the ×, no subtitle, reaching 8 below the top so the room's head does not show above
+    //      it); the start knob moves by keys, the end knob by dragging along the ring; back or Esc discards and
     //      closes only the page; another period is added and removed; ✓ saves into the demo schedule and the window
     //      under it shows the new time. "Times for other days" shows only while a day has no times: after Saturday's
     //      times are deleted (Sunday deselected keeps its own, so the weekend group and its row are gone and the focus
@@ -1123,6 +1124,19 @@ module.exports = function sheets(h) {
         await openWin(w.page, 'win-heating-times');
         r.page = await ev(w.page, () => ({ ...__s.stack(), dialogs: __s.panels().length,
           title: (__s.panel().querySelector('.g-sheet-header__title, .modal-header__title') || {}).textContent }));
+        if (style === 'glas') {
+          r.head = await ev(w.page, () => {
+            const p = __s.panel();
+            const back = p.querySelector('.g-sheet-header__back');
+            const circle = back && back.querySelector('.g-sheet-header__close-circle');
+            const roomBtn = document.querySelector('.room-page__header')?.querySelector('a, button');
+            return { label: back && back.getAttribute('aria-label'), text: back && back.textContent.trim(),
+              w: back && back.offsetWidth, h: back && back.offsetHeight,
+              circle: circle && `${circle.offsetWidth}x${circle.offsetHeight}`,
+              subtitle: !!p.querySelector('.g-sheet-header__subtitle'), top: Math.round(p.getBoundingClientRect().top),
+              roomHead: roomBtn ? Math.round(roomBtn.getBoundingClientRect().top) : null };
+          });
+        }
         r.start = await ev(w.page, fields);
         await w.page.focus('.heating-ring__knob--from');
         for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
@@ -1209,6 +1223,8 @@ module.exports = function sheets(h) {
       const two = (f, a, b) => Array.isArray(f) && f[0] === a && f[1] === b;
       out.sheetsHeatingTimesOk = Object.entries(res).every(([style, r]) => (style === 'glas'
         ? r.page.windows === 2 && r.page.top.pres === 'page' && r.page.top.back && r.page.below.inert
+          && r.head.label === 'Zurück' && r.head.text === '' && r.head.w >= 44 && r.head.h >= 44 && r.head.circle === '32x32'
+          && !r.head.subtitle && near(r.head.top, 8) && r.head.roomHead != null && r.head.top <= r.head.roomHead
         : r.page.dialogs === 2) && r.page.title === 'Werktags'
         && two(r.start, '06:00', '08:30') && two(r.keys, '06:30', '08:30') && two(r.drag, '06:30', '10:00')
         && r.back.dialogs === 1 && r.back.first === '06:00'

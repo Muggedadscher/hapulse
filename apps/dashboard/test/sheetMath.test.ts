@@ -44,9 +44,9 @@ describe('pickPresentation', () => {
 });
 
 describe('detents', () => {
-  it('sizes follow GLAS-DESIGN §7.18 (sketch: 700 and 792 of 844)', () => {
+  it('sizes follow GLAS-DESIGN §7.18 (medium 700 of 844; large up to 8 below the top of the viewport)', () => {
     expect(mediumMaxHeight(844)).toBe(700);
-    expect(largeHeight(844)).toBe(792);
+    expect(largeHeight(844)).toBe(836);
     expect(mediumHeight(450, 844)).toBe(450);
     expect(mediumHeight(900, 844)).toBe(700);
   });
