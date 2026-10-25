@@ -1,7 +1,7 @@
 /**
  * [fork] Home hints (docs/GLAS-PLAN.md §2.11, docs/glas/PLAN-ETAPPE-4.md K76): collects the inputs — the entities
  * without the hidden ones, the waste bins, the Sentinel cameras that should record but don't (only while Sentinel is
- * the camera source) — and asks core's `collectHints`. A door that is not yet open long enough re-evaluates itself
+ * the camera source), for admins the rooms without a heating plan — and asks core's `collectHints`. A door that is not yet open long enough re-evaluates itself
  * when it gets there, a bin's "today"/"tomorrow" at local midnight.
  */
 
@@ -11,6 +11,7 @@ import type { Hint } from '@hapulse/core';
 import { sentinelRecordingState } from '@sentinel-nvr/web/api';
 import { useCustomization, useEntityMap } from '../../ha/hooks';
 import { useSentinelCameras } from '../../nvr/cameraSource';
+import { useHeatingSetupRooms } from '../heating/useHeatingSetup';
 
 export interface HomeHints {
   hints: Hint[];
@@ -22,6 +23,9 @@ export function useHints(): HomeHints {
   const entities = useEntityMap();
   const { hiddenEntities } = useCustomization();
   const sentinel = useSentinelCameras();
+  // admins only (empty otherwise): rooms with a thermostat but no heating plan, without "Nicht einrichten"
+  const setupRooms = useHeatingSetupRooms();
+  const heatingMissing = useMemo(() => setupRooms.filter((r) => !r.skipped), [setupRooms]);
   // the time of the last scheduled re-evaluation; the time itself is read fresh on every run
   const [now, setNow] = useState(() => Date.now());
 
@@ -48,12 +52,13 @@ export function useHints(): HomeHints {
       hidden: hiddenEntities,
       waste,
       camerasNotRecording: camerasKey ? camerasKey.split('\n').length : 0,
+      heatingMissing,
     });
     // a bin's day moves at local midnight, also without an entity update (a sensor without its own `daysTo`)
     const midnight = waste.length > 0 ? new Date(at).setHours(24, 0, 0, 0) : null;
     const recheckAt = r.recheckAt === null ? midnight : midnight === null ? r.recheckAt : Math.min(r.recheckAt, midnight);
     return { hints: r.hints, recheckAt };
-  }, [entities, hiddenEntities, now, camerasKey]);
+  }, [entities, hiddenEntities, now, camerasKey, heatingMissing]);
 
   useEffect(() => {
     if (result.recheckAt === null) return undefined;

@@ -1,6 +1,7 @@
 # Heizplan je Raum — Einrichtung in Home Assistant
 
-Stand: 2026-10-24 (Etappe 2a: Karte und Fenster in der Raumseite; Etappe 2b: Zeiten ändern). Logik: `packages/core/src/heatingPlan.ts`, Aufrufe: `apps/dashboard/src/ha/heatingPlan.ts`, Oberfläche:
+Stand: 2026-10-25 (Etappe 2a: Karte und Fenster in der Raumseite; Etappe 2b: Zeiten ändern; Etappe 4: Einrichten per
+Knopf). Logik: `packages/core/src/heatingPlan.ts`, Aufrufe: `apps/dashboard/src/ha/heatingPlan.ts`, Oberfläche:
 `apps/dashboard/src/components/heating/*` (Glas: `styles/glas/heating.css`), Demo: `packages/core/src/heatingPlanDemo.ts`.
 
 In jedem Raum mit Thermostat schaltet HAPulse den Heizplan an und aus, stellt Komfort und Eco und ändert die Zeiten.
@@ -134,8 +135,54 @@ verdeckt); in Klassisch ein Dialog mit „Abbrechen“/„Speichern“. Esc schl
   Seite offen mit „Nicht gespeichert … Erneut versuchen“; solange ✓ läuft, stehen Ring, Felder und Tage still. Die Zeiten speichern sich also mit dem ✓ der Seite, Schalter und Temperaturen
   weiter mit dem ✓ des Fensters.
 
+## Einrichten per Knopf (Etappe 4)
+Nur für Admins. Logik: `packages/core/src/heatingSetup.ts`, Aufrufe: `apps/dashboard/src/ha/heatingSetup.ts`,
+Oberfläche: `HeatingSetupCard`, `HeatingSetupSheet`, `useHeatingSetup.ts`; Hinweis „Heizplan fehlt“ in
+`packages/core/src/hints.ts`.
+
+- **Welcher Raum:** ein Bereich ohne Plan (`findHeatingPlans`) mit einem `climate.*`, das eingeschaltet, nicht
+  versteckt, erreichbar ist, `heat` kann und von keiner Automation aus dem Blueprint gesteuert wird, egal in welchem
+  Bereich (`search/related` auf den Blueprint, dann auf jede seiner Automationen). Ein nicht erreichbares Thermostat
+  zählt nicht (es kann gleich wieder da sein). Antwortet Home Assistant nicht, zeigt HAPulse nichts.
+- **Wo:** Karte „Heizplan einrichten“ unter „Klima“ des Raums und eine Zeile „Heizplan fehlt“ in den Hinweisen der
+  Übersicht (Tipp öffnet den Raum). Benutzer ohne Admin-Rechte sehen beides nicht.
+- **„Nicht einrichten“:** Label „Ohne Heizplan“ (`ohne_heizplan`) an die Thermostate des Raums; die Karte zeigt dann nur
+  „Kein Heizplan · Doch einrichten“ (nimmt das Label wieder ab), der Hinweis entfällt.
+- **Fenster:** die Thermostate des Raums (ein Gerät, das auch kühlen kann, ist nicht vorgewählt: der Plan stellt es auf
+  Heizen), die Fenster- und Türkontakte (Fenster und Öffnungen vorgewählt, Türen angeboten), Komfort und Eco. Beide
+  starten mit dem Sollwert des ersten Thermostats, das nicht aus ist, sonst mit dem kleinsten Wert: der Raum ändert sich
+  erst, wenn Zeiten und Komfort im Heizplan stehen. Bereich der Helfer = was alle gewählten Thermostate annehmen
+  (innerhalb 5–30 °C), Schritt = der gröbste.
+- **Vorher geprüft:** Blueprint geladen (`blueprint/list`), `automation.heizplan_speichern` vorhanden, REST aus dieser
+  Adresse erlaubt (GET auf die Automation des Raums). Fehlt etwas, sagt das Fenster was und bietet den Knopf nicht an.
+- **Was entsteht** (Reihenfolge, jeder Schritt sieht erst nach, ob es seinen Eintrag schon gibt):
+  1. Label „Heizplan“, Kategorie „Heizung Zeitplan“ (Automationen) und „Zeitplan“ (Helfer), falls sie fehlen.
+  2. Helfer `input_number.heizplan_<raum>_komfort` und `_eco` (Raum ohne Umlaute: `kueche`; gehört der Name einem
+     anderen Raum, mit `_2`, `_3` …): angelegt mit der Kennung als Namen, dann „Heizplan <Raum> Komfort/Eco“ genannt,
+     Wert per `set_value` (nie `initial`, das setzte ihn bei jedem Neustart zurück). Hat HA die Entity-ID nummeriert
+     (`…_komfort_2`), benennt HAPulse sie um, damit sie auf `_komfort`/`_eco` endet. Bereich, Label, Kategorie.
+  3. Zeitplan `schedule.zeitplan_heizung_<raum>`, leer (= immer Eco), „Zeitplan Heizung <Raum>“, Bereich, Label, Kategorie.
+  4. Automation „Advanced Heating <Raum>“ über REST `POST /api/config/automation/config/heizplan_<bereichs-id>` (feste
+     Kennung je Bereich: ein zweiter Versuch überschreibt statt zu verdoppeln), Eingaben wie beim WC, Beschreibung mit
+     dem Zustand der Thermostate vorher. Bereich, Label, Kategorie, dann `automation.trigger`.
+  5. Label „Ohne Heizplan“ von den Thermostaten nehmen, Register neu laden: der Raum zeigt seine Heizplan-Karte.
+- **Abbruch:** Das Fenster nennt den Schritt; ein neuer Versuch übernimmt, was schon da ist (Helfer und Zeitplan ohne
+  Bereich oder in diesem Raum, ein Helfer, der noch seine Kennung als Namen trägt, wird benannt).
+- **Nebenwirkung:** Jede gespeicherte Automation lädt alle Automationen neu, alle Räume stellen ihren Planwert einmal
+  neu ein; von Hand gestellte Thermostate springen zurück. Das Fenster sagt es.
+- **REST aus dem Browser:** Automationen speichert Home Assistant nur über REST, und das erlaubt ein Browser nur, wenn
+  die Adresse von HAPulse (so wie sie oben im Browser steht; welche IP der DNS liefert, ist egal) zu den erlaubten
+  CORS-Ursprüngen gehört. Seit Home Assistant 2026.8 steht das unter **Einstellungen → System → Netzwerk → HTTP-Server**
+  (ein `http:`-Block in `configuration.yaml` wird nur einmal übernommen und danach ignoriert). `https://cast.home-assistant.io`
+  bleibt in der Liste. Speichern startet Home Assistant neu; danach die Änderung bestätigen, sonst nimmt Home Assistant
+  sie nach 5 Minuten zurück. Über die WebSocket-API: `http/config` lesen, `http/config/configure` mit der ganzen
+  Konfiguration (ohne `created_at`/`error`), nach dem Neustart `http/config/promote`. Fehlt die Adresse, zeigt das
+  Fenster sie zum Kopieren.
+
 ## Demo
 Im Demo-Wohnzimmer: Automation, Zeitplan (Mo–Fr 06:00–08:30 und 16:30–22:00, Sa/So 08:00–22:30), Helfer 21/18 °C und
 „Save Heating Plan“. Die Zeiten liegen im Attribut `demo_week` des Zeitplans; `get_schedule` und das Speichern wirken
 darauf, mit derselben Prüfung wie in HA. Zustand und `next_event` des Zeitplans folgen der Uhr (`tickDemoHeating` im
 Demo-Takt). Das Thermostat folgt dem Plan in der Demo nicht, deshalb zeigt die Demo den Hinweis „folgt dem Plan nicht“ nie.
+Im Demo-Schlafzimmer fehlt der Plan: Admins sehen dort „Heizplan einrichten“ und in der Übersicht den Hinweis. „Einrichten“
+legt die Einträge in der Demo an (`demoHeatingSetup`), „Nicht einrichten“ setzt das Label; ein Neuladen fängt neu an.

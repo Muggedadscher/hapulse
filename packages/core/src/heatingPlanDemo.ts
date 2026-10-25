@@ -6,8 +6,9 @@
  * entity's attribute `demo_week`, so `applyDemoService` stays a pure function of the entity map. `demoHeatingWeek`
  * answers `schedule.get_schedule` from it, and `automation.trigger` on the save automation writes it after the same
  * check as the automation in HA (an invalid request changes nothing, as there). `input_number.set_value` works only
- * on the demo's two helpers, so the other demo helpers (pool) keep their behaviour. The thermostat does not follow
- * the plan in the demo.
+ * on the demo's heating helpers (the living room's and those a demo setup created), so the other demo helpers (pool)
+ * keep their behaviour. The thermostat does not follow the plan in the demo. `demoHeatingSetup` is what "Einrichten"
+ * does in the demo (heatingSetup.ts).
  */
 
 import {
@@ -107,6 +108,65 @@ export function demoHeatingWeek(entities: HassEntityMap, scheduleId: string): He
 
 const HELPERS = new Set<string>([DEMO_HEATING.comfort, DEMO_HEATING.eco]);
 
+/** Attribute that marks the helpers a demo setup created (demoHeatingSetup): `set_value` works on them too. */
+export const DEMO_SETUP_ATTRIBUTE = 'demo_heating_setup';
+
+const isDemoHelper = (entities: HassEntityMap, id: string) => HELPERS.has(id) || entities[id]?.attributes[DEMO_SETUP_ATTRIBUTE] === true;
+
+/** What a demo setup creates (the dashboard computes the ids as for HA, ha/heatingSetup.ts). */
+export interface DemoHeatingSetup {
+  areaId: string;
+  roomName: string;
+  automation: string;
+  schedule: string;
+  comfort: string;
+  eco: string;
+  comfortValue: number;
+  ecoValue: number;
+  min: number;
+  max: number;
+  step: number;
+}
+
+/**
+ * A setup in the demo: the room's automation (on), an empty schedule and both helpers, each with the room's area and
+ * the label, as `Einrichten` leaves them in HA. Entries that exist already stay (a second setup adds nothing).
+ * Returns new maps; the inputs are not changed.
+ */
+export function demoHeatingSetup(
+  entities: HassEntityMap,
+  entries: readonly EntityRegistryEntry[],
+  setup: DemoHeatingSetup,
+  now: Date,
+): { entities: HassEntityMap; entries: EntityRegistryEntry[] } {
+  const iso = now.toISOString();
+  const nextEntities: HassEntityMap = { ...entities };
+  const nextEntries = [...entries];
+  const add = (id: string, platform: string, state: HassEntity) => {
+    if (!nextEntities[id]) nextEntities[id] = state;
+    if (!nextEntries.some((e) => e.entity_id === id)) {
+      nextEntries.push({
+        entity_id: id, area_id: setup.areaId, device_id: null, entity_category: null, hidden_by: null, disabled_by: null,
+        original_name: null, icon: null, platform, labels: [HEATING_PLAN_LABEL],
+      });
+    }
+  };
+  const helper = (name: string, icon: string): HassEntityAttributes => ({
+    min: setup.min, max: setup.max, step: setup.step, mode: 'slider', unit_of_measurement: '°C', friendly_name: name, icon,
+    [DEMO_SETUP_ATTRIBUTE]: true,
+  });
+  const week = Object.fromEntries(HEATING_WEEKDAYS.map((d) => [d, []])) as unknown as HeatingWeek;
+  add(setup.automation, 'automation', entity(setup.automation, 'on', {
+    friendly_name: `Advanced Heating ${setup.roomName}`, last_triggered: iso, current: 0, mode: 'single', icon: 'mdi:radiator',
+  }, iso));
+  add(setup.schedule, 'schedule', entity(setup.schedule, 'off', {
+    friendly_name: `Heating ${setup.roomName}`, icon: 'mdi:calendar-clock', editable: true, next_event: null, [DEMO_WEEK_ATTRIBUTE]: week,
+  }, iso));
+  add(setup.comfort, 'input_number', entity(setup.comfort, setup.comfortValue.toFixed(1), helper(`Heating Plan ${setup.roomName} Comfort`, 'mdi:sun-thermometer'), iso));
+  add(setup.eco, 'input_number', entity(setup.eco, setup.ecoValue.toFixed(1), helper(`Heating Plan ${setup.roomName} Eco`, 'mdi:leaf'), iso));
+  return { entities: nextEntities, entries: nextEntries };
+}
+
 /** The days of a save request, or null when the automation in HA would refuse it. */
 function saveRequest(entities: HassEntityMap, variables: unknown): { schedule: string; days: [HeatingWeekday, HeatingBlock[]][] } | null {
   if (variables == null || typeof variables !== 'object') return null;
@@ -143,7 +203,7 @@ export function applyDemoHeatingService(
   targetIds: string[],
   now: string,
 ): HassEntityMap | null {
-  if (domain === 'input_number' && service === 'set_value' && targetIds.length > 0 && targetIds.every((id) => HELPERS.has(id))) {
+  if (domain === 'input_number' && service === 'set_value' && targetIds.length > 0 && targetIds.every((id) => isDemoHelper(entities, id))) {
     for (const id of targetIds) {
       const helper = entities[id];
       const value = Number(data['value']);

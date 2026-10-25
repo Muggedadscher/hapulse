@@ -208,6 +208,25 @@ import {
   heatingWeekWith,
   heatingChangedDays,
   HEATING_MAX_BLOCKS,
+  // [fork] heating plan: set up with one button
+  HEATING_BLUEPRINT_PATH,
+  HEATING_SKIP_LABEL,
+  heatingRoomSlug,
+  heatingSetupAutomationId,
+  heatingCanHeat,
+  heatingCanCool,
+  findHeatingSetupRooms,
+  heatingRelatedIds,
+  heatingCoveredThermostats,
+  heatingSetupContacts,
+  heatingSnapTemp,
+  heatingSetupTemps,
+  heatingSetupIds,
+  heatingSuffixedEntityId,
+  heatingAutomationConfig,
+  heatingPriorStates,
+  demoHeatingSetup,
+  DEMO_SETUP_ATTRIBUTE,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -2684,4 +2703,154 @@ console.log('\n── heating plan: editing the periods ──');
   assert(week.monday === day, 'week: the old week is untouched');
   assertEqual(heatingChangedDays(week, ['sunday', 'monday', 'tuesday'], day).join(), 'sunday', 'changed days: only those that differ');
   assertEqual(heatingChangedDays(week, ['saturday', 'monday'], blocks).join(), 'monday,saturday', 'changed days: in week order');
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Heating plan: set up with one button (heatingSetup.ts, glas/heizung-zeitplan/PLAN-ETAPPE-4.md)
+//
+// Which rooms have a thermostat but no plan, the ids of the new entries (umlauts, rooms that share a name, a setup that
+// stopped halfway), the start values, the automation's config, the hint and the demo setup.
+// ---------------------------------------------------------------------------
+console.log('\n── heating plan: set up ──');
+{
+  // slug and ids
+  assertEqual(heatingRoomSlug('Küche'), 'kueche', 'slug: ü → ue');
+  assertEqual(heatingRoomSlug('Zimmer Jannick'), 'zimmer_jannick', 'slug: space → _');
+  assertEqual(heatingRoomSlug('Bad/WC  Süd'), 'bad_wc_sued', 'slug: runs of other characters → one _');
+  assertEqual(heatingRoomSlug('Großes Café'), 'grosses_cafe', 'slug: ß → ss, accents dropped');
+  assertEqual(heatingRoomSlug('  ✨  '), 'raum', 'slug: nothing left → raum');
+  assertEqual(heatingSetupAutomationId('0f3a9c2e-1b'), 'heizplan_0f3a9c2e_1b', 'automation id: fixed per area, safe characters');
+
+  const cl = (id, state, attrs = {}) => ({ entity_id: id, state, attributes: { hvac_modes: ['off', 'heat'], ...attrs }, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null } });
+  assert(heatingCanHeat(cl('climate.a', 'off')), 'can heat: heat in hvac_modes');
+  assert(!heatingCanHeat(cl('climate.a', 'cool', { hvac_modes: ['off', 'cool'] })), 'can heat: an air conditioner without heat');
+  assert(heatingCanCool(cl('climate.a', 'off', { hvac_modes: ['off', 'heat_cool'] })), 'can cool: heat_cool');
+  assert(!heatingCanCool(cl('climate.a', 'off')), 'can cool: a radiator thermostat');
+  assert(!heatingCanHeat(undefined), 'can heat: no state');
+
+  // rooms without a plan
+  const E = (entity_id, extra = {}) => ({
+    entity_id, area_id: null, device_id: null, entity_category: null, hidden_by: null, disabled_by: null,
+    original_name: null, icon: null, ...extra,
+  });
+  const L = [HEATING_PLAN_LABEL];
+  const reg = {
+    areas: [
+      { area_id: 'bad', name: 'Bad' }, { area_id: 'kueche', name: 'Küche' }, { area_id: 'buero', name: 'Büro' },
+      { area_id: 'flur', name: 'Flur' }, { area_id: 'keller', name: 'Keller' }, { area_id: 'gast', name: 'Gast' },
+    ],
+    devices: [{ id: 'dk', area_id: 'kueche', name: 'TRV Küche' }],
+    entities: [
+      E('climate.bad', { area_id: 'bad' }),
+      E('automation.advanced_heating_bad', { area_id: 'bad', labels: L }),
+      E('climate.kueche', { device_id: 'dk' }),
+      E('climate.kueche_hidden', { area_id: 'kueche', hidden_by: 'user' }),
+      E('climate.kueche_off', { area_id: 'kueche', disabled_by: 'user' }),
+      E('climate.buero_ac', { area_id: 'buero' }),
+      E('climate.buero', { area_id: 'buero' }),
+      E('climate.flur', { area_id: 'flur' }),
+      E('climate.keller', { area_id: 'keller', labels: [HEATING_SKIP_LABEL] }),
+      E('climate.gast', { area_id: 'gast' }),
+      E('climate.gast_2', { area_id: 'gast', labels: [HEATING_SKIP_LABEL] }),
+      E('climate.nowhere'),
+    ],
+  };
+  const states = Object.fromEntries([
+    cl('climate.bad', 'heat'), cl('climate.kueche', 'off'), cl('climate.kueche_hidden', 'off'), cl('climate.kueche_off', 'off'),
+    cl('climate.buero_ac', 'cool', { hvac_modes: ['off', 'cool', 'fan_only'] }), cl('climate.buero', 'unavailable'),
+    cl('climate.flur', 'heat'), cl('climate.keller', 'off'), cl('climate.gast', 'off'), cl('climate.gast_2', 'off'), cl('climate.nowhere', 'off'),
+  ].map((s) => [s.entity_id, s]));
+  const plans = findHeatingPlans(reg);
+  const rooms = findHeatingSetupRooms({ registries: reg, entities: states, plans, covered: new Set(['climate.flur']) });
+  assertEqual(
+    rooms.map((r) => `${r.areaId}:${r.thermostats.join('+')}:${r.skipped ? 'skip' : 'set'}`).join(' '),
+    'gast:climate.gast+climate.gast_2:set keller:climate.keller:skip kueche:climate.kueche:set',
+    'setup rooms: plan room, hidden, disabled, air conditioner, unavailable, covered elsewhere and no area are left out; skipped only when all carry the label; by name',
+  );
+  assertEqual(rooms.find((r) => r.areaId === 'kueche').name, 'Küche', 'setup rooms: the area name');
+  assertEqual(findHeatingSetupRooms({ registries: reg, entities: { ...states, 'climate.buero': cl('climate.buero', 'heat') }, plans, covered: new Set() }).map((r) => r.areaId).join(), 'buero,flur,gast,keller,kueche',
+    'setup rooms: back when reachable; a thermostat no automation uses counts');
+
+  // search/related
+  assertEqual(heatingRelatedIds({ automation: ['automation.a', 3, 'automation.b'] }, 'automation').join(), 'automation.a,automation.b', 'related: strings under the key');
+  assertEqual(heatingRelatedIds(null, 'automation').length, 0, 'related: no answer → nothing');
+  assertEqual(heatingRelatedIds({ entity: 'x' }, 'entity').length, 0, 'related: not a list → nothing');
+  assertEqual([...heatingCoveredThermostats([{ entity: ['climate.a', 'schedule.s', 'input_number.k'] }, { entity: ['climate.b', 'climate.a'] }, {}])].sort().join(),
+    'climate.a,climate.b', 'covered: only thermostats, from all automations');
+
+  // contacts
+  const bs = (id, dc) => [id, { entity_id: id, state: 'off', attributes: { device_class: dc } }];
+  const contactStates = Object.fromEntries([bs('binary_sensor.t', 'door'), bs('binary_sensor.f', 'window'), bs('binary_sensor.o', 'opening'), bs('binary_sensor.g', 'garage_door'), bs('binary_sensor.m', 'motion')]);
+  assertEqual(heatingSetupContacts(['binary_sensor.t', 'binary_sensor.g', 'binary_sensor.o', 'binary_sensor.m', 'binary_sensor.f', 'light.x'], contactStates).map((c) => `${c.id}:${c.preselected ? 1 : 0}`).join(),
+    'binary_sensor.f:1,binary_sensor.o:1,binary_sensor.t:0', 'contacts: windows and openings chosen, doors offered, garage doors and the rest left out');
+
+  // temperatures
+  assertEqual(heatingSnapTemp(20.26, { min: 5, max: 30, step: 0.5 }), 20.5, 'snap: to the step');
+  assertEqual(heatingSnapTemp(3, { min: 7, max: 30, step: 0.5 }), 7, 'snap: into the range');
+  const t1 = heatingSetupTemps([cl('climate.a', 'off', { min_temp: 7, max_temp: 35, target_temp_step: 0.5, temperature: 5 }), cl('climate.b', 'heat', { min_temp: 4.5, max_temp: 28, target_temp_step: 1, temperature: 20.4 })]);
+  assertEqual(JSON.stringify(t1), JSON.stringify({ min: 7, max: 28, step: 1, comfort: 20, eco: 20 }), 'temps: narrowest range, coarsest step, the running thermostat\'s target');
+  assertEqual(JSON.stringify(heatingSetupTemps([cl('climate.a', 'off', { temperature: 5 })])), JSON.stringify({ min: 5, max: 30, step: 0.5, comfort: 5, eco: 5 }), 'temps: all off → the minimum');
+  assertEqual(JSON.stringify(heatingSetupTemps([cl('climate.a', 'heat', { min_temp: 25, max_temp: 20, temperature: 22 })])), JSON.stringify({ min: 5, max: 30, step: 0.5, comfort: 22, eco: 22 }), 'temps: an impossible range → 5–30');
+  assertEqual(heatingSetupTemps([]).comfort, 5, 'temps: no thermostat → the minimum');
+
+  // ids of the new entries
+  const ids = (numbers, schedules) => JSON.stringify(heatingSetupIds('kueche', 'k1', numbers, schedules));
+  assertEqual(ids([], []), JSON.stringify({ comfort: 'heizplan_kueche_komfort', eco: 'heizplan_kueche_eco', schedule: 'zeitplan_heizung_kueche' }), 'ids: from the slug');
+  assertEqual(ids([{ id: 'heizplan_kueche_komfort', areaId: 'k1' }, { id: 'heizplan_kueche_eco', areaId: null }], [{ id: 'zeitplan_heizung_kueche', areaId: null }]),
+    JSON.stringify({ comfort: 'heizplan_kueche_komfort', eco: 'heizplan_kueche_eco', schedule: 'zeitplan_heizung_kueche' }), 'ids: entries of this room or of none are taken over');
+  assertEqual(ids([{ id: 'heizplan_kueche_eco', areaId: 'k2' }], []),
+    JSON.stringify({ comfort: 'heizplan_kueche_2_komfort', eco: 'heizplan_kueche_2_eco', schedule: 'zeitplan_heizung_kueche_2' }), 'ids: one taken by another room → all with _2');
+  const taken = new Set(['input_number.heizplan_kueche_2_komfort']);
+  assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_komfort', '_komfort', taken), null, 'entity id: ends right → keep');
+  assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_komfort_2', '_komfort', taken), 'input_number.heizplan_kueche_3_komfort', 'entity id: HA\'s _2 → number before the ending, the next free one');
+  assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_eco_2', '_eco', new Set()), 'input_number.heizplan_kueche_2_eco', 'entity id: eco');
+
+  // the automation
+  const config = heatingAutomationConfig({
+    roomName: 'Küche', description: 'Heizplan Küche: …', thermostats: ['climate.kueche'], contacts: ['binary_sensor.f'],
+    schedule: 'schedule.zeitplan_heizung_kueche', comfort: 'input_number.heizplan_kueche_komfort', eco: 'input_number.heizplan_kueche_eco',
+    comfortValue: 20, ecoValue: 20,
+  });
+  assertEqual(JSON.stringify(config), JSON.stringify({
+    alias: 'Advanced Heating Küche',
+    description: 'Heizplan Küche: …',
+    use_blueprint: {
+      path: HEATING_BLUEPRINT_PATH,
+      input: {
+        input_log_level: 'info', input_physical_change: false, input_schedulers: ['schedule.zeitplan_heizung_kueche'],
+        input_temperature_comfort: 'input_number.heizplan_kueche_komfort', input_temperature_comfort_static: 20,
+        input_temperature_eco: 'input_number.heizplan_kueche_eco', input_temperature_eco_static: 20,
+        input_trvs: ['climate.kueche'], input_windows: ['binary_sensor.f'],
+      },
+    },
+  }), 'automation: the inputs of the WC');
+  assert(!('input_windows' in heatingAutomationConfig({ ...{ roomName: 'X', description: '', thermostats: ['climate.x'], contacts: [], schedule: 's', comfort: 'c', eco: 'e', comfortValue: 5, ecoValue: 5 } }).use_blueprint.input),
+    'automation: no contacts → no window input');
+  assertEqual(JSON.stringify(heatingPriorStates([cl('climate.k', 'off', { friendly_name: 'TRV Küche', temperature: 5 }), undefined, cl('climate.x', 'heat')])),
+    JSON.stringify([{ name: 'TRV Küche', mode: 'off', temperature: 5 }, { name: 'climate.x', mode: 'heat', temperature: null }]), 'prior states: name, mode, target');
+
+  // the hint
+  const hint = collectHints([], { now: 0, heatingMissing: [{ areaId: 'k2', name: 'Küche', thermostats: ['climate.b', 'climate.a'] }, { areaId: 'b1', name: 'Bad', thermostats: ['climate.c'] }, { areaId: 'h', name: 'Hidden', thermostats: ['climate.h'] }], hidden: new Set(['climate.h']) });
+  assertEqual(hint.hints.map((h) => `${h.id}:${h.severity}:${h.entityIds.join('+')}:${h.room?.name}`).join(' '),
+    'heating-missing:b1:info:climate.c:Bad heating-missing:k2:info:climate.a+climate.b:Küche', 'hint: one per room by name, info, hidden thermostats left out');
+
+  // the demo setup
+  const bedroom = findHeatingSetupRooms({ registries: DEMO_REGISTRIES, entities: DEMO_ENTITIES, plans: findHeatingPlans(DEMO_REGISTRIES), covered: new Set(findHeatingPlans(DEMO_REGISTRIES).living_room.thermostats) });
+  assertEqual(bedroom.map((r) => r.areaId).join(), 'bedroom', 'demo: the bedroom has a thermostat but no plan');
+  const setup = {
+    areaId: 'bedroom', roomName: 'Bedroom', automation: 'automation.advanced_heating_bedroom', schedule: 'schedule.zeitplan_heizung_bedroom',
+    comfort: 'input_number.heizplan_bedroom_komfort', eco: 'input_number.heizplan_bedroom_eco', comfortValue: 18, ecoValue: 18, min: 5, max: 30, step: 0.5,
+  };
+  const done = demoHeatingSetup(DEMO_ENTITIES, DEMO_REGISTRIES.entities, setup, new Date('2026-10-25T08:00:00Z'));
+  const demoReg = { ...DEMO_REGISTRIES, entities: done.entries };
+  assertEqual(JSON.stringify(findHeatingPlans(demoReg).bedroom), JSON.stringify({
+    areaId: 'bedroom', automation: setup.automation, schedule: setup.schedule, comfort: setup.comfort, eco: setup.eco, thermostats: ['climate.bedroom'],
+  }), 'demo setup: the bedroom has its plan');
+  assertEqual(done.entities[setup.comfort].state, '18.0', 'demo setup: the helper holds the start value');
+  assert(done.entities[setup.eco].attributes[DEMO_SETUP_ATTRIBUTE] === true, 'demo setup: the helpers are marked');
+  assert(!DEMO_ENTITIES[setup.comfort] && !DEMO_REGISTRIES.entities.some((e) => e.entity_id === setup.automation), 'demo setup: the inputs are untouched');
+  assertEqual(demoHeatingSetup(done.entities, done.entries, setup, new Date()).entries.length, done.entries.length, 'demo setup: a second setup adds nothing');
+  const set = applyDemoService(done.entities, 'input_number', 'set_value', { value: 21 }, { entity_id: setup.comfort });
+  assertEqual(set[setup.comfort].state, '21.0', 'demo setup: set_value works on the new helpers');
+  assertEqual(findHeatingSetupRooms({ registries: demoReg, entities: done.entities, plans: findHeatingPlans(demoReg), covered: new Set() }).length, 0, 'demo setup: no room left without a plan');
 }

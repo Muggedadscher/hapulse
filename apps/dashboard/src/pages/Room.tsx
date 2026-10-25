@@ -31,6 +31,7 @@ import { useIsGlas } from '../app/glas/useUiStyle'; // [fork] Glas: back as a gl
 import { glasSceneTone } from '../components/glas/home/sceneTone'; // [fork] Glas: scene tiles like the overview (K95)
 import { HeatingPlanCard } from '../components/heating/HeatingPlanCard'; // [fork] heating plan per room (docs/HEIZPLAN.md)
 import { useAreaHasHeatingPlan } from '../components/heating/useHeatingPlan'; // [fork]
+import { HeatingSetupCard } from '../components/heating/HeatingSetupCard'; // [fork] set up a plan with one button (docs/HEIZPLAN.md)
 
 // ── Entity name helpers ───────────────────────────────────────────────────────
 
@@ -559,6 +560,7 @@ export function Room() {
       >
         {ids.map((entityId, idx) => renderCard(key, entityId, isSensor ?? false, idx))}
         {key === 'climate' && heatingPlan && !editMode && room && <HeatingPlanCard areaId={room.id} roomName={room.name} roomEntityIds={room.entityIds} />}{/* [fork] after the thermostats */}
+        {key === 'climate' && !editMode && room && <HeatingSetupCard areaId={room.id} roomEntityIds={room.entityIds} />}{/* [fork] admins: a thermostat without plan (Etappe 4) */}
       </SortableGrid>
     );
   }
