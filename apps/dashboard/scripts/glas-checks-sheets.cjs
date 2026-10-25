@@ -1101,12 +1101,13 @@ module.exports = function sheets(h) {
     });
 
     // 11c. Editing the times (Etappe 2b) in both styles: a group opens its page on the window (Glas: a page with a
-    //      round back button like the ×, no subtitle, as high as every large sheet); the start knob moves by keys, the end knob by dragging along the ring; back or Esc discards and
-    //      closes only the page; another period is added and removed; ✓ saves into the demo schedule and the window
-    //      under it shows the new time. "Times for other days" shows only while a day has no times: after Saturday's
-    //      times are deleted (Sunday deselected keeps its own, so the weekend group and its row are gone and the focus
-    //      goes to the first group) it opens with Sa and a first period; made a whole day, a drag from midnight against
-    //      the clock moves its end (both knobs lie on each other there).
+    //      round back button like the ×, no subtitle, as high as every large sheet); the start knob moves by keys,
+    //      the end knob by dragging along the ring; back or Esc discards and closes only the page; another period is
+    //      added and removed; ✓ saves into the demo schedule and the window under it shows the new time. "Times for
+    //      other days" shows only while a day has no times: after Saturday's times are deleted (Sunday deselected keeps
+    //      its own, so the weekend group and its row are gone and the focus goes to the first group) it opens with Sa
+    //      and a first period; made a whole day, a drag from midnight against the clock moves its end (both knobs lie
+    //      on each other there).
     await block('sheetsHeatingTimes', async () => {
       const res = {};
       const fields = () => [...__s.panel().querySelectorAll('.heating-times__input')].map((i) => i.value);
