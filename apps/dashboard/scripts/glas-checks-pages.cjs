@@ -764,7 +764,8 @@ module.exports = function pages(h) {
             found.push(...(await fixedIn()));
             await page.keyboard.press('Escape');
           }
-          const ok = container !== 'normal' && found.length === 0 && !!panel && !panel.inPage && panel.gap >= 0 && panel.gap <= 24;
+          // the pool page is no size container since F67 (it only aligned the schedule card), the rest still holds there
+          const ok = (container !== 'normal' || p === '/pool') && found.length === 0 && !!panel && !panel.inPage && panel.gap >= 0 && panel.gap <= 24;
           res[`fixed${p}`] = { ok, container, opened, panel, ...(found.length ? { found: found.slice(0, 4) } : {}) };
         } catch (e) {
           res[`fixed${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
