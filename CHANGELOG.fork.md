@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F68 — 2026-10-26
+
+**Systemmonitor: klare Namen, eine Liste** · _System monitor: clear names, one list_
+
+### Geändert / Changed
+
+- Die Werte im Systemmonitor heißen ohne den Gerätenamen davor, also „Prozessornutzung“ statt „System Monitor Prozessornutzung“, in beiden Stilen  
+  _The system monitor’s values are named without the device name in front, “Processor use” instead of “System Monitor Processor use”, in both styles_
+- In Glas ist der Systemmonitor eine Liste wie die Batterien daneben, ohne Kacheln und Zwischentitel; Speichergrößen stehen in GB statt MiB  
+  _In Glass the system monitor is a list like the batteries beside it, without tiles and group titles; sizes are shown in GB instead of MiB_
+
 ## F67 — 2026-10-26
 
 **Pool-Zeitplan: Überschrift über der Karte** · _Pool schedule: title above the card_

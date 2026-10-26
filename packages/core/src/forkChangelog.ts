@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 68,
+    date: '2026-10-26',
+    title: { de: 'Systemmonitor: klare Namen, eine Liste', en: 'System monitor: clear names, one list' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Werte im Systemmonitor heißen ohne den Gerätenamen davor, also „Prozessornutzung“ statt „System Monitor Prozessornutzung“, in beiden Stilen',
+            en: 'The system monitor’s values are named without the device name in front, “Processor use” instead of “System Monitor Processor use”, in both styles',
+          },
+          {
+            de: 'In Glas ist der Systemmonitor eine Liste wie die Batterien daneben, ohne Kacheln und Zwischentitel; Speichergrößen stehen in GB statt MiB',
+            en: 'In Glass the system monitor is a list like the batteries beside it, without tiles and group titles; sizes are shown in GB instead of MiB',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 67,
     date: '2026-10-26',
     title: { de: 'Pool-Zeitplan: Überschrift über der Karte', en: 'Pool schedule: title above the card' },

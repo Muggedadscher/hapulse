@@ -599,7 +599,11 @@ und übernommen, außer wo anders vermerkt.
   Kanten der Fläche und an ihren runden Ecken beschnitten (432 mit den Einzügen). **Abweichung:** die Kacheln sind
   mindestens 220 breit (Klassisch 180; die Schrift ist größer) und füllen ihre Zeile (`auto-fit`): in Klassisch blieb
   auf dem iPad die rechte Hälfte leer, während die Namen gekürzt wurden (Nebenbefund 29). Eine einzelne Kachel nimmt
-  die ganze Zeile.
+  die ganze Zeile. **Seit F68 (26.10.2026, Jannick „Ja“ zur Apple-Prüfung):** keine Kacheln und keine Gruppentitel
+  mehr, sondern eine Liste wie die Batterien (Zeilen ab 52 mit Einzug 16, Name 17/22 `label`, umbricht statt gekürzt zu
+  werden, Wert 15/20 `label2`, Trennlinien ab dem Text, Balken darunter); Namen ohne den Gerätenamen (beide Stile,
+  `systemMetricNamer`), Speichergrößen in GB statt MiB (`formatDataSize`). Gemischte Gruppen mit und ohne Titel in einer
+  Fläche wären nicht eindeutig gewesen (eine Zeile nach einer betitelten Gruppe sah aus wie ein Teil davon).
 - **Batterien (R4, K94):** eingerückte Liste über die ganze Fläche, Zeilen 52, Symbol im Kreis 32 (`fill`; grün, ab
   25 % orange, ab 10 % rot), Name 17/22, Balken 6, Prozent 15/20 `label2` (schwach `orangeInk`, kritisch `redInk`,
   beide 600); Trennlinien ab 60, nach der letzten keine. Die Bänder bleiben (bis 10, 25, 50 %), jedes in seiner Farbe:

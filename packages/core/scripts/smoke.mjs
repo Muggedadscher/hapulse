@@ -79,6 +79,9 @@ import {
   compareVersions,
   indexSystemMonitor,
   pickSystemMetrics,
+  systemMetricNamer, // [fork]
+  dataSizeBytes, // [fork]
+  formatDataSize, // [fork]
   parseScheduleAttributes,
   buildScheduleTimeslots,
   normalizeWindows,
@@ -1239,6 +1242,38 @@ const enMetrics = pickSystemMetrics([
 assertEqual(enMetrics.cpu?.entity_id, 'sensor.system_monitor_processor_use', 'CPU still found without registry keys');
 assertEqual(enMetrics.memory?.entity_id, 'sensor.system_monitor_memory_use_percent', 'RAM still found without registry keys');
 assertEqual(enMetrics.disk?.entity_id, 'sensor.system_monitor_disk_use_percent', 'disk still found without registry keys');
+
+// [fork] Names without the device's name, sizes in decimal units (systemMetricDisplay.ts)
+console.log('\n── systemMetricNamer / formatDataSize ──');
+const smNamed = (entity_id, friendly_name, unit) => ({
+  ...smState(entity_id, '1'),
+  attributes: { friendly_name, ...(unit ? { unit_of_measurement: unit } : {}) },
+});
+const namer = systemMetricNamer({
+  areas: [],
+  devices: [{ id: 'dev_sm', area_id: null, name: 'System Monitor' }, { id: 'dev_renamed', area_id: null, name: 'System Monitor', name_by_user: 'Server' }],
+  entities: [
+    { entity_id: 'sensor.processor_use', device_id: 'dev_sm', platform: 'systemmonitor' },
+    { entity_id: 'sensor.renamed', device_id: 'dev_sm', platform: 'systemmonitor' },
+    { entity_id: 'sensor.only_device', device_id: 'dev_sm', platform: 'systemmonitor' },
+    { entity_id: 'sensor.server_cpu', device_id: 'dev_renamed', platform: 'systemmonitor' },
+  ],
+});
+assertEqual(namer(smNamed('sensor.processor_use', 'System Monitor Prozessornutzung')), 'Prozessornutzung', 'the device name in front is dropped');
+assertEqual(namer(smNamed('sensor.renamed', 'Mein Prozessor')), 'Mein Prozessor', 'a name the user set without the prefix stays');
+assertEqual(namer(smNamed('sensor.only_device', 'System Monitor')), 'System Monitor', 'a name that is only the device name stays');
+assertEqual(namer(smNamed('sensor.server_cpu', 'Server Prozessornutzung')), 'Prozessornutzung', 'a renamed device is dropped by its new name');
+assertEqual(namer(smNamed('sensor.unknown_entity', 'System Monitor Last')), 'System Monitor Last', 'an entity without registry entry keeps its name');
+assertEqual(namer(smState('sensor.memory_free', '1')), 'memory free', 'without friendly_name the entity id tail stays the fallback');
+
+assertEqual(dataSizeBytes(smNamed('sensor.memory_free', 'x', 'MiB')), 1024 ** 2, 'MiB is a data size');
+assertEqual(dataSizeBytes(smNamed('sensor.net', 'x', 'MB/s')), null, 'a rate is not a data size');
+assertEqual(dataSizeBytes(smNamed('sensor.cpu', 'x', '%')), null, 'a percentage is not a data size');
+assertEqual(formatDataSize(3119.4 * 1024 ** 2, 'de'), '3,3 GB', 'free memory in decimal GB, German comma');
+assertEqual(formatDataSize(3119.4 * 1024 ** 2, 'en'), '3.3 GB', 'free memory in decimal GB, English point');
+assertEqual(formatDataSize(512e6, 'de'), '512 MB', 'MB without decimals');
+assertEqual(formatDataSize(234.5e9, 'de'), '235 GB', 'from 100 GB without decimals');
+assertEqual(formatDataSize(0, 'de'), '0 B', 'zero stays bytes');
 
 // ---------------------------------------------------------------------------
 // [fork] Pool pump — schedule model round-trip
