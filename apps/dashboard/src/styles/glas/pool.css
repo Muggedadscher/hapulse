@@ -311,9 +311,25 @@
   line-height: 22px;
 }
 
-/* ---- Schedule (title in the surface, beside the switch): the next action 20/25 600 with its label 13 label2 and no
-   capitals; the weekdays as capsules 28 (planned: accentSoft with accentInk, the plan is a choice), the on-windows teal
-   like the pump, the edit button plain 44 ---- */
+/* ---- Schedule (title above the surface like the other cards): the switch is the surface's first row with its
+   label 17/22 and a hairline below (iOS lists: a section title carries no control); the next action 20/25 600 with
+   its label 13 label2 and no capitals; the weekdays as capsules 28 (planned: accentSoft with accentInk, the plan is a
+   choice), the on-windows teal like the pump, the edit button plain 44 ---- */
+:root[data-style='glas'] .g-pool-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .g-pool-toggle__label {
+  min-width: 0;
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
 :root[data-style='glas'] .pool-schedule__body {
   gap: 12px;
 }
