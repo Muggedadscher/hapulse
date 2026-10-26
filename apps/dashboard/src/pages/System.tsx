@@ -17,7 +17,7 @@ import { SystemMonitorCard } from '../components/system/SystemMonitorCard';
 import { BatteriesCard } from '../components/system/BatteriesCard';
 import { applyStoredOrder } from '../lib/order';
 import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K96)
-import { indexSystemMonitor } from '@hapulse/core';
+import { indexSystemMonitor, systemMetricNamer } from '@hapulse/core'; // [fork] systemMetricNamer
 import './Page.css';
 import './System.css';
 
@@ -180,6 +180,7 @@ export function System() {
 
   // System Monitor entities — identified via entity registry platform field
   const systemMonitorIndex = useMemo(() => indexSystemMonitor(registries), [registries]);
+  const systemMetricName = useMemo(() => systemMetricNamer(registries), [registries]); // [fork] names without "System Monitor"
 
   const systemMonitorEntities = useMemo(
     () => allEntities.filter((e) => systemMonitorIndex.ids.has(e.entity_id)),
@@ -286,7 +287,7 @@ export function System() {
       case 'activity':
         return <ActivityCard entities={entities} hideSeeAll />;
       case 'system_monitor':
-        return <SystemMonitorCard entities={systemMonitorEntities} index={systemMonitorIndex} />;
+        return <SystemMonitorCard entities={systemMonitorEntities} index={systemMonitorIndex} nameOf={systemMetricName} />; // [fork] nameOf
       case 'batteries':
         return <BatteriesCard batteries={batteries} />;
     }

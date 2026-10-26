@@ -3113,7 +3113,8 @@ module.exports = function pages(h) {
             const mon = document.querySelector('.system-page .sys-monitor-card');
             const groups = mon.querySelector('.sys-monitor-card__groups');
             const label = groups.querySelector('.sys-monitor-group__label');
-            const tile = groups.querySelector('.sys-metric-tile');
+            const tiles = [...groups.querySelectorAll('.sys-metric-tile')];
+            const tile = tiles[0];
             const tcs = getComputedStyle(tile);
             const tname = tile.querySelector('.sys-metric-tile__name');
             const tval = tile.querySelector('.sys-metric-tile__value');
@@ -3144,11 +3145,15 @@ module.exports = function pages(h) {
             return {
               warn: alert('battery', '--g-warn-ink'), critical: alert('unavailable', '--g-warn-ink'),
               dots: [value('cpu', '--g-yellow'), value('ram', '--g-red'), value('disk', '--g-green')],
-              label: `${font(label)} ${getComputedStyle(label).color === tok('--g-label-2')} ${getComputedStyle(label).textTransform}`,
-              symbol: getComputedStyle(label.querySelector('[aria-hidden="true"]')).display,
-              tile: `${tcs.borderTopLeftRadius} ${tcs.borderTopWidth} ${tcs.backgroundColor === bg('--g-fill')}`,
-              tname: `${font(tname)} ${getComputedStyle(tname).color === tok('--g-label-2')}`,
-              tval: `${font(tval)} ${getComputedStyle(tval).color === tok('--g-label')} ${getComputedStyle(tval).fontVariantNumeric}`,
+              // F68: one list like the batteries, no group titles, no tiles; hairlines from the text (16), none above
+              // the first row, also between two groups
+              label: getComputedStyle(label).display,
+              tile: `${tcs.borderTopLeftRadius} ${tcs.borderTopWidth} ${tcs.backgroundColor}`,
+              tname: `${font(tname)} ${getComputedStyle(tname).color === tok('--g-label')} ${getComputedStyle(tname).whiteSpace}`,
+              tval: `${font(tval)} ${getComputedStyle(tval).color === tok('--g-label-2')} ${getComputedStyle(tval).fontVariantNumeric}`,
+              mrows: Math.round(Math.min(...tiles.map((t) => t.getBoundingClientRect().height))),
+              msep: tiles.map((t) => `${getComputedStyle(t).backgroundImage.slice(0, 15)} ${getComputedStyle(t).backgroundPosition}`)
+                .every((x, i) => (i === 0 ? x.startsWith('none ') : x === 'linear-gradient 16px 0px')),
               bar: `${Math.round(bar.getBoundingClientRect().height)} ${getComputedStyle(bar).backgroundColor === bg('--g-fill')}`,
               bands: fills.every((f) => getComputedStyle(f).backgroundColor === BAND[band(f, 'sys-metric-bar__fill')]),
               bandSet: [...new Set(fills.map((f) => band(f, 'sys-metric-bar__fill')))].sort().join(),
@@ -3228,7 +3233,11 @@ module.exports = function pages(h) {
             await close();
           }
           const g = got.glas || {};
-          const same = !!got.classic && !got.classic.error && !g.error && JSON.stringify(got.classic) === JSON.stringify(g);
+          // F68: Glas shows sizes in decimal GB (formatDataSize), Klassisch keeps HA's unit; everything else is the same
+          const glasSizes = (c) => (c && c.groups ? { ...c, groups: c.groups.map((x) => x.replace('Memory free|3.624 MiB', 'Memory free|3,8 GB')
+            .replace('Disk free (/)|25 GiB', 'Disk free (/)|26,6 GB')) } : c);
+          const same = !!got.classic && !got.classic.error && !g.error && JSON.stringify(glasSizes(got.classic)) === JSON.stringify(g)
+            && JSON.stringify(got.classic) !== JSON.stringify(g);
           const fine = same && g.status === DE['system.hero.status.critical']
             && g.gauges.join() === ['warn:CPU82%', 'critical:RAM93%', 'ok:Speicher61%'].join()
             && g.alerts.join() === [DE['system.hero.lowBatteryCount.other'].replace('{count}', '2'),
@@ -3242,9 +3251,9 @@ module.exports = function pages(h) {
           const L = look || {};
           const measured = !!look && !look.error && L.warn === 'true 18x18 true 600' && L.critical === 'true 18x18 true 600'
             && L.dots.join() === ['true true 600', 'true true 600', 'true true 600'].join()
-            && L.label === '600 15px/20px true none' && L.symbol === 'none' && L.tile === '12px 0px true' && L.tname === '400 15px/20px true'
-            && L.tval === '600 15px/20px true tabular-nums' && L.bar === '6 true' && L.bands && L.bandSet === 'critical,ok,warn'
-            && L.groups.edges === '0,0,0' && L.groups.top && L.groups.h === 432 && L.groups.scrolls && L.groups.gap === '16px'
+            && L.label === 'none' && L.tile === '0px 0px rgba(0, 0, 0, 0)' && L.tname === '400 17px/22px true normal'
+            && L.tval === '400 15px/20px true tabular-nums' && L.mrows >= 52 && L.msep && L.bar === '6 true' && L.bands && L.bandSet === 'critical,ok,warn'
+            && L.groups.edges === '0,0,0' && L.groups.top && L.groups.h === 432 && L.groups.scrolls && L.groups.gap === '0px'
             && L.rows === 52 && L.circle === '32x32 50% true' && L.textStart === 60 && L.name === '400 17px/22px true'
             && L.sep === 'linear-gradient 60px 0px' && L.firstSep === 'none' && L.borders && L.list.edges === '0,0,0' && L.list.top
             && L.states.every((s) => s === 'true,true,true,true') && L.bbar === '6 true' && L.pct === '400 15px/20px tabular-nums'

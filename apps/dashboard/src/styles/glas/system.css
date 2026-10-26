@@ -20,15 +20,17 @@
   }
 }
 
-/* ---- Monitor (R3): group titles 15/20 600 label2 in sentence case without their symbol (the title says it, like the
-   groups in the sheets); tiles in `fill` without a border, radius 12 (like the energy page's figures), the name
-   15/20 label2, the value 15/20 600 tabular; the bar 6 high on `fill`. The groups scroll as in Klassisch (400 high),
-   but up to the surface's edges and clipped at its rounded corners, so nothing is cut off 16 px inside it. ---- */
+/* ---- Monitor (R3, F68): one list like the batteries beside it, no tiles and no group titles: the names come from Home
+   Assistant without the device's name (systemMetricNamer) and say what they measure, the groups only keep related
+   rows together. The list is the whole surface below the title and scrolls there as in Klassisch (400, plus its
+   insets), clipped at its rounded corners. Rows with their own inset 16 and at least 52 high: the name 17/22 `label`
+   (wraps instead of being cut off), the value 15/20 `label2` tabular, a percentage's bar 6 high on `fill` below them;
+   separators 0.5 px from the text start, none above the first row. ---- */
 :root[data-style='glas'] .system-page .sys-monitor-card__groups {
-  gap: 16px;
+  gap: 0;
   max-height: calc(400px + 32px);
   margin: -16px;
-  padding: 16px;
+  padding: 0;
   border-radius: var(--radius-card);
 }
 
@@ -38,42 +40,47 @@
 }
 
 :root[data-style='glas'] .system-page .sys-monitor-group__label {
-  gap: 0;
-  margin: 0 4px 8px;
-  color: var(--g-label-2);
-  font: 600 15px / 20px var(--g-font);
-  letter-spacing: normal;
-  text-transform: none;
-}
-
-:root[data-style='glas'] .system-page .sys-monitor-group__label > [aria-hidden='true'] {
   display: none;
 }
 
-/* the larger type needs wider tiles (Klassisch 180); a group fills its row instead of leaving empty columns on the
-   right (a single tile then takes the whole row, like a list row) */
 :root[data-style='glas'] .system-page .sys-monitor-group__tiles {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 :root[data-style='glas'] .system-page .sys-metric-tile {
+  justify-content: center;
   gap: 8px;
-  padding: 10px 12px;
+  min-height: 52px;
+  padding: 12px 16px;
   border: 0;
-  border-radius: 12px;
-  background: var(--g-fill);
+  border-radius: 0;
+  background: none;
+}
+
+:root[data-style='glas'] .system-page :is(.sys-metric-tile + .sys-metric-tile, .sys-monitor-card__groups > * + * .sys-metric-tile:first-child) {
+  background: linear-gradient(var(--g-sep), var(--g-sep)) no-repeat 16px 0 / calc(100% - 16px) 0.5px;
+}
+
+:root[data-style='glas'] .system-page .sys-metric-tile__top {
+  align-items: baseline;
+  gap: 12px;
 }
 
 :root[data-style='glas'] .system-page .sys-metric-tile__name {
-  color: var(--g-label-2);
-  font: 400 15px / 20px var(--g-font);
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-transform: none;
 }
 
 :root[data-style='glas'] .system-page .sys-metric-tile__value {
-  color: var(--g-label);
-  font: 600 15px / 20px var(--g-font);
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 :root[data-style='glas'] .system-page :is(.sys-metric-bar, .sys-metric-bar__fill) {
@@ -219,7 +226,7 @@
 }
 
 @media (forced-colors: active) {
-  :root[data-style='glas'] .system-page :is(.sys-metric-tile, .bat-row__icon, .batteries-card__low-badge) {
+  :root[data-style='glas'] .system-page :is(.bat-row__icon, .batteries-card__low-badge) {
     border: 1px solid CanvasText;
   }
 

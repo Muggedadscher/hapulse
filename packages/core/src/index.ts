@@ -81,6 +81,7 @@ export type { HistoryPoint, LogbookEntry } from './history.js';
 
 export { indexSystemMonitor, pickSystemMetrics } from './systemMonitor.js';
 export type { SystemMonitorIndex, SystemMetricFamily, SystemMetrics } from './systemMonitor.js';
+export { systemMetricNamer, dataSizeBytes, formatDataSize } from './systemMetricDisplay.js'; // [fork]
 
 // Domain helpers
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';
