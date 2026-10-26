@@ -478,9 +478,8 @@ module.exports = function pages(h) {
         ['/energy', '.energy-now', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-battery', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'above', false, ['.energy-kv-list', '.energy-card__sub']],
-        ['/pool', '.pool-card:not(.pool-schedule, .pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
+        ['/pool', '.pool-card:not(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
         ['/pool', ':is(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above', true],
-        ['/pool', '.pool-schedule', '.pool-card__title', '.pool-card__icon', 'inside'],
         ['/music', '.other-players-card', '.other-players-card__title', '.other-players-card__icon-chip', 'inside'],
         ['/music', '.zones-card', '.zones-card__title', '.zones-card__icon-chip', 'inside'],
         ['/music', '.queue-card', '.queue-card__title', '.queue-card__title-icon', 'inside'],
@@ -551,7 +550,7 @@ module.exports = function pages(h) {
 
     // ---- K89/K90/K85 the frame. Columns by content width (1920/1440/1100/900: 4/3/2/2; a grid whose cards all span
     //      two columns takes four from 900 px of content), no page wider than the window; a card without a title above
-    //      (hero, alarm panel, pool schedule) starts its surface on the line of its neighbours' surfaces; the heroes are
+    //      (hero, alarm panel) starts its surface on the line of its neighbours' surfaces; the heroes are
     //      tafeln (§7.34): the state as the head's colour (security disarmed/armed/triggered, system healthy), the
     //      symbol in a circle 56, no capitals, no wash, figures coloured only by state; the camera section has neither
     //      head nor surface; no element of a page that became a size container is fixed (windows and menus are
@@ -583,7 +582,7 @@ module.exports = function pages(h) {
               const wide = !!grid && ![...grid.children].some((c) => c.classList.contains('overview-grid__cell')
                 && ![...c.classList].some((k) => k.startsWith('overview-grid__cell--span-')));
               // a headless card next to a card with a title above: same row = cells start on the same line
-              const HEADLESS = '.security-hero-card, .alarm-panel-card, .energy-hero, .system-hero-card, .auto-hero-card, .scene-hero-card, .pool-schedule';
+              const HEADLESS = '.security-hero-card, .alarm-panel-card, .energy-hero, .system-hero-card, .auto-hero-card, .scene-hero-card';
               const titled = [...document.querySelectorAll('.page .card')].filter((c) => getComputedStyle(c, '::before').content !== 'none'
                 && getComputedStyle(c).backgroundColor === 'rgba(0, 0, 0, 0)' && c.getClientRects().length);
               const pairs = [];

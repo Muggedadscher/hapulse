@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F67 — 2026-10-26
+
+**Pool-Zeitplan: Überschrift über der Karte** · _Pool schedule: title above the card_
+
+### Geändert / Changed
+
+- In Glas steht „Zeitplan“ auf der Pool-Seite jetzt wie die anderen Überschriften über der Karte; der Schalter ist die erste Zeile in der Karte („Zeitplan aktiv“)  
+  _In Glass, “Schedule” on the pool page now stands above its card like the other titles; the switch is the first row inside the card (“Schedule on”)_
+
 ## F66 — 2026-10-25
 
 **Pool-Zeiten wie im Heizplan** · _Pool times like the heating plan_

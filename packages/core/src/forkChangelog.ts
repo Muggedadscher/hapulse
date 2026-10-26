@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 67,
+    date: '2026-10-26',
+    title: { de: 'Pool-Zeitplan: Überschrift über der Karte', en: 'Pool schedule: title above the card' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'In Glas steht „Zeitplan“ auf der Pool-Seite jetzt wie die anderen Überschriften über der Karte; der Schalter ist die erste Zeile in der Karte („Zeitplan aktiv“)',
+            en: 'In Glass, “Schedule” on the pool page now stands above its card like the other titles; the switch is the first row inside the card (“Schedule on”)',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 66,
     date: '2026-10-25',
     title: { de: 'Pool-Zeiten wie im Heizplan', en: 'Pool times like the heating plan' },
