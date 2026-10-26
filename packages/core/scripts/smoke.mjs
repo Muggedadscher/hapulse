@@ -1251,18 +1251,20 @@ const smNamed = (entity_id, friendly_name, unit) => ({
 });
 const namer = systemMetricNamer({
   areas: [],
-  devices: [{ id: 'dev_sm', area_id: null, name: 'System Monitor' }, { id: 'dev_renamed', area_id: null, name: 'System Monitor', name_by_user: 'Server' }],
+  devices: [{ id: 'dev_sm', area_id: null, name: 'System Monitor' }, { id: 'dev_renamed', area_id: null, name: 'System Monitor', name_by_user: 'Server' }, { id: 'dev_us', area_id: null, name: 'My_Host' }],
   entities: [
     { entity_id: 'sensor.processor_use', device_id: 'dev_sm', platform: 'systemmonitor' },
     { entity_id: 'sensor.renamed', device_id: 'dev_sm', platform: 'systemmonitor' },
     { entity_id: 'sensor.only_device', device_id: 'dev_sm', platform: 'systemmonitor' },
     { entity_id: 'sensor.server_cpu', device_id: 'dev_renamed', platform: 'systemmonitor' },
+    { entity_id: 'sensor.host_cpu', device_id: 'dev_us', platform: 'systemmonitor' },
   ],
 });
 assertEqual(namer(smNamed('sensor.processor_use', 'System Monitor Prozessornutzung')), 'Prozessornutzung', 'the device name in front is dropped');
 assertEqual(namer(smNamed('sensor.renamed', 'Mein Prozessor')), 'Mein Prozessor', 'a name the user set without the prefix stays');
 assertEqual(namer(smNamed('sensor.only_device', 'System Monitor')), 'System Monitor', 'a name that is only the device name stays');
 assertEqual(namer(smNamed('sensor.server_cpu', 'Server Prozessornutzung')), 'Prozessornutzung', 'a renamed device is dropped by its new name');
+assertEqual(namer(smNamed('sensor.host_cpu', 'My_Host CPU')), 'CPU', 'underscores in the device name match the shown name');
 assertEqual(namer(smNamed('sensor.unknown_entity', 'System Monitor Last')), 'System Monitor Last', 'an entity without registry entry keeps its name');
 assertEqual(namer(smState('sensor.memory_free', '1')), 'memory free', 'without friendly_name the entity id tail stays the fallback');
 
@@ -1274,6 +1276,10 @@ assertEqual(formatDataSize(3119.4 * 1024 ** 2, 'en'), '3.3 GB', 'free memory in 
 assertEqual(formatDataSize(512e6, 'de'), '512 MB', 'MB without decimals');
 assertEqual(formatDataSize(234.5e9, 'de'), '235 GB', 'from 100 GB without decimals');
 assertEqual(formatDataSize(0, 'de'), '0 B', 'zero stays bytes');
+assertEqual(formatDataSize(953.5 * 1024 ** 2, 'de'), '1,0 GB', 'a value that would round to 1000 MB is 1,0 GB');
+assertEqual(formatDataSize(99.97e9, 'de'), '100 GB', 'a value that rounds to 100 GB has no decimal');
+assertEqual(formatDataSize(999.7e9, 'de'), '1,0 TB', 'a value that would round to 1000 GB is 1,0 TB');
+assertEqual(formatDataSize(999, 'de'), '999 B', 'below 1 kB stays bytes');
 
 // ---------------------------------------------------------------------------
 // [fork] Pool pump — schedule model round-trip

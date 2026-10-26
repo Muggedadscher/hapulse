@@ -23,7 +23,7 @@ export function systemMetricNamer(registries: Registries | null | undefined): (e
   const prefixOf = new Map<string, string>();
   for (const e of registries?.entities ?? []) {
     const name = e.device_id ? deviceNames.get(e.device_id) : undefined;
-    if (name) prefixOf.set(e.entity_id, `${name} `);
+    if (name) prefixOf.set(e.entity_id, `${name.replace(/_/g, ' ')} `);
   }
 
   return (entity) => {
@@ -67,9 +67,10 @@ export function formatDataSize(bytes: number, locale?: string): string {
     [1e3, 'kB'],
   ];
   for (const [size, unit] of steps) {
-    if (Math.abs(bytes) >= size) {
+    // the next unit starts where the smaller one would round to 1000 ("999,6 MB" → "1,0 GB", not "1000 MB")
+    if (Math.abs(bytes) >= size * 0.9995) {
       const v = bytes / size;
-      const decimals = size >= 1e9 && Math.abs(v) < 100 ? 1 : 0;
+      const decimals = size >= 1e9 && Math.abs(Math.round(v * 10) / 10) < 100 ? 1 : 0;
       return `${formatNumber(v, locale, { minDecimals: decimals, maxDecimals: decimals })} ${unit}`;
     }
   }
