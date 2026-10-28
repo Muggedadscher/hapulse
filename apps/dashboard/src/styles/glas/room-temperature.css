@@ -1,0 +1,43 @@
+/* [fork] Glas — where the room's temperature comes from (components/room/RoomTemperatureSource.tsx, classic
+   RoomTemperatureSource.css; plan /mnt/project-files/raumtemperatur/PLAN.md). The row on the room page in edit mode
+   stands like the heating plan card's head (heating.css): opaque `card`, circle 36, title 17/22 600, status 15/20;
+   the window's choice is the climate card's room list (home-lists.css `.g-pick`). */
+
+:root[data-style='glas'] .room-temp-source {
+  font-family: var(--g-font);
+}
+
+/* the card is a frame, its row answers: no card tint under the pointer */
+@media (hover: hover) {
+  :root[data-style='glas'] .room-temp-source:hover {
+    background-color: var(--bg-card);
+  }
+}
+
+:root[data-style='glas'] .room-temp-source__row {
+  gap: 12px;
+  min-height: 64px;
+  padding: 14px 16px;
+}
+
+:root[data-style='glas'] .room-temp-source__name {
+  color: var(--g-label);
+  font: 600 17px / 22px var(--g-font);
+  letter-spacing: 0;
+}
+
+:root[data-style='glas'] .room-temp-source__status {
+  margin-top: 1px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .room-temp-source__chevron {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .room-temp-source__desc {
+  margin: 0 0 12px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}

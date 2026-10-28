@@ -1680,5 +1680,12 @@
   "heatingSetup.problem.blueprint": "In Home Assistant manca il blueprint “Advanced Heating Control” (panhans/advanced_heating_control.yaml).",
   "heatingSetup.problem.saver": "In Home Assistant manca l’automazione “Heizplan speichern”. Senza di essa non si può salvare un programma.",
   "heatingSetup.problem.denied": "Home Assistant rifiuta l’impostazione. Serve un account con diritti di amministratore.",
-  "heatingSetup.problem.offline": "Nessuna connessione a Home Assistant."
+  "heatingSetup.problem.offline": "Nessuna connessione a Home Assistant.",
+  "roomTemp.label": "Temperatura della stanza",
+  "roomTemp.title": "Temperatura della stanza",
+  "roomTemp.auto": "Automatica",
+  "roomTemp.noValue": "Nessun valore",
+  "roomTemp.gone": "La fonte non è più nella stanza, automatica",
+  "roomTemp.desc": "Da dove viene la temperatura di questa stanza. «Automatica» usa il primo sensore di temperatura della stanza, altrimenti il termostato.",
+  "roomTemp.listAria": "Fonte della temperatura della stanza"
 }

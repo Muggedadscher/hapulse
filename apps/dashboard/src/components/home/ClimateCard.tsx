@@ -6,7 +6,8 @@ import { Minus, Plus, Thermometer, ChevronRight } from 'lucide-react';
 import { Card } from '../ui/Card';
 import type { HassEntityMap, HassEntity, Room } from '@hapulse/core';
 import { useT, useStateLabel, useLocale } from '../../i18n/useT'; // [fork] useLocale
-import { formatNumber } from '@hapulse/core'; // [fork]
+import { formatNumber, roomTemperature } from '@hapulse/core'; // [fork]
+import { useRoomTemperatureSources } from '../../lib/roomTemperatureSource'; // [fork]
 import './ClimateCard.css';
 import { climateSetpoint, gaugeRange } from './climateLogic'; // [fork]
 import { useClimateStepper } from './useClimateStepper'; // [fork] sends set_temperature (upstream's callService import dropped)
@@ -139,6 +140,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
   const sl = useStateLabel();
   const isGlas = useIsGlas(); // [fork]
   const temperatureUnit = useTemperatureUnit(); // [fork] HA's unit (was guessed from max_temp)
+  const temperatureSources = useRoomTemperatureSources(); // [fork] the rooms' chosen temperature sources
   const [selectedRoomName, setSelectedRoomName] = useState<string | null>(null);
 
   // Build list of rooms that have at least one climate entity
@@ -148,20 +150,11 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
     const entity = entities[climateIds[0]!];
     if (!entity) return [];
 
-    // Prefer room temperature sensor; fall back to climate.current_temperature
-    let currentTemp: number | null = null;
-    let currentUnit: string | null = null; // [fork]
-    for (const id of room.domains['sensor'] ?? []) {
-      const e = entities[id];
-      if (e?.attributes.device_class === 'temperature') {
-        const v = parseFloat(e.state);
-        if (!isNaN(v)) { currentTemp = v; currentUnit = e.attributes.unit_of_measurement || null; break; } // [fork] unit
-      }
-    }
-    if (currentTemp === null) {
-      const cur = entity.attributes.current_temperature;
-      if (typeof cur === 'number') currentTemp = cur;
-    }
+    // [fork] The room's temperature (core roomTemperature): the chosen source, else as upstream — the room's
+    // temperature sensor, falling back to climate.current_temperature
+    const roomTemp = roomTemperature(room, entities, temperatureSources[room.id]);
+    const currentTemp: number | null = roomTemp?.value ?? null;
+    const currentUnit: string | null = roomTemp?.unit ?? null; // [fork]
 
     return [{ name: room.name, entity, currentTemp, currentUnit }]; // [fork] currentUnit
   });

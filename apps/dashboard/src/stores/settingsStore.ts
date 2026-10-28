@@ -182,6 +182,11 @@ export interface CustomizationSettings {
   /** [fork] Sentinel camera id → HA area id (null = no room): room pages show these cameras (nvr/cameraSource.ts). */
   nvrCameraRooms: Record<string, string | null>;
   /**
+   * [fork] HA area id → entity id the room's temperature comes from (a temperature sensor or a thermostat of the room;
+   * core `roomTemperature`). Missing = automatic (first temperature sensor, else the thermostat). GLOBAL.
+   */
+  roomTemperatureSource: Record<string, string>;
+  /**
    * [fork] Second style "Glas" (docs/GLAS-PLAN.md): `'classic'` | `'glas'`. Only look and motion change.
    * GLOBAL like every customization field: under admin management the admin sets it for everybody (E1).
    * Read through `resolveAppearance` (theme/glasAppearance.ts), which maps unknown values to `'classic'`.
@@ -408,6 +413,7 @@ const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
   tallSections: [], // [fork] Glas S/M/L
   navOrderV2Migrated: false, // [fork]
   nvrCameraRooms: {}, // [fork]
+  roomTemperatureSource: {}, // [fork] room temperature source
   uiStyle: 'classic', // [fork] Glas
   glassStrength: 'clear', // [fork] Glas
   reduceTransparency: false, // [fork] Glas

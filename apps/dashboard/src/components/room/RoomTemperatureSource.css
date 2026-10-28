@@ -1,0 +1,129 @@
+/* [fork] Room temperature source (RoomTemperatureSource.tsx), Klassisch. Glas: styles/glas/room-temperature.css.
+   The row on the room page in edit mode stands like the heating plan card's head (heating.css): circle, title,
+   status; the window lists the choices as radios with a check on the chosen one. */
+
+.room-temp-source {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+.room-temp-source__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.room-temp-source__row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.room-temp-source__chip {
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+}
+
+.room-temp-source__titles {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.room-temp-source__name {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.room-temp-source__status {
+  display: -webkit-box;
+  margin-top: 0.125rem;
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.room-temp-source__chevron {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.room-temp-source__desc {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text-dim);
+}
+
+/* ── Choice (Klassisch) ─────────────────────────────────── */
+.room-temp-pick {
+  display: flex;
+  flex-direction: column;
+}
+
+.room-temp-pick__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.25rem;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.room-temp-pick__row:last-child {
+  border-bottom: 0;
+}
+
+.room-temp-pick__row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.room-temp-pick__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-temp-pick__value {
+  max-width: 60%;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
+.room-temp-pick__check {
+  flex-shrink: 0;
+  color: var(--accent);
+  visibility: hidden;
+}
+
+.room-temp-pick__row[aria-checked='true'] .room-temp-pick__check {
+  visibility: visible;
+}
