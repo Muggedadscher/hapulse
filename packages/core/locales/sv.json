@@ -1680,5 +1680,12 @@
   "heatingSetup.problem.blueprint": "I Home Assistant saknas ritningen ”Advanced Heating Control” (panhans/advanced_heating_control.yaml).",
   "heatingSetup.problem.saver": "I Home Assistant saknas automationen ”Heizplan speichern”. Utan den går det inte att spara ett schema.",
   "heatingSetup.problem.denied": "Home Assistant nekar installationen. Den kräver ett konto med administratörsrättigheter.",
-  "heatingSetup.problem.offline": "Ingen anslutning till Home Assistant."
+  "heatingSetup.problem.offline": "Ingen anslutning till Home Assistant.",
+  "roomTemp.label": "Rumstemperatur",
+  "roomTemp.title": "Rumstemperatur",
+  "roomTemp.auto": "Automatisk",
+  "roomTemp.noValue": "Inget värde",
+  "roomTemp.gone": "Källan finns inte längre i rummet, automatisk",
+  "roomTemp.desc": "Var rummets temperatur kommer ifrån. ”Automatisk” tar rummets första temperatursensor, annars termostaten. Valet gäller för alla.",
+  "roomTemp.listAria": "Källa för rumstemperaturen"
 }

@@ -8,7 +8,7 @@ import {
   Lightbulb, Thermometer, Droplets, Wind, Minus, Plus, ChevronRight,
 } from 'lucide-react';
 import { Flame, Pause } from 'lucide-react'; // [fork] Glas
-import { roomSummary, roomKind } from '@hapulse/core';
+import { roomSummary, roomKind, withRoomTemperature } from '@hapulse/core'; // [fork] withRoomTemperature
 import { climateTone, formatNumber, roomIconName } from '@hapulse/core'; // [fork] Glas (K83)
 import type { Room, HassEntityMap, RoomKind } from '@hapulse/core';
 import { callService } from '../../ha/service';
@@ -25,6 +25,7 @@ import { RollingValue } from '../glas/RollingValue'; // [fork]
 import { climateSetpoint } from './climateLogic'; // [fork]
 import { useClimateStepper } from './useClimateStepper'; // [fork]
 import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
+import { useRoomTemperatureSources } from '../../lib/roomTemperatureSource'; // [fork]
 
 /** Resolve an HA area picture path against the connection URL. */
 function resolvePicture(picture: string | null | undefined, baseUrl: string): string | null {
@@ -91,6 +92,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
   const temperatureUnit = useTemperatureUnit(); // [fork] HA's unit: the default step when the thermostat has none
   const [lightsPulse, setLightsPulse] = useState(0); // [fork] Glas: the light pill pulses when tapped
   const climateStepper = useClimateStepper(); // [fork] +/− like the climate card (quick taps count, step/min/max)
+  const temperatureSources = useRoomTemperatureSources(); // [fork] the room's chosen temperature source
   const hiddenEntities = useSettingsStore(
     useShallow((s) => s.customization.hiddenEntities)
   );
@@ -142,7 +144,7 @@ export function HeroRoomCard({ rooms, entities }: HeroRoomCardProps) {
     );
   }
 
-  const summary = roomSummary(room, entities);
+  const summary = withRoomTemperature(roomSummary(room, entities), room, entities, temperatureSources[room.id]); // [fork] chosen source
   const gradient = roomGradient(room.name);
   const photoUrl = imgFailed ? null : candidateUrl;
   const hasPhoto = photoUrl != null;

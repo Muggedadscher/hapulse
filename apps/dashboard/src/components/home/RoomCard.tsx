@@ -5,7 +5,8 @@ import { Card } from '../ui/Card';
 import { EditBadge } from '../ui/EditBadge';
 import { RoomIcon } from '../ui/RoomIcon';
 import { roomDisplayIcon } from '../../lib/roomIcon';
-import { roomSummary } from '@hapulse/core';
+import { roomSummary, withRoomTemperature } from '@hapulse/core'; // [fork] withRoomTemperature
+import { useRoomTemperatureSources } from '../../lib/roomTemperatureSource'; // [fork]
 import type { Room, HassEntityMap } from '@hapulse/core';
 import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
 import { formatNumber } from '@hapulse/core'; // [fork]
@@ -39,7 +40,8 @@ export function RoomCard({
   const navigate = useNavigate();
   const t = useT();
   const locale = useLocale(); // [fork] number formatting
-  const summary = roomSummary(room, entities);
+  const temperatureSources = useRoomTemperatureSources(); // [fork]
+  const summary = withRoomTemperature(roomSummary(room, entities), room, entities, temperatureSources[room.id]); // [fork] chosen source
   const anyLightsOn = summary.lightsOn > 0;
   const { iconName, isStatus } = roomDisplayIcon(room, entities);
 

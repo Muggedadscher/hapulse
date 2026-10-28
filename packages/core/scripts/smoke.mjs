@@ -155,6 +155,8 @@ import {
   tallKey,
   withTall,
   roomGlances,
+  roomTemperature,
+  roomTemperatureSources,
   lightPercent,
   climateTone,
   // [fork] Etappe 5: the summary chips' counts
@@ -2217,6 +2219,44 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
   assertEqual(glance({ sensor: ['sensor.t_bad', 'sensor.t', 'sensor.t2', 'sensor.h'], climate: ['climate.a'] }), 'temperature:sensor.t=21.5°C humidity:sensor.h=48%', 'glance: first numeric sensors, climate not needed');
   assertEqual(glance({ sensor: ['sensor.h'], climate: ['climate.gone', 'climate.a', 'climate.b'] }), 'temperature:climate.a=20.4 humidity:sensor.h=48%', 'glance: climate fallback = first existing climate, no unit');
   assertEqual(glance({ light: ['light.x'] }), '', 'glance: nothing to show');
+
+  // [fork] room temperature source (raumtemperatur/PLAN.md): the kitchen oven listed before the thermostat's sensor
+  const kStates = {
+    'sensor.oven': ent('sensor.oven', '59', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.thermo_t': ent('sensor.thermo_t', '19.5', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.off_t': ent('sensor.off_t', 'unavailable', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.power': ent('sensor.power', '120', { device_class: 'power', unit_of_measurement: 'W' }),
+    'climate.k': ent('climate.k', 'heat', { current_temperature: 19.5 }),
+    'climate.dead': ent('climate.dead', 'unavailable', {}),
+  };
+  const kRoom = glRoom({ sensor: ['sensor.oven', 'sensor.thermo_t', 'sensor.off_t', 'sensor.power'], climate: ['climate.k', 'climate.dead'] });
+  const rt = (src, room = kRoom) => { const r = roomTemperature(room, kStates, src); return r ? `${r.entityId}=${r.value}${r.unit ?? ''}` : 'none'; };
+  assertEqual(rt(undefined), 'sensor.oven=59°C', 'room temp: automatic = first temperature sensor (the oven)');
+  assertEqual(rt('climate.k'), 'climate.k=19.5', 'room temp: chosen thermostat, no unit');
+  assertEqual(rt('sensor.thermo_t'), 'sensor.thermo_t=19.5°C', 'room temp: chosen sensor with its unit');
+  assertEqual(rt('sensor.off_t'), 'none', 'room temp: chosen sensor without a number → nothing, never the oven');
+  assertEqual(rt('climate.dead'), 'none', 'room temp: chosen thermostat without current temperature → nothing');
+  assertEqual(rt('sensor.power'), 'sensor.oven=59°C', 'room temp: not a temperature sensor → automatic');
+  assertEqual(rt('sensor.elsewhere'), 'sensor.oven=59°C', 'room temp: source not in the room → automatic');
+  assertEqual(rt(42), 'sensor.oven=59°C', 'room temp: a non-string value → automatic');
+  assertEqual(rt(undefined, glRoom({ sensor: ['sensor.off_t'], climate: ['climate.gone', 'climate.k'] })), 'climate.k=19.5', 'room temp: automatic climate fallback = first existing climate');
+  assertEqual(rt(undefined, glRoom({ climate: ['climate.dead', 'climate.k'] })), 'none', 'room temp: automatic stops at the first existing climate');
+  assertEqual(
+    roomTemperatureSources(kRoom, kStates).map((x) => `${x.kind}:${x.entityId}=${x.value ?? '-'}`).join(' '),
+    'sensor:sensor.oven=59 sensor:sensor.thermo_t=19.5 sensor:sensor.off_t=- climate:climate.k=19.5 climate:climate.dead=-',
+    'room temp: sources = temperature sensors, then climates',
+  );
+  assertEqual(
+    roomGlances(kRoom, kStates, 'climate.k').map((g) => `${g.kind}:${g.entityId}=${g.value}`).join(' '),
+    'temperature:climate.k=19.5',
+    'glance: follows the chosen source (tap opens it)',
+  );
+  for (const [i, room] of Object.entries({ kitchen: kRoom, mixed: glRoom({ sensor: ['sensor.t_bad', 'sensor.t2'], climate: ['climate.a'] }), climateOnly: glRoom({ climate: ['climate.b'] }), none: glRoom({ light: ['light.x'] }) })) {
+    const states = { ...glStates, ...kStates };
+    const summary = roomSummary(room, states);
+    const auto = roomTemperature(room, states);
+    assertEqual(auto?.value, summary.temperature, `room temp: automatic matches roomSummary (${i})`);
+  }
   assertEqual(lightPercent(ent('light.x', 'on', { brightness: 204 })), 80, 'light: 204/255 → 80 %');
   assertEqual(lightPercent(ent('light.x', 'on', { brightness: 1 })), 1, 'light: a glimmer still shows 1 %');
   assertEqual(lightPercent(ent('light.x', 'off', { brightness: 204 })), null, 'light: off → no level');

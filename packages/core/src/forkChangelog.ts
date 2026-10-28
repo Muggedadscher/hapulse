@@ -38,6 +38,31 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 69,
+    date: '2026-10-28',
+    title: { de: 'Raumtemperatur aus der richtigen Quelle', en: 'Room temperature from the right source' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Für Administratoren: Auf der Raumseite im Bearbeiten-Modus lässt sich wählen, woher die Raumtemperatur kommt, „Automatisch“ oder ein bestimmter Temperatursensor bzw. ein Thermostat des Raums',
+            en: 'For administrators: on the room page in edit mode you can choose where the room temperature comes from, “Automatic” or a specific temperature sensor or thermostat of the room',
+          },
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Mit gewählter Quelle zeigen Raumkacheln, der Raum oben auf der Übersicht und der Raumseite sowie die Klima-Karte deren Wert, etwa das Thermostat statt des Backofens in der Küche',
+            en: 'With a chosen source, the room tiles, the room at the top of the overview and the room page and the climate card show its value, for example the thermostat instead of the oven in the kitchen',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 68,
     date: '2026-10-26',
     title: { de: 'Systemmonitor: klare Namen, eine Liste', en: 'System monitor: clear names, one list' },

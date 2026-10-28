@@ -32,6 +32,7 @@ import { glasSceneTone } from '../components/glas/home/sceneTone'; // [fork] Gla
 import { HeatingPlanCard } from '../components/heating/HeatingPlanCard'; // [fork] heating plan per room (docs/HEIZPLAN.md)
 import { useAreaHasHeatingPlan } from '../components/heating/useHeatingPlan'; // [fork]
 import { HeatingSetupCard } from '../components/heating/HeatingSetupCard'; // [fork] set up a plan with one button (docs/HEIZPLAN.md)
+import { RoomTemperatureSource } from '../components/room/RoomTemperatureSource'; // [fork] where the room's temperature comes from
 
 // ── Entity name helpers ───────────────────────────────────────────────────────
 
@@ -587,6 +588,7 @@ export function Room() {
 
       {/* Hero room card */}
       <HeroRoomCard rooms={[room]} entities={entities} />
+      {editMode && <RoomTemperatureSource room={room} entities={entities} nameOf={getEntityName} />}{/* [fork] admins choose the room's temperature source */}
 
       {/* Sections */}
       {isEmpty ? (

@@ -9,6 +9,7 @@ import React from 'react';
 import { Droplet, Thermometer } from 'lucide-react';
 import { formatNumber, roomGlances } from '@hapulse/core';
 import type { HassEntityMap, Room } from '@hapulse/core';
+import { useRoomTemperatureSources } from '../../../lib/roomTemperatureSource';
 import { useUIStore } from '../../../stores/uiStore';
 import { useLocale, useT } from '../../../i18n/useT';
 
@@ -23,7 +24,8 @@ export function HeroGlance({ room, entities }: HeroGlanceProps) {
   const t = useT();
   const locale = useLocale();
   const openEntityDetail = useUIStore((s) => s.openEntityDetail);
-  const glances = roomGlances(room, entities);
+  const temperatureSources = useRoomTemperatureSources(); // the room's chosen temperature source
+  const glances = roomGlances(room, entities, temperatureSources[room.id]);
   if (glances.length === 0) return null;
 
   return (

@@ -6,6 +6,20 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F69 — 2026-10-28
+
+**Raumtemperatur aus der richtigen Quelle** · _Room temperature from the right source_
+
+### Neu / Added
+
+- Für Administratoren: Auf der Raumseite im Bearbeiten-Modus lässt sich wählen, woher die Raumtemperatur kommt, „Automatisch“ oder ein bestimmter Temperatursensor bzw. ein Thermostat des Raums  
+  _For administrators: on the room page in edit mode you can choose where the room temperature comes from, “Automatic” or a specific temperature sensor or thermostat of the room_
+
+### Behoben / Fixed
+
+- Mit gewählter Quelle zeigen Raumkacheln, der Raum oben auf der Übersicht und der Raumseite sowie die Klima-Karte deren Wert, etwa das Thermostat statt des Backofens in der Küche  
+  _With a chosen source, the room tiles, the room at the top of the overview and the room page and the climate card show its value, for example the thermostat instead of the oven in the kitchen_
+
 ## F68 — 2026-10-26
 
 **Systemmonitor: klare Namen, eine Liste** · _System monitor: clear names, one list_
