@@ -32,6 +32,8 @@ import { useLocale, useT } from '../../i18n/useT';
 import './RoomTemperatureSource.css';
 
 const AUTO = '';
+/** Never a row key: lets a tap on "Automatisch" through while a stale choice is stored. */
+const STALE = '\u0000stale';
 
 interface RoomTemperatureSourceProps {
   room: Room;
@@ -56,7 +58,8 @@ export function RoomTemperatureSource({ room, entities, nameOf }: RoomTemperatur
 
   const chosen = stored[room.id];
   const valid = isRoomTemperatureSource(room, entities, chosen);
-  const selected = valid ? chosen : AUTO;
+  // a stale choice (no longer in the room) shows "Automatisch" checked, but choosing it must still clear the entry
+  const selected = chosen === undefined ? AUTO : valid ? chosen : STALE;
 
   const valueText = (value: number | null, unit: string | null) =>
     value === null ? t('roomTemp.noValue') : `${formatNumber(value, locale, { minDecimals: 1, maxDecimals: 1 })} ${unit ?? haUnit ?? '°'}`;

@@ -1686,6 +1686,6 @@
   "roomTemp.auto": "Automatisk",
   "roomTemp.noValue": "Inget värde",
   "roomTemp.gone": "Källan finns inte längre i rummet, automatisk",
-  "roomTemp.desc": "Var rummets temperatur kommer ifrån. ”Automatisk” tar rummets första temperatursensor, annars termostaten. Valet gäller för alla.",
+  "roomTemp.desc": "Var rummets temperatur kommer ifrån. ”Automatisk” tar rummets första temperatursensor, annars termostaten.",
   "roomTemp.listAria": "Källa för rumstemperaturen"
 }

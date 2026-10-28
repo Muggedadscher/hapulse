@@ -1686,6 +1686,6 @@
   "roomTemp.auto": "Automatique",
   "roomTemp.noValue": "Aucune valeur",
   "roomTemp.gone": "La source n’est plus dans la pièce, automatique",
-  "roomTemp.desc": "D’où vient la température de cette pièce. « Automatique » prend le premier capteur de température de la pièce, sinon le thermostat. Le choix s’applique à tout le monde.",
+  "roomTemp.desc": "D’où vient la température de cette pièce. « Automatique » prend le premier capteur de température de la pièce, sinon le thermostat.",
   "roomTemp.listAria": "Source de la température de la pièce"
 }

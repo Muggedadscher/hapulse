@@ -1686,6 +1686,6 @@
   "roomTemp.auto": "Automático",
   "roomTemp.noValue": "Sem valor",
   "roomTemp.gone": "A fonte já não está na divisão, automático",
-  "roomTemp.desc": "De onde vem a temperatura desta divisão. «Automático» usa o primeiro sensor de temperatura da divisão, senão o termóstato. A escolha aplica-se a todos.",
+  "roomTemp.desc": "De onde vem a temperatura desta divisão. «Automático» usa o primeiro sensor de temperatura da divisão, senão o termóstato.",
   "roomTemp.listAria": "Fonte da temperatura da divisão"
 }

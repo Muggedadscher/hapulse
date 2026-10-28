@@ -1686,6 +1686,6 @@
   "roomTemp.auto": "Automático",
   "roomTemp.noValue": "Sin valor",
   "roomTemp.gone": "La fuente ya no está en la habitación, automático",
-  "roomTemp.desc": "De dónde viene la temperatura de esta habitación. «Automático» usa el primer sensor de temperatura de la habitación, si no, el termostato. La elección se aplica a todos.",
+  "roomTemp.desc": "De dónde viene la temperatura de esta habitación. «Automático» usa el primer sensor de temperatura de la habitación, si no, el termostato.",
   "roomTemp.listAria": "Fuente de la temperatura de la habitación"
 }

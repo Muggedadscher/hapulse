@@ -80,16 +80,22 @@ export function automaticRoomTemperature(room: Room, entities: HassEntityMap): R
   return null;
 }
 
-/** Whether `sourceId` is a source this room offers right now (a string, one of `roomTemperatureSources`). */
+/**
+ * Whether `sourceId` is a source of this room: a string among the room's climate entities, or among its sensors as a
+ * temperature sensor. A room entity without a state yet still counts (it shows nothing then, never the automatic one).
+ */
 export function isRoomTemperatureSource(room: Room, entities: HassEntityMap, sourceId: unknown): sourceId is string {
   if (typeof sourceId !== 'string') return false;
-  if ((room.domains['climate'] ?? []).includes(sourceId)) return entities[sourceId] !== undefined;
-  return (room.domains['sensor'] ?? []).includes(sourceId) && isTemperatureSensor(entities[sourceId]);
+  if ((room.domains['climate'] ?? []).includes(sourceId)) return true;
+  if (!(room.domains['sensor'] ?? []).includes(sourceId)) return false;
+  const entity = entities[sourceId];
+  return entity === undefined || isTemperatureSensor(entity);
 }
 
 export function roomTemperature(room: Room, entities: HassEntityMap, sourceId?: unknown): RoomTemperature | null {
   if (!isRoomTemperatureSource(room, entities, sourceId)) return automaticRoomTemperature(room, entities);
-  const entity = entities[sourceId]!;
+  const entity = entities[sourceId];
+  if (!entity) return null;
   if (sourceId.startsWith('climate.')) {
     const value = climateValue(entity);
     return value === null ? null : { entityId: sourceId, value, unit: null };

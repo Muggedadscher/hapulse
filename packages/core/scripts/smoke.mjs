@@ -2239,6 +2239,8 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
   assertEqual(rt('sensor.power'), 'sensor.oven=59°C', 'room temp: not a temperature sensor → automatic');
   assertEqual(rt('sensor.elsewhere'), 'sensor.oven=59°C', 'room temp: source not in the room → automatic');
   assertEqual(rt(42), 'sensor.oven=59°C', 'room temp: a non-string value → automatic');
+  assertEqual(rt('climate.nostate', glRoom({ sensor: ['sensor.oven'], climate: ['climate.nostate'] })), 'none', 'room temp: chosen room entity without a state yet → nothing, never the oven');
+  assertEqual(rt('sensor.nostate', glRoom({ sensor: ['sensor.oven', 'sensor.nostate'] })), 'none', 'room temp: chosen room sensor without a state yet → nothing');
   assertEqual(rt(undefined, glRoom({ sensor: ['sensor.off_t'], climate: ['climate.gone', 'climate.k'] })), 'climate.k=19.5', 'room temp: automatic climate fallback = first existing climate');
   assertEqual(rt(undefined, glRoom({ climate: ['climate.dead', 'climate.k'] })), 'none', 'room temp: automatic stops at the first existing climate');
   assertEqual(
