@@ -202,6 +202,66 @@
   outline-offset: -2px;
 }
 
+/* ---- Foot of a thermostat card in "Klima – Alle anzeigen" (HeatingPlanStrip): hairline above, one line 13/18,
+   the thin bar 6 under it ---- */
+:root[data-style='glas'] .heating-strip {
+  gap: 8px;
+  margin: auto -20px -20px;
+  padding: 12px 18px 14px 20px;
+  border-top: 0.5px solid var(--g-sep);
+  color: var(--g-label);
+  font-family: var(--g-font);
+  transition: background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .heating-strip:hover {
+  background: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .heating-strip:hover {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .heating-strip:active {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .heating-strip:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .heating-strip__line {
+  gap: 6px;
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .heating-strip__icon,
+:root[data-style='glas'] .heating-strip__name,
+:root[data-style='glas'] .heating-strip__status {
+  color: var(--g-label-2);
+}
+
+:root[data-style='glas'] .heating-strip[data-phase='comfort'] .heating-strip__icon {
+  color: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .heating-strip[data-phase='window'] .heating-strip__icon {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .heating-strip__chev {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .heating-strip .heating-bar--thin .heating-bar__track {
+  height: 6px;
+  border-radius: 3px;
+}
+
 /* ---- The question before switching off ---- */
 :root[data-style='glas'] .heating-confirm__text {
   font: 400 15px / 20px var(--g-font);

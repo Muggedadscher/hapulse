@@ -7,6 +7,9 @@ import { ClimateCard } from '../../cards/ClimateCard';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useT, useLocale } from '../../../i18n/useT';
 import './all-modal.css';
+import { useRooms } from '../../../ha/hooks'; // [fork]
+import { useHeatingPlanAreas } from '../../heating/useHeatingPlan'; // [fork] the room's heating plan under its thermostat
+import { HeatingPlanStrip } from '../../heating/HeatingPlanStrip'; // [fork]
 
 interface ClimateAllModalProps {
   open: boolean;
@@ -16,6 +19,8 @@ interface ClimateAllModalProps {
 export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
   const t = useT();
   const locale = useLocale();
+  const planAreas = useHeatingPlanAreas(); // [fork]
+  const rooms = useRooms(); // [fork]
   const climateEntities = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities)
@@ -48,8 +53,11 @@ export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
               (entity.attributes.friendly_name as string | undefined) ??
               entity.entity_id.split('.')[1]?.replace(/_/g, ' ') ??
               entity.entity_id;
+            const room = rooms.find((r) => r.id === planAreas.get(entity.entity_id)); // [fork]
             return (
-              <ClimateCard key={entity.entity_id} entity={entity} name={name} />
+              <ClimateCard key={entity.entity_id} entity={entity} name={name}>
+                {room && <HeatingPlanStrip areaId={room.id} roomName={room.name} roomEntityIds={room.entityIds} />}{/* [fork] */}
+              </ClimateCard>
             );
           })}
         </div>

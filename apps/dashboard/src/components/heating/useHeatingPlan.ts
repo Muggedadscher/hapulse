@@ -90,6 +90,22 @@ function heatingPlansOf(registries: Registries): Record<string, HeatingPlanEntit
   return plans;
 }
 
+/** Thermostat → the area of its heating plan ("Klima – Alle anzeigen" puts the plan under each thermostat). */
+const thermostatCache = new WeakMap<Registries, ReadonlyMap<string, string>>();
+export function useHeatingPlanAreas(): ReadonlyMap<string, string> {
+  const registries = useEntityStore((s) => s.registries);
+  if (!registries) return EMPTY_AREAS;
+  let map = thermostatCache.get(registries);
+  if (!map) {
+    const m = new Map<string, string>();
+    for (const plan of Object.values(heatingPlansOf(registries))) for (const id of plan.thermostats) m.set(id, plan.areaId);
+    map = m;
+    thermostatCache.set(registries, map);
+  }
+  return map;
+}
+const EMPTY_AREAS: ReadonlyMap<string, string> = new Map();
+
 /** The room has a heating plan whose automation HA knows (the room page shows "Klima" for it). */
 export function useAreaHasHeatingPlan(areaId: string): boolean {
   const registries = useEntityStore((s) => s.registries);
