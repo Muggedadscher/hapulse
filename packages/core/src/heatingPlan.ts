@@ -109,6 +109,13 @@ export function findHeatingPlans(registries: Registries): Record<string, Heating
   return plans;
 }
 
+/** Thermostat → the area of its heating plan (Home's "Klima – Alle anzeigen" puts the plan under each thermostat). */
+export function heatingThermostatAreas(plans: Readonly<Record<string, HeatingPlanEntities>>): Map<string, string> {
+  const areas = new Map<string, string>();
+  for (const plan of Object.values(plans)) for (const id of plan.thermostats) areas.set(id, plan.areaId);
+  return areas;
+}
+
 // ---------------------------------------------------------------------------
 // Times and schedules
 // ---------------------------------------------------------------------------

@@ -358,6 +358,7 @@ export {
   heatingPlanStatus,
   heatingWindowSensors,
   heatingThermostatDeviates,
+  heatingThermostatAreas,
   HEATING_FOLLOW_GRACE_MS,
 } from './heatingPlan.js';
 export type {

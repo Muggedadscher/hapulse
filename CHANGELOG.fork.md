@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F70 — 2026-11-04
+
+**Heizplan unter „Klima – Alle anzeigen“** · _Heating plan in “Climate – See All”_
+
+### Neu / Added
+
+- Auf der Übersicht zeigt „Klima – Alle anzeigen“ unter jedem Thermostat mit Heizplan eine schmale Zeile: was gerade gilt und bis wann, darunter der heutige Tag als Balken; ein Tipp öffnet den Heizplan des Raums  
+  _On the overview, “Climate – See All” shows a slim row under every thermostat with a heating plan: what holds now and until when, today as a bar under it; a tap opens the room’s heating plan_
+
 ## F69 — 2026-10-28
 
 **Raumtemperatur aus der richtigen Quelle** · _Room temperature from the right source_
