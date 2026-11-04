@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { findHeatingPlans, heatingPlanStatus, heatingThermostatDeviates, heatingWindowSensors } from '@hapulse/core';
+import { findHeatingPlans, heatingPlanStatus, heatingThermostatAreas, heatingThermostatDeviates, heatingWindowSensors } from '@hapulse/core';
 import type { HassEntity, HeatingPlanEntities, HeatingPlanStatus, HeatingWeek, Registries } from '@hapulse/core';
 import { useEntityStore } from '../../stores/entityStore';
 import { useConnectionStore } from '../../stores/connectionStore';
@@ -97,9 +97,7 @@ export function useHeatingPlanAreas(): ReadonlyMap<string, string> {
   if (!registries) return EMPTY_AREAS;
   let map = thermostatCache.get(registries);
   if (!map) {
-    const m = new Map<string, string>();
-    for (const plan of Object.values(heatingPlansOf(registries))) for (const id of plan.thermostats) m.set(id, plan.areaId);
-    map = m;
+    map = heatingThermostatAreas(heatingPlansOf(registries));
     thermostatCache.set(registries, map);
   }
   return map;

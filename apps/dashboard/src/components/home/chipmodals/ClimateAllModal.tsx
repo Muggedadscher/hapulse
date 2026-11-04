@@ -21,6 +21,11 @@ export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
   const locale = useLocale();
   const planAreas = useHeatingPlanAreas(); // [fork]
   const rooms = useRooms(); // [fork]
+  // [fork] Klassisch: every open Modal hears Esc; while a heating plan's window is open above, its Esc is not ours
+  const [planOpen, setPlanOpen] = React.useState(false);
+  const close = React.useCallback(() => {
+    if (!planOpen) onClose();
+  }, [planOpen, onClose]);
   const climateEntities = useEntityStore(
     useShallow((s) =>
       Object.values(s.entities)
@@ -36,7 +41,7 @@ export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={close /* [fork] */}
       title={t('home.chipmodals.climateAll.title')}
       icon={<Thermometer size={20} strokeWidth={1.75} />}
     >
@@ -55,8 +60,8 @@ export function ClimateAllModal({ open, onClose }: ClimateAllModalProps) {
               entity.entity_id;
             const room = rooms.find((r) => r.id === planAreas.get(entity.entity_id)); // [fork]
             return (
-              <ClimateCard key={entity.entity_id} entity={entity} name={name}>
-                {room && <HeatingPlanStrip areaId={room.id} roomName={room.name} roomEntityIds={room.entityIds} />}{/* [fork] */}
+              <ClimateCard key={entity.entity_id} entity={entity} name={name}>{/* [fork] with the room's heating plan */}
+                {room && <HeatingPlanStrip areaId={room.id} roomName={room.name} roomEntityIds={room.entityIds} onSheetChange={setPlanOpen} />}{/* [fork] */}
               </ClimateCard>
             );
           })}

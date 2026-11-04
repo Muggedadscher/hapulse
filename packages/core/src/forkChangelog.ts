@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 70,
+    date: '2026-11-04',
+    title: { de: 'Heizplan unter „Klima – Alle anzeigen“', en: 'Heating plan in “Climate – See All”' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Auf der Übersicht zeigt „Klima – Alle anzeigen“ unter jedem Thermostat mit Heizplan eine schmale Zeile: was gerade gilt und bis wann, darunter der heutige Tag als Balken; ein Tipp öffnet den Heizplan des Raums',
+            en: 'On the overview, “Climate – See All” shows a slim row under every thermostat with a heating plan: what holds now and until when, today as a bar under it; a tap opens the room’s heating plan',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 69,
     date: '2026-10-28',
     title: { de: 'Raumtemperatur aus der richtigen Quelle', en: 'Room temperature from the right source' },

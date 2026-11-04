@@ -206,8 +206,7 @@
    the thin bar 6 under it ---- */
 :root[data-style='glas'] .heating-strip {
   gap: 8px;
-  margin: auto -20px -20px;
-  padding: 12px 18px 14px 20px;
+  padding: 12px 18px 14px var(--heating-strip-pad, 20px);
   border-top: 0.5px solid var(--g-sep);
   color: var(--g-label);
   font-family: var(--g-font);
@@ -229,13 +228,19 @@
   background: var(--g-hover);
 }
 
-:root[data-style='glas'] .heating-strip:focus-visible {
+:root[data-style='glas'] .heating-strip:has(.heating-strip__line:focus-visible) {
   outline: 2px solid var(--g-focus);
   outline-offset: -2px;
 }
 
+/* the card's gap (14) is the distance to the modes */
+:root[data-style='glas'] .heating-strip-slot {
+  padding-top: 0;
+}
+
 :root[data-style='glas'] .heating-strip__line {
   gap: 6px;
+  color: var(--g-label);
   font: 400 13px / 18px var(--g-font);
 }
 

@@ -185,6 +185,7 @@ import {
   HEATING_PLAN_LABEL,
   HEATING_PLAN_SAVE_AUTOMATION,
   findHeatingPlans,
+  heatingThermostatAreas,
   normalizeHeatingTime,
   parseHeatingWeek,
   validHeatingBlocks,
@@ -2591,6 +2592,12 @@ console.log('\n── heating plan ──');
   const demoPlan = findHeatingPlans(DEMO_REGISTRIES).living_room;
   assert(demoPlan?.automation === DEMO_HEATING.automation && demoPlan.schedule === DEMO_HEATING.schedule && demoPlan.comfort === DEMO_HEATING.comfort && demoPlan.eco === DEMO_HEATING.eco, 'demo living room: heating plan found');
   assertEqual(demoPlan?.thermostats.join(','), 'climate.living_room', 'demo living room: its thermostat');
+  const thermostatAreas = heatingThermostatAreas({
+    ...plans,
+    wz: { areaId: 'wz', automation: 'automation.a', schedule: null, comfort: null, eco: null, thermostats: ['climate.wz_1', 'climate.wz_2'] },
+  });
+  assertEqual(JSON.stringify([...thermostatAreas].sort()), JSON.stringify([['climate.bad', 'bad'], ['climate.wz_1', 'wz'], ['climate.wz_2', 'wz']]), 'thermostat areas: every thermostat of a plan to its room');
+  assertEqual(heatingThermostatAreas(findHeatingPlans(DEMO_REGISTRIES)).get('climate.bedroom'), undefined, 'thermostat areas: a thermostat without a plan has none');
 
   const times = { '06:00:00': '06:00', '7:05': '07:05', '06:00:30': '06:00', '23:59': '23:59', '23:59:59.999999': '24:00', '24:00:00': '24:00', '24:00': '24:00', '24:01': null, '25:00': null, '12:60': null, 'x': null, '': null };
   for (const [input, expected] of Object.entries(times)) assertEqual(normalizeHeatingTime(input), expected, `time ${JSON.stringify(input)}`);
