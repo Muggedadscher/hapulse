@@ -30,15 +30,15 @@
    becomes a ::before below it, the parts of the body keep the classic flex column with a 12 gap (a part pinned to the
    bottom with margin-top: auto stays there). home.css keeps the overview's own list until every page is in (plan §7.6).
    The garage card has no header wrapper, its title row is the head; the system monitor's head and the pool cards' head
-   hold symbol and title directly. A card whose head carries a control keeps its title in the surface (further below):
-   the pool schedule (switch), the zones (view switch), the queue and the library (player choice); on the music page the
-   players' card joins them, so its column starts flush with Now Playing. The headless alarm panel stays a card as it
+   hold symbol and title directly (the pool schedule's switch is the first row of its surface, pool.css). A card whose
+   head carries a control keeps its title in the surface (further below): the zones (view switch), the queue and the
+   library (player choice); on the music page the players' card joins them, so its column starts flush with Now Playing. The headless alarm panel stays a card as it
    is. ---- */
 :root[data-style='glas']
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
     .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
-    .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
+    .pool-layout .pool-card,
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)
@@ -57,7 +57,7 @@
   :is(
     .security-page :is(.people-list-card, .locks-section-card, .garage-section-card, .sensor-section-card),
     .energy-page :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water, .energy-gas),
-    .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))),
+    .pool-layout .pool-card,
     .system-page :is(.sys-monitor-card, .batteries-card, .activity-card),
     .automations-page :is(.auto-feed-card, .auto-cat-card),
     .scenes-page :is(.scene-feed-card, .scene-room-card)
@@ -85,7 +85,7 @@
     .energy-page
       :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water:where(:has(> .energy-kv-list)))
       > .energy-card__header,
-    .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))) > .pool-card__head,
+    .pool-layout .pool-card > .pool-card__head,
     .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
     .automations-page :is(.auto-feed-card__header, .auto-cat-card__header),
     .scenes-page :is(.scene-feed-card__header, .scene-room-card__header)
@@ -112,7 +112,7 @@
       .energy-page
         :is(.energy-sources, .energy-devices, .energy-solar, .energy-now, .energy-battery, .energy-water:where(:has(> .energy-kv-list)))
         > .energy-card__header,
-      .pool-layout .pool-card:where(:not(:has(> .pool-card__head > .pool-switch))) > .pool-card__head,
+      .pool-layout .pool-card > .pool-card__head,
       .system-page :is(.sys-monitor-card__header, .batteries-card__header, .activity-card__header),
       .automations-page :is(.auto-feed-card__header, .auto-cat-card__header),
       .scenes-page :is(.scene-feed-card__header, .scene-room-card__header)
@@ -125,7 +125,6 @@
    the surface, 8 below it. ---- */
 :root[data-style='glas']
   :is(
-    .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)),
     .music-page :is(.other-players-card, .zones-card, .queue-card, .library-card)
   ) {
   row-gap: 12px;
@@ -134,7 +133,6 @@
 
 :root[data-style='glas']
   :is(
-    .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)) > .pool-card__head,
     .music-page :is(.other-players-card__header, .zones-card__header, .queue-card__header, .library-card__header)
   ) {
   display: flex;
@@ -153,7 +151,7 @@
   :is(
     .g-tafel,
     .security-page .alarm-panel-card,
-    .pool-layout :is(.pool-hero, .pool-card:where(:has(> .pool-card__head > .pool-switch))),
+    .pool-layout .pool-hero,
     .music-page .card,
     .settings-page .card
   ):where(.card):hover {
@@ -498,11 +496,9 @@
   }
 }
 
-/* ---- Pool: its cards flow in their own grid (auto-fit, at least 300 wide) with the gaps of the grids above. From two
-   columns on the schedule card (title in the surface) starts on the line of its neighbours' surfaces. The page has no
-   fixed descendants (its windows are portaled), so the container may hold at every width. ---- */
+/* ---- Pool: its cards flow in their own grid (auto-fit, at least 300 wide) with the gaps of the grids above. Every card
+   has its title above the surface, so the surfaces of a row start on one line. ---- */
 :root[data-style='glas'] .pool-layout {
-  container: g-pool / inline-size;
   gap: 20px;
 }
 
@@ -517,12 +513,6 @@
 
   :root[data-style='glas'] .pool-layout > .pool-grid {
     gap: 26px 20px;
-  }
-}
-
-@container g-pool (min-width: 620px) {
-  :root[data-style='glas'] .pool-layout .pool-card:where(:has(> .pool-card__head > .pool-switch)) {
-    margin-top: 50px;
   }
 }
 

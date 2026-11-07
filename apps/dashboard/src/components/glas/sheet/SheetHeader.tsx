@@ -1,7 +1,8 @@
 /**
  * [fork] Glas sheets (stage 3) — the head of a window in Glas (plan docs/glas/PLAN-ETAPPE-3.md K53, GLAS-DESIGN
- * §7.18/§7.19): grid `44px 1fr 44px`, close (hit area 44, circle 32) on the left — "‹ Zurück" on a page —, title
- * 17/22 600 in the middle with an optional subtitle; the icon only on the desktop. The title keeps the id the panel's
+ * §7.18/§7.19): grid `44px 1fr 44px`, close (hit area 44, circle 32) on the left — on a page the same circle with a
+ * chevron (iOS 26: back is a round glass button without text) —, title 17/22 600 in the middle with an optional
+ * subtitle; the icon only on the desktop. The title keeps the id the panel's
  * `aria-labelledby` points to. The entity detail (stage 4, plan docs/glas/PLAN-ETAPPE-4.md K79, §7.20/§7.21) puts its
  * state tile before name and room (`lead`, also on the phone) and its star into the end column (`trailing`); in the
  * inspector the head reads tile, name and room, star, close (styles/glas/detail.css).
@@ -20,7 +21,7 @@ interface SheetHeaderProps {
   lead?: ReactNode;
   /** In the end column instead of the empty space (the detail's star). */
   trailing?: ReactNode;
-  /** A page in another window: "‹ Zurück" instead of ×. */
+  /** A page in another window: a chevron (back) instead of ×. */
   page: boolean;
   onClose: () => void;
 }
@@ -30,9 +31,10 @@ export function SheetHeader({ title, titleId, subtitle, icon, lead, trailing, pa
   return (
     <div className={`g-sheet-header${page ? ' g-sheet-header--page' : ''}${lead ? ' g-sheet-header--lead' : ''}`}>
       {page ? (
-        <button type="button" className="g-sheet-header__back" onClick={onClose}>
-          <ChevronLeft size={24} strokeWidth={2.25} aria-hidden="true" />
-          <span>{t('common.back')}</span>
+        <button type="button" className="g-sheet-header__back" aria-label={t('common.back')} onClick={onClose}>
+          <span className="g-sheet-header__close-circle" aria-hidden="true">
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </span>
         </button>
       ) : (
         <button type="button" className="g-sheet-header__close" aria-label={t('common.close')} onClick={onClose}>

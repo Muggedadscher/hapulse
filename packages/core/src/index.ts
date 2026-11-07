@@ -81,6 +81,7 @@ export type { HistoryPoint, LogbookEntry } from './history.js';
 
 export { indexSystemMonitor, pickSystemMetrics } from './systemMonitor.js';
 export type { SystemMonitorIndex, SystemMetricFamily, SystemMetrics } from './systemMonitor.js';
+export { systemMetricNamer, dataSizeBytes, formatDataSize } from './systemMetricDisplay.js'; // [fork]
 
 // Domain helpers
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';
@@ -186,6 +187,10 @@ export {
   daySlotsToWindows,
   dailyRuntimeBars,
   poolDayStarts, // [fork]
+  poolWindowsToPeriods, // [fork]
+  poolPeriodsToWindows, // [fork]
+  POOL_MAX_PERIODS, // [fork]
+  POOL_FIRST_PERIOD, // [fork]
   POOL_MANUAL_MIN_MINUTES,
   POOL_MANUAL_MAX_MINUTES,
   POOL_MANUAL_PRESETS_MIN,
@@ -320,6 +325,8 @@ export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './s
 export type { SizePreset, SectionSize } from './sizePresets.js';
 export { roomGlances, lightPercent, climateTone } from './roomGlance.js';
 export type { RoomGlance, ClimateTone } from './roomGlance.js';
+export { roomTemperature, roomTemperatureSources, automaticRoomTemperature, isRoomTemperatureSource, withRoomTemperature } from './roomTemperature.js'; // [fork]
+export type { RoomTemperature, RoomTemperatureSource } from './roomTemperature.js'; // [fork]
 
 // [fork] The summary chips' counts, shared with the subtitles of their windows (docs/glas/PLAN-ETAPPE-5.md K97)
 export { chipCounts } from './chipCounts.js';
@@ -327,3 +334,118 @@ export type { ChipCounts, ChipCountOptions } from './chipCounts.js';
 
 // [fork] The fork's spelling of upstream texts, laid over the dictionaries (docs/glas/PLAN-TEXTE.md)
 export { withCase } from './textCase.js';
+
+// [fork] Heating plan per room: entities, schedule periods, status line (glas/heizung-zeitplan/PLAN.md)
+export {
+  HEATING_PLAN_LABEL,
+  HEATING_PLAN_SAVE_AUTOMATION,
+  HEATING_MAX_BLOCKS,
+  HEATING_WEEKDAYS,
+  isHeatingPlanEntry,
+  findHeatingPlans,
+  normalizeHeatingTime,
+  heatingMinutes,
+  sortHeatingBlocks,
+  emptyHeatingWeek,
+  parseHeatingWeek,
+  validHeatingBlocks,
+  sameHeatingBlocks,
+  heatingWeekMatches,
+  heatingSaveDays,
+  heatingDayGroups,
+  heatingDayGroupKind,
+  heatingWeekday,
+  heatingPlanStatus,
+  heatingWindowSensors,
+  heatingThermostatDeviates,
+  heatingThermostatAreas,
+  HEATING_FOLLOW_GRACE_MS,
+} from './heatingPlan.js';
+export type {
+  HeatingWeekday,
+  HeatingBlock,
+  HeatingWeek,
+  HeatingPlanEntities,
+  HeatingSaveDay,
+  HeatingDayGroup,
+  HeatingDayGroupKind,
+  HeatingPhase,
+  HeatingUntil,
+  HeatingPlanStatus,
+  HeatingStatusInput,
+  HeatingFollowInput,
+} from './heatingPlan.js';
+export { DEMO_HEATING, demoHeatingWeek, tickDemoHeating } from './heatingPlanDemo.js';
+// [fork] Editing the comfort periods (Etappe 2b)
+export {
+  HEATING_STEP_MINUTES,
+  HEATING_NEW_DAY_BLOCK,
+  heatingTimeOf,
+  snapHeatingMinutes,
+  heatingEdgeRange,
+  moveHeatingEdge,
+  heatingRingMinutes,
+  heatingRingAngle,
+  addHeatingBlock,
+  removeHeatingBlock,
+  heatingBlockMinutes,
+  heatingFieldMinutes,
+  heatingFieldValue,
+  heatingWeekWith,
+  heatingChangedDays,
+} from './heatingEdit.js';
+export type { HeatingEdge } from './heatingEdit.js';
+// [fork] Setting up a room's plan with one button (Etappe 4)
+export {
+  HEATING_BLUEPRINT_PATH,
+  HEATING_SKIP_LABEL,
+  HEATING_SKIP_LABEL_NAME,
+  HEATING_PLAN_LABEL_NAME,
+  HEATING_AUTOMATION_CATEGORY,
+  HEATING_HELPER_CATEGORY,
+  heatingRoomSlug,
+  heatingSetupAutomationId,
+  heatingCanHeat,
+  heatingCanCool,
+  findHeatingSetupRooms,
+  heatingRelatedIds,
+  heatingCoveredThermostats,
+  heatingSetupContacts,
+  heatingSnapTemp,
+  heatingSetupTemps,
+  heatingSetupIds,
+  heatingSuffixedEntityId,
+  heatingAutomationConfig,
+  heatingPriorStates,
+} from './heatingSetup.js';
+export type {
+  HeatingSetupRoom,
+  HeatingSetupInput,
+  HeatingSetupContact,
+  HeatingSetupTemps,
+  HeatingSetupIds,
+  HeatingStoredItem,
+  HeatingAutomationInput,
+  HeatingPriorState,
+} from './heatingSetup.js';
+export { demoHeatingSetup, DEMO_SETUP_ATTRIBUTE } from './heatingPlanDemo.js';
+export type { DemoHeatingSetup } from './heatingPlanDemo.js';
+// [fork] Periods of a day and the rules of the ring/time-field editor (heating plan + pool schedule)
+export {
+  PERIOD_STEP_MINUTES,
+  periodMinutes,
+  periodTimeOf,
+  snapPeriodMinutes,
+  sortPeriods,
+  periodEdgeRange,
+  movePeriodEdge,
+  periodRingMinutes,
+  periodRingAngle,
+  addPeriod,
+  removePeriod,
+  periodLength,
+  periodFieldMinutes,
+  periodFieldValue,
+  samePeriods,
+} from './timePeriods.js';
+export type { TimePeriod, PeriodEdge, AddPeriodOptions } from './timePeriods.js';

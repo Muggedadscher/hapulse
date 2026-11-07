@@ -6,6 +6,171 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F70 — 2026-11-04
+
+**Heizplan unter „Klima – Alle anzeigen“** · _Heating plan in “Climate – See All”_
+
+### Neu / Added
+
+- Auf der Übersicht zeigt „Klima – Alle anzeigen“ unter jedem Thermostat mit Heizplan eine schmale Zeile: was gerade gilt und bis wann, darunter der heutige Tag als Balken; ein Tipp öffnet den Heizplan des Raums  
+  _On the overview, “Climate – See All” shows a slim row under every thermostat with a heating plan: what holds now and until when, today as a bar under it; a tap opens the room’s heating plan_
+
+## F69 — 2026-10-28
+
+**Raumtemperatur aus der richtigen Quelle** · _Room temperature from the right source_
+
+### Neu / Added
+
+- Für Administratoren: Auf der Raumseite im Bearbeiten-Modus lässt sich wählen, woher die Raumtemperatur kommt, „Automatisch“ oder ein bestimmter Temperatursensor bzw. ein Thermostat des Raums  
+  _For administrators: on the room page in edit mode you can choose where the room temperature comes from, “Automatic” or a specific temperature sensor or thermostat of the room_
+
+### Behoben / Fixed
+
+- Mit gewählter Quelle zeigen Raumkacheln, der Raum oben auf der Übersicht und der Raumseite sowie die Klima-Karte deren Wert, etwa das Thermostat statt des Backofens in der Küche  
+  _With a chosen source, the room tiles, the room at the top of the overview and the room page and the climate card show its value, for example the thermostat instead of the oven in the kitchen_
+
+## F68 — 2026-10-26
+
+**Systemmonitor: klare Namen, eine Liste** · _System monitor: clear names, one list_
+
+### Geändert / Changed
+
+- Die Werte im Systemmonitor heißen ohne den Gerätenamen davor, also „Prozessornutzung“ statt „System Monitor Prozessornutzung“, in beiden Stilen  
+  _The system monitor’s values are named without the device name in front, “Processor use” instead of “System Monitor Processor use”, in both styles_
+- In Glas ist der Systemmonitor eine Liste wie die Batterien daneben, ohne Kacheln und Zwischentitel; Speichergrößen stehen in GB statt MiB  
+  _In Glass the system monitor is a list like the batteries beside it, without tiles and group titles; sizes are shown in GB instead of MiB_
+
+## F67 — 2026-10-26
+
+**Pool-Zeitplan: Überschrift über der Karte** · _Pool schedule: title above the card_
+
+### Geändert / Changed
+
+- In Glas steht „Zeitplan“ auf der Pool-Seite jetzt wie die anderen Überschriften über der Karte; der Schalter ist die erste Zeile in der Karte („Zeitplan aktiv“)  
+  _In Glass, “Schedule” on the pool page now stands above its card like the other titles; the switch is the first row inside the card (“Schedule on”)_
+
+## F66 — 2026-10-25
+
+**Pool-Zeiten wie im Heizplan** · _Pool times like the heating plan_
+
+### Geändert / Changed
+
+- Die Zeiten des Pool-Zeitplans stellt man jetzt so ein wie die Zeiten im Heizplan: die Tage als runde Knöpfe, ein 24-Stunden-Ring zum Ziehen und „An ab“ / „Aus ab“ für jede Laufzeit  
+  _The pool schedule’s times are now set like the times of a heating plan: the days as round buttons, a 24-hour ring to drag and “On from” / “Off from” for each run_
+- Laufzeiten, die aneinanderstoßen, werden beim Speichern zu einer; höchstens 10 Laufzeiten am Tag  
+  _Runs that touch become one when saved; at most 10 runs a day_
+- In Glas ist das ein Fenster mit × und ✓, in Klassisch ein Dialog mit Abbrechen und „Zeitplan speichern“  
+  _In Glass it is a window with × and ✓, in Classic a dialog with Cancel and “Save schedule”_
+- Die Karte „Zeitplan“ zeigt die Laufzeit pro Tag in Stunden und Minuten statt als Dezimalzahl  
+  _The “Schedule” card shows the run time per day in hours and minutes instead of a decimal number_
+
+## F65 — 2026-10-25
+
+**Große Fenster wieder mit Abstand oben** · _Large windows with their gap at the top again_
+
+### Geändert / Changed
+
+- Große Fenster in Glas beginnen wieder mit etwas Abstand unter dem oberen Rand, wie vor F63; der runde Zurück-Knopf bleibt  
+  _Large windows in Glass start a little below the top edge again, as before F63; the round back button stays_
+
+## F64 — 2026-10-25
+
+**Heizplan per Knopf einrichten** · _Set up a heating plan with one button_
+
+### Neu / Added
+
+- Für Administratoren: Hat ein Raum ein Thermostat, aber keinen Heizplan, steht unter „Klima“ die Karte „Heizplan einrichten“, und die Übersicht zeigt den Hinweis „Heizplan fehlt“  
+  _For administrators: when a room has a thermostat but no heating plan, “Climate” shows the card “Set up heating plan” and the overview shows the hint “Heating plan missing”_
+- „Einrichten“ legt in Home Assistant die Automation, den Zeitplan und die Temperaturen Komfort und Eco an, mit Bereich, Label und Kategorie wie in den übrigen Räumen; Thermostate und Fenster sind wählbar, ein Gerät, das auch kühlen kann, ist nicht vorgewählt  
+  _“Set up” creates the automation, the schedule and the comfort and eco temperatures in Home Assistant, with area, label and category as in the other rooms; thermostats and windows can be chosen, a device that can also cool is not chosen in advance_
+- „Nicht einrichten“ merkt sich, dass der Raum keinen Plan haben soll, und nimmt den Hinweis weg; „Doch einrichten“ macht das rückgängig  
+  _“Don’t set up” remembers that the room should have no plan and removes the hint; “Set up anyway” undoes it_
+- Fehlt in Home Assistant etwas für die Einrichtung, nennt das Fenster es vorher; bricht sie ab, macht ein neuer Versuch dort weiter, ohne etwas doppelt anzulegen  
+  _When Home Assistant lacks something for the setup, the window says so first; when a setup stops, trying again continues there without creating anything twice_
+
+## F63 — 2026-10-25
+
+**Fenster in Glas wie in iOS 26** · _Windows in Glass like in iOS 26_
+
+### Geändert / Changed
+
+- Eine Seite in einem Fenster (etwa die Zeiten im Heizplan, „Entriegeln?“ oder „Garage öffnen?“) geht mit einem runden Zurück-Knopf zurück, so wie das × ein Fenster schließt  
+  _A page in a window (such as the times of a heating plan, “Unlock?” or “Open garage?”) goes back with a round back button, the way the × closes a window_
+- Ein großes Fenster reicht bis knapp unter den oberen Rand; der Kopf der Seite dahinter mit seinem Zurück-Knopf ist nicht mehr zu sehen  
+  _A large window reaches just below the top edge; the head of the page behind it with its back button no longer shows_
+- Die Zeiten im Heizplan zeigen nur noch die Tage als Titel, ohne „Heizplan · Raum“ darunter  
+  _The times of a heating plan show only the days as their title, without “Heating plan · room” below_
+
+## F62 — 2026-10-24
+
+**Komfortzeiten im Heizplan ändern** · _Change the comfort times of a heating plan_
+
+### Neu / Added
+
+- Im Fenster „Zeitplan und Temperaturen“ öffnet ein Tipp auf eine Gruppe von Tagen ihre Zeiten: Tage wählen, am 24-Stunden-Ring ziehen oder die Uhrzeit eintippen, in Schritten von 5 Minuten  
+  _In the window “Schedule and temperatures” a tap on a group of days opens its times: choose the days, drag on the 24-hour ring or type the time, in steps of 5 minutes_
+- Eine zweite Zeit am Tag hinzufügen, eine Zeit entfernen oder alle Zeiten der gewählten Tage löschen; „Zeiten für weitere Tage“ legt Zeiten für Tage ohne Komfortzeit an  
+  _Add a second time of the day, remove a time or delete all times of the chosen days; “Times for other days” sets times for days without a comfort time_
+- Der Haken speichert die Zeiten sofort in Home Assistant, auch ohne Administratorrechte; nimmt Home Assistant sie nicht an, bleibt die Seite offen mit „Erneut versuchen“  
+  _The check mark saves the times in Home Assistant at once, also without administrator rights; when Home Assistant does not take them, the page stays open with “Try again”_
+
+## F61 — 2026-10-24
+
+**Heizplan in jedem Raum** · _Heating plan in every room_
+
+### Neu / Added
+
+- In Räumen mit Heizplan steht unter „Klima“ die Karte „Heizplan“: was gerade gilt und bis wann, der heutige Tag als Balken mit den Komfortzeiten, Komfort- und Eco-Temperatur und ein Schalter für den Plan  
+  _Rooms with a heating plan show the card “Heating plan” under “Climate”: what applies now and until when, today as a bar with the comfort times, the comfort and eco temperatures and a switch for the plan_
+- „Zeitplan und Temperaturen“ öffnet ein Fenster mit dem Schalter, Komfort und Eco zum Einstellen und den Komfortzeiten, nach gleichen Tagen gruppiert  
+  _“Schedule and temperatures” opens a window with the switch, comfort and eco to set and the comfort times grouped by equal days_
+- Ausschalten fragt vorher, denn dann sind auch Fenster- und Frostschutz des Raums aus; die Karte sagt, wenn ein Fenster offen ist oder das Thermostat dem Plan nicht folgt  
+  _Switching off asks first, as the room’s window and frost protection are off then too; the card says when a window is open or the thermostat does not follow the plan_
+- Alle Benutzer können das bedienen, auch ohne Administratorrechte in Home Assistant  
+  _Every user can do this, also without administrator rights in Home Assistant_
+
+## F60 — 2026-10-24
+
+**Automationen nach den Kategorien aus Home Assistant** · _Automations grouped by Home Assistant’s categories_
+
+### Geändert / Changed
+
+- Die Gruppen unter Automationen tragen die Kategorie, die eine Automation in Home Assistant hat, wie dessen eigene Automationsliste; Automationen ohne Kategorie bleiben nach dem ersten Wort ihres Namens gruppiert  
+  _The groups on the automations page carry the category an automation has in Home Assistant, like its own automation list; automations without a category stay grouped by the first word of their name_
+- Eine Gruppe, die dadurch einen neuen Namen bekommt, steht einmalig wieder sichtbar an ihrem Standardplatz, auch wenn sie vorher ausgeblendet oder verschoben war; ebenso nach dem Umbenennen einer Kategorie in Home Assistant  
+  _A group that gets a new name this way shows up once more at its default place, even if it was hidden or moved before; the same after renaming a category in Home Assistant_
+
+## F59 — 2026-10-24
+
+**Thermostat in der Raumkarte zählt jeden Tipp** · _Thermostat in the room card counts every tap_
+
+### Behoben / Fixed
+
+- Plus und Minus an der Thermostat-Pille der Raumkarte zählen jeden Tipp und zeigen den neuen Wert sofort, wie die Klima-Karte; vorher schickten schnelle Tipps immer denselben Wert, bis das Thermostat geantwortet hatte  
+  _Plus and minus on the room card’s thermostat pill count every tap and show the new value at once, like the climate card; quick taps used to send the same value until the thermostat had answered_
+- Die Pille hält Schrittweite, Mindest- und Höchstwert des Thermostats ein und ist gesperrt, wenn es keine einzelne Solltemperatur meldet (etwa im Bereichsmodus)  
+  _The pill keeps to the thermostat’s step, minimum and maximum and is disabled when it reports no single target temperature (e.g. in range mode)_
+
+## F58 — 2026-10-23
+
+**Pool: aufgeräumt auf breiten Bildschirmen** · _Pool: tidy on wide screens_
+
+### Geändert / Changed
+
+- Die Karte „Solar-Automatik“ steht in einer schmalen Spalte mittig untereinander wie „Manueller Betrieb“, statt mit leerer rechter Hälfte  
+  _The card “Solar automation” stacks centred in a narrow column like “Manual run”, instead of leaving its right half empty_
+- „Laufzeit pro Tag“ ist auf Tablet und Desktop zwei Spalten breit, auf sehr breiten Bildschirmen der Rest der Zeile; im Stil Glas steht der Wert des Tages groß oben in der Karte  
+  _“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in Glass the day’s value stands large at the top of the card_
+
+## F57 — 2026-10-22
+
+**Energie: Balken stehen wieder unten** · _Energy: bars stand on the base again_
+
+### Behoben / Fixed
+
+- Die Balken der Karten „Verbrauch“ und „Solar“ füllen ihre Spalte auch bei kleinen Werten unter 1 kWh und schweben nicht mehr über der Grundlinie  
+  _The bars of the cards “Consumption” and “Solar” fill their column also for small values below 1 kWh and no longer float above the base line_
+
 ## F56 — 2026-10-21
 
 **Energie: jetzt und Batterie** · _Energy: now and battery_

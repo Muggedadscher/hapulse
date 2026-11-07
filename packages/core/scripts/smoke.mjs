@@ -79,6 +79,9 @@ import {
   compareVersions,
   indexSystemMonitor,
   pickSystemMetrics,
+  systemMetricNamer, // [fork]
+  dataSizeBytes, // [fork]
+  formatDataSize, // [fork]
   parseScheduleAttributes,
   buildScheduleTimeslots,
   normalizeWindows,
@@ -152,6 +155,8 @@ import {
   tallKey,
   withTall,
   roomGlances,
+  roomTemperature,
+  roomTemperatureSources,
   lightPercent,
   climateTone,
   // [fork] Etappe 5: the summary chips' counts
@@ -176,6 +181,65 @@ import {
   demoBatterySoc,
   computeEnergyDashboard,
   energyStatisticIds,
+  // [fork] heating plan
+  HEATING_PLAN_LABEL,
+  HEATING_PLAN_SAVE_AUTOMATION,
+  findHeatingPlans,
+  heatingThermostatAreas,
+  normalizeHeatingTime,
+  parseHeatingWeek,
+  validHeatingBlocks,
+  heatingWeekMatches,
+  heatingSaveDays,
+  heatingDayGroups,
+  heatingDayGroupKind,
+  heatingWeekday,
+  heatingPlanStatus,
+  emptyHeatingWeek,
+  DEMO_HEATING,
+  demoHeatingWeek,
+  heatingWindowSensors,
+  heatingThermostatDeviates,
+  HEATING_FOLLOW_GRACE_MS,
+  tickDemoHeating,
+  heatingTimeOf,
+  heatingEdgeRange,
+  moveHeatingEdge,
+  heatingRingMinutes,
+  addHeatingBlock,
+  removeHeatingBlock,
+  heatingBlockMinutes,
+  heatingFieldMinutes,
+  heatingFieldValue,
+  heatingWeekWith,
+  heatingChangedDays,
+  HEATING_MAX_BLOCKS,
+  // [fork] heating plan: set up with one button
+  HEATING_BLUEPRINT_PATH,
+  HEATING_SKIP_LABEL,
+  heatingRoomSlug,
+  heatingSetupAutomationId,
+  heatingCanHeat,
+  heatingCanCool,
+  findHeatingSetupRooms,
+  heatingRelatedIds,
+  heatingCoveredThermostats,
+  heatingSetupContacts,
+  heatingSnapTemp,
+  heatingSetupTemps,
+  heatingSetupIds,
+  heatingSuffixedEntityId,
+  heatingAutomationConfig,
+  heatingPriorStates,
+  demoHeatingSetup,
+  DEMO_SETUP_ATTRIBUTE,
+  poolWindowsToPeriods,
+  poolPeriodsToWindows,
+  POOL_MAX_PERIODS,
+  POOL_FIRST_PERIOD,
+  addPeriod,
+  movePeriodEdge,
+  samePeriods,
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -1182,6 +1246,44 @@ assertEqual(enMetrics.cpu?.entity_id, 'sensor.system_monitor_processor_use', 'CP
 assertEqual(enMetrics.memory?.entity_id, 'sensor.system_monitor_memory_use_percent', 'RAM still found without registry keys');
 assertEqual(enMetrics.disk?.entity_id, 'sensor.system_monitor_disk_use_percent', 'disk still found without registry keys');
 
+// [fork] Names without the device's name, sizes in decimal units (systemMetricDisplay.ts)
+console.log('\n── systemMetricNamer / formatDataSize ──');
+const smNamed = (entity_id, friendly_name, unit) => ({
+  ...smState(entity_id, '1'),
+  attributes: { friendly_name, ...(unit ? { unit_of_measurement: unit } : {}) },
+});
+const namer = systemMetricNamer({
+  areas: [],
+  devices: [{ id: 'dev_sm', area_id: null, name: 'System Monitor' }, { id: 'dev_renamed', area_id: null, name: 'System Monitor', name_by_user: 'Server' }, { id: 'dev_us', area_id: null, name: 'My_Host' }],
+  entities: [
+    { entity_id: 'sensor.processor_use', device_id: 'dev_sm', platform: 'systemmonitor' },
+    { entity_id: 'sensor.renamed', device_id: 'dev_sm', platform: 'systemmonitor' },
+    { entity_id: 'sensor.only_device', device_id: 'dev_sm', platform: 'systemmonitor' },
+    { entity_id: 'sensor.server_cpu', device_id: 'dev_renamed', platform: 'systemmonitor' },
+    { entity_id: 'sensor.host_cpu', device_id: 'dev_us', platform: 'systemmonitor' },
+  ],
+});
+assertEqual(namer(smNamed('sensor.processor_use', 'System Monitor Prozessornutzung')), 'Prozessornutzung', 'the device name in front is dropped');
+assertEqual(namer(smNamed('sensor.renamed', 'Mein Prozessor')), 'Mein Prozessor', 'a name the user set without the prefix stays');
+assertEqual(namer(smNamed('sensor.only_device', 'System Monitor')), 'System Monitor', 'a name that is only the device name stays');
+assertEqual(namer(smNamed('sensor.server_cpu', 'Server Prozessornutzung')), 'Prozessornutzung', 'a renamed device is dropped by its new name');
+assertEqual(namer(smNamed('sensor.host_cpu', 'My_Host CPU')), 'CPU', 'underscores in the device name match the shown name');
+assertEqual(namer(smNamed('sensor.unknown_entity', 'System Monitor Last')), 'System Monitor Last', 'an entity without registry entry keeps its name');
+assertEqual(namer(smState('sensor.memory_free', '1')), 'memory free', 'without friendly_name the entity id tail stays the fallback');
+
+assertEqual(dataSizeBytes(smNamed('sensor.memory_free', 'x', 'MiB')), 1024 ** 2, 'MiB is a data size');
+assertEqual(dataSizeBytes(smNamed('sensor.net', 'x', 'MB/s')), null, 'a rate is not a data size');
+assertEqual(dataSizeBytes(smNamed('sensor.cpu', 'x', '%')), null, 'a percentage is not a data size');
+assertEqual(formatDataSize(3119.4 * 1024 ** 2, 'de'), '3,3 GB', 'free memory in decimal GB, German comma');
+assertEqual(formatDataSize(3119.4 * 1024 ** 2, 'en'), '3.3 GB', 'free memory in decimal GB, English point');
+assertEqual(formatDataSize(512e6, 'de'), '512 MB', 'MB without decimals');
+assertEqual(formatDataSize(234.5e9, 'de'), '235 GB', 'from 100 GB without decimals');
+assertEqual(formatDataSize(0, 'de'), '0 B', 'zero stays bytes');
+assertEqual(formatDataSize(953.5 * 1024 ** 2, 'de'), '1,0 GB', 'a value that would round to 1000 MB is 1,0 GB');
+assertEqual(formatDataSize(99.97e9, 'de'), '100 GB', 'a value that rounds to 100 GB has no decimal');
+assertEqual(formatDataSize(999.7e9, 'de'), '1,0 TB', 'a value that would round to 1000 GB is 1,0 TB');
+assertEqual(formatDataSize(999, 'de'), '999 B', 'below 1 kB stays bytes');
+
 // ---------------------------------------------------------------------------
 // [fork] Pool pump — schedule model round-trip
 //
@@ -1264,6 +1366,29 @@ assertEqual(JSON.stringify(buildScheduleTimeslots([{ start: 0, stop: 1440 }], { 
   'full-day window → one all-day on slot');
 
 assertEqual(scheduleOnMinutes(model.windows), 120, 'scheduleOnMinutes counts the on-window (2h = 120min)');
+
+// [fork] Periods (ring editor, shared with the heating plan) ↔ on-windows
+assertEqual(JSON.stringify(poolWindowsToPeriods(model.windows)), JSON.stringify([{ from: '12:00', to: '14:00' }]),
+  'poolWindowsToPeriods: 720–840 → 12:00–14:00');
+assertEqual(JSON.stringify(poolWindowsToPeriods([{ start: 1380, stop: 1440 }, { start: 0, stop: 60 }])),
+  JSON.stringify([{ from: '00:00', to: '01:00' }, { from: '23:00', to: '24:00' }]),
+  'poolWindowsToPeriods: a run over midnight is two periods in day order, the end of the day is 24:00');
+assertEqual(JSON.stringify(poolPeriodsToWindows([{ from: '14:00', to: '16:00' }, { from: '12:00', to: '14:00' }])),
+  JSON.stringify([{ start: 720, stop: 960 }]),
+  'poolPeriodsToWindows: touching runs become one window');
+assertEqual(JSON.stringify(poolPeriodsToWindows([{ from: '22:00', to: '24:00' }])), JSON.stringify([{ start: 1320, stop: 1440 }]),
+  'poolPeriodsToWindows: 24:00 = 1440');
+assertEqual(JSON.stringify(buildScheduleTimeslots(poolPeriodsToWindows([{ from: '22:00', to: '24:00' }]), { entityId: 'x' }).map((s) => [s.start, s.stop])),
+  JSON.stringify([['00:00', '22:00'], ['22:00', '00:00']]),
+  'a run up to 24:00 ends the timeslots at 00:00');
+assertEqual(JSON.stringify(poolPeriodsToWindows(poolWindowsToPeriods([{ start: 603, stop: 777 }]))), JSON.stringify([{ start: 603, stop: 777 }]),
+  'periods ↔ windows keep minutes off the 5-minute step');
+assertEqual(movePeriodEdge(poolWindowsToPeriods([{ start: 603, stop: 777 }]), 0, 'from', 610)[0].from, '10:10',
+  'a time off the step snaps once it is moved');
+assertEqual(JSON.stringify(addPeriod([], { max: POOL_MAX_PERIODS, first: POOL_FIRST_PERIOD })), JSON.stringify([{ from: '12:00', to: '14:00' }]),
+  'addPeriod: a schedule without runs gets the pool first run');
+assert(samePeriods([{ from: '12:00', to: '14:00' }, { from: '06:00', to: '07:00' }], [{ from: '06:00', to: '07:00' }, { from: '12:00', to: '14:00' }]),
+  'samePeriods ignores the order');
 
 // Day-slot model (graphical editor) — round-trips with the on-window model.
 const daySlots = windowsToDaySlots(model.windows);
@@ -2095,6 +2220,46 @@ console.log('\n── hints, active scenes, glas energy, sizes ──');
   assertEqual(glance({ sensor: ['sensor.t_bad', 'sensor.t', 'sensor.t2', 'sensor.h'], climate: ['climate.a'] }), 'temperature:sensor.t=21.5°C humidity:sensor.h=48%', 'glance: first numeric sensors, climate not needed');
   assertEqual(glance({ sensor: ['sensor.h'], climate: ['climate.gone', 'climate.a', 'climate.b'] }), 'temperature:climate.a=20.4 humidity:sensor.h=48%', 'glance: climate fallback = first existing climate, no unit');
   assertEqual(glance({ light: ['light.x'] }), '', 'glance: nothing to show');
+
+  // [fork] room temperature source (raumtemperatur/PLAN.md): the kitchen oven listed before the thermostat's sensor
+  const kStates = {
+    'sensor.oven': ent('sensor.oven', '59', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.thermo_t': ent('sensor.thermo_t', '19.5', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.off_t': ent('sensor.off_t', 'unavailable', { device_class: 'temperature', unit_of_measurement: '°C' }),
+    'sensor.power': ent('sensor.power', '120', { device_class: 'power', unit_of_measurement: 'W' }),
+    'climate.k': ent('climate.k', 'heat', { current_temperature: 19.5 }),
+    'climate.dead': ent('climate.dead', 'unavailable', {}),
+  };
+  const kRoom = glRoom({ sensor: ['sensor.oven', 'sensor.thermo_t', 'sensor.off_t', 'sensor.power'], climate: ['climate.k', 'climate.dead'] });
+  const rt = (src, room = kRoom) => { const r = roomTemperature(room, kStates, src); return r ? `${r.entityId}=${r.value}${r.unit ?? ''}` : 'none'; };
+  assertEqual(rt(undefined), 'sensor.oven=59°C', 'room temp: automatic = first temperature sensor (the oven)');
+  assertEqual(rt('climate.k'), 'climate.k=19.5', 'room temp: chosen thermostat, no unit');
+  assertEqual(rt('sensor.thermo_t'), 'sensor.thermo_t=19.5°C', 'room temp: chosen sensor with its unit');
+  assertEqual(rt('sensor.off_t'), 'none', 'room temp: chosen sensor without a number → nothing, never the oven');
+  assertEqual(rt('climate.dead'), 'none', 'room temp: chosen thermostat without current temperature → nothing');
+  assertEqual(rt('sensor.power'), 'sensor.oven=59°C', 'room temp: not a temperature sensor → automatic');
+  assertEqual(rt('sensor.elsewhere'), 'sensor.oven=59°C', 'room temp: source not in the room → automatic');
+  assertEqual(rt(42), 'sensor.oven=59°C', 'room temp: a non-string value → automatic');
+  assertEqual(rt('climate.nostate', glRoom({ sensor: ['sensor.oven'], climate: ['climate.nostate'] })), 'none', 'room temp: chosen room entity without a state yet → nothing, never the oven');
+  assertEqual(rt('sensor.nostate', glRoom({ sensor: ['sensor.oven', 'sensor.nostate'] })), 'none', 'room temp: chosen room sensor without a state yet → nothing');
+  assertEqual(rt(undefined, glRoom({ sensor: ['sensor.off_t'], climate: ['climate.gone', 'climate.k'] })), 'climate.k=19.5', 'room temp: automatic climate fallback = first existing climate');
+  assertEqual(rt(undefined, glRoom({ climate: ['climate.dead', 'climate.k'] })), 'none', 'room temp: automatic stops at the first existing climate');
+  assertEqual(
+    roomTemperatureSources(kRoom, kStates).map((x) => `${x.kind}:${x.entityId}=${x.value ?? '-'}`).join(' '),
+    'sensor:sensor.oven=59 sensor:sensor.thermo_t=19.5 sensor:sensor.off_t=- climate:climate.k=19.5 climate:climate.dead=-',
+    'room temp: sources = temperature sensors, then climates',
+  );
+  assertEqual(
+    roomGlances(kRoom, kStates, 'climate.k').map((g) => `${g.kind}:${g.entityId}=${g.value}`).join(' '),
+    'temperature:climate.k=19.5',
+    'glance: follows the chosen source (tap opens it)',
+  );
+  for (const [i, room] of Object.entries({ kitchen: kRoom, mixed: glRoom({ sensor: ['sensor.t_bad', 'sensor.t2'], climate: ['climate.a'] }), climateOnly: glRoom({ climate: ['climate.b'] }), none: glRoom({ light: ['light.x'] }) })) {
+    const states = { ...glStates, ...kStates };
+    const summary = roomSummary(room, states);
+    const auto = roomTemperature(room, states);
+    assertEqual(auto?.value, summary.temperature, `room temp: automatic matches roomSummary (${i})`);
+  }
   assertEqual(lightPercent(ent('light.x', 'on', { brightness: 204 })), 80, 'light: 204/255 → 80 %');
   assertEqual(lightPercent(ent('light.x', 'on', { brightness: 1 })), 1, 'light: a glimmer still shows 1 %');
   assertEqual(lightPercent(ent('light.x', 'off', { brightness: 204 })), null, 'light: off → no level');
@@ -2375,4 +2540,452 @@ console.log('\n── energy origins, power, battery ──');
   assert(near(computeEnergyDashboard(oldFormat, st).cost, 3 - 0.4), 'cost: the old flow format unchanged');
   const series = computeEnergyDashboard(prefs, { 'sensor.b_in': [{ start: 0, end: 1, change: 0.4 }], 'sensor.b_out': [{ start: 0, end: 1, change: 0.1 }] }).series;
   assert(series.length === 1 && near(series[0].batteryIn, 0.4) && near(series[0].batteryOut, 0.1), 'series: battery charge and discharge per bucket');
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Heating plan per room (heatingPlan.ts, glas/heizung-zeitplan/PLAN.md)
+//
+// Room → entities from area + label, the schedule as HA's get_schedule returns it (seconds, end of day as
+// 23:59:59.999999), the check that mirrors the save automation in HA, groups of equal days and the status line,
+// also on the 23- and 25-hour days (run in Europe/Berlin).
+// ---------------------------------------------------------------------------
+console.log('\n── heating plan ──');
+{
+  const E = (entity_id, extra = {}) => ({
+    entity_id, area_id: null, device_id: null, entity_category: null, hidden_by: null, disabled_by: null,
+    original_name: null, icon: null, ...extra,
+  });
+  const L = [HEATING_PLAN_LABEL];
+  const reg = {
+    areas: [{ area_id: 'bad', name: 'Bad' }, { area_id: 'flur', name: 'Flur' }, { area_id: 'kueche', name: 'Küche' }],
+    devices: [{ id: 'd1', area_id: 'bad', name: 'TRV Bad' }, { id: 'd2', area_id: 'flur', name: 'TRV Flur' }],
+    entities: [
+      E('input_number.heizplan_bad_komfort', { area_id: 'bad', labels: L, hidden_by: 'user' }),
+      E('climate.bad', { device_id: 'd1' }),
+      E('automation.advanced_heating_bad', { area_id: 'bad', labels: L }),
+      E('schedule.zeitplan_heizung_bad', { area_id: 'bad', labels: L }),
+      E('input_number.heizplan_bad_eco', { area_id: 'bad', labels: L }),
+      E(HEATING_PLAN_SAVE_AUTOMATION),
+      E('climate.flur', { device_id: 'd2' }),
+      E('schedule.zeitplan_heizung_flur', { area_id: 'flur', labels: L }),
+      E('automation.advanced_heating_kueche', { area_id: 'kueche', labels: L, disabled_by: 'user' }),
+      E('automation.advanced_heating_nowhere', { labels: L }),
+      E('climate.flur_labelled', { area_id: 'flur', labels: L }),
+    ],
+  };
+  const plans = findHeatingPlans(reg);
+  assertEqual(Object.keys(plans).join(','), 'bad', 'plans: only rooms with a labelled, enabled automation');
+  assertEqual(JSON.stringify(plans.bad), JSON.stringify({
+    areaId: 'bad', automation: 'automation.advanced_heating_bad', schedule: 'schedule.zeitplan_heizung_bad',
+    comfort: 'input_number.heizplan_bad_komfort', eco: 'input_number.heizplan_bad_eco', thermostats: ['climate.bad'],
+  }), 'plans: automation, schedule, hidden helper by suffix, thermostat via its device');
+  assertEqual(findHeatingPlans({ ...reg, entities: [...reg.entities].reverse() }).bad.automation, 'automation.advanced_heating_bad', 'plans: independent of the registry order');
+
+  const states = Object.fromEntries(reg.entities.map((e) => [e.entity_id, { entity_id: e.entity_id, state: 'on', attributes: {} }]));
+  const bad = buildRooms(reg, states).find((r) => r.id === 'bad');
+  assertEqual(Object.keys(bad.domains).sort().join(','), 'climate', 'buildRooms: labelled entries are not in the room\'s domains');
+  assert(bad.entityIds.includes('schedule.zeitplan_heizung_bad'), 'buildRooms: labelled entries stay in entityIds');
+  const flur = buildRooms(reg, states).find((r) => r.id === 'flur');
+  assertEqual((flur.domains.climate ?? []).join(','), 'climate.flur,climate.flur_labelled', 'buildRooms: the label on a thermostat hides nothing');
+  const lr = buildRooms(DEMO_REGISTRIES, DEMO_ENTITIES).find((r) => r.id === 'living_room');
+  assert(!lr.domains.automation && !lr.domains.schedule && !lr.domains.input_number, 'demo living room: no heating plan entries among its devices');
+  const demoPlan = findHeatingPlans(DEMO_REGISTRIES).living_room;
+  assert(demoPlan?.automation === DEMO_HEATING.automation && demoPlan.schedule === DEMO_HEATING.schedule && demoPlan.comfort === DEMO_HEATING.comfort && demoPlan.eco === DEMO_HEATING.eco, 'demo living room: heating plan found');
+  assertEqual(demoPlan?.thermostats.join(','), 'climate.living_room', 'demo living room: its thermostat');
+  const thermostatAreas = heatingThermostatAreas({
+    ...plans,
+    wz: { areaId: 'wz', automation: 'automation.a', schedule: null, comfort: null, eco: null, thermostats: ['climate.wz_1', 'climate.wz_2'] },
+  });
+  assertEqual(JSON.stringify([...thermostatAreas].sort()), JSON.stringify([['climate.bad', 'bad'], ['climate.wz_1', 'wz'], ['climate.wz_2', 'wz']]), 'thermostat areas: every thermostat of a plan to its room');
+  assertEqual(heatingThermostatAreas(findHeatingPlans(DEMO_REGISTRIES)).get('climate.bedroom'), undefined, 'thermostat areas: a thermostat without a plan has none');
+
+  const times = { '06:00:00': '06:00', '7:05': '07:05', '06:00:30': '06:00', '23:59': '23:59', '23:59:59.999999': '24:00', '24:00:00': '24:00', '24:00': '24:00', '24:01': null, '25:00': null, '12:60': null, 'x': null, '': null };
+  for (const [input, expected] of Object.entries(times)) assertEqual(normalizeHeatingTime(input), expected, `time ${JSON.stringify(input)}`);
+  assertEqual(normalizeHeatingTime(360), null, 'time: a number is not a time');
+
+  const response = {
+    'schedule.k': {
+      monday: [{ from: '17:00:00', to: '23:59:59.999999' }, { from: '06:00:00', to: '08:00:00', data: { x: 1 } }],
+      tuesday: [],
+    },
+  };
+  const week = parseHeatingWeek(response, 'schedule.k');
+  assertEqual(JSON.stringify(week.monday), JSON.stringify([{ from: '06:00', to: '08:00' }, { from: '17:00', to: '24:00' }]), 'get_schedule: sorted, seconds cut, end of day 24:00, data dropped');
+  assertEqual(week.sunday.length, 0, 'get_schedule: a day left out has no periods');
+  assertEqual(parseHeatingWeek(response, 'schedule.other'), null, 'get_schedule: other entity → null');
+  assertEqual(parseHeatingWeek({ 'schedule.k': { monday: [{ from: '06:00:00' }] } }, 'schedule.k'), null, 'get_schedule: a period without end → null');
+  assertEqual(parseHeatingWeek({ 'schedule.k': { monday: [{ from: '24:00:00', to: '24:00:00' }] } }, 'schedule.k'), null, 'get_schedule: a period from 24:00 → null');
+  assertEqual(parseHeatingWeek(null, 'schedule.k'), null, 'get_schedule: no response → null');
+  const short = parseHeatingWeek({ 'schedule.k': { monday: [{ from: '05:00:00', to: '06:00:00' }, { from: '06:00:00', to: '06:00:30' }] } }, 'schedule.k');
+  assertEqual(JSON.stringify(short.monday), JSON.stringify([{ from: '05:00', to: '06:00' }]), 'get_schedule: a period under a minute is left out');
+
+  const B = (from, to) => ({ from, to });
+  assert(validHeatingBlocks([B('17:00', '24:00'), B('06:00', '08:00'), B('08:00', '09:00')]), 'valid: unsorted, touching, until 24:00');
+  assert(validHeatingBlocks([]), 'valid: a day without periods');
+  assert(!validHeatingBlocks([B('06:00', '08:00'), B('07:30', '09:00')]), 'invalid: overlap');
+  assert(!validHeatingBlocks([B('08:00', '08:00')]), 'invalid: empty period');
+  assert(!validHeatingBlocks([B('09:00', '08:00')]), 'invalid: from after to');
+  assert(!validHeatingBlocks([B('24:00', '24:00')]), 'invalid: from 24:00');
+  assert(!validHeatingBlocks([B('6:00', '08:00')]), 'invalid: from without leading zero');
+  assert(!validHeatingBlocks([B('06:00:00', '08:00')]), 'invalid: seconds (HAPulse sends HH:MM)');
+  assert(!validHeatingBlocks(Array.from({ length: 11 }, (_, i) => B(`${String(i).padStart(2, '0')}:00`, `${String(i).padStart(2, '0')}:30`))), 'invalid: more than 10 periods');
+
+  const days = heatingSaveDays({ ...emptyHeatingWeek(), monday: [{ from: '17:00', to: '24:00', extra: 1 }, B('06:00', '08:00')] }, ['tuesday', 'monday']);
+  assertEqual(JSON.stringify(days), JSON.stringify([{ tag: 'monday', bloecke: [B('06:00', '08:00'), B('17:00', '24:00')] }, { tag: 'tuesday', bloecke: [] }]), 'save days: week order, sorted, only from/to');
+  const changed = { ...week, tuesday: [B('06:30', '22:00')] };
+  assert(heatingWeekMatches(changed, { ...week, tuesday: [B('06:30', '22:00')] }, ['monday', 'tuesday']), 'read back: equal');
+  assert(!heatingWeekMatches(changed, week, ['tuesday']), 'read back: the change is missing');
+  assert(heatingWeekMatches(changed, week, ['monday']), 'read back: only the sent days count');
+
+  const badWeek = { ...emptyHeatingWeek() };
+  for (const d of ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']) badWeek[d] = [B('05:30', '20:00')];
+  for (const d of ['saturday', 'sunday']) badWeek[d] = [B('07:00', '20:00')];
+  const groups = heatingDayGroups(badWeek);
+  assertEqual(groups.map((g) => heatingDayGroupKind(g.days)).join(','), 'weekdays,weekend', 'groups: workdays and weekend');
+  assertEqual(groups[0].blocks[0].from, '05:30', 'groups: periods of the group');
+  assertEqual(heatingDayGroups(emptyHeatingWeek()).map((g) => `${heatingDayGroupKind(g.days)}:${g.blocks.length}`).join(), 'daily:0', 'groups: empty week = one group without periods');
+  const mixed = { ...badWeek, wednesday: [B('05:30', '12:00')] };
+  assertEqual(heatingDayGroups(mixed).map((g) => g.days.join('+')).join(' | '), 'monday+tuesday+thursday+friday | wednesday | saturday+sunday', 'groups: a different Wednesday');
+  assertEqual(heatingDayGroupKind(['wednesday']), 'custom', 'group kind: single day');
+
+  const tzBefore = process.env.TZ;
+  process.env.TZ = 'Europe/Berlin';
+  try {
+    const at = (...a) => new Date(...a);
+    const status = (now, scheduleOn, w = badWeek, extra = {}) => heatingPlanStatus({ automationOn: true, scheduleOn, week: w, now, ...extra });
+    const fmt = (s) => `${s.phase}${s.until ? ` ${s.until.time}+${s.until.dayOffset} ${s.until.weekday}` : ''}`;
+    assertEqual(heatingWeekday(at(2026, 9, 24, 12)), 'saturday', 'weekday: 24.10.2026 is a Saturday');
+    assertEqual(fmt(status(at(2026, 9, 24, 12, 30), true)), 'comfort 20:00+0 saturday', 'status: comfort until 20:00');
+    assertEqual(fmt(status(at(2026, 9, 24, 21, 0), false)), 'eco 07:00+1 sunday', 'status: eco until tomorrow 07:00');
+    assertEqual(fmt(status(at(2026, 9, 23, 21, 0), false)), 'eco 07:00+1 saturday', 'status: Friday evening → Saturday 07:00');
+    assertEqual(fmt(status(at(2026, 9, 25, 2, 30), false)), 'eco 07:00+0 sunday', 'status: 25-hour day (25.10.), 02:30 → 07:00 today');
+    assertEqual(fmt(status(at(2026, 9, 25, 19, 59), true)), 'comfort 20:00+0 sunday', 'status: 25-hour day, comfort until 20:00');
+    assertEqual(fmt(status(at(2026, 2, 29, 3, 30), false)), 'eco 07:00+0 sunday', 'status: 23-hour day (29.03.), 03:30 → 07:00 today');
+    assertEqual(fmt(status(at(2026, 2, 29, 20, 0), false)), 'eco 05:30+1 monday', 'status: 23-hour day, at the end of the period → eco');
+    assertEqual(fmt(status(at(2026, 9, 26, 5, 29, 59), false)), 'eco 05:30+0 monday', 'status: a second before the start → eco');
+    const night = { ...emptyHeatingWeek(), monday: [B('17:00', '24:00')], tuesday: [B('00:00', '06:00'), B('06:00', '08:00')] };
+    assertEqual(fmt(status(at(2026, 9, 26, 18, 0), true, night)), 'comfort 08:00+1 tuesday', 'status: touching periods count as one, across midnight');
+    assertEqual(fmt(status(at(2026, 9, 27, 9, 0), false, night)), 'eco 17:00+6 monday', 'status: next period next Monday');
+    const once = { ...emptyHeatingWeek(), monday: [B('06:00', '07:00')] };
+    assertEqual(fmt(status(at(2026, 9, 26, 8, 0), false, once)), 'eco 06:00+7 monday', 'status: the only period was earlier today → in a week');
+    const always = Object.fromEntries(Object.keys(emptyHeatingWeek()).map((d) => [d, [B('00:00', '24:00')]]));
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, always)), 'comfort', 'status: comfort all week → no end');
+    const wrap = { ...always, monday: [B('00:00', '06:00'), B('08:00', '24:00')] };
+    assertEqual(fmt(status(at(2026, 9, 26, 10, 0), true, wrap)), 'comfort 06:00+7 monday', 'status: comfort until next Monday 06:00');
+    const zero = { ...emptyHeatingWeek(), monday: [B('05:00', '06:00'), B('06:00', '06:00')], tuesday: [B('00:00', '00:00')] };
+    assertEqual(fmt(status(at(2026, 9, 26, 5, 30), true, zero)), 'comfort 06:00+0 monday', 'status: an empty period does not hang the end');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), false, emptyHeatingWeek())), 'eco', 'status: no periods → eco without end');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), null)), 'comfort 20:00+0 saturday', 'status: schedule state unknown → from the periods');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), null, null)), 'unknown', 'status: nothing known');
+    assertEqual(fmt(heatingPlanStatus({ automationOn: false, scheduleOn: true, week: badWeek, now: at(2026, 9, 24, 12) })), 'off', 'status: automation off');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, badWeek, { windowOpen: true })), 'window', 'status: window open');
+    const ev = at(2026, 9, 26, 5, 30).toISOString();
+    assertEqual(fmt(status(at(2026, 9, 24, 22, 0), true, badWeek, { nextEvent: ev })), 'comfort 05:30+2 monday', 'status: state and periods disagree → next_event, across the 25-hour day');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, null, { nextEvent: at(2026, 9, 25, 0, 0).toISOString() })), 'comfort 24:00+0 saturday', 'status: next_event at midnight = 24:00 today');
+    assertEqual(fmt(status(at(2026, 9, 24, 12), true, null, { nextEvent: 'garbage' })), 'comfort', 'status: unreadable next_event → no end');
+  } finally {
+    if (tzBefore === undefined) delete process.env.TZ;
+    else process.env.TZ = tzBefore;
+  }
+
+  // demo: get_schedule and the save automation work on the schedule entity's demo periods
+  const demoWeek = demoHeatingWeek(DEMO_ENTITIES, DEMO_HEATING.schedule);
+  assertEqual(heatingDayGroups(demoWeek).map((g) => `${heatingDayGroupKind(g.days)}:${g.blocks.length}`).join(), 'weekdays:2,weekend:1', 'demo: weekdays with two periods, weekend with one');
+  const save = (tage, zeitplan = DEMO_HEATING.schedule) =>
+    applyDemoService(DEMO_ENTITIES, 'automation', 'trigger', { variables: { zeitplan, tage } }, { entity_id: HEATING_PLAN_SAVE_AUTOMATION });
+  const saved = save([{ tag: 'monday', bloecke: [B('07:00', '09:00')] }, { tag: 'sunday', bloecke: [] }]);
+  const savedWeek = demoHeatingWeek(saved, DEMO_HEATING.schedule);
+  assert(JSON.stringify(savedWeek.monday) === JSON.stringify([B('07:00', '09:00')]) && savedWeek.sunday.length === 0 && savedWeek.tuesday.length === 2, 'demo save: the sent days change, the others stay');
+  assert(saved[HEATING_PLAN_SAVE_AUTOMATION].attributes.last_triggered, 'demo save: the automation ran');
+  assertEqual(JSON.stringify(demoHeatingWeek(DEMO_ENTITIES, DEMO_HEATING.schedule)), JSON.stringify(demoWeek), 'demo save: the input map is unchanged');
+  const refused = (tage, zeitplan, label) => assertEqual(JSON.stringify(demoHeatingWeek(save(tage, zeitplan), DEMO_HEATING.schedule)), JSON.stringify(demoWeek), label);
+  refused([{ tag: 'monday', bloecke: [B('07:00', '09:00')] }, { tag: 'tuesday', bloecke: [B('09:00', '08:00')] }], undefined, 'demo save: one invalid day → nothing saved');
+  refused([{ tag: 'funday', bloecke: [] }], undefined, 'demo save: unknown weekday → nothing saved');
+  refused([{ tag: 'monday', bloecke: [] }], 'input_number.heating_plan_living_room_eco', 'demo save: not a schedule → nothing saved');
+  refused([], undefined, 'demo save: no days → nothing saved');
+  const setValue = (id, value) => applyDemoService(DEMO_ENTITIES, 'input_number', 'set_value', { value }, { entity_id: id })[id].state;
+  assertEqual(setValue(DEMO_HEATING.comfort, 22.5), '22.5', 'demo: comfort helper takes a value');
+  assertEqual(setValue(DEMO_HEATING.eco, 40), DEMO_ENTITIES[DEMO_HEATING.eco].state, 'demo: a value above max is refused');
+  assertEqual(setValue('input_number.poolpumpe_manuell_dauer', 30), DEMO_ENTITIES['input_number.poolpumpe_manuell_dauer'].state, 'demo: other helpers unchanged as before');
+}
+
+// [fork] Heating plan, Etappe 2a: the room's windows, whether the thermostat follows, the demo schedule on the clock
+console.log('\n── heating plan: room ──');
+{
+  const S = (entity_id, state, attributes = {}) => ({
+    entity_id, state, attributes, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null },
+  });
+  const entities = {
+    'binary_sensor.w': S('binary_sensor.w', 'off', { device_class: 'window' }),
+    'binary_sensor.d': S('binary_sensor.d', 'on', { device_class: 'door' }),
+    'binary_sensor.o': S('binary_sensor.o', 'off', { device_class: 'opening' }),
+    'binary_sensor.m': S('binary_sensor.m', 'on', { device_class: 'motion' }),
+    'sensor.w': S('sensor.w', '1', { device_class: 'window' }),
+  };
+  const ids = ['binary_sensor.w', 'binary_sensor.d', 'binary_sensor.o', 'binary_sensor.m', 'sensor.w', 'binary_sensor.gone'];
+  assertEqual(heatingWindowSensors(ids, entities).join(), 'binary_sensor.w,binary_sensor.d,binary_sensor.o', 'windows: window, door and opening contacts only');
+
+  const now = Date.UTC(2026, 9, 24, 12);
+  const T = (state, temperature, step) => S('climate.t', state, { temperature, ...(step ? { target_temp_step: step } : {}) });
+  const dev = (thermostats, extra = {}) =>
+    heatingThermostatDeviates({ phase: 'comfort', expected: 21, thermostats, changedAt: now - HEATING_FOLLOW_GRACE_MS, now, ...extra });
+  assert(!dev([T('heat', 21)]), 'follow: holds the value');
+  assert(!dev([T('heat', 21.2)]), 'follow: within half a step');
+  assert(dev([T('heat', 22)]), 'follow: set by hand');
+  assert(!dev([T('heat', 21.5, 1)]), 'follow: a whole-degree thermostat rounds half a degree');
+  assert(dev([T('heat', 22, 1)]), 'follow: a whole-degree thermostat a degree off');
+  assert(dev([T('off')]), 'follow: switched off');
+  assert(!dev([T('unavailable'), undefined]), 'follow: an unavailable thermostat says nothing');
+  assert(dev([T('heat', 21), T('heat', 18)]), 'follow: one of two thermostats is enough');
+  assert(!dev([T('heat', 22)], { changedAt: now - HEATING_FOLLOW_GRACE_MS + 1 }), 'follow: grace after a change');
+  assert(!dev([T('heat', 22)], { phase: 'window' }), 'follow: not with the window open');
+  assert(!dev([T('off')], { phase: 'off' }), 'follow: not with the plan off');
+  assert(!dev([T('heat', 22)], { expected: null }), 'follow: no expected value');
+  assert(!dev([T('heat', '22')]), 'follow: no numeric target');
+  assert(dev([T('heat', 16)], { phase: 'eco', expected: 18 }), 'follow: eco too');
+
+  // demo: the schedule's state and next_event follow the clock (Monday 26 Oct 2026, the day after the 25-hour day)
+  const first = demoHeatingWeek(DEMO_ENTITIES, DEMO_HEATING.schedule).monday[0];
+  const [fh, fm] = first.from.split(':').map(Number);
+  const map = { ...DEMO_ENTITIES };
+  const original = map[DEMO_HEATING.schedule];
+  const before = new Date(2026, 9, 26, fh, fm - 1);
+  tickDemoHeating(map, before);
+  assertEqual(map[DEMO_HEATING.schedule].state, 'off', 'demo tick: off before the first period');
+  assertEqual(new Date(map[DEMO_HEATING.schedule].attributes.next_event).getTime(), new Date(2026, 9, 26, fh, fm).getTime(), 'demo tick: next_event = start of the period');
+  const inside = new Date(2026, 9, 26, fh, fm + 1);
+  tickDemoHeating(map, inside);
+  assertEqual(map[DEMO_HEATING.schedule].state, 'on', 'demo tick: on inside the period');
+  assertEqual(map[DEMO_HEATING.schedule].last_changed, inside.toISOString(), 'demo tick: last_changed moves with the state');
+  const kept = map[DEMO_HEATING.schedule];
+  tickDemoHeating(map, new Date(inside.getTime() + 1000));
+  assert(map[DEMO_HEATING.schedule] === kept, 'demo tick: nothing changed → the same entity');
+  assert(DEMO_ENTITIES[DEMO_HEATING.schedule] === original, 'demo tick: the demo map itself is untouched');
+}
+
+console.log('\n── heating plan: editing the periods ──');
+{
+  const B = (from, to) => ({ from, to });
+  const day = [B('06:00', '08:30'), B('16:30', '22:00')];
+  assertEqual(heatingTimeOf(0), '00:00', 'edit: 0 = 00:00');
+  assertEqual(heatingTimeOf(1440), '24:00', 'edit: 1440 = 24:00');
+  assertEqual(heatingTimeOf(1500), '24:00', 'edit: beyond the day = 24:00');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 0, 'from')), JSON.stringify({ min: 0, max: 505 }), 'edit: first start from midnight to 5 min before its end');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 0, 'to')), JSON.stringify({ min: 365, max: 990 }), 'edit: first end up to the next start');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 1, 'to')), JSON.stringify({ min: 995, max: 1440 }), 'edit: last end up to 24:00');
+  assertEqual(JSON.stringify(heatingEdgeRange(day, 1, 'from')), JSON.stringify({ min: 510, max: 1315 }), 'edit: second start after the first end');
+  assertEqual(moveHeatingEdge(day, 0, 'from', 333)[0].from, '05:35', 'edit: snapped to 5 minutes');
+  assertEqual(moveHeatingEdge(day, 0, 'to', 1200)[0].to, '16:30', 'edit: an end stops at the next start (touching)');
+  assertEqual(moveHeatingEdge(day, 1, 'from', 0)[1].from, '08:30', 'edit: a start stops at the previous end');
+  assertEqual(moveHeatingEdge(day, 1, 'to', 2000)[1].to, '24:00', 'edit: the last end stops at 24:00');
+  {
+    // A period shorter than a step (set outside HAPulse) keeps a range around its own value and never flips
+    const odd = [{ from: '05:00', to: '06:00' }, { from: '06:00', to: '06:03' }];
+    assertEqual(JSON.stringify(heatingEdgeRange(odd, 1, 'from')), JSON.stringify({ min: 360, max: 360 }), 'edit: a too short period keeps its start in range');
+    const moved = moveHeatingEdge(odd, 1, 'from', 400);
+    assertEqual(moved[1].from, '06:00', 'edit: a too short period does not flip its start past its end');
+    assertEqual(validHeatingBlocks(moveHeatingEdge(odd, 1, 'to', 500)), true, 'edit: a too short period can grow');
+  }
+  assertEqual(moveHeatingEdge(day, 0, 'from', 900)[0].from, '08:25', 'edit: a start stays a step before its end');
+  assert(moveHeatingEdge(day, 0, 'from', 900)[1] === day[1], 'edit: the other periods stay the same objects');
+  assert(validHeatingBlocks(moveHeatingEdge(day, 0, 'to', 1200)), 'edit: a moved day stays valid');
+  // ring: the side of midnight closest to the current value
+  assertEqual(heatingRingMinutes(90, 300), 360, 'ring: 90° = 06:00');
+  assertEqual(heatingRingMinutes(355, 1380), 1440 - 20, 'ring: just before the top from the evening = late evening');
+  assertEqual(heatingRingMinutes(5, 1420), 1440 + 20, 'ring: past the top from the evening runs beyond the end (clamped later)');
+  assertEqual(heatingRingMinutes(355, 30), -20, 'ring: before the top from the morning runs below 0 (clamped later)');
+  assertEqual(moveHeatingEdge(day, 1, 'to', heatingRingMinutes(5, 1320))[1].to, '24:00', 'ring: dragging the last end past the top stops at 24:00');
+  assertEqual(moveHeatingEdge(day, 0, 'from', heatingRingMinutes(355, 360))[0].from, '00:00', 'ring: dragging the first start past the top stops at 00:00');
+  // adding and removing
+  assertEqual(JSON.stringify(addHeatingBlock([])), JSON.stringify([B('06:00', '22:00')]), 'add: a day without periods gets 06:00–22:00');
+  const added = addHeatingBlock(day);
+  assert(added && added.length === 3 && validHeatingBlocks(added), 'add: a third period fits and stays valid');
+  assertEqual(JSON.stringify(added[1]), JSON.stringify(B('09:30', '11:30')), 'add: in the largest stretch (08:30–16:30), an hour in, two hours long');
+  assertEqual(addHeatingBlock([B('00:00', '23:50')]), null, 'add: no room for 15 minutes with space around → null');
+  const full = Array.from({ length: HEATING_MAX_BLOCKS }, (_, i) => B(`${String(i * 2).padStart(2, '0')}:00`, `${String(i * 2).padStart(2, '0')}:30`));
+  assertEqual(addHeatingBlock(full), null, 'add: at most HEATING_MAX_BLOCKS periods');
+  assertEqual(JSON.stringify(removeHeatingBlock(day, 0)), JSON.stringify([B('16:30', '22:00')]), 'remove: the period goes');
+  assertEqual(heatingBlockMinutes(B('05:30', '20:00')), 870, 'length: 14 h 30 min');
+  assertEqual(heatingBlockMinutes(B('22:00', '24:00')), 120, 'length: up to 24:00');
+  // time fields
+  assertEqual(heatingFieldMinutes('05:32', 'from'), 330, 'field: snapped');
+  assertEqual(heatingFieldMinutes('00:00', 'to'), 1440, 'field: 00:00 as an end = 24:00');
+  assertEqual(heatingFieldMinutes('00:00', 'from'), 0, 'field: 00:00 as a start = midnight');
+  assertEqual(heatingFieldMinutes('', 'from'), null, 'field: empty = null');
+  assertEqual(heatingFieldMinutes('25:00', 'to'), null, 'field: no time = null');
+  assertEqual(heatingFieldValue('24:00'), '00:00', 'field: 24:00 shows as 00:00');
+  // the week
+  const week = { ...emptyHeatingWeek(), monday: day, tuesday: day, saturday: [B('08:00', '22:30')] };
+  const blocks = [B('07:00', '21:00')];
+  const next = heatingWeekWith(week, ['monday', 'saturday'], blocks);
+  assertEqual(next.monday[0].from, '07:00', 'week: the chosen days get the periods');
+  assert(next.tuesday === day, 'week: the other days keep theirs');
+  assert(week.monday === day, 'week: the old week is untouched');
+  assertEqual(heatingChangedDays(week, ['sunday', 'monday', 'tuesday'], day).join(), 'sunday', 'changed days: only those that differ');
+  assertEqual(heatingChangedDays(week, ['saturday', 'monday'], blocks).join(), 'monday,saturday', 'changed days: in week order');
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Heating plan: set up with one button (heatingSetup.ts, glas/heizung-zeitplan/PLAN-ETAPPE-4.md)
+//
+// Which rooms have a thermostat but no plan, the ids of the new entries (umlauts, rooms that share a name, a setup that
+// stopped halfway), the start values, the automation's config, the hint and the demo setup.
+// ---------------------------------------------------------------------------
+console.log('\n── heating plan: set up ──');
+{
+  // slug and ids
+  assertEqual(heatingRoomSlug('Küche'), 'kueche', 'slug: ü → ue');
+  assertEqual(heatingRoomSlug('Zimmer Jannick'), 'zimmer_jannick', 'slug: space → _');
+  assertEqual(heatingRoomSlug('Bad/WC  Süd'), 'bad_wc_sued', 'slug: runs of other characters → one _');
+  assertEqual(heatingRoomSlug('Großes Café'), 'grosses_cafe', 'slug: ß → ss, accents dropped');
+  assertEqual(heatingRoomSlug('  ✨  '), 'raum', 'slug: nothing left → raum');
+  assertEqual(heatingSetupAutomationId('0f3a9c2e-1b'), 'heizplan_0f3a9c2e_1b', 'automation id: fixed per area, safe characters');
+
+  const cl = (id, state, attrs = {}) => ({ entity_id: id, state, attributes: { hvac_modes: ['off', 'heat'], ...attrs }, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null } });
+  assert(heatingCanHeat(cl('climate.a', 'off')), 'can heat: heat in hvac_modes');
+  assert(!heatingCanHeat(cl('climate.a', 'cool', { hvac_modes: ['off', 'cool'] })), 'can heat: an air conditioner without heat');
+  assert(heatingCanCool(cl('climate.a', 'off', { hvac_modes: ['off', 'heat_cool'] })), 'can cool: heat_cool');
+  assert(!heatingCanCool(cl('climate.a', 'off')), 'can cool: a radiator thermostat');
+  assert(!heatingCanHeat(undefined), 'can heat: no state');
+
+  // rooms without a plan
+  const E = (entity_id, extra = {}) => ({
+    entity_id, area_id: null, device_id: null, entity_category: null, hidden_by: null, disabled_by: null,
+    original_name: null, icon: null, ...extra,
+  });
+  const L = [HEATING_PLAN_LABEL];
+  const reg = {
+    areas: [
+      { area_id: 'bad', name: 'Bad' }, { area_id: 'kueche', name: 'Küche' }, { area_id: 'buero', name: 'Büro' },
+      { area_id: 'flur', name: 'Flur' }, { area_id: 'keller', name: 'Keller' }, { area_id: 'gast', name: 'Gast' },
+    ],
+    devices: [{ id: 'dk', area_id: 'kueche', name: 'TRV Küche' }],
+    entities: [
+      E('climate.bad', { area_id: 'bad' }),
+      E('automation.advanced_heating_bad', { area_id: 'bad', labels: L }),
+      E('climate.kueche', { device_id: 'dk' }),
+      E('climate.kueche_hidden', { area_id: 'kueche', hidden_by: 'user' }),
+      E('climate.kueche_off', { area_id: 'kueche', disabled_by: 'user' }),
+      E('climate.buero_ac', { area_id: 'buero' }),
+      E('climate.buero', { area_id: 'buero' }),
+      E('climate.flur', { area_id: 'flur' }),
+      E('climate.keller', { area_id: 'keller', labels: [HEATING_SKIP_LABEL] }),
+      E('climate.gast', { area_id: 'gast' }),
+      E('climate.gast_2', { area_id: 'gast', labels: [HEATING_SKIP_LABEL] }),
+      E('climate.nowhere'),
+    ],
+  };
+  const states = Object.fromEntries([
+    cl('climate.bad', 'heat'), cl('climate.kueche', 'off'), cl('climate.kueche_hidden', 'off'), cl('climate.kueche_off', 'off'),
+    cl('climate.buero_ac', 'cool', { hvac_modes: ['off', 'cool', 'fan_only'] }), cl('climate.buero', 'unavailable'),
+    cl('climate.flur', 'heat'), cl('climate.keller', 'off'), cl('climate.gast', 'off'), cl('climate.gast_2', 'off'), cl('climate.nowhere', 'off'),
+  ].map((s) => [s.entity_id, s]));
+  const plans = findHeatingPlans(reg);
+  const rooms = findHeatingSetupRooms({ registries: reg, entities: states, plans, covered: new Set(['climate.flur']) });
+  assertEqual(
+    rooms.map((r) => `${r.areaId}:${r.thermostats.join('+')}:${r.skipped ? 'skip' : 'set'}`).join(' '),
+    'gast:climate.gast+climate.gast_2:set keller:climate.keller:skip kueche:climate.kueche:set',
+    'setup rooms: plan room, hidden, disabled, air conditioner, unavailable, covered elsewhere and no area are left out; skipped only when all carry the label; by name',
+  );
+  assertEqual(rooms.find((r) => r.areaId === 'kueche').name, 'Küche', 'setup rooms: the area name');
+  assertEqual(findHeatingSetupRooms({ registries: reg, entities: { ...states, 'climate.buero': cl('climate.buero', 'heat') }, plans, covered: new Set() }).map((r) => r.areaId).join(), 'buero,flur,gast,keller,kueche',
+    'setup rooms: back when reachable; a thermostat no automation uses counts');
+
+  // search/related
+  assertEqual(heatingRelatedIds({ automation: ['automation.a', 3, 'automation.b'] }, 'automation').join(), 'automation.a,automation.b', 'related: strings under the key');
+  assertEqual(heatingRelatedIds(null, 'automation').length, 0, 'related: no answer → nothing');
+  assertEqual(heatingRelatedIds({ entity: 'x' }, 'entity').length, 0, 'related: not a list → nothing');
+  const covReg = {
+    areas: [{ area_id: 'k1', name: 'Küche' }, { area_id: 'b1', name: 'Bad' }],
+    devices: [],
+    entities: [
+      { entity_id: 'climate.a', area_id: 'k1' },
+      { entity_id: 'climate.b', area_id: 'b1' },
+      { entity_id: 'automation.x', platform: 'automation', unique_id: '1700000000000' },
+      { entity_id: 'automation.heizplan_k1', platform: 'automation', unique_id: 'heizplan_k1' },
+    ],
+  };
+  assertEqual([...heatingCoveredThermostats(['automation.x', 'automation.y', 'automation.z'], [{ entity: ['climate.a', 'schedule.s', 'input_number.k'] }, { entity: ['climate.b', 'climate.a'] }, {}], covReg)].sort().join(),
+    'climate.a,climate.b', 'covered: only thermostats, from all automations');
+  assertEqual([...heatingCoveredThermostats(['automation.heizplan_k1'], [{ entity: ['climate.a', 'climate.b'] }], covReg)].join(),
+    'climate.b', 'covered: the room\'s own setup automation does not cover its room (a half setup can be finished)');
+  assertEqual(heatingRoomSlug('Ku\u0308che'), 'kueche', 'slug: a decomposed umlaut too');
+
+  // contacts
+  const bs = (id, dc) => [id, { entity_id: id, state: 'off', attributes: { device_class: dc } }];
+  const contactStates = Object.fromEntries([bs('binary_sensor.t', 'door'), bs('binary_sensor.f', 'window'), bs('binary_sensor.o', 'opening'), bs('binary_sensor.g', 'garage_door'), bs('binary_sensor.m', 'motion')]);
+  assertEqual(heatingSetupContacts(['binary_sensor.t', 'binary_sensor.g', 'binary_sensor.o', 'binary_sensor.m', 'binary_sensor.f', 'light.x'], contactStates).map((c) => `${c.id}:${c.preselected ? 1 : 0}`).join(),
+    'binary_sensor.f:1,binary_sensor.o:1,binary_sensor.t:0', 'contacts: windows and openings chosen, doors offered, garage doors and the rest left out');
+
+  // temperatures
+  assertEqual(heatingSnapTemp(20.26, { min: 5, max: 30, step: 0.5 }), 20.5, 'snap: to the step');
+  assertEqual(heatingSnapTemp(3, { min: 7, max: 30, step: 0.5 }), 7, 'snap: into the range');
+  const t1 = heatingSetupTemps([cl('climate.a', 'off', { min_temp: 7, max_temp: 35, target_temp_step: 0.5, temperature: 5 }), cl('climate.b', 'heat', { min_temp: 4.5, max_temp: 28, target_temp_step: 1, temperature: 20.4 })]);
+  assertEqual(JSON.stringify(t1), JSON.stringify({ min: 7, max: 28, step: 1, comfort: 20, eco: 20 }), 'temps: narrowest range, coarsest step, the running thermostat\'s target');
+  assertEqual(JSON.stringify(heatingSetupTemps([cl('climate.a', 'off', { temperature: 5 })])), JSON.stringify({ min: 5, max: 30, step: 0.5, comfort: 5, eco: 5 }), 'temps: all off → the minimum');
+  assertEqual(JSON.stringify(heatingSetupTemps([cl('climate.a', 'heat', { min_temp: 25, max_temp: 20, temperature: 22 })])), JSON.stringify({ min: 5, max: 30, step: 0.5, comfort: 22, eco: 22 }), 'temps: an impossible range → 5–30');
+  assertEqual(heatingSetupTemps([]).comfort, 5, 'temps: no thermostat → the minimum');
+
+  // ids of the new entries
+  const ids = (numbers, schedules) => JSON.stringify(heatingSetupIds('kueche', 'k1', numbers, schedules));
+  assertEqual(ids([], []), JSON.stringify({ comfort: 'heizplan_kueche_komfort', eco: 'heizplan_kueche_eco', schedule: 'zeitplan_heizung_kueche' }), 'ids: from the slug');
+  assertEqual(ids([{ id: 'heizplan_kueche_komfort', areaId: 'k1' }, { id: 'heizplan_kueche_eco', areaId: null }], [{ id: 'zeitplan_heizung_kueche', areaId: null }]),
+    JSON.stringify({ comfort: 'heizplan_kueche_komfort', eco: 'heizplan_kueche_eco', schedule: 'zeitplan_heizung_kueche' }), 'ids: entries of this room or of none are taken over');
+  assertEqual(ids([{ id: 'heizplan_kueche_eco', areaId: 'k2' }], []),
+    JSON.stringify({ comfort: 'heizplan_kueche_2_komfort', eco: 'heizplan_kueche_2_eco', schedule: 'zeitplan_heizung_kueche_2' }), 'ids: one taken by another room → all with _2');
+  assertEqual(ids([], [{ id: 'zeitplan_heizung_kueche', areaId: null, yaml: true }]),
+    JSON.stringify({ comfort: 'heizplan_kueche_2_komfort', eco: 'heizplan_kueche_2_eco', schedule: 'zeitplan_heizung_kueche_2' }), 'ids: one from YAML is never taken over → all with _2');
+  const taken = new Set(['input_number.heizplan_kueche_2_komfort']);
+  assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_komfort', '_komfort', taken), null, 'entity id: ends right → keep');
+  assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_komfort_2', '_komfort', taken), 'input_number.heizplan_kueche_3_komfort', 'entity id: HA\'s _2 → number before the ending, the next free one');
+  assertEqual(heatingSuffixedEntityId('input_number.heizplan_kueche_eco_2', '_eco', new Set()), 'input_number.heizplan_kueche_2_eco', 'entity id: eco');
+
+  // the automation
+  const config = heatingAutomationConfig({
+    roomName: 'Küche', description: 'Heizplan Küche: …', thermostats: ['climate.kueche'], contacts: ['binary_sensor.f'],
+    schedule: 'schedule.zeitplan_heizung_kueche', comfort: 'input_number.heizplan_kueche_komfort', eco: 'input_number.heizplan_kueche_eco',
+    comfortValue: 20, ecoValue: 20,
+  });
+  assertEqual(JSON.stringify(config), JSON.stringify({
+    alias: 'Advanced Heating Küche',
+    description: 'Heizplan Küche: …',
+    use_blueprint: {
+      path: HEATING_BLUEPRINT_PATH,
+      input: {
+        input_log_level: 'info', input_physical_change: false, input_schedulers: ['schedule.zeitplan_heizung_kueche'],
+        input_temperature_comfort: 'input_number.heizplan_kueche_komfort', input_temperature_comfort_static: 20,
+        input_temperature_eco: 'input_number.heizplan_kueche_eco', input_temperature_eco_static: 20,
+        input_trvs: ['climate.kueche'], input_windows: ['binary_sensor.f'],
+      },
+    },
+  }), 'automation: the inputs of the WC');
+  assert(!('input_windows' in heatingAutomationConfig({ ...{ roomName: 'X', description: '', thermostats: ['climate.x'], contacts: [], schedule: 's', comfort: 'c', eco: 'e', comfortValue: 5, ecoValue: 5 } }).use_blueprint.input),
+    'automation: no contacts → no window input');
+  assertEqual(JSON.stringify(heatingPriorStates([cl('climate.k', 'off', { friendly_name: 'TRV Küche', temperature: 5 }), undefined, cl('climate.x', 'heat')])),
+    JSON.stringify([{ name: 'TRV Küche', mode: 'off', temperature: 5 }, { name: 'climate.x', mode: 'heat', temperature: null }]), 'prior states: name, mode, target');
+
+  // the hint
+  const hint = collectHints([], { now: 0, heatingMissing: [{ areaId: 'k2', name: 'Küche', thermostats: ['climate.b', 'climate.a'] }, { areaId: 'b1', name: 'Bad', thermostats: ['climate.c'] }, { areaId: 'h', name: 'Hidden', thermostats: ['climate.h'] }], hidden: new Set(['climate.h']) });
+  assertEqual(hint.hints.map((h) => `${h.id}:${h.severity}:${h.entityIds.join('+')}:${h.room?.name}`).join(' '),
+    'heating-missing:b1:info:climate.c:Bad heating-missing:k2:info:climate.a+climate.b:Küche', 'hint: one per room by name, info, hidden thermostats left out');
+
+  // the demo setup
+  const bedroom = findHeatingSetupRooms({ registries: DEMO_REGISTRIES, entities: DEMO_ENTITIES, plans: findHeatingPlans(DEMO_REGISTRIES), covered: new Set(findHeatingPlans(DEMO_REGISTRIES).living_room.thermostats) });
+  assertEqual(bedroom.map((r) => r.areaId).join(), 'bedroom', 'demo: the bedroom has a thermostat but no plan');
+  const setup = {
+    areaId: 'bedroom', roomName: 'Bedroom', automation: 'automation.advanced_heating_bedroom', schedule: 'schedule.zeitplan_heizung_bedroom',
+    comfort: 'input_number.heizplan_bedroom_komfort', eco: 'input_number.heizplan_bedroom_eco', comfortValue: 18, ecoValue: 18, min: 5, max: 30, step: 0.5,
+  };
+  const done = demoHeatingSetup(DEMO_ENTITIES, DEMO_REGISTRIES.entities, setup, new Date('2026-10-25T08:00:00Z'));
+  const demoReg = { ...DEMO_REGISTRIES, entities: done.entries };
+  assertEqual(JSON.stringify(findHeatingPlans(demoReg).bedroom), JSON.stringify({
+    areaId: 'bedroom', automation: setup.automation, schedule: setup.schedule, comfort: setup.comfort, eco: setup.eco, thermostats: ['climate.bedroom'],
+  }), 'demo setup: the bedroom has its plan');
+  assertEqual(done.entities[setup.comfort].state, '18.0', 'demo setup: the helper holds the start value');
+  assert(done.entities[setup.eco].attributes[DEMO_SETUP_ATTRIBUTE] === true, 'demo setup: the helpers are marked');
+  assert(!DEMO_ENTITIES[setup.comfort] && !DEMO_REGISTRIES.entities.some((e) => e.entity_id === setup.automation), 'demo setup: the inputs are untouched');
+  assertEqual(demoHeatingSetup(done.entities, done.entries, setup, new Date()).entries.length, done.entries.length, 'demo setup: a second setup adds nothing');
+  const set = applyDemoService(done.entities, 'input_number', 'set_value', { value: 21 }, { entity_id: setup.comfort });
+  assertEqual(set[setup.comfort].state, '21.0', 'demo setup: set_value works on the new helpers');
+  assertEqual(findHeatingSetupRooms({ registries: demoReg, entities: done.entities, plans: findHeatingPlans(demoReg), covered: new Set() }).length, 0, 'demo setup: no room left without a plan');
 }

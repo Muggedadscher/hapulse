@@ -77,6 +77,13 @@ module.exports = function sheets(h) {
     'win-keypad': { act: seq(chip('alarm'), sel('.modal-body .alarm-btn--away')) },
     'win-keypad-security': { path: '/security', act: sel('.alarm-btn--away') },
     'win-pool-restart': { path: '/pool', act: glasOnly(sel('.pool-admin__restart')) },
+    // the heating plan of the demo living room (Etappe 2a): its window and the question before switching off
+    'win-heating': { path: '/room/living_room', act: sel('.heating-card__open') },
+    'win-heating-off': { path: '/room/living_room', act: sel('.heating-card__head .heating-switch') },
+    // its times page (Etappe 2b), a window on the window: Esc closes only the page (`escapes`)
+    'win-heating-times': { path: '/room/living_room', escapes: 2, act: seq(sel('.heating-card__open'), sel('.modal-body .heating-group__edit')) },
+    // setting up a plan (Etappe 4): the demo bedroom has a thermostat but no plan
+    'win-heating-setup': { path: '/room/bedroom', act: sel('.heating-setup-card__actions .btn--primary') },
   };
   for (const sc of Object.values(scenes)) {
     sc.path = sc.path || '/';
@@ -243,8 +250,10 @@ module.exports = function sheets(h) {
           const r = await ev(w.page, () => ({ dialogs: document.querySelectorAll('[role="dialog"]').length, remnants: __g.remnants().count,
             overflow: document.body.style.overflow, dom: __s.classicDom() }));
           res.dom[`${device} ${name}`] = r.dom;
-          await w.page.keyboard.press('Escape');
-          await sleep(150);
+          for (let i = 0; i < (sc.escapes || 1); i++) {
+            await w.page.keyboard.press('Escape');
+            await sleep(150);
+          }
           const after = await ev(w.page, () => ({ dialogs: document.querySelectorAll('[role="dialog"]').length, overflow: document.body.style.overflow }));
           res.windows[`${device} ${name}`] = { dialogs: r.dialogs, remnants: r.remnants, after };
           await w.close();
@@ -312,7 +321,8 @@ module.exports = function sheets(h) {
       res.ipad = await openWin(ipad.page, 'win-people');
       await ipad.close();
       const widths = { 'win-people': 440, 'win-weather': 500, 'win-lights': 480, 'win-doors': 460, 'win-garage': 560, 'win-locks': 560,
-        'win-alarm': 460, 'win-pool': 480, 'win-media': 500, 'win-climate': 760, 'win-blinds': 780, 'win-waste': 440 };
+        'win-alarm': 460, 'win-pool': 480, 'win-media': 500, 'win-climate': 760, 'win-blinds': 780, 'win-waste': 440,
+        'win-heating': 780 };
       res.desktop = {};
       for (const [name, want] of Object.entries(widths)) {
         const d = await open('desktop', 'glas', scenes[name].path, scenes[name]);
@@ -1039,6 +1049,269 @@ module.exports = function sheets(h) {
       }
       out.sheetsPerf = res;
       out.sheetsPerfOk = Object.values(res.budget).every((b) => b.ok);
+    });
+
+    // 11b. The heating plan of the demo living room (Etappe 2a, glas/heizung-zeitplan/PLAN.md) in both styles: switching
+    //      off asks and then switches the automation off, on acts at once; + in the window changes nothing until ✓ (Glas)
+    //      or "Speichern" (Klassisch), which saves and closes; × or "Abbrechen" discards.
+    await block('sheetsHeating', async () => {
+      const res = {};
+      const card = (page) => ev(page, () => ({
+        on: document.querySelector('.heating-card__head .heating-switch')?.getAttribute('aria-checked') ?? null,
+        comfort: document.querySelector('.heating-temp--comfort .heating-temp__value')?.textContent ?? null,
+        status: document.querySelector('.heating-card__status')?.textContent ?? null,
+      }));
+      const plus = () => __s.panel().querySelectorAll('.heating-sheet__temp--comfort .heating-stepper__btn')[1];
+      for (const style of ['glas', 'classic']) {
+        const r = {};
+        const w = await open('phone', style, '/room/living_room');
+        r.before = await card(w.page);
+        await openWin(w.page, 'win-heating-off');
+        r.asked = await ev(w.page, () => !!__s.panel().querySelector('.heating-confirm__text'));
+        await press(w.page, () => __s.panel().querySelector('.modal-footer .btn--danger'));
+        await until(w.page, () => !__s.panels().length
+          && document.querySelector('.heating-card__head .heating-switch')?.getAttribute('aria-checked') === 'false');
+        r.off = await card(w.page);
+        await press(w.page, () => document.querySelector('.heating-card__head .heating-switch'));
+        await until(w.page, () => document.querySelector('.heating-card__head .heating-switch')?.getAttribute('aria-checked') === 'true');
+        r.on = { ...(await card(w.page)), windows: await ev(w.page, () => __s.panels().length) };
+        await openWin(w.page, 'win-heating');
+        await press(w.page, plus);
+        r.draft = await ev(w.page, () => __s.panel().querySelector('.heating-sheet__temp--comfort .heating-stepper__value')?.textContent);
+        r.cardWhileDraft = (await card(w.page)).comfort;
+        await press(w.page, () => __s.panel().querySelector('.g-sheet-header__close') || __s.panel().querySelector('.modal-footer .btn--secondary'));
+        await until(w.page, () => !__s.panels().length);
+        await settleAnimations(w.page);
+        r.discarded = (await card(w.page)).comfort;
+        await openWin(w.page, 'win-heating');
+        await press(w.page, plus);
+        await press(w.page, () => __s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await until(w.page, () => !__s.panels().length);
+        await settleAnimations(w.page);
+        r.saved = (await card(w.page)).comfort;
+        await w.close();
+        res[style] = r;
+      }
+      out.sheetsHeating = res;
+      const clean = (t) => (t || '').replace(/\s/g, ' ');
+      out.sheetsHeatingOk = Object.values(res).every((r) => r.before.on === 'true' && clean(r.before.comfort) === '21°C'
+        && r.asked && r.off.on === 'false' && /^Aus/.test(r.off.status || '') && r.on.on === 'true' && r.on.windows === 0
+        && clean(r.draft) === '21,5 °C' && clean(r.cardWhileDraft) === '21°C' && clean(r.discarded) === '21°C'
+        && clean(r.saved) === '21,5°C');
+    });
+
+    // 11c. Editing the times (Etappe 2b) in both styles: a group opens its page on the window (Glas: a page with a
+    //      round back button like the ×, no subtitle, as high as every large sheet); the start knob moves by keys,
+    //      the end knob by dragging along the ring; back or Esc discards and closes only the page; another period is
+    //      added and removed; ✓ saves into the demo schedule and the window under it shows the new time. "Times for
+    //      other days" shows only while a day has no times: after Saturday's times are deleted (Sunday deselected keeps
+    //      its own, so the weekend group and its row are gone and the focus goes to the first group) it opens with Sa
+    //      and a first period; made a whole day, a drag from midnight against the clock moves its end (both knobs lie
+    //      on each other there).
+    await block('sheetsHeatingTimes', async () => {
+      const res = {};
+      const fields = () => [...__s.panel().querySelectorAll('.sched__input')].map((i) => i.value);
+      const below = () => ({ dialogs: __s.panels().length, first: __s.panel().querySelector('.heating-period__time')?.textContent ?? null });
+      /** Press a part of the top window after scrolling it into view (the page is longer than the phone). */
+      const pressIn = async (page, q) => {
+        await ev(page, (sq) => __s.panel().querySelector(sq)?.scrollIntoView({ block: 'center', behavior: 'instant' }), q);
+        await sleep(100);
+        await press(page, (sq) => __s.panel().querySelector(sq), q);
+      };
+      out.sheetsHeatingTimes = res; // partial results stay visible when a step fails
+      for (const style of ['glas', 'classic']) {
+        const r = {};
+        res[style] = r;
+        const w = await open('phone', style, '/room/living_room');
+        await openWin(w.page, 'win-heating-times');
+        r.page = await ev(w.page, () => ({ ...__s.stack(), dialogs: __s.panels().length,
+          title: (__s.panel().querySelector('.g-sheet-header__title, .modal-header__title') || {}).textContent }));
+        if (style === 'glas') {
+          r.head = await ev(w.page, () => {
+            const p = __s.panel();
+            const back = p.querySelector('.g-sheet-header__back');
+            const circle = back && back.querySelector('.g-sheet-header__close-circle');
+            return { label: back && back.getAttribute('aria-label'), text: back && back.textContent.trim(),
+              w: back && back.offsetWidth, h: back && back.offsetHeight,
+              circle: circle && `${circle.offsetWidth}x${circle.offsetHeight}`,
+              subtitle: !!p.querySelector('.g-sheet-header__subtitle'), top: Math.round(p.getBoundingClientRect().top) };
+          });
+        }
+        r.start = await ev(w.page, fields);
+        await w.page.focus('.sched-ring__knob--from');
+        for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
+        r.keys = await ev(w.page, fields);
+        // drag the end knob to 10:00 (150°) along the ring
+        const g = await ev(w.page, () => {
+          const ring = __s.panel().querySelector('.sched-ring').getBoundingClientRect();
+          const knob = __s.panel().querySelector('.sched-ring__knob--to').getBoundingClientRect();
+          return { cx: ring.left + ring.width / 2, cy: ring.top + ring.height / 2, r: (ring.width * 120) / 310,
+            kx: knob.left + knob.width / 2, ky: knob.top + knob.height / 2 };
+        });
+        await w.page.mouse.move(g.kx, g.ky);
+        await w.page.mouse.down();
+        for (let a = 127.5; a <= 150; a += 2.5) {
+          const rad = (a * Math.PI) / 180;
+          await w.page.mouse.move(g.cx + g.r * Math.sin(rad), g.cy - g.r * Math.cos(rad));
+        }
+        await w.page.mouse.up();
+        r.drag = await ev(w.page, fields);
+        // back (Glas) or Esc (Klassisch) discards and leaves the window under it
+        if (style === 'glas') await press(w.page, () => __s.panel().querySelector('.g-sheet-header__back'));
+        else await w.page.keyboard.press('Escape');
+        await until(w.page, () => __s.panels().length === 1);
+        await settleAnimations(w.page);
+        r.back = await ev(w.page, below);
+        // again: +30 min, a third period, remove it, save
+        await press(w.page, () => __s.panel().querySelector('.heating-group__edit'));
+        await until(w.page, () => __s.panels().length === 2);
+        await settleAnimations(w.page);
+        await w.page.focus('.sched-ring__knob--from');
+        for (let i = 0; i < 6; i++) await w.page.keyboard.press('ArrowRight');
+        await pressIn(w.page, '.sched .sched__add');
+        r.added = await ev(w.page, () => __s.panel().querySelectorAll('.sched__period').length);
+        r.label = await ev(w.page, () => __s.panel().querySelector('.sched__input')?.getAttribute('aria-label'));
+        await pressIn(w.page, '.sched__clear');
+        r.removed = await ev(w.page, fields);
+        await press(w.page, () => __s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await until(w.page, () => __s.panels().length === 1, null, 6000);
+        await settleAnimations(w.page);
+        r.saved = await ev(w.page, below);
+        r.noAdd = await ev(w.page, () => !__s.panel().querySelector('.heating-sheet .heating-add'));
+        // delete Saturday's times, then "times for other days" starts with Sa
+        await pressIn(w.page, '.heating-group__edit[aria-label^="Wochenende"]');
+        await until(w.page, () => __s.panels().length === 2);
+        await settleAnimations(w.page);
+        await pressIn(w.page, '.sched__day[aria-label="Sonntag"]');
+        await pressIn(w.page, '.sched__clear');
+        await press(w.page, () => __s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary'));
+        await until(w.page, () => __s.panels().length === 1, null, 6000);
+        await settleAnimations(w.page);
+        r.addRow = await ev(w.page, () => __s.panel().querySelector('.heating-sheet .heating-add')?.textContent ?? null);
+        r.focusBack = await ev(w.page, () => document.activeElement === __s.panel().querySelector('.heating-group__edit'));
+        await pressIn(w.page, '.heating-sheet .heating-add');
+        await until(w.page, () => __s.panels().length === 2);
+        await settleAnimations(w.page);
+        r.addDays = await ev(w.page, () => ({
+          pressed: [...__s.panel().querySelectorAll('.sched__day[aria-pressed="true"]')].map((b) => b.textContent),
+          disabled: !!(__s.panel().querySelector('.g-sched-done') || __s.panel().querySelector('.modal-footer .btn--primary')).disabled,
+          fields: [...__s.panel().querySelectorAll('.sched__input')].map((i) => i.value),
+        }));
+        // a whole day: both knobs at midnight; a drag against the clock takes the end
+        await w.page.focus('.sched-ring__knob--from');
+        await w.page.keyboard.press('Home');
+        await w.page.focus('.sched-ring__knob--to');
+        await w.page.keyboard.press('End');
+        r.whole = await ev(w.page, fields);
+        const top = await ev(w.page, () => {
+          const ring = __s.panel().querySelector('.sched-ring').getBoundingClientRect();
+          return { cx: ring.left + ring.width / 2, cy: ring.top + ring.height / 2, r: (ring.width * 120) / 310 };
+        });
+        await w.page.mouse.move(top.cx, top.cy - top.r);
+        await w.page.mouse.down();
+        for (let a = 357.5; a >= 330; a -= 2.5) {
+          const rad = (a * Math.PI) / 180;
+          await w.page.mouse.move(top.cx + top.r * Math.sin(rad), top.cy - top.r * Math.cos(rad));
+        }
+        await w.page.mouse.up();
+        r.overlap = await ev(w.page, () => ({
+          fields: [...__s.panel().querySelectorAll('.sched__input')].map((i) => i.value),
+          focus: document.activeElement?.classList.contains('sched-ring__knob--to') ?? false,
+        }));
+        await w.close();
+      }
+      const two = (f, a, b) => Array.isArray(f) && f[0] === a && f[1] === b;
+      out.sheetsHeatingTimesOk = Object.entries(res).every(([style, r]) => (style === 'glas'
+        ? r.page.windows === 2 && r.page.top.pres === 'page' && r.page.top.back && r.page.below.inert
+          && r.head.label === 'Zurück' && r.head.text === '' && r.head.w >= 44 && r.head.h >= 44 && r.head.circle === '32x32'
+          && !r.head.subtitle && near(r.head.top, 52)
+        : r.page.dialogs === 2) && r.page.title === 'Werktags'
+        && two(r.start, '06:00', '08:30') && two(r.keys, '06:30', '08:30') && two(r.drag, '06:30', '10:00')
+        && r.back.dialogs === 1 && r.back.first === '06:00'
+        && r.added === 3 && r.label === 'Komfort ab, Zeit 1' && r.removed.length === 4 && r.removed[0] === '06:30'
+        && r.saved.dialogs === 1 && r.saved.first === '06:30' && r.noAdd
+        && r.addRow === 'Zeiten für weitere Tage' && r.focusBack && r.addDays.pressed.join() === 'Sa' && !r.addDays.disabled
+        && two(r.addDays.fields, '06:00', '22:00') && two(r.whole, '00:00', '00:00')
+        && two(r.overlap.fields, '00:00', '22:00') && r.overlap.focus);
+    });
+
+    // 11d. Setting up a plan (Etappe 4) in both styles, in the demo bedroom (thermostat off at 18 °C, can also cool, a
+    //      window contact): Home shows the hint, a tap opens the room; "Nicht einrichten" leaves one line with "Doch
+    //      einrichten" and takes the hint away; the window has the thermostat not chosen (it can cool) and the window
+    //      contact chosen, the button waits for a thermostat; "Einrichten" closes the window and the plan card takes the
+    //      place, starting at the lowest value (the thermostat was off). A user without admin rights sees none of it.
+    await block('sheetsHeatingSetup', async () => {
+      const res = {};
+      out.sheetsHeatingSetup = res;
+      const card = () => ({
+        setup: !!document.querySelector('.heating-setup-card:not(.heating-setup-card--skipped)'),
+        skipped: !!document.querySelector('.heating-setup-card--skipped'),
+        plan: !!document.querySelector('.heating-card__open'),
+        comfort: document.querySelector('.heating-temp--comfort .heating-temp__value')?.textContent ?? null,
+      });
+      const hint = () => !!document.querySelector('.hint-row[data-kind="heating-missing"]');
+      const pressOn = async (page, q) => {
+        await ev(page, (sq) => document.querySelector(sq)?.scrollIntoView({ block: 'center', behavior: 'instant' }), q);
+        await sleep(150);
+        await press(page, (sq) => document.querySelector(sq), q);
+      };
+      for (const style of ['glas', 'classic']) {
+        const r = {};
+        res[style] = r;
+        const w = await open('phone', style, '/');
+        r.hint = await until(w.page, hint);
+        r.hintText = await ev(w.page, () => document.querySelector('.hint-row[data-kind="heating-missing"]')?.textContent ?? null);
+        await pressOn(w.page, '.hint-row[data-kind="heating-missing"]');
+        r.toRoom = await until(w.page, () => location.pathname === '/room/bedroom' && !!document.querySelector('.heating-setup-card'), null, 6000);
+        await settleAnimations(w.page);
+        r.start = await ev(w.page, card);
+        await pressOn(w.page, '.heating-setup-card:not(.heating-setup-card--skipped) .btn--secondary');
+        await until(w.page, () => !!document.querySelector('.heating-setup-card--skipped'));
+        r.skip = await ev(w.page, card);
+        await pressOn(w.page, '.heating-setup-card__unskip');
+        await until(w.page, () => !!document.querySelector('.heating-setup-card:not(.heating-setup-card--skipped)'));
+        r.unskip = await ev(w.page, card);
+        await openWin(w.page, 'win-heating-setup');
+        const sheet = () => ({
+          checks: [...__s.panel().querySelectorAll('.heating-setup__check')].map((c) => `${c.querySelector('.heating-setup__check-name')?.textContent}:${c.getAttribute('aria-checked')}`),
+          go: !!__s.panel().querySelector('.heating-setup__go')?.disabled,
+          temps: [...__s.panel().querySelectorAll('.heating-sheet__temp .heating-stepper__value')].map((v) => v.textContent),
+          problems: __s.panel().querySelectorAll('.heating-setup__problem').length,
+        });
+        await until(w.page, () => !__s.panel().querySelector('.heating-setup [role="status"]'));
+        r.sheet = await ev(w.page, sheet);
+        await press(w.page, () => __s.panel().querySelector('.heating-setup__check'));
+        r.picked = await ev(w.page, sheet);
+        await press(w.page, () => __s.panel().querySelector('.heating-setup__go'));
+        await until(w.page, () => !__s.panels().length, null, 6000);
+        await settleAnimations(w.page);
+        r.done = await ev(w.page, card);
+        // back to Home inside the app (a reload starts the demo afresh); at the top, where Glas shows the whole tab bar
+        await ev(w.page, () => scrollTo({ top: 0, behavior: 'instant' }));
+        await sleep(400);
+        await press(w.page, () => document.querySelector('.app-tabs a.app-tabs__item[href="/"]'));
+        r.home = await until(w.page, () => location.pathname === '/' && !!document.querySelector('.home-page'), null, 6000);
+        await sleep(300);
+        r.hintAfter = await ev(w.page, hint);
+        await w.close();
+        // a user without admin rights
+        const n = await open('phone', style, '/room/bedroom');
+        await ev(n.page, () => window.__hapulseDemo.admin(false));
+        await sleep(300);
+        r.nonAdmin = { ...(await ev(n.page, card)), hint: false };
+        await press(n.page, () => document.querySelector('.app-tabs a.app-tabs__item[href="/"]'));
+        r.nonAdmin.home = await until(n.page, () => location.pathname === '/' && !!document.querySelector('.home-page'), null, 6000);
+        await sleep(300);
+        r.nonAdmin.hint = await ev(n.page, hint);
+        await n.close();
+      }
+      const clean = (t) => (t || '').replace(/\s/g, ' ');
+      out.sheetsHeatingSetupOk = Object.values(res).every((r) => r.hint && /Heizplan fehlt/.test(r.hintText || '') && /Bedroom/.test(r.hintText || '')
+        && r.toRoom && r.start.setup && !r.start.plan && r.skip.skipped && !r.skip.setup && r.unskip.setup
+        && r.sheet.checks.join() === 'Bedroom Thermostat:false,Bedroom Window:true' && r.sheet.go && r.sheet.problems === 0
+        && r.sheet.temps.map(clean).join() === '5 °C,5 °C' && !r.picked.go && r.picked.checks[0].endsWith(':true')
+        && !r.done.setup && r.done.plan && clean(r.done.comfort) === '5°C' && r.home && !r.hintAfter
+        && !r.nonAdmin.setup && !r.nonAdmin.skipped && r.nonAdmin.home && !r.nonAdmin.hint);
     });
 
     // 12. Every window of §6.0 opens in Glas on the phone and the desktop without an error, with one window on top and

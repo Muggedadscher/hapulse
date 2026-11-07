@@ -4,12 +4,15 @@ import { useT, useLocale } from '../../i18n/useT'; // [fork] useLocale
 import type { TKey, TFunction } from '../../i18n/useT';
 import { Card } from '../ui/Card';
 import type { HassEntity, SystemMonitorIndex } from '@hapulse/core';
-import { formatNumber } from '@hapulse/core'; // [fork]
+import { formatNumber, dataSizeBytes, formatDataSize } from '@hapulse/core'; // [fork]
+import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas sizes in GB
 import './SystemMonitorCard.css';
 
 interface SystemMonitorCardProps {
   entities: HassEntity[];
   index: SystemMonitorIndex;
+  /** [fork] Display name without the device's name in front (systemMetricNamer). */
+  nameOf?: (entity: HassEntity) => string;
 }
 
 type MetricGroup = {
@@ -83,9 +86,10 @@ function barColorClass(val: number): string {
   return 'sys-metric-bar__fill--ok';
 }
 
-export function SystemMonitorCard({ entities, index }: SystemMonitorCardProps) {
+export function SystemMonitorCard({ entities, index, nameOf }: SystemMonitorCardProps) { // [fork] nameOf
   const t = useT();
   const locale = useLocale(); // [fork] number formatting
+  const glas = useIsGlas(); // [fork]
   if (entities.length === 0) return null;
 
   const groups = categorise(entities, index);
@@ -108,11 +112,12 @@ export function SystemMonitorCard({ entities, index }: SystemMonitorCardProps) {
             </div>
             <div className="sys-monitor-group__tiles">
               {group.entities.map((entity) => {
-                const name = (
+                const name = nameOf ? nameOf(entity) : ( // [fork] nameOf
                   entity.attributes.friendly_name ?? entity.entity_id.split('.')[1]!
                 ).replace(/_/g, ' ');
                 const barPct = metricBarWidth(entity);
-                const formatted = formatValue(entity, t, index.keyOf(entity.entity_id), locale); // [fork] locale
+                const bytes = glas && entity.state !== 'unavailable' && entity.state !== 'unknown' ? dataSizeBytes(entity) : null; // [fork] Glas: decimal GB
+                const formatted = bytes !== null ? formatDataSize(bytes, locale) : formatValue(entity, t, index.keyOf(entity.entity_id), locale); // [fork] locale, size
 
                 return (
                   <div key={entity.entity_id} className="sys-metric-tile">

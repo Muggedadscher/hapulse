@@ -25,6 +25,7 @@ export type HintKind =
   | 'door-open'
   | 'alarm-pending'
   | 'camera-not-recording'
+  | 'heating-missing'
   | 'waste-soon';
 
 export type HintSeverity = 'critical' | 'warning' | 'info';
@@ -40,6 +41,8 @@ export interface Hint {
   entityIds: string[];
   /** Waste: the bin (name, date, days). */
   bin?: WasteBin | undefined;
+  /** Heating plan missing: the room (area id and name). */
+  room?: { areaId: string; name: string } | undefined;
 }
 
 export interface HintOptions {
@@ -53,6 +56,8 @@ export interface HintOptions {
   waste?: readonly WasteBin[] | undefined;
   /** Sentinel cameras that should record but don't: offline or stalled (0 while HA is the camera source). */
   camerasNotRecording?: number | undefined;
+  /** Rooms with a thermostat but no heating plan (`findHeatingSetupRooms` without the skipped ones; admins only). */
+  heatingMissing?: readonly { areaId: string; name: string; thermostats: readonly string[] }[] | undefined;
 }
 
 export interface HintResult {
@@ -75,7 +80,7 @@ const SEVERITY_RANK: Record<HintSeverity, number> = { critical: 0, warning: 1, i
 const KIND_ORDER: readonly HintKind[] = [
   'alarm-triggered', 'leak', 'smoke', 'garage-open', 'lock-open',
   'garage-fault', 'lock-fault', 'window-open', 'door-open', 'alarm-pending', 'camera-not-recording',
-  'waste-soon',
+  'heating-missing', 'waste-soon',
 ];
 
 const SEVERITY: Record<HintKind, HintSeverity> = {
@@ -90,6 +95,7 @@ const SEVERITY: Record<HintKind, HintSeverity> = {
   'door-open': 'warning',
   'alarm-pending': 'warning',
   'camera-not-recording': 'warning',
+  'heating-missing': 'info',
   'waste-soon': 'info',
 };
 
@@ -152,6 +158,11 @@ export function collectHints(entities: readonly HassEntity[], opts: HintOptions)
   }
   const cameras = opts.camerasNotRecording ?? 0;
   if (cameras > 0) hints.push({ id: 'camera-not-recording', kind: 'camera-not-recording', severity: 'warning', count: cameras, entityIds: [] });
+  for (const room of opts.heatingMissing ?? []) {
+    const ids = room.thermostats.filter((id) => !hidden.has(id)).sort();
+    if (ids.length === 0) continue;
+    hints.push({ id: `heating-missing:${room.areaId}`, kind: 'heating-missing', severity: 'info', count: 1, entityIds: ids, room: { areaId: room.areaId, name: room.name } });
+  }
   for (const bin of opts.waste ?? []) {
     if (hidden.has(bin.entityId) || bin.daysTo === null || bin.daysTo < 0 || bin.daysTo > 1) continue;
     hints.push({ id: `waste-soon:${bin.entityId}`, kind: 'waste-soon', severity: 'info', count: 1, entityIds: [bin.entityId], bin });
@@ -162,6 +173,7 @@ export function collectHints(entities: readonly HassEntity[], opts: HintOptions)
       SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] ||
       KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) ||
       (a.bin?.daysTo ?? 0) - (b.bin?.daysTo ?? 0) ||
+      (a.room?.name ?? '').localeCompare(b.room?.name ?? '') ||
       a.id.localeCompare(b.id),
   );
   return { hints, recheckAt };

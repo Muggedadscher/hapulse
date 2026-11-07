@@ -351,8 +351,8 @@ module.exports = function pages(h) {
     });
 
     // ---- K94 fields: fill, 36 visible in a hit area of 44, text 17; a click 2 px inside the hit area but outside the
-    //      visible field still focuses it, and typing still reaches it (the pool editor's time field: the arrow up moves
-    //      its hour). Glas only. ----
+    //      visible field still focuses it, and typing still reaches it. Glas only. (The pool's time fields are those of
+    //      the times page, components/schedule, checked in the pool block.) ----
     await block('pagesFields', async () => {
       const res = {};
       const FIELDS = [
@@ -360,13 +360,11 @@ module.exports = function pages(h) {
         ['automations', '/automations', '.automations-toolbar__search-input', '.automations-toolbar__search'],
         ['settings', '/settings', '.settings-text-input', null],
         ['library', '/music', '.library-card__search-input', null],
-        ['poolTime', '/pool', '[role="dialog"] .pool-time-input', null, (page) => click(page, '.pool-schedule__edit')],
       ];
       for (const [device, mode] of [['desktop', 'light'], ['phone', 'dark']]) {
-        for (const [name, p, input, bar, opener] of FIELDS) {
+        for (const [name, p, input, bar] of FIELDS) {
           const { page, close } = await open(device, 'glas', p, { mode });
           try {
-            if (opener) await opener(page);
             const field = page.locator(input).filter({ visible: true }).first();
             if (!(await field.count())) throw new Error('not visible: ' + input);
             await field.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
@@ -389,12 +387,10 @@ module.exports = function pages(h) {
             await page.mouse.click(a.x, a.visTop - 2);
             await sleep(100);
             const focused = await ev(page, (sel) => document.activeElement && document.activeElement.matches(sel), input);
-            const before = await field.inputValue();
-            if (name === 'poolTime') await page.keyboard.press('ArrowUp');
-            else await page.keyboard.type('ab');
+            await page.keyboard.type('ab');
             await sleep(100);
             const typed = await field.inputValue();
-            const reached = name === 'poolTime' ? typed !== before : typed.endsWith('ab');
+            const reached = typed.endsWith('ab');
             const ok = Math.abs(a.hit - 44) < 0.6 && Math.abs(a.visible - 36) < 0.6 && a.bg === a.fill && a.font === '17px' && focused && reached;
             res[`${device}-${name}`] = { ok, hit: a.hit, visible: a.visible, bg: a.bg, font: a.font, focused, typed };
           } catch (e) {
@@ -482,9 +478,8 @@ module.exports = function pages(h) {
         ['/energy', '.energy-now', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-battery', '.energy-card__title', '.energy-card__icon-chip', 'above'],
         ['/energy', '.energy-water', '.energy-card__title', '.energy-card__icon-chip', 'above', false, ['.energy-kv-list', '.energy-card__sub']],
-        ['/pool', '.pool-card:not(.pool-schedule, .pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
+        ['/pool', '.pool-card:not(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above'],
         ['/pool', ':is(.pool-data, .pool-admin)', '.pool-card__title', '.pool-card__icon', 'above', true],
-        ['/pool', '.pool-schedule', '.pool-card__title', '.pool-card__icon', 'inside'],
         ['/music', '.other-players-card', '.other-players-card__title', '.other-players-card__icon-chip', 'inside'],
         ['/music', '.zones-card', '.zones-card__title', '.zones-card__icon-chip', 'inside'],
         ['/music', '.queue-card', '.queue-card__title', '.queue-card__title-icon', 'inside'],
@@ -555,7 +550,7 @@ module.exports = function pages(h) {
 
     // ---- K89/K90/K85 the frame. Columns by content width (1920/1440/1100/900: 4/3/2/2; a grid whose cards all span
     //      two columns takes four from 900 px of content), no page wider than the window; a card without a title above
-    //      (hero, alarm panel, pool schedule) starts its surface on the line of its neighbours' surfaces; the heroes are
+    //      (hero, alarm panel) starts its surface on the line of its neighbours' surfaces; the heroes are
     //      tafeln (§7.34): the state as the head's colour (security disarmed/armed/triggered, system healthy), the
     //      symbol in a circle 56, no capitals, no wash, figures coloured only by state; the camera section has neither
     //      head nor surface; no element of a page that became a size container is fixed (windows and menus are
@@ -587,7 +582,7 @@ module.exports = function pages(h) {
               const wide = !!grid && ![...grid.children].some((c) => c.classList.contains('overview-grid__cell')
                 && ![...c.classList].some((k) => k.startsWith('overview-grid__cell--span-')));
               // a headless card next to a card with a title above: same row = cells start on the same line
-              const HEADLESS = '.security-hero-card, .alarm-panel-card, .energy-hero, .system-hero-card, .auto-hero-card, .scene-hero-card, .pool-schedule';
+              const HEADLESS = '.security-hero-card, .alarm-panel-card, .energy-hero, .system-hero-card, .auto-hero-card, .scene-hero-card';
               const titled = [...document.querySelectorAll('.page .card')].filter((c) => getComputedStyle(c, '::before').content !== 'none'
                 && getComputedStyle(c).backgroundColor === 'rgba(0, 0, 0, 0)' && c.getClientRects().length);
               const pairs = [];
@@ -769,7 +764,8 @@ module.exports = function pages(h) {
             found.push(...(await fixedIn()));
             await page.keyboard.press('Escape');
           }
-          const ok = container !== 'normal' && found.length === 0 && !!panel && !panel.inPage && panel.gap >= 0 && panel.gap <= 24;
+          // the pool page is no size container since F67 (it only aligned the schedule card), the rest still holds there
+          const ok = (container !== 'normal' || p === '/pool') && found.length === 0 && !!panel && !panel.inPage && panel.gap >= 0 && panel.gap <= 24;
           res[`fixed${p}`] = { ok, container, opened, panel, ...(found.length ? { found: found.slice(0, 4) } : {}) };
         } catch (e) {
           res[`fixed${p}`] = { ok: false, error: String(e.message).slice(0, 160) };
@@ -1980,7 +1976,7 @@ module.exports = function pages(h) {
         }
 
         // Pool K: the hero's word and the rings in their Glas colours (K99); the solar stepper writes the threshold,
-        // "Stopp" the automatic mode; the schedule: a handle moved by 5 min and saved sends scheduler.edit with the new
+        // "Stopp" the automatic mode; the schedule: the ring's start knob moved by 5 min and saved sends scheduler.edit with the new
         // switch point; a figure opens its detail; the restart asks first (Escape: nothing is sent, the danger button
         // presses). The demo applies none of these calls: they are read from its call log (demoCalls.ts).
         if (keepPart('pool')) {
@@ -2036,34 +2032,35 @@ module.exports = function pages(h) {
             const stopOk = stop.length === 1 && stop[0].domain === 'input_select' && stop[0].service === 'select_option'
               && stop[0].data.option === 'Automatik' && stop[0].target.entity_id === 'input_select.modus_poolpumpe';
 
-            // the schedule: the handle at 12:00 moved to 12:05 and saved
+            // the schedule (the shared period editor, glas/pool-zeiten/PLAN.md): the ring's start knob at 12:00 moved
+            // to 12:05 with a key and saved with ✓ sends scheduler.edit with the new switch point and closes the window
             await page.locator('.pool-schedule__edit').click();
             await sleep(400);
             await settleAnimations(page);
-            const handle = page.locator('[role="dialog"] .pool-timeline__handle').first();
-            await handle.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+            const knob = page.locator('[role="dialog"] .sched-ring__knob--from');
+            await knob.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
             await settleAnimations(page);
-            const h0 = Number(await handle.getAttribute('aria-valuenow'));
-            const bar = await page.locator('[role="dialog"] .pool-timeline__bar').boundingBox();
-            const hb = await handle.boundingBox();
-            await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
-            await page.mouse.down();
-            const tx = bar.x + (bar.width * (h0 + 5)) / 1440;
-            for (let k = 1; k <= 4; k++) await page.mouse.move(hb.x + hb.width / 2 + (tx - hb.x - hb.width / 2) * (k / 4), hb.y + hb.height / 2);
-            await page.mouse.up();
+            const h0 = Number(await knob.getAttribute('aria-valuenow'));
+            await knob.focus();
+            await page.keyboard.press('ArrowRight');
             await sleep(200);
-            const moved = { now: Number(await handle.getAttribute('aria-valuenow')), time: (await handle.locator('.pool-timeline__handle-time').textContent()).trim() };
+            const moved = {
+              now: Number(await knob.getAttribute('aria-valuenow')),
+              time: await page.locator('[role="dialog"] .sched__input').first().inputValue(),
+              tone: await ev(page, () => getComputedStyle(document.querySelector('[role="dialog"] .sched-ring__arc--selected')).stroke),
+            };
             await clear();
-            await page.locator('[role="dialog"] .pool-editor__footer .btn--primary').click();
+            await page.locator('[role="dialog"] .g-sched-done').click();
             await sleep(500);
             await settleAnimations(page);
             const saved = await calls();
             const edit = saved[0];
             const slot = edit && Array.isArray(edit.data.timeslots) ? edit.data.timeslots.find((s) => s.start === '12:05') : null;
-            const scheduleOk = h0 === 720 && moved.now === 725 && moved.time === '12:05' && saved.length === 1
+            const scheduleOk = h0 === 720 && moved.now === 725 && moved.time === '12:05' && moved.tone === (await tok('--g-teal'))
+              && saved.length === 1
               && edit.domain === 'scheduler' && edit.service === 'edit' && edit.data.entity_id === 'switch.schedule_zeitplan_poolpumpe'
               && !!slot && slot.actions[0].service === 'input_boolean.turn_on' && Array.isArray(edit.data.weekdays) && edit.data.weekdays.length > 0
-              && (await page.locator('[role="dialog"] .pool-editor').count()) === 0;
+              && (await page.locator('[role="dialog"] .sched').count()) === 0;
 
             // a figure opens its detail (the inspector from 1100 px, the sheet on the phone)
             const tile = page.locator('.pool-data .pool-tile--clickable').first();
@@ -2214,6 +2211,14 @@ module.exports = function pages(h) {
                   && each('.en-bat__line', (e) => getComputedStyle(e).stroke === tok('--g-green-ink')),
                 bars: document.querySelectorAll('.en-card--usage .en-chart__bar').length,
                 widths: [...new Set(cols.map((e) => Math.round(e.getBoundingClientRect().width)))],
+                // every column filled by its parts from the base up, also below 1 kWh (fractional flex-grow left it hollow)
+                hollow: [...document.querySelectorAll('.energy-page .en-chart__col')].filter((c) => {
+                  const kids = [...c.children];
+                  const gap = parseFloat(getComputedStyle(c).rowGap) || 0;
+                  const sum = kids.reduce((a, k) => a + k.getBoundingClientRect().height, 0) + gap * (kids.length - 1);
+                  // empty space left in the column (a 2-px column of three parts is all gaps, not hollow)
+                  return sum < c.getBoundingClientRect().height - 0.5;
+                }).length,
                 deviceBars: each('.energy-device__bar', (e) => bg(e) === tok('--g-prominent')),
                 figure: `${fig.fontWeight} ${fig.fontSize}/${fig.lineHeight}`, figureColor: fig.color === tok('--g-label', 'color'),
                 // the tafel's cells: no tile of their own (the card's colour), the symbol bare
@@ -2242,7 +2247,7 @@ module.exports = function pages(h) {
             const ok = same && glasTexts.sections.join() === 'hero,now,battery,usage,solar,devices,water' && glasTexts.usage.length === 24
               && glasTexts.compare !== null && glasTexts.pv !== null && glasTexts.bigs.length === 3
               && glasTexts.nowSay.length === 1 && glasTexts.nowNodes.length === 4 && glasTexts.bands === 3 && glasTexts.batSub.length === 1
-              && look.grid && look.battery && look.solar && look.flow && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14
+              && look.grid && look.battery && look.solar && look.flow && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14 && look.hollow === 0
               && look.deviceBars && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
               && look.cut.length === 0 && look.out.length === 0 && !look.wide && look.loading && hover !== false;
             res[`${device}-energy`] = { ok, same, ...(same ? {} : { glas: glasTexts, classic: classicTexts }), look, hover };
@@ -2824,13 +2829,13 @@ module.exports = function pages(h) {
           const st = g.start ? g.start.dom : {};
           const stats = (v) => (v && v.hero ? v.hero.stats.join() : '');
           const counts = (on, off) => `${on} ${DE['automations.hero.statActive']},${off} ${DE['automations.hero.statDisabled']},5 ${DE['automations.hero.categoryLabel.other']}`;
-          const fine = same && !!st.hero && st.hero.total === '13' && st.feed.length === 8 && st.cats.length === 5
-            && stats(st) === counts(11, 2)
-            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === counts(12, 1)
-            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === counts(11, 2)
+          const fine = same && !!st.hero && st.hero.total === '15' && st.feed.length === 8 && st.cats.length === 5
+            && stats(st) === counts(13, 2)
+            && g.tap.sent.join() === 'automation.turn_on {"entity_id":"automation.comfort_humidity"} {}' && stats(g.tap.dom) === counts(14, 1)
+            && g.space.sent.join() === 'automation.turn_off {"entity_id":"automation.away_mode"} {}' && stats(g.space.dom) === counts(13, 2)
             && g.search.dom.join() === 'Evening Lights,Morning Lights' && g.searchNone.dom.join() === DE['automations.emptyFilter']
-            && g.searchOff.dom === 13 && g.room.dom.join() === 'Evening Lights'
-            && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 13;
+            && g.searchOff.dom === 15 && g.room.dom.join() === 'Advanced Heating Living Room,Evening Lights'
+            && g.category.dom.join() === 'Front Door Alert,Motion Alert,Alarm Notification' && g.filtersOff.dom === 15;
           const measured = !!look && !look.error && look.catRows >= 60 && look.feedRows >= 52 && look.textStart === 60 && look.feedTextStart === 60
             && look.sep === 'linear-gradient 60px 0px' && look.firstSep === 'none' && look.edges.join() === '0,0,0' && look.top
             && look.feedH === 260 && look.feedScrolls && look.off && look.statsCut === 0
@@ -3108,7 +3113,8 @@ module.exports = function pages(h) {
             const mon = document.querySelector('.system-page .sys-monitor-card');
             const groups = mon.querySelector('.sys-monitor-card__groups');
             const label = groups.querySelector('.sys-monitor-group__label');
-            const tile = groups.querySelector('.sys-metric-tile');
+            const tiles = [...groups.querySelectorAll('.sys-metric-tile')];
+            const tile = tiles[0];
             const tcs = getComputedStyle(tile);
             const tname = tile.querySelector('.sys-metric-tile__name');
             const tval = tile.querySelector('.sys-metric-tile__value');
@@ -3139,11 +3145,15 @@ module.exports = function pages(h) {
             return {
               warn: alert('battery', '--g-warn-ink'), critical: alert('unavailable', '--g-warn-ink'),
               dots: [value('cpu', '--g-yellow'), value('ram', '--g-red'), value('disk', '--g-green')],
-              label: `${font(label)} ${getComputedStyle(label).color === tok('--g-label-2')} ${getComputedStyle(label).textTransform}`,
-              symbol: getComputedStyle(label.querySelector('[aria-hidden="true"]')).display,
-              tile: `${tcs.borderTopLeftRadius} ${tcs.borderTopWidth} ${tcs.backgroundColor === bg('--g-fill')}`,
-              tname: `${font(tname)} ${getComputedStyle(tname).color === tok('--g-label-2')}`,
-              tval: `${font(tval)} ${getComputedStyle(tval).color === tok('--g-label')} ${getComputedStyle(tval).fontVariantNumeric}`,
+              // F68: one list like the batteries, no group titles, no tiles; hairlines from the text (16), none above
+              // the first row, also between two groups
+              label: getComputedStyle(label).display,
+              tile: `${tcs.borderTopLeftRadius} ${tcs.borderTopWidth} ${tcs.backgroundColor}`,
+              tname: `${font(tname)} ${getComputedStyle(tname).color === tok('--g-label')} ${getComputedStyle(tname).whiteSpace}`,
+              tval: `${font(tval)} ${getComputedStyle(tval).color === tok('--g-label-2')} ${getComputedStyle(tval).fontVariantNumeric}`,
+              mrows: Math.round(Math.min(...tiles.map((t) => t.getBoundingClientRect().height))),
+              msep: tiles.map((t) => `${getComputedStyle(t).backgroundImage.slice(0, 15)} ${getComputedStyle(t).backgroundPosition}`)
+                .every((x, i) => (i === 0 ? x.startsWith('none ') : x === 'linear-gradient 16px 0px')),
               bar: `${Math.round(bar.getBoundingClientRect().height)} ${getComputedStyle(bar).backgroundColor === bg('--g-fill')}`,
               bands: fills.every((f) => getComputedStyle(f).backgroundColor === BAND[band(f, 'sys-metric-bar__fill')]),
               bandSet: [...new Set(fills.map((f) => band(f, 'sys-metric-bar__fill')))].sort().join(),
@@ -3223,7 +3233,11 @@ module.exports = function pages(h) {
             await close();
           }
           const g = got.glas || {};
-          const same = !!got.classic && !got.classic.error && !g.error && JSON.stringify(got.classic) === JSON.stringify(g);
+          // F68: Glas shows sizes in decimal GB (formatDataSize), Klassisch keeps HA's unit; everything else is the same
+          const glasSizes = (c) => (c && c.groups ? { ...c, groups: c.groups.map((x) => x.replace('Memory free|3.624 MiB', 'Memory free|3,8 GB')
+            .replace('Disk free (/)|25 GiB', 'Disk free (/)|26,6 GB')) } : c);
+          const same = !!got.classic && !got.classic.error && !g.error && JSON.stringify(glasSizes(got.classic)) === JSON.stringify(g)
+            && JSON.stringify(got.classic) !== JSON.stringify(g);
           const fine = same && g.status === DE['system.hero.status.critical']
             && g.gauges.join() === ['warn:CPU82%', 'critical:RAM93%', 'ok:Speicher61%'].join()
             && g.alerts.join() === [DE['system.hero.lowBatteryCount.other'].replace('{count}', '2'),
@@ -3237,9 +3251,9 @@ module.exports = function pages(h) {
           const L = look || {};
           const measured = !!look && !look.error && L.warn === 'true 18x18 true 600' && L.critical === 'true 18x18 true 600'
             && L.dots.join() === ['true true 600', 'true true 600', 'true true 600'].join()
-            && L.label === '600 15px/20px true none' && L.symbol === 'none' && L.tile === '12px 0px true' && L.tname === '400 15px/20px true'
-            && L.tval === '600 15px/20px true tabular-nums' && L.bar === '6 true' && L.bands && L.bandSet === 'critical,ok,warn'
-            && L.groups.edges === '0,0,0' && L.groups.top && L.groups.h === 432 && L.groups.scrolls && L.groups.gap === '16px'
+            && L.label === 'none' && L.tile === '0px 0px rgba(0, 0, 0, 0)' && L.tname === '400 17px/22px true normal'
+            && L.tval === '400 15px/20px true tabular-nums' && L.mrows >= 52 && L.msep && L.bar === '6 true' && L.bands && L.bandSet === 'critical,ok,warn'
+            && L.groups.edges === '0,0,0' && L.groups.top && L.groups.h === 432 && L.groups.scrolls && L.groups.gap === '0px'
             && L.rows === 52 && L.circle === '32x32 50% true' && L.textStart === 60 && L.name === '400 17px/22px true'
             && L.sep === 'linear-gradient 60px 0px' && L.firstSep === 'none' && L.borders && L.list.edges === '0,0,0' && L.list.top
             && L.states.every((s) => s === 'true,true,true,true') && L.bbar === '6 true' && L.pct === '400 15px/20px tabular-nums'

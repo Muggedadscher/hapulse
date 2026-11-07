@@ -74,11 +74,12 @@ sauber übernehmen können.
   Hero-Pumpenstatus + Modus-Umschalter, Solar-Gauge mit editierbarer Schwelle,
   Manuell-Timer-Ring, Laufzeit/Verbrauch (Kacheln öffnen Upstreams
   Entity-Detail-Modal), einen
-  **vollen Zeitplan-Editor** (grafische Tages-Timeline, schreibt via
+  **Zeitplan-Editor** (`PoolTimesPage.tsx`: Tages-Chips, 24-h-Ring und Zeitfelder aus dem gemeinsamen Bauteil
+  `components/schedule/` wie beim Heizplan, Ton `sched--pool`; ein Satz Laufzeiten für alle gewählten Tage, schreibt via
   `scheduler.edit`), einen **Laufzeit-Chart** (`PoolChartCard`: Balken der
   Pumpen-Laufzeit pro Tag aus der State-History, Tages-Max) und eine
   Admin-Sektion (nur HA-Admins). Scheduler-/Slot-Konvertierung (Timeslots ↔
-  On-Fenster ↔ Tages-Slots) und das Tages-Bucketing (`dailyRuntimeBars`) liegen
+  On-Fenster ↔ Laufzeiten `poolWindowsToPeriods`/`poolPeriodsToWindows`) und das Tages-Bucketing (`dailyRuntimeBars`) liegen
   DOM-frei in `packages/core/src/pool.ts` (getestet in
   `packages/core/scripts/smoke.mjs`). Die Seite ist ein **festes Layout**
   (Hero + fließendes Karten-Grid, NICHT editierbar — bewusst schlank für
@@ -232,6 +233,26 @@ sauber übernehmen können.
   Übergänge, Hover, Kontrast, Leistung, Stil-Zeile, reduzierte Bewegung); `--engine webkit` für Playwright-WebKit im
   Labor (Blöcke mit CDP werden übersprungen und gelistet). Glas ist nicht Standard; ob es das für alle wird, entscheidet
   der User.
+
+- **Heizplan je Raum (Etappen 1, 2a, 2b, 4 fertig; offen: Thermostat aufnehmen/tauschen)**: je Raum mit Thermostat Plan an/aus, Komfort/Eco und Zeiten, für
+  jeden HA-Benutzer ohne Admin-Rechte (Speichern über die Automation `automation.heizplan_speichern`, danach
+  Nachlesen). Core (`packages/core/src/heatingPlan.ts`, Tests in `smoke.mjs`), Aufrufe
+  (`apps/dashboard/src/ha/heatingPlan.ts`), Demo im Wohnzimmer; Einträge mit dem Label `heizplan` erscheinen nicht unter
+  den Geräten eines Raums. Seit Etappe 2a die Karte in „Klima“ (`components/heating/HeatingPlanCard.tsx`, eine
+  `[fork]`-Stelle in `Room.tsx`) und ihr Fenster (`HeatingPlanSheet.tsx`, Speicherreihenfolge in `heatingSave.ts`,
+  Test `test/heatingCard.test.ts`), Glas in `styles/glas/heating.css`. Seit Etappe 2b die Seite mit den Zeiten
+  (`HeatingTimesPage.tsx` als Fenster auf dem Fenster; ihr Körper ist das gemeinsame Bauteil
+  `components/schedule/` — `ScheduleTimes`, Ring `ScheduleRing`, CSS `schedule.css` + `styles/glas/schedule.css`, Klassen
+  `sched*`, Ton per `sched--heat`/`sched--pool` —, Regeln DOM-frei in Core `timePeriods.ts` (Heizungs-Namen in
+  `heatingEdit.ts`), Seiten-Logik in `heatingTimes.ts`); Prüfung `checks --part sheets --only sheetsHeatingTimes`.
+  Seit Etappe 4 „Einrichten per Knopf“ für Admins: Räume mit Thermostat ohne Plan (Core `heatingSetup.ts`,
+  `search/related` auf den Blueprint), Karte `HeatingSetupCard` (zweite `[fork]`-Stelle in `Room.tsx`), Fenster
+  `HeatingSetupSheet`, Hinweis `heating-missing` (Core `hints.ts`), Aufrufe `ha/heatingSetup.ts` (WebSocket für Helfer,
+  Zeitplan, Register; die Automation über REST, braucht die HAPulse-Adresse in den CORS-Ursprüngen von HA, seit 2026.8 unter
+  Einstellungen → System → Netzwerk; dafür
+  `HAConnection.sendMessage`/`restAuth`), Test `test/heatingSetup.test.ts` (nachgebautes HA), Prüfung
+  `--only sheetsHeatingSetup` (Demo-Schlafzimmer). Einrichtung in Home Assistant, Aufrufe und Regeln der Karte:
+  **`docs/HEIZPLAN.md`**.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

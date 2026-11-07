@@ -143,6 +143,18 @@ export class HAConnection {
   }
 
   /**
+   * [fork] HA's categories of one scope (`config/category_registry/list`, e.g. scope `automation`): id → name.
+   * Throws on failure — callers decide their fallback.
+   */
+  async fetchCategories(scope: string): Promise<Record<string, string>> {
+    const list = await this.#conn.sendMessagePromise<{ category_id: string; name: string }[]>({
+      type: 'config/category_registry/list',
+      scope,
+    });
+    return Object.fromEntries((list ?? []).map((c) => [c.category_id, c.name]));
+  }
+
+  /**
    * Fetch the Energy dashboard preferences (`energy/get_prefs`).
    *
    * Returns `null` when energy is not set up (the integration isn't loaded, so
@@ -512,6 +524,25 @@ export class HAConnection {
    */
   subscribeConfig(cb: (config: HassConfig) => void): UnsubscribeFunc {
     return libSubscribeConfig(this.#conn, cb);
+  }
+
+  /**
+   * [fork] Any WebSocket command (setting up a heating plan: registries, helpers, `search/related`). Throws HA's
+   * error, e.g. `unauthorized` for a user without admin rights.
+   */
+  sendMessage<T = unknown>(msg: { type: string; [key: string]: unknown }): Promise<T> {
+    return this.#conn.sendMessagePromise<T>(msg);
+  }
+
+  /**
+   * [fork] HA's address and a valid access token for a REST call (an automation can only be saved over REST). An OAuth
+   * token lives about 30 minutes, so an expired one is refreshed first. Null without auth.
+   */
+  async restAuth(): Promise<{ hassUrl: string; accessToken: string } | null> {
+    const auth = this.#auth;
+    if (!auth) return null;
+    if (auth.expired) await auth.refreshAccessToken();
+    return { hassUrl: auth.data.hassUrl.replace(/\/+$/, ''), accessToken: auth.accessToken };
   }
 
   /**

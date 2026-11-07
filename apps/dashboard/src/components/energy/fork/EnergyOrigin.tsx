@@ -101,6 +101,9 @@ interface OriginChartProps {
   label: string;
 }
 
+/** Below this a bar's total is nothing (kWh). */
+const EPS = 1e-9;
+
 function OriginChart({ bars, period, average, label }: OriginChartProps) {
   const t = useT();
   const locale = useLocale();
@@ -148,8 +151,9 @@ function OriginChart({ bars, period, average, label }: OriginChartProps) {
               );
             }
             // nothing in this bar (a night hour in the solar card): an empty column, like the overview's card
-            if (bar.total <= 0) return <span key={i} className="en-chart__bar" />;
-            const parts = bar.parts.filter((p) => p.value > 0);
+            // (float leftovers of the allocation, about 1e-16 kWh, count as nothing)
+            if (bar.total <= EPS) return <span key={i} className="en-chart__bar" />;
+            const parts = bar.parts.filter((p) => p.value > bar.total * 1e-6);
             return (
               <span key={i} className="en-chart__bar">
                 <span className="en-chart__col" style={{ height: `${Math.max(1.5, pct(bar.total))}%` }}>
@@ -157,7 +161,9 @@ function OriginChart({ bars, period, average, label }: OriginChartProps) {
                     <span
                       key={p.kind}
                       className={`en-chart__part en-chart__part--${p.kind}`}
-                      style={{ flexGrow: p.value }}
+                      // the parts' shares of the column (they sum to 1): raw kWh below 1 would leave the column
+                      // partly empty, since flex hands out only that fraction of the space
+                      style={{ flexGrow: p.value / bar.total }}
                     />
                   ))}
                 </span>

@@ -13,6 +13,7 @@ import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
 interface ClimateCardProps {
   entity: HassEntity;
   name: string;
+  children?: React.ReactNode; // [fork] a foot (the room's heating plan in "Klima – Alle anzeigen")
 }
 
 const MODE_ICONS: Record<string, React.ReactNode> = {
@@ -23,7 +24,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
   fan_only: <Wind size={12} strokeWidth={1.75} />,
 };
 
-export function ClimateCard({ entity, name }: ClimateCardProps) {
+export function ClimateCard({ entity, name, children }: ClimateCardProps) { // [fork] children
   const t = useT();
   const locale = useLocale(); // [fork] number formatting
   const temperatureUnit = useTemperatureUnit(); // [fork] HA's unit: the default step when the entity has none
@@ -140,6 +141,7 @@ export function ClimateCard({ entity, name }: ClimateCardProps) {
           ))}
         </div>
       )}
+      {children}{/* [fork] */}
     </Card>
   );
 }

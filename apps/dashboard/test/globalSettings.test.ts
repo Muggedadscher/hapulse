@@ -105,6 +105,7 @@ describe('scope table', () => {
       'nvrCameraRooms', 'garageChipMigrated', 'locksChipMigrated',
       'uiStyle', 'glassStrength', 'reduceTransparency', // Glas: the admin sets the style for everybody (E1/E2)
       'hintsSectionMigrated', 'tallSections', // Etappe 4: home hints placed once; Glas L sizes (E6) for everybody
+      'roomTemperatureSource', // the room's temperature source, chosen by the admin for everybody
     ];
     const all = [...KNOWN_GLOBAL, ...scope.USER_CUSTOMIZATION_KEYS, ...scope.SECRET_CUSTOMIZATION_KEYS].sort();
     expect(Object.keys(INITIAL.customization).sort()).toEqual(all);

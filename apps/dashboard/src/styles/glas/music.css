@@ -572,7 +572,6 @@
    list "now" and "next" as rows; below, the count and the controls with a hairline. ---- */
 :root[data-style='glas'] .music-page :is(.queue-card__header, .library-card__header) {
   flex-wrap: wrap;
-  row-gap: 0;
 }
 
 :root[data-style='glas']

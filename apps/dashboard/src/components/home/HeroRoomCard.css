@@ -198,6 +198,12 @@
   transform: scale(0.92);
 }
 
+/* [fork] no single setpoint to step (as .climate-card__step-btn) */
+.hero-pill__step-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .hero-room-card--empty {
   display: flex;
   align-items: center;

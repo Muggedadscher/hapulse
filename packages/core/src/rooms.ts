@@ -13,6 +13,7 @@ import type {
   RoomSummary,
 } from './types.js';
 import { domainOf } from './domain.js';
+import { isHeatingPlanEntry } from './heatingPlanLabel.js'; // [fork]
 
 /** Device id → area_id, as resolved by `resolveEntityAreaId`'s device fallback. */
 export type DeviceAreaMap = Map<string, string | null>;
@@ -51,6 +52,7 @@ export function resolveEntityAreaId(
  * - Entities with `disabled_by` or `hidden_by` are excluded entirely.
  * - Entities with `entity_category` ('config' | 'diagnostic') go into `entityIds`
  *   but are excluded from `domains` (so they don't appear in room summaries or cards).
+ * - [fork] So are entities with the label `heizplan` (heatingPlanLabel.ts).
  * - Rooms with no assigned entities are still included (they come from the area registry).
  * - Rooms are sorted alphabetically by name.
  */
@@ -94,6 +96,10 @@ export function buildRooms(registries: Registries, entities: HassEntityMap): Roo
     // Diagnostic/config entities are in entityIds but NOT in domains.
     // Use loose != null so absent entity_category (undefined on older HA) is treated as "no category".
     if (entry.entity_category != null) continue;
+
+    // [fork] Likewise the room's heating plan entries (label `heizplan`: automation, schedule, temperature helpers):
+    // the heating plan card shows them, not the room's device sections and counts.
+    if (isHeatingPlanEntry(entry)) continue;
 
     // Only include if there's a live state entry
     if (!(entry.entity_id in entities)) continue;

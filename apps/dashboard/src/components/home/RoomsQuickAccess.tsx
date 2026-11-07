@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router';
 import { useShallow } from 'zustand/react/shallow';
 import { Thermometer, Droplets, Lightbulb } from 'lucide-react';
 import { LayoutGrid } from 'lucide-react'; // [fork] Glas title (docs/glas/PLAN-ETAPPE-4.md K83)
-import { roomSummary } from '@hapulse/core';
+import { roomSummary, withRoomTemperature } from '@hapulse/core'; // [fork] withRoomTemperature
+import { useRoomTemperatureSources } from '../../lib/roomTemperatureSource'; // [fork]
 import type { Room, HassEntityMap } from '@hapulse/core';
 import { RoomDisplayIcon } from '../ui/RoomDisplayIcon';
 import { roomDisplayIcon } from '../../lib/roomIcon';
@@ -30,6 +31,8 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
     useShallow((s) => s.customization.hiddenEntities)
   );
 
+  const temperatureSources = useRoomTemperatureSources(); // [fork]
+
   if (rooms.length === 0) return null;
 
   return (
@@ -37,7 +40,7 @@ export function RoomsQuickAccess({ rooms, entities }: RoomsQuickAccessProps) {
       <SectionLabel style={{ marginBottom: 0 }}>{isGlas && <LayoutGrid className="g-rooms__icon" size={18} strokeWidth={2} aria-hidden="true" />}{t('home.roomsQuickAccess.sectionLabel')}</SectionLabel>{/* [fork] Glas: symbol */}
       <div className="rooms-quick-strip" role="list" aria-label={t('home.roomsQuickAccess.listAria')}>
         {rooms.map((room) => {
-          const summary = roomSummary(room, entities);
+          const summary = withRoomTemperature(roomSummary(room, entities), room, entities, temperatureSources[room.id]); // [fork] chosen source
           const { iconName, isStatus } = roomDisplayIcon(room, entities, hiddenEntities);
 
           // Lights: visible (non-hidden) entities only

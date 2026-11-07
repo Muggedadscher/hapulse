@@ -14,7 +14,7 @@ export const INSPECTOR_FROM = 1100;
 /** Medium: inset 8 on the left, right and bottom; at most `100dvh − 144px` tall. */
 export const MEDIUM_INSET = 8;
 export const MEDIUM_TOP_GAP = 144;
-/** Large: docked at the bottom, `100dvh − 52px` tall. */
+/** Large: docked at the bottom, `100dvh − 52px` tall (on 25.10.2026 briefly 8: too high for most windows, Jannick). */
 export const LARGE_TOP = 52;
 /** Below this viewport height only the large detent exists (390 px landscape would leave 246 px for medium). */
 export const LARGE_ONLY_BELOW = 560;

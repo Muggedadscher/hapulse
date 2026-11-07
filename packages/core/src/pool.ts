@@ -20,6 +20,8 @@
 
 /** Minutes in a full day. A stop at exactly midnight means end-of-day. */
 import { formatNumber } from './numberFormat.js';
+import { periodMinutes, periodTimeOf, sortPeriods } from './timePeriods.js';
+import type { TimePeriod } from './timePeriods.js';
 
 export const POOL_DAY_MINUTES = 1440;
 
@@ -475,4 +477,27 @@ export function daySlotsToWindows(slots: PoolDaySlot[]): PoolWindow[] {
     windows.push({ start, stop });
   }
   return normalizeWindows(windows);
+}
+
+// ---------------------------------------------------------------------------
+// [fork] Periods — the ring editor's representation (timePeriods.ts, shared with the heating plan)
+// ---------------------------------------------------------------------------
+
+/** At most this many runs a day in the ring editor (as the heating plan). */
+export const POOL_MAX_PERIODS = 10;
+
+/** The first run for a schedule without one. */
+export const POOL_FIRST_PERIOD: TimePeriod = { from: '12:00', to: '14:00' };
+
+/** On-windows as periods (`HH:MM`, the end of the day `24:00`), in the order of the day. */
+export function poolWindowsToPeriods(windows: PoolWindow[]): TimePeriod[] {
+  return normalizeWindows(windows).map((w) => ({ from: periodTimeOf(w.start), to: periodTimeOf(w.stop) }));
+}
+
+/**
+ * Periods back to on-windows for saving: normalized, so runs that touch become one (the scheduler keeps no border
+ * between two "on" slots).
+ */
+export function poolPeriodsToWindows(periods: readonly TimePeriod[]): PoolWindow[] {
+  return normalizeWindows(sortPeriods(periods).map((p) => ({ start: periodMinutes(p.from), stop: periodMinutes(p.to) })));
 }

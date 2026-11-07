@@ -38,6 +38,307 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 70,
+    date: '2026-11-04',
+    title: { de: 'Heizplan unter „Klima – Alle anzeigen“', en: 'Heating plan in “Climate – See All”' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Auf der Übersicht zeigt „Klima – Alle anzeigen“ unter jedem Thermostat mit Heizplan eine schmale Zeile: was gerade gilt und bis wann, darunter der heutige Tag als Balken; ein Tipp öffnet den Heizplan des Raums',
+            en: 'On the overview, “Climate – See All” shows a slim row under every thermostat with a heating plan: what holds now and until when, today as a bar under it; a tap opens the room’s heating plan',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 69,
+    date: '2026-10-28',
+    title: { de: 'Raumtemperatur aus der richtigen Quelle', en: 'Room temperature from the right source' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Für Administratoren: Auf der Raumseite im Bearbeiten-Modus lässt sich wählen, woher die Raumtemperatur kommt, „Automatisch“ oder ein bestimmter Temperatursensor bzw. ein Thermostat des Raums',
+            en: 'For administrators: on the room page in edit mode you can choose where the room temperature comes from, “Automatic” or a specific temperature sensor or thermostat of the room',
+          },
+        ],
+      },
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Mit gewählter Quelle zeigen Raumkacheln, der Raum oben auf der Übersicht und der Raumseite sowie die Klima-Karte deren Wert, etwa das Thermostat statt des Backofens in der Küche',
+            en: 'With a chosen source, the room tiles, the room at the top of the overview and the room page and the climate card show its value, for example the thermostat instead of the oven in the kitchen',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 68,
+    date: '2026-10-26',
+    title: { de: 'Systemmonitor: klare Namen, eine Liste', en: 'System monitor: clear names, one list' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Werte im Systemmonitor heißen ohne den Gerätenamen davor, also „Prozessornutzung“ statt „System Monitor Prozessornutzung“, in beiden Stilen',
+            en: 'The system monitor’s values are named without the device name in front, “Processor use” instead of “System Monitor Processor use”, in both styles',
+          },
+          {
+            de: 'In Glas ist der Systemmonitor eine Liste wie die Batterien daneben, ohne Kacheln und Zwischentitel; Speichergrößen stehen in GB statt MiB',
+            en: 'In Glass the system monitor is a list like the batteries beside it, without tiles and group titles; sizes are shown in GB instead of MiB',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 67,
+    date: '2026-10-26',
+    title: { de: 'Pool-Zeitplan: Überschrift über der Karte', en: 'Pool schedule: title above the card' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'In Glas steht „Zeitplan“ auf der Pool-Seite jetzt wie die anderen Überschriften über der Karte; der Schalter ist die erste Zeile in der Karte („Zeitplan aktiv“)',
+            en: 'In Glass, “Schedule” on the pool page now stands above its card like the other titles; the switch is the first row inside the card (“Schedule on”)',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 66,
+    date: '2026-10-25',
+    title: { de: 'Pool-Zeiten wie im Heizplan', en: 'Pool times like the heating plan' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Zeiten des Pool-Zeitplans stellt man jetzt so ein wie die Zeiten im Heizplan: die Tage als runde Knöpfe, ein 24-Stunden-Ring zum Ziehen und „An ab“ / „Aus ab“ für jede Laufzeit',
+            en: 'The pool schedule’s times are now set like the times of a heating plan: the days as round buttons, a 24-hour ring to drag and “On from” / “Off from” for each run',
+          },
+          {
+            de: 'Laufzeiten, die aneinanderstoßen, werden beim Speichern zu einer; höchstens 10 Laufzeiten am Tag',
+            en: 'Runs that touch become one when saved; at most 10 runs a day',
+          },
+          {
+            de: 'In Glas ist das ein Fenster mit × und ✓, in Klassisch ein Dialog mit Abbrechen und „Zeitplan speichern“',
+            en: 'In Glass it is a window with × and ✓, in Classic a dialog with Cancel and “Save schedule”',
+          },
+          {
+            de: 'Die Karte „Zeitplan“ zeigt die Laufzeit pro Tag in Stunden und Minuten statt als Dezimalzahl',
+            en: 'The “Schedule” card shows the run time per day in hours and minutes instead of a decimal number',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 65,
+    date: '2026-10-25',
+    title: { de: 'Große Fenster wieder mit Abstand oben', en: 'Large windows with their gap at the top again' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Große Fenster in Glas beginnen wieder mit etwas Abstand unter dem oberen Rand, wie vor F63; der runde Zurück-Knopf bleibt',
+            en: 'Large windows in Glass start a little below the top edge again, as before F63; the round back button stays',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 64,
+    date: '2026-10-25',
+    title: { de: 'Heizplan per Knopf einrichten', en: 'Set up a heating plan with one button' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Für Administratoren: Hat ein Raum ein Thermostat, aber keinen Heizplan, steht unter „Klima“ die Karte „Heizplan einrichten“, und die Übersicht zeigt den Hinweis „Heizplan fehlt“',
+            en: 'For administrators: when a room has a thermostat but no heating plan, “Climate” shows the card “Set up heating plan” and the overview shows the hint “Heating plan missing”',
+          },
+          {
+            de: '„Einrichten“ legt in Home Assistant die Automation, den Zeitplan und die Temperaturen Komfort und Eco an, mit Bereich, Label und Kategorie wie in den übrigen Räumen; Thermostate und Fenster sind wählbar, ein Gerät, das auch kühlen kann, ist nicht vorgewählt',
+            en: '“Set up” creates the automation, the schedule and the comfort and eco temperatures in Home Assistant, with area, label and category as in the other rooms; thermostats and windows can be chosen, a device that can also cool is not chosen in advance',
+          },
+          {
+            de: '„Nicht einrichten“ merkt sich, dass der Raum keinen Plan haben soll, und nimmt den Hinweis weg; „Doch einrichten“ macht das rückgängig',
+            en: '“Don’t set up” remembers that the room should have no plan and removes the hint; “Set up anyway” undoes it',
+          },
+          {
+            de: 'Fehlt in Home Assistant etwas für die Einrichtung, nennt das Fenster es vorher; bricht sie ab, macht ein neuer Versuch dort weiter, ohne etwas doppelt anzulegen',
+            en: 'When Home Assistant lacks something for the setup, the window says so first; when a setup stops, trying again continues there without creating anything twice',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 63,
+    date: '2026-10-25',
+    title: { de: 'Fenster in Glas wie in iOS 26', en: 'Windows in Glass like in iOS 26' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Eine Seite in einem Fenster (etwa die Zeiten im Heizplan, „Entriegeln?“ oder „Garage öffnen?“) geht mit einem runden Zurück-Knopf zurück, so wie das × ein Fenster schließt',
+            en: 'A page in a window (such as the times of a heating plan, “Unlock?” or “Open garage?”) goes back with a round back button, the way the × closes a window',
+          },
+          {
+            de: 'Ein großes Fenster reicht bis knapp unter den oberen Rand; der Kopf der Seite dahinter mit seinem Zurück-Knopf ist nicht mehr zu sehen',
+            en: 'A large window reaches just below the top edge; the head of the page behind it with its back button no longer shows',
+          },
+          {
+            de: 'Die Zeiten im Heizplan zeigen nur noch die Tage als Titel, ohne „Heizplan · Raum“ darunter',
+            en: 'The times of a heating plan show only the days as their title, without “Heating plan · room” below',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 62,
+    date: '2026-10-24',
+    title: { de: 'Komfortzeiten im Heizplan ändern', en: 'Change the comfort times of a heating plan' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Im Fenster „Zeitplan und Temperaturen“ öffnet ein Tipp auf eine Gruppe von Tagen ihre Zeiten: Tage wählen, am 24-Stunden-Ring ziehen oder die Uhrzeit eintippen, in Schritten von 5 Minuten',
+            en: 'In the window “Schedule and temperatures” a tap on a group of days opens its times: choose the days, drag on the 24-hour ring or type the time, in steps of 5 minutes',
+          },
+          {
+            de: 'Eine zweite Zeit am Tag hinzufügen, eine Zeit entfernen oder alle Zeiten der gewählten Tage löschen; „Zeiten für weitere Tage“ legt Zeiten für Tage ohne Komfortzeit an',
+            en: 'Add a second time of the day, remove a time or delete all times of the chosen days; “Times for other days” sets times for days without a comfort time',
+          },
+          {
+            de: 'Der Haken speichert die Zeiten sofort in Home Assistant, auch ohne Administratorrechte; nimmt Home Assistant sie nicht an, bleibt die Seite offen mit „Erneut versuchen“',
+            en: 'The check mark saves the times in Home Assistant at once, also without administrator rights; when Home Assistant does not take them, the page stays open with “Try again”',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 61,
+    date: '2026-10-24',
+    title: { de: 'Heizplan in jedem Raum', en: 'Heating plan in every room' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'In Räumen mit Heizplan steht unter „Klima“ die Karte „Heizplan“: was gerade gilt und bis wann, der heutige Tag als Balken mit den Komfortzeiten, Komfort- und Eco-Temperatur und ein Schalter für den Plan',
+            en: 'Rooms with a heating plan show the card “Heating plan” under “Climate”: what applies now and until when, today as a bar with the comfort times, the comfort and eco temperatures and a switch for the plan',
+          },
+          {
+            de: '„Zeitplan und Temperaturen“ öffnet ein Fenster mit dem Schalter, Komfort und Eco zum Einstellen und den Komfortzeiten, nach gleichen Tagen gruppiert',
+            en: '“Schedule and temperatures” opens a window with the switch, comfort and eco to set and the comfort times grouped by equal days',
+          },
+          {
+            de: 'Ausschalten fragt vorher, denn dann sind auch Fenster- und Frostschutz des Raums aus; die Karte sagt, wenn ein Fenster offen ist oder das Thermostat dem Plan nicht folgt',
+            en: 'Switching off asks first, as the room’s window and frost protection are off then too; the card says when a window is open or the thermostat does not follow the plan',
+          },
+          {
+            de: 'Alle Benutzer können das bedienen, auch ohne Administratorrechte in Home Assistant',
+            en: 'Every user can do this, also without administrator rights in Home Assistant',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 60,
+    date: '2026-10-24',
+    title: { de: 'Automationen nach den Kategorien aus Home Assistant', en: 'Automations grouped by Home Assistant’s categories' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Gruppen unter Automationen tragen die Kategorie, die eine Automation in Home Assistant hat, wie dessen eigene Automationsliste; Automationen ohne Kategorie bleiben nach dem ersten Wort ihres Namens gruppiert',
+            en: 'The groups on the automations page carry the category an automation has in Home Assistant, like its own automation list; automations without a category stay grouped by the first word of their name',
+          },
+          {
+            de: 'Eine Gruppe, die dadurch einen neuen Namen bekommt, steht einmalig wieder sichtbar an ihrem Standardplatz, auch wenn sie vorher ausgeblendet oder verschoben war; ebenso nach dem Umbenennen einer Kategorie in Home Assistant',
+            en: 'A group that gets a new name this way shows up once more at its default place, even if it was hidden or moved before; the same after renaming a category in Home Assistant',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 59,
+    date: '2026-10-24',
+    title: { de: 'Thermostat in der Raumkarte zählt jeden Tipp', en: 'Thermostat in the room card counts every tap' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Plus und Minus an der Thermostat-Pille der Raumkarte zählen jeden Tipp und zeigen den neuen Wert sofort, wie die Klima-Karte; vorher schickten schnelle Tipps immer denselben Wert, bis das Thermostat geantwortet hatte',
+            en: 'Plus and minus on the room card’s thermostat pill count every tap and show the new value at once, like the climate card; quick taps used to send the same value until the thermostat had answered',
+          },
+          {
+            de: 'Die Pille hält Schrittweite, Mindest- und Höchstwert des Thermostats ein und ist gesperrt, wenn es keine einzelne Solltemperatur meldet (etwa im Bereichsmodus)',
+            en: 'The pill keeps to the thermostat’s step, minimum and maximum and is disabled when it reports no single target temperature (e.g. in range mode)',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 58,
+    date: '2026-10-23',
+    title: { de: 'Pool: aufgeräumt auf breiten Bildschirmen', en: 'Pool: tidy on wide screens' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Karte „Solar-Automatik“ steht in einer schmalen Spalte mittig untereinander wie „Manueller Betrieb“, statt mit leerer rechter Hälfte',
+            en: 'The card “Solar automation” stacks centred in a narrow column like “Manual run”, instead of leaving its right half empty',
+          },
+          {
+            de: '„Laufzeit pro Tag“ ist auf Tablet und Desktop zwei Spalten breit, auf sehr breiten Bildschirmen der Rest der Zeile; im Stil Glas steht der Wert des Tages groß oben in der Karte',
+            en: '“Runtime per day” is two columns wide on tablet and desktop, the rest of the row on very wide screens; in Glass the day’s value stands large at the top of the card',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: 57,
+    date: '2026-10-22',
+    title: { de: 'Energie: Balken stehen wieder unten', en: 'Energy: bars stand on the base again' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Die Balken der Karten „Verbrauch“ und „Solar“ füllen ihre Spalte auch bei kleinen Werten unter 1 kWh und schweben nicht mehr über der Grundlinie',
+            en: 'The bars of the cards “Consumption” and “Solar” fill their column also for small values below 1 kWh and no longer float above the base line',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 56,
     date: '2026-10-21',
     title: { de: 'Energie: jetzt und Batterie', en: 'Energy: now and battery' },
