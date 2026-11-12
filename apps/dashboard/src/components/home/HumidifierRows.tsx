@@ -1,7 +1,8 @@
 /**
  * [fork] The dehumidifiers (and humidifiers) of the rooms under the overview's climate card: a short heading
  * „Luftfeuchte“, then a row per device with its name, what it does in HA's own words („Entfeuchtung“, „Leerlauf“,
- * „Aus“; core humidifier.ts) and the current humidity. A tap opens the device's detail, whose control is the
+ * „Aus“; core humidifier.ts) and the current humidity. A row is named after its room, like the thermostats above
+ * („Bad“, not „Luftentfeuchter Bad“); a room with more than one device names them by their own names. A tap opens the device's detail, whose control is the
  * HumidifierCard (target −/+, On/Off). Only devices with a room (HA area or the device's area), like the thermostats.
  * Klassisch uses the card's room rows (HumidifierRows.css), Glas the rows of the room choice (styles/glas/humidifier.css).
  */
@@ -14,23 +15,31 @@ import { useLocale, useStateLabel, useT } from '../../i18n/useT';
 import { useUIStore } from '../../stores/uiStore';
 import './HumidifierRows.css';
 
+export interface RoomHumidifier {
+  entity: HassEntity;
+  /** the room's name, or the device's own when its room has more than one */
+  name: string;
+}
+
 /** The rooms' humidifier entities, in room order. */
-export function roomHumidifiers(rooms: readonly Room[], entities: HassEntityMap): HassEntity[] {
+export function roomHumidifiers(rooms: readonly Room[], entities: HassEntityMap): RoomHumidifier[] {
   const seen = new Set<string>();
-  const out: HassEntity[] = [];
+  const out: RoomHumidifier[] = [];
   for (const room of rooms) {
-    for (const id of room.domains['humidifier'] ?? []) {
-      const entity = entities[id];
-      if (!entity || seen.has(id)) continue;
-      seen.add(id);
-      out.push(entity);
+    const found = (room.domains['humidifier'] ?? [])
+      .map((id) => entities[id])
+      .filter((e): e is HassEntity => !!e && !seen.has(e.entity_id));
+    for (const entity of found) {
+      seen.add(entity.entity_id);
+      const own = (entity.attributes.friendly_name as string | undefined) ?? entity.entity_id;
+      out.push({ entity, name: found.length === 1 ? room.name : own });
     }
   }
   return out;
 }
 
 interface HumidifierRowsProps {
-  humidifiers: readonly HassEntity[];
+  humidifiers: readonly RoomHumidifier[];
   glas: boolean;
 }
 
@@ -44,13 +53,12 @@ export function HumidifierRows({ humidifiers, glas }: HumidifierRowsProps) {
   const pct = (v: number | null) =>
     v == null ? '—' : new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(v / 100);
 
-  const rows = humidifiers.map((entity) => {
+  const rows = humidifiers.map(({ entity, name }) => {
     const deviceClass = typeof entity.attributes['device_class'] === 'string' ? (entity.attributes['device_class'] as string) : undefined;
     const action = typeof entity.attributes['action'] === 'string' ? (entity.attributes['action'] as string) : undefined;
     const label = action
       ? sl('humidifier', action, { attribute: 'action', deviceClass })
       : sl('humidifier', entity.state, { deviceClass });
-    const name = (entity.attributes.friendly_name as string | undefined) ?? entity.entity_id;
     return { id: entity.entity_id, name, label, tone: humidifierTone(entity), value: pct(currentHumidity(entity)) };
   });
 

@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 73,
+    date: '2026-11-12',
+    title: { de: 'Luftentfeuchter nach Raum benannt', en: 'Dehumidifiers named by room' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Luftentfeuchter in der Karte „Klima“ der Übersicht heißen wie ihr Raum („Bad“ statt „Luftentfeuchter Bad“), so wie die Thermostate darüber; stehen in einem Raum mehrere, behalten sie ihre eigenen Namen',
+            en: 'The dehumidifiers in the overview’s “Climate” card are named after their room (“Bathroom” instead of “Dehumidifier Bathroom”), like the thermostats above; several in one room keep their own names',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 72,
     date: '2026-11-12',
     title: { de: 'Luftentfeuchter in der Übersicht', en: 'Dehumidifiers on the overview' },
