@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F73 — 2026-11-12
+
+**Luftentfeuchter nach Raum benannt** · _Dehumidifiers named by room_
+
+### Geändert / Changed
+
+- Die Luftentfeuchter in der Karte „Klima“ der Übersicht heißen wie ihr Raum („Bad“ statt „Luftentfeuchter Bad“), so wie die Thermostate darüber; stehen in einem Raum mehrere, behalten sie ihre eigenen Namen  
+  _The dehumidifiers in the overview’s “Climate” card are named after their room (“Bathroom” instead of “Dehumidifier Bathroom”), like the thermostats above; several in one room keep their own names_
+
 ## F72 — 2026-11-12
 
 **Luftentfeuchter in der Übersicht** · _Dehumidifiers on the overview_
