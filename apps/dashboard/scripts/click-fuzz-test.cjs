@@ -64,7 +64,7 @@ const getJSON = (u) => new Promise((res, rej) => { http.get(u, (r) => { let d = 
   await go('/');
   let routes = await ev(`Array.from(new Set(Array.from(document.querySelectorAll('a[href^="/"]')).map(a=>a.getAttribute('href')).filter(h=>h&&!h.startsWith('//'))))`);
   if (!Array.isArray(routes)) routes = ['/'];
-  for (const extra of ['/', '/room/living_room', '/nvr', '/pool', '/settings', '/security', '/energy', '/music', '/devices', '/automations', '/scenes', '/system', '/rooms']) if (!routes.includes(extra)) routes.push(extra);
+  for (const extra of ['/', '/room/living_room', '/room/bathroom', '/nvr', '/pool', '/settings', '/security', '/energy', '/music', '/devices', '/automations', '/scenes', '/system', '/rooms']) if (!routes.includes(extra)) routes.push(extra);
   const pages = [];
   for (const route of routes) {
     errs = [];

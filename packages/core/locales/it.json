@@ -677,6 +677,8 @@
   "cards.climate.increaseAria": "Alza la temperatura",
   "cards.climate.current": "Attuale",
   "cards.climate.target": "Obiettivo",
+  "cards.humidifier.decreaseAria": "Diminuisci umidità",
+  "cards.humidifier.increaseAria": "Aumenta umidità",
   "cards.cover.percentOpen": "{percent}% aperta",
   "cards.cover.open": "Apri",
   "cards.cover.stop": "Ferma",

@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F71 — 2026-11-12
+
+**Luftentfeuchter im Raum** · _Dehumidifiers in the room_
+
+### Neu / Added
+
+- Luftentfeuchter und Luftbefeuchter stehen auf der Raumseite unter „Klima“ als eigene Karte, in beiden Stilen: was das Gerät gerade tut („Entfeuchtung“ oder „Leerlauf“, wenn es trocken genug ist), die aktuelle und die Ziel-Luftfeuchte mit − und + sowie Ein und Aus  
+  _Dehumidifiers and humidifiers have their own card under “Climate” on the room page, in both styles: what the device is doing (“Drying”, or “Idle” when the room is dry enough), the current and the target humidity with − and +, and On and Off_
+
 ## F70 — 2026-11-04
 
 **Heizplan unter „Klima – Alle anzeigen“** · _Heating plan in “Climate – See All”_

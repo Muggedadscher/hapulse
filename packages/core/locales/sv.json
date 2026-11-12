@@ -677,6 +677,8 @@
   "cards.climate.increaseAria": "Höj temperatur",
   "cards.climate.current": "Aktuell",
   "cards.climate.target": "Mål",
+  "cards.humidifier.decreaseAria": "Sänk luftfuktighet",
+  "cards.humidifier.increaseAria": "Höj luftfuktighet",
   "cards.cover.percentOpen": "{percent}% öppen",
   "cards.cover.open": "Öppna",
   "cards.cover.stop": "Stoppa",

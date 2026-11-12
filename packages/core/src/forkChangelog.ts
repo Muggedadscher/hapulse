@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 71,
+    date: '2026-11-12',
+    title: { de: 'Luftentfeuchter im Raum', en: 'Dehumidifiers in the room' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Luftentfeuchter und Luftbefeuchter stehen auf der Raumseite unter „Klima“ als eigene Karte, in beiden Stilen: was das Gerät gerade tut („Entfeuchtung“ oder „Leerlauf“, wenn es trocken genug ist), die aktuelle und die Ziel-Luftfeuchte mit − und + sowie Ein und Aus',
+            en: 'Dehumidifiers and humidifiers have their own card under “Climate” on the room page, in both styles: what the device is doing (“Drying”, or “Idle” when the room is dry enough), the current and the target humidity with − and +, and On and Off',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 70,
     date: '2026-11-04',
     title: { de: 'Heizplan unter „Klima – Alle anzeigen“', en: 'Heating plan in “Climate – See All”' },
