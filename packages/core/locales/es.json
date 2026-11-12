@@ -679,6 +679,7 @@
   "cards.climate.target": "Objetivo",
   "cards.humidifier.decreaseAria": "Reducir humedad",
   "cards.humidifier.increaseAria": "Aumentar humedad",
+  "home.climate.humidity": "Humedad",
   "cards.cover.percentOpen": "{percent}% abierta",
   "cards.cover.open": "Abrir",
   "cards.cover.stop": "Detener",
