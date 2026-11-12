@@ -12,6 +12,7 @@ import { CameraCard } from './CameraCard';
 import { ButtonCard } from './ButtonCard';
 import { VacuumCard } from './VacuumCard';
 import { GarageCard } from '../garage/GarageCard'; // [fork]
+import { HumidifierCard } from './HumidifierCard'; // [fork]
 import { useLongPress } from '../../lib/useLongPress';
 import { useUIStore } from '../../stores/uiStore';
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas context menu (docs/glas/PLAN-ETAPPE-3.md K58)
@@ -53,6 +54,8 @@ function CardForDomain({ entity, name }: { entity: HassEntity; name: string }) {
       return <LightCard entity={entity} name={name} />;
     case 'climate':
       return <ClimateCard entity={entity} name={name} />;
+    case 'humidifier': // [fork] dehumidifier / humidifier like a thermostat
+      return <HumidifierCard entity={entity} name={name} />;
     case 'media_player':
       return <MediaCard entity={entity} name={name} />;
     case 'cover':

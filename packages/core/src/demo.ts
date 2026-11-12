@@ -18,6 +18,7 @@ import type {
   DeviceRegistryEntry,
 } from './types.js';
 import { applyDemoHeatingService, demoHeatingEntities, demoHeatingRegistryEntries, tickDemoHeating } from './heatingPlanDemo.js'; // [fork]
+import { applyDemoHumidifierService, demoHumidifierEntities, demoHumidifierRegistryEntries } from './humidifierDemo.js'; // [fork]
 
 /** Plausible manufacturer/model per demo device, keyed by name keyword. */
 function withDemoDeviceMeta(d: DeviceRegistryEntry): DeviceRegistryEntry {
@@ -242,6 +243,7 @@ export const DEMO_REGISTRIES: Registries = {
     { entity_id: 'sensor.hallway_motion_battery', area_id: null, device_id: 'dev_ha_motion', entity_category: 'diagnostic', hidden_by: null, disabled_by: null, original_name: 'Hallway Motion Battery', icon: null },
     { entity_id: 'sensor.bedroom_sensor_battery', area_id: null, device_id: 'dev_br_sensor', entity_category: 'diagnostic', hidden_by: null, disabled_by: null, original_name: 'Bedroom Sensor Battery', icon: null },
     ...demoHeatingRegistryEntries(), // [fork] heating plan in the living room (heatingPlanDemo.ts)
+    ...demoHumidifierRegistryEntries(), // [fork] dehumidifier in the bathroom (humidifierDemo.ts)
   ] as EntityRegistryEntry[]).map(withDemoPlatform),
 };
 
@@ -731,6 +733,7 @@ export const DEMO_ENTITIES: HassEntityMap = {
   ...demoPoolEntities(),
   ...demoEnergyEntities(), // [fork] power and charge for the energy page's "Now" and battery
   ...demoHeatingEntities(), // [fork] heating plan in the living room (heatingPlanDemo.ts)
+  ...demoHumidifierEntities(), // [fork] dehumidifier in the bathroom (humidifierDemo.ts)
 };
 
 // [fork] Scene members (`attributes.entity_id`, as HA reports them) so the Home scenes card can show
@@ -948,6 +951,8 @@ export function applyDemoService(
   // [fork] heating plan helpers and the save automation (heatingPlanDemo.ts)
   const heating = applyDemoHeatingService(updated, domain, service, data, targetIds, now);
   if (heating) return heating;
+  const humidifier = applyDemoHumidifierService(updated, domain, service, data, targetIds, now); // [fork] humidifierDemo.ts
+  if (humidifier) return humidifier;
 
   // Speaker grouping mutates SEVERAL entities (leader and members all carry
   // the group in group_members), so it is handled before per-entity dispatch.

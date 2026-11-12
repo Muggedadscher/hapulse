@@ -69,6 +69,7 @@ const DEVICES = {
 const SCENES = {
   home: { path: '/' },
   room: { path: '/room/living_room' },
+  bath: { path: '/room/bathroom' }, // the demo bathroom: thermostat-less "Klima" with the dehumidifier (HumidifierCard)
   security: { path: '/security' },
   pool: { path: '/pool' },
   energy: { path: '/energy' },

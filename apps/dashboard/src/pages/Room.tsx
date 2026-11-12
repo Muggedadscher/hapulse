@@ -276,6 +276,7 @@ const CORE_DOMAINS = new Set([
   'scene', 'light', 'climate', 'media_player', 'cover',
   'switch', 'fan', 'input_boolean', 'button', 'vacuum',
   'sensor', 'binary_sensor',
+  'humidifier', // [fork] in "Klima" (climateSectionIds)
 ]);
 
 
@@ -404,7 +405,8 @@ export function Room() {
 
   const sceneIds        = orderedIds(domainMap['scene']        ?? []);
   const lightIds        = orderedIds(domainMap['light']        ?? []);
-  const climateIds      = orderedIds(domainMap['climate']      ?? []);
+  // [fork] was climateIds; dehumidifiers stand in "Klima": one stored order for the section, so dragging between the two works
+  const climateSectionIds = orderedIds([...(domainMap['climate'] ?? []), ...(domainMap['humidifier'] ?? [])]);
   const mediaIds        = orderedIds(domainMap['media_player'] ?? []);
   // [fork] garage doors / gates get their own section (handled like locks, not like blinds)
   const coverIds        = orderedIds((domainMap['cover'] ?? []).filter((id) => !isGarageDoor(entities[id])));
@@ -419,7 +421,7 @@ export function Room() {
   const sectionsSnap: Record<string, string[]> = {
     scene:        sceneIds,
     light:        lightIds,
-    climate:      climateIds,
+    climate:      climateSectionIds, // [fork] humidifiers
     media_player: mediaIds,
     cover:        coverIds,
     garage:       garageIds, // [fork]
@@ -517,7 +519,7 @@ export function Room() {
     // [fork] Sentinel cameras the admin assigned to this room
     { key: 'nvrCameras',   label: t('cameraSource.room.title'),           ids: cameraSource === 'sentinel' ? areaCameraIds : [] },
     { key: 'light',        label: t(SECTION_LABEL_KEYS['light']!),        ids: lightIds },
-    { key: 'climate',      label: t(SECTION_LABEL_KEYS['climate']!),      ids: climateIds },
+    { key: 'climate',      label: t(SECTION_LABEL_KEYS['climate']!),      ids: climateSectionIds }, // [fork] humidifiers
     { key: 'media_player', label: t(SECTION_LABEL_KEYS['media_player']!), ids: mediaIds },
     { key: 'cover',        label: t(SECTION_LABEL_KEYS['cover']!),        ids: coverIds },
     { key: 'garage',       label: t(SECTION_LABEL_KEYS['garage']!),       ids: garageIds }, // [fork]
@@ -559,9 +561,11 @@ export function Room() {
         editMode={editMode}
         className={gridClass}
       >
-        {ids.map((entityId, idx) => renderCard(key, entityId, isSensor ?? false, idx))}
+        {/* [fork] "Klima" outside edit mode: thermostats, the heating plan cards, then the humidifiers */}
+        {(key === 'climate' && !editMode ? ids.filter((id) => !id.startsWith('humidifier.')) : ids).map((entityId, idx) => renderCard(key, entityId, isSensor ?? false, idx))}
         {key === 'climate' && heatingPlan && !editMode && room && <HeatingPlanCard areaId={room.id} roomName={room.name} roomEntityIds={room.entityIds} />}{/* [fork] after the thermostats */}
         {key === 'climate' && !editMode && room && <HeatingSetupCard areaId={room.id} roomEntityIds={room.entityIds} />}{/* [fork] admins: a thermostat without plan (Etappe 4) */}
+        {key === 'climate' && !editMode && ids.filter((id) => id.startsWith('humidifier.')).map((entityId, idx) => renderCard(key, entityId, false, idx))}{/* [fork] */}
       </SortableGrid>
     );
   }

@@ -185,6 +185,9 @@ export function domainIcon(entity: HassEntity): string {
     case 'climate':
       return 'thermometer';
 
+    case 'humidifier': // [fork] the humidifier card's drop (HumidifierCard)
+      return 'droplets';
+
     case 'cover':
       return deviceClass === 'blind' || deviceClass === 'curtain'
         ? 'blinds'

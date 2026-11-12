@@ -240,6 +240,10 @@ import {
   addPeriod,
   movePeriodEdge,
   samePeriods,
+  humidifierTone, // [fork]
+  humiditySetpoint, // [fork]
+  stepHumidity, // [fork]
+  DEMO_DEHUMIDIFIER, // [fork]
 } from '../dist/index.js';
 import { readFileSync } from 'node:fs';
 import EN_DICT from '../locales/en.json' with { type: 'json' };
@@ -611,6 +615,31 @@ assertEqual(afterOpen['cover.bedroom_blinds'].state, 'open', 'open_cover → ope
 // Alarm arm away
 const afterArm = applyDemoService(DEMO_ENTITIES, 'alarm_control_panel', 'alarm_arm_away', {}, { entity_id: 'alarm_control_panel.home' });
 assertEqual(afterArm['alarm_control_panel.home'].state, 'armed_away', 'alarm arm away');
+
+// [fork] Demo dehumidifier (humidifierDemo.ts): bathroom at 70 % → drying; off → action off; target 75 → idle
+const dh = DEMO_ENTITIES[DEMO_DEHUMIDIFIER];
+assertEqual(dh.attributes['action'], 'drying', 'demo dehumidifier dries at 70 %');
+assertEqual(humidifierTone(dh), 'active', 'humidifierTone: drying → active');
+const dhOff = applyDemoService(DEMO_ENTITIES, 'humidifier', 'turn_off', {}, { entity_id: DEMO_DEHUMIDIFIER });
+assertEqual(dhOff[DEMO_DEHUMIDIFIER].state, 'off', 'humidifier turn_off → off');
+assertEqual(dhOff[DEMO_DEHUMIDIFIER].attributes['action'], 'off', 'humidifier turn_off → action off');
+assertEqual(humidifierTone(dhOff[DEMO_DEHUMIDIFIER]), 'off', 'humidifierTone: off');
+const dhHigh = applyDemoService(DEMO_ENTITIES, 'humidifier', 'set_humidity', { humidity: 75 }, { entity_id: DEMO_DEHUMIDIFIER });
+assertEqual(dhHigh[DEMO_DEHUMIDIFIER].attributes['humidity'], 75, 'humidifier set_humidity');
+assertEqual(dhHigh[DEMO_DEHUMIDIFIER].attributes['action'], 'idle', 'target 75 at 70 % → idle (dry enough)');
+assertEqual(humidifierTone(dhHigh[DEMO_DEHUMIDIFIER]), 'idle', 'humidifierTone: idle');
+assertEqual(DEMO_ENTITIES[DEMO_DEHUMIDIFIER].attributes['humidity'], 60, 'demo humidifier: the input map is unchanged');
+const dhBack = applyDemoService(dhOff, 'humidifier', 'turn_on', {}, { entity_id: DEMO_DEHUMIDIFIER });
+assertEqual(dhBack[DEMO_DEHUMIDIFIER].attributes['action'], 'drying', 'turn_on again at 70 % → drying');
+// humiditySetpoint / stepHumidity
+const hsp = humiditySetpoint({ humidity: 60, min_humidity: 30, max_humidity: 80 });
+assertEqual(stepHumidity(60, 1, hsp), 61, 'stepHumidity +1');
+assertEqual(stepHumidity(80, 1, hsp), 80, 'stepHumidity clamps at max');
+assertEqual(stepHumidity(30, -1, hsp), 30, 'stepHumidity clamps at min');
+assertEqual(humiditySetpoint({ humidity: 50, target_humidity_step: 5 }).step, 5, 'target_humidity_step is used');
+assertEqual(humiditySetpoint({ target_humidity_step: 0 }).step, 1, 'step 0 → 1');
+assertEqual(humiditySetpoint({}).value, null, 'no target → null');
+assertEqual(humidifierTone({ ...dh, attributes: { ...dh.attributes, action: undefined } }), 'idle', 'humidifierTone: on without action → idle');
 
 // ---------------------------------------------------------------------------
 // OAuth helpers — error-mapping (no real HA needed)

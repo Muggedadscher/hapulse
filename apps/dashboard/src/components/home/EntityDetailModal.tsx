@@ -62,6 +62,7 @@ const SKIP_ATTRS = new Set([
 const CONTROL_DOMAINS = new Set([
   'light', 'switch', 'fan', 'input_boolean', 'climate', 'cover',
   'media_player', 'lock', 'vacuum', 'button', 'scene', 'script',
+  'humidifier', // [fork] its card is the control (HumidifierCard)
 ]);
 
 /** States rendered as "off"/neutral in the timeline; everything else is active. */

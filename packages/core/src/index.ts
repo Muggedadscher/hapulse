@@ -449,3 +449,7 @@ export {
   samePeriods,
 } from './timePeriods.js';
 export type { TimePeriod, PeriodEdge, AddPeriodOptions } from './timePeriods.js';
+// [fork] Humidifier card rules (humidifier.ts) and the demo bathroom's dehumidifier (humidifierDemo.ts)
+export { humidifierTone, humiditySetpoint, stepHumidity, currentHumidity } from './humidifier.js';
+export type { HumidifierTone, HumiditySetpoint } from './humidifier.js';
+export { DEMO_DEHUMIDIFIER } from './humidifierDemo.js';
