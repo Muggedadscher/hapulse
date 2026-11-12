@@ -12,7 +12,7 @@ import { Droplets, Power } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { callService } from '../../ha/service';
 import { useLocale, useStateLabel, useT } from '../../i18n/useT';
-import { currentHumidity, formatNumber, humidifierTone, humiditySetpoint, stepHumidity } from '@hapulse/core';
+import { currentHumidity, humidifierTone, humiditySetpoint, stepHumidity } from '@hapulse/core';
 import type { HassEntity } from '@hapulse/core';
 import './cards.css';
 import { useIsGlas } from '../../app/glas/useUiStyle';
@@ -52,7 +52,11 @@ export function HumidifierCard({ entity, name }: HumidifierCardProps) {
       if (next === from) return;
       localRef.current = next;
       setLocalTarget(next);
-      void callService('humidifier', 'set_humidity', { humidity: next }, { entity_id: entityId }).catch(() => {});
+      void callService('humidifier', 'set_humidity', { humidity: next }, { entity_id: entityId }).catch(() => {
+        // not set: back to what HA holds
+        localRef.current = sp.value;
+        setLocalTarget(sp.value);
+      });
     },
     [entityId, sp]
   );
@@ -70,7 +74,8 @@ export function HumidifierCard({ entity, name }: HumidifierCardProps) {
   const actionLabel = action
     ? sl('humidifier', action, { attribute: 'action', deviceClass })
     : sl('humidifier', entity.state, { deviceClass });
-  const pct = (v: number) => `${formatNumber(v, locale, { maxDecimals: 1 })} %`;
+  // the language's own percent (de "60 %", en "60%")
+  const pct = (v: number) => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(v / 100);
 
   return (
     <Card className="climate-card humidifier-card" data-tone={glas ? GLAS_TONE[humidifierTone(entity)] : undefined}>
