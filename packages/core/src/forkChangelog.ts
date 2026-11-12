@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 72,
+    date: '2026-11-12',
+    title: { de: 'Luftentfeuchter in der Übersicht', en: 'Dehumidifiers on the overview' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Die Karte „Klima“ der Übersicht zeigt unter den Thermostaten die Luftentfeuchter: je Gerät, was es gerade tut („Entfeuchtung“, „Leerlauf“ oder „Aus“), und die aktuelle Luftfeuchte; ein Tipp öffnet das Gerät mit Ziel-Luftfeuchte, Ein und Aus. „Klima – Alle anzeigen“ zeigt sie nach den Thermostaten',
+            en: 'The overview’s “Climate” card lists the dehumidifiers under the thermostats: what each device is doing (“Drying”, “Idle” or “Off”) and the current humidity; a tap opens the device with its target humidity, On and Off. “Climate – See All” shows them after the thermostats',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 71,
     date: '2026-11-12',
     title: { de: 'Luftentfeuchter im Raum', en: 'Dehumidifiers in the room' },

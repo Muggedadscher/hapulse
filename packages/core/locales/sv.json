@@ -679,6 +679,7 @@
   "cards.climate.target": "Mål",
   "cards.humidifier.decreaseAria": "Sänk luftfuktighet",
   "cards.humidifier.increaseAria": "Höj luftfuktighet",
+  "home.climate.humidity": "Luftfuktighet",
   "cards.cover.percentOpen": "{percent}% öppen",
   "cards.cover.open": "Öppna",
   "cards.cover.stop": "Stoppa",

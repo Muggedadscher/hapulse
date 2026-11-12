@@ -169,7 +169,7 @@ describe('Glas stylesheets', () => {
       'styles/glas/devices.css',
       'styles/glas/edit.css', 'styles/glas/energy.css', 'styles/glas/feedback.css', 'styles/glas/gestures.css', 'styles/glas/heating.css', 'styles/glas/home-cards.css',
       'styles/glas/home-lists.css',
-      'styles/glas/home.css', 'styles/glas/index.css', 'styles/glas/lists.css', 'styles/glas/material.css', 'styles/glas/menus.css',
+      'styles/glas/home.css', 'styles/glas/humidifier.css', 'styles/glas/index.css', 'styles/glas/lists.css', 'styles/glas/material.css', 'styles/glas/menus.css',
       'styles/glas/motion.css', 'styles/glas/music.css', 'styles/glas/nvr.css', 'styles/glas/onboarding.css', 'styles/glas/pages.css',
       'styles/glas/pool.css', 'styles/glas/room-temperature.css',
       'styles/glas/schedule.css', 'styles/glas/security.css', 'styles/glas/settings.css',

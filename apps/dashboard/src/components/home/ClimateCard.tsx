@@ -14,6 +14,7 @@ import { useClimateStepper } from './useClimateStepper'; // [fork] sends set_tem
 import { useIsGlas } from '../../app/glas/useUiStyle'; // [fork] Glas (docs/glas/PLAN-ETAPPE-4.md K83)
 import { GlasClimateBody } from '../glas/home/GlasClimateBody'; // [fork]
 import { useTemperatureUnit } from '../../ha/temperatureUnit'; // [fork]
+import { HumidifierRows, roomHumidifiers } from './HumidifierRows'; // [fork] the rooms' dehumidifiers below the thermostats
 
 interface ClimateCardProps {
   entities: HassEntityMap;
@@ -188,6 +189,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
   }, [activeEntity, sp.value, sp.step, sp.min, sp.max]);
   const handleDown = useCallback(() => stepBy(-1), [stepBy]);
   const handleUp = useCallback(() => stepBy(1), [stepBy]);
+  const humidifiers = roomHumidifiers(rooms, entities); // [fork]
 
   // No climate entities found — show the card with a prompt to hide it
   if (climateRooms.length === 0 || !activeRoom || !activeEntity) {
@@ -201,6 +203,11 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
             <span className="climate-card__title">{t('home.climate.title')}</span>
           </div>
         </div>
+        {humidifiers.length > 0 ? ( // [fork] no thermostat, but dehumidifiers: just their rows
+          <div className="card-scroll-body card-scroll-wrap">
+            <HumidifierRows humidifiers={humidifiers} glas={isGlas} />
+          </div>
+        ) : (<>{/* [fork] */}
         <div className="climate-card__empty">
           <Thermometer size={28} strokeWidth={1.5} className="climate-card__empty-icon" />
           <p className="climate-card__empty-text">{t('home.climate.emptyTitle')}</p>
@@ -208,6 +215,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
             {t('home.climate.emptyDescription')}
           </p>
         </div>
+        </>)}{/* [fork] */}
       </Card>
     );
   }
@@ -314,6 +322,7 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
         })}
       </ul>
       </>)}{/* [fork] */}
+      <HumidifierRows humidifiers={humidifiers} glas={isGlas} />{/* [fork] */}
       </div>
     </Card>
   );
