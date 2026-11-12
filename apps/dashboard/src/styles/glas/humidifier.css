@@ -38,6 +38,17 @@
   color: var(--g-label-3);
 }
 
+/* the card's 400-px cap (ClimateCard.css) is lifted for the thermostat control (home-lists.css `:has(.g-ctl)`); a card
+   with only humidifier rows needs the same, else rows past the cap are cut off */
+:root[data-style='glas'] .home-page .climate-card:has(.g-humid) {
+  max-height: none;
+}
+
+/* the room choice above is no longer the card's last block: no rounded bottom */
+:root[data-style='glas'] .g-pick:has(+ .g-humid) {
+  border-radius: 0;
+}
+
 @media (min-width: 900px) {
   :root[data-style='glas'] .g-humid {
     margin-top: 12px;

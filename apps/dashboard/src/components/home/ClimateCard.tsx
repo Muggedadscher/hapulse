@@ -202,6 +202,12 @@ export function ClimateCard({ entities, rooms, onSeeAll }: ClimateCardProps) {
             </span>
             <span className="climate-card__title">{t('home.climate.title')}</span>
           </div>
+          {humidifiers.length > 0 && onSeeAll && ( // [fork] "Alle anzeigen" lists the dehumidifiers too
+            <button className="climate-card__link" type="button" onClick={onSeeAll} aria-label={t('home.climate.seeAllAria')}>
+              {t('home.climate.seeAll')}
+              <ChevronRight size={14} strokeWidth={2} />
+            </button>
+          )}
         </div>
         {humidifiers.length > 0 ? ( // [fork] no thermostat, but dehumidifiers: just their rows
           <div className="card-scroll-body card-scroll-wrap">
