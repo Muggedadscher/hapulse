@@ -3,16 +3,17 @@
  * battery is (ring and figure), what it does right now (charging, with "full at about" when every capacity is known;
  * discharging, full, idle, not reachable) and its charge today. Everything comes from Home Assistant's energy settings
  * (`stat_soc`, `stat_rate`, `capacity` per battery; core `energyBatteryIds`); several batteries count as one, weighted by
- * capacity (core `combinedSoc`). Reserve, mode and charge limits are left open until a battery integration is known
- * (plan §7). The charge and power are read only here (narrow store selectors). Both styles; the look in
- * EnergyBattery.css and styles/glas/energy.css.
+ * capacity (core `combinedSoc`). With one battery of a known integration also its charge limit, reserve and mode
+ * (plan PLAN-E4-AKKU.md, core `findBatteryDetails` over the entity registry): "full" at the limit, "reserve reached",
+ * "lasts until about", a line under the state and the reserve in the chart. The charge and power are read only here
+ * (narrow store selectors). Both styles; the look in EnergyBattery.css and styles/glas/energy.css.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Battery, Zap } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { batteryStatus, combinedSoc, combinedSocSeries, energyBatteryIds, formatNumber, powerWatts } from '@hapulse/core';
-import type { BatteryStatus, EnergyBatteryIds, EnergyPreferences, HassEntityMap } from '@hapulse/core';
+import { batteryDetails, batteryStatus, combinedSoc, combinedSocSeries, energyBatteryIds, findBatteryDetails, formatNumber, powerWatts } from '@hapulse/core';
+import type { BatteryDetails, BatteryState, BatteryStatus, EnergyBatteryIds, EnergyPreferences, HassEntityMap } from '@hapulse/core';
 import { Card } from '../../ui/Card';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useConnectionStore } from '../../../stores/connectionStore';
@@ -27,10 +28,11 @@ const RELOAD = 5 * 60_000;
 const CHART_H = 96;
 const AXIS_W = 44;
 
-export const BATTERY_STATE_KEY: Record<string, TKey> = {
+export const BATTERY_STATE_KEY: Record<BatteryState, TKey> = {
   charging: 'energy.battery.charging',
   discharging: 'energy.battery.discharging',
   full: 'energy.battery.full',
+  reserve: 'energy.battery.reserve',
   idle: 'energy.battery.idle',
 };
 
@@ -112,7 +114,7 @@ export function BatteryRing({ value, size = 20, stroke = 3 }: { value: number; s
   return <Ring value={value} size={size} stroke={stroke} />;
 }
 
-function SocChart({ points, nowSoc, now }: { points: { t: number; v: number }[]; nowSoc: number | null; now: number }) {
+function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: number }[]; nowSoc: number | null; now: number; reserve: number | null }) {
   const t = useT();
   const locale = useLocale();
   const box = useRef<HTMLDivElement>(null);
@@ -154,6 +156,15 @@ function SocChart({ points, nowSoc, now }: { points: { t: number; v: number }[];
               )}
             </g>
           ))}
+          {reserve !== null && (
+            <g className="en-bat__reserve">
+              <line className="en-bat__reserve-line" x1={0} x2={cw} y1={y(reserve)} y2={y(reserve)} />
+              {/* at the day's end, where the chart is still empty */}
+              <text className="en-bat__reserve-label" x={cw - 4} y={y(reserve) - 4} textAnchor="end">
+                {t('energy.battery.reserveLine')}
+              </text>
+            </g>
+          )}
           {last && line.length > 1 && (
             <>
               <path className="en-bat__area" d={`M${x(all[0]!.t)},${CHART_H}L${line.join('L')}L${x(last.t)},${CHART_H}Z`} />
@@ -177,10 +188,12 @@ function SocChart({ points, nowSoc, now }: { points: { t: number; v: number }[];
 
 export interface BatteryNow {
   ids: EnergyBatteryIds;
+  /** charge limit, reserve and mode of the one battery, each null when unknown */
+  details: BatteryDetails;
   /** combined charge (%), null when a battery's charge is unknown */
   soc: number | null;
   status: BatteryStatus | null;
-  /** the state word is certain: there is power to tell it, or the battery is full */
+  /** the state word is certain: there is power to tell it, or the battery is full or at its reserve */
   showState: boolean;
 }
 
@@ -190,7 +203,10 @@ export interface BatteryNow {
  */
 export function useBatteryNow(prefs: EnergyPreferences | null): BatteryNow | null {
   const ids = useMemo(() => energyBatteryIds(prefs), [prefs]);
-  const all = useMemo(() => (ids ? [...ids.soc, ...ids.power] : []), [ids]);
+  const registries = useEntityStore((s) => s.registries);
+  const detailIds = useMemo(() => findBatteryDetails(registries, ids?.soc, ids?.power), [registries, ids]);
+  const extra = useMemo(() => (detailIds ? [detailIds.chargeLimit, detailIds.reserve, detailIds.mode].filter((id): id is string => !!id) : []), [detailIds]);
+  const all = useMemo(() => (ids ? [...ids.soc, ...ids.power, ...extra] : []), [ids, extra]);
   const states = useEntityStore(useShallow((s) => all.map((id) => s.entities[id])));
   if (!ids || ids.soc.some((_, i) => !states[i])) return null;
   const map: HassEntityMap = {};
@@ -207,10 +223,11 @@ export function useBatteryNow(prefs: EnergyPreferences | null): BatteryNow | nul
   const power = powers.length > 0 && powers.every((p) => p !== null) ? (powers as number[]).reduce((a, b) => a + b, 0) : null;
   const now = new Date();
   const capacity = ids.capacities ? ids.capacities.reduce((a, b) => a + b, 0) : null;
-  const status = soc === null ? null : batteryStatus(soc, power, capacity, now);
-  // without a power sensor only "full" is certain; the card does not claim "idle"
-  const showState = !!status && (power !== null || status.state === 'full');
-  return { ids, soc, status, showState };
+  const details = batteryDetails(detailIds, map);
+  const status = soc === null ? null : batteryStatus(soc, power, capacity, now, { full: details.chargeLimit, reserve: details.reserve });
+  // without a power sensor only "full" and "reserve reached" are certain; the card does not claim "idle"
+  const showState = !!status && (power !== null || status.state === 'full' || status.state === 'reserve');
+  return { ids, details, soc, status, showState };
 }
 
 /** The card "Battery"; renders nothing without a charge sensor in Home Assistant's energy settings. */
@@ -220,9 +237,22 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
   const battery = useBatteryNow(prefs);
   const series = useSocToday(battery?.ids.soc ?? [], battery?.ids.capacities ?? null);
   if (!battery) return null;
-  const { soc, status, showState } = battery;
+  const { soc, status, showState, details } = battery;
   const now = new Date();
   const time = (ms: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(ms);
+  const pct = (v: number) => `${formatNumber(v, locale, { maxDecimals: 0 })} %`;
+  const mode = details.mode
+    ? details.mode.key === 'auto'
+      ? t('energy.battery.modeAuto')
+      : details.mode.key === 'manual'
+        ? t('energy.battery.modeManual')
+        : details.mode.raw
+    : null;
+  const limits = [
+    mode,
+    details.chargeLimit !== null ? t('energy.battery.chargeLimit', { value: pct(details.chargeLimit) }) : null,
+    details.reserve !== null ? t('energy.battery.reserveAt', { value: pct(details.reserve) }) : null,
+  ].filter((x): x is string => !!x);
 
   return (
     <Card className="energy-battery en-card en-card--battery">
@@ -247,6 +277,17 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
                 <p className="en-bat__sub">
                   <span className={`en-bat__state en-bat__state--${status.state}`}>{t(BATTERY_STATE_KEY[status.state]!)}</span>
                   {status.at !== null && <> · {t('energy.battery.fullAt', { time: time(status.at) })}</>}
+                  {status.until !== null && <> · {t('energy.battery.lastsUntil', { time: time(status.until) })}</>}
+                </p>
+              )}
+              {limits.length > 0 && (
+                <p className="en-bat__limits">
+                  {limits.map((text, i) => (
+                    <React.Fragment key={text}>
+                      {i > 0 && ' · '}
+                      <span className="en-bat__limit">{text}</span>
+                    </React.Fragment>
+                  ))}
                 </p>
               )}
             </>
@@ -254,7 +295,7 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
         </div>
       </div>
       <p className="en-bat__label">{t('energy.battery.today')}</p>
-      <SocChart points={series ?? []} nowSoc={soc} now={now.getTime()} />
+      <SocChart points={series ?? []} nowSoc={soc} now={now.getTime()} reserve={details.reserve} />
     </Card>
   );
 }

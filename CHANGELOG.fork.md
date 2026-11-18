@@ -6,6 +6,20 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F74 — 2026-11-18
+
+**Akku: Ladegrenze, Reserve und Modus** · _Battery: charge limit, reserve and mode_
+
+### Neu / Added
+
+- Ist der Heimakku über eine bekannte Integration eingebunden (bisher „AECC Battery“), zeigt die Karte „Akku“ der Energie-Seite unter dem Zustand Modus, Ladegrenze und Reserve, im Diagramm „Ladezustand heute“ eine Linie für die Reserve und beim Entladen „reicht bis ca.“  
+  _When the home battery comes from a known integration (so far “AECC Battery”), the energy page’s “Battery” card shows its mode, charge limit and reserve under the state, a line for the reserve in the “Charge today” chart and “lasts until about” while discharging_
+
+### Geändert / Changed
+
+- „Voll“ gilt dann ab der Ladegrenze des Akkus statt erst bei 100 %, und „voll um ca.“ rechnet bis dorthin; an der Reserve steht „Reserve erreicht“, auch in der Akku-Zeile der Übersicht  
+  _“Full” then means the battery’s charge limit instead of 100 %, and “full at about” counts to it; at the reserve it says “Reserve reached”, also in the overview’s battery line_
+
 ## F73 — 2026-11-12
 
 **Luftentfeuchter nach Raum benannt** · _Dehumidifiers named by room_

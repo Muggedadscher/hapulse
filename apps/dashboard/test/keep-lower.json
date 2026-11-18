@@ -135,6 +135,10 @@
     "langs": "all",
     "reason": "follows the battery's state on the same line (\"Lädt · voll um ca. 16:30\")"
   },
+  "energy.battery.lastsUntil": {
+    "langs": "all",
+    "reason": "follows the battery's state on the same line (\"Entlädt · reicht bis ca. 6:45\")"
+  },
   "glas.energy.chartAriaStackedGridBattery": {
     "langs": [
       "en",

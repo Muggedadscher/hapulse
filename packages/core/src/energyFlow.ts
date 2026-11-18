@@ -419,34 +419,63 @@ export function energyNowSentence(f: EnergyAllocation): EnergyNowSentence {
 // Battery
 // ---------------------------------------------------------------------------
 
-export type BatteryState = 'charging' | 'discharging' | 'full' | 'idle';
+export type BatteryState = 'charging' | 'discharging' | 'full' | 'reserve' | 'idle';
 
 export interface BatteryStatus {
   state: BatteryState;
-  /** When it is about full (charging), rounded to the quarter hour; null when unknown or more than 24 h away. */
+  /** When it is about full (charging, at the charge limit), rounded to the quarter hour; null when unknown or more than 24 h away. */
   at: number | null;
+  /** [fork] When it reaches the reserve (discharging), the same way; null without a reserve. */
+  until: number | null;
 }
 
+/** [fork] The battery's own limits (core batteryDetails.ts), each absent when unknown. */
+export interface BatteryLimits {
+  /** the charge limit (%): "full" at it, "full at" counts to it */
+  full?: number | null;
+  /** the reserve (%): "reserve reached" at it, "lasts until" counts to it */
+  reserve?: number | null;
+}
+
+/** [fork] A battery with an integer charge can rest a point beside its own limit; while it rests that counts as there. */
+const AT_LIMIT_IDLE = 1.5;
+
 /**
- * The battery's state from its charge (%) and power (W, positive = discharging). "Full" from 99.5 %, unless it
- * discharges. The time needs the usable capacity (kWh) and at least 50 W of charging. No time while discharging:
- * Home Assistant knows no reserve, and a battery stops at its own discharge limit, so "lasts until" would be late.
+ * The battery's state from its charge (%) and power (W, positive = discharging). "Full" from half a point below the
+ * charge limit (without one 100 %; with one also 1.5 points below while it rests), unless it discharges; "reserve
+ * reached" the same way above the reserve, unless it charges. The times need the usable capacity (kWh) and at least
+ * 50 W: charging to the charge limit, discharging to the reserve (none without a reserve: a battery stops at its own
+ * discharge limit, so "lasts until" would be late).
  */
-export function batteryStatus(soc: number, powerW: number | null, capacityKWh: number | null | undefined, now: Date): BatteryStatus {
+export function batteryStatus(
+  soc: number,
+  powerW: number | null,
+  capacityKWh: number | null | undefined,
+  now: Date,
+  limits?: BatteryLimits,
+): BatteryStatus {
   const p = powerW ?? 0;
   const charging = p <= -POWER_FLOW_MIN;
   const discharging = p >= POWER_FLOW_MIN;
-  if (!discharging && soc >= 99.5) return { state: 'full', at: null };
-  if (!charging && !discharging) return { state: 'idle', at: null };
-  let at: number | null = null;
-  if (charging && capacityKWh && capacityKWh > 0) {
-    const kwh = ((100 - soc) / 100) * capacityKWh;
-    const hours = kwh / (Math.abs(p) / 1000);
-    // to the quarter hour on the epoch: every time zone's offset is a multiple of 15 min, and a repeated hour
-    // (DST end) keeps its instant
-    if (hours >= 0 && hours <= 24) at = Math.round((now.getTime() + hours * 3600_000) / 900_000) * 900_000;
+  const limit = limits?.full ?? null;
+  const full = limit ?? 100;
+  const reserve = limits?.reserve ?? null;
+  const none = { at: null, until: null };
+  if (!discharging && (soc >= full - 0.5 || (limit !== null && !charging && soc >= full - AT_LIMIT_IDLE))) return { state: 'full', ...none };
+  if (reserve !== null && !charging && (soc <= reserve + 0.5 || (!discharging && soc <= reserve + AT_LIMIT_IDLE))) {
+    return { state: 'reserve', ...none };
   }
-  return { state: charging ? 'charging' : 'discharging', at };
+  if (!charging && !discharging) return { state: 'idle', ...none };
+  // to the quarter hour on the epoch: every time zone's offset is a multiple of 15 min, and a repeated hour
+  // (DST end) keeps its instant
+  const time = (points: number) => {
+    if (!capacityKWh || capacityKWh <= 0 || points <= 0) return null;
+    const hours = ((points / 100) * capacityKWh) / (Math.abs(p) / 1000);
+    return hours <= 24 ? Math.round((now.getTime() + hours * 3600_000) / 900_000) * 900_000 : null;
+  };
+  return charging
+    ? { state: 'charging', at: time(full - soc), until: null }
+    : { state: 'discharging', at: null, until: reserve === null ? null : time(soc - reserve) };
 }
 
 /** The batteries Home Assistant knows a charge sensor for: their `stat_soc`, `stat_rate` and `capacity`. */
