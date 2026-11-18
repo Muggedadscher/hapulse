@@ -377,3 +377,23 @@
   justify-content: flex-end;
   gap: 0.5rem;
 }
+
+/* [fork] The battery's plan (EnergyBatteryTimesPage, plan PLAN-E4-AKKU.md E5b): the tone follows the chosen time,
+   each arc its own way: charging green, discharging orange. */
+.sched--charge {
+  --sched-tone: var(--positive);
+  --sched-tone-soft: var(--positive-soft);
+}
+
+.sched--discharge {
+  --sched-tone: var(--warning);
+  --sched-tone-soft: var(--warning-soft);
+}
+
+.sched-ring__arc--charge {
+  stroke: var(--positive);
+}
+
+.sched-ring__arc--discharge {
+  stroke: var(--warning);
+}

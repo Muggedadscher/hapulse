@@ -10,7 +10,8 @@
  * tap does, so a check can reach the detail of an entity without a card for it (a light's brightness control).
  * `entity(id)` reads an entity as the store holds it, so a check can see what a control has sent (a light's brightness
  * only after the key is let go). `calls()` returns the service calls of the demo, newest last, and `clearCalls()`
- * empties that list (demoCalls.ts), for the calls the demo does not apply (the pool's mode, threshold and schedule).
+ * empties that list (demoCalls.ts), for the calls the demo does not apply (the pool's mode, threshold and schedule);
+ * `failCalls('number.set_value', n)` makes the next n calls of that service fail (the battery window's save, E5b).
  * `energyConfigured(false)` makes the demo's energy "not set up" (demoEnergy.ts) for the pages opened after it,
  * `energyHold(true)` keeps its statistics back until `energyHold(false)` (a period that loads), `energyLoads()` counts
  * its statistics requests (the More menu's figure, K97), and `setUrl(url)` gives
@@ -23,7 +24,7 @@
 import type { AreaRegistryEntry, EntityRegistryEntry, HassEntity, HassEntityAttributes } from '@hapulse/core';
 import { useEntityStore } from '../stores/entityStore';
 import { useUIStore } from '../stores/uiStore';
-import { clearDemoCalls, demoCalls, type DemoCall } from './demoCalls';
+import { clearDemoCalls, demoCalls, failDemoCalls, type DemoCall } from './demoCalls';
 import { demoEnergyLoads, setDemoEnergyConfigured, setDemoEnergyHold } from './demoEnergy';
 
 export interface DemoPatch {
@@ -41,6 +42,7 @@ interface DemoControl {
   entity: (id: string) => HassEntity | null;
   calls: () => DemoCall[];
   clearCalls: () => void;
+  failCalls: (service: string, count?: number) => void;
   energyConfigured: (on: boolean) => void;
   energyHold: (on: boolean) => void;
   energyLoads: () => number;
@@ -106,6 +108,7 @@ export function startDemoControl(conn: { setUrl: (url: string) => void; setAdmin
     },
     calls: demoCalls,
     clearCalls: clearDemoCalls,
+    failCalls: failDemoCalls,
     energyConfigured: setDemoEnergyConfigured,
     energyHold: setDemoEnergyHold,
     energyLoads: demoEnergyLoads,

@@ -8,11 +8,13 @@
  * The chosen period (tinted; chosen by its fields or a tap on its arc) can be removed while there are more. A time
  * field keeps what is typed until it is left or Enter is pressed (scheduleRing.ts, @hapulse/core timePeriods.ts).
  * `tone` picks the colour of the arcs, the chosen period and the start knob: the heating plan's warm comfort tone or
- * the pool's run tone (CSS schedule.css, styles/glas/schedule.css).
+ * the pool's run tone (CSS schedule.css, styles/glas/schedule.css). The battery's plan (EnergyBatteryTimesPage) has no
+ * days, keeps the chosen period itself (`selected`), colours each arc by its direction (`arcClass`) and shows the
+ * chosen period's direction and power under its fields (`chosenExtra`).
  */
 
 import { useState } from 'react';
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { CircleAlert, Plus } from 'lucide-react';
 import { movePeriodEdge, periodFieldMinutes, periodFieldValue, removePeriod } from '@hapulse/core';
 import type { PeriodEdge, TimePeriod } from '@hapulse/core';
@@ -25,10 +27,10 @@ import './schedule.css';
 
 /** The texts of the body, translated by the page. */
 export interface ScheduleTimesLabels extends ScheduleRingText {
-  /** The group of day chips. */
-  days: string;
+  /** The group of day chips (without days: none). */
+  days?: string;
   /** Under the chips while no day is chosen. */
-  pickDays: string;
+  pickDays?: string;
   /** Under the chips always (the pool: what a day left out means); none for the heating plan. */
   daysNote?: string;
   /** Under the ring, centred (the pool with more than one run: how long it runs a day); none for the heating plan. */
@@ -53,14 +55,23 @@ export interface ScheduleDayChip {
   on: boolean;
 }
 
-interface ScheduleTimesProps {
-  tone: 'heat' | 'pool';
-  days: readonly ScheduleDayChip[];
-  onToggleDay: (index: number) => void;
-  periods: TimePeriod[];
-  onChange: (periods: TimePeriod[]) => void;
+interface ScheduleTimesProps<P extends TimePeriod> {
+  /** The tone of the arcs, the chosen period and the start knob; the battery's follows its chosen time. */
+  tone: 'heat' | 'pool' | 'charge' | 'discharge';
+  /** The day chips; none for a plan that holds every day (the battery's). */
+  days?: readonly ScheduleDayChip[];
+  onToggleDay?: (index: number) => void;
+  periods: P[];
+  onChange: (periods: P[]) => void;
   /** The periods with one more, or null when no more fit (addPeriod with the page's limits). */
-  addTo: (periods: readonly TimePeriod[]) => TimePeriod[] | null;
+  addTo: (periods: readonly P[]) => P[] | null;
+  /** The chosen period, when the page needs it (the battery's power of the chosen time); else the editor keeps it. */
+  selected?: number;
+  onSelect?: (index: number) => void;
+  /** A class for one period's arc (ScheduleRing). */
+  arcClass?: (index: number) => string | undefined;
+  /** Under the chosen period's time fields: what the page sets per period (the battery's direction and power). */
+  chosenExtra?: ReactNode;
   /** While ✓ runs: shown, not changed. */
   busy: boolean;
   /** The last save did not reach HA: shown with "try again". */
@@ -117,36 +128,57 @@ function TimeField({
   );
 }
 
-export function ScheduleTimes({ tone, days, onToggleDay, periods, onChange, addTo, busy, failed, onRetry, labels }: ScheduleTimesProps) {
+export function ScheduleTimes<P extends TimePeriod>({
+  tone,
+  days,
+  onToggleDay,
+  periods,
+  onChange,
+  addTo,
+  selected: chosen,
+  onSelect,
+  arcClass,
+  chosenExtra,
+  busy,
+  failed,
+  onRetry,
+  labels,
+}: ScheduleTimesProps<P>) {
   const locale = useLocale();
-  const [selected, setSelected] = useState(0);
-  const sel = Math.min(selected, Math.max(0, periods.length - 1));
+  const [own, setOwn] = useState(0);
+  const setSelected = (i: number) => {
+    setOwn(i);
+    onSelect?.(i);
+  };
+  const sel = Math.min(chosen ?? own, Math.max(0, periods.length - 1));
   const added = addTo(periods);
-  const noDays = !days.some((d) => d.on);
+  const noDays = !!days && !days.some((d) => d.on);
   // With more than one period, the fields say which one they set
   const fieldLabel = (label: string, i: number) => (periods.length > 1 ? labels.nth(label, i + 1) : label);
 
   return (
     <div className={`sched sched--${tone}`}>
-      <div className="sched__days" role="group" aria-label={labels.days}>
-        {days.map((d, i) => (
-          <button
-            key={i}
-            type="button"
-            className="sched__day"
-            aria-pressed={d.on}
-            aria-label={d.long}
-            disabled={busy}
-            onClick={() => onToggleDay(i)}
-          >
-            {d.short}
-          </button>
-        ))}
-      </div>
-      {labels.daysNote && <p className="sched__note sched__pick">{labels.daysNote}</p>}
-      {noDays && <p className="sched__note sched__pick">{labels.pickDays}</p>}
+      {days && (
+        <div className="sched__days" role="group" aria-label={labels.days}>
+          {days.map((d, i) => (
+            <button
+              key={i}
+              type="button"
+              className="sched__day"
+              aria-pressed={d.on}
+              aria-label={d.long}
+              disabled={busy}
+              onClick={() => onToggleDay?.(i)}
+            >
+              {d.short}
+            </button>
+          ))}
+        </div>
+      )}
+      {days && labels.daysNote && <p className="sched__note sched__pick">{labels.daysNote}</p>}
+      {noDays && labels.pickDays && <p className="sched__note sched__pick">{labels.pickDays}</p>}
 
-      <ScheduleRing periods={periods} selected={sel} disabled={busy} onSelect={setSelected} onChange={onChange} text={labels} />
+      <ScheduleRing periods={periods} selected={sel} disabled={busy} onSelect={setSelected} onChange={onChange} text={labels} arcClass={arcClass} />
       {labels.summary && <p className="sched__note sched__summary">{labels.summary}</p>}
 
       {periods.length > 0 && (
@@ -189,6 +221,7 @@ export function ScheduleTimes({ tone, days, onToggleDay, periods, onChange, addT
               </div>
             ))}
           </div>
+          {chosenExtra}
           <p className="sched__note">{labels.hint}</p>
         </>
       )}

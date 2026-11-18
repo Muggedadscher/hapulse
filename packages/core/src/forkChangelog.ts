@@ -38,6 +38,47 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 75,
+    date: '2026-11-18',
+    title: { de: 'Akku: Fenster mit Modus, Ladebereich und Steuerung', en: 'Battery: window with mode, charge range and control' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Die Karte „Batterie“ der Energie-Seite hat oben „Details“: ein Fenster mit dem Zustand jetzt, dem Modus (Automatisch oder Manuell, je mit einem Satz, was er tut) und dem Ladebereich mit „Laden bis“, Reserve und der nutzbaren Energie',
+            en: 'The energy page’s “Battery” card has “Details” at the top: a window with the state now, the mode (Automatic or Manual, each with a line on what it does) and the charge range with “Charge up to”, the reserve and the usable energy',
+          },
+          {
+            de: 'Dort lassen sich Modus, „Laden bis“ und Reserve auch einstellen (Regler wie in iOS, ✓ speichert); ein neuer Modus fragt vorher, denn Home Assistant übernimmt dann die Steuerung von der App der Batterie',
+            en: 'The mode, “Charge up to” and the reserve can be set there too (sliders like in iOS, ✓ saves); a new mode asks first, since Home Assistant then takes over control from the battery’s app',
+          },
+          {
+            de: 'Bei „Manuell“ steuert HAPulse die Batterie selbst: dauerhaft (Ruhen, Laden oder Entladen mit einer Leistung) oder nach einem täglichen Zeitplan, den Home Assistant schaltet; die Zeiten stellt man am 24-Stunden-Ring ein wie beim Heizplan, Laden grün, Entladen orange',
+            en: 'With “Manual” HAPulse steers the battery itself: permanently (idle, charge or discharge with a power) or on a daily schedule that Home Assistant switches; the times are set on the 24-hour ring like the heating plan’s, charging green, discharging orange',
+          },
+          {
+            de: 'Beim Entladen sagt das Fenster, dass ohne Strommesser ins Netz geht, was das Haus nicht verbraucht, beim Laden, dass auch Strom aus dem Netz kommt',
+            en: 'When discharging the window says that without a power meter whatever the house does not use goes into the grid, when charging that power also comes from the grid',
+          },
+          {
+            de: 'Hat die Batterie die laufende Zeit des Zeitplans nicht übernommen, sagen es Karte und Fenster, mit „Erneut senden“',
+            en: 'If the battery has not taken the schedule’s current time, the card and the window say so, with “Send again”',
+          },
+        ],
+      },
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Das Diagramm „Ladezustand heute“ füllt die Karte bis unten, auch neben einer höheren Karte',
+            en: 'The “Charge today” chart fills the card to the bottom, also beside a taller card',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 74,
     date: '2026-11-18',
     title: { de: 'Akku: Ladegrenze, Reserve und Modus', en: 'Battery: charge limit, reserve and mode' },

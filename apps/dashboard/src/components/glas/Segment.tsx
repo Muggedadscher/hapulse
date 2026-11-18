@@ -11,7 +11,8 @@
  * Keys: arrows (wrapping), Home and End. With `activation="auto"` (default) the selection follows the focus — for
  * views (period, grid/list). With `activation="manual"` the keys only move the focus and Space/Enter choose — for
  * segments that write something (settings, the pool mode), so that arrowing across does not set every option on the
- * way. Choosing the chosen option again calls `onReselect` (the pool's "Manuell" reopens its duration picker). An
+ * way. Choosing the chosen option again calls `onReselect` (the pool's "Manuell" reopens its duration picker); `disabled`
+ * shows the choice without letting it change (a window while it saves). An
  * option may carry data attributes (`data`): the style's options keep the hook of the classic buttons
  * (`data-glas-style-option`) that probes use to switch the style.
  *
@@ -55,6 +56,8 @@ interface SegmentProps<V extends string> {
   activation?: 'auto' | 'manual';
   /** The chosen option was chosen again (click, Space, Enter). */
   onReselect?: (value: V) => void;
+  /** Shown, not chosen (a window while it saves). */
+  disabled?: boolean;
 }
 
 export function Segment<V extends string>({
@@ -65,6 +68,7 @@ export function Segment<V extends string>({
   className,
   activation = 'auto',
   onReselect,
+  disabled = false,
 }: SegmentProps<V>) {
   const ref = useRef<HTMLDivElement>(null);
   // manual activation: the option the keys moved to (the tab stop while the focus is inside), null = the chosen one
@@ -88,7 +92,8 @@ export function Segment<V extends string>({
       if (!opts[0] || !cs) return;
       const font = `600 ${cs.fontSize} ${cs.fontFamily}`;
       const need = Math.max(...opts.map((o) => textWidth(o.textContent ?? '', font)));
-      const room = opts[0].getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      // the layout width, not the drawn one: a window that grows open from its button (scale) is not too narrow
+      const room = opts[0].offsetWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       el.toggleAttribute('data-tight', need + 1 > room); // 1 px slack: the canvas and the text may round apart
     };
     fit();
@@ -105,6 +110,7 @@ export function Segment<V extends string>({
   }, [labels]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (disabled) return;
     const from = activation === 'manual' ? stop : found;
     let i: number | null = null;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') i = from < 0 ? 0 : (from + 1) % n;
@@ -130,6 +136,7 @@ export function Segment<V extends string>({
       ref={ref}
       role="radiogroup"
       aria-label={label}
+      aria-disabled={disabled || undefined}
       className={className ? `g-seg ${className}` : 'g-seg'}
       data-none={found < 0 ? '' : undefined}
       style={{ '--g-seg-n': n, '--g-seg-i': index } as React.CSSProperties}
@@ -150,6 +157,7 @@ export function Segment<V extends string>({
           aria-label={o.icon ? (o.aria ?? o.label) : o.aria}
           title={o.icon ? o.label : undefined}
           tabIndex={i === stop ? 0 : -1}
+          disabled={disabled || undefined}
           className={o.icon ? 'g-seg__opt g-seg__opt--icon' : 'g-seg__opt'}
           {...o.data}
           data-value={o.value}

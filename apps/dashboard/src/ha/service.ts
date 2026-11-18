@@ -34,7 +34,7 @@ import { useConnectionStore, getLiveConnection } from '../stores/connectionStore
 import { useSettingsStore } from '../stores/settingsStore';
 import { useEntityStore } from '../stores/entityStore';
 import { useToastStore } from '../stores/toastStore'; // [fork]
-import { recordDemoCall } from './demoCalls'; // [fork]
+import { recordDemoCall, takeDemoFailure } from './demoCalls'; // [fork]
 
 // ---------------------------------------------------------------------------
 // Demo persistent notifications — in-memory, since demo mode has no live conn.
@@ -64,6 +64,11 @@ export async function callService(
 
   if (demo) {
     recordDemoCall(domain, service, data, target); // [fork] the lab checks read what a control sent (demoCalls.ts)
+    // [fork] a lab check makes this call fail, as Home Assistant refusing it would (demoCalls.ts)
+    if (takeDemoFailure(domain, service)) {
+      useToastStore.getState().push('toast.serviceFailed', { domain, service, message: 'demo' });
+      throw new Error('demo: refused');
+    }
     // Persistent notifications aren't entities — handle them against the
     // in-memory demo list so dismiss / dismiss-all work in demo mode.
     if (domain === 'persistent_notification') {

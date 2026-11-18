@@ -69,18 +69,6 @@
   color: var(--warning);
 }
 
-/* mode, charge limit and reserve of a known battery integration (plan PLAN-E4-AKKU.md) */
-.en-bat__limits {
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 0.8125rem;
-  line-height: 1.125rem;
-}
-
-.en-bat__limit {
-  white-space: nowrap;
-}
-
 .en-bat__label {
   margin: 0.25rem 0 0;
   color: var(--en-label);
@@ -88,11 +76,18 @@
   line-height: 1.125rem;
 }
 
+/* the chart takes the card's free height, so a card beside a taller one has no empty space under it; the drawing sits
+   on the box (EnergyBattery.tsx measures it), so it never makes the box grow */
 .en-bat__chart {
+  position: relative;
+  flex: 1 1 auto;
   min-height: 118px;
 }
 
 .en-bat__chart svg {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
   overflow: visible;
 }
@@ -114,6 +109,7 @@
 .en-bat__reserve-line {
   stroke: var(--text-dim);
   stroke-width: 1px;
+  stroke-dasharray: 3 3;
 }
 
 .en-bat__reserve-label {
@@ -152,4 +148,619 @@
   .en-bat__dot {
     fill: LinkText;
   }
+}
+
+/* the "Details" link in the card head */
+.en-bat__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  min-height: 44px;
+  padding: 0.25rem 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 160ms ease-out;
+}
+
+@media (hover: hover) {
+  .en-bat__more:hover {
+    opacity: 0.75;
+  }
+}
+
+/* ---- The battery's window (EnergyBatteryWindow.tsx, plan PLAN-E4-AKKU.md E5). Glas gives it its look
+   (styles/glas/energy.css); Klassisch shows the same parts plainly. ---- */
+.en-bat-win {
+  --en-battery: var(--positive);
+  --en-battery-ink: var(--positive);
+  --en-track: var(--bg-subtle);
+  --en-reserve: var(--text-faint);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.en-bat-win__group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+}
+
+.en-bat-win__hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.en-bat-win__ring {
+  position: relative;
+  flex: none;
+  width: 76px;
+  height: 76px;
+}
+
+.en-bat-win__glyph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--en-battery-ink);
+}
+
+.en-bat-win__now {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.en-bat-win__pct {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin: 0;
+  color: var(--text);
+}
+
+.en-bat-win__num {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.en-bat-win__unit {
+  color: var(--text-dim);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.en-bat-win__state,
+.en-bat-win__stored {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.en-bat-win__title {
+  margin: 8px 0 -4px;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.en-bat-win__modes {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.en-bat-win__mode {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.en-bat-win__mode:first-child {
+  border-top: 0;
+}
+
+.en-bat-win__mode[aria-disabled='true'] {
+  cursor: default;
+}
+
+.en-bat-win__mode:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.en-bat-win__mode-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+}
+
+.en-bat-win__mode--auto .en-bat-win__mode-icon {
+  background: var(--positive-soft);
+  color: var(--positive);
+}
+
+.en-bat-win__mode--manual .en-bat-win__mode-icon {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.en-bat-win__mode--other .en-bat-win__mode-icon {
+  background: var(--bg-subtle);
+  color: var(--text-dim);
+}
+
+.en-bat-win__mode-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.en-bat-win__mode-name {
+  font-size: 0.9375rem;
+}
+
+.en-bat-win__mode-hint {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-win__check {
+  flex: none;
+  color: var(--accent);
+  visibility: hidden;
+}
+
+.en-bat-win__mode[aria-checked='true'] .en-bat-win__check {
+  visibility: visible;
+}
+
+.en-bat-win__note {
+  margin: -4px 0 0;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-win__note--warn {
+  color: var(--warning);
+}
+
+.en-bat-win__range {
+  display: flex;
+  flex-direction: column;
+}
+
+.en-bat-win__usable {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.en-bat-win__usable-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.en-bat-win__usable-name {
+  color: var(--text);
+  font-size: 0.9375rem;
+}
+
+.en-bat-win__usable-value {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.en-bat-win__status {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+}
+
+.en-bat-win__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--danger);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-win__error > svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.en-bat-win__retry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* the question before a new mode: what it does, under the question in the title */
+.en-bat-win__confirm {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* the charge range as a picture (EnergyBatteryRange.tsx): the reserve, the usable part in the battery's green, the
+   rest above the charge limit */
+.en-bat-range {
+  position: relative;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--en-track);
+}
+
+.en-bat-range__zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.en-bat-range__zone--reserve {
+  background: var(--en-reserve);
+}
+
+.en-bat-range__zone--usable {
+  background: var(--en-battery);
+}
+
+/* a limit with its slider */
+.en-bat-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.en-bat-slider__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.en-bat-slider__name {
+  color: var(--text);
+  font-size: 0.9375rem;
+}
+
+.en-bat-slider__value {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.en-bat-slider__input {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--positive);
+}
+
+.en-bat-slider--reserve .en-bat-slider__input {
+  accent-color: var(--text-dim);
+}
+
+.en-bat-slider__ends {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.en-bat-slider--charge .en-bat-slider__input {
+  accent-color: var(--positive);
+}
+
+.en-bat-slider--discharge .en-bat-slider__input {
+  accent-color: var(--warning);
+}
+
+/* ---- E5b: the steering (EnergyBatteryControl.tsx), the times page (EnergyBatteryTimesPage.tsx) and the card's
+   warning. Klassisch only works (plan E5 "nur Glas"): plain radio buttons, a row, a bar. ---- */
+.en-bat-choice {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+}
+
+.en-bat-choice__opt {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.en-bat-choice__opt[aria-checked='true'] {
+  background: var(--bg-raised);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.en-bat-choice__opt:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.en-bat-choice__opt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* "Permanent | Schedule" over the group */
+.en-bat-ctl__how {
+  display: flex;
+}
+
+.en-bat-ctl__how > * {
+  flex: 1;
+}
+
+.en-bat-ctl {
+  display: flex;
+  flex-direction: column;
+}
+
+.en-bat-ctl__kind {
+  padding: 12px 14px;
+}
+
+.en-bat-ctl__times {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.en-bat-ctl__times:disabled {
+  cursor: default;
+}
+
+.en-bat-ctl__times:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.en-bat-ctl__times-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.en-bat-ctl__times-name {
+  font-size: 0.9375rem;
+}
+
+.en-bat-ctl__times-sum {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-ctl__chevron {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.en-bat-ctl__day {
+  padding: 4px 14px 12px;
+}
+
+/* the plan's row and day: the row's hover stays within the group's corners */
+.en-bat-ctl--plan {
+  overflow: hidden;
+}
+
+/* the plan's day: charging green, discharging orange, now as a mark with a dot (like the heating plan's day bar) */
+.en-bat-day__track {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--bg-subtle);
+}
+
+.en-bat-day__part {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
+}
+
+.en-bat-day__part--charge {
+  background: var(--positive);
+}
+
+.en-bat-day__part--discharge {
+  background: var(--warning);
+}
+
+.en-bat-day__now {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--text);
+}
+
+.en-bat-day__now::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+.en-bat-day__ticks {
+  position: relative;
+  height: 1rem;
+  margin-top: 0.25rem;
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.en-bat-day__ticks > span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.en-bat-day__ticks > span:nth-child(1) {
+  left: 0;
+  transform: none;
+}
+
+.en-bat-day__ticks > span:nth-child(2) {
+  left: 25%;
+}
+
+.en-bat-day__ticks > span:nth-child(3) {
+  left: 50%;
+}
+
+.en-bat-day__ticks > span:nth-child(4) {
+  left: 75%;
+}
+
+.en-bat-day__ticks > span:nth-child(5) {
+  right: 0;
+  transform: none;
+}
+
+/* a warning with its button (the plan not taken, the battery not reachable, the plan still on) */
+.en-bat-win__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--warning);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-win__alert > svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.en-bat-win__retry:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* the times page: the chosen time's way and power under its fields */
+.en-bat-times__extra {
+  margin-top: 12px;
+}
+
+.en-bat-times__extra .en-bat-slider:first-child {
+  border-top: 0;
+}
+
+.sched__note.en-bat-times__note--warn {
+  color: var(--warning);
+}
+
+/* the card: the battery has not taken the running time; opens the window */
+.en-bat__alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.en-bat__alert > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.en-bat__alert > svg {
+  flex: none;
+}
+
+.en-bat__alert:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

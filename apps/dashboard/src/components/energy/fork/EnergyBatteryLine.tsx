@@ -8,7 +8,8 @@ import React from 'react';
 import { formatNumber } from '@hapulse/core';
 import type { EnergyPreferences } from '@hapulse/core';
 import { useLocale, useT } from '../../../i18n/useT';
-import { BATTERY_STATE_KEY, BatteryRing, useBatteryNow } from './EnergyBattery';
+import { useBatteryNow } from './EnergyBattery';
+import { BATTERY_STATE_KEY, BatteryRing } from './EnergyBatteryParts';
 import './EnergyBatteryLine.css';
 
 export function EnergyBatteryLine({ prefs }: { prefs: EnergyPreferences | null }) {
