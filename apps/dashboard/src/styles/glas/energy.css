@@ -510,6 +510,11 @@
   stroke-width: 2.25;
 }
 
+/* hidden while editing, like the links in the overview's card heads (edit.css, §7.32): the size bar sits there */
+:root[data-style='glas'] .energy-page .overview-grid__cell--editing .en-bat__more {
+  visibility: hidden;
+}
+
 /* ---- The battery's window (EnergyBatteryWindow.tsx, plan PLAN-E4-AKKU.md E5): lists in `group` like the other
    windows (heating.css). Now: the ring 76 in the battery green, the charge 34/41 600, the state 15/20, the stored energy
    13/18 label2. The modes as rows 60 with a symbol square 30 (Automatic green, Manual blue, like the iOS settings) and
