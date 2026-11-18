@@ -199,6 +199,7 @@ import {
   batteryPlanProblem,
   batteryPlanOutOfRange,
   batteryPlanMismatch,
+  batteryModeKey,
   batterySaveCalls,
   batterySaved,
   batteryRecheck,
@@ -2661,8 +2662,14 @@ console.log('\n── energy origins, power, battery ──');
     const rival = { ...S, entity_id: 'switch.schedule_abc', attributes: { ...S.attributes, tags: [] } };
     assertEqual(batteryPlanRivals({ ...withPlan, 'switch.schedule_abc': rival }, 'number.sp').join(), 'switch.schedule_abc', 'rivals: an untagged schedule on the setpoint');
     const steerP = batterySteer('number.sp', withPlan);
-    assertEqual(batteryPlanMismatch(steerP), true, 'check: the setpoint is not the running slot\'s → mismatch');
-    assertEqual(batteryPlanMismatch(batterySteer('number.sp', { ...withPlan, 'number.sp': spE('0') })), false, 'check: the same → fine');
+    assertEqual(batteryPlanMismatch(steerP, 'manual'), true, 'check: the setpoint is not the running slot\'s → mismatch');
+    assertEqual(batteryPlanMismatch(batterySteer('number.sp', { ...withPlan, 'number.sp': spE('0') }), 'manual'), false, 'check: the same → fine');
+    assertEqual(batteryPlanMismatch(steerP, 'auto'), false, 'check: in Automatic the battery rests the setpoint itself → no mismatch');
+    const offFirst = { ...withPlan, 'switch.schedule_batterie': { ...S, state: 'off' }, 'switch.schedule_batterie_2': { ...S, entity_id: 'switch.schedule_batterie_2' } };
+    const dup = batteryPlanState(offFirst, 'number.sp');
+    assertEqual(`${dup.entityId} ${dup.on} ${dup.others.join()}`, 'switch.schedule_batterie_2 true ', 'plan state: of two tagged plans the one that runs');
+    const bothOn = batteryPlanState({ ...withPlan, 'switch.schedule_batterie_2': { ...S, entity_id: 'switch.schedule_batterie_2' } }, 'number.sp');
+    assertEqual(`${bothOn.entityId} ${bothOn.others.join()}`, 'switch.schedule_batterie switch.schedule_batterie_2', 'plan state: both run → the first, the other listed');
     assertEqual(batteryPlanProblem([]), 'empty', 'plan problem: no period');
     assertEqual(batteryPlanProblem([P('00:00', '24:00', -200)]), 'allDay', 'plan problem: the same power all day');
     assertEqual(batteryPlanProblem([P('00:00', '07:00', -200)]), null, 'plan problem: a period → fine');
@@ -2687,6 +2694,12 @@ console.log('\n── energy origins, power, battery ──');
     let calls = batterySaveCalls(ctl, steerP, sd0({ control: cmd('idle', 0) }));
     assertEqual(fmt(calls[0]), 'switch.turn_off switch.schedule_batterie {} (undo turn_on)', 'save: a command switches a running plan off first, with a way back');
     assertEqual(fmt(calls.at(-1)), 'number.set_value number.sp {"value":0}', 'save: … and rests');
+    const twoOn = batterySteer('number.sp', { ...withPlan, 'switch.schedule_batterie_2': { ...S, entity_id: 'switch.schedule_batterie_2' } });
+    assertEqual(batterySaveCalls(ctl, twoOn, sd0({ control: cmd('idle', 0) })).slice(0, 2).map(fmt).join(' | '),
+      'switch.turn_off switch.schedule_batterie {} (undo turn_on) | switch.turn_off switch.schedule_batterie_2 {} (undo turn_on)', 'save: a second running plan off too, also with a way back');
+    assertEqual(batteryModeKey({ ...ctl, mode: null }), 'manual', 'mode key: without a mode entity the setpoint means Manual');
+    assertEqual(batteryModeKey(ctl), ctl.mode.key, 'mode key: else the mode\'s');
+    assertEqual(batteryControlNow(offPlan, batteryModeKey({ ...ctl, mode: null })).kind, 'command', 'shown: mode unavailable, plan off → the command that runs, not the stored plan');
     const periods = [P('00:00', '07:00', -200), P('18:00', '24:00', -300)];
     calls = batterySaveCalls(ctl, steer0, sd0({ control: { kind: 'plan', periods } }));
     assertEqual(calls.map((c) => c.part).join(), 'reserve,chargeLimit,mode,planAdd', 'save: a first plan → limits, mode, add');
@@ -2723,6 +2736,11 @@ console.log('\n── energy origins, power, battery ──');
     assertEqual(JSON.stringify(batteryPlanAt(atP, 12 * 60)), '{"setpoint":0,"until":"18:00"}', 'plan at: between times rests until the next');
     assertEqual(JSON.stringify(batteryPlanAt(atP, 23 * 60)), '{"setpoint":0,"until":"06:00"}', 'plan at: after the last rests until tomorrow\'s first');
     assertEqual(JSON.stringify(batteryPlanAt([], 600)), '{"setpoint":0,"until":"24:00"}', 'plan at: without times rests all day');
+    const night = [{ from: '00:00', to: '06:00', setpoint: -200 }, { from: '22:00', to: '24:00', setpoint: -200 }];
+    assertEqual(JSON.stringify(batteryPlanAt(night, 23 * 60)), '{"setpoint":-200,"until":"06:00"}', 'plan at: over midnight into tomorrow\'s first with the same setpoint');
+    assertEqual(JSON.stringify(batteryPlanAt([{ from: '22:00', to: '24:00', setpoint: -200 }, { from: '00:00', to: '06:00', setpoint: 300 }], 23 * 60)), '{"setpoint":-200,"until":"24:00"}',
+      'plan at: another setpoint after midnight → until midnight');
+    assertEqual(JSON.stringify(batteryPlanAt([{ from: '00:00', to: '24:00', setpoint: -200 }], 600)), '{"setpoint":-200,"until":"24:00"}', 'plan at: the same all day → 24:00');
     // the demo takes the window's calls (controlsDemo.ts)
     let dm = applyDemoService(DEMO_ENTITIES, 'number', 'set_value', { value: 90 }, { entity_id: 'number.demo_battery_charge_limit' });
     assertEqual(dm['number.demo_battery_charge_limit'].state, '90', 'demo: number.set_value sets the value');
@@ -2754,7 +2772,7 @@ console.log('\n── energy origins, power, battery ──');
       assertEqual(JSON.stringify(planE.attributes.entities), JSON.stringify([demoSp]), 'demo scheduler: the entities');
       assertEqual(ds[demoSp].state, '-250', 'demo scheduler: add runs the current slot');
       const st = batterySteer(demoSp, ds);
-      assertEqual(`${st.plan.entityId} ${st.plan.on} ${st.plan.foreign} ${st.plan.periods.length} ${batteryPlanMismatch(st)}`, 'switch.schedule_batterie true false 1 false',
+      assertEqual(`${st.plan.entityId} ${st.plan.on} ${st.plan.foreign} ${st.plan.periods.length} ${batteryPlanMismatch(st, 'manual')}`, 'switch.schedule_batterie true false 1 false',
         'demo scheduler: HAPulse reads its plan back');
       ds = applyDemoService(ds, 'switch', 'turn_off', {}, { entity_id: 'switch.schedule_batterie' });
       ds = applyDemoService(ds, 'number', 'set_value', { value: 0 }, { entity_id: demoSp });
@@ -2765,7 +2783,7 @@ console.log('\n── energy origins, power, battery ──');
       ds = applyDemoService(ds, 'switch', 'turn_on', {}, { entity_id: 'switch.schedule_batterie' });
       assertEqual(ds[demoSp].state, '300', 'demo scheduler: on runs the current slot');
       ds = applyDemoService(ds, 'number', 'set_value', { value: 0 }, { entity_id: demoSp });
-      assert(batteryPlanMismatch(batterySteer(demoSp, ds)), 'demo scheduler: a setpoint other than the slot\'s is a mismatch');
+      assert(batteryPlanMismatch(batterySteer(demoSp, ds), 'manual'), 'demo scheduler: a setpoint other than the slot\'s is a mismatch');
       ds = applyDemoService(ds, 'scheduler', 'run_action', { entity_id: 'switch.schedule_batterie' });
       assertEqual(ds[demoSp].state, '300', 'demo scheduler: run_action sends the slot again');
       ds = applyDemoService(ds, 'scheduler', 'add', { name: 'Batterie', tags: ['hapulse-batterie'], weekdays: ['daily'], timeslots: slots });

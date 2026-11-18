@@ -5,14 +5,16 @@
  * the plan is the row "Times" with what it does now and a bar of the day, opening the times page
  * (EnergyBatteryTimesPage, a window on the window). Under them the notes: charging also draws from the grid,
  * discharging without a meter feeds what the house does not use into the grid, a plan the window cannot take, one
- * changed outside HAPulse, a time above the bound; and the checks: the battery did not take the running time
- * ("Send again"), another schedule steers the same setpoint, the battery cannot be reached ("Switch the plan off").
+ * changed outside HAPulse (shown with the plan: whatever is saved here replaces it), a time above the bound; and the
+ * checks: the battery did not take the running time ("Send again"), another schedule steers the same setpoint, the
+ * battery cannot be reached ("Switch the plan off"). Switching Permanent ⇄ Plan keeps what was set each way.
  *
  * Only a draft until ✓ of the window (core batterySaveCalls). `BatteryChoice` is the Glas segment, in Klassisch plain
  * radio buttons (Klassisch only works, plan E5 "nur Glas"); `BatteryDayBar` the plan's day.
  */
 
-import type { ReactNode } from 'react';
+import { useRef } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { ChevronRight, CircleAlert } from 'lucide-react';
 import {
   batteryCommandOf,
@@ -68,14 +70,59 @@ export function BatteryChoice<V extends string>({
       />
     );
   }
+  return <BatteryChoiceClassic options={options} value={value} onChange={onChange} label={label} disabled={disabled} className={className} />;
+}
+
+/** Klassisch: plain radio buttons, arrows (wrapping), Home and End choose; one tab stop, as in the mode's rows. */
+function BatteryChoiceClassic<V extends string>({
+  options,
+  value,
+  onChange,
+  label,
+  disabled,
+  className,
+}: {
+  options: readonly BatteryChoiceOption<V>[];
+  value: V;
+  onChange: (value: V) => void;
+  label: string;
+  disabled: boolean;
+  className: string | undefined;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const n = options.length;
+  const found = options.findIndex((o) => o.value === value);
+  // the tab stop and where the arrows start: the chosen option, else the first
+  const index = Math.max(0, found);
+  function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (disabled) return;
+    let i: number | null = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') i = (index + 1) % n;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') i = (index - 1 + n) % n;
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = n - 1;
+    const next = i === null ? undefined : options[i];
+    if (i === null || !next) return;
+    e.preventDefault();
+    if (next.value !== value) onChange(next.value);
+    ref.current?.querySelectorAll<HTMLButtonElement>('.en-bat-choice__opt')[i]?.focus();
+  }
   return (
-    <div role="radiogroup" aria-label={label} className={className ? `en-bat-choice ${className}` : 'en-bat-choice'}>
-      {options.map((o) => (
+    <div
+      ref={ref}
+      role="radiogroup"
+      aria-label={label}
+      aria-disabled={disabled || undefined}
+      className={className ? `en-bat-choice ${className}` : 'en-bat-choice'}
+      onKeyDown={onKeyDown}
+    >
+      {options.map((o, i) => (
         <button
           key={o.value}
           type="button"
           role="radio"
-          aria-checked={o.value === value}
+          aria-checked={i === found}
+          tabIndex={i === index ? 0 : -1}
           disabled={disabled}
           className="en-bat-choice__opt"
           data-value={o.value}
@@ -106,6 +153,7 @@ export function BatteryPowerSlider({
   keep,
   disabled,
   onChange,
+  ariaLabel,
 }: {
   kind: 'charge' | 'discharge';
   watts: number;
@@ -113,6 +161,8 @@ export function BatteryPowerSlider({
   keep: number | null;
   disabled: boolean;
   onChange: (watts: number) => void;
+  /** the name a screen reader hears, when "Power" alone does not say whose (a plan's time) */
+  ariaLabel?: string;
 }) {
   const t = useT();
   const locale = useLocale();
@@ -122,6 +172,7 @@ export function BatteryPowerSlider({
     <BatteryLimitSlider
       kind={kind}
       label={t('energy.battery.power')}
+      {...(ariaLabel ? { ariaLabel } : {})}
       value={watts}
       slider={slider}
       disabled={disabled}
@@ -183,12 +234,17 @@ function Alert({ text, action, busy, onAction }: { text: string; action?: string
 
 const localMinute = (d: Date) => d.getHours() * 60 + d.getMinutes();
 
+/** The steering each way as last set in the window (null: not set there): switching Permanent ⇄ Plan keeps it. */
+export interface BatteryKeptControl {
+  command: BatteryCommand | null;
+  plan: BatteryPlanPeriod[] | null;
+}
+
 interface BatteryControlSectionProps {
   steer: BatterySteer;
   /** what the window shows: its draft, else what Home Assistant does now */
   control: BatteryControlDraft;
-  /** the plan shown is Home Assistant's (not changed in the window): only then "changed outside HAPulse" */
-  planFromHa: boolean;
+  kept: BatteryKeptControl;
   /** while ✓ runs, or while the battery cannot be reached */
   disabled: boolean;
   /** the battery has not taken the running time for a while (EnergyBatteryCard) */
@@ -206,7 +262,7 @@ interface BatteryControlSectionProps {
 export function BatteryControlSection({
   steer,
   control,
-  planFromHa,
+  kept,
   disabled,
   mismatch,
   rivalNames,
@@ -295,7 +351,7 @@ export function BatteryControlSection({
         <p className="en-bat-win__note">{t('energy.battery.planNote')}</p>
         {problem === 'empty' && <p className="en-bat-win__note">{t('energy.battery.planEmpty')}</p>}
         {problem === 'allDay' && <p className="en-bat-win__note en-bat-win__note--warn">{t('energy.battery.planAllDay')}</p>}
-        {planFromHa && plan?.foreign && <p className="en-bat-win__note en-bat-win__note--warn">{t('energy.battery.planForeign')}</p>}
+        {plan?.foreign && <p className="en-bat-win__note en-bat-win__note--warn">{t('energy.battery.planForeign')}</p>}
         {batteryPlanOutOfRange(periods, setpoint) && <p className="en-bat-win__note en-bat-win__note--warn">{t('energy.battery.planOutOfRange')}</p>}
         {periods.some((p) => p.setpoint < 0) && <p className="en-bat-win__note en-bat-win__note--warn">{t('energy.battery.dischargeNote')}</p>}
         {periods.some((p) => p.setpoint > 0) && <p className="en-bat-win__note">{t('energy.battery.chargeNote')}</p>}
@@ -316,7 +372,11 @@ export function BatteryControlSection({
           label={t('energy.battery.controlTitle')}
           disabled={disabled}
           onChange={(kind) =>
-            onControl(kind === 'plan' ? { kind: 'plan', periods: plan?.periods ?? [] } : { kind: 'command', command: commandOf(now.kind) })
+            onControl(
+              kind === 'plan'
+                ? { kind: 'plan', periods: kept.plan ?? plan?.periods ?? [] }
+                : { kind: 'command', command: kept.command ?? commandOf(now.kind) },
+            )
           }
         />
       </div>

@@ -87,7 +87,7 @@ export function EnergyBatteryTimesPage({ open, start, setpoint, returnFocus, onD
             <BatteryChoice
               options={ways}
               value={chosenWay}
-              label={t('energy.battery.directionLabel')}
+              label={t('energy.battery.timesNth', { label: t('energy.battery.directionLabel'), n: sel + 1 })}
               onChange={(way) => setChosen(signed(way, batteryStartPower(most(way))))}
             />
           </div>
@@ -99,6 +99,7 @@ export function EnergyBatteryTimesPage({ open, start, setpoint, returnFocus, onD
           keep={null}
           disabled={false}
           onChange={(watts) => setChosen(signed(chosenWay, watts))}
+          ariaLabel={t('energy.battery.timesNth', { label: t('energy.battery.power'), n: sel + 1 })}
         />
       </div>
       {chosenWay === 'discharge' ? (

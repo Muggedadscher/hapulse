@@ -374,6 +374,7 @@ export {
   clampBatterySetpoint,
   batteryPlanOutOfRange,
   batteryPlanMismatch,
+  batteryModeKey,
   batterySaveCalls,
   batterySaved,
   batteryRecheck,

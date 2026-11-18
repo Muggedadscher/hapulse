@@ -30,6 +30,8 @@ interface BatteryLimitSliderProps {
   /** the two limits (E5), or the power of a command or a plan's time (E5b: charge green, discharge orange) */
   kind: 'chargeLimit' | 'reserve' | 'charge' | 'discharge';
   label: string;
+  /** the slider's name for a screen reader, when it differs from the label shown */
+  ariaLabel?: string;
   /** the value shown (the draft, else Home Assistant's) */
   value: number;
   /** null: the value only, no slider */
@@ -40,7 +42,7 @@ interface BatteryLimitSliderProps {
   format: (value: number) => string;
 }
 
-export function BatteryLimitSlider({ kind, label, value, slider, disabled = false, onChange, format }: BatteryLimitSliderProps) {
+export function BatteryLimitSlider({ kind, label, ariaLabel, value, slider, disabled = false, onChange, format }: BatteryLimitSliderProps) {
   const head = (
     <span className="en-bat-slider__line">
       <span className="en-bat-slider__name">{label}</span>
@@ -61,7 +63,7 @@ export function BatteryLimitSlider({ kind, label, value, slider, disabled = fals
       <input
         type="range"
         className="en-bat-slider__input"
-        aria-label={label}
+        aria-label={ariaLabel ?? label}
         min={0}
         max={stops.length - 1}
         step={1}

@@ -14,8 +14,11 @@
  * E5b: with the integration's power setpoint the manual mode is HAPulse's steering (EnergyBatteryControl): a permanent
  * command or the daily plan, whose times open as a window on this one (EnergyBatteryTimesPage; its ✓ only takes them
  * here). ✓ then sends the calls of core batterySaveCalls in their order (ha/battery.ts: the plan switched on again
- * when a later call fails, a look once more a moment after). An empty plan, or one with the same power all day, cannot
- * be saved (✓ off, a note says why). While the plan still runs in the automatic mode, a note offers to switch it off.
+ * when a later call fails, a look once more a moment after). ✓ never closes the window without doing what it shows: it
+ * waits while the plan to save is empty or the same power all day, while a steering changed here cannot reach the
+ * battery, and while "Send again" or "Switch the plan off" runs (a note says why). Home Assistant's own plan with a
+ * time above the integration's bound is saved cut down. While the plan, or another schedule on the setpoint, still runs
+ * in the automatic mode, a note says that it switches the battery back to Manual (HAPulse's own one with "Switch off").
  */
 
 import { useRef, useState } from 'react';
@@ -24,7 +27,9 @@ import { Battery, Check, CircleAlert, SlidersHorizontal, Sparkles, Zap } from 'l
 import {
   batteryControlNow,
   batteryControlShown,
+  batteryModeKey,
   batteryPlanOffCall,
+  batteryPlanOutOfRange,
   batteryPlanProblem,
   batteryPlanRunCall,
   batterySaveCalls,
@@ -34,13 +39,14 @@ import {
   formatNumber,
   sameBatteryControl,
 } from '@hapulse/core';
-import type { BatteryCall, BatteryModeKey, BatteryModeOption, BatteryPlanPeriod, BatterySaveDraft } from '@hapulse/core';
+import type { BatteryCall, BatteryControlDraft, BatteryModeKey, BatteryModeOption, BatteryPlanPeriod, BatterySaveDraft } from '@hapulse/core';
 import { Modal } from '../../ui/Modal';
 import { BatterySaveError, recheckBattery, runBatteryCalls, sendBatteryCall } from '../../../ha/battery';
 import { useIsGlas } from '../../../app/glas/useUiStyle';
 import { useLocale, useT } from '../../../i18n/useT';
 import type { BatteryNow } from './EnergyBattery';
 import { BatteryControlSection } from './EnergyBatteryControl';
+import type { BatteryKeptControl } from './EnergyBatteryControl';
 import { BATTERY_STATE_KEY, BatteryRing, formatBatteryPower } from './EnergyBatteryParts';
 import { BatteryLimitSlider, BatteryRangeBar } from './EnergyBatteryRange';
 import { EnergyBatteryTimesPage } from './EnergyBatteryTimesPage';
@@ -153,15 +159,38 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
 
   const { mode, chargeLimit, reserve } = controls;
   const modeSettable = !!mode && mode.options.length > 0;
-  // [fork] E5b: the steering while the setpoint can be reached (else it is shown, not changed: plan §2.3)
+  let modeRows: BatteryModeOption[] = [];
+  if (mode) {
+    modeRows = mode.options.length > 0 ? [...mode.options] : [];
+    // the mode now is always a row, also when the select's options do not name it
+    if (!modeRows.some((o) => o.raw === mode.raw)) modeRows.push({ raw: mode.raw, key: mode.key });
+  }
+  const shownMode = draft.mode ?? mode?.raw ?? '';
+  const newMode = mode && draft.mode !== null && draft.mode !== mode.raw ? modeRows.find((o) => o.raw === draft.mode) ?? null : null;
+  // [fork] E5b: the steering with the manual mode, and without a mode entity to show (it cannot be read now)
+  const shownKey = mode ? (newMode ? newMode.key : mode.key) : null;
+  const steering = !!steer && (shownKey === 'manual' || !mode);
+  // it can be changed while the setpoint can be reached (else it is shown, not changed: plan §2.3)
   const reachable = !!steer && steer.setpoint.value !== null;
-  const controlNow = steer ? batteryControlNow(steer, mode?.key ?? null) : null;
+  const controlNow = steer ? batteryControlNow(steer, batteryModeKey(controls)) : null;
+  const shownControl = steer ? batteryControlShown(controls, steer, draft) : null;
   // a steering set back to what Home Assistant does counts as untouched
   const controlChanged = draft.control !== null && controlNow !== null && !sameBatteryControl(draft.control, controlNow);
-  const saveDraft: BatterySaveDraft = controlChanged && reachable ? draft : { ...draft, control: null };
-  const changed = batteryWrites(controls, saveDraft).length > 0 || saveDraft.control !== null;
-  const calls = changed ? batterySaveCalls(controls, steer, saveDraft) : [];
-  const shownControl = steer ? batteryControlShown(controls, steer, draft) : null;
+  // Home Assistant's own plan with a time above the integration's bound: ✓ saves it cut down, as its note says
+  const planCut =
+    steering && reachable && !controlChanged && shownControl?.kind === 'plan' && !!steer?.plan && batteryPlanOutOfRange(shownControl.periods, steer.setpoint);
+  const saveControl = !reachable ? null : controlChanged ? draft.control : planCut ? shownControl : null;
+  const saveDraft: BatterySaveDraft = { ...draft, control: saveControl };
+  // what was changed here (swiping the window away would lose it)
+  const changed = batteryWrites(controls, draft).length > 0 || controlChanged;
+  const calls = changed || saveControl !== null ? batterySaveCalls(controls, steer, saveDraft) : [];
+  // ✓ waits, so that it never closes the window without doing what it shows: a plan that cannot be saved (none, or
+  // the same power all day; its note says why) while the save writes the steering, a steering changed here or Manual
+  // chosen while the battery cannot be reached (the note says so), and a call of the window's own that still runs
+  const savesSteering = steering && (saveControl !== null || newMode?.key === 'manual');
+  const planProblem = savesSteering && shownControl?.kind === 'plan' ? batteryPlanProblem(shownControl.periods) : null;
+  const steerWaits = !!steer && !reachable && (controlChanged || newMode?.key === 'manual');
+  const blocked = !!planProblem || steerWaits || quickBusy;
   const canSet = modeSettable || !!chargeLimit?.range || !!reserve?.range || reachable;
 
   const close = () => {
@@ -199,24 +228,13 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
       : key === 'manual'
         ? t(steer ? 'energy.battery.hintModeSteer' : 'energy.battery.hintModeManual')
         : null;
-  let modeRows: BatteryModeOption[] = [];
-  if (mode) {
-    modeRows = mode.options.length > 0 ? [...mode.options] : [];
-    // the mode now is always a row, also when the select's options do not name it
-    if (!modeRows.some((o) => o.raw === mode.raw)) modeRows.push({ raw: mode.raw, key: mode.key });
-  }
-  const shownMode = draft.mode ?? mode?.raw ?? '';
-  const newMode = mode && draft.mode !== null && draft.mode !== mode.raw ? modeRows.find((o) => o.raw === draft.mode) ?? null : null;
-  // [fork] E5b: the steering with the manual mode, and without a mode entity to show (it cannot be read now)
-  const shownKey = mode ? (newMode ? newMode.key : mode.key) : null;
-  const steering = !!steer && (shownKey === 'manual' || !mode);
-  // a plan that cannot be saved (none, or the same power all day): ✓ waits
-  const planProblem = steering && shownControl?.kind === 'plan' && saveDraft.control !== null ? batteryPlanProblem(shownControl.periods) : null;
   // the automatic mode while the plan still runs: its next time switches the battery back to Manual
   const planStillOn = !!steer?.plan?.on && !!mode && mode.key !== 'manual' && !newMode;
+  // other schedules that set the setpoint do the same in the automatic mode (HAPulse leaves them alone)
+  const rivalsAuto = !!steer && steer.rivals.length > 0 && !!mode && shownKey !== 'manual';
 
   function save() {
-    if (busyRef.current || planProblem) return;
+    if (busyRef.current || blocked) return;
     // only a new mode asks: a Manual save writes the mode each time (core batterySaveCalls)
     if (newMode) {
       askingRef.current = true;
@@ -234,6 +252,12 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
   };
 
   // ---- the steering's own calls and the times page ----
+  // the steering each way as last set here: switching Permanent ⇄ Plan keeps what was set before
+  const [kept, setKept] = useState<BatteryKeptControl>({ command: null, plan: null });
+  const setControl = (control: BatteryControlDraft) => {
+    setKept((k) => (control.kind === 'plan' ? { ...k, plan: control.periods } : { ...k, command: control.command }));
+    setDraft((d) => ({ ...d, control }));
+  };
   async function quick(call: BatteryCall) {
     if (quickBusy || busyRef.current) return;
     setQuickBusy(true);
@@ -338,6 +362,11 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
               </span>
             </div>
           )}
+          {rivalsAuto && (
+            <p className="en-bat-win__note en-bat-win__note--warn">
+              {t('energy.battery.rivalsAuto', { count: battery.rivalNames.length, names: battery.rivalNames.join(', ') })}
+            </p>
+          )}
         </>
       )}
 
@@ -345,12 +374,12 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
         <BatteryControlSection
           steer={steer}
           control={shownControl}
-          planFromHa={draft.control === null || (draft.control.kind === 'plan' && controlNow?.kind === 'plan' && sameBatteryControl(draft.control, controlNow))}
+          kept={kept}
           disabled={busy || !reachable}
           mismatch={battery.mismatch}
           rivalNames={battery.rivalNames}
           quickBusy={quickBusy}
-          onControl={(control) => setDraft((d) => ({ ...d, control }))}
+          onControl={setControl}
           onOpenTimes={openTimes}
           onSendAgain={() => steer.plan && void quick(batteryPlanRunCall(steer.plan.entityId))}
           onPlanOff={() => steer.plan && void quick(batteryPlanOffCall(steer.plan.entityId))}
@@ -420,7 +449,7 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
           setpoint={steer.setpoint}
           returnFocus={timesReturn}
           onDone={(periods) => {
-            setDraft((d) => ({ ...d, control: { kind: 'plan', periods } }));
+            setControl({ kind: 'plan', periods });
             setFailed(null);
             closeTimes();
           }}
@@ -441,7 +470,7 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
         swipeToClose={!changed && !busy}
         trailing={
           glas && canSet ? (
-            <button type="button" className="g-sched-done" aria-label={t('energy.battery.save')} disabled={busy || !!planProblem} onClick={save}>
+            <button type="button" className="g-sched-done" aria-label={t('energy.battery.save')} disabled={busy || blocked} onClick={save}>
               <span className="g-sched-done__circle" aria-hidden="true">
                 <Check size={18} strokeWidth={2.5} />
               </span>
@@ -454,7 +483,7 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
               <button type="button" className="btn btn--secondary" disabled={busy} onClick={close}>
                 {t('glas.sheet.cancel')}
               </button>
-              <button type="button" className="btn btn--primary" disabled={busy || !!planProblem} onClick={save}>
+              <button type="button" className="btn btn--primary" disabled={busy || blocked} onClick={save}>
                 {t('energy.battery.save')}
               </button>
             </div>

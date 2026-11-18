@@ -120,10 +120,19 @@ export interface BatteryTimeslot {
  * at midnight written `00:00` (the scheduler's end of the day). Neighbours with the same setpoint become one slot.
  */
 export function batteryPlanTimeslots(periods: readonly BatteryPlanPeriod[], setpointId: string): BatteryTimeslot[] {
-  const day = 24 * 60;
+  return planParts(periods).map((p) => ({
+    start: minutesToHHMM(p.start),
+    stop: minutesToHHMM(p.stop),
+    actions: [{ service: 'number.set_value', entity_id: setpointId, service_data: { value: p.value } }],
+  }));
+}
+
+const DAY = 24 * 60;
+
+/** The day in parts without gaps (minutes): the periods with their setpoint (an earlier one wins), 0 between them. */
+function planParts(periods: readonly BatteryPlanPeriod[]): { start: number; stop: number; value: number }[] {
   const sorted = sortPeriods(periods);
-  type Part = { start: number; stop: number; value: number };
-  const parts: Part[] = [];
+  const parts: { start: number; stop: number; value: number }[] = [];
   const push = (start: number, stop: number, value: number) => {
     if (stop <= start) return;
     const last = parts[parts.length - 1];
@@ -133,17 +142,13 @@ export function batteryPlanTimeslots(periods: readonly BatteryPlanPeriod[], setp
   let at = 0;
   for (const p of sorted) {
     const from = Math.max(at, periodMinutes(p.from));
-    const to = Math.min(day, periodMinutes(p.to));
+    const to = Math.min(DAY, periodMinutes(p.to));
     push(at, from, 0);
     push(from, to, Math.round(p.setpoint));
     at = Math.max(at, to);
   }
-  push(at, day, 0);
-  return parts.map((p) => ({
-    start: minutesToHHMM(p.start),
-    stop: minutesToHHMM(p.stop),
-    actions: [{ service: 'number.set_value', entity_id: setpointId, service_data: { value: p.value } }],
-  }));
+  push(at, DAY, 0);
+  return parts;
 }
 
 /** At most six times a day; a plan's first time is in the evening, when a house draws on its battery. */
@@ -161,25 +166,22 @@ export function addBatteryPeriod(periods: readonly BatteryPlanPeriod[], setpoint
 }
 
 /**
- * What the plan does at `minutes` past midnight: the period's setpoint until it ends (a touching one with the same
- * setpoint runs on), else 0 until the next period starts (tomorrow's first after the last; `24:00` without any).
+ * What the plan does at `minutes` past midnight, as Home Assistant runs it (its timeslots): the setpoint until it
+ * changes — a touching period with the same setpoint runs on, also over midnight into tomorrow's first — so resting
+ * lasts until the next period starts; `24:00` when the whole day is the same.
  */
 export function batteryPlanAt(periods: readonly BatteryPlanPeriod[], minutes: number): { setpoint: number; until: string } {
-  const sorted = sortPeriods(periods);
-  const cur = sorted.find((p) => periodMinutes(p.from) <= minutes && minutes < periodMinutes(p.to));
-  if (cur) {
-    const value = Math.round(cur.setpoint);
-    let end = periodMinutes(cur.to);
-    for (const p of sorted) if (periodMinutes(p.from) === end && Math.round(p.setpoint) === value) end = periodMinutes(p.to);
-    return { setpoint: value, until: periodTimeOf(end) };
-  }
-  const next = sorted.find((p) => periodMinutes(p.from) > minutes) ?? sorted[0];
-  return { setpoint: 0, until: next ? next.from : '24:00' };
+  const parts = planParts(periods);
+  const i = parts.findIndex((p) => p.start <= minutes && minutes < p.stop);
+  const part = parts[i] ?? parts[parts.length - 1]!;
+  const first = parts[0]!;
+  const until = part.stop === DAY && i > 0 && first.value === part.value ? first.stop : part.stop;
+  return { setpoint: part.value, until: periodTimeOf(until) };
 }
 
 /** HAPulse's battery plan in Home Assistant. */
 export interface BatteryPlanState {
-  /** the schedule HAPulse uses (the first with the tag, by entity id) */
+  /** the schedule HAPulse uses: the first with the tag that runs, else the first (by entity id) */
   entityId: string;
   /** its state as Home Assistant has it (`on`, `off`, `triggered`, `completed`, `unavailable` …) */
   state: string;
@@ -191,7 +193,7 @@ export interface BatteryPlanState {
   foreign: boolean;
   /** the running period's setpoint and the time it ends (`HH:MM`), from the schedule's `current_slot`; null when off */
   now: { setpoint: number; until: string } | null;
-  /** further schedules with the tag (a second `scheduler.add`) that run: HAPulse switches them off when it saves */
+  /** further schedules with the tag that run (a second `scheduler.add`): HAPulse switches them off when it saves */
   others: string[];
 }
 
@@ -281,7 +283,8 @@ export function batteryPlanState(entities: HassEntityMap, setpointId: string | n
   const ids = Object.keys(entities)
     .filter((id) => isBatteryPlanEntity(id, entities[id]))
     .sort();
-  const entityId = ids[0];
+  // the one that runs, so the window shows what steers the battery (a second one only from a second scheduler.add)
+  const entityId = ids.find((id) => scheduleRuns(entities[id])) ?? ids[0];
   if (!entityId) return null;
   const entity = entities[entityId]!;
   const { periods, foreign } = parseBatteryPlan(entity, setpointId);
@@ -295,7 +298,7 @@ export function batteryPlanState(entities: HassEntityMap, setpointId: string | n
     const value = slotValue(actions[cur]);
     if (range && value !== null) now = { setpoint: Math.round(value), until: periodTimeOf(range.stop) };
   }
-  const others = ids.slice(1).filter((id) => scheduleRuns(entities[id]));
+  const others = ids.filter((id) => id !== entityId && scheduleRuns(entities[id]));
   return { entityId, state: entity.state, on, periods, foreign, now, others };
 }
 
@@ -331,7 +334,8 @@ export type BatteryControlDraft = { kind: 'command'; command: BatteryCommand } |
 
 /**
  * What the window shows first: the plan while it runs; in the automatic mode the plan when one is stored (going back
- * to Manual finds it again); else the command of the setpoint (resting while Home Assistant has none).
+ * to Manual finds it again); else the command of the setpoint (resting while Home Assistant has none). `modeKey` as
+ * batteryModeKey gives it: without a mode entity the setpoint means the manual mode.
  */
 export function batteryControlNow(steer: BatterySteer, modeKey: string | null): BatteryControlDraft {
   const plan = steer.plan;
@@ -362,9 +366,13 @@ export function batteryPlanOutOfRange(periods: readonly BatteryPlanPeriod[], set
   return periods.some((p) => clampBatterySetpoint(p.setpoint, setpoint) !== Math.round(p.setpoint));
 }
 
-/** The plan runs, but the setpoint is not the running period's (the scheduler does not retry a write that failed). */
-export function batteryPlanMismatch(steer: BatterySteer | null): boolean {
-  if (!steer?.plan?.on || !steer.plan.now || steer.setpoint.value === null) return false;
+/**
+ * The plan runs in the manual mode, but the setpoint is not the running period's (the scheduler does not retry a write
+ * that failed). Not in another mode: there the battery's own steering rests the setpoint (the window says that the
+ * plan still runs).
+ */
+export function batteryPlanMismatch(steer: BatterySteer | null, modeKey: string | null): boolean {
+  if (modeKey !== 'manual' || !steer?.plan?.on || !steer.plan.now || steer.setpoint.value === null) return false;
   return Math.abs(steer.plan.now.setpoint - steer.setpoint.value) >= 0.5;
 }
 
@@ -397,6 +405,11 @@ function planSwitch(part: 'planOff' | 'planOn', entityId: string, undo = false):
   return call;
 }
 
+/** The mode's key now; without a mode entity (none, or unavailable) a setpoint means the manual mode. */
+export function batteryModeKey(controls: BatteryControls): string | null {
+  return modeKeyOf(controls, null);
+}
+
 /** The mode key of one of the select's options; without a mode entity a setpoint means the manual mode. */
 function modeKeyOf(controls: BatteryControls, raw: string | null): string | null {
   const mode = controls.mode;
@@ -424,7 +437,7 @@ function limitCalls(controls: BatteryControls, draft: BatteryDraft): BatteryCall
 
 /** The steering the window shows and saves: the draft's, else what Home Assistant does now. */
 export function batteryControlShown(controls: BatteryControls, steer: BatterySteer, draft: BatterySaveDraft): BatteryControlDraft {
-  return draft.control ?? batteryControlNow(steer, controls.mode?.key ?? null);
+  return draft.control ?? batteryControlNow(steer, batteryModeKey(controls));
 }
 
 /**
@@ -447,7 +460,7 @@ export function batterySaveCalls(controls: BatteryControls, steer: BatterySteer 
   const targetKey = modeKeyOf(controls, targetRaw);
   const modeChanges = !!mode && draft.mode !== null && draft.mode !== mode.raw;
   const plan = steer.plan;
-  const othersOff = (plan?.others ?? []).map((id) => planSwitch('planOff', id));
+  const othersOff = (plan?.others ?? []).map((id) => planSwitch('planOff', id, true));
   const planOff = plan?.on ? [planSwitch('planOff', plan.entityId, true)] : [];
 
   if (targetKey !== 'manual') {
@@ -531,7 +544,7 @@ export function batteryRecheck(controls: BatteryControls, steer: BatterySteer | 
     }
   } else if (steer.plan) {
     if (!steer.plan.on) out.push(planSwitch('planOn', steer.plan.entityId));
-    else if (batteryPlanMismatch(steer)) out.push(batteryPlanRunCall(steer.plan.entityId));
+    else if (batteryPlanMismatch(steer, 'manual')) out.push(batteryPlanRunCall(steer.plan.entityId));
   }
   return out;
 }

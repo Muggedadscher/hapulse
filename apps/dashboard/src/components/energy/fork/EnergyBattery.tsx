@@ -18,6 +18,7 @@ import { useShallow } from 'zustand/react/shallow';
 import {
   batteryControls,
   batteryDetails,
+  batteryModeKey,
   batteryPlanMismatch,
   batteryStatus,
   batterySteer,
@@ -272,7 +273,9 @@ export function useBatteryNow(prefs: EnergyPreferences | null): BatteryNow | nul
   const planEntity = steer?.plan ? steerMap[steer.plan.entityId] : undefined;
   const setpointEntity = setpointId ? steerMap[setpointId] : undefined;
   const since = Math.max(Date.parse(setpointEntity?.last_updated ?? '') || 0, Date.parse(planEntity?.last_updated ?? '') || 0);
-  const mismatch = useLastingSince(batteryPlanMismatch(steer), since);
+  // only in the manual mode: in another the battery's own steering rests the setpoint (the window says the plan runs)
+  const modeKey = useMemo(() => batteryModeKey(batteryControls(detailIds, steerMap)), [detailIds, steerMap]);
+  const mismatch = useLastingSince(batteryPlanMismatch(steer, modeKey), since);
   if (!ids || ids.soc.some((_, i) => !states[i])) return null;
   const map: HassEntityMap = {};
   all.forEach((id, i) => {
