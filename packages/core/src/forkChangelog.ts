@@ -40,14 +40,27 @@ export const FORK_RELEASES: ForkRelease[] = [
   {
     version: 75,
     date: '2026-11-18',
-    title: { de: 'Akku: Fenster „Details“', en: 'Battery: “Details” window' },
+    title: { de: 'Akku: Fenster mit Modus und Ladebereich', en: 'Battery: window with mode and charge range' },
     sections: [
       {
         kind: 'added',
         items: [
           {
-            de: 'Die Karte „Batterie“ der Energie-Seite hat oben „Details“: ein Fenster mit Modus, „Laden bis“ und Reserve des Akkus, zum Ansehen',
-            en: 'The energy page’s “Battery” card has “Details” at the top: a window with the battery’s mode, “Charge up to” and reserve, to look at',
+            de: 'Die Karte „Batterie“ der Energie-Seite hat oben „Details“: ein Fenster mit dem Zustand jetzt, dem Modus (Automatisch oder Manuell, je mit einem Satz, was er tut) und dem Ladebereich mit „Laden bis“, Reserve und der nutzbaren Energie',
+            en: 'The energy page’s “Battery” card has “Details” at the top: a window with the state now, the mode (Automatic or Manual, each with a line on what it does) and the charge range with “Charge up to”, the reserve and the usable energy',
+          },
+          {
+            de: 'Dort lassen sich Modus, „Laden bis“ und Reserve auch einstellen (Regler wie in iOS, ✓ speichert); ein neuer Modus fragt vorher, denn Home Assistant übernimmt dann die Steuerung von der App der Batterie',
+            en: 'The mode, “Charge up to” and the reserve can be set there too (sliders like in iOS, ✓ saves); a new mode asks first, since Home Assistant then takes over control from the battery’s app',
+          },
+        ],
+      },
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Das Diagramm „Ladezustand heute“ füllt die Karte bis unten, auch neben einer höheren Karte',
+            en: 'The “Charge today” chart fills the card to the bottom, also beside a taller card',
           },
         ],
       },

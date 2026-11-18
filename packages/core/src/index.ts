@@ -307,6 +307,7 @@ export {
   energyBatteryIds,
   combinedSoc,
   combinedSocSeries,
+  simplifyLine,
   demoBatterySoc,
 } from './energyFlow.js';
 export type {
@@ -322,8 +323,29 @@ export type {
   BatteryLimits,
   EnergyBatteryIds,
 } from './energyFlow.js';
-export { BATTERY_PROFILES, findBatteryDetails, batteryDetails } from './batteryDetails.js';
-export type { BatteryProfile, BatteryDetailIds, BatteryDetails, BatteryModeKey } from './batteryDetails.js';
+export {
+  BATTERY_PROFILES,
+  findBatteryDetails,
+  batteryDetails,
+  batteryRange,
+  batteryControls,
+  batterySlider,
+  batteryWrites,
+} from './batteryDetails.js';
+export type {
+  BatteryProfile,
+  BatteryDetailIds,
+  BatteryDetails,
+  BatteryModeKey,
+  BatteryRange,
+  BatteryLimitControl,
+  BatteryModeOption,
+  BatteryModeControl,
+  BatteryControls,
+  BatterySlider,
+  BatteryDraft,
+  BatteryWrite,
+} from './batteryDetails.js';
 export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './sizePresets.js';
 export type { SizePreset, SectionSize } from './sizePresets.js';
 export { roomGlances, lightPercent, climateTone } from './roomGlance.js';

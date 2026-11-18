@@ -19,6 +19,7 @@ import type {
 } from './types.js';
 import { applyDemoHeatingService, demoHeatingEntities, demoHeatingRegistryEntries, tickDemoHeating } from './heatingPlanDemo.js'; // [fork]
 import { applyDemoHumidifierService, demoHumidifierEntities, demoHumidifierRegistryEntries } from './humidifierDemo.js'; // [fork]
+import { applyDemoControlService } from './controlsDemo.js'; // [fork] battery window (E5)
 
 /** Plausible manufacturer/model per demo device, keyed by name keyword. */
 function withDemoDeviceMeta(d: DeviceRegistryEntry): DeviceRegistryEntry {
@@ -963,6 +964,8 @@ export function applyDemoService(
   if (heating) return heating;
   const humidifier = applyDemoHumidifierService(updated, domain, service, data, targetIds, now); // [fork] humidifierDemo.ts
   if (humidifier) return humidifier;
+  const control = applyDemoControlService(updated, domain, service, data, targetIds, now); // [fork] controlsDemo.ts
+  if (control) return control;
 
   // Speaker grouping mutates SEVERAL entities (leader and members all carry
   // the group in group_members), so it is handled before per-entity dispatch.

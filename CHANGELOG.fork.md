@@ -8,12 +8,19 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 ## F75 — 2026-11-18
 
-**Akku: Fenster „Details“** · _Battery: “Details” window_
+**Akku: Fenster mit Modus und Ladebereich** · _Battery: window with mode and charge range_
 
 ### Neu / Added
 
-- Die Karte „Batterie“ der Energie-Seite hat oben „Details“: ein Fenster mit Modus, „Laden bis“ und Reserve des Akkus, zum Ansehen  
-  _The energy page’s “Battery” card has “Details” at the top: a window with the battery’s mode, “Charge up to” and reserve, to look at_
+- Die Karte „Batterie“ der Energie-Seite hat oben „Details“: ein Fenster mit dem Zustand jetzt, dem Modus (Automatisch oder Manuell, je mit einem Satz, was er tut) und dem Ladebereich mit „Laden bis“, Reserve und der nutzbaren Energie  
+  _The energy page’s “Battery” card has “Details” at the top: a window with the state now, the mode (Automatic or Manual, each with a line on what it does) and the charge range with “Charge up to”, the reserve and the usable energy_
+- Dort lassen sich Modus, „Laden bis“ und Reserve auch einstellen (Regler wie in iOS, ✓ speichert); ein neuer Modus fragt vorher, denn Home Assistant übernimmt dann die Steuerung von der App der Batterie  
+  _The mode, “Charge up to” and the reserve can be set there too (sliders like in iOS, ✓ saves); a new mode asks first, since Home Assistant then takes over control from the battery’s app_
+
+### Geändert / Changed
+
+- Das Diagramm „Ladezustand heute“ füllt die Karte bis unten, auch neben einer höheren Karte  
+  _The “Charge today” chart fills the card to the bottom, also beside a taller card_
 
 ## F74 — 2026-11-18
 

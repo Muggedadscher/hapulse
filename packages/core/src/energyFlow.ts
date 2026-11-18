@@ -546,6 +546,41 @@ export function combinedSocSeries(
 }
 
 /**
+ * [fork] The points of a line that matter at `tolerance` (in the values' unit): a point stays when it lies further than
+ * that above or below the straight line between the points kept around it (Douglas–Peucker over the vertical distance);
+ * the first and the last point always stay. The charge sensors report whole percent and the series holds each reading
+ * until the next one, so a steady charge comes as small steps, which a tall chart would draw as teeth.
+ */
+export function simplifyLine<T extends { t: number; v: number }>(points: readonly T[], tolerance: number): T[] {
+  if (points.length <= 2) return [...points];
+  const keep = new Uint8Array(points.length);
+  keep[0] = 1;
+  keep[points.length - 1] = 1;
+  const spans: [number, number][] = [[0, points.length - 1]];
+  while (spans.length > 0) {
+    const [a, b] = spans.pop()!;
+    const pa = points[a]!;
+    const pb = points[b]!;
+    let worst = -1;
+    let far = tolerance;
+    for (let i = a + 1; i < b; i++) {
+      const p = points[i]!;
+      const on = pb.t === pa.t ? pa.v : pa.v + ((pb.v - pa.v) * (p.t - pa.t)) / (pb.t - pa.t);
+      const d = Math.abs(p.v - on);
+      if (d > far) {
+        far = d;
+        worst = i;
+      }
+    }
+    if (worst >= 0) {
+      keep[worst] = 1;
+      spans.push([a, worst], [worst, b]);
+    }
+  }
+  return points.filter((_, i) => keep[i] === 1);
+}
+
+/**
  * The demo's charge today: down overnight to 20 % at 09:00, then charging with the sun up to `nowSoc` at `now` (the
  * demo's battery entity). Deterministic; a point every 15 min from `start`, the last one at `now`.
  */

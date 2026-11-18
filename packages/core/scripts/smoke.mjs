@@ -177,9 +177,14 @@ import {
   batteryStatus,
   findBatteryDetails,
   batteryDetails,
+  batteryRange,
+  batteryControls,
+  batterySlider,
+  batteryWrites,
   energyBatteryIds,
   combinedSoc,
   combinedSocSeries,
+  simplifyLine,
   demoBatterySoc,
   computeEnergyDashboard,
   energyStatisticIds,
@@ -2537,6 +2542,61 @@ console.log('\n── energy origins, power, battery ──');
       'battery details: a reserve not below the charge limit → absent');
     assertEqual(batteryDetails(det, { 'select.bat_work_mode': st('toString') }).mode?.key, null, 'battery details: an option named like an object key → no key');
     assertEqual(JSON.stringify(batteryDetails(null, {})), JSON.stringify({ chargeLimit: null, reserve: null, mode: null }), 'battery details: no ids → nothing');
+    // [fork] E5: setting the three in the battery's window
+    const stA = (v, attributes) => ({ ...st(v), attributes });
+    const ents = {
+      'number.bat_charge_limit': stA('98', { min: 50, max: 100, step: 5 }),
+      'number.bat_discharge_limit': stA('10', { min: 5, max: 50, step: 5 }),
+      'select.bat_work_mode': stA('Custom / Manual', { options: ['Self-Consumption (AI)', 'Custom / Manual'] }),
+    };
+    const ctl = batteryControls(det, ents);
+    assertEqual(JSON.stringify(ctl.chargeLimit), JSON.stringify({ entityId: 'number.bat_charge_limit', value: 98, range: { min: 50, max: 100, step: 5 } }),
+      'battery controls: the charge limit with its range');
+    assertEqual(ctl.mode.options.map((o) => `${o.raw}=${o.key}`).join(), 'Self-Consumption (AI)=auto,Custom / Manual=manual',
+      'battery controls: the options in the select\'s order, named');
+    assertEqual(batteryRange(stA('1', { min: 5, max: 5, step: 1 })), null, 'battery range: min = max → none');
+    assertEqual(batteryRange(stA('1', { min: '5', max: 50 })), null, 'battery range: a min that is not a number → none');
+    assertEqual(batteryRange(stA('1', { min: 5, max: 50, step: 0 })), null, 'battery range: step 0 → none');
+    assertEqual(JSON.stringify(batteryRange(stA('1', { min: 0, max: 10 }))), JSON.stringify({ min: 0, max: 10, step: 1 }), 'battery range: no step → 1');
+    assertEqual(batteryControls(det, { ...ents, 'number.bat_charge_limit': stA('98', {}) }).chargeLimit.range, null, 'battery controls: no min/max → shown, not set');
+    assertEqual(batteryControls(det, { ...ents, 'select.bat_work_mode': stA('Custom / Manual', {}) }).mode.options.length, 0, 'battery controls: no options → the mode shown, not set');
+    assertEqual(batteryControls(det, { ...ents, 'number.bat_discharge_limit': stA('unavailable', { min: 5, max: 50, step: 5 }) }).reserve, null,
+      'battery controls: an unavailable reserve → no control');
+    const R = { min: 5, max: 50, step: 5 };
+    const L = { min: 50, max: 100, step: 5 };
+    const span = (sl) => (sl ? `${sl.stops[sl.first]}-${sl.stops[sl.last]}` : 'none');
+    const sl = batterySlider('chargeLimit', L, 98, 10);
+    assertEqual(sl.stops.join(), '50,55,60,65,70,75,80,85,90,95,98,100', 'slider: the grid plus the value from the app');
+    assertEqual(span(sl), '50-100', 'slider: a low reserve leaves the limit its whole range');
+    assertEqual(batterySlider('reserve', R, 10, 98).stops.length, 10, 'slider: a value on the grid adds no stop');
+    assertEqual(span(batterySlider('reserve', R, 10, 98)), '5-50', 'slider: the reserve up to its max under a high limit');
+    assertEqual(span(batterySlider('reserve', R, 10, 50)), '5-45', 'slider: the reserve stays below the limit');
+    assertEqual(span(batterySlider('chargeLimit', L, 100, 50)), '55-100', 'slider: the limit stays above the reserve');
+    assertEqual(batterySlider('chargeLimit', L, 100, 100), null, 'slider: no stop left → none');
+    assertEqual(batterySlider('reserve', { min: 0, max: 1, step: 0.1 }, 0.2, 0.3).stops.slice(0, 4).join(), '0,0.1,0.2,0.3', 'slider: decimal steps without float noise');
+    assertEqual(span(batterySlider('reserve', { min: 0, max: 1, step: 0.1 }, 0.2, 0.3)), '0-0.2', 'slider: … and strictly below the other');
+    assertEqual(batterySlider('reserve', { min: 5, max: 52, step: 5 }, 10, null).stops.at(-1), 50, 'slider: a max off the grid → the last grid value');
+    assertEqual(batterySlider('reserve', R, 3, 98).stops.slice(0, 2).join(), '3,5', 'slider: a value below the range stays a stop');
+    const draft = (mode, chargeLimit, reserve) => ({ mode, chargeLimit, reserve });
+    const call = (w) => `${w.domain}.${w.service} ${w.entityId} ${JSON.stringify(w.data)}`;
+    assertEqual(batteryWrites(ctl, draft(null, null, null)).length, 0, 'writes: nothing touched → none');
+    assertEqual(batteryWrites(ctl, draft('Custom / Manual', 98, 10)).length, 0, 'writes: the same values → none');
+    assertEqual(batteryWrites(ctl, draft('Self-Consumption (AI)', 90, 20)).map(call).join(' | '),
+      'number.set_value number.bat_discharge_limit {"value":20} | number.set_value number.bat_charge_limit {"value":90} | select.select_option select.bat_work_mode {"option":"Self-Consumption (AI)"}',
+      'writes: the reserve first when it fits under the limit now, the mode last');
+    const tight = batteryControls(det, { ...ents, 'number.bat_charge_limit': stA('50', L), 'number.bat_discharge_limit': stA('45', R) });
+    assertEqual(batteryWrites(tight, draft(null, 60, 50)).map((w) => w.part).join(), 'chargeLimit,reserve',
+      'writes: a reserve not under the limit now → the limit first, so the reserve stays below it in between');
+    assertEqual(batteryWrites(tight, draft(null, null, 40)).map(call).join(), 'number.set_value number.bat_discharge_limit {"value":40}', 'writes: only what differs');
+    // the demo takes the window's calls (controlsDemo.ts)
+    let dm = applyDemoService(DEMO_ENTITIES, 'number', 'set_value', { value: 90 }, { entity_id: 'number.demo_battery_charge_limit' });
+    assertEqual(dm['number.demo_battery_charge_limit'].state, '90', 'demo: number.set_value sets the value');
+    dm = applyDemoService(DEMO_ENTITIES, 'number', 'set_value', { value: 120 }, { entity_id: 'number.demo_battery_charge_limit' });
+    assertEqual(dm['number.demo_battery_charge_limit'].state, DEMO_ENTITIES['number.demo_battery_charge_limit'].state, 'demo: a value past max changes nothing');
+    dm = applyDemoService(DEMO_ENTITIES, 'select', 'select_option', { option: 'Custom / Manual' }, { entity_id: 'select.demo_battery_work_mode' });
+    assertEqual(dm['select.demo_battery_work_mode'].state, 'Custom / Manual', 'demo: select.select_option sets the option');
+    dm = applyDemoService(DEMO_ENTITIES, 'select', 'select_option', { option: 'Peak Shaving' }, { entity_id: 'select.demo_battery_work_mode' });
+    assertEqual(dm['select.demo_battery_work_mode'].state, DEMO_ENTITIES['select.demo_battery_work_mode'].state, 'demo: an unknown option changes nothing');
     // several batteries: charge weighted by capacity, else the mean; one unknown → none
     assert(near(combinedSoc([50, 100], [10, 5]), 200 / 3), 'combined charge: weighted by capacity');
     assert(near(combinedSoc([50, 100], null), 75), 'combined charge: without capacities the mean');
@@ -2544,6 +2604,15 @@ console.log('\n── energy origins, power, battery ──');
     const ser = combinedSocSeries([[{ t: 0, v: 40 }, { t: 20, v: 60 }], [{ t: 10, v: 100 }]], [3, 1], 0, 30, 10);
     assertEqual(ser.map((p) => p.v).join(), '40,55,70,70', 'combined series: last value per battery, weighted, a battery joins when it has a value');
     assertEqual(combinedSocSeries([[{ t: 5, v: 40 }]], null, 0, 10, 5).length, 2, 'combined series: no point before the first value');
+    // the drawn line: whole-percent steps of a steady charge go, corners and the ends stay
+    const steps = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3].map((v, i) => ({ t: i, v }));
+    assertEqual(simplifyLine(steps, 1.5).map((p) => p.t).join(), '0,9', 'simplified line: steps within the tolerance become one straight line');
+    const vee = [50, 40, 30, 20, 30, 40].map((v, i) => ({ t: i * 10, v }));
+    assertEqual(simplifyLine(vee, 1.5).map((p) => p.t).join(), '0,30,50', 'simplified line: the turn stays');
+    const flat = [{ t: 0, v: 36 }, { t: 10, v: 36 }, { t: 20, v: 36 }, { t: 30, v: 80 }];
+    assertEqual(simplifyLine(flat, 1.5).map((p) => p.t).join(), '0,20,30', 'simplified line: a rest before a jump keeps its end');
+    assertEqual(simplifyLine([{ t: 0, v: 1 }], 1.5).length, 1, 'simplified line: one point stays one point');
+    assertEqual(simplifyLine([{ t: 0, v: 1 }, { t: 0, v: 9 }, { t: 0, v: 1 }], 1.5).length, 3, 'simplified line: points at the same time do not divide by zero');
     const ids = energyBatteryIds({ energy_sources: [
       { type: 'battery', stat_energy_from: 'a', stat_energy_to: 'b', stat_soc: 'sensor.soc1', stat_rate: 'sensor.p1', capacity: 5 },
       { type: 'battery', stat_energy_from: 'c', stat_energy_to: 'd', stat_soc: 'sensor.soc2' },

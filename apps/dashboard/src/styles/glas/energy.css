@@ -445,15 +445,15 @@
   line-height: 20px;
 }
 
-:root[data-style='glas'] .energy-page .en-bat__state {
+:root[data-style='glas'] :is(.energy-page, .en-bat-win) .en-bat__state {
   font-weight: 600;
 }
 
-:root[data-style='glas'] .energy-page .en-bat__state--reserve {
+:root[data-style='glas'] :is(.energy-page, .en-bat-win) .en-bat__state--reserve {
   color: var(--g-warn-ink);
 }
 
-:root[data-style='glas'] .energy-page .en-bat__state:not(.en-bat__state--charging, .en-bat__state--full, .en-bat__state--reserve) {
+:root[data-style='glas'] :is(.energy-page, .en-bat-win) .en-bat__state:not(.en-bat__state--charging, .en-bat__state--full, .en-bat__state--reserve) {
   color: var(--g-label);
 }
 
@@ -510,23 +510,354 @@
   stroke-width: 2.25;
 }
 
-:root[data-style='glas'] .en-bat-details__row {
-  border-bottom-color: var(--g-sep);
+/* ---- The battery's window (EnergyBatteryWindow.tsx, plan PLAN-E4-AKKU.md E5): lists in `group` like the other
+   windows (heating.css). Now: the ring 76 in the battery green, the charge 34/41 600, the state 15/20, the stored energy
+   13/18 label2. The modes as rows 60 with a symbol square 30 (Automatic green, Manual blue, like the iOS settings) and
+   the check in the accent ink (a choice, §2.3). The charge range: "Usable" with the kWh, the bar 10 (the reserve in
+   label3, the usable part in the battery green with its 1-px edge, above the limit `fill`), and a slider per limit
+   like iOS 26: the track 6 in `fill2`, filled to the knob (the limit in the battery green, the reserve in label3), the
+   white knob 28 with the switch's shadow, the ends 12/16 label2 under it. Titles 15/20 600 label2 over the groups,
+   notes 13/18 under them, the note on a new mode in the warn ink. The window is portaled out of .energy-page. ---- */
+:root[data-style='glas'] .en-bat-win {
+  --en-battery: var(--g-chart-battery);
+  --en-battery-ink: var(--g-green-ink);
+  --en-track: var(--g-fill);
+  --en-reserve: var(--g-label-3);
+  gap: 0;
+  font-family: var(--g-font);
 }
 
-:root[data-style='glas'] :is(.en-bat-details__label, .en-bat-details__value) {
+:root[data-style='glas'] .en-bat-win__group {
+  border: 0;
+  border-radius: 22px;
+  background: var(--g-group);
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glas'] .en-bat-win__group {
+    border-radius: 20px;
+  }
+}
+
+:root[data-style='glas'] .en-bat-win__hero {
+  gap: 16px;
+  margin-top: 4px;
+  padding: 16px;
+}
+
+:root[data-style='glas'] .en-bat-win__pct {
+  gap: 4px;
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .en-bat-win__num {
+  font: 600 34px / 41px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__unit {
+  color: var(--g-label-2);
+  font: 600 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__state {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__stored {
+  margin-top: 2px;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__title {
+  margin: 20px 4px 7px 16px;
+  color: var(--g-label-2);
+  font: 600 15px / 20px var(--g-font);
+}
+
+/* modes */
+:root[data-style='glas'] .en-bat-win__mode {
+  position: relative;
+  gap: 12px;
+  min-height: 60px;
+  padding: 9px 16px;
+  border-top: 0;
   color: var(--g-label);
   font-family: var(--g-font);
-  font-size: 17px;
-  line-height: 22px;
+  transition: background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-:root[data-style='glas'] .en-bat-details__value {
+/* the hairline starts at the text, after the symbol (16 + 30 + 12) */
+:root[data-style='glas'] .en-bat-win__mode + .en-bat-win__mode::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 58px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .en-bat-win__mode:not([aria-disabled='true']):hover {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .en-bat-win__mode:not([aria-disabled='true']):active {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .en-bat-win__mode:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .en-bat-win__mode-icon {
+  border-radius: 9px;
+  background: var(--g-green);
+  color: var(--g-glyph-dark);
+}
+
+:root[data-style='glas'] .en-bat-win__mode--manual .en-bat-win__mode-icon {
+  background: var(--g-blue);
+  color: var(--g-on-badge);
+}
+
+:root[data-style='glas'] .en-bat-win__mode--other .en-bat-win__mode-icon {
+  background: var(--g-fill-2);
+  color: var(--g-label);
+}
+
+:root[data-style='glas'] .en-bat-win__mode-name {
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__mode-hint {
   color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__check {
+  color: var(--g-accent-ink);
+}
+
+:root[data-style='glas'] .en-bat-win__note {
+  margin: 7px 16px 0;
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__note + .en-bat-win__note {
+  margin-top: 12px;
+}
+
+:root[data-style='glas'] .en-bat-win__note--warn {
+  color: var(--g-warn-ink);
+}
+
+/* the charge range */
+:root[data-style='glas'] .en-bat-win__usable {
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+
+:root[data-style='glas'] .en-bat-win__usable-name {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__usable-value {
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-style='glas'] .en-bat-range__zone--usable {
+  box-shadow: inset 0 0 0 1px var(--g-chart-battery-edge);
+}
+
+:root[data-style='glas'] .en-bat-slider {
+  position: relative;
+  gap: 2px;
+  padding: 12px 16px 10px;
+  border-top: 0;
+}
+
+:root[data-style='glas'] .en-bat-slider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 16px;
+  border-top: 0.5px solid var(--g-sep);
+}
+
+:root[data-style='glas'] .en-bat-slider__name {
+  color: var(--g-label);
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-slider__value {
+  color: var(--g-label-2);
+  font: 400 17px / 22px var(--g-font);
   font-weight: 400;
 }
 
-:root[data-style='glas'] :is(.en-bat-details__sub, .en-bat-details__hint) {
+/* the knob's centre runs from 14 to the width − 14, the fill ends there (--en-fill 0…1 from EnergyBatteryRange.tsx) */
+:root[data-style='glas'] .en-bat-slider__input {
+  --en-fill-ink: var(--en-battery);
+  height: 36px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-style='glas'] .en-bat-slider--reserve .en-bat-slider__input {
+  --en-fill-ink: var(--en-reserve);
+}
+
+:root[data-style='glas'] .en-bat-slider__input:disabled {
+  cursor: default;
+}
+
+:root[data-style='glas'] .en-bat-slider__input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--en-fill-ink) calc(14px + (100% - 28px) * var(--en-fill, 0)), var(--g-fill-2) 0);
+}
+
+:root[data-style='glas'] .en-bat-slider__input::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--g-fill-2);
+}
+
+:root[data-style='glas'] .en-bat-slider__input::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--en-fill-ink);
+}
+
+:root[data-style='glas'] .en-bat-slider__input::-webkit-slider-thumb {
+  width: 28px;
+  height: 28px;
+  margin-top: -11px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform 200ms var(--g-spring-snappy);
+}
+
+:root[data-style='glas'] .en-bat-slider__input::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-knob);
+  box-shadow: var(--g-shadow-knob);
+  transition: transform 200ms var(--g-spring-snappy);
+}
+
+/* while a finger or the pointer holds it the knob grows a little (§6.3) */
+:root[data-style='glas'] .en-bat-slider__input:not(:disabled):active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+:root[data-style='glas'] .en-bat-slider__input:not(:disabled):active::-moz-range-thumb {
+  transform: scale(1.12);
+}
+
+:root[data-style='glas'] .en-bat-slider__input:focus-visible {
+  border-radius: 18px;
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .en-bat-slider__ends {
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__status {
+  margin: 16px 16px 0;
   color: var(--g-label-2);
   font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__error {
+  margin: 16px 16px 0;
+  color: var(--g-red-ink);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__retry {
+  color: var(--g-accent-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* the question before a new mode: the question is the title, the text under it says what happens (like an iOS
+   alert's message: regular, centred, label2) */
+:root[data-style='glas'] .en-bat-win__confirm {
+  margin: 2px 4px 4px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .en-bat-slider__input:not(:disabled):active::-webkit-slider-thumb {
+    transform: none;
+  }
+
+  :root[data-style='glas'] .en-bat-slider__input:not(:disabled):active::-moz-range-thumb {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :root[data-style='glas'] .en-bat-range {
+    border: 1px solid CanvasText;
+  }
+
+  :root[data-style='glas'] .en-bat-range__zone--usable {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  /* the fill is a colour, which forced colours drop: the value shows in the system highlight (controls.css) */
+  :root[data-style='glas'] .en-bat-slider__input {
+    forced-color-adjust: none;
+  }
+
+  :root[data-style='glas'] .en-bat-slider__input::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, Highlight calc(14px + (100% - 28px) * var(--en-fill, 0)), GrayText 0);
+  }
+
+  :root[data-style='glas'] .en-bat-slider__input::-moz-range-track {
+    background: GrayText;
+  }
+
+  :root[data-style='glas'] .en-bat-slider__input::-moz-range-progress {
+    background: Highlight;
+  }
+
+  :root[data-style='glas'] .en-bat-slider__input::-webkit-slider-thumb {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    box-shadow: none;
+  }
+
+  :root[data-style='glas'] .en-bat-slider__input::-moz-range-thumb {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    box-shadow: none;
+  }
 }

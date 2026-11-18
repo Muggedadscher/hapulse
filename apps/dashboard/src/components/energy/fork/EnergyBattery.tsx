@@ -5,40 +5,40 @@
  * (`stat_soc`, `stat_rate`, `capacity` per battery; core `energyBatteryIds`); several batteries count as one, weighted by
  * capacity (core `combinedSoc`). With one battery of a known integration also its charge limit, reserve and mode
  * (plan PLAN-E4-AKKU.md, core `findBatteryDetails` over the entity registry): "full" at the limit, "reserve reached",
- * "lasts until about", a line under the state and the reserve in the chart. The charge and power are read only here
- * (narrow store selectors). Both styles; the look in EnergyBattery.css and styles/glas/energy.css.
+ * "lasts until about" and the reserve in the chart; "Details" opens the battery's window, where everyone can also set the
+ * three (E5, EnergyBatteryWindow.tsx). The chart takes the card's free height, so a card beside a taller one has no
+ * empty space under it; the line leaves out the sensors' whole-percent steps, which a tall chart would show as teeth.
+ * The charge and power are read only here (narrow store selectors). The look in
+ * EnergyBattery.css and styles/glas/energy.css.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Battery, ChevronRight, Zap } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { batteryDetails, batteryStatus, combinedSoc, combinedSocSeries, energyBatteryIds, findBatteryDetails, formatNumber, powerWatts } from '@hapulse/core';
-import type { BatteryDetails, BatteryState, BatteryStatus, EnergyBatteryIds, EnergyPreferences, HassEntityMap } from '@hapulse/core';
+import { batteryControls, batteryDetails, batteryStatus, combinedSoc, combinedSocSeries, energyBatteryIds, findBatteryDetails, formatNumber, powerWatts, simplifyLine } from '@hapulse/core';
+import type { BatteryControls, BatteryDetails, BatteryStatus, EnergyBatteryIds, EnergyPreferences, HassEntityMap } from '@hapulse/core';
 import { Card } from '../../ui/Card';
-import { Modal } from '../../ui/Modal';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useConnectionStore } from '../../../stores/connectionStore';
 import { getHistory } from '../../../ha/history';
-import { useLocale, useT, type TKey } from '../../../i18n/useT';
+import { useLocale, useT } from '../../../i18n/useT';
 import { CardHead } from './EnergyOrigin';
+import { BATTERY_STATE_KEY, BatteryRing } from './EnergyBatteryParts';
+import { EnergyBatteryWindow } from './EnergyBatteryWindow';
 import './EnergyNow.css';
 import './EnergyBattery.css';
 
 const STEP = 5 * 60_000;
 const RELOAD = 5 * 60_000;
+/** the chart's least height (without the hour labels); it grows with the card */
 const CHART_H = 96;
+const LABELS_H = 22;
+/** the line leaves out readings within this many percentage points of it: the sensors' whole-percent steps (core simplifyLine) */
+const LINE_TOLERANCE = 1.5;
 const AXIS_W = 44;
 /** [fork] with a reserve: room for its word in the axis column, and a regular label closer than this (points) is left out */
 const AXIS_W_RESERVE = 54;
 const RESERVE_TICK_GAP = 12;
-
-export const BATTERY_STATE_KEY: Record<BatteryState, TKey> = {
-  charging: 'energy.battery.charging',
-  discharging: 'energy.battery.discharging',
-  full: 'energy.battery.full',
-  reserve: 'energy.battery.reserve',
-  idle: 'energy.battery.idle',
-};
 
 /** Local midnight today and tomorrow (23 or 25 hours apart on a DST day). */
 function dayBounds(now: Date): [number, number] {
@@ -88,50 +88,23 @@ function useSocToday(soc: string[], capacities: number[] | null): Point[] | null
   return series;
 }
 
-function Ring({ value, size, stroke }: { value: number; size: number; stroke: number }) {
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const m = size / 2;
-  const p = Math.max(0, Math.min(100, value));
-  return (
-    <svg className="en-bat__ring-svg" width={size} height={size} aria-hidden="true">
-      <circle className="en-bat__ring-track" cx={m} cy={m} r={r} fill="none" strokeWidth={stroke} />
-      {p > 0 && (
-        <circle
-          className="en-bat__ring-fill"
-          cx={m}
-          cy={m}
-          r={r}
-          fill="none"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={`${(c * p) / 100} ${c}`}
-          transform={`rotate(-90 ${m} ${m})`}
-        />
-      )}
-    </svg>
-  );
-}
-
-/** The battery's ring for other places (the overview's battery line). */
-export function BatteryRing({ value, size = 20, stroke = 3 }: { value: number; size?: number; stroke?: number }) {
-  return <Ring value={value} size={size} stroke={stroke} />;
-}
-
 function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: number }[]; nowSoc: number | null; now: number; reserve: number | null }) {
   const t = useT();
   const locale = useLocale();
   const box = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
+  const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
     const el = box.current;
     if (!el) return undefined;
-    const read = () => setWidth(el.clientWidth);
+    // the box takes the card's free height (CSS); the drawing sits on it, so it never makes the box grow
+    const read = () => setSize((cur) => (cur.width === el.clientWidth && cur.height === el.clientHeight ? cur : { width: el.clientWidth, height: el.clientHeight }));
     read();
     const ro = new ResizeObserver(read);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  const { width } = size;
+  const chartH = Math.max(CHART_H, size.height - LABELS_H);
   const [start, end] = dayBounds(new Date(now));
   // today only: after midnight the last load is yesterday's until the next one
   const today = points.filter((p) => p.t >= start && p.t < now);
@@ -140,18 +113,19 @@ function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: nu
   const axisW = reserve === null ? AXIS_W : AXIS_W_RESERVE;
   const cw = Math.max(0, width - axisW);
   const x = (ms: number) => ((ms - start) / (end - start)) * cw;
-  const y = (v: number) => CHART_H - (Math.max(0, Math.min(100, v)) / 100) * CHART_H;
+  const y = (v: number) => chartH - (Math.max(0, Math.min(100, v)) / 100) * chartH;
   const pct = (v: number) => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(v / 100);
   const hour = new Intl.DateTimeFormat(locale, { hour: 'numeric' });
   const day = new Date(start);
   const ticks = [0, 6, 12, 18].map((h) => new Date(day.getFullYear(), day.getMonth(), day.getDate(), h).getTime());
   const last = all[all.length - 1];
-  const line = all.map((p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`);
+  const drawn = simplifyLine(all, LINE_TOLERANCE);
+  const line = drawn.map((p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`);
   const label = last ? t('energy.battery.chartAria', { value: pct(last.v) }) : t('energy.battery.noData');
   return (
     <div ref={box} className="en-bat__chart" role="img" aria-label={label}>
       {width > axisW && (
-        <svg width={width} height={CHART_H + 22} aria-hidden="true">
+        <svg width={width} height={chartH + LABELS_H} aria-hidden="true">
           {[0, 50, 100].map((p) => (
             <g key={p}>
               <line className={p ? 'en-bat__rule' : 'en-bat__rule en-bat__rule--base'} x1={0} x2={cw} y1={y(p)} y2={y(p)} />
@@ -173,16 +147,16 @@ function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: nu
           )}
           {last && line.length > 1 && (
             <>
-              <path className="en-bat__area" d={`M${x(all[0]!.t)},${CHART_H}L${line.join('L')}L${x(last.t)},${CHART_H}Z`} />
+              <path className="en-bat__area" d={`M${x(drawn[0]!.t)},${chartH}L${line.join('L')}L${x(last.t)},${chartH}Z`} />
               <path className="en-bat__line" d={`M${line.join('L')}`} />
             </>
           )}
           {last && x(last.t) + 4 < cw && (
-            <line className="en-bat__rest" x1={x(last.t) + 4} x2={cw} y1={CHART_H - 1.5} y2={CHART_H - 1.5} />
+            <line className="en-bat__rest" x1={x(last.t) + 4} x2={cw} y1={chartH - 1.5} y2={chartH - 1.5} />
           )}
           {last && <circle className="en-bat__dot" cx={x(last.t)} cy={y(last.v)} r={4} />}
           {ticks.map((ms) => (
-            <text key={ms} className="en-bat__tick" x={x(ms)} y={CHART_H + 18}>
+            <text key={ms} className="en-bat__tick" x={x(ms)} y={chartH + 18}>
               {hour.format(ms)}
             </text>
           ))}
@@ -196,8 +170,14 @@ export interface BatteryNow {
   ids: EnergyBatteryIds;
   /** charge limit, reserve and mode of the one battery, each null when unknown */
   details: BatteryDetails;
+  /** the same three with what the window needs to set them */
+  controls: BatteryControls;
   /** combined charge (%), null when a battery's charge is unknown */
   soc: number | null;
+  /** combined power (W, + = discharging), null without a reading of every battery */
+  power: number | null;
+  /** combined capacity (kWh), null unless every battery names one */
+  capacity: number | null;
   status: BatteryStatus | null;
   /** the state word is certain: there is power to tell it, or the battery is full or at its reserve */
   showState: boolean;
@@ -230,10 +210,11 @@ export function useBatteryNow(prefs: EnergyPreferences | null): BatteryNow | nul
   const now = new Date();
   const capacity = ids.capacities ? ids.capacities.reduce((a, b) => a + b, 0) : null;
   const details = batteryDetails(detailIds, map);
+  const controls = batteryControls(detailIds, map);
   const status = soc === null ? null : batteryStatus(soc, power, capacity, now, { full: details.chargeLimit, reserve: details.reserve });
   // without a power sensor only "full" and "reserve reached" are certain; the card does not claim "idle"
   const showState = !!status && (power !== null || status.state === 'full' || status.state === 'reserve');
-  return { ids, details, soc, status, showState };
+  return { ids, details, controls, soc, power, capacity, status, showState };
 }
 
 /** The card "Battery"; renders nothing without a charge sensor in Home Assistant's energy settings. */
@@ -242,30 +223,13 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
   const locale = useLocale();
   const battery = useBatteryNow(prefs);
   const series = useSocToday(battery?.ids.soc ?? [], battery?.ids.capacities ?? null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  // the window; a new key per opening starts its drafts from Home Assistant's values, `open` lets it leave animated
+  const [win, setWin] = useState({ key: 0, open: false });
   if (!battery) return null;
-  const { soc, status, showState, details } = battery;
+  const { soc, status, showState, details, controls } = battery;
   const now = new Date();
   const time = (ms: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(ms);
-  const pct = (v: number) => `${formatNumber(v, locale, { maxDecimals: 0 })} %`;
-  const mode = details.mode
-    ? details.mode.key === 'auto'
-      ? t('energy.battery.modeAuto')
-      : details.mode.key === 'manual'
-        ? t('energy.battery.modeManual')
-        : details.mode.raw
-    : null;
-  const hasDetails = mode !== null || details.chargeLimit !== null || details.reserve !== null;
-  const modeHint =
-    details.mode?.key === 'auto' ? t('energy.battery.hintModeAuto') : details.mode?.key === 'manual' ? t('energy.battery.hintModeManual') : null;
-  const rows: { key: string; label: string; value: string; hint: string | null }[] = [];
-  if (mode !== null) rows.push({ key: 'mode', label: t('energy.battery.rowMode'), value: mode, hint: modeHint });
-  if (details.chargeLimit !== null) {
-    rows.push({ key: 'limit', label: t('energy.battery.rowChargeLimit'), value: pct(details.chargeLimit), hint: t('energy.battery.hintChargeLimit') });
-  }
-  if (details.reserve !== null) {
-    rows.push({ key: 'reserve', label: t('energy.battery.rowReserve'), value: pct(details.reserve), hint: t('energy.battery.hintReserve') });
-  }
+  const hasDetails = !!(controls.mode || controls.chargeLimit || controls.reserve);
 
   return (
     <Card className="energy-battery en-card en-card--battery">
@@ -274,7 +238,7 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
         title={t('energy.battery.title')}
         action={
           hasDetails ? (
-            <button type="button" className="en-bat__more" aria-label={t('energy.battery.detailsAria')} onClick={() => setDetailsOpen(true)}>
+            <button type="button" className="en-bat__more" aria-label={t('energy.battery.detailsAria')} onClick={() => setWin((w) => ({ key: w.key + 1, open: true }))}>
               {t('energy.battery.details')}
               <ChevronRight size={14} strokeWidth={2} />
             </button>
@@ -283,7 +247,7 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
       />
       <div className="en-bat__head">
         <div className="en-bat__ring">
-          <Ring value={soc ?? 0} size={64} stroke={7} />
+          <BatteryRing value={soc ?? 0} size={64} stroke={7} />
           <span className="en-bat__glyph" aria-hidden="true">
             <Zap size={24} strokeWidth={2} />
           </span>
@@ -310,27 +274,7 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
       </div>
       <p className="en-bat__label">{t('energy.battery.today')}</p>
       <SocChart points={series ?? []} nowSoc={soc} now={now.getTime()} reserve={details.reserve} />
-      <Modal
-        open={detailsOpen}
-        onClose={() => setDetailsOpen(false)}
-        title={t('energy.battery.title')}
-        icon={<Battery size={18} strokeWidth={1.75} />}
-      >
-        <div className="en-bat-details">
-          <ul className="en-bat-details__list">
-            {rows.map((r) => (
-              <li key={r.key} className="en-bat-details__row">
-                <div className="en-bat-details__line">
-                  <span className="en-bat-details__label">{r.label}</span>
-                  <span className="en-bat-details__value">{r.value}</span>
-                </div>
-                {r.hint && <p className="en-bat-details__sub">{r.hint}</p>}
-              </li>
-            ))}
-          </ul>
-          <p className="en-bat-details__hint">{t('energy.battery.detailsHint')}</p>
-        </div>
-      </Modal>
+      {win.key > 0 && <EnergyBatteryWindow key={win.key} open={win.open} battery={battery} onClose={() => setWin((w) => ({ ...w, open: false }))} />}
     </Card>
   );
 }

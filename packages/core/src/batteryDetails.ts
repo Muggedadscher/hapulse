@@ -7,9 +7,14 @@
  * device hold the values, by the end of their `unique_id` (set by the integration, never translated; the same way as
  * systemMonitor.ts). Only the same device and the same integration count. Unknown integration, missing entity, a value
  * that is not a number, or more than one battery: that value is absent and the card behaves as without it.
+ *
+ * E5 (PLAN-E4-AKKU.md, second part): the battery's window sets the three. `batteryControls` adds what that needs (the
+ * entity, the range from the number's attributes, the select's options); `batterySlider` gives a slider its stops (the
+ * grid of the range plus the value Home Assistant has, which may lie off it) and keeps the reserve below the charge
+ * limit; `batteryWrites` turns a draft into Home Assistant calls in a safe order.
  */
 
-import type { HassEntityMap, Registries } from './types.js';
+import type { HassEntity, HassEntityMap, Registries } from './types.js';
 
 export type BatteryModeKey = 'auto' | 'manual';
 
@@ -105,4 +110,135 @@ export function batteryDetails(ids: BatteryDetailIds | null, entities: HassEntit
   const raw = ids?.mode ? entities[ids.mode]?.state : undefined;
   const mode = raw === undefined || NO_STATE.has(raw) ? null : { key: (ids && Object.hasOwn(ids.modes, raw) ? ids.modes[raw] : null) ?? null, raw };
   return { chargeLimit, reserve, mode };
+}
+
+// ---- E5: setting the three in the battery's window ----
+
+/** A setting's values: from `min` to `max` in steps of `step` counted from `min` (Home Assistant's number attributes). */
+export interface BatteryRange {
+  min: number;
+  max: number;
+  step: number;
+}
+
+export interface BatteryLimitControl {
+  entityId: string;
+  /** the value now (checked like batteryDetails) */
+  value: number;
+  /** null when the entity names no usable range: then it is shown, not set */
+  range: BatteryRange | null;
+}
+
+export interface BatteryModeOption {
+  /** the option as Home Assistant has it (what `select.select_option` takes) */
+  raw: string;
+  key: BatteryModeKey | null;
+}
+
+export interface BatteryModeControl {
+  entityId: string;
+  raw: string;
+  key: BatteryModeKey | null;
+  /** the select's options in its order; empty when it names none (then the mode is shown, not set) */
+  options: BatteryModeOption[];
+}
+
+export interface BatteryControls {
+  chargeLimit: BatteryLimitControl | null;
+  reserve: BatteryLimitControl | null;
+  mode: BatteryModeControl | null;
+}
+
+/** The range of a number entity from its attributes; null when min or max is missing or they make no range. */
+export function batteryRange(entity: HassEntity | undefined): BatteryRange | null {
+  const a = entity?.attributes;
+  if (!a) return null;
+  const min = a['min'];
+  const max = a['max'];
+  const step = a['step'] ?? 1;
+  if (typeof min !== 'number' || typeof max !== 'number' || typeof step !== 'number') return null;
+  if (![min, max, step].every(Number.isFinite) || min >= max || step <= 0) return null;
+  return { min, max, step };
+}
+
+/** The three with what the window needs to set them; a part is null where batteryDetails has no value. */
+export function batteryControls(ids: BatteryDetailIds | null, entities: HassEntityMap): BatteryControls {
+  const values = batteryDetails(ids, entities);
+  const limit = (id: string | null, value: number | null): BatteryLimitControl | null =>
+    id && value !== null ? { entityId: id, value, range: batteryRange(entities[id]) } : null;
+  let mode: BatteryModeControl | null = null;
+  if (ids?.mode && values.mode) {
+    const raw = entities[ids.mode]?.attributes['options'];
+    const keyOf = (o: string) => (Object.hasOwn(ids.modes, o) ? ids.modes[o] : null) ?? null;
+    const options = Array.isArray(raw) ? raw.filter((o): o is string => typeof o === 'string' && o !== '').map((o) => ({ raw: o, key: keyOf(o) })) : [];
+    mode = { entityId: ids.mode, raw: values.mode.raw, key: values.mode.key, options };
+  }
+  return {
+    chargeLimit: limit(ids?.chargeLimit ?? null, values.chargeLimit),
+    reserve: limit(ids?.reserve ?? null, values.reserve),
+    mode,
+  };
+}
+
+/** Float noise of the grid, in steps (steps like 0.1 do not add up exactly). */
+const EPS = 1e-6;
+const tidy = (v: number) => Math.round(v * 1e6) / 1e6;
+
+export interface BatterySlider {
+  /** the slider's stops in order: the grid of the entity's range and Home Assistant's value (which may lie off it) */
+  stops: number[];
+  /** the first and last stop (index) the slider may take now; the reserve stays below the charge limit, the limit above the reserve */
+  first: number;
+  last: number;
+}
+
+/**
+ * A slider for the charge limit or the reserve: its stops are the grid of the entity's range (`min` + k × `step` up to
+ * `max`) plus `keep`, Home Assistant's value — 98 % set in the battery's app stays reachable, and going back to it
+ * counts as untouched. `other` is the other value (the draft): only stops below the charge limit, or above the
+ * reserve, may be taken. Null when no stop is left to take.
+ */
+export function batterySlider(knob: 'chargeLimit' | 'reserve', range: BatteryRange, keep: number | null, other: number | null): BatterySlider | null {
+  const n = Math.floor((range.max - range.min) / range.step + EPS);
+  const grid = Array.from({ length: n + 1 }, (_, k) => tidy(range.min + k * range.step));
+  const stops = keep === null || grid.some((g) => Math.abs(g - keep) <= EPS) ? grid : [...grid, keep].sort((a, b) => a - b);
+  const ok = (v: number) => other === null || (knob === 'reserve' ? v < other - EPS : v > other + EPS);
+  const first = stops.findIndex(ok);
+  if (first < 0) return null;
+  let last = first;
+  while (last + 1 < stops.length && ok(stops[last + 1]!)) last++;
+  return { stops, first, last };
+}
+
+/** What the window would set; null = left as it is. */
+export interface BatteryDraft {
+  mode: string | null;
+  chargeLimit: number | null;
+  reserve: number | null;
+}
+
+export type BatteryWrite =
+  | { part: 'mode'; domain: 'select'; service: 'select_option'; entityId: string; data: { option: string } }
+  | { part: 'chargeLimit' | 'reserve'; domain: 'number'; service: 'set_value'; entityId: string; data: { value: number } };
+
+/**
+ * The calls that make Home Assistant match the draft, only for what differs: first the two limits, in the order that
+ * keeps the reserve below the charge limit in between — the reserve first when it fits under the limit now, else the
+ * limit (one of the two orders always works, since before and after are valid) — and the mode last: a switch of the
+ * mode takes the battery over from its app, so it comes after the harmless calls have shown the battery answers, and
+ * the new mode starts with the new limits.
+ */
+export function batteryWrites(controls: BatteryControls, draft: BatteryDraft): BatteryWrite[] {
+  const out: BatteryWrite[] = [];
+  const { mode, chargeLimit, reserve } = controls;
+  const write = (part: 'chargeLimit' | 'reserve', c: BatteryLimitControl | null, v: number | null): BatteryWrite | null =>
+    c && v !== null && Math.abs(v - c.value) > EPS ? { part, domain: 'number', service: 'set_value', entityId: c.entityId, data: { value: v } } : null;
+  const lim = write('chargeLimit', chargeLimit, draft.chargeLimit);
+  const res = write('reserve', reserve, draft.reserve);
+  const reserveFirst = res !== null && draft.reserve !== null && (chargeLimit === null || draft.reserve < chargeLimit.value);
+  for (const w of reserveFirst ? [res, lim] : [lim, res]) if (w) out.push(w);
+  if (mode && draft.mode !== null && draft.mode !== mode.raw) {
+    out.push({ part: 'mode', domain: 'select', service: 'select_option', entityId: mode.entityId, data: { option: draft.mode } });
+  }
+  return out;
 }
