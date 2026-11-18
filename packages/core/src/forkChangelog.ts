@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 75,
+    date: '2026-11-18',
+    title: { de: 'Akku: Fenster „Details“', en: 'Battery: “Details” window' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Die Karte „Batterie“ der Energie-Seite hat oben „Details“: ein Fenster mit Modus, „Laden bis“ und Reserve des Akkus, zum Ansehen',
+            en: 'The energy page’s “Battery” card has “Details” at the top: a window with the battery’s mode, “Charge up to” and reserve, to look at',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 74,
     date: '2026-11-18',
     title: { de: 'Akku: Ladegrenze, Reserve und Modus', en: 'Battery: charge limit, reserve and mode' },

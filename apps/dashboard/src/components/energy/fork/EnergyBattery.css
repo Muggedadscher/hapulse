@@ -69,18 +69,6 @@
   color: var(--warning);
 }
 
-/* mode, charge limit and reserve of a known battery integration (plan PLAN-E4-AKKU.md) */
-.en-bat__limits {
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 0.8125rem;
-  line-height: 1.125rem;
-}
-
-.en-bat__limit {
-  white-space: nowrap;
-}
-
 .en-bat__label {
   margin: 0.25rem 0 0;
   color: var(--en-label);
@@ -114,6 +102,7 @@
 .en-bat__reserve-line {
   stroke: var(--text-dim);
   stroke-width: 1px;
+  stroke-dasharray: 3 3;
 }
 
 .en-bat__reserve-label {
@@ -152,4 +141,85 @@
   .en-bat__dot {
     fill: LinkText;
   }
+}
+
+/* the "Details" link in the card head and its window: mode, charge limit and reserve, each with a line on what it means */
+.en-bat__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  min-height: 44px;
+  padding: 0.25rem 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 160ms ease-out;
+}
+
+.en-bat__more:hover {
+  opacity: 0.75;
+}
+
+.en-bat-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.en-bat-details__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.en-bat-details__row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.en-bat-details__row:first-child {
+  padding-top: 0;
+}
+
+.en-bat-details__row:last-child {
+  border-bottom: 0;
+}
+
+.en-bat-details__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.en-bat-details__label {
+  color: var(--text);
+  font-size: 0.9375rem;
+}
+
+.en-bat-details__value {
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.en-bat-details__sub {
+  margin: 2px 0 0;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-details__hint {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
 }

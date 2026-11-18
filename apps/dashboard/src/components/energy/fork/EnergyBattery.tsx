@@ -10,11 +10,12 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Battery, Zap } from 'lucide-react';
+import { Battery, ChevronRight, Zap } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { batteryDetails, batteryStatus, combinedSoc, combinedSocSeries, energyBatteryIds, findBatteryDetails, formatNumber, powerWatts } from '@hapulse/core';
 import type { BatteryDetails, BatteryState, BatteryStatus, EnergyBatteryIds, EnergyPreferences, HassEntityMap } from '@hapulse/core';
 import { Card } from '../../ui/Card';
+import { Modal } from '../../ui/Modal';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useConnectionStore } from '../../../stores/connectionStore';
 import { getHistory } from '../../../ha/history';
@@ -27,6 +28,9 @@ const STEP = 5 * 60_000;
 const RELOAD = 5 * 60_000;
 const CHART_H = 96;
 const AXIS_W = 44;
+/** [fork] with a reserve: room for its word in the axis column, and a regular label closer than this (points) is left out */
+const AXIS_W_RESERVE = 54;
+const RESERVE_TICK_GAP = 12;
 
 export const BATTERY_STATE_KEY: Record<BatteryState, TKey> = {
   charging: 'energy.battery.charging',
@@ -132,7 +136,9 @@ function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: nu
   // today only: after midnight the last load is yesterday's until the next one
   const today = points.filter((p) => p.t >= start && p.t < now);
   const all = nowSoc === null ? today : [...today, { t: now, v: nowSoc }];
-  const cw = Math.max(0, width - AXIS_W);
+  // the reserve's label sits in the axis column, which needs a little more room for the word
+  const axisW = reserve === null ? AXIS_W : AXIS_W_RESERVE;
+  const cw = Math.max(0, width - axisW);
   const x = (ms: number) => ((ms - start) / (end - start)) * cw;
   const y = (v: number) => CHART_H - (Math.max(0, Math.min(100, v)) / 100) * CHART_H;
   const pct = (v: number) => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(v / 100);
@@ -144,12 +150,12 @@ function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: nu
   const label = last ? t('energy.battery.chartAria', { value: pct(last.v) }) : t('energy.battery.noData');
   return (
     <div ref={box} className="en-bat__chart" role="img" aria-label={label}>
-      {width > AXIS_W && (
+      {width > axisW && (
         <svg width={width} height={CHART_H + 22} aria-hidden="true">
           {[0, 50, 100].map((p) => (
             <g key={p}>
               <line className={p ? 'en-bat__rule' : 'en-bat__rule en-bat__rule--base'} x1={0} x2={cw} y1={y(p)} y2={y(p)} />
-              {p > 0 && (
+              {p > 0 && (reserve === null || Math.abs(p - reserve) >= RESERVE_TICK_GAP) && (
                 <text className="en-bat__tick" x={cw + 6} y={y(p) + 4}>
                   {pct(p)}
                 </text>
@@ -159,8 +165,8 @@ function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: nu
           {reserve !== null && (
             <g className="en-bat__reserve">
               <line className="en-bat__reserve-line" x1={0} x2={cw} y1={y(reserve)} y2={y(reserve)} />
-              {/* at the day's end, where the chart is still empty */}
-              <text className="en-bat__reserve-label" x={cw - 4} y={y(reserve) - 4} textAnchor="end">
+              {/* in the axis column like the other lines' labels */}
+              <text className="en-bat__reserve-label" x={cw + 6} y={y(reserve) + 4}>
                 {t('energy.battery.reserveLine')}
               </text>
             </g>
@@ -236,6 +242,7 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
   const locale = useLocale();
   const battery = useBatteryNow(prefs);
   const series = useSocToday(battery?.ids.soc ?? [], battery?.ids.capacities ?? null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   if (!battery) return null;
   const { soc, status, showState, details } = battery;
   const now = new Date();
@@ -248,15 +255,32 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
         ? t('energy.battery.modeManual')
         : details.mode.raw
     : null;
-  const limits = [
-    mode,
-    details.chargeLimit !== null ? t('energy.battery.chargeLimit', { value: pct(details.chargeLimit) }) : null,
-    details.reserve !== null ? t('energy.battery.reserveAt', { value: pct(details.reserve) }) : null,
-  ].filter((x): x is string => !!x);
+  const hasDetails = mode !== null || details.chargeLimit !== null || details.reserve !== null;
+  const modeHint =
+    details.mode?.key === 'auto' ? t('energy.battery.hintModeAuto') : details.mode?.key === 'manual' ? t('energy.battery.hintModeManual') : null;
+  const rows: { key: string; label: string; value: string; hint: string | null }[] = [];
+  if (mode !== null) rows.push({ key: 'mode', label: t('energy.battery.rowMode'), value: mode, hint: modeHint });
+  if (details.chargeLimit !== null) {
+    rows.push({ key: 'limit', label: t('energy.battery.rowChargeLimit'), value: pct(details.chargeLimit), hint: t('energy.battery.hintChargeLimit') });
+  }
+  if (details.reserve !== null) {
+    rows.push({ key: 'reserve', label: t('energy.battery.rowReserve'), value: pct(details.reserve), hint: t('energy.battery.hintReserve') });
+  }
 
   return (
     <Card className="energy-battery en-card en-card--battery">
-      <CardHead icon={<Battery size={16} strokeWidth={1.75} />} title={t('energy.battery.title')} />
+      <CardHead
+        icon={<Battery size={16} strokeWidth={1.75} />}
+        title={t('energy.battery.title')}
+        action={
+          hasDetails ? (
+            <button type="button" className="en-bat__more" aria-label={t('energy.battery.detailsAria')} onClick={() => setDetailsOpen(true)}>
+              {t('energy.battery.details')}
+              <ChevronRight size={14} strokeWidth={2} />
+            </button>
+          ) : undefined
+        }
+      />
       <div className="en-bat__head">
         <div className="en-bat__ring">
           <Ring value={soc ?? 0} size={64} stroke={7} />
@@ -280,22 +304,33 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
                   {status.until !== null && <> · {t('energy.battery.lastsUntil', { time: time(status.until) })}</>}
                 </p>
               )}
-              {limits.length > 0 && (
-                <p className="en-bat__limits">
-                  {limits.map((text, i) => (
-                    <React.Fragment key={text}>
-                      {i > 0 && ' · '}
-                      <span className="en-bat__limit">{text}</span>
-                    </React.Fragment>
-                  ))}
-                </p>
-              )}
             </>
           )}
         </div>
       </div>
       <p className="en-bat__label">{t('energy.battery.today')}</p>
       <SocChart points={series ?? []} nowSoc={soc} now={now.getTime()} reserve={details.reserve} />
+      <Modal
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        title={t('energy.battery.title')}
+        icon={<Battery size={18} strokeWidth={1.75} />}
+      >
+        <div className="en-bat-details">
+          <ul className="en-bat-details__list">
+            {rows.map((r) => (
+              <li key={r.key} className="en-bat-details__row">
+                <div className="en-bat-details__line">
+                  <span className="en-bat-details__label">{r.label}</span>
+                  <span className="en-bat-details__value">{r.value}</span>
+                </div>
+                {r.hint && <p className="en-bat-details__sub">{r.hint}</p>}
+              </li>
+            ))}
+          </ul>
+          <p className="en-bat-details__hint">{t('energy.battery.detailsHint')}</p>
+        </div>
+      </Modal>
     </Card>
   );
 }

@@ -429,7 +429,7 @@
   font: 600 17px / 22px var(--g-font);
 }
 
-:root[data-style='glas'] .energy-page :is(.en-now__name, .en-now__does, .en-bat__sub, .en-bat__label, .en-bat__limits) {
+:root[data-style='glas'] .energy-page :is(.en-now__name, .en-now__does, .en-bat__sub, .en-bat__label) {
   color: var(--g-label-2);
   font: 400 13px / 18px var(--g-font);
 }
@@ -469,13 +469,64 @@
   font-family: var(--g-font);
 }
 
-/* the reserve in the chart (draft v5): a solid hairline with its label in label2 */
+/* the reserve in the chart: a dashed hairline, its label in the axis column in label2 */
 :root[data-style='glas'] .energy-page .en-bat__reserve-line {
   stroke: var(--g-label-2);
   stroke-width: 1px;
+  stroke-dasharray: 3 3;
 }
 
 :root[data-style='glas'] .energy-page .en-bat__reserve-label {
   fill: var(--g-label-2);
   font: 400 11px var(--g-font);
+}
+
+/* the battery card's "Details" link: like the links of the overview cards (home.css) */
+:root[data-style='glas'] .energy-page .en-bat__more {
+  flex: none;
+  gap: 2px;
+  margin-left: auto;
+  padding: 0 0 0 12px;
+  border-radius: 999px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .energy-page .en-bat__more:hover {
+    opacity: 1;
+  }
+}
+
+:root[data-style='glas'] .energy-page .en-bat__more:active {
+  opacity: 0.55;
+}
+
+:root[data-style='glas'] .energy-page .en-bat__more > svg {
+  flex: none;
+  stroke-width: 2.25;
+}
+
+:root[data-style='glas'] .en-bat-details__row {
+  border-bottom-color: var(--g-sep);
+}
+
+:root[data-style='glas'] :is(.en-bat-details__label, .en-bat-details__value) {
+  color: var(--g-label);
+  font-family: var(--g-font);
+  font-size: 17px;
+  line-height: 22px;
+}
+
+:root[data-style='glas'] .en-bat-details__value {
+  color: var(--g-label-2);
+  font-weight: 400;
+}
+
+:root[data-style='glas'] :is(.en-bat-details__sub, .en-bat-details__hint) {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
 }

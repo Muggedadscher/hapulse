@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F75 — 2026-11-18
+
+**Akku: Fenster „Details“** · _Battery: “Details” window_
+
+### Neu / Added
+
+- Die Karte „Batterie“ der Energie-Seite hat oben „Details“: ein Fenster mit Modus, „Laden bis“ und Reserve des Akkus, zum Ansehen  
+  _The energy page’s “Battery” card has “Details” at the top: a window with the battery’s mode, “Charge up to” and reserve, to look at_
+
 ## F74 — 2026-11-18
 
 **Akku: Ladegrenze, Reserve und Modus** · _Battery: charge limit, reserve and mode_
