@@ -64,8 +64,12 @@ export function findBatteryDetails(
   const profile = profiles.find((p) => onDevice.some((e) => e.platform === p.platform));
   if (!profile) return null;
   const mine = onDevice.filter((e) => e.platform === profile.platform);
-  const pick = (end: string | undefined, domain: string) =>
-    (end && mine.find((e) => e.entity_id.startsWith(`${domain}.`) && (e.unique_id ?? '').endsWith(end))?.entity_id) || null;
+  // exactly one match; two entities with the same ending would be a guess
+  const pick = (end: string | undefined, domain: string) => {
+    if (!end) return null;
+    const hits = mine.filter((e) => e.entity_id.startsWith(`${domain}.`) && (e.unique_id ?? '').endsWith(end));
+    return hits.length === 1 ? (hits[0]?.entity_id ?? null) : null;
+  };
   const ids: BatteryDetailIds = {
     chargeLimit: pick(profile.chargeLimit, 'number'),
     reserve: pick(profile.reserve, 'number'),
@@ -99,6 +103,6 @@ export function batteryDetails(ids: BatteryDetailIds | null, entities: HassEntit
   const res = num(ids?.reserve ?? null);
   const reserve = res !== null && res >= 0 && res < (chargeLimit ?? 100) ? res : null;
   const raw = ids?.mode ? entities[ids.mode]?.state : undefined;
-  const mode = raw === undefined || NO_STATE.has(raw) ? null : { key: ids?.modes[raw] ?? null, raw };
+  const mode = raw === undefined || NO_STATE.has(raw) ? null : { key: (ids && Object.hasOwn(ids.modes, raw) ? ids.modes[raw] : null) ?? null, raw };
   return { chargeLimit, reserve, mode };
 }

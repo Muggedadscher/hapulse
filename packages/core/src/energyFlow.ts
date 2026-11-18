@@ -442,7 +442,7 @@ const AT_LIMIT_IDLE = 1.5;
 
 /**
  * The battery's state from its charge (%) and power (W, positive = discharging). "Full" from half a point below the
- * charge limit (without one 100 %; with one also 1.5 points below while it rests), unless it discharges; "reserve
+ * charge limit (without one 100 %; with one also 1.5 points below while it rests, which needs a power reading), unless it discharges; "reserve
  * reached" the same way above the reserve, unless it charges. The times need the usable capacity (kWh) and at least
  * 50 W: charging to the charge limit, discharging to the reserve (none without a reserve: a battery stops at its own
  * discharge limit, so "lasts until" would be late).
@@ -461,8 +461,10 @@ export function batteryStatus(
   const full = limit ?? 100;
   const reserve = limits?.reserve ?? null;
   const none = { at: null, until: null };
-  if (!discharging && (soc >= full - 0.5 || (limit !== null && !charging && soc >= full - AT_LIMIT_IDLE))) return { state: 'full', ...none };
-  if (reserve !== null && !charging && (soc <= reserve + 0.5 || (!discharging && soc <= reserve + AT_LIMIT_IDLE))) {
+  // resting is known only with a power reading, and only when the two bands cannot meet
+  const resting = powerW !== null && !charging && !discharging && (reserve === null || full - reserve > 2 * AT_LIMIT_IDLE);
+  if (!discharging && (soc >= full - 0.5 || (limit !== null && resting && soc >= full - AT_LIMIT_IDLE))) return { state: 'full', ...none };
+  if (reserve !== null && !charging && (soc <= reserve + 0.5 || (resting && soc <= reserve + AT_LIMIT_IDLE))) {
     return { state: 'reserve', ...none };
   }
   if (!charging && !discharging) return { state: 'idle', ...none };
@@ -471,7 +473,10 @@ export function batteryStatus(
   const time = (points: number) => {
     if (!capacityKWh || capacityKWh <= 0 || points <= 0) return null;
     const hours = ((points / 100) * capacityKWh) / (Math.abs(p) / 1000);
-    return hours <= 24 ? Math.round((now.getTime() + hours * 3600_000) / 900_000) * 900_000 : null;
+    if (hours > 24) return null;
+    // never a quarter hour that has passed: at least the next one
+    const q = Math.round((now.getTime() + hours * 3600_000) / 900_000) * 900_000;
+    return Math.max(q, Math.ceil(now.getTime() / 900_000) * 900_000);
   };
   return charging
     ? { state: 'charging', at: time(full - soc), until: null }

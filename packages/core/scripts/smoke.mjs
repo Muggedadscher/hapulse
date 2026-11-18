@@ -2499,6 +2499,12 @@ console.log('\n── energy origins, power, battery ──');
     assertEqual(batteryStatus(40, 512, 5.12, t0, { full: 98 }).until, null, 'battery: discharging without a reserve → no time');
     assertEqual(batteryStatus(40, 512, null, t0, lim).until, null, 'battery: discharging without capacity → no time');
     assertEqual(batteryStatus(90, 60, 5.12, t0, lim).until, null, 'battery: lasting more than 24 h → no time');
+    assertEqual(batteryStatus(96.6, null, 5.12, t0, lim).state, 'idle', 'battery: no power reading a point below the limit → not full (could be charging)');
+    assertEqual(batteryStatus(11.4, null, 5.12, t0, lim).state, 'idle', 'battery: no power reading a point above the reserve → not reserve');
+    assertEqual(batteryStatus(97.6, null, 5.12, t0, lim).state, 'full', 'battery: no power reading at the limit → full');
+    assertEqual(batteryStatus(49, 0, 5.12, t0, { full: 50, reserve: 48 }).state, 'idle', 'battery: limit and reserve close together → no resting bands');
+    b = batteryStatus(11, 3000, 5.12, at(2026, 10, 21, 14, 6), lim);
+    assertEqual(b.until, at(2026, 10, 21, 14, 15).getTime(), 'battery: a minute left → the next quarter hour, never a past one');
     // [fork] E4: charge limit, reserve and mode from the entity registry (aecc_battery profile)
     const reg = (id, platform, device, uid, extra = {}) => ({ entity_id: id, area_id: null, device_id: device, entity_category: null, hidden_by: null, disabled_by: null, original_name: null, icon: null, platform, unique_id: uid, ...extra });
     const regs = { areas: [], devices: [], entities: [
@@ -2520,6 +2526,8 @@ console.log('\n── energy origins, power, battery ──');
     assertEqual(findBatteryDetails(tpl, ['sensor.bat_soc'], ['sensor.bat_power_inverted'])?.reserve, 'number.bat_discharge_limit',
       'battery details: a charge sensor without device → the power sensor\'s device');
     assertEqual(findBatteryDetails(tpl, ['sensor.bat_soc']), null, 'battery details: no device at all → none');
+    const twin = { ...regs, entities: [...regs.entities, reg('number.bat_backup_max_soc', 'aecc_battery', 'd1', 'SN1_backup_max_soc')] };
+    assertEqual(findBatteryDetails(twin, ['sensor.bat_soc'])?.chargeLimit, null, 'battery details: two entities with the same ending → none of them');
     const st = (v) => ({ state: v, attributes: {}, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null } });
     let bd = batteryDetails(det, { 'number.bat_charge_limit': st('98'), 'number.bat_discharge_limit': st('10'), 'select.bat_work_mode': st('Custom / Manual') });
     assertEqual(JSON.stringify(bd), JSON.stringify({ chargeLimit: 98, reserve: 10, mode: { key: 'manual', raw: 'Custom / Manual' } }), 'battery details: values and the mode named');
@@ -2527,6 +2535,7 @@ console.log('\n── energy origins, power, battery ──');
     assertEqual(JSON.stringify(bd), JSON.stringify({ chargeLimit: null, reserve: 10, mode: { key: null, raw: 'Peak Shaving' } }), 'battery details: unavailable → absent, an unknown mode as it is');
     assertEqual(batteryDetails(det, { 'number.bat_charge_limit': st('40'), 'number.bat_discharge_limit': st('50') }).reserve, null,
       'battery details: a reserve not below the charge limit → absent');
+    assertEqual(batteryDetails(det, { 'select.bat_work_mode': st('toString') }).mode?.key, null, 'battery details: an option named like an object key → no key');
     assertEqual(JSON.stringify(batteryDetails(null, {})), JSON.stringify({ chargeLimit: null, reserve: null, mode: null }), 'battery details: no ids → nothing');
     // several batteries: charge weighted by capacity, else the mean; one unknown → none
     assert(near(combinedSoc([50, 100], [10, 5]), 200 / 3), 'combined charge: weighted by capacity');
