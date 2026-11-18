@@ -429,7 +429,7 @@
   font: 600 17px / 22px var(--g-font);
 }
 
-:root[data-style='glas'] .energy-page :is(.en-now__name, .en-now__does, .en-bat__sub, .en-bat__label) {
+:root[data-style='glas'] .energy-page :is(.en-now__name, .en-now__does, .en-bat__sub, .en-bat__label, .en-bat__limits) {
   color: var(--g-label-2);
   font: 400 13px / 18px var(--g-font);
 }
@@ -449,7 +449,11 @@
   font-weight: 600;
 }
 
-:root[data-style='glas'] .energy-page .en-bat__state:not(.en-bat__state--charging, .en-bat__state--full) {
+:root[data-style='glas'] .energy-page .en-bat__state--reserve {
+  color: var(--g-warn-ink);
+}
+
+:root[data-style='glas'] .energy-page .en-bat__state:not(.en-bat__state--charging, .en-bat__state--full, .en-bat__state--reserve) {
   color: var(--g-label);
 }
 
@@ -463,4 +467,15 @@
 
 :root[data-style='glas'] .energy-page .en-bat__tick {
   font-family: var(--g-font);
+}
+
+/* the reserve in the chart (draft v5): a solid hairline with its label in label2 */
+:root[data-style='glas'] .energy-page .en-bat__reserve-line {
+  stroke: var(--g-label-2);
+  stroke-width: 1px;
+}
+
+:root[data-style='glas'] .energy-page .en-bat__reserve-label {
+  fill: var(--g-label-2);
+  font: 400 11px var(--g-font);
 }

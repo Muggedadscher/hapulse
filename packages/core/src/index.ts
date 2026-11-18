@@ -319,8 +319,11 @@ export type {
   EnergyNowSentence,
   BatteryState,
   BatteryStatus,
+  BatteryLimits,
   EnergyBatteryIds,
 } from './energyFlow.js';
+export { BATTERY_PROFILES, findBatteryDetails, batteryDetails } from './batteryDetails.js';
+export type { BatteryProfile, BatteryDetailIds, BatteryDetails, BatteryModeKey } from './batteryDetails.js';
 export { SIZE_PRESETS, sizePresetOf, sizeOfPreset, tallKey, withTall } from './sizePresets.js';
 export type { SizePreset, SectionSize } from './sizePresets.js';
 export { roomGlances, lightPercent, climateTone } from './roomGlance.js';

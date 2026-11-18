@@ -175,6 +175,8 @@ import {
   energyPowerNow,
   energyNowSentence,
   batteryStatus,
+  findBatteryDetails,
+  batteryDetails,
   energyBatteryIds,
   combinedSoc,
   combinedSocSeries,
@@ -2468,7 +2470,7 @@ console.log('\n── energy origins, power, battery ──');
     let b = batteryStatus(70.5, -1200, 5.12, t0);
     assertEqual(`${b.state} ${day(b.at)}`, 'charging Oct 21 2026 16:30', 'battery: draft v5 → full at about 16:30');
     b = batteryStatus(40, 500, 5.12, t0);
-    assertEqual(`${b.state} ${b.at}`, 'discharging null', 'battery: discharging → no time (the reserve is unknown)');
+    assertEqual(`${b.state} ${b.at} ${b.until}`, 'discharging null null', 'battery: discharging → no time (the reserve is unknown)');
     assertEqual(batteryStatus(100, -30, 5.12, t0).state, 'full', 'battery: 100 % → full');
     assertEqual(batteryStatus(100, 400, 5.12, t0).state, 'discharging', 'battery: 100 % but discharging → discharging');
     assertEqual(batteryStatus(55, 20, 5.12, t0).state, 'idle', 'battery: under 50 W → idle');
@@ -2477,6 +2479,64 @@ console.log('\n── energy origins, power, battery ──');
     // the repeated hour at DST end keeps its instant: 01:45 CEST + 1 h = 02:45 CEST (00:45Z), not 02:45 CET
     b = batteryStatus(50, -2560, 5.12, new Date(Date.UTC(2026, 9, 24, 23, 45)));
     assertEqual(new Date(b.at).toISOString(), '2026-10-25T00:45:00.000Z', 'battery: quarter hour in the repeated hour');
+    // [fork] E4: the battery's own charge limit and reserve
+    const lim = { full: 98, reserve: 10 };
+    assertEqual(batteryStatus(97.6, -30, 5.12, t0, lim).state, 'full', 'battery: half a point below the charge limit → full');
+    assertEqual(batteryStatus(96.6, -30, 5.12, t0, lim).state, 'full', 'battery: resting a point below the charge limit → full');
+    assertEqual(batteryStatus(96.6, -400, 5.12, t0, lim).state, 'charging', 'battery: charging a point below the charge limit → charging');
+    assertEqual(batteryStatus(96.4, -30, 5.12, t0, lim).state, 'idle', 'battery: below the charge limit and idle → idle');
+    assertEqual(batteryStatus(99.4, -30, 5.12, t0).state, 'idle', 'battery: without a charge limit as before (99.5 %)');
+    assertEqual(batteryStatus(98, 300, 5.12, t0, lim).state, 'discharging', 'battery: at the charge limit but discharging → discharging');
+    b = batteryStatus(70.5, -1200, 5.12, t0, lim);
+    assertEqual(`${b.state} ${day(b.at)}`, 'charging Oct 21 2026 16:15', 'battery: full at about counts to the charge limit');
+    assertEqual(batteryStatus(10.4, 0, 5.12, t0, lim).state, 'reserve', 'battery: at the reserve → reserve reached');
+    assertEqual(batteryStatus(10.4, 80, 5.12, t0, lim).state, 'reserve', 'battery: at the reserve and still discharging → reserve reached');
+    assertEqual(batteryStatus(11.4, 0, 5.12, t0, lim).state, 'reserve', 'battery: resting a point above the reserve → reserve reached');
+    assertEqual(batteryStatus(11.4, 300, 5.12, t0, lim).state, 'discharging', 'battery: discharging a point above the reserve → discharging');
+    assertEqual(batteryStatus(10.4, -400, 5.12, t0, lim).state, 'charging', 'battery: at the reserve but charging → charging');
+    b = batteryStatus(40, 512, 5.12, t0, lim);
+    assertEqual(`${b.state} ${b.at} ${day(b.until)}`, 'discharging null Oct 21 2026 18:15', 'battery: lasts until about counts to the reserve');
+    assertEqual(batteryStatus(40, 512, 5.12, t0, { full: 98 }).until, null, 'battery: discharging without a reserve → no time');
+    assertEqual(batteryStatus(40, 512, null, t0, lim).until, null, 'battery: discharging without capacity → no time');
+    assertEqual(batteryStatus(90, 60, 5.12, t0, lim).until, null, 'battery: lasting more than 24 h → no time');
+    assertEqual(batteryStatus(96.6, null, 5.12, t0, lim).state, 'idle', 'battery: no power reading a point below the limit → not full (could be charging)');
+    assertEqual(batteryStatus(11.4, null, 5.12, t0, lim).state, 'idle', 'battery: no power reading a point above the reserve → not reserve');
+    assertEqual(batteryStatus(97.6, null, 5.12, t0, lim).state, 'full', 'battery: no power reading at the limit → full');
+    assertEqual(batteryStatus(49, 0, 5.12, t0, { full: 50, reserve: 48 }).state, 'idle', 'battery: limit and reserve close together → no resting bands');
+    b = batteryStatus(11, 3000, 5.12, at(2026, 10, 21, 14, 6), lim);
+    assertEqual(b.until, at(2026, 10, 21, 14, 15).getTime(), 'battery: a minute left → the next quarter hour, never a past one');
+    // [fork] E4: charge limit, reserve and mode from the entity registry (aecc_battery profile)
+    const reg = (id, platform, device, uid, extra = {}) => ({ entity_id: id, area_id: null, device_id: device, entity_category: null, hidden_by: null, disabled_by: null, original_name: null, icon: null, platform, unique_id: uid, ...extra });
+    const regs = { areas: [], devices: [], entities: [
+      reg('sensor.bat_soc', 'aecc_battery', 'd1', 'SN1_soc'),
+      reg('number.bat_charge_limit', 'aecc_battery', 'd1', 'SN1_max_soc'),
+      reg('number.bat_discharge_limit', 'aecc_battery', 'd1', 'SN1_min_soc'),
+      reg('select.bat_work_mode', 'aecc_battery', 'd1', 'SN1_work_mode'),
+      reg('number.other_max_soc', 'aecc_battery', 'd2', 'SN2_max_soc'),
+      reg('sensor.bat_power_inverted', 'energy', 'd1', 'x_max_soc'),
+    ] };
+    const det = findBatteryDetails(regs, ['sensor.bat_soc']);
+    assertEqual(`${det.chargeLimit} ${det.reserve} ${det.mode}`, 'number.bat_charge_limit number.bat_discharge_limit select.bat_work_mode',
+      'battery details: the profile finds the three on the same device and integration');
+    assertEqual(findBatteryDetails(regs, ['sensor.bat_soc', 'sensor.x']), null, 'battery details: more than one battery → none');
+    assertEqual(findBatteryDetails(regs, ['sensor.unknown']), null, 'battery details: charge sensor without registry entry → none');
+    assertEqual(findBatteryDetails({ ...regs, entities: regs.entities.map((e) => ({ ...e, platform: 'other' })) }, ['sensor.bat_soc']), null,
+      'battery details: unknown integration → none');
+    const tpl = { ...regs, entities: [...regs.entities.slice(1), reg('sensor.bat_soc', 'template', null, 't1')] };
+    assertEqual(findBatteryDetails(tpl, ['sensor.bat_soc'], ['sensor.bat_power_inverted'])?.reserve, 'number.bat_discharge_limit',
+      'battery details: a charge sensor without device → the power sensor\'s device');
+    assertEqual(findBatteryDetails(tpl, ['sensor.bat_soc']), null, 'battery details: no device at all → none');
+    const twin = { ...regs, entities: [...regs.entities, reg('number.bat_backup_max_soc', 'aecc_battery', 'd1', 'SN1_backup_max_soc')] };
+    assertEqual(findBatteryDetails(twin, ['sensor.bat_soc'])?.chargeLimit, null, 'battery details: two entities with the same ending → none of them');
+    const st = (v) => ({ state: v, attributes: {}, last_changed: '', last_updated: '', context: { id: '', parent_id: null, user_id: null } });
+    let bd = batteryDetails(det, { 'number.bat_charge_limit': st('98'), 'number.bat_discharge_limit': st('10'), 'select.bat_work_mode': st('Custom / Manual') });
+    assertEqual(JSON.stringify(bd), JSON.stringify({ chargeLimit: 98, reserve: 10, mode: { key: 'manual', raw: 'Custom / Manual' } }), 'battery details: values and the mode named');
+    bd = batteryDetails(det, { 'number.bat_charge_limit': st('unavailable'), 'number.bat_discharge_limit': st('10'), 'select.bat_work_mode': st('Peak Shaving') });
+    assertEqual(JSON.stringify(bd), JSON.stringify({ chargeLimit: null, reserve: 10, mode: { key: null, raw: 'Peak Shaving' } }), 'battery details: unavailable → absent, an unknown mode as it is');
+    assertEqual(batteryDetails(det, { 'number.bat_charge_limit': st('40'), 'number.bat_discharge_limit': st('50') }).reserve, null,
+      'battery details: a reserve not below the charge limit → absent');
+    assertEqual(batteryDetails(det, { 'select.bat_work_mode': st('toString') }).mode?.key, null, 'battery details: an option named like an object key → no key');
+    assertEqual(JSON.stringify(batteryDetails(null, {})), JSON.stringify({ chargeLimit: null, reserve: null, mode: null }), 'battery details: no ids → nothing');
     // several batteries: charge weighted by capacity, else the mean; one unknown → none
     assert(near(combinedSoc([50, 100], [10, 5]), 200 / 3), 'combined charge: weighted by capacity');
     assert(near(combinedSoc([50, 100], null), 75), 'combined charge: without capacities the mean');

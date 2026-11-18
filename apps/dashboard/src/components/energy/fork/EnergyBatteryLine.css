@@ -44,3 +44,8 @@
   font-weight: 600;
 }
 
+.en-batline__state--reserve {
+  color: var(--warning);
+  font-weight: 600;
+}
+

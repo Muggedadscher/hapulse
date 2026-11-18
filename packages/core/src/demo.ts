@@ -244,6 +244,12 @@ export const DEMO_REGISTRIES: Registries = {
     { entity_id: 'sensor.bedroom_sensor_battery', area_id: null, device_id: 'dev_br_sensor', entity_category: 'diagnostic', hidden_by: null, disabled_by: null, original_name: 'Bedroom Sensor Battery', icon: null },
     ...demoHeatingRegistryEntries(), // [fork] heating plan in the living room (heatingPlanDemo.ts)
     ...demoHumidifierRegistryEntries(), // [fork] dehumidifier in the bathroom (humidifierDemo.ts)
+    // [fork] the home battery's charge limit, reserve and mode (aecc_battery profile, core batteryDetails.ts); a device id
+    // without a device entry, so no device list shows it
+    { entity_id: 'sensor.demo_battery_soc', area_id: null, device_id: 'dev_demo_battery', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Battery State of Charge', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_soc' },
+    { entity_id: 'number.demo_battery_charge_limit', area_id: null, device_id: 'dev_demo_battery', entity_category: 'config', hidden_by: null, disabled_by: null, original_name: 'Charge limit', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_max_soc' },
+    { entity_id: 'number.demo_battery_discharge_limit', area_id: null, device_id: 'dev_demo_battery', entity_category: 'config', hidden_by: null, disabled_by: null, original_name: 'Discharge limit', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_min_soc' },
+    { entity_id: 'select.demo_battery_work_mode', area_id: null, device_id: 'dev_demo_battery', entity_category: 'config', hidden_by: null, disabled_by: null, original_name: 'Work mode', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_work_mode' },
   ] as EntityRegistryEntry[]).map(withDemoPlatform),
 };
 
@@ -783,7 +789,7 @@ function demoWasteSensors(): HassEntityMap {
 /**
  * [fork] Power sensors and the battery's charge of the demo's energy preferences (DEMO_ENERGY_PREFS `stat_rate`,
  * `stat_soc`): a sunny afternoon like draft v5 — solar 2.1 kW, the home 0.6 kW, the battery charging with 1.2 kW at
- * 71 %, 0.3 kW exported.
+ * 71 % up to its charge limit of 98 % (reserve 10 %, mode automatic), 0.3 kW exported.
  */
 function demoEnergyEntities(): HassEntityMap {
   const e = (id: string, state: string, attributes: HassEntityAttributes) => ({ [id]: makeEntity(id, state, attributes) });
@@ -794,6 +800,10 @@ function demoEnergyEntities(): HassEntityMap {
     ...e('sensor.demo_battery_power', '-1200', power('Battery Power')),
     // no device_class 'battery': the System page would list the home battery among the device batteries
     ...e('sensor.demo_battery_soc', '71', { unit_of_measurement: '%', state_class: 'measurement', friendly_name: 'Battery State of Charge' }),
+    // the battery's own limits and mode (registry entries above, platform aecc_battery)
+    ...e('number.demo_battery_charge_limit', '98', { unit_of_measurement: '%', min: 50, max: 100, step: 5, mode: 'box', friendly_name: 'Charge limit' }),
+    ...e('number.demo_battery_discharge_limit', '10', { unit_of_measurement: '%', min: 5, max: 50, step: 5, mode: 'box', friendly_name: 'Discharge limit' }),
+    ...e('select.demo_battery_work_mode', 'Self-Consumption (AI)', { options: ['Self-Consumption (AI)', 'Custom / Manual'], friendly_name: 'Work mode' }),
   };
 }
 

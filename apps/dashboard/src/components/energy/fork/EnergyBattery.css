@@ -64,6 +64,23 @@
   color: var(--en-battery-ink);
 }
 
+/* at the reserve (draft v5: warnInk) */
+.en-bat__state--reserve {
+  color: var(--warning);
+}
+
+/* mode, charge limit and reserve of a known battery integration (plan PLAN-E4-AKKU.md) */
+.en-bat__limits {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat__limit {
+  white-space: nowrap;
+}
+
 .en-bat__label {
   margin: 0.25rem 0 0;
   color: var(--en-label);
@@ -92,6 +109,16 @@
 .en-bat__tick {
   fill: var(--en-label);
   font-size: 12px;
+}
+
+.en-bat__reserve-line {
+  stroke: var(--text-dim);
+  stroke-width: 1px;
+}
+
+.en-bat__reserve-label {
+  fill: var(--en-label);
+  font-size: 11px;
 }
 
 .en-bat__area {
