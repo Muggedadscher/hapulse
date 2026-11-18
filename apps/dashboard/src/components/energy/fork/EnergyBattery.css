@@ -728,7 +728,7 @@
   border-top: 0;
 }
 
-.en-bat-times__note--warn {
+.sched__note.en-bat-times__note--warn {
   color: var(--warning);
 }
 

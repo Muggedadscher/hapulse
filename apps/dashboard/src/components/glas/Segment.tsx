@@ -92,7 +92,8 @@ export function Segment<V extends string>({
       if (!opts[0] || !cs) return;
       const font = `600 ${cs.fontSize} ${cs.fontFamily}`;
       const need = Math.max(...opts.map((o) => textWidth(o.textContent ?? '', font)));
-      const room = opts[0].getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      // the layout width, not the drawn one: a window that grows open from its button (scale) is not too narrow
+      const room = opts[0].offsetWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       el.toggleAttribute('data-tight', need + 1 > room); // 1 px slack: the canvas and the text may round apart
     };
     fit();

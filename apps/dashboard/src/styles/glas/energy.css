@@ -931,7 +931,7 @@
   content: none;
 }
 
-:root[data-style='glas'] .en-bat-times__note--warn {
+:root[data-style='glas'] .sched__note.en-bat-times__note--warn {
   color: var(--g-warn-ink);
 }
 
