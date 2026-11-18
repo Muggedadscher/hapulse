@@ -13,10 +13,32 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Battery, ChevronRight, Zap } from 'lucide-react';
+import { Battery, ChevronRight, CircleAlert, Zap } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { batteryControls, batteryDetails, batteryStatus, combinedSoc, combinedSocSeries, energyBatteryIds, findBatteryDetails, formatNumber, powerWatts, simplifyLine } from '@hapulse/core';
-import type { BatteryControls, BatteryDetails, BatteryStatus, EnergyBatteryIds, EnergyPreferences, HassEntityMap } from '@hapulse/core';
+import {
+  batteryControls,
+  batteryDetails,
+  batteryPlanMismatch,
+  batteryStatus,
+  batterySteer,
+  combinedSoc,
+  combinedSocSeries,
+  energyBatteryIds,
+  findBatteryDetails,
+  formatNumber,
+  powerWatts,
+  simplifyLine,
+} from '@hapulse/core';
+import type {
+  BatteryControls,
+  BatteryDetailIds,
+  BatteryDetails,
+  BatteryStatus,
+  BatterySteer,
+  EnergyBatteryIds,
+  EnergyPreferences,
+  HassEntityMap,
+} from '@hapulse/core';
 import { Card } from '../../ui/Card';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useConnectionStore } from '../../../stores/connectionStore';
@@ -168,6 +190,8 @@ function SocChart({ points, nowSoc, now, reserve }: { points: { t: number; v: nu
 
 export interface BatteryNow {
   ids: EnergyBatteryIds;
+  /** the one battery's entities of a known integration (core findBatteryDetails), null without */
+  detailIds: BatteryDetailIds | null;
   /** charge limit, reserve and mode of the one battery, each null when unknown */
   details: BatteryDetails;
   /** the same three with what the window needs to set them */
@@ -181,6 +205,40 @@ export interface BatteryNow {
   status: BatteryStatus | null;
   /** the state word is certain: there is power to tell it, or the battery is full or at its reserve */
   showState: boolean;
+  /** [fork] E5b: the power setpoint and HAPulse's plan, null without a setpoint entity */
+  steer: BatterySteer | null;
+  /** the names of other schedules that set the same setpoint */
+  rivalNames: string[];
+  /** the plan runs and the setpoint has not had the running time's value for a while (MISMATCH_MS) */
+  mismatch: boolean;
+}
+
+/** How long the setpoint may differ from the running time before the card and the window say so: the battery takes a
+ *  new value within seconds, the integration retries a failed write for up to half a minute. */
+const MISMATCH_MS = 45_000;
+
+const NO_SCHEDULES: HassEntityMap = {};
+
+/** The scheduler's schedules (`switch.schedule_*`): HAPulse's plan and other schedules that may set the setpoint. */
+function scheduleEntities(entities: HassEntityMap): HassEntityMap {
+  const out: HassEntityMap = {};
+  for (const id in entities) if (id.startsWith('switch.schedule_')) out[id] = entities[id]!;
+  return out;
+}
+
+/** True once `flag` has held MISMATCH_MS after `since` (ms); renders again when that time comes. */
+function useLastingSince(flag: boolean, since: number): boolean {
+  const [, setTick] = useState(0);
+  const left = since + MISMATCH_MS - Date.now();
+  const waiting = flag && left > 0;
+  useEffect(() => {
+    if (!waiting) return undefined;
+    const timer = window.setTimeout(() => setTick((n) => n + 1), left + 100);
+    return () => window.clearTimeout(timer);
+    // `left` only while waiting: a new render must not restart the timer
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waiting, since]);
+  return flag && !waiting;
 }
 
 /**
@@ -191,9 +249,30 @@ export function useBatteryNow(prefs: EnergyPreferences | null): BatteryNow | nul
   const ids = useMemo(() => energyBatteryIds(prefs), [prefs]);
   const registries = useEntityStore((s) => s.registries);
   const detailIds = useMemo(() => findBatteryDetails(registries, ids?.soc, ids?.power), [registries, ids]);
-  const extra = useMemo(() => (detailIds ? [detailIds.chargeLimit, detailIds.reserve, detailIds.mode].filter((id): id is string => !!id) : []), [detailIds]);
+  const extra = useMemo(
+    () => (detailIds ? [detailIds.chargeLimit, detailIds.reserve, detailIds.mode, detailIds.setpoint].filter((id): id is string => !!id) : []),
+    [detailIds],
+  );
   const all = useMemo(() => (ids ? [...ids.soc, ...ids.power, ...extra] : []), [ids, extra]);
   const states = useEntityStore(useShallow((s) => all.map((id) => s.entities[id])));
+  // [fork] E5b: the schedules only with a setpoint to steer (a shallow map: a change elsewhere renders nothing)
+  const setpointId = detailIds?.setpoint ?? null;
+  const schedules = useEntityStore(useShallow((s) => (setpointId ? scheduleEntities(s.entities) : NO_SCHEDULES)));
+  const steerMap = useMemo(() => {
+    const m: HassEntityMap = { ...schedules };
+    all.forEach((id, i) => {
+      const e = states[i];
+      if (e) m[id] = e;
+    });
+    return m;
+  }, [schedules, all, states]);
+  const steer = useMemo(() => batterySteer(setpointId, steerMap), [setpointId, steerMap]);
+  // the mismatch counts from the later change of the setpoint and the plan (a new slot), so it shows at once when the
+  // window opens long after
+  const planEntity = steer?.plan ? steerMap[steer.plan.entityId] : undefined;
+  const setpointEntity = setpointId ? steerMap[setpointId] : undefined;
+  const since = Math.max(Date.parse(setpointEntity?.last_updated ?? '') || 0, Date.parse(planEntity?.last_updated ?? '') || 0);
+  const mismatch = useLastingSince(batteryPlanMismatch(steer), since);
   if (!ids || ids.soc.some((_, i) => !states[i])) return null;
   const map: HassEntityMap = {};
   all.forEach((id, i) => {
@@ -214,7 +293,11 @@ export function useBatteryNow(prefs: EnergyPreferences | null): BatteryNow | nul
   const status = soc === null ? null : batteryStatus(soc, power, capacity, now, { full: details.chargeLimit, reserve: details.reserve });
   // without a power sensor only "full" and "reserve reached" are certain; the card does not claim "idle"
   const showState = !!status && (power !== null || status.state === 'full' || status.state === 'reserve');
-  return { ids, details, controls, soc, power, capacity, status, showState };
+  const rivalNames = (steer?.rivals ?? []).map((id) => {
+    const name = steerMap[id]?.attributes['friendly_name'];
+    return typeof name === 'string' && name ? name : id;
+  });
+  return { ids, detailIds, details, controls, soc, power, capacity, status, showState, steer, rivalNames, mismatch };
 }
 
 /** The card "Battery"; renders nothing without a charge sensor in Home Assistant's energy settings. */
@@ -226,10 +309,11 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
   // the window; a new key per opening starts its drafts from Home Assistant's values, `open` lets it leave animated
   const [win, setWin] = useState({ key: 0, open: false });
   if (!battery) return null;
-  const { soc, status, showState, details, controls } = battery;
+  const { soc, status, showState, details, controls, steer, mismatch } = battery;
   const now = new Date();
   const time = (ms: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(ms);
-  const hasDetails = !!(controls.mode || controls.chargeLimit || controls.reserve);
+  const hasDetails = !!(controls.mode || controls.chargeLimit || controls.reserve || steer);
+  const openWindow = () => setWin((w) => ({ key: w.key + 1, open: true }));
 
   return (
     <Card className="energy-battery en-card en-card--battery">
@@ -238,7 +322,7 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
         title={t('energy.battery.title')}
         action={
           hasDetails ? (
-            <button type="button" className="en-bat__more" aria-label={t('energy.battery.detailsAria')} onClick={() => setWin((w) => ({ key: w.key + 1, open: true }))}>
+            <button type="button" className="en-bat__more" aria-label={t('energy.battery.detailsAria')} onClick={openWindow}>
               {t('energy.battery.details')}
               <ChevronRight size={14} strokeWidth={2} />
             </button>
@@ -272,6 +356,14 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
           )}
         </div>
       </div>
+      {/* [fork] E5b: the battery has not taken the plan's running time; the window says more and can send it again */}
+      {mismatch && hasDetails && (
+        <button type="button" className="en-bat__alert" onClick={openWindow}>
+          <CircleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
+          <span>{t('energy.battery.mismatch')}</span>
+          <ChevronRight className="en-bat__alert-chevron" size={14} strokeWidth={2} aria-hidden="true" />
+        </button>
+      )}
       <p className="en-bat__label">{t('energy.battery.today')}</p>
       <SocChart points={series ?? []} nowSoc={soc} now={now.getTime()} reserve={details.reserve} />
       {win.key > 0 && <EnergyBatteryWindow key={win.key} open={win.open} battery={battery} onClose={() => setWin((w) => ({ ...w, open: false }))} />}

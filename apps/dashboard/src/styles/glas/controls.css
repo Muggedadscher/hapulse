@@ -100,6 +100,34 @@
   font-weight: 600;
 }
 
+/* [fork] The battery's window (E5b): Permanent | Schedule, Idle | Charge | Discharge — like the pool mode: track 44,
+   lens 38, text 15/20, the chosen one 600 label, the others 400 label2. */
+:root[data-style='glas'] .g-seg--battery {
+  --g-seg-h: 44px;
+  --g-seg-inset: 0px;
+  --g-seg-pad: 3px;
+}
+
+:root[data-style='glas'] .g-seg--battery .g-seg__opt {
+  padding: 0 8px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .g-seg--battery .g-seg__opt[aria-checked='true'] {
+  color: var(--g-label);
+  font-weight: 600;
+}
+
+/* [fork] A segment shown, not changed (a window while it saves, a battery that cannot be reached) */
+:root[data-style='glas'] .g-seg[aria-disabled='true'] {
+  opacity: 0.45;
+}
+
+:root[data-style='glas'] .g-seg__opt:disabled {
+  cursor: default;
+}
+
 /* Grid | list of the music zones (K92): symbols, each option 44 wide; hit area 44, visible track 32, lens 28 like the
    energy period. */
 :root[data-style='glas'] .g-seg--view {

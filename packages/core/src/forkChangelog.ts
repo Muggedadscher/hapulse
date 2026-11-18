@@ -40,7 +40,7 @@ export const FORK_RELEASES: ForkRelease[] = [
   {
     version: 75,
     date: '2026-11-18',
-    title: { de: 'Akku: Fenster mit Modus und Ladebereich', en: 'Battery: window with mode and charge range' },
+    title: { de: 'Akku: Fenster mit Modus, Ladebereich und Steuerung', en: 'Battery: window with mode, charge range and control' },
     sections: [
       {
         kind: 'added',
@@ -52,6 +52,18 @@ export const FORK_RELEASES: ForkRelease[] = [
           {
             de: 'Dort lassen sich Modus, „Laden bis“ und Reserve auch einstellen (Regler wie in iOS, ✓ speichert); ein neuer Modus fragt vorher, denn Home Assistant übernimmt dann die Steuerung von der App der Batterie',
             en: 'The mode, “Charge up to” and the reserve can be set there too (sliders like in iOS, ✓ saves); a new mode asks first, since Home Assistant then takes over control from the battery’s app',
+          },
+          {
+            de: 'Bei „Manuell“ steuert HAPulse die Batterie selbst: dauerhaft (Ruhen, Laden oder Entladen mit einer Leistung) oder nach einem täglichen Zeitplan, den Home Assistant schaltet; die Zeiten stellt man am 24-Stunden-Ring ein wie beim Heizplan, Laden grün, Entladen orange',
+            en: 'With “Manual” HAPulse steers the battery itself: permanently (idle, charge or discharge with a power) or on a daily schedule that Home Assistant switches; the times are set on the 24-hour ring like the heating plan’s, charging green, discharging orange',
+          },
+          {
+            de: 'Beim Entladen sagt das Fenster, dass ohne Strommesser ins Netz geht, was das Haus nicht verbraucht, beim Laden, dass auch Strom aus dem Netz kommt',
+            en: 'When discharging the window says that without a power meter whatever the house does not use goes into the grid, when charging that power also comes from the grid',
+          },
+          {
+            de: 'Hat die Batterie die laufende Zeit des Zeitplans nicht übernommen, sagen es Karte und Fenster, mit „Erneut senden“',
+            en: 'If the battery has not taken the schedule’s current time, the card and the window say so, with “Send again”',
           },
         ],
       },

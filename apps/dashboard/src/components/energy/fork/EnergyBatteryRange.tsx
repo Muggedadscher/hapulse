@@ -8,7 +8,8 @@
  * a native range input whose positions are the stops of core `batterySlider` (the grid of the entity's range plus
  * Home Assistant's value), so pointer, keys and screen readers move from stop to stop and the value reads as "98 %".
  * Stops the other value blocks (the reserve stays below the limit) cannot be taken: the slider stays at the last free
- * one. Without a slider (no range) the row shows the value only.
+ * one. Without a slider (no range) the row shows the value only. The same row sets the power of a command or of a
+ * plan's time (E5b): its stops are core batteryPowerStops.
  */
 
 import type { CSSProperties } from 'react';
@@ -26,7 +27,8 @@ export function BatteryRangeBar({ reserve, chargeLimit }: { reserve: number | nu
 }
 
 interface BatteryLimitSliderProps {
-  kind: 'chargeLimit' | 'reserve';
+  /** the two limits (E5), or the power of a command or a plan's time (E5b: charge green, discharge orange) */
+  kind: 'chargeLimit' | 'reserve' | 'charge' | 'discharge';
   label: string;
   /** the value shown (the draft, else Home Assistant's) */
   value: number;

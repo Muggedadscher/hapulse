@@ -494,3 +494,273 @@
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
+
+.en-bat-slider--charge .en-bat-slider__input {
+  accent-color: var(--positive);
+}
+
+.en-bat-slider--discharge .en-bat-slider__input {
+  accent-color: var(--warning);
+}
+
+/* ---- E5b: the steering (EnergyBatteryControl.tsx), the times page (EnergyBatteryTimesPage.tsx) and the card's
+   warning. Klassisch only works (plan E5 "nur Glas"): plain radio buttons, a row, a bar. ---- */
+.en-bat-choice {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+}
+
+.en-bat-choice__opt {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.en-bat-choice__opt[aria-checked='true'] {
+  background: var(--bg-raised);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.en-bat-choice__opt:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.en-bat-choice__opt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* "Permanent | Schedule" over the group */
+.en-bat-ctl__how {
+  display: flex;
+}
+
+.en-bat-ctl__how > * {
+  flex: 1;
+}
+
+.en-bat-ctl {
+  display: flex;
+  flex-direction: column;
+}
+
+.en-bat-ctl__kind {
+  padding: 12px 14px;
+}
+
+.en-bat-ctl__times {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.en-bat-ctl__times:disabled {
+  cursor: default;
+}
+
+.en-bat-ctl__times:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.en-bat-ctl__times-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.en-bat-ctl__times-name {
+  font-size: 0.9375rem;
+}
+
+.en-bat-ctl__times-sum {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-ctl__chevron {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.en-bat-ctl__day {
+  padding: 4px 14px 12px;
+}
+
+/* the plan's row and day: the row's hover stays within the group's corners */
+.en-bat-ctl--plan {
+  overflow: hidden;
+}
+
+/* the plan's day: charging green, discharging orange, now as a mark with a dot (like the heating plan's day bar) */
+.en-bat-day__track {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--bg-subtle);
+}
+
+.en-bat-day__part {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
+}
+
+.en-bat-day__part--charge {
+  background: var(--positive);
+}
+
+.en-bat-day__part--discharge {
+  background: var(--warning);
+}
+
+.en-bat-day__now {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--text);
+}
+
+.en-bat-day__now::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+.en-bat-day__ticks {
+  position: relative;
+  height: 1rem;
+  margin-top: 0.25rem;
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.en-bat-day__ticks > span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.en-bat-day__ticks > span:nth-child(1) {
+  left: 0;
+  transform: none;
+}
+
+.en-bat-day__ticks > span:nth-child(2) {
+  left: 25%;
+}
+
+.en-bat-day__ticks > span:nth-child(3) {
+  left: 50%;
+}
+
+.en-bat-day__ticks > span:nth-child(4) {
+  left: 75%;
+}
+
+.en-bat-day__ticks > span:nth-child(5) {
+  right: 0;
+  transform: none;
+}
+
+/* a warning with its button (the plan not taken, the battery not reachable, the plan still on) */
+.en-bat-win__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--warning);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.en-bat-win__alert > svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.en-bat-win__retry:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* the times page: the chosen time's way and power under its fields */
+.en-bat-times__extra {
+  margin-top: 12px;
+}
+
+.en-bat-times__extra .en-bat-slider:first-child {
+  border-top: 0;
+}
+
+.en-bat-times__note--warn {
+  color: var(--warning);
+}
+
+/* the card: the battery has not taken the running time; opens the window */
+.en-bat__alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.en-bat__alert > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.en-bat__alert > svg {
+  flex: none;
+}
+
+.en-bat__alert:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

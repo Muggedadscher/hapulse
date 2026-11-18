@@ -251,6 +251,8 @@ export const DEMO_REGISTRIES: Registries = {
     { entity_id: 'number.demo_battery_charge_limit', area_id: null, device_id: 'dev_demo_battery', entity_category: 'config', hidden_by: null, disabled_by: null, original_name: 'Charge limit', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_max_soc' },
     { entity_id: 'number.demo_battery_discharge_limit', area_id: null, device_id: 'dev_demo_battery', entity_category: 'config', hidden_by: null, disabled_by: null, original_name: 'Discharge limit', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_min_soc' },
     { entity_id: 'select.demo_battery_work_mode', area_id: null, device_id: 'dev_demo_battery', entity_category: 'config', hidden_by: null, disabled_by: null, original_name: 'Work mode', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_work_mode' },
+    // [fork] the signed power setpoint (E5b): + charges, − discharges, 0 rests
+    { entity_id: 'number.demo_battery_power_setpoint', area_id: null, device_id: 'dev_demo_battery', entity_category: null, hidden_by: null, disabled_by: null, original_name: 'Power Setpoint', icon: null, platform: 'aecc_battery', unique_id: 'demo_battery_signed_power_setpoint' },
   ] as EntityRegistryEntry[]).map(withDemoPlatform),
 };
 
@@ -805,6 +807,8 @@ function demoEnergyEntities(): HassEntityMap {
     ...e('number.demo_battery_charge_limit', '98', { unit_of_measurement: '%', min: 50, max: 100, step: 5, mode: 'box', friendly_name: 'Charge limit' }),
     ...e('number.demo_battery_discharge_limit', '10', { unit_of_measurement: '%', min: 5, max: 50, step: 5, mode: 'box', friendly_name: 'Discharge limit' }),
     ...e('select.demo_battery_work_mode', 'Self-Consumption (AI)', { options: ['Self-Consumption (AI)', 'Custom / Manual'], friendly_name: 'Work mode' }),
+    // the command HAPulse steers in the manual mode (controlsDemo.ts: a write puts the battery in it, the automatic mode clears it)
+    ...e('number.demo_battery_power_setpoint', '0', { unit_of_measurement: 'W', device_class: 'power', min: -800, max: 800, step: 1, mode: 'box', friendly_name: 'Power Setpoint' }),
   };
 }
 

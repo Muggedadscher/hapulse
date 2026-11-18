@@ -139,6 +139,18 @@
     "langs": "all",
     "reason": "follows the battery's state on the same line (\"Entlädt · reicht bis ca. 6:45\")"
   },
+  "energy.battery.planNowIdle": {
+    "langs": "all",
+    "reason": "follows the number of times on the same line (\"2 Zeiten · jetzt Ruhen bis 18:00\")"
+  },
+  "energy.battery.planNowCharge": {
+    "langs": "all",
+    "reason": "follows the number of times on the same line (\"2 Zeiten · jetzt Laden 400 W bis 6:00\")"
+  },
+  "energy.battery.planNowDischarge": {
+    "langs": "all",
+    "reason": "follows the number of times on the same line (\"2 Zeiten · jetzt Entladen 200 W bis 22:00\")"
+  },
   "glas.energy.chartAriaStackedGridBattery": {
     "langs": [
       "en",

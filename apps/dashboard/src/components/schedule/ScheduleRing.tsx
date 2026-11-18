@@ -6,6 +6,8 @@
  * keys, steps of five minutes, never across its other end or a neighbour: @hapulse/core timePeriods.ts). A tap on
  * another arc chooses that period. The middle shows how long the chosen period lasts.
  *
+ * An arc may carry a class of its own (`arcClass`: the battery plan's charging and discharging times).
+ *
  * The drawing is SVG; the knobs and the middle are HTML on top, so they take the focus ring and the shadow of the
  * style. The arcs are for the pointer only: the time fields under the ring choose and set the same periods by keys.
  * Where both knobs lie on each other (a whole day, a few minutes), the first move of a drag picks the knob
@@ -44,15 +46,17 @@ export interface ScheduleRingText {
   empty: string;
 }
 
-interface ScheduleRingProps {
-  periods: readonly TimePeriod[];
+interface ScheduleRingProps<P extends TimePeriod> {
+  periods: readonly P[];
   /** The period with the knobs. */
   selected: number;
   onSelect: (index: number) => void;
-  onChange: (periods: TimePeriod[]) => void;
+  onChange: (periods: P[]) => void;
   text: ScheduleRingText;
   /** While a save runs: shown, not moved. */
   disabled?: boolean;
+  /** A class for one period's arc (the battery's plan: charging green, discharging orange). */
+  arcClass?: ((index: number) => string | undefined) | undefined;
 }
 
 /** Ticks every half hour, longer every hour, the longest at 0, 6, 12 and 18. */
@@ -67,7 +71,7 @@ const LABELS = [0, 6, 12, 18].map((h) => {
   return { h, x, y };
 });
 
-export function ScheduleRing({ periods: blocks, selected, onSelect, onChange, text, disabled = false }: ScheduleRingProps) {
+export function ScheduleRing<P extends TimePeriod>({ periods: blocks, selected, onSelect, onChange, text, disabled = false, arcClass }: ScheduleRingProps<P>) {
   const locale = useLocale();
   const ringRef = useRef<HTMLDivElement>(null);
   const knobRefs = useRef<Record<PeriodEdge, HTMLDivElement | null>>({ from: null, to: null });
@@ -177,10 +181,11 @@ export function ScheduleRing({ periods: blocks, selected, onSelect, onChange, te
         {blocks.map((b, i) => {
           const from = periodMinutes(b.from);
           const to = periodMinutes(b.to);
+          const extra = arcClass?.(i);
           return (
             <path
               key={`${b.from}-${b.to}`}
-              className={`sched-ring__arc${i === selected ? ' sched-ring__arc--selected' : ''}`}
+              className={`sched-ring__arc${i === selected ? ' sched-ring__arc--selected' : ''}${extra ? ` ${extra}` : ''}`}
               d={ringArcPath(from, Math.min(to, DAY), C, R)}
               onClick={i === selected || disabled ? undefined : () => onSelect(i)}
             />

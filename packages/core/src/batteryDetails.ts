@@ -27,6 +27,8 @@ export interface BatteryProfile {
   reserve?: string;
   /** `unique_id` ending of the operating mode (`select`) */
   mode?: string;
+  /** `unique_id` ending of the signed power setpoint (`number`, W: plus charges, minus discharges; E5b) */
+  setpoint?: string;
   /** the mode's options HAPulse names; any other is shown as Home Assistant reports it */
   modes?: Record<string, BatteryModeKey>;
 }
@@ -38,6 +40,8 @@ export const BATTERY_PROFILES: readonly BatteryProfile[] = [
     chargeLimit: '_max_soc',
     reserve: '_min_soc',
     mode: '_work_mode',
+    // the full ending: the deprecated unsigned power ends in `_power_setpoint` too
+    setpoint: '_signed_power_setpoint',
     modes: { 'Self-Consumption (AI)': 'auto', 'Custom / Manual': 'manual' },
   },
 ];
@@ -46,6 +50,8 @@ export interface BatteryDetailIds {
   chargeLimit: string | null;
   reserve: string | null;
   mode: string | null;
+  /** the power setpoint (E5b); with it HAPulse can steer the battery in the manual mode */
+  setpoint: string | null;
   modes: Record<string, BatteryModeKey>;
 }
 
@@ -79,9 +85,10 @@ export function findBatteryDetails(
     chargeLimit: pick(profile.chargeLimit, 'number'),
     reserve: pick(profile.reserve, 'number'),
     mode: pick(profile.mode, 'select'),
+    setpoint: pick(profile.setpoint, 'number'),
     modes: profile.modes ?? {},
   };
-  return ids.chargeLimit || ids.reserve || ids.mode ? ids : null;
+  return ids.chargeLimit || ids.reserve || ids.mode || ids.setpoint ? ids : null;
 }
 
 export interface BatteryDetails {

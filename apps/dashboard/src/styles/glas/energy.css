@@ -812,6 +812,152 @@
   text-align: center;
 }
 
+/* ---- E5b: the steering (EnergyBatteryControl.tsx, plan PLAN-E4-AKKU.md E5b §2). "Permanent | Schedule" as a segment
+   44 over the group (like the pool mode), in the group the way (Idle | Charge | Discharge, 16 inset) and the power as
+   a slider like "Charge to" (charging filled green, discharging orange). The schedule: a row 60 "Times" with its summary
+   13/18 label2 and the chevron in label3, under it the day 10 with radius 5 (charging green, discharging orange, now
+   in label with a dot) and the hours 12/16 label2. Warnings in the warn ink with their button in the accent ink. The
+   times page: the chosen time's way and power in a group of its own under its fields. The card: the warning as a row
+   in warn-soft that opens the window. ---- */
+:root[data-style='glas'] .en-bat-ctl__how {
+  margin: 0 0 12px;
+}
+
+:root[data-style='glas'] .en-bat-ctl__kind {
+  padding: 12px 16px;
+}
+
+:root[data-style='glas'] .en-bat-slider--charge .en-bat-slider__input {
+  --en-fill-ink: var(--g-green);
+}
+
+:root[data-style='glas'] .en-bat-slider--discharge .en-bat-slider__input {
+  --en-fill-ink: var(--g-orange);
+}
+
+:root[data-style='glas'] .en-bat-ctl__times {
+  position: relative;
+  gap: 12px;
+  min-height: 60px;
+  padding: 9px 16px;
+  color: var(--g-label);
+  font-family: var(--g-font);
+  transition: background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .en-bat-ctl__times:not(:disabled):hover {
+    background: var(--g-hover);
+  }
+}
+
+:root[data-style='glas'] .en-bat-ctl__times:not(:disabled):active {
+  background: var(--g-hover);
+}
+
+:root[data-style='glas'] .en-bat-ctl__times:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: -2px;
+}
+
+:root[data-style='glas'] .en-bat-ctl__times-name {
+  font: 400 17px / 22px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-ctl__times-sum {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-ctl__chevron {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .en-bat-ctl__day {
+  padding: 2px 16px 14px;
+}
+
+:root[data-style='glas'] .en-bat-day__track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--g-fill);
+}
+
+:root[data-style='glas'] .en-bat-day__part--charge {
+  background: var(--g-green);
+}
+
+:root[data-style='glas'] .en-bat-day__part--discharge {
+  background: var(--g-orange);
+}
+
+:root[data-style='glas'] .en-bat-day__now,
+:root[data-style='glas'] .en-bat-day__now::before {
+  background: var(--g-label);
+}
+
+:root[data-style='glas'] .en-bat-day__now::before {
+  top: -3px;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+}
+
+:root[data-style='glas'] .en-bat-day__ticks {
+  height: 16px;
+  margin-top: 4px;
+  color: var(--g-label-2);
+  font: 400 12px / 16px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__alert {
+  gap: 6px;
+  margin: 12px 16px 0;
+  color: var(--g-warn-ink);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .en-bat-win__retry:disabled {
+  opacity: 0.5;
+}
+
+/* the times page (EnergyBatteryTimesPage.tsx): portaled out of the window, so the fills are named here */
+:root[data-style='glas'] .en-bat-times__extra {
+  margin-top: 12px;
+}
+
+:root[data-style='glas'] .en-bat-times__extra .en-bat-slider:first-child::before {
+  content: none;
+}
+
+:root[data-style='glas'] .en-bat-times__note--warn {
+  color: var(--g-warn-ink);
+}
+
+/* the card's warning (EnergyBattery.tsx) */
+:root[data-style='glas'] .energy-page .en-bat__alert {
+  gap: 8px;
+  margin: 2px 0 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--g-warn-soft);
+  color: var(--g-warn-ink);
+  font: 400 13px / 18px var(--g-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .energy-page .en-bat__alert:hover {
+    background-image: linear-gradient(var(--g-hover), var(--g-hover));
+  }
+}
+
+:root[data-style='glas'] .energy-page .en-bat__alert:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root[data-style='glas'] .en-bat-slider__input:not(:disabled):active::-webkit-slider-thumb {
     transform: none;

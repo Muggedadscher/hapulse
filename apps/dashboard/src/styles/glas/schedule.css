@@ -346,6 +346,28 @@
   background: var(--g-hover);
 }
 
+/* [fork] The battery's plan (EnergyBatteryTimesPage, plan PLAN-E4-AKKU.md E5b): charging green, discharging orange;
+   the tone (chosen time, start knob) follows the chosen time, each arc its own way. */
+:root[data-style='glas'] .sched--charge {
+  --sched-g-tone: var(--g-green);
+  --sched-g-ink: var(--g-green-ink);
+  --sched-g-soft: var(--g-green-soft);
+}
+
+:root[data-style='glas'] .sched--discharge {
+  --sched-g-tone: var(--g-orange);
+  --sched-g-ink: var(--g-orange-ink);
+  --sched-g-soft: var(--g-orange-soft);
+}
+
+:root[data-style='glas'] .sched-ring__arc--charge {
+  stroke: var(--g-green);
+}
+
+:root[data-style='glas'] .sched-ring__arc--discharge {
+  stroke: var(--g-orange);
+}
+
 @media (forced-colors: active) {
   :root[data-style='glas'] .sched-ring__arc {
     stroke: Highlight;
