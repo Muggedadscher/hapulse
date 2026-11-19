@@ -87,7 +87,7 @@ export { systemMetricNamer, dataSizeBytes, formatDataSize } from './systemMetric
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';
 
 // Room icon utilities
-export { roomIconName, roomStatusIconName, roomKind, CANONICAL_ROOM_ICONS, ROOM_KINDS } from './roomIcons.js';
+export { roomIconName, roomStatusIconName, roomKind, CANONICAL_ROOM_ICONS, ROOM_KINDS, ROOM_KEYWORDS, MDI_TO_LUCIDE, ICON_BY_KIND } from './roomIcons.js'; // [fork] tables exported for the iOS app
 export type { RoomIconName, RoomKind } from './roomIcons.js';
 
 // HA icon string → @mdi/js export name converter
