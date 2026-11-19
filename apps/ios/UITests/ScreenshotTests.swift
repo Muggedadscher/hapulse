@@ -1,10 +1,10 @@
 import XCTest
 
-/// Screenshots of every scene in light and dark (stage 0: the catalogue). With `SCREENSHOT_DIR` set (CI:
+/// Screenshots of every scene in light and dark (catalogue of the building blocks: overview, controls, tiles, detail). With `SCREENSHOT_DIR` set (CI:
 /// `TEST_RUNNER_SCREENSHOT_DIR`), PNGs and an accessibility dump per scene are written there; they are always attached
 /// to the test result too.
 final class ScreenshotTests: XCTestCase {
-    private let scenes = ["catalog"]
+    private let scenes = ["catalog", "controls", "tiles", "detail"]
     private let locales = ["de", "en"]
 
     override func setUp() {
@@ -19,7 +19,8 @@ final class ScreenshotTests: XCTestCase {
                     let app = XCUIApplication()
                     app.launchArguments = ["-hp-scene", scene, "-hp-locale", locale, "-hp-scheme", scheme]
                     app.launch()
-                    XCTAssertTrue(app.staticTexts["hp.greeting"].waitForExistence(timeout: 20), "scene \(scene) did not appear")
+                    // every scene marks its title with `hp.scene.<name>` once it is on screen
+                    XCTAssertTrue(app.descendants(matching: .any)["hp.scene.\(scene)"].waitForExistence(timeout: 20), "scene \(scene) did not appear")
                     let name = "\(scene)-\(locale)-\(scheme)"
                     let shot = XCUIScreen.main.screenshot()
                     let attachment = XCTAttachment(screenshot: shot)

@@ -2,8 +2,8 @@ import SwiftUI
 import HAPulseKit
 import HAPulseUI
 
-/// Stage 0: the app shows the catalogue of the building blocks (colours, type, icons, glass). The real pages follow
-/// stage by stage (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
+/// The app shows the catalogue of the building blocks (scenes `catalog`, `controls`, `tiles`, `detail`; start option
+/// `-hp-scene`). The real pages follow stage by stage (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
 struct RootView: View {
     let options: LaunchOptions
     /// Loaded once (four JSON files), not on every `body`.
@@ -15,8 +15,15 @@ struct RootView: View {
     }
 
     var body: some View {
-        CatalogView(localizer: localizer)
-            .accessibilityElement(children: .contain)
+        Group {
+            switch options.scene {
+            case "controls": ControlsScene(l: localizer)
+            case "tiles": TilesScene(l: localizer)
+            case "detail": DetailScene(l: localizer)
+            default: CatalogView(localizer: localizer)
+            }
+        }
+        .accessibilityElement(children: .contain)
             .accessibilityIdentifier("hp.root")
     }
 }
@@ -36,7 +43,7 @@ struct CatalogView: View {
                     Text(localizer.t("home.greeting.morning"))
                         .hpText(.greetingPhone)
                         .foregroundStyle(.glas(.label))
-                        .accessibilityIdentifier("hp.greeting")
+                        .accessibilityIdentifier("hp.scene.catalog")
                     Text(localizer.t("nav.overview") + " · " + localizer.number(1250.5) + " kWh · " + localizer.number(21, minDecimals: 1) + " °C")
                         .hpText(.subhead)
                         .foregroundStyle(.glas(.label2))

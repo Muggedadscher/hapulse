@@ -1,4 +1,4 @@
 {
-  "lucide": ["house", "door-open", "lightbulb", "thermometer", "shield", "cctv", "settings", "zap", "sun", "moon", "chevron-right", "circle-alert"],
+  "lucide": ["house", "door-open", "lightbulb", "thermometer", "shield", "cctv", "settings", "zap", "sun", "moon", "chevron-right", "circle-alert", "minus", "plus", "x", "star", "fan", "lamp", "power", "lock", "lock-open", "droplets", "flame", "snowflake", "tv", "speaker", "sofa", "bed", "bell", "blinds", "check", "layout-grid", "waves-horizontal", "cpu", "workflow", "activity", "shield-check", "music", "sparkles", "monitor", "ellipsis", "chevron-left", "info", "pencil", "user-round"],
   "mdi": ["mdiLightbulb", "mdiThermostat", "mdiGarage"]
 }
