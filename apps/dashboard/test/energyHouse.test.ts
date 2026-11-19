@@ -8,7 +8,9 @@ import {
   pointAlong,
   polyLength,
   roundRoute,
+  BATTERY,
   WIRE_BATTERY,
+  WIRE_BATTERY_DOTS,
   WIRE_GRID,
   type HouseLink,
 } from '../src/components/energy/fork/energyHouse';
@@ -30,11 +32,11 @@ describe('energyHouse: nodes', () => {
     expect(n.grid).toMatchObject({ w: 200, does: 'imports' });
     expect(n.home.w).toBe(600);
   });
-  it('idle: everything dimmed, the battery rests, the grid says import', () => {
+  it('idle: everything dimmed, battery and grid rest', () => {
     const n = houseNodes([]);
     expect(Object.values(n).every((x) => !x.active)).toBe(true);
     expect(n.battery.does).toBe('idle');
-    expect(n.grid.does).toBe('imports');
+    expect(n.grid.does).toBe('idle');
   });
 });
 
@@ -77,6 +79,14 @@ describe('energyHouse: geometry', () => {
       expect(sy).toBeLessThanOrEqual(h);
     }
     expect(HOUSE_MIN_W).toBeLessThan(w);
+  });
+  it('the moving dots start outside the battery (its front ellipse would show them)', () => {
+    const v = houseScale(326, 270);
+    const [cx, cy] = iso(v, BATTERY.BX, BATTERY.BY, 0);
+    const [x, y] = iso(v, WIRE_BATTERY_DOTS[0]![0], WIRE_BATTERY_DOTS[0]![1], 0);
+    const rx = BATTERY.BR * 1.2247 * v.k;
+    const ry = BATTERY.BR * 0.7071 * v.k;
+    expect(((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2).toBeGreaterThan(1);
   });
   it('wires start at the battery or mast and end at the house, rounded corners', () => {
     for (const route of [WIRE_BATTERY, WIRE_GRID]) {

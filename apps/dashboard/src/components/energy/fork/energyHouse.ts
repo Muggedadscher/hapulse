@@ -12,6 +12,7 @@ import { POWER_FLOW_MIN } from '@hapulse/core';
 export type HouseKey = 'solar' | 'battery' | 'grid' | 'home';
 /** What a node does, as the suffix of `energy.now.<does>` (`idle` = `energy.battery.idle`). */
 export type HouseDoes = 'produces' | 'charges' | 'discharges' | 'idle' | 'imports' | 'exports' | 'uses';
+// `idle` (battery or grid, nothing flows) reads "Ruht"
 
 export interface HouseLink {
   from: 'solar' | 'battery' | 'grid';
@@ -58,7 +59,9 @@ export function houseNodes(links: HouseLink[]): Record<HouseKey, HouseNode> {
         : { key: 'battery', w: 0, active: false, does: 'idle' },
     grid: on(exp)
       ? { key: 'grid', w: exp, active: true, does: 'exports' }
-      : { key: 'grid', w: imp, active: on(imp), does: 'imports' },
+      : on(imp)
+        ? { key: 'grid', w: imp, active: true, does: 'imports' }
+        : { key: 'grid', w: 0, active: false, does: 'idle' },
   };
 }
 
@@ -95,12 +98,14 @@ export const HOUSE = { X0: 38, X1: 78, Y0: 30, Y1: 60, HW: 24, HR: 38, YM: 45, O
 export const BATTERY = { BX: 22, BY: 82, BR: 6.5, BH: 22 };
 /** Mast at (MX, MY), height MH. */
 export const MAST = { MX: 90, MY: 22, MH: 46 };
-/** The wires' corner points: from the battery / the mast to the house. */
+/** The wires' corner points: from the battery / the mast to the house (the battery's starts inside the cylinder, hidden
+ *  behind it; the moving dots start at its edge, WIRE_BATTERY_DOTS). */
 export const WIRE_BATTERY: [number, number][] = [
   [BATTERY.BX + BATTERY.BR - 1, BATTERY.BY],
   [52, BATTERY.BY],
   [52, HOUSE.Y1],
 ];
+export const WIRE_BATTERY_DOTS: [number, number][] = [[BATTERY.BX + BATTERY.BR + 1.5, BATTERY.BY], ...WIRE_BATTERY.slice(1)];
 export const WIRE_GRID: [number, number][] = [
   [MAST.MX, MAST.MY + 3],
   [MAST.MX, 46],

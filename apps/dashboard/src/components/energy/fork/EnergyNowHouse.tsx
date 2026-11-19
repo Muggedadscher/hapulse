@@ -17,6 +17,7 @@ import {
   MAST,
   PLATE,
   WIRE_BATTERY,
+  WIRE_BATTERY_DOTS,
   WIRE_GRID,
   houseNodes,
   houseScale,
@@ -75,7 +76,7 @@ export function wireDots(v: HouseView, wires: { battery: Wire; grid: Wire }, has
     const sp = roundRoute(route).map(([x, y]) => iso(v, x, y, 0));
     out.push({ key, d: `M${sp.map(([x, y]) => `${f1(x)},${f1(y)}`).join('L')}`, toHouse: wire.toHouse, width: 1.5 * v.k });
   };
-  if (hasBattery) add('battery', WIRE_BATTERY, wires.battery);
+  if (hasBattery) add('battery', WIRE_BATTERY_DOTS, wires.battery);
   add('grid', WIRE_GRID, wires.grid);
   return out;
 }

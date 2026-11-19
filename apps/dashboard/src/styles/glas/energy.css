@@ -1027,7 +1027,8 @@
 }
 
 :root[data-style='glas'] .energy-page .g-house--narrow {
-  min-height: 0;
+  /* the compact text form fills the box (absolute), as in Klassisch's 220-px flow */
+  min-height: 220px;
 }
 
 :root[data-style='glas'] .energy-page .g-house__svg {
