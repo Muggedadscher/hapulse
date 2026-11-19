@@ -15,6 +15,7 @@ public struct HPDeviceTile: View {
     let onToggle: () -> Void
     let onOpen: () -> Void
     @State private var pulse = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// - Parameters:
     ///   - toggleLabel: VoiceOver name of the switch circle (web `home.favorites.toggleAria`)
@@ -37,7 +38,7 @@ public struct HPDeviceTile: View {
         let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
         HStack(spacing: 0) {
             Button {
-                pulse.toggle()
+                if !reduceMotion { pulse.toggle() }
                 onToggle()
             } label: {
                 ZStack {

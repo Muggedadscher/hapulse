@@ -85,17 +85,16 @@ public struct HPTrackSlider: View {
             }
             .clipShape(Capsule())
             .contentShape(Capsule())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { g in
-                        dragging = true
-                        value = min(max(g.location.x / max(geo.size.width, 1), 0), 1)
-                    }
-                    .onEnded { _ in
-                        dragging = false
-                        onCommit?(value)
-                    }
-            )
+            // a tap sets the value where it lands; a sideways drag follows the finger; vertical drags scroll the page
+            .onTapGesture { p in
+                value = min(max(p.x / max(geo.size.width, 1), 0), 1)
+                onCommit?(value)
+            }
+            .hpHorizontalPan { v in
+                value = min(max(v.location.x / max(geo.size.width, 1), 0), 1)
+                dragging = v.phase == .changed
+                if v.phase == .ended { onCommit?(value) }
+            }
         }
         .frame(height: height)
         .scaleEffect(y: dragging ? 1.04 : 1)
@@ -150,14 +149,19 @@ public struct HPLightCapsule: View {
             .clipShape(shape)
             .contentShape(shape)
             .gesture(
-                DragGesture(minimumDistance: 3)
+                // a move over 3 points is a drag (relative), less is a tap that sets the level where it lands (web)
+                DragGesture(minimumDistance: 0)
                     .onChanged { g in
+                        guard startLevel != nil || abs(g.translation.height) > 3 else { return }
                         let start = startLevel ?? level
                         startLevel = start
                         let next = start - g.translation.height / max(geo.size.height, 1) * 100
                         level = min(max(next, 0), 100).rounded()
                     }
-                    .onEnded { _ in
+                    .onEnded { g in
+                        if startLevel == nil {
+                            level = min(max((1 - g.location.y / max(geo.size.height, 1)) * 100, 0), 100).rounded()
+                        }
                         startLevel = nil
                         if level < 3 { level = 0 }
                         onCommit?(level)

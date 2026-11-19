@@ -216,11 +216,22 @@ public struct HPOnOffBar: View {
     let segments: [HPOnOffSegment]
     let onLabel: String
     let tone: HPTone
+    let locale: Locale
 
-    public init(segments: [HPOnOffSegment], onLabel: String, tone: HPTone = .yellow) {
+    /// - Parameter locale: for the times VoiceOver reads ("On: 07:00–08:30, 18:00–23:00")
+    public init(segments: [HPOnOffSegment], onLabel: String, tone: HPTone = .yellow, locale: Locale = .current) {
         self.segments = segments
         self.onLabel = onLabel
         self.tone = tone
+        self.locale = locale
+    }
+
+    /// The on stretches as times, for VoiceOver; empty when it was never on.
+    private var onRanges: String {
+        let time = Date.FormatStyle.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits).locale(locale)
+        return segments.filter { $0.state == .on }
+            .map { "\($0.start.formatted(time))–\($0.end.formatted(time))" }
+            .joined(separator: ", ")
     }
 
     public var body: some View {
@@ -249,5 +260,6 @@ public struct HPOnOffBar: View {
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(onLabel)
+        .accessibilityValue(onRanges.isEmpty ? "0" : onRanges)
     }
 }

@@ -6,6 +6,8 @@ import HAPulseKit
 struct LaunchOptions {
     var scene: String?
     var locale: AppLocale
+    /// `-hp-locale` was given (it then wins over the stored language).
+    var localeGiven = false
     var scheme: ColorScheme?
     var accentHue: Double?
 
@@ -24,6 +26,7 @@ struct LaunchOptions {
         case "light": .light
         default: nil
         }
-        return LaunchOptions(scene: value("-hp-scene"), locale: locale, scheme: scheme, accentHue: value("-hp-accent").flatMap(Double.init))
+        return LaunchOptions(scene: value("-hp-scene"), locale: locale, localeGiven: value("-hp-locale").flatMap(AppLocale.init(rawValue:)) != nil,
+                             scheme: scheme, accentHue: value("-hp-accent").flatMap(Double.init))
     }
 }

@@ -237,7 +237,7 @@ struct DetailScene: View {
                     HPHistoryChart(points: points, tone: .orange, locale: Locale(identifier: l.locale.rawValue),
                                    emptyText: l.t("entityDetail.historyEmpty")) { l.number($0, minDecimals: 1) + " °C" }
                     Text(l.t("entityDetail.activity")).hpText(.title3).foregroundStyle(.glas(.label))
-                    HPOnOffBar(segments: onOff, onLabel: l.t("cards.sensor.on"))
+                    HPOnOffBar(segments: onOff, onLabel: l.t("cards.sensor.on"), locale: Locale(identifier: l.locale.rawValue))
                     HPListGroup {
                         HPListRow(l.t("home.activity.lightOn"), subtitle: "18:00", icon: "lucide.lightbulb", tone: .yellow)
                         HPListRow(l.t("entityState.unavailable"), subtitle: "17:00", icon: "lucide.info")

@@ -1,10 +1,10 @@
 import XCTest
 
-/// Screenshots of every scene in light and dark (catalogue of the building blocks: overview, controls, tiles, detail). With `SCREENSHOT_DIR` set (CI:
+/// Screenshots of every scene in light and dark (catalogue of the building blocks: overview, controls, tiles, detail; the frame: overview, rooms, settings, detail sheet). With `SCREENSHOT_DIR` set (CI:
 /// `TEST_RUNNER_SCREENSHOT_DIR`), PNGs and an accessibility dump per scene are written there; they are always attached
 /// to the test result too.
 final class ScreenshotTests: XCTestCase {
-    private let scenes = ["catalog", "controls", "tiles", "detail"]
+    private let scenes = ["catalog", "controls", "tiles", "detail", "shell", "rooms", "settings", "sheet"]
     private let locales = ["de", "en"]
 
     override func setUp() {

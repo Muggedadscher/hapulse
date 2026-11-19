@@ -45,7 +45,8 @@ public struct HPSwipeRow<Content: View>: View {
     let content: Content
     @State private var offset: CGFloat = 0
     @State private var start: CGFloat?
-    @State private var horizontal: Bool?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private var settle: Animation? { reduceMotion ? nil : HPMotion.snappy }
 
     public init(actionTitle: String, tone: HPSwipeTone = .delete, width: CGFloat = 104, onAction: @escaping () -> Void,
                 @ViewBuilder content: () -> Content) {
@@ -58,53 +59,49 @@ public struct HPSwipeRow<Content: View>: View {
 
     public var body: some View {
         ZStack(alignment: .trailing) {
-            Button {
-                withAnimation(HPMotion.snappy) { offset = 0 }
-                onAction()
-            } label: {
-                Text(actionTitle)
-                    .hpText(.subhead, weight: .semibold)
-                    .foregroundStyle(.glas(.onBadge))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .padding(.horizontal, 8)
-                    .frame(width: width)
-                    .frame(maxWidth: max(-offset, 0), maxHeight: .infinity, alignment: .leading)
-                    .background(tone.style)
-            }
-            .buttonStyle(.plain)
-            .accessibilityHidden(true)
+            // a plain surface with an explicit Rectangle fill: on iOS 26 `background(style)` here came out rounded
+            Text(actionTitle)
+                .hpText(.subhead, weight: .semibold)
+                .foregroundStyle(.glas(.onBadge))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .padding(.horizontal, 8)
+                .frame(width: width)
+                .frame(maxWidth: max(-offset, 0), maxHeight: .infinity, alignment: .leading)
+                .background { Rectangle().fill(tone.style) }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(settle) { offset = 0 }
+                    onAction()
+                }
+                .accessibilityHidden(true)
             .opacity(offset < 0 ? 1 : 0)
 
             content
                 .background(.glas(.group))
-                .offset(x: offset)
+                // the hit area moves with the row, so the revealed action gets its taps
                 .contentShape(Rectangle())
+                .offset(x: offset)
                 .onTapGesture {
-                    if offset != 0 { withAnimation(HPMotion.snappy) { offset = 0 } }
+                    if offset != 0 { withAnimation(settle) { offset = 0 } }
                 }
-                .gesture(drag)
+                // only a sideways drag moves the row; a vertical one keeps scrolling the page
+                .hpHorizontalPan(pan)
         }
         .clipped()
         .accessibilityElement(children: .combine)
         .accessibilityAction(named: actionTitle, onAction)
     }
 
-    private var drag: some Gesture {
-        DragGesture(minimumDistance: HPSwipeMath.decide)
-            .onChanged { g in
-                if horizontal == nil {
-                    horizontal = abs(g.translation.width) > abs(g.translation.height)
-                }
-                guard horizontal == true else { return }
-                let base = start ?? offset
-                start = base
-                offset = HPSwipeMath.clamp(base + g.translation.width, width: width)
-            }
-            .onEnded { _ in
-                defer { start = nil; horizontal = nil }
-                guard horizontal == true else { return }
-                withAnimation(HPMotion.snappy) { offset = HPSwipeMath.settle(offset: offset, width: width) }
-            }
+    private func pan(_ v: HPPanValue) {
+        switch v.phase {
+        case .changed:
+            let base = start ?? offset
+            start = base
+            offset = HPSwipeMath.clamp(base + v.translation, width: width)
+        case .ended:
+            start = nil
+            withAnimation(settle) { offset = HPSwipeMath.settle(offset: offset, width: width) }
+        }
     }
 }

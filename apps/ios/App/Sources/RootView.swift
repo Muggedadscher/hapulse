@@ -2,29 +2,38 @@ import SwiftUI
 import HAPulseKit
 import HAPulseUI
 
-/// The app shows the catalogue of the building blocks (scenes `catalog`, `controls`, `tiles`, `detail`; start option
-/// `-hp-scene`). The real pages follow stage by stage (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
+/// The app frame (`AppShell`), or with the start option `-hp-scene` a scene for screenshots: the catalogue of the
+/// building blocks (`catalog`, `controls`, `tiles`, `detail`) or the frame on a given page (`shell`, `rooms`,
+/// `settings`, `sheet` = overview with a detail open). The real pages follow stage by stage
+/// (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
 struct RootView: View {
     let options: LaunchOptions
-    /// Loaded once (four JSON files), not on every `body`.
-    @State private var localizer: Localizer
-
-    init(options: LaunchOptions) {
-        self.options = options
-        _localizer = State(initialValue: Localizer(locale: options.locale))
-    }
+    @Environment(AppModel.self) private var model
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
+        let localizer = model.localizer
         Group {
             switch options.scene {
+            case "catalog": CatalogView(localizer: localizer)
             case "controls": ControlsScene(l: localizer)
             case "tiles": TilesScene(l: localizer)
             case "detail": DetailScene(l: localizer)
-            default: CatalogView(localizer: localizer)
+            default: AppShell().task { applyScene() }
             }
         }
         .accessibilityElement(children: .contain)
             .accessibilityIdentifier("hp.root")
+    }
+
+    /// Puts the frame on the page a screenshot scene asks for.
+    private func applyScene() {
+        switch options.scene {
+        case "rooms": model.open(.rooms, compact: sizeClass == .compact)
+        case "settings": model.open(.settings, compact: sizeClass == .compact)
+        case "sheet": model.detail = model.devices.first { $0.isOn }
+        default: break
+        }
     }
 }
 

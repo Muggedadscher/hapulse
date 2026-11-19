@@ -1,0 +1,57 @@
+import SwiftUI
+import HAPulseKit
+import HAPulseUI
+
+/// The detail of a device in the inspector (iPad) or sheet (iPhone): head, state, switch and brightness, the day's
+/// on/off history. Stage 2 shows the frame; the full detail with real history follows with the HA client.
+struct DeviceDetail: View {
+    let device: DemoDevice
+    @Environment(AppModel.self) private var model
+    @State private var level: Double = 0
+
+    var body: some View {
+        let l = model.localizer
+        let d = device
+        ScrollView {
+            VStack(spacing: 0) {
+                HPDetailHeader(icon: d.icon, title: d.name, subtitle: d.room, tone: d.isOn ? d.tone : nil,
+                               closeLabel: l.t("common.close")) { model.detail = nil }
+                    .accessibilityIdentifier("hp.scene.sheet")
+                VStack(alignment: .leading, spacing: 24) {
+                    HPDetailValue(d.stateText(l))
+                    HPListGroup {
+                        HPListRow(d.name, subtitle: d.room) {
+                            Toggle(d.name, isOn: Binding(get: { d.isOn }, set: { _ in model.toggle(d.id) })).hpSwitch(showsLabel: false)
+                        }
+                    }
+                    if d.tone == .yellow {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(l.t("cards.light.brightness")).hpText(.title3).foregroundStyle(.glas(.label))
+                            HPTrackSlider(value: Binding(get: { level / 100 }, set: { level = ($0 * 100).rounded() }), height: 32,
+                                          label: l.t("cards.light.brightness"),
+                                          valueText: { l.number(($0 * 100).rounded(), maxDecimals: 0) + " %" })
+                        }
+                    }
+                    Text(l.t("entityDetail.activity")).hpText(.title3).foregroundStyle(.glas(.label))
+                    HPOnOffBar(segments: demoDay, onLabel: l.t("cards.sensor.on"), tone: d.tone, locale: Locale(identifier: l.locale.rawValue))
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 24)
+            }
+        }
+        .background(.glas(.card))
+        .onAppear { level = d.level ?? (d.isOn ? 100 : 0) }
+    }
+
+    /// A fixed demo day; the history API comes with the HA client (stage 1).
+    private var demoDay: [HPOnOffSegment] {
+        let end = (try? DemoHome.load().now) ?? .now
+        let start = end.addingTimeInterval(-24 * 3600)
+        func at(_ h: Double) -> Date { start.addingTimeInterval(h * 3600) }
+        return [HPOnOffSegment(start: at(0), end: at(7), state: .off),
+                HPOnOffSegment(start: at(7), end: at(8.5), state: .on),
+                HPOnOffSegment(start: at(8.5), end: at(18), state: .off),
+                HPOnOffSegment(start: at(18), end: at(23), state: .on),
+                HPOnOffSegment(start: at(23), end: at(24), state: device.isOn ? .on : .off)]
+    }
+}
