@@ -62,6 +62,8 @@ public final class HomeSession {
     private var userTask: Task<Void, Never>?
     private var registryTask: Task<Void, Never>?
     private var wired = false
+    /// set by `close()`: a `.connected` still buffered in the status stream starts nothing any more
+    private var closed = false
 
     /// Everything the subscriptions deliver goes through ONE stream, drained by one task on the main actor: events
     /// arrive in the order Home Assistant sent them (separate tasks per event could swap two entity updates).
@@ -123,7 +125,7 @@ public final class HomeSession {
                 for await s in stream {
                     guard let self else { return }
                     self.status = s
-                    if case .connected = s {
+                    if case .connected = s, !self.closed {
                         self.loadUser()
                         self.loadRegistries()
                     } else {
@@ -147,6 +149,7 @@ public final class HomeSession {
 
     /// Ends the session for good (sign-out): the readers stop too.
     public func close() async {
+        closed = true
         await stop()
         for t in tasks { t.cancel() }
         tasks = []
@@ -197,6 +200,7 @@ public final class HomeSession {
                     self.recompute() // admin rights decide which tokens stay
                     return
                 } catch {
+                    guard Self.retryWorthy(error) else { return } // disconnected: the next connect asks again
                     self?.log.error("auth/current_user failed: \(error)")
                 }
                 try? await Task.sleep(for: .seconds(pause))
@@ -222,13 +226,23 @@ public final class HomeSession {
                     if self.registries != r { self.registries = r }
                     self.log.info("registries loaded: \(r.areas.count) areas, \(r.entities.count) entities")
                     return
+                } catch let e as HAError where e != .timeout && e != .notConnected {
+                    // refused (unknown command, no rights): asking again would not help; the rooms stay as they were
+                    self?.log.error("registries refused: \(e)")
+                    return
                 } catch {
+                    guard Self.retryWorthy(error) else { return } // disconnected: the next connect loads them again
                     self?.log.error("registries failed: \(error)")
                 }
                 try? await Task.sleep(for: .seconds(pause))
                 pause = min(pause * 2, 30)
             }
         }
+    }
+
+    /// A failed command is asked again unless the connection is gone (the next `.connected` starts over anyway).
+    nonisolated static func retryWorthy(_ error: any Error) -> Bool {
+        (error as? HAError) != .notConnected && !(error is CancellationError)
     }
 
     private func applyEntities(_ ev: JSONValue) {

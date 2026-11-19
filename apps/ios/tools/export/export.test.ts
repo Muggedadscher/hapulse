@@ -504,6 +504,27 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'entityDisplay.json'), { entities, res, formatted: out, meta, humanize, attr });
   });
 
+  it('golden: localeCompare', () => {
+    // String.prototype.localeCompare as the web sorts names and entity ids with it
+    let seed = 11;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed % n;
+    };
+    const alphabet = [...' _-,;:!?.\'"()[]{}@*/\\&#%`^+<=>|~$0123456789aAbBzZäÄöÖüÜßéÉèçñ', 'ss', 'ae'];
+    const word = () => Array.from({ length: 1 + r(6) }, () => alphabet[r(alphabet.length)]).join('');
+    const pairs: [string, string, number][] = [];
+    for (let i = 0; i < 3000; i++) {
+      const a = word();
+      const b = r(4) === 0 ? a.toUpperCase() : r(3) === 0 ? a + word() : word();
+      pairs.push([a, b, Math.sign(a.localeCompare(b))]);
+    }
+    for (const [a, b] of [['sensor.temp_1', 'sensor.temp1'], ['Straße', 'Strasse'], ['a', 'A'], ['ä', 'a'], ['', 'a']]) {
+      pairs.push([a!, b!, Math.sign(a!.localeCompare(b!))]);
+    }
+    writeJson(join(FIX, 'localeCompare.json'), pairs, false);
+  });
+
   it('golden: sentinel', async () => {
     const api = await import('@sentinel-nvr/web/api');
     const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',

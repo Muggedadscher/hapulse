@@ -40,6 +40,45 @@ struct HomeSessionTests {
         await s.stop()
     }
 
+    func fakeSession(_ ha: FakeHA) throws -> HomeSession {
+        var o = HAClient.Options()
+        o.pingInterval = .seconds(3600)
+        o.retryDelays = [.milliseconds(50)]
+        let client = try HAClient(baseURL: URL(string: "https://ha.example")!, transport: ha, token: { "good" }, options: o)
+        return HomeSession(client: client)
+    }
+
+    func registryCalls(_ ha: FakeHA) async -> Int {
+        await ha.received.filter { $0["type"]?.string == "config/area_registry/list" }.count
+    }
+
+    /// A Home Assistant that refuses the registry lists is asked once per connect, not again every few seconds;
+    /// a new connect asks again.
+    @Test func refusedRegistriesAreNotRetried() async throws {
+        let ha = FakeHA() // answers every unknown command with unknown_command
+        let s = try fakeSession(ha)
+        await s.start()
+        try await eventuallyMainAsync("asked") { await self.registryCalls(ha) == 1 }
+        try await Task.sleep(for: .milliseconds(1500)) // the old code asked again after 1 s
+        #expect(await registryCalls(ha) == 1)
+        #expect(s.registries == nil)
+        await ha.dropCurrent()
+        try await eventuallyMainAsync("asked after reconnect") { await self.registryCalls(ha) == 2 }
+        await s.close()
+    }
+
+    /// Closing while a `.connected` may still sit in the status stream starts no new request afterwards.
+    @Test func closeStartsNothingAfterwards() async throws {
+        let ha = FakeHA()
+        let s = try fakeSession(ha)
+        await s.start()
+        try await eventuallyMainAsync("asked") { await self.registryCalls(ha) == 1 }
+        await s.close()
+        let before = await ha.received.count
+        try await Task.sleep(for: .milliseconds(300))
+        #expect(await ha.received.count == before)
+    }
+
     @Test func stateTranslationsLoadOncePerLanguage() async throws {
         let s = try connectedDemo(DemoHA(home: try DemoHome.load()))
         await s.start()

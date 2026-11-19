@@ -44,7 +44,8 @@ public enum Rooms {
         return a
     }
 
-    public static func build(_ registries: Registries, hasState: (String) -> Bool) -> [Room] {
+    /// `locale`: the language the names are sorted in (the web: the browser's language).
+    public static func build(_ registries: Registries, locale: Locale = .current, hasState: (String) -> Bool) -> [Room] {
         var deviceAreas: [String: String?] = [:]
         for d in registries.devices { deviceAreas[d.id] = d.areaId }
         var rooms: [String: Room] = [:]
@@ -65,14 +66,14 @@ public enum Rooms {
         // JavaScript's sort is stable: equal names keep the registry order
         return order.enumerated().map { ($0.offset, rooms[$0.element]!) }
             .sorted { l, r in
-                let c = JSCompare.locale(l.1.name, r.1.name)
+                let c = JSCompare.locale(l.1.name, r.1.name, locale)
                 return c == .orderedSame ? l.0 < r.0 : c == .orderedAscending
             }
             .map(\.1)
     }
 
-    public static func build(_ registries: Registries, entities: EntityStore) -> [Room] {
-        build(registries) { entities[$0] != nil }
+    public static func build(_ registries: Registries, entities: EntityStore, locale: Locale = .current) -> [Room] {
+        build(registries, locale: locale) { entities[$0] != nil }
     }
 
     /// The sections of the room's page (`roomSections`).
@@ -116,32 +117,16 @@ public enum Rooms {
 
 /// JavaScript behaviour the ported rules depend on.
 public enum JSCompare {
-    /// `a.localeCompare(b)` with the default (root) collation: letters before case before accents decide in this
-    /// order — base letters (ä = a, A = a), then accents (a < ä), then case (lower before upper). Digits are
-    /// compared character by character ("Zimmer 10" < "Zimmer 9"), like ICU without numeric collation.
-    public static func locale(_ a: String, _ b: String) -> ComparisonResult {
-        let primary = compare(fold(a, [.caseInsensitive, .diacriticInsensitive]), fold(b, [.caseInsensitive, .diacriticInsensitive]))
-        if primary != .orderedSame { return primary }
-        let secondary = compare(fold(a, [.caseInsensitive]), fold(b, [.caseInsensitive]))
-        if secondary != .orderedSame { return secondary }
-        // tertiary: lower case first
-        let ta = a.map { $0.isUppercase ? 1 : 0 }, tb = b.map { $0.isUppercase ? 1 : 0 }
-        for (x, y) in zip(ta, tb) where x != y { return x < y ? .orderedAscending : .orderedDescending }
-        return ta.count == tb.count ? .orderedSame : (ta.count < tb.count ? .orderedAscending : .orderedDescending)
-    }
-
-    private static func fold(_ s: String, _ o: String.CompareOptions) -> [Unicode.Scalar] {
-        Array(s.folding(options: o, locale: nil).decomposedStringWithCanonicalMapping.unicodeScalars)
-    }
-
-    private static func compare(_ a: [Unicode.Scalar], _ b: [Unicode.Scalar]) -> ComparisonResult {
-        for (x, y) in zip(a, b) where x != y { return x.value < y.value ? .orderedAscending : .orderedDescending }
-        return a.count == b.count ? .orderedSame : (a.count < b.count ? .orderedAscending : .orderedDescending)
+    /// `a.localeCompare(b)`: the browser compares with ICU in its own language (`navigator.language`), the app with
+    /// ICU in the device language. Same rules as Node for every pair of the golden file (`localeCompare.json`), also
+    /// for punctuation, Ł/Ø/Æ, ß and emoji, and for languages with their own order (Swedish: Ä after Z).
+    public static func locale(_ a: String, _ b: String, _ locale: Locale = .current) -> ComparisonResult {
+        a.compare(b, options: [], range: nil, locale: locale)
     }
 
     /// `parseFloat(s)`: the longest number at the start after white space; nil where JavaScript gives NaN.
     public static func parseFloat(_ s: String) -> Double? {
-        let t = s.drop { $0.isWhitespace }
+        let t = s.drop { $0.utf16.allSatisfy(JSText.isSpace) }
         if t.hasPrefix("Infinity") || t.hasPrefix("+Infinity") { return .infinity }
         if t.hasPrefix("-Infinity") { return -.infinity }
         var end = t.startIndex, i = t.startIndex, sawDigit = false, sawDot = false, sawExp = false

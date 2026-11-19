@@ -30,7 +30,7 @@ import Testing
     }
 
     private static func check(registries: Registries, states: [String: JSONValue], golden: JSONValue) {
-        let rooms = Rooms.build(registries) { states[$0] != nil }
+        let rooms = Rooms.build(registries, locale: Locale(identifier: "en")) { states[$0] != nil }
         #expect(rooms.map(\.id) == (golden["rooms"]?.array ?? []).compactMap { $0["id"]?.string })
         for (room, want) in zip(rooms, golden["rooms"]?.array ?? []) {
             #expect(json(room) == want, "room \(room.id)")
@@ -58,8 +58,24 @@ import Testing
 
     @Test func localeCompareLikeJavaScript() {
         let names = ["Zimmer 9", "bad", "Ärger", "Küche", "Arbeitszimmer", "Zimmer 10", "Bad", "Äpfel", "apfel"]
-        let sorted = names.sorted { JSCompare.locale($0, $1) == .orderedAscending }
+        let sorted = names.sorted { JSCompare.locale($0, $1, Locale(identifier: "en")) == .orderedAscending }
         #expect(sorted == ["apfel", "Äpfel", "Arbeitszimmer", "Ärger", "bad", "Bad", "Küche", "Zimmer 10", "Zimmer 9"])
+    }
+
+    @Test func localeCompareAgainstNode() throws {
+        let pairs = try Golden.load("localeCompare", as: JSONValue.self).array ?? []
+        #expect(pairs.count > 3000)
+        var bad = 0
+        for p in pairs {
+            let v = p.array ?? [], a = v.first?.string ?? "", b = v.dropFirst().first?.string ?? "", want = Int(v.last?.number ?? 9)
+            let got = JSCompare.locale(a, b, Locale(identifier: "en"))
+            let sign = got == .orderedAscending ? -1 : got == .orderedSame ? 0 : 1
+            if sign != want {
+                bad += 1
+                if bad <= 8 { Issue.record("\(a) | \(b): \(sign), JavaScript \(want)") }
+            }
+        }
+        #expect(bad == 0)
     }
 
     @Test func parseFloatLikeJavaScript() {
