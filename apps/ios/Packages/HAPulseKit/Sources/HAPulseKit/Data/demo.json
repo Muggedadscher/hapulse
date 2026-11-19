@@ -1,0 +1,3557 @@
+{
+  "entities": {
+    "alarm_control_panel.home": {
+      "attributes": {
+        "changed_by": null,
+        "code_format": "number",
+        "friendly_name": "Home Alarm"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "alarm_control_panel.home",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "disarmed"
+    },
+    "automation.advanced_heating_living_room": {
+      "attributes": {
+        "category": "Comfort",
+        "current": 0,
+        "friendly_name": "Advanced Heating Living Room",
+        "icon": "mdi:radiator",
+        "last_triggered": "2026-06-15T09:01:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.advanced_heating_living_room",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.arrival_home": {
+      "attributes": {
+        "category": "Away",
+        "current": 0,
+        "friendly_name": "Arrival Home",
+        "icon": "mdi:home-import-outline",
+        "last_triggered": "2026-06-15T01:41:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.arrival_home",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.away_mode": {
+      "attributes": {
+        "category": "Away",
+        "current": 0,
+        "friendly_name": "Away Mode",
+        "icon": "mdi:home-export-outline",
+        "last_triggered": null,
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.away_mode",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.comfort_humidity": {
+      "attributes": {
+        "category": "Comfort",
+        "current": 0,
+        "friendly_name": "Humidity Alert",
+        "icon": "mdi:water-percent",
+        "last_triggered": "2026-06-15T06:41:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.comfort_humidity",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "automation.comfort_temperature": {
+      "attributes": {
+        "category": "Comfort",
+        "current": 0,
+        "friendly_name": "Temperature Control",
+        "icon": "mdi:thermometer",
+        "last_triggered": "2026-06-15T07:41:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.comfort_temperature",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.evening_downtime": {
+      "attributes": {
+        "category": "Evening",
+        "current": 0,
+        "friendly_name": "Downtime Mode",
+        "icon": "mdi:sofa",
+        "last_triggered": "2026-06-15T08:11:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.evening_downtime",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.evening_lights": {
+      "attributes": {
+        "category": "Evening",
+        "current": 0,
+        "friendly_name": "Evening Lights",
+        "icon": "mdi:weather-sunset-down",
+        "last_triggered": "2026-06-15T08:41:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.evening_lights",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.evening_shutters": {
+      "attributes": {
+        "category": "Evening",
+        "current": 0,
+        "friendly_name": "Close Shutters",
+        "icon": "mdi:blinds",
+        "last_triggered": "2026-06-15T08:29:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.evening_shutters",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.heizplan_speichern": {
+      "attributes": {
+        "category": "Comfort",
+        "current": 0,
+        "friendly_name": "Save Heating Plan",
+        "last_triggered": null,
+        "max": 10,
+        "mode": "queued"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.heizplan_speichern",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.morning_coffee": {
+      "attributes": {
+        "category": "Morning",
+        "current": 0,
+        "friendly_name": "Coffee Machine",
+        "icon": "mdi:coffee",
+        "last_triggered": "2026-06-15T03:11:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.morning_coffee",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.morning_lights": {
+      "attributes": {
+        "category": "Morning",
+        "current": 0,
+        "friendly_name": "Morning Lights",
+        "icon": "mdi:weather-sunset-up",
+        "last_triggered": "2026-06-15T03:53:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.morning_lights",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.morning_wake_up": {
+      "attributes": {
+        "category": "Morning",
+        "current": 0,
+        "friendly_name": "Wake Up",
+        "icon": "mdi:alarm",
+        "last_triggered": "2026-06-15T03:41:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.morning_wake_up",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.security_alarm": {
+      "attributes": {
+        "category": "Security",
+        "current": 0,
+        "friendly_name": "Alarm Notification",
+        "icon": "mdi:alarm-light",
+        "last_triggered": null,
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.security_alarm",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "automation.security_front_door": {
+      "attributes": {
+        "category": "Security",
+        "current": 0,
+        "friendly_name": "Front Door Alert",
+        "icon": "mdi:door-alert",
+        "last_triggered": "2026-06-15T09:11:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.security_front_door",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "automation.security_motion": {
+      "attributes": {
+        "category": "Security",
+        "current": 0,
+        "friendly_name": "Motion Alert",
+        "icon": "mdi:motion-sensor",
+        "last_triggered": "2026-06-15T08:56:00.000Z",
+        "mode": "single"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "automation.security_motion",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "binary_sensor.bedroom_window": {
+      "attributes": {
+        "device_class": "window",
+        "friendly_name": "Bedroom Window"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "binary_sensor.bedroom_window",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "binary_sensor.front_door": {
+      "attributes": {
+        "device_class": "door",
+        "friendly_name": "Front Door"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "binary_sensor.front_door",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "binary_sensor.hallway_motion": {
+      "attributes": {
+        "device_class": "motion",
+        "friendly_name": "Hallway Motion"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "binary_sensor.hallway_motion",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "binary_sensor.living_room_motion": {
+      "attributes": {
+        "device_class": "motion",
+        "friendly_name": "Living Room Motion"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "binary_sensor.living_room_motion",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "binary_sensor.schwellwert_poolpumpe_solarleistung": {
+      "attributes": {
+        "friendly_name": "Schwellwert Poolpumpe Solarleistung"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "binary_sensor.schwellwert_poolpumpe_solarleistung",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "button.poolpumpe_esppoolpumpe_geraeteneustart": {
+      "attributes": {
+        "device_class": "restart",
+        "friendly_name": "ESPPoolpumpe Geräteneustart"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "button.poolpumpe_esppoolpumpe_geraeteneustart",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "unknown"
+    },
+    "camera.hallway": {
+      "attributes": {
+        "entity_picture": null,
+        "friendly_name": "Hallway Camera"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "camera.hallway",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "idle"
+    },
+    "camera.outdoor": {
+      "attributes": {
+        "entity_picture": null,
+        "friendly_name": "Outdoor Camera"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "camera.outdoor",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "idle"
+    },
+    "climate.bedroom": {
+      "attributes": {
+        "current_temperature": 19.8,
+        "friendly_name": "Bedroom Thermostat",
+        "hvac_action": "idle",
+        "hvac_modes": [
+          "off",
+          "cool",
+          "heat",
+          "auto"
+        ],
+        "preset_mode": "eco",
+        "temperature": 18
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "climate.bedroom",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "climate.living_room": {
+      "attributes": {
+        "current_temperature": 21.4,
+        "fan_mode": "auto",
+        "fan_modes": [
+          "auto",
+          "low",
+          "medium",
+          "high"
+        ],
+        "friendly_name": "Living Room Thermostat",
+        "hvac_action": "heating",
+        "hvac_modes": [
+          "off",
+          "cool",
+          "heat",
+          "auto"
+        ],
+        "preset_mode": "comfort",
+        "preset_modes": [
+          "eco",
+          "comfort",
+          "boost"
+        ],
+        "temperature": 22
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "climate.living_room",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "heat"
+    },
+    "cover.bedroom_blinds": {
+      "attributes": {
+        "current_position": 0,
+        "device_class": "blind",
+        "friendly_name": "Bedroom Blinds"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "cover.bedroom_blinds",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "closed"
+    },
+    "cover.garage_door": {
+      "attributes": {
+        "device_class": "garage",
+        "friendly_name": "Garage Door",
+        "supported_features": 3
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "cover.garage_door",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "closed"
+    },
+    "humidifier.bathroom_dehumidifier": {
+      "attributes": {
+        "action": "drying",
+        "current_humidity": 70,
+        "device_class": "dehumidifier",
+        "friendly_name": "Bathroom Dehumidifier",
+        "humidity": 60,
+        "max_humidity": 100,
+        "min_humidity": 0,
+        "supported_features": 0
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "humidifier.bathroom_dehumidifier",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "input_boolean.poolpumpe_zeitplan": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Zeitplan",
+        "icon": "mdi:heat-pump-outline"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_boolean.poolpumpe_zeitplan",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "input_number.heating_plan_living_room_comfort": {
+      "attributes": {
+        "friendly_name": "Heating Plan Living Room Comfort",
+        "icon": "mdi:sun-thermometer",
+        "max": 30,
+        "min": 5,
+        "mode": "box",
+        "step": 0.5,
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.heating_plan_living_room_comfort",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "21.0"
+    },
+    "input_number.heating_plan_living_room_eco": {
+      "attributes": {
+        "friendly_name": "Heating Plan Living Room Eco",
+        "icon": "mdi:leaf",
+        "max": 30,
+        "min": 5,
+        "mode": "box",
+        "step": 0.5,
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.heating_plan_living_room_eco",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "18.0"
+    },
+    "input_number.poolpumpe_manuell_dauer": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Manuell Dauer",
+        "max": 1440,
+        "min": 5,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "min"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.poolpumpe_manuell_dauer",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "120.0"
+    },
+    "input_number.poolpumpe_siri_dauer": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Siri Dauer",
+        "max": 1440,
+        "min": 5,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "min"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.poolpumpe_siri_dauer",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "30.0"
+    },
+    "input_number.schwellwert_poolpumpe_solarleistung": {
+      "attributes": {
+        "friendly_name": "Schwellwert Poolpumpe Solarleistung",
+        "max": 800,
+        "min": 0,
+        "mode": "slider",
+        "step": 50,
+        "unit_of_measurement": "W"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.schwellwert_poolpumpe_solarleistung",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "400.0"
+    },
+    "input_select.modus_poolpumpe": {
+      "attributes": {
+        "friendly_name": "Modus Poolpumpe",
+        "icon": "mdi:auto-mode",
+        "options": [
+          "Ausgeschalten",
+          "Automatik",
+          "Manuell"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_select.modus_poolpumpe",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "Manuell"
+    },
+    "light.bathroom_ceiling": {
+      "attributes": {
+        "color_mode": "brightness",
+        "friendly_name": "Bathroom Light",
+        "supported_color_modes": [
+          "brightness"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.bathroom_ceiling",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "light.bathroom_mirror": {
+      "attributes": {
+        "color_mode": "color_temp",
+        "friendly_name": "Mirror Light",
+        "max_color_temp_kelvin": 6500,
+        "min_color_temp_kelvin": 2700,
+        "supported_color_modes": [
+          "color_temp"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.bathroom_mirror",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "light.bedroom_ceiling": {
+      "attributes": {
+        "brightness": 0,
+        "color_mode": "brightness",
+        "friendly_name": "Bedroom Ceiling",
+        "supported_color_modes": [
+          "brightness"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.bedroom_ceiling",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "light.bedroom_nightstand": {
+      "attributes": {
+        "brightness": 40,
+        "color_mode": "color_temp",
+        "color_temp": 500,
+        "color_temp_kelvin": 2000,
+        "friendly_name": "Nightstand Light",
+        "max_color_temp_kelvin": 5000,
+        "min_color_temp_kelvin": 1800,
+        "supported_color_modes": [
+          "color_temp"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.bedroom_nightstand",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "light.hallway": {
+      "attributes": {
+        "color_mode": "brightness",
+        "friendly_name": "Hallway Light",
+        "supported_color_modes": [
+          "brightness"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.hallway",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "light.kitchen_ceiling": {
+      "attributes": {
+        "brightness": 255,
+        "color_mode": "color_temp",
+        "color_temp": 300,
+        "color_temp_kelvin": 3333,
+        "friendly_name": "Kitchen Ceiling",
+        "max_color_temp_kelvin": 6500,
+        "min_color_temp_kelvin": 2700,
+        "supported_color_modes": [
+          "color_temp"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.kitchen_ceiling",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "light.kitchen_counter": {
+      "attributes": {
+        "color_mode": "brightness",
+        "friendly_name": "Counter Light",
+        "supported_color_modes": [
+          "brightness"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.kitchen_counter",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "light.living_room_ceiling": {
+      "attributes": {
+        "brightness": 200,
+        "color_mode": "color_temp",
+        "color_temp": 350,
+        "color_temp_kelvin": 2857,
+        "friendly_name": "Ceiling Light",
+        "max_color_temp_kelvin": 6500,
+        "min_color_temp_kelvin": 2200,
+        "supported_color_modes": [
+          "color_temp",
+          "xy"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.living_room_ceiling",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "light.living_room_floor_lamp": {
+      "attributes": {
+        "brightness": 120,
+        "color_mode": "color_temp",
+        "color_temp": 400,
+        "color_temp_kelvin": 2500,
+        "friendly_name": "Floor Lamp",
+        "max_color_temp_kelvin": 6500,
+        "min_color_temp_kelvin": 2200,
+        "supported_color_modes": [
+          "color_temp"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.living_room_floor_lamp",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "light.living_room_shelf": {
+      "attributes": {
+        "color_mode": "onoff",
+        "friendly_name": "Shelf Light",
+        "supported_color_modes": [
+          "onoff"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.living_room_shelf",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "light.office_ceiling": {
+      "attributes": {
+        "brightness": 220,
+        "color_mode": "color_temp",
+        "color_temp": 250,
+        "color_temp_kelvin": 4000,
+        "friendly_name": "Office Ceiling",
+        "max_color_temp_kelvin": 6500,
+        "min_color_temp_kelvin": 2700,
+        "supported_color_modes": [
+          "color_temp"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.office_ceiling",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "light.office_desk": {
+      "attributes": {
+        "brightness": 180,
+        "color_mode": "color_temp",
+        "color_temp": 220,
+        "color_temp_kelvin": 4545,
+        "friendly_name": "Desk Light",
+        "max_color_temp_kelvin": 6500,
+        "min_color_temp_kelvin": 2700,
+        "supported_color_modes": [
+          "color_temp"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "light.office_desk",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "lock.front_door": {
+      "attributes": {
+        "changed_by": null,
+        "friendly_name": "Front Door Lock"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "lock.front_door",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "locked"
+    },
+    "media_player.bedroom_speaker": {
+      "attributes": {
+        "entity_picture": null,
+        "friendly_name": "Bedroom Speaker",
+        "group_members": [],
+        "is_volume_muted": false,
+        "media_album_name": "Midnights",
+        "media_artist": "Taylor Swift",
+        "media_title": "Midnight Rain",
+        "source": "Spotify",
+        "source_list": [
+          "Spotify",
+          "AirPlay",
+          "Bluetooth"
+        ],
+        "supported_features": 837693,
+        "volume_level": 0.2
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "media_player.bedroom_speaker",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "paused"
+    },
+    "media_player.kitchen_speaker": {
+      "attributes": {
+        "entity_picture": null,
+        "friendly_name": "Kitchen Speaker",
+        "group_members": [],
+        "is_volume_muted": false,
+        "source": "Spotify",
+        "source_list": [
+          "Spotify",
+          "AirPlay"
+        ],
+        "supported_features": 837693,
+        "volume_level": 0.3
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "media_player.kitchen_speaker",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "idle"
+    },
+    "media_player.living_room_tv": {
+      "attributes": {
+        "entity_picture": null,
+        "friendly_name": "Living Room TV",
+        "is_volume_muted": false,
+        "media_album_name": "Blade Runner 2049",
+        "media_artist": "Denis Villeneuve",
+        "media_duration": 9720,
+        "media_position": 2400,
+        "media_position_updated_at": "2026-06-15T09:41:00.000Z",
+        "media_title": "Blade Runner 2049",
+        "source": "Netflix",
+        "source_list": [
+          "Netflix",
+          "YouTube",
+          "Spotify",
+          "HDMI 1",
+          "HDMI 2"
+        ],
+        "supported_features": 18495,
+        "volume_level": 0.35
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "media_player.living_room_tv",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "playing"
+    },
+    "number.demo_battery_charge_limit": {
+      "attributes": {
+        "friendly_name": "Charge limit",
+        "max": 100,
+        "min": 50,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "number.demo_battery_charge_limit",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "98"
+    },
+    "number.demo_battery_discharge_limit": {
+      "attributes": {
+        "friendly_name": "Discharge limit",
+        "max": 50,
+        "min": 5,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "number.demo_battery_discharge_limit",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "10"
+    },
+    "number.demo_battery_power_setpoint": {
+      "attributes": {
+        "device_class": "power",
+        "friendly_name": "Power Setpoint",
+        "max": 800,
+        "min": -800,
+        "mode": "box",
+        "step": 1,
+        "unit_of_measurement": "W"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "number.demo_battery_power_setpoint",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "0"
+    },
+    "person.alice": {
+      "attributes": {
+        "entity_picture": null,
+        "friendly_name": "Alice",
+        "source_type": "gps",
+        "user_id": "user_alice"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "person.alice",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "home"
+    },
+    "person.bob": {
+      "attributes": {
+        "entity_picture": null,
+        "friendly_name": "Bob",
+        "source_type": "gps",
+        "user_id": "user_bob"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "person.bob",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "not_home"
+    },
+    "scene.bedroom_sleep": {
+      "attributes": {
+        "entity_id": [
+          "light.bedroom_ceiling",
+          "light.bedroom_nightstand",
+          "cover.bedroom_blinds"
+        ],
+        "friendly_name": "Sleep"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.bedroom_sleep",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T01:41:00.000Z"
+    },
+    "scene.bedroom_wake": {
+      "attributes": {
+        "entity_id": [
+          "light.bedroom_ceiling",
+          "light.bedroom_nightstand",
+          "cover.bedroom_blinds"
+        ],
+        "friendly_name": "Wake Up"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.bedroom_wake",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T04:11:00.000Z"
+    },
+    "scene.hallway_away": {
+      "attributes": {
+        "entity_id": [
+          "light.hallway",
+          "light.living_room_ceiling",
+          "light.kitchen_ceiling"
+        ],
+        "friendly_name": "Away Mode"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.hallway_away",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "unknown"
+    },
+    "scene.hallway_welcome": {
+      "attributes": {
+        "entity_id": [
+          "light.hallway",
+          "light.living_room_floor_lamp"
+        ],
+        "friendly_name": "Welcome Home"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.hallway_welcome",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T05:41:00.000Z"
+    },
+    "scene.kitchen_cooking": {
+      "attributes": {
+        "entity_id": [
+          "light.kitchen_ceiling",
+          "light.kitchen_counter"
+        ],
+        "friendly_name": "Cooking Mode"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.kitchen_cooking",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T08:41:00.000Z"
+    },
+    "scene.kitchen_morning": {
+      "attributes": {
+        "entity_id": [
+          "light.kitchen_ceiling",
+          "switch.coffee_machine"
+        ],
+        "friendly_name": "Morning Coffee"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.kitchen_morning",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T03:41:00.000Z"
+    },
+    "scene.living_room_bright": {
+      "attributes": {
+        "entity_id": [
+          "light.living_room_ceiling",
+          "light.living_room_floor_lamp",
+          "light.living_room_shelf"
+        ],
+        "friendly_name": "Bright Mode"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.living_room_bright",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T06:41:00.000Z"
+    },
+    "scene.living_room_movie": {
+      "attributes": {
+        "entity_id": [
+          "light.living_room_ceiling",
+          "light.living_room_floor_lamp",
+          "light.living_room_shelf"
+        ],
+        "friendly_name": "Movie Night"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.living_room_movie",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T07:41:00.000Z"
+    },
+    "scene.living_room_relax": {
+      "attributes": {
+        "entity_id": [
+          "light.living_room_floor_lamp",
+          "light.living_room_shelf"
+        ],
+        "friendly_name": "Relax Mode"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.living_room_relax",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "unknown"
+    },
+    "scene.office_focus": {
+      "attributes": {
+        "entity_id": [
+          "light.office_ceiling",
+          "light.office_desk",
+          "switch.office_desk"
+        ],
+        "friendly_name": "Focus Mode"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.office_focus",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T07:11:00.000Z"
+    },
+    "scene.office_meeting": {
+      "attributes": {
+        "entity_id": [
+          "light.office_ceiling",
+          "light.office_desk"
+        ],
+        "friendly_name": "Meeting"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "scene.office_meeting",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "unknown"
+    },
+    "schedule.heating_living_room": {
+      "attributes": {
+        "demo_week": {
+          "friday": [
+            {
+              "from": "06:00",
+              "to": "08:30"
+            },
+            {
+              "from": "16:30",
+              "to": "22:00"
+            }
+          ],
+          "monday": [
+            {
+              "from": "06:00",
+              "to": "08:30"
+            },
+            {
+              "from": "16:30",
+              "to": "22:00"
+            }
+          ],
+          "saturday": [
+            {
+              "from": "08:00",
+              "to": "22:30"
+            }
+          ],
+          "sunday": [
+            {
+              "from": "08:00",
+              "to": "22:30"
+            }
+          ],
+          "thursday": [
+            {
+              "from": "06:00",
+              "to": "08:30"
+            },
+            {
+              "from": "16:30",
+              "to": "22:00"
+            }
+          ],
+          "tuesday": [
+            {
+              "from": "06:00",
+              "to": "08:30"
+            },
+            {
+              "from": "16:30",
+              "to": "22:00"
+            }
+          ],
+          "wednesday": [
+            {
+              "from": "06:00",
+              "to": "08:30"
+            },
+            {
+              "from": "16:30",
+              "to": "22:00"
+            }
+          ]
+        },
+        "editable": true,
+        "friendly_name": "Heating Living Room",
+        "icon": "mdi:calendar-clock",
+        "next_event": "2026-06-15T16:30:00.000Z"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "schedule.heating_living_room",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "script.pool_manuell_timer_starten": {
+      "attributes": {
+        "friendly_name": "Pool – Manuell-Timer starten",
+        "mode": "restart"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "script.pool_manuell_timer_starten",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "select.demo_battery_work_mode": {
+      "attributes": {
+        "friendly_name": "Work mode",
+        "options": [
+          "Self-Consumption (AI)",
+          "Custom / Manual"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "select.demo_battery_work_mode",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "Self-Consumption (AI)"
+    },
+    "sensor.balkonkraftwerk_power": {
+      "attributes": {
+        "device_class": "power",
+        "friendly_name": "Balkonkraftwerk Leistung",
+        "state_class": "measurement",
+        "unit_of_measurement": "W"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.balkonkraftwerk_power",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "403"
+    },
+    "sensor.bathroom_humidity": {
+      "attributes": {
+        "device_class": "humidity",
+        "friendly_name": "Bathroom Humidity",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.bathroom_humidity",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "70"
+    },
+    "sensor.bathroom_temperature": {
+      "attributes": {
+        "device_class": "temperature",
+        "friendly_name": "Bathroom Temperature",
+        "state_class": "measurement",
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.bathroom_temperature",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "20.5"
+    },
+    "sensor.bedroom_humidity": {
+      "attributes": {
+        "device_class": "humidity",
+        "friendly_name": "Bedroom Humidity",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.bedroom_humidity",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "55"
+    },
+    "sensor.bedroom_sensor_battery": {
+      "attributes": {
+        "device_class": "battery",
+        "friendly_name": "Bedroom Sensor Battery",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.bedroom_sensor_battery",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "64"
+    },
+    "sensor.bedroom_temperature": {
+      "attributes": {
+        "device_class": "temperature",
+        "friendly_name": "Bedroom Temperature",
+        "state_class": "measurement",
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.bedroom_temperature",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "19.8"
+    },
+    "sensor.demo_battery_power": {
+      "attributes": {
+        "device_class": "power",
+        "friendly_name": "Battery Power",
+        "state_class": "measurement",
+        "unit_of_measurement": "W"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.demo_battery_power",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "-1200"
+    },
+    "sensor.demo_battery_soc": {
+      "attributes": {
+        "friendly_name": "Battery State of Charge",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.demo_battery_soc",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "71"
+    },
+    "sensor.demo_grid_power": {
+      "attributes": {
+        "device_class": "power",
+        "friendly_name": "Grid Power",
+        "state_class": "measurement",
+        "unit_of_measurement": "W"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.demo_grid_power",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "-300"
+    },
+    "sensor.demo_solar_power": {
+      "attributes": {
+        "device_class": "power",
+        "friendly_name": "Solar Power",
+        "state_class": "measurement",
+        "unit_of_measurement": "W"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.demo_solar_power",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2100"
+    },
+    "sensor.disk_free": {
+      "attributes": {
+        "friendly_name": "Disk free (/)",
+        "icon": "mdi:harddisk",
+        "state_class": "measurement",
+        "unit_of_measurement": "GiB"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.disk_free",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "24.8"
+    },
+    "sensor.disk_use_percent": {
+      "attributes": {
+        "friendly_name": "Disk use (/)",
+        "icon": "mdi:harddisk",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.disk_use_percent",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "61"
+    },
+    "sensor.energy_today": {
+      "attributes": {
+        "device_class": "energy",
+        "friendly_name": "Energy Today",
+        "state_class": "total_increasing",
+        "unit_of_measurement": "kWh"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.energy_today",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "18.4"
+    },
+    "sensor.front_door_lock_battery": {
+      "attributes": {
+        "device_class": "battery",
+        "friendly_name": "Front Door Lock Battery",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.front_door_lock_battery",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "88"
+    },
+    "sensor.gelbersack_komplett": {
+      "attributes": {
+        "daysTo": 9,
+        "friendly_name": "Waste Collection Schedule gelbersack_komplett",
+        "icon": "mdi:recycle-variant",
+        "types": [
+          "Gelber Sack"
+        ],
+        "upcoming": [
+          {
+            "date": "2026-06-24",
+            "icon": "mdi:recycle-variant",
+            "type": "Gelber Sack"
+          },
+          {
+            "date": "2026-07-08",
+            "icon": "mdi:recycle-variant",
+            "type": "Gelber Sack"
+          },
+          {
+            "date": "2026-07-22",
+            "icon": "mdi:recycle-variant",
+            "type": "Gelber Sack"
+          }
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.gelbersack_komplett",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "Gelber Sack in 9 days"
+    },
+    "sensor.geschatzter_verbrauch_poolpumpe_energy_daily": {
+      "attributes": {
+        "device_class": "energy",
+        "friendly_name": "Verbrauch Poolpumpe heute",
+        "state_class": "total_increasing",
+        "unit_of_measurement": "kWh"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.geschatzter_verbrauch_poolpumpe_energy_daily",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "3.2168"
+    },
+    "sensor.geschatzter_verbrauch_poolpumpe_energy_monthly": {
+      "attributes": {
+        "device_class": "energy",
+        "friendly_name": "Verbrauch Poolpumpe Monat",
+        "state_class": "total_increasing",
+        "unit_of_measurement": "kWh"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.geschatzter_verbrauch_poolpumpe_energy_monthly",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "67.1248"
+    },
+    "sensor.geschatzter_verbrauch_poolpumpe_energy_weekly": {
+      "attributes": {
+        "device_class": "energy",
+        "friendly_name": "Verbrauch Poolpumpe Woche",
+        "state_class": "total_increasing",
+        "unit_of_measurement": "kWh"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.geschatzter_verbrauch_poolpumpe_energy_weekly",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "14.7138"
+    },
+    "sensor.grauetonne_komplett": {
+      "attributes": {
+        "daysTo": 2,
+        "friendly_name": "Waste Collection Schedule grauetonne_komplett",
+        "icon": "mdi:trash-can",
+        "types": [
+          "Graue Tonne"
+        ],
+        "upcoming": [
+          {
+            "date": "2026-06-17",
+            "icon": "mdi:trash-can",
+            "type": "Graue Tonne"
+          },
+          {
+            "date": "2026-07-01",
+            "icon": "mdi:trash-can",
+            "type": "Graue Tonne"
+          },
+          {
+            "date": "2026-07-15",
+            "icon": "mdi:trash-can",
+            "type": "Graue Tonne"
+          }
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.grauetonne_komplett",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "Graue Tonne in 2 days"
+    },
+    "sensor.hallway_motion_battery": {
+      "attributes": {
+        "device_class": "battery",
+        "friendly_name": "Hallway Motion Battery",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.hallway_motion_battery",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "24"
+    },
+    "sensor.kitchen_humidity": {
+      "attributes": {
+        "device_class": "humidity",
+        "friendly_name": "Kitchen Humidity",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.kitchen_humidity",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "52"
+    },
+    "sensor.kitchen_temperature": {
+      "attributes": {
+        "device_class": "temperature",
+        "friendly_name": "Kitchen Temperature",
+        "state_class": "measurement",
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.kitchen_temperature",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "22.1"
+    },
+    "sensor.last_boot": {
+      "attributes": {
+        "device_class": "timestamp",
+        "friendly_name": "Last boot"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.last_boot",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-09T04:41:00.000Z"
+    },
+    "sensor.laufzeit_poolpumpe_heute": {
+      "attributes": {
+        "device_class": "duration",
+        "friendly_name": "Laufzeit Poolpumpe Heute",
+        "state_class": "measurement",
+        "unit_of_measurement": "h"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.laufzeit_poolpumpe_heute",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "5.47"
+    },
+    "sensor.living_room_humidity": {
+      "attributes": {
+        "device_class": "humidity",
+        "friendly_name": "Living Room Humidity",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.living_room_humidity",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "48"
+    },
+    "sensor.living_room_temperature": {
+      "attributes": {
+        "device_class": "temperature",
+        "friendly_name": "Living Room Temperature",
+        "state_class": "measurement",
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.living_room_temperature",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "21.4"
+    },
+    "sensor.memory_free": {
+      "attributes": {
+        "friendly_name": "Memory free",
+        "icon": "mdi:memory",
+        "state_class": "measurement",
+        "unit_of_measurement": "MiB"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.memory_free",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "3624"
+    },
+    "sensor.memory_use_percent": {
+      "attributes": {
+        "friendly_name": "Memory use",
+        "icon": "mdi:memory",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.memory_use_percent",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "54"
+    },
+    "sensor.network_throughput_in_eth0": {
+      "attributes": {
+        "friendly_name": "Network throughput in eth0",
+        "icon": "mdi:download-network",
+        "state_class": "measurement",
+        "unit_of_measurement": "MB/s"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.network_throughput_in_eth0",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "1.42"
+    },
+    "sensor.network_throughput_out_eth0": {
+      "attributes": {
+        "friendly_name": "Network throughput out eth0",
+        "icon": "mdi:upload-network",
+        "state_class": "measurement",
+        "unit_of_measurement": "MB/s"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.network_throughput_out_eth0",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "0.38"
+    },
+    "sensor.office_humidity": {
+      "attributes": {
+        "device_class": "humidity",
+        "friendly_name": "Office Humidity",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.office_humidity",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "45"
+    },
+    "sensor.office_temperature": {
+      "attributes": {
+        "device_class": "temperature",
+        "friendly_name": "Office Temperature",
+        "state_class": "measurement",
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.office_temperature",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "23.0"
+    },
+    "sensor.papiertonne_komplett": {
+      "attributes": {
+        "daysTo": 27,
+        "friendly_name": "Waste Collection Schedule papiertonne_komplett",
+        "icon": "mdi:newspaper-variant-outline",
+        "types": [
+          "Papiertonne"
+        ],
+        "upcoming": [
+          {
+            "date": "2026-07-12",
+            "icon": "mdi:newspaper-variant-outline",
+            "type": "Papiertonne"
+          },
+          {
+            "date": "2026-08-09",
+            "icon": "mdi:newspaper-variant-outline",
+            "type": "Papiertonne"
+          }
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.papiertonne_komplett",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "Papiertonne in 27 days"
+    },
+    "sensor.processor_temperature": {
+      "attributes": {
+        "device_class": "temperature",
+        "friendly_name": "Processor temperature",
+        "state_class": "measurement",
+        "unit_of_measurement": "°C"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.processor_temperature",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "47.2"
+    },
+    "sensor.processor_use": {
+      "attributes": {
+        "friendly_name": "Processor use",
+        "icon": "mdi:cpu-64-bit",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.processor_use",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "18"
+    },
+    "sensor.schadstoffsammlung": {
+      "attributes": {
+        "daysTo": 30,
+        "friendly_name": "Waste Collection Schedule schadstoffsammlung",
+        "icon": "mdi:alert-octagon-outline",
+        "types": [
+          "Schadstoffsammlung"
+        ],
+        "upcoming": [
+          {
+            "date": "2026-07-15",
+            "icon": "mdi:alert-octagon-outline",
+            "type": "Schadstoffsammlung"
+          }
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.schadstoffsammlung",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "Schadstoffsammlung in 30 days"
+    },
+    "sun.sun": {
+      "attributes": {
+        "azimuth": 220.5,
+        "elevation": 42.3,
+        "friendly_name": "Sun",
+        "next_rising": "2026-06-15T23:34:20.000Z",
+        "next_setting": "2026-06-15T16:37:40.000Z",
+        "rising": false
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sun.sun",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "above_horizon"
+    },
+    "switch.coffee_machine": {
+      "attributes": {
+        "friendly_name": "Coffee Machine"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "switch.coffee_machine",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
+    "switch.esppoolpumpe_poolpumpe": {
+      "attributes": {
+        "friendly_name": "Poolpumpe",
+        "icon": "mdi:heat-pump-outline"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "switch.esppoolpumpe_poolpumpe",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "switch.esppoolpumpe_schalter_uberbrucken": {
+      "attributes": {
+        "friendly_name": "Schalter überbrücken",
+        "icon": "mdi:meter-electric-outline"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "switch.esppoolpumpe_schalter_uberbrucken",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "switch.office_desk": {
+      "attributes": {
+        "friendly_name": "Desk Switch"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "switch.office_desk",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "switch.schedule_zeitplan_poolpumpe": {
+      "attributes": {
+        "actions": [
+          {
+            "service": "input_boolean.turn_off"
+          },
+          {
+            "service": "input_boolean.turn_on"
+          },
+          {
+            "service": "input_boolean.turn_off"
+          }
+        ],
+        "current_slot": 2,
+        "entities": [
+          "input_boolean.poolpumpe_zeitplan"
+        ],
+        "friendly_name": "Scheduler Zeitplan Poolpumpe",
+        "icon": "mdi:calendar-clock",
+        "next_slot": 0,
+        "tags": [],
+        "timeslots": [
+          "00:00 - 12:00",
+          "12:00 - 14:00",
+          "14:00 - 00:00"
+        ],
+        "weekdays": [
+          "daily"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "switch.schedule_zeitplan_poolpumpe",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "timer.poolpumpe_manuell": {
+      "attributes": {
+        "duration": "2:00:00",
+        "finishes_at": "2026-06-15T11:11:00.000Z",
+        "friendly_name": "Poolpumpe Manuell Timer",
+        "icon": "mdi:timer",
+        "remaining": "2:00:00"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "timer.poolpumpe_manuell",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "active"
+    },
+    "weather.home": {
+      "attributes": {
+        "condition": "sunny",
+        "forecast": [
+          {
+            "condition": "partlycloudy",
+            "datetime": "2026-06-16T09:41:00.000Z",
+            "precipitation": 0,
+            "temperature": 20,
+            "templow": 12
+          },
+          {
+            "condition": "rainy",
+            "datetime": "2026-06-17T09:41:00.000Z",
+            "precipitation": 8,
+            "temperature": 17,
+            "templow": 10
+          },
+          {
+            "condition": "cloudy",
+            "datetime": "2026-06-18T09:41:00.000Z",
+            "precipitation": 2,
+            "temperature": 15,
+            "templow": 9
+          },
+          {
+            "condition": "sunny",
+            "datetime": "2026-06-19T09:41:00.000Z",
+            "precipitation": 0,
+            "temperature": 19,
+            "templow": 11
+          },
+          {
+            "condition": "sunny",
+            "datetime": "2026-06-20T09:41:00.000Z",
+            "precipitation": 0,
+            "temperature": 22,
+            "templow": 14
+          }
+        ],
+        "friendly_name": "Home",
+        "humidity": 62,
+        "temperature": 18.5,
+        "temperature_unit": "°C",
+        "wind_speed": 12
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "weather.home",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "sunny"
+    }
+  },
+  "notifications": [
+    {
+      "created_at": "2026-06-15T08:00:00+00:00",
+      "message": "You are exploring the demo home. Connect your own Home Assistant to control real devices.",
+      "notification_id": "hapulse_welcome",
+      "status": "unread",
+      "title": "Welcome to HAPulse"
+    },
+    {
+      "created_at": "2026-06-15T07:30:00+00:00",
+      "message": "Home Assistant Core 2026.6.2 is available. [Open Settings](/config/updates).",
+      "notification_id": "update_available",
+      "status": "unread",
+      "title": "Update available"
+    },
+    {
+      "created_at": "2026-06-14T03:00:00+00:00",
+      "message": "Automatic backup finished successfully (1.2 GB).",
+      "notification_id": "backup_complete",
+      "status": "unread",
+      "title": "Backup complete"
+    }
+  ],
+  "now": "2026-06-15T09:41:00.000Z",
+  "registries": {
+    "areas": [
+      {
+        "area_id": "living_room",
+        "icon": "mdi:sofa",
+        "name": "Living Room"
+      },
+      {
+        "area_id": "kitchen",
+        "icon": "mdi:silverware-fork-knife",
+        "name": "Kitchen"
+      },
+      {
+        "area_id": "bedroom",
+        "icon": "mdi:bed",
+        "name": "Bedroom"
+      },
+      {
+        "area_id": "office",
+        "icon": "mdi:desk",
+        "name": "Office"
+      },
+      {
+        "area_id": "bathroom",
+        "icon": "mdi:shower",
+        "name": "Bathroom"
+      },
+      {
+        "area_id": "hallway",
+        "icon": "mdi:door",
+        "name": "Hallway"
+      },
+      {
+        "area_id": "garage",
+        "icon": "mdi:garage",
+        "name": "Garage"
+      }
+    ],
+    "devices": [
+      {
+        "area_id": "living_room",
+        "id": "dev_lr_lights",
+        "manufacturer": "Philips Hue",
+        "model": "Hue Bulb",
+        "name": "Living Room Lights"
+      },
+      {
+        "area_id": "living_room",
+        "id": "dev_lr_climate",
+        "manufacturer": "Google Nest",
+        "model": "Learning Thermostat",
+        "name": "Living Room Thermostat"
+      },
+      {
+        "area_id": "living_room",
+        "id": "dev_lr_tv",
+        "manufacturer": "LG",
+        "model": "OLED C3",
+        "name": "Living Room TV"
+      },
+      {
+        "area_id": "living_room",
+        "id": "dev_lr_sensor",
+        "manufacturer": "Aqara",
+        "model": "Temp & Humidity",
+        "name": "Living Room Sensor"
+      },
+      {
+        "area_id": "kitchen",
+        "id": "dev_kt_lights",
+        "manufacturer": "Philips Hue",
+        "model": "Hue Bulb",
+        "name": "Kitchen Lights"
+      },
+      {
+        "area_id": "kitchen",
+        "id": "dev_kt_sensor",
+        "manufacturer": "Aqara",
+        "model": "Temp & Humidity",
+        "name": "Kitchen Sensor"
+      },
+      {
+        "area_id": "kitchen",
+        "id": "dev_kt_switch",
+        "manufacturer": "TP-Link",
+        "model": "Kasa Smart Plug",
+        "name": "Coffee Machine"
+      },
+      {
+        "area_id": "bedroom",
+        "id": "dev_br_lights",
+        "manufacturer": "Philips Hue",
+        "model": "Hue Bulb",
+        "name": "Bedroom Lights"
+      },
+      {
+        "area_id": "bedroom",
+        "id": "dev_br_climate",
+        "manufacturer": "Google Nest",
+        "model": "Learning Thermostat",
+        "name": "Bedroom Thermostat"
+      },
+      {
+        "area_id": "bedroom",
+        "id": "dev_br_cover",
+        "manufacturer": "IKEA",
+        "model": "FYRTUR",
+        "name": "Bedroom Blinds"
+      },
+      {
+        "area_id": "bedroom",
+        "id": "dev_br_sensor",
+        "manufacturer": "Aqara",
+        "model": "Temp & Humidity",
+        "name": "Bedroom Sensor"
+      },
+      {
+        "area_id": "bedroom",
+        "id": "dev_br_speaker",
+        "manufacturer": "Sonos",
+        "model": "One SL",
+        "name": "Bedroom Speaker"
+      },
+      {
+        "area_id": "office",
+        "id": "dev_of_lights",
+        "manufacturer": "Philips Hue",
+        "model": "Hue Bulb",
+        "name": "Office Lights"
+      },
+      {
+        "area_id": "office",
+        "id": "dev_of_sensor",
+        "manufacturer": "Aqara",
+        "model": "Temp & Humidity",
+        "name": "Office Sensor"
+      },
+      {
+        "area_id": "office",
+        "id": "dev_of_switch",
+        "manufacturer": "TP-Link",
+        "model": "Kasa Smart Plug",
+        "name": "Office Desk Switch"
+      },
+      {
+        "area_id": "bathroom",
+        "id": "dev_ba_lights",
+        "manufacturer": "Philips Hue",
+        "model": "Hue Bulb",
+        "name": "Bathroom Lights"
+      },
+      {
+        "area_id": "bathroom",
+        "id": "dev_ba_sensor",
+        "manufacturer": "Aqara",
+        "model": "Temp & Humidity",
+        "name": "Bathroom Sensor"
+      },
+      {
+        "area_id": "hallway",
+        "id": "dev_ha_lights",
+        "manufacturer": "Philips Hue",
+        "model": "Hue Bulb",
+        "name": "Hallway Light"
+      },
+      {
+        "area_id": "hallway",
+        "id": "dev_ha_motion",
+        "manufacturer": "Aqara",
+        "model": "Motion Sensor P1",
+        "name": "Hallway Motion Sensor"
+      },
+      {
+        "area_id": "hallway",
+        "id": "dev_ha_door",
+        "manufacturer": "Aqara",
+        "model": "Door & Window Sensor",
+        "name": "Front Door Sensor"
+      },
+      {
+        "area_id": "hallway",
+        "id": "dev_ha_lock",
+        "manufacturer": "Yale",
+        "model": "Assure Lock 2",
+        "name": "Front Door Lock"
+      },
+      {
+        "area_id": "garage",
+        "id": "dev_ga_door",
+        "manufacturer": "Aqara",
+        "model": "Door & Window Sensor",
+        "name": "Garage Door"
+      },
+      {
+        "area_id": "hallway",
+        "id": "dev_ha_camera",
+        "manufacturer": "Reolink",
+        "model": "RLC-810A",
+        "name": "Hallway Camera"
+      },
+      {
+        "area_id": null,
+        "id": "dev_outdoor_camera",
+        "manufacturer": "Reolink",
+        "model": "RLC-810A",
+        "name": "Outdoor Camera"
+      },
+      {
+        "area_id": null,
+        "id": "dev_alarm",
+        "manufacturer": "Home Assistant",
+        "model": "Manual Alarm",
+        "name": "Alarm Panel"
+      },
+      {
+        "area_id": null,
+        "id": "dev_system_monitor",
+        "manufacturer": "System Monitor",
+        "model": "Glances",
+        "name": "System Monitor"
+      }
+    ],
+    "entities": [
+      {
+        "area_id": null,
+        "device_id": "dev_lr_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.living_room_ceiling",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Ceiling Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_lr_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.living_room_floor_lamp",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Floor Lamp",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_lr_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.living_room_shelf",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Shelf Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_lr_climate",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "climate.living_room",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Thermostat",
+        "platform": "nest"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_lr_tv",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "media_player.living_room_tv",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Living Room TV",
+        "platform": "cast"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_lr_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.living_room_temperature",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Temperature",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_lr_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.living_room_humidity",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Humidity",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_lr_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "binary_sensor.living_room_motion",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Motion",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_kt_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.kitchen_ceiling",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Kitchen Ceiling",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_kt_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.kitchen_counter",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Counter Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_kt_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.kitchen_temperature",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Temperature",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_kt_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.kitchen_humidity",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Humidity",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_kt_switch",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "switch.coffee_machine",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Coffee Machine",
+        "platform": "tplink"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.bedroom_ceiling",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bedroom Ceiling",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.bedroom_nightstand",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Nightstand Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_climate",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "climate.bedroom",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bedroom Thermostat",
+        "platform": "nest"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_cover",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "cover.bedroom_blinds",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bedroom Blinds",
+        "platform": "zwave_js"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ga_door",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "cover.garage_door",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Garage Door",
+        "platform": "zwave_js"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.bedroom_temperature",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Temperature",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.bedroom_humidity",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Humidity",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_speaker",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "media_player.bedroom_speaker",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bedroom Speaker",
+        "platform": "cast"
+      },
+      {
+        "area_id": "kitchen",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "media_player.kitchen_speaker",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Kitchen Speaker",
+        "platform": "cast"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "binary_sensor.bedroom_window",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bedroom Window",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_of_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.office_ceiling",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Office Ceiling",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_of_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.office_desk",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Desk Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_of_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.office_temperature",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Temperature",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_of_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.office_humidity",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Humidity",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_of_switch",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "switch.office_desk",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Desk Switch",
+        "platform": "tplink"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.energy_today",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Energy Today",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ba_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.bathroom_ceiling",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bathroom Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ba_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.bathroom_mirror",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Mirror Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ba_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.bathroom_temperature",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Temperature",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ba_sensor",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.bathroom_humidity",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Humidity",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ha_lights",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "light.hallway",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Hallway Light",
+        "platform": "hue"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ha_motion",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "binary_sensor.hallway_motion",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Hallway Motion",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ha_door",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "binary_sensor.front_door",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Front Door",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ha_lock",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "lock.front_door",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Front Door Lock",
+        "platform": "zwave_js"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ha_camera",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "camera.hallway",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Hallway Camera",
+        "platform": "generic"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_outdoor_camera",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "camera.outdoor",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Outdoor Camera",
+        "platform": "generic"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_alarm",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "alarm_control_panel.home",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Home Alarm",
+        "platform": "manual_alarm"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "weather.home",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Home Weather",
+        "platform": "met"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sun.sun",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Sun",
+        "platform": "sun"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "person.alice",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Alice",
+        "platform": "person"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "person.bob",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bob",
+        "platform": "person"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.morning_wake_up",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Wake Up",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.morning_coffee",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Coffee Machine",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.morning_lights",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Morning Lights",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.evening_lights",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Evening Lights",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.evening_shutters",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Close Shutters",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.evening_downtime",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Downtime Mode",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.security_front_door",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Front Door Alert",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.security_motion",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Motion Alert",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.security_alarm",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Alarm Notification",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.comfort_temperature",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Temperature Control",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.comfort_humidity",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Humidity Alert",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.away_mode",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Away Mode",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.arrival_home",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Arrival Home",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "living_room",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.living_room_movie",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Movie Night",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "living_room",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.living_room_bright",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bright Mode",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "living_room",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.living_room_relax",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Relax Mode",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "bedroom",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.bedroom_sleep",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Sleep",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "bedroom",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.bedroom_wake",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Wake Up",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "kitchen",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.kitchen_cooking",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Cooking Mode",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "kitchen",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.kitchen_morning",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Morning Coffee",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "office",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.office_focus",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Focus Mode",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "office",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.office_meeting",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Meeting",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "hallway",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.hallway_away",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Away Mode",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": "hallway",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "scene.hallway_welcome",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Welcome Home",
+        "platform": "homeassistant"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.processor_use",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Processor use",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.processor_temperature",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Processor temperature",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.memory_use_percent",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Memory use",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.memory_free",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Memory free",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.disk_use_percent",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Disk use (/)",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.disk_free",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Disk free (/)",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.network_throughput_in_eth0",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Network throughput in eth0",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.network_throughput_out_eth0",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Network throughput out eth0",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_system_monitor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.last_boot",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Last boot",
+        "platform": "systemmonitor"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ha_lock",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.front_door_lock_battery",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Front Door Lock Battery",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_ha_motion",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.hallway_motion_battery",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Hallway Motion Battery",
+        "platform": "zha"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_br_sensor",
+        "disabled_by": null,
+        "entity_category": "diagnostic",
+        "entity_id": "sensor.bedroom_sensor_battery",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Bedroom Sensor Battery",
+        "platform": "zha"
+      },
+      {
+        "area_id": "living_room",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.advanced_heating_living_room",
+        "hidden_by": null,
+        "icon": null,
+        "labels": [
+          "heizplan"
+        ],
+        "original_name": null,
+        "platform": "automation"
+      },
+      {
+        "area_id": "living_room",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "schedule.heating_living_room",
+        "hidden_by": null,
+        "icon": null,
+        "labels": [
+          "heizplan"
+        ],
+        "original_name": null,
+        "platform": "schedule"
+      },
+      {
+        "area_id": "living_room",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "input_number.heating_plan_living_room_comfort",
+        "hidden_by": null,
+        "icon": null,
+        "labels": [
+          "heizplan"
+        ],
+        "original_name": null,
+        "platform": "input_number"
+      },
+      {
+        "area_id": "living_room",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "input_number.heating_plan_living_room_eco",
+        "hidden_by": null,
+        "icon": null,
+        "labels": [
+          "heizplan"
+        ],
+        "original_name": null,
+        "platform": "input_number"
+      },
+      {
+        "area_id": null,
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "automation.heizplan_speichern",
+        "hidden_by": null,
+        "icon": null,
+        "labels": [],
+        "original_name": null,
+        "platform": "automation"
+      },
+      {
+        "area_id": "bathroom",
+        "device_id": null,
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "humidifier.bathroom_dehumidifier",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": null,
+        "platform": "generic_hygrostat"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_demo_battery",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "sensor.demo_battery_soc",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Battery State of Charge",
+        "platform": "aecc_battery",
+        "unique_id": "demo_battery_soc"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_demo_battery",
+        "disabled_by": null,
+        "entity_category": "config",
+        "entity_id": "number.demo_battery_charge_limit",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Charge limit",
+        "platform": "aecc_battery",
+        "unique_id": "demo_battery_max_soc"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_demo_battery",
+        "disabled_by": null,
+        "entity_category": "config",
+        "entity_id": "number.demo_battery_discharge_limit",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Discharge limit",
+        "platform": "aecc_battery",
+        "unique_id": "demo_battery_min_soc"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_demo_battery",
+        "disabled_by": null,
+        "entity_category": "config",
+        "entity_id": "select.demo_battery_work_mode",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Work mode",
+        "platform": "aecc_battery",
+        "unique_id": "demo_battery_work_mode"
+      },
+      {
+        "area_id": null,
+        "device_id": "dev_demo_battery",
+        "disabled_by": null,
+        "entity_category": null,
+        "entity_id": "number.demo_battery_power_setpoint",
+        "hidden_by": null,
+        "icon": null,
+        "original_name": "Power Setpoint",
+        "platform": "aecc_battery",
+        "unique_id": "demo_battery_signed_power_setpoint"
+      }
+    ]
+  }
+}

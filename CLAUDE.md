@@ -1,8 +1,9 @@
 # CLAUDE.md — Arbeitsanweisungen für diesen Fork
 
 Dies ist ein **Fork** von [jlnbln/HAPulse](https://github.com/jlnbln/HAPulse).
-Ziel des Users: eigene Erweiterungen einbauen **und** Upstream-Updates weiter
-sauber übernehmen können.
+Ziel des Users: eigene Erweiterungen einbauen. **Seit 19.11.2026 wird Upstream nicht mehr übernommen** (User: „ich
+brauche upstream nicht mehr“); Regeln, die nur Upstream-Merges erleichtern (`[fork]`-Marken, neue Dateien statt
+Änderungen), bleiben vorerst bestehen, dürfen aber einer sauberen Lösung nicht mehr im Weg stehen.
 
 ## Fork-Konventionen (immer einhalten)
 
@@ -253,6 +254,13 @@ sauber übernehmen können.
   `HAConnection.sendMessage`/`restAuth`), Test `test/heatingSetup.test.ts` (nachgebautes HA), Prüfung
   `--only sheetsHeatingSetup` (Demo-Schlafzimmer). Einrichtung in Home Assistant, Aufrufe und Regeln der Karte:
   **`docs/HEIZPLAN.md`**.
+
+- **Native iOS-App** (`apps/ios`, seit 19.11.2026 im Bau): SwiftUI, iOS 26, nur Stil Glas. Logik ohne UI in
+  `Packages/HAPulseKit` (läuft unter Linux), Bausteine in `Packages/HAPulseUI`, Projekt per XcodeGen (`project.yml`).
+  Die Web-Logik ist die Quelle: der Generator `npx vitest run --config apps/ios/tools/export/vitest.config.mts` kopiert
+  Texte, Demo-Haus, Glas-Farben und Symbole und schreibt Prüffälle, gegen die `swift test` prüft. Wer Core-Logik ändert,
+  die die App nachbaut (Zahlen, Texte, `glasTokens.ts`, …), lässt den Generator laufen. CI `.github/workflows/ios.yml`
+  (Linux + macOS, Bildschirmfotos als Artefakt). Details `apps/ios/README.md`.
 
 ## Optionales Folge-Feature — HA-Kameras live
 

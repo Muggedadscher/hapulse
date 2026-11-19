@@ -1,0 +1,9410 @@
+[
+  {
+    "locale": "en",
+    "value": 0,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0.0"
+  },
+  {
+    "locale": "en",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0.0"
+  },
+  {
+    "locale": "en",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": 0,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0.00"
+  },
+  {
+    "locale": "en",
+    "value": 1,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "en",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "en",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1"
+  },
+  {
+    "locale": "en",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.0"
+  },
+  {
+    "locale": "en",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.0"
+  },
+  {
+    "locale": "en",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1"
+  },
+  {
+    "locale": "en",
+    "value": 1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.00"
+  },
+  {
+    "locale": "en",
+    "value": -1,
+    "opts": {},
+    "out": "-1"
+  },
+  {
+    "locale": "en",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "en",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "en",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1.0"
+  },
+  {
+    "locale": "en",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1.0"
+  },
+  {
+    "locale": "en",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "en",
+    "value": -1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1.00"
+  },
+  {
+    "locale": "en",
+    "value": 0.5,
+    "opts": {},
+    "out": "0.5"
+  },
+  {
+    "locale": "en",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "en",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0.5"
+  },
+  {
+    "locale": "en",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0.5"
+  },
+  {
+    "locale": "en",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0.5"
+  },
+  {
+    "locale": "en",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0.5"
+  },
+  {
+    "locale": "en",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0.50"
+  },
+  {
+    "locale": "en",
+    "value": 1.5,
+    "opts": {},
+    "out": "1.5"
+  },
+  {
+    "locale": "en",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "en",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.5"
+  },
+  {
+    "locale": "en",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.5"
+  },
+  {
+    "locale": "en",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.5"
+  },
+  {
+    "locale": "en",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.5"
+  },
+  {
+    "locale": "en",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.50"
+  },
+  {
+    "locale": "en",
+    "value": -0.04,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0.04"
+  },
+  {
+    "locale": "en",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0.0"
+  },
+  {
+    "locale": "en",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0.0"
+  },
+  {
+    "locale": "en",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0.04"
+  },
+  {
+    "locale": "en",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0.04"
+  },
+  {
+    "locale": "en",
+    "value": -0.05,
+    "opts": {},
+    "out": "-0.1"
+  },
+  {
+    "locale": "en",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0.05"
+  },
+  {
+    "locale": "en",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-0.1"
+  },
+  {
+    "locale": "en",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-0.1"
+  },
+  {
+    "locale": "en",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0.05"
+  },
+  {
+    "locale": "en",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0.05"
+  },
+  {
+    "locale": "en",
+    "value": 2.25,
+    "opts": {},
+    "out": "2.3"
+  },
+  {
+    "locale": "en",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "en",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2.25"
+  },
+  {
+    "locale": "en",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2.3"
+  },
+  {
+    "locale": "en",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2.3"
+  },
+  {
+    "locale": "en",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2.25"
+  },
+  {
+    "locale": "en",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2.25"
+  },
+  {
+    "locale": "en",
+    "value": 2.35,
+    "opts": {},
+    "out": "2.4"
+  },
+  {
+    "locale": "en",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "en",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2.35"
+  },
+  {
+    "locale": "en",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2.4"
+  },
+  {
+    "locale": "en",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2.4"
+  },
+  {
+    "locale": "en",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2.35"
+  },
+  {
+    "locale": "en",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2.35"
+  },
+  {
+    "locale": "en",
+    "value": 1.005,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "en",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "en",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.01"
+  },
+  {
+    "locale": "en",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.0"
+  },
+  {
+    "locale": "en",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.0"
+  },
+  {
+    "locale": "en",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.005"
+  },
+  {
+    "locale": "en",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.01"
+  },
+  {
+    "locale": "en",
+    "value": 12.345,
+    "opts": {},
+    "out": "12.3"
+  },
+  {
+    "locale": "en",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12"
+  },
+  {
+    "locale": "en",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12.35"
+  },
+  {
+    "locale": "en",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12.3"
+  },
+  {
+    "locale": "en",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12.3"
+  },
+  {
+    "locale": "en",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12.345"
+  },
+  {
+    "locale": "en",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12.35"
+  },
+  {
+    "locale": "en",
+    "value": 999.95,
+    "opts": {},
+    "out": "1,000"
+  },
+  {
+    "locale": "en",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1,000"
+  },
+  {
+    "locale": "en",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "999.95"
+  },
+  {
+    "locale": "en",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "999.95"
+  },
+  {
+    "locale": "en",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "999.95"
+  },
+  {
+    "locale": "en",
+    "value": 1000,
+    "opts": {},
+    "out": "1,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,000.00"
+  },
+  {
+    "locale": "en",
+    "value": 1250,
+    "opts": {},
+    "out": "1,250"
+  },
+  {
+    "locale": "en",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1,250"
+  },
+  {
+    "locale": "en",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,250"
+  },
+  {
+    "locale": "en",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,250.0"
+  },
+  {
+    "locale": "en",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,250.0"
+  },
+  {
+    "locale": "en",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,250"
+  },
+  {
+    "locale": "en",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,250.00"
+  },
+  {
+    "locale": "en",
+    "value": 1250.5,
+    "opts": {},
+    "out": "1,250.5"
+  },
+  {
+    "locale": "en",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1,251"
+  },
+  {
+    "locale": "en",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,250.5"
+  },
+  {
+    "locale": "en",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,250.5"
+  },
+  {
+    "locale": "en",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,250.5"
+  },
+  {
+    "locale": "en",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,250.5"
+  },
+  {
+    "locale": "en",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,250.50"
+  },
+  {
+    "locale": "en",
+    "value": 9999,
+    "opts": {},
+    "out": "9,999"
+  },
+  {
+    "locale": "en",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "9,999"
+  },
+  {
+    "locale": "en",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "9,999"
+  },
+  {
+    "locale": "en",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "9,999.0"
+  },
+  {
+    "locale": "en",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "9,999.0"
+  },
+  {
+    "locale": "en",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "9,999"
+  },
+  {
+    "locale": "en",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "9,999.00"
+  },
+  {
+    "locale": "en",
+    "value": 10000,
+    "opts": {},
+    "out": "10,000"
+  },
+  {
+    "locale": "en",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "10,000"
+  },
+  {
+    "locale": "en",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "10,000"
+  },
+  {
+    "locale": "en",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "10,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "10,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "10,000"
+  },
+  {
+    "locale": "en",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "10,000.00"
+  },
+  {
+    "locale": "en",
+    "value": 12345.678,
+    "opts": {},
+    "out": "12,345.7"
+  },
+  {
+    "locale": "en",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12,346"
+  },
+  {
+    "locale": "en",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12,345.68"
+  },
+  {
+    "locale": "en",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12,345.7"
+  },
+  {
+    "locale": "en",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12,345.7"
+  },
+  {
+    "locale": "en",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12,345.678"
+  },
+  {
+    "locale": "en",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12,345.68"
+  },
+  {
+    "locale": "en",
+    "value": 1234567.891,
+    "opts": {},
+    "out": "1,234,567.9"
+  },
+  {
+    "locale": "en",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1,234,568"
+  },
+  {
+    "locale": "en",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,234,567.89"
+  },
+  {
+    "locale": "en",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,234,567.9"
+  },
+  {
+    "locale": "en",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,234,567.9"
+  },
+  {
+    "locale": "en",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,234,567.891"
+  },
+  {
+    "locale": "en",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,234,567.89"
+  },
+  {
+    "locale": "en",
+    "value": -1234.5,
+    "opts": {},
+    "out": "-1,234.5"
+  },
+  {
+    "locale": "en",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1,235"
+  },
+  {
+    "locale": "en",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1,234.5"
+  },
+  {
+    "locale": "en",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1,234.5"
+  },
+  {
+    "locale": "en",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1,234.5"
+  },
+  {
+    "locale": "en",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1,234.5"
+  },
+  {
+    "locale": "en",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1,234.50"
+  },
+  {
+    "locale": "en",
+    "value": 0.125,
+    "opts": {},
+    "out": "0.1"
+  },
+  {
+    "locale": "en",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "en",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0.13"
+  },
+  {
+    "locale": "en",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0.1"
+  },
+  {
+    "locale": "en",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0.1"
+  },
+  {
+    "locale": "en",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0.125"
+  },
+  {
+    "locale": "en",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0.13"
+  },
+  {
+    "locale": "en",
+    "value": 21,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "en",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "en",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21"
+  },
+  {
+    "locale": "en",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21.0"
+  },
+  {
+    "locale": "en",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21.0"
+  },
+  {
+    "locale": "en",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21"
+  },
+  {
+    "locale": "en",
+    "value": 21,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21.00"
+  },
+  {
+    "locale": "en",
+    "value": 21.04,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "en",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "en",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21.04"
+  },
+  {
+    "locale": "en",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21.0"
+  },
+  {
+    "locale": "en",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21.0"
+  },
+  {
+    "locale": "en",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21.04"
+  },
+  {
+    "locale": "en",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21.04"
+  },
+  {
+    "locale": "en",
+    "value": 1000000000,
+    "opts": {},
+    "out": "1,000,000,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1,000,000,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,000,000,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,000,000,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,000,000,000.0"
+  },
+  {
+    "locale": "en",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,000,000,000"
+  },
+  {
+    "locale": "en",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,000,000,000.00"
+  },
+  {
+    "locale": "de",
+    "value": 0,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "de",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "de",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": 0,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,00"
+  },
+  {
+    "locale": "de",
+    "value": 1,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "de",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "de",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1"
+  },
+  {
+    "locale": "de",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "de",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "de",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1"
+  },
+  {
+    "locale": "de",
+    "value": 1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,00"
+  },
+  {
+    "locale": "de",
+    "value": -1,
+    "opts": {},
+    "out": "-1"
+  },
+  {
+    "locale": "de",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "de",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "de",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "de",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "de",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "de",
+    "value": -1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1,00"
+  },
+  {
+    "locale": "de",
+    "value": 0.5,
+    "opts": {},
+    "out": "0,5"
+  },
+  {
+    "locale": "de",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "de",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "de",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "de",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "de",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "de",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,50"
+  },
+  {
+    "locale": "de",
+    "value": 1.5,
+    "opts": {},
+    "out": "1,5"
+  },
+  {
+    "locale": "de",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "de",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "de",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "de",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "de",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "de",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,50"
+  },
+  {
+    "locale": "de",
+    "value": -0.04,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "de",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "de",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "de",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "de",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "de",
+    "value": -0.05,
+    "opts": {},
+    "out": "-0,1"
+  },
+  {
+    "locale": "de",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "de",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "de",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "de",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "de",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "de",
+    "value": 2.25,
+    "opts": {},
+    "out": "2,3"
+  },
+  {
+    "locale": "de",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "de",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "de",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "de",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "de",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "de",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "de",
+    "value": 2.35,
+    "opts": {},
+    "out": "2,4"
+  },
+  {
+    "locale": "de",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "de",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "de",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "de",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "de",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "de",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "de",
+    "value": 1.005,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "de",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "de",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "de",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "de",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "de",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,005"
+  },
+  {
+    "locale": "de",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "de",
+    "value": 12.345,
+    "opts": {},
+    "out": "12,3"
+  },
+  {
+    "locale": "de",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12"
+  },
+  {
+    "locale": "de",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "de",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "de",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "de",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12,345"
+  },
+  {
+    "locale": "de",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "de",
+    "value": 999.95,
+    "opts": {},
+    "out": "1.000"
+  },
+  {
+    "locale": "de",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "de",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "de",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "de",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "de",
+    "value": 1000,
+    "opts": {},
+    "out": "1.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.000,00"
+  },
+  {
+    "locale": "de",
+    "value": 1250,
+    "opts": {},
+    "out": "1.250"
+  },
+  {
+    "locale": "de",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.250"
+  },
+  {
+    "locale": "de",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.250"
+  },
+  {
+    "locale": "de",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.250,0"
+  },
+  {
+    "locale": "de",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.250,0"
+  },
+  {
+    "locale": "de",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.250"
+  },
+  {
+    "locale": "de",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.250,00"
+  },
+  {
+    "locale": "de",
+    "value": 1250.5,
+    "opts": {},
+    "out": "1.250,5"
+  },
+  {
+    "locale": "de",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.251"
+  },
+  {
+    "locale": "de",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "de",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "de",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "de",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "de",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.250,50"
+  },
+  {
+    "locale": "de",
+    "value": 9999,
+    "opts": {},
+    "out": "9.999"
+  },
+  {
+    "locale": "de",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "9.999"
+  },
+  {
+    "locale": "de",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "9.999"
+  },
+  {
+    "locale": "de",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "9.999,0"
+  },
+  {
+    "locale": "de",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "9.999,0"
+  },
+  {
+    "locale": "de",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "9.999"
+  },
+  {
+    "locale": "de",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "9.999,00"
+  },
+  {
+    "locale": "de",
+    "value": 10000,
+    "opts": {},
+    "out": "10.000"
+  },
+  {
+    "locale": "de",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "de",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "de",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "de",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "10.000,00"
+  },
+  {
+    "locale": "de",
+    "value": 12345.678,
+    "opts": {},
+    "out": "12.345,7"
+  },
+  {
+    "locale": "de",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12.346"
+  },
+  {
+    "locale": "de",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "de",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "de",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "de",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12.345,678"
+  },
+  {
+    "locale": "de",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "de",
+    "value": 1234567.891,
+    "opts": {},
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "de",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.234.568"
+  },
+  {
+    "locale": "de",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "de",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "de",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "de",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.234.567,891"
+  },
+  {
+    "locale": "de",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "de",
+    "value": -1234.5,
+    "opts": {},
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "de",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1.235"
+  },
+  {
+    "locale": "de",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "de",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "de",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "de",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "de",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1.234,50"
+  },
+  {
+    "locale": "de",
+    "value": 0.125,
+    "opts": {},
+    "out": "0,1"
+  },
+  {
+    "locale": "de",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "de",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "de",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "de",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "de",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,125"
+  },
+  {
+    "locale": "de",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "de",
+    "value": 21,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "de",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "de",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21"
+  },
+  {
+    "locale": "de",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "de",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "de",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21"
+  },
+  {
+    "locale": "de",
+    "value": 21,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,00"
+  },
+  {
+    "locale": "de",
+    "value": 21.04,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "de",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "de",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "de",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "de",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "de",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "de",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "de",
+    "value": 1000000000,
+    "opts": {},
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "de",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "de",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000,00"
+  },
+  {
+    "locale": "es",
+    "value": 0,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "es",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "es",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": 0,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,00"
+  },
+  {
+    "locale": "es",
+    "value": 1,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "es",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "es",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1"
+  },
+  {
+    "locale": "es",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "es",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "es",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1"
+  },
+  {
+    "locale": "es",
+    "value": 1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,00"
+  },
+  {
+    "locale": "es",
+    "value": -1,
+    "opts": {},
+    "out": "-1"
+  },
+  {
+    "locale": "es",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "es",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "es",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "es",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "es",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "es",
+    "value": -1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1,00"
+  },
+  {
+    "locale": "es",
+    "value": 0.5,
+    "opts": {},
+    "out": "0,5"
+  },
+  {
+    "locale": "es",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "es",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "es",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "es",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "es",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "es",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,50"
+  },
+  {
+    "locale": "es",
+    "value": 1.5,
+    "opts": {},
+    "out": "1,5"
+  },
+  {
+    "locale": "es",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "es",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "es",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "es",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "es",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "es",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,50"
+  },
+  {
+    "locale": "es",
+    "value": -0.04,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "es",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "es",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "es",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "es",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "es",
+    "value": -0.05,
+    "opts": {},
+    "out": "-0,1"
+  },
+  {
+    "locale": "es",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "es",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "es",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "es",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "es",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "es",
+    "value": 2.25,
+    "opts": {},
+    "out": "2,3"
+  },
+  {
+    "locale": "es",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "es",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "es",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "es",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "es",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "es",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "es",
+    "value": 2.35,
+    "opts": {},
+    "out": "2,4"
+  },
+  {
+    "locale": "es",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "es",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "es",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "es",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "es",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "es",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "es",
+    "value": 1.005,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "es",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "es",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "es",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "es",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "es",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,005"
+  },
+  {
+    "locale": "es",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "es",
+    "value": 12.345,
+    "opts": {},
+    "out": "12,3"
+  },
+  {
+    "locale": "es",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12"
+  },
+  {
+    "locale": "es",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "es",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "es",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "es",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12,345"
+  },
+  {
+    "locale": "es",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "es",
+    "value": 999.95,
+    "opts": {},
+    "out": "1000"
+  },
+  {
+    "locale": "es",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "es",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "es",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "es",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "es",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "es",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "es",
+    "value": 1000,
+    "opts": {},
+    "out": "1000"
+  },
+  {
+    "locale": "es",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "es",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "es",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "es",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "es",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "es",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1000,00"
+  },
+  {
+    "locale": "es",
+    "value": 1250,
+    "opts": {},
+    "out": "1250"
+  },
+  {
+    "locale": "es",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1250"
+  },
+  {
+    "locale": "es",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1250"
+  },
+  {
+    "locale": "es",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1250,0"
+  },
+  {
+    "locale": "es",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1250,0"
+  },
+  {
+    "locale": "es",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1250"
+  },
+  {
+    "locale": "es",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1250,00"
+  },
+  {
+    "locale": "es",
+    "value": 1250.5,
+    "opts": {},
+    "out": "1250,5"
+  },
+  {
+    "locale": "es",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1251"
+  },
+  {
+    "locale": "es",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "es",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "es",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "es",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "es",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1250,50"
+  },
+  {
+    "locale": "es",
+    "value": 9999,
+    "opts": {},
+    "out": "9999"
+  },
+  {
+    "locale": "es",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "9999"
+  },
+  {
+    "locale": "es",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "9999"
+  },
+  {
+    "locale": "es",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "9999,0"
+  },
+  {
+    "locale": "es",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "9999,0"
+  },
+  {
+    "locale": "es",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "9999"
+  },
+  {
+    "locale": "es",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "9999,00"
+  },
+  {
+    "locale": "es",
+    "value": 10000,
+    "opts": {},
+    "out": "10.000"
+  },
+  {
+    "locale": "es",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "es",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "es",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "es",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "es",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "es",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "10.000,00"
+  },
+  {
+    "locale": "es",
+    "value": 12345.678,
+    "opts": {},
+    "out": "12.345,7"
+  },
+  {
+    "locale": "es",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12.346"
+  },
+  {
+    "locale": "es",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "es",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "es",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "es",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12.345,678"
+  },
+  {
+    "locale": "es",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "es",
+    "value": 1234567.891,
+    "opts": {},
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "es",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.234.568"
+  },
+  {
+    "locale": "es",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "es",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "es",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "es",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.234.567,891"
+  },
+  {
+    "locale": "es",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "es",
+    "value": -1234.5,
+    "opts": {},
+    "out": "-1234,5"
+  },
+  {
+    "locale": "es",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1235"
+  },
+  {
+    "locale": "es",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "es",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "es",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "es",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "es",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1234,50"
+  },
+  {
+    "locale": "es",
+    "value": 0.125,
+    "opts": {},
+    "out": "0,1"
+  },
+  {
+    "locale": "es",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "es",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "es",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "es",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "es",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,125"
+  },
+  {
+    "locale": "es",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "es",
+    "value": 21,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "es",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "es",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21"
+  },
+  {
+    "locale": "es",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "es",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "es",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21"
+  },
+  {
+    "locale": "es",
+    "value": 21,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,00"
+  },
+  {
+    "locale": "es",
+    "value": 21.04,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "es",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "es",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "es",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "es",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "es",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "es",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "es",
+    "value": 1000000000,
+    "opts": {},
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "es",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "es",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "es",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "es",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "es",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "es",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000,00"
+  },
+  {
+    "locale": "fr",
+    "value": 0,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "fr",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "fr",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": 0,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,00"
+  },
+  {
+    "locale": "fr",
+    "value": 1,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "fr",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "fr",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1"
+  },
+  {
+    "locale": "fr",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1"
+  },
+  {
+    "locale": "fr",
+    "value": 1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,00"
+  },
+  {
+    "locale": "fr",
+    "value": -1,
+    "opts": {},
+    "out": "-1"
+  },
+  {
+    "locale": "fr",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "fr",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "fr",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "fr",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "fr",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "fr",
+    "value": -1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1,00"
+  },
+  {
+    "locale": "fr",
+    "value": 0.5,
+    "opts": {},
+    "out": "0,5"
+  },
+  {
+    "locale": "fr",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "fr",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "fr",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "fr",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "fr",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "fr",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,50"
+  },
+  {
+    "locale": "fr",
+    "value": 1.5,
+    "opts": {},
+    "out": "1,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "fr",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,50"
+  },
+  {
+    "locale": "fr",
+    "value": -0.04,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "fr",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "fr",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "fr",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "fr",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "fr",
+    "value": -0.05,
+    "opts": {},
+    "out": "-0,1"
+  },
+  {
+    "locale": "fr",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "fr",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "fr",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "fr",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "fr",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "fr",
+    "value": 2.25,
+    "opts": {},
+    "out": "2,3"
+  },
+  {
+    "locale": "fr",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "fr",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "fr",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "fr",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "fr",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "fr",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "fr",
+    "value": 2.35,
+    "opts": {},
+    "out": "2,4"
+  },
+  {
+    "locale": "fr",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "fr",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "fr",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "fr",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "fr",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "fr",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "fr",
+    "value": 1.005,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "fr",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "fr",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "fr",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,005"
+  },
+  {
+    "locale": "fr",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "fr",
+    "value": 12.345,
+    "opts": {},
+    "out": "12,3"
+  },
+  {
+    "locale": "fr",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12"
+  },
+  {
+    "locale": "fr",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "fr",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "fr",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "fr",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12,345"
+  },
+  {
+    "locale": "fr",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "fr",
+    "value": 999.95,
+    "opts": {},
+    "out": "1 000"
+  },
+  {
+    "locale": "fr",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "fr",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "fr",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "fr",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "fr",
+    "value": 1000,
+    "opts": {},
+    "out": "1 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 000,00"
+  },
+  {
+    "locale": "fr",
+    "value": 1250,
+    "opts": {},
+    "out": "1 250"
+  },
+  {
+    "locale": "fr",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 250"
+  },
+  {
+    "locale": "fr",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 250"
+  },
+  {
+    "locale": "fr",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 250,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 250,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 250"
+  },
+  {
+    "locale": "fr",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 250,00"
+  },
+  {
+    "locale": "fr",
+    "value": 1250.5,
+    "opts": {},
+    "out": "1 250,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 251"
+  },
+  {
+    "locale": "fr",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "fr",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 250,50"
+  },
+  {
+    "locale": "fr",
+    "value": 9999,
+    "opts": {},
+    "out": "9 999"
+  },
+  {
+    "locale": "fr",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "9 999"
+  },
+  {
+    "locale": "fr",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "9 999"
+  },
+  {
+    "locale": "fr",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "9 999,0"
+  },
+  {
+    "locale": "fr",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "9 999,0"
+  },
+  {
+    "locale": "fr",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "9 999"
+  },
+  {
+    "locale": "fr",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "9 999,00"
+  },
+  {
+    "locale": "fr",
+    "value": 10000,
+    "opts": {},
+    "out": "10 000"
+  },
+  {
+    "locale": "fr",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "10 000"
+  },
+  {
+    "locale": "fr",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "10 000"
+  },
+  {
+    "locale": "fr",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "10 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "10 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "10 000"
+  },
+  {
+    "locale": "fr",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "10 000,00"
+  },
+  {
+    "locale": "fr",
+    "value": 12345.678,
+    "opts": {},
+    "out": "12 345,7"
+  },
+  {
+    "locale": "fr",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12 346"
+  },
+  {
+    "locale": "fr",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12 345,68"
+  },
+  {
+    "locale": "fr",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12 345,7"
+  },
+  {
+    "locale": "fr",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12 345,7"
+  },
+  {
+    "locale": "fr",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12 345,678"
+  },
+  {
+    "locale": "fr",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12 345,68"
+  },
+  {
+    "locale": "fr",
+    "value": 1234567.891,
+    "opts": {},
+    "out": "1 234 567,9"
+  },
+  {
+    "locale": "fr",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 234 568"
+  },
+  {
+    "locale": "fr",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 234 567,89"
+  },
+  {
+    "locale": "fr",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 234 567,9"
+  },
+  {
+    "locale": "fr",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 234 567,9"
+  },
+  {
+    "locale": "fr",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 234 567,891"
+  },
+  {
+    "locale": "fr",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 234 567,89"
+  },
+  {
+    "locale": "fr",
+    "value": -1234.5,
+    "opts": {},
+    "out": "-1 234,5"
+  },
+  {
+    "locale": "fr",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1 235"
+  },
+  {
+    "locale": "fr",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1 234,5"
+  },
+  {
+    "locale": "fr",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1 234,5"
+  },
+  {
+    "locale": "fr",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1 234,5"
+  },
+  {
+    "locale": "fr",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1 234,5"
+  },
+  {
+    "locale": "fr",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1 234,50"
+  },
+  {
+    "locale": "fr",
+    "value": 0.125,
+    "opts": {},
+    "out": "0,1"
+  },
+  {
+    "locale": "fr",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "fr",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "fr",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "fr",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "fr",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,125"
+  },
+  {
+    "locale": "fr",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "fr",
+    "value": 21,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "fr",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "fr",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21"
+  },
+  {
+    "locale": "fr",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "fr",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "fr",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21"
+  },
+  {
+    "locale": "fr",
+    "value": 21,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,00"
+  },
+  {
+    "locale": "fr",
+    "value": 21.04,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "fr",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "fr",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "fr",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "fr",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "fr",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "fr",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "fr",
+    "value": 1000000000,
+    "opts": {},
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 000 000 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 000 000 000,0"
+  },
+  {
+    "locale": "fr",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "fr",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 000 000 000,00"
+  },
+  {
+    "locale": "it",
+    "value": 0,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "it",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "it",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": 0,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,00"
+  },
+  {
+    "locale": "it",
+    "value": 1,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "it",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "it",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1"
+  },
+  {
+    "locale": "it",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "it",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "it",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1"
+  },
+  {
+    "locale": "it",
+    "value": 1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,00"
+  },
+  {
+    "locale": "it",
+    "value": -1,
+    "opts": {},
+    "out": "-1"
+  },
+  {
+    "locale": "it",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "it",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "it",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "it",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "it",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "it",
+    "value": -1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1,00"
+  },
+  {
+    "locale": "it",
+    "value": 0.5,
+    "opts": {},
+    "out": "0,5"
+  },
+  {
+    "locale": "it",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "it",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "it",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "it",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "it",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "it",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,50"
+  },
+  {
+    "locale": "it",
+    "value": 1.5,
+    "opts": {},
+    "out": "1,5"
+  },
+  {
+    "locale": "it",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "it",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "it",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "it",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "it",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "it",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,50"
+  },
+  {
+    "locale": "it",
+    "value": -0.04,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "it",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "it",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "it",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "it",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "it",
+    "value": -0.05,
+    "opts": {},
+    "out": "-0,1"
+  },
+  {
+    "locale": "it",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "it",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "it",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "it",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "it",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "it",
+    "value": 2.25,
+    "opts": {},
+    "out": "2,3"
+  },
+  {
+    "locale": "it",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "it",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "it",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "it",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "it",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "it",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "it",
+    "value": 2.35,
+    "opts": {},
+    "out": "2,4"
+  },
+  {
+    "locale": "it",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "it",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "it",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "it",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "it",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "it",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "it",
+    "value": 1.005,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "it",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "it",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "it",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "it",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "it",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,005"
+  },
+  {
+    "locale": "it",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "it",
+    "value": 12.345,
+    "opts": {},
+    "out": "12,3"
+  },
+  {
+    "locale": "it",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12"
+  },
+  {
+    "locale": "it",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "it",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "it",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "it",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12,345"
+  },
+  {
+    "locale": "it",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "it",
+    "value": 999.95,
+    "opts": {},
+    "out": "1000"
+  },
+  {
+    "locale": "it",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "it",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "it",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "it",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "it",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "it",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "it",
+    "value": 1000,
+    "opts": {},
+    "out": "1000"
+  },
+  {
+    "locale": "it",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "it",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "it",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "it",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1000,0"
+  },
+  {
+    "locale": "it",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1000"
+  },
+  {
+    "locale": "it",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1000,00"
+  },
+  {
+    "locale": "it",
+    "value": 1250,
+    "opts": {},
+    "out": "1250"
+  },
+  {
+    "locale": "it",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1250"
+  },
+  {
+    "locale": "it",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1250"
+  },
+  {
+    "locale": "it",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1250,0"
+  },
+  {
+    "locale": "it",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1250,0"
+  },
+  {
+    "locale": "it",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1250"
+  },
+  {
+    "locale": "it",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1250,00"
+  },
+  {
+    "locale": "it",
+    "value": 1250.5,
+    "opts": {},
+    "out": "1250,5"
+  },
+  {
+    "locale": "it",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1251"
+  },
+  {
+    "locale": "it",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "it",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "it",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "it",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1250,5"
+  },
+  {
+    "locale": "it",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1250,50"
+  },
+  {
+    "locale": "it",
+    "value": 9999,
+    "opts": {},
+    "out": "9999"
+  },
+  {
+    "locale": "it",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "9999"
+  },
+  {
+    "locale": "it",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "9999"
+  },
+  {
+    "locale": "it",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "9999,0"
+  },
+  {
+    "locale": "it",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "9999,0"
+  },
+  {
+    "locale": "it",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "9999"
+  },
+  {
+    "locale": "it",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "9999,00"
+  },
+  {
+    "locale": "it",
+    "value": 10000,
+    "opts": {},
+    "out": "10.000"
+  },
+  {
+    "locale": "it",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "it",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "it",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "it",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "it",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "it",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "10.000,00"
+  },
+  {
+    "locale": "it",
+    "value": 12345.678,
+    "opts": {},
+    "out": "12.345,7"
+  },
+  {
+    "locale": "it",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12.346"
+  },
+  {
+    "locale": "it",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "it",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "it",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "it",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12.345,678"
+  },
+  {
+    "locale": "it",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "it",
+    "value": 1234567.891,
+    "opts": {},
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "it",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.234.568"
+  },
+  {
+    "locale": "it",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "it",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "it",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "it",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.234.567,891"
+  },
+  {
+    "locale": "it",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "it",
+    "value": -1234.5,
+    "opts": {},
+    "out": "-1234,5"
+  },
+  {
+    "locale": "it",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1235"
+  },
+  {
+    "locale": "it",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "it",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "it",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "it",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1234,5"
+  },
+  {
+    "locale": "it",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1234,50"
+  },
+  {
+    "locale": "it",
+    "value": 0.125,
+    "opts": {},
+    "out": "0,1"
+  },
+  {
+    "locale": "it",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "it",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "it",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "it",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "it",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,125"
+  },
+  {
+    "locale": "it",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "it",
+    "value": 21,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "it",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "it",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21"
+  },
+  {
+    "locale": "it",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "it",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "it",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21"
+  },
+  {
+    "locale": "it",
+    "value": 21,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,00"
+  },
+  {
+    "locale": "it",
+    "value": 21.04,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "it",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "it",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "it",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "it",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "it",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "it",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "it",
+    "value": 1000000000,
+    "opts": {},
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "it",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "it",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "it",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "it",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "it",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "it",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000,00"
+  },
+  {
+    "locale": "pt",
+    "value": 0,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "pt",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "pt",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": 0,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,00"
+  },
+  {
+    "locale": "pt",
+    "value": 1,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "pt",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "pt",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1"
+  },
+  {
+    "locale": "pt",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1"
+  },
+  {
+    "locale": "pt",
+    "value": 1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,00"
+  },
+  {
+    "locale": "pt",
+    "value": -1,
+    "opts": {},
+    "out": "-1"
+  },
+  {
+    "locale": "pt",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "pt",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "pt",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "pt",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1,0"
+  },
+  {
+    "locale": "pt",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1"
+  },
+  {
+    "locale": "pt",
+    "value": -1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1,00"
+  },
+  {
+    "locale": "pt",
+    "value": 0.5,
+    "opts": {},
+    "out": "0,5"
+  },
+  {
+    "locale": "pt",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "pt",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "pt",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "pt",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "pt",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "pt",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,50"
+  },
+  {
+    "locale": "pt",
+    "value": 1.5,
+    "opts": {},
+    "out": "1,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "pt",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,50"
+  },
+  {
+    "locale": "pt",
+    "value": -0.04,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "pt",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "pt",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "pt",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "pt",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,04"
+  },
+  {
+    "locale": "pt",
+    "value": -0.05,
+    "opts": {},
+    "out": "-0,1"
+  },
+  {
+    "locale": "pt",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "pt",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "pt",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-0,1"
+  },
+  {
+    "locale": "pt",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "pt",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-0,05"
+  },
+  {
+    "locale": "pt",
+    "value": 2.25,
+    "opts": {},
+    "out": "2,3"
+  },
+  {
+    "locale": "pt",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "pt",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "pt",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "pt",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "pt",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "pt",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "pt",
+    "value": 2.35,
+    "opts": {},
+    "out": "2,4"
+  },
+  {
+    "locale": "pt",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "pt",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "pt",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "pt",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "pt",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "pt",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "pt",
+    "value": 1.005,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "pt",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "pt",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "pt",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,005"
+  },
+  {
+    "locale": "pt",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "pt",
+    "value": 12.345,
+    "opts": {},
+    "out": "12,3"
+  },
+  {
+    "locale": "pt",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12"
+  },
+  {
+    "locale": "pt",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "pt",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "pt",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "pt",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12,345"
+  },
+  {
+    "locale": "pt",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "pt",
+    "value": 999.95,
+    "opts": {},
+    "out": "1.000"
+  },
+  {
+    "locale": "pt",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "pt",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "pt",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "pt",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "pt",
+    "value": 1000,
+    "opts": {},
+    "out": "1.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.000,00"
+  },
+  {
+    "locale": "pt",
+    "value": 1250,
+    "opts": {},
+    "out": "1.250"
+  },
+  {
+    "locale": "pt",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.250"
+  },
+  {
+    "locale": "pt",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.250"
+  },
+  {
+    "locale": "pt",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.250,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.250,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.250"
+  },
+  {
+    "locale": "pt",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.250,00"
+  },
+  {
+    "locale": "pt",
+    "value": 1250.5,
+    "opts": {},
+    "out": "1.250,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.251"
+  },
+  {
+    "locale": "pt",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.250,5"
+  },
+  {
+    "locale": "pt",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.250,50"
+  },
+  {
+    "locale": "pt",
+    "value": 9999,
+    "opts": {},
+    "out": "9.999"
+  },
+  {
+    "locale": "pt",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "9.999"
+  },
+  {
+    "locale": "pt",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "9.999"
+  },
+  {
+    "locale": "pt",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "9.999,0"
+  },
+  {
+    "locale": "pt",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "9.999,0"
+  },
+  {
+    "locale": "pt",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "9.999"
+  },
+  {
+    "locale": "pt",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "9.999,00"
+  },
+  {
+    "locale": "pt",
+    "value": 10000,
+    "opts": {},
+    "out": "10.000"
+  },
+  {
+    "locale": "pt",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "pt",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "pt",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "10.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "10.000"
+  },
+  {
+    "locale": "pt",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "10.000,00"
+  },
+  {
+    "locale": "pt",
+    "value": 12345.678,
+    "opts": {},
+    "out": "12.345,7"
+  },
+  {
+    "locale": "pt",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12.346"
+  },
+  {
+    "locale": "pt",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "pt",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "pt",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12.345,7"
+  },
+  {
+    "locale": "pt",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12.345,678"
+  },
+  {
+    "locale": "pt",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12.345,68"
+  },
+  {
+    "locale": "pt",
+    "value": 1234567.891,
+    "opts": {},
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "pt",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.234.568"
+  },
+  {
+    "locale": "pt",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "pt",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "pt",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.234.567,9"
+  },
+  {
+    "locale": "pt",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.234.567,891"
+  },
+  {
+    "locale": "pt",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.234.567,89"
+  },
+  {
+    "locale": "pt",
+    "value": -1234.5,
+    "opts": {},
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "pt",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "-1.235"
+  },
+  {
+    "locale": "pt",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "pt",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "pt",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "pt",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "-1.234,5"
+  },
+  {
+    "locale": "pt",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "-1.234,50"
+  },
+  {
+    "locale": "pt",
+    "value": 0.125,
+    "opts": {},
+    "out": "0,1"
+  },
+  {
+    "locale": "pt",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "pt",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "pt",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "pt",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "pt",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,125"
+  },
+  {
+    "locale": "pt",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "pt",
+    "value": 21,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "pt",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "pt",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21"
+  },
+  {
+    "locale": "pt",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "pt",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "pt",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21"
+  },
+  {
+    "locale": "pt",
+    "value": 21,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,00"
+  },
+  {
+    "locale": "pt",
+    "value": 21.04,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "pt",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "pt",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "pt",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "pt",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "pt",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "pt",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "pt",
+    "value": 1000000000,
+    "opts": {},
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1.000.000.000,0"
+  },
+  {
+    "locale": "pt",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1.000.000.000"
+  },
+  {
+    "locale": "pt",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1.000.000.000,00"
+  },
+  {
+    "locale": "sv",
+    "value": 0,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "sv",
+    "value": 0,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "sv",
+    "value": 0,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": 0,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,00"
+  },
+  {
+    "locale": "sv",
+    "value": 1,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "sv",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "sv",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1"
+  },
+  {
+    "locale": "sv",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1"
+  },
+  {
+    "locale": "sv",
+    "value": 1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,00"
+  },
+  {
+    "locale": "sv",
+    "value": -1,
+    "opts": {},
+    "out": "−1"
+  },
+  {
+    "locale": "sv",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "−1"
+  },
+  {
+    "locale": "sv",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "−1"
+  },
+  {
+    "locale": "sv",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "−1,0"
+  },
+  {
+    "locale": "sv",
+    "value": -1,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "−1,0"
+  },
+  {
+    "locale": "sv",
+    "value": -1,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "−1"
+  },
+  {
+    "locale": "sv",
+    "value": -1,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "−1,00"
+  },
+  {
+    "locale": "sv",
+    "value": 0.5,
+    "opts": {},
+    "out": "0,5"
+  },
+  {
+    "locale": "sv",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "sv",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "sv",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "sv",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "sv",
+    "value": 0.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,5"
+  },
+  {
+    "locale": "sv",
+    "value": 0.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,50"
+  },
+  {
+    "locale": "sv",
+    "value": 1.5,
+    "opts": {},
+    "out": "1,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "sv",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,50"
+  },
+  {
+    "locale": "sv",
+    "value": -0.04,
+    "opts": {},
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "−0,04"
+  },
+  {
+    "locale": "sv",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "sv",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,0"
+  },
+  {
+    "locale": "sv",
+    "value": -0.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "−0,04"
+  },
+  {
+    "locale": "sv",
+    "value": -0.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "−0,04"
+  },
+  {
+    "locale": "sv",
+    "value": -0.05,
+    "opts": {},
+    "out": "−0,1"
+  },
+  {
+    "locale": "sv",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "−0,05"
+  },
+  {
+    "locale": "sv",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "−0,1"
+  },
+  {
+    "locale": "sv",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "−0,1"
+  },
+  {
+    "locale": "sv",
+    "value": -0.05,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "−0,05"
+  },
+  {
+    "locale": "sv",
+    "value": -0.05,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "−0,05"
+  },
+  {
+    "locale": "sv",
+    "value": 2.25,
+    "opts": {},
+    "out": "2,3"
+  },
+  {
+    "locale": "sv",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "sv",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "sv",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "sv",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,3"
+  },
+  {
+    "locale": "sv",
+    "value": 2.25,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "sv",
+    "value": 2.25,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,25"
+  },
+  {
+    "locale": "sv",
+    "value": 2.35,
+    "opts": {},
+    "out": "2,4"
+  },
+  {
+    "locale": "sv",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "2"
+  },
+  {
+    "locale": "sv",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "sv",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "sv",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "2,4"
+  },
+  {
+    "locale": "sv",
+    "value": 2.35,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "sv",
+    "value": 2.35,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "2,35"
+  },
+  {
+    "locale": "sv",
+    "value": 1.005,
+    "opts": {},
+    "out": "1"
+  },
+  {
+    "locale": "sv",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1"
+  },
+  {
+    "locale": "sv",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "sv",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1.005,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1,005"
+  },
+  {
+    "locale": "sv",
+    "value": 1.005,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1,01"
+  },
+  {
+    "locale": "sv",
+    "value": 12.345,
+    "opts": {},
+    "out": "12,3"
+  },
+  {
+    "locale": "sv",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12"
+  },
+  {
+    "locale": "sv",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "sv",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "sv",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12,3"
+  },
+  {
+    "locale": "sv",
+    "value": 12.345,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12,345"
+  },
+  {
+    "locale": "sv",
+    "value": 12.345,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12,35"
+  },
+  {
+    "locale": "sv",
+    "value": 999.95,
+    "opts": {},
+    "out": "1 000"
+  },
+  {
+    "locale": "sv",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "sv",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "sv",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 999.95,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "sv",
+    "value": 999.95,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "999,95"
+  },
+  {
+    "locale": "sv",
+    "value": 1000,
+    "opts": {},
+    "out": "1 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 000,00"
+  },
+  {
+    "locale": "sv",
+    "value": 1250,
+    "opts": {},
+    "out": "1 250"
+  },
+  {
+    "locale": "sv",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 250"
+  },
+  {
+    "locale": "sv",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 250"
+  },
+  {
+    "locale": "sv",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 250,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 250,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1250,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 250"
+  },
+  {
+    "locale": "sv",
+    "value": 1250,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 250,00"
+  },
+  {
+    "locale": "sv",
+    "value": 1250.5,
+    "opts": {},
+    "out": "1 250,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 251"
+  },
+  {
+    "locale": "sv",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1250.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 250,5"
+  },
+  {
+    "locale": "sv",
+    "value": 1250.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 250,50"
+  },
+  {
+    "locale": "sv",
+    "value": 9999,
+    "opts": {},
+    "out": "9 999"
+  },
+  {
+    "locale": "sv",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "9 999"
+  },
+  {
+    "locale": "sv",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "9 999"
+  },
+  {
+    "locale": "sv",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "9 999,0"
+  },
+  {
+    "locale": "sv",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "9 999,0"
+  },
+  {
+    "locale": "sv",
+    "value": 9999,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "9 999"
+  },
+  {
+    "locale": "sv",
+    "value": 9999,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "9 999,00"
+  },
+  {
+    "locale": "sv",
+    "value": 10000,
+    "opts": {},
+    "out": "10 000"
+  },
+  {
+    "locale": "sv",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "10 000"
+  },
+  {
+    "locale": "sv",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "10 000"
+  },
+  {
+    "locale": "sv",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "10 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "10 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 10000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "10 000"
+  },
+  {
+    "locale": "sv",
+    "value": 10000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "10 000,00"
+  },
+  {
+    "locale": "sv",
+    "value": 12345.678,
+    "opts": {},
+    "out": "12 345,7"
+  },
+  {
+    "locale": "sv",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "12 346"
+  },
+  {
+    "locale": "sv",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "12 345,68"
+  },
+  {
+    "locale": "sv",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "12 345,7"
+  },
+  {
+    "locale": "sv",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "12 345,7"
+  },
+  {
+    "locale": "sv",
+    "value": 12345.678,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "12 345,678"
+  },
+  {
+    "locale": "sv",
+    "value": 12345.678,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "12 345,68"
+  },
+  {
+    "locale": "sv",
+    "value": 1234567.891,
+    "opts": {},
+    "out": "1 234 567,9"
+  },
+  {
+    "locale": "sv",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 234 568"
+  },
+  {
+    "locale": "sv",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 234 567,89"
+  },
+  {
+    "locale": "sv",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 234 567,9"
+  },
+  {
+    "locale": "sv",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 234 567,9"
+  },
+  {
+    "locale": "sv",
+    "value": 1234567.891,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 234 567,891"
+  },
+  {
+    "locale": "sv",
+    "value": 1234567.891,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 234 567,89"
+  },
+  {
+    "locale": "sv",
+    "value": -1234.5,
+    "opts": {},
+    "out": "−1 234,5"
+  },
+  {
+    "locale": "sv",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "−1 235"
+  },
+  {
+    "locale": "sv",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "−1 234,5"
+  },
+  {
+    "locale": "sv",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "−1 234,5"
+  },
+  {
+    "locale": "sv",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "−1 234,5"
+  },
+  {
+    "locale": "sv",
+    "value": -1234.5,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "−1 234,5"
+  },
+  {
+    "locale": "sv",
+    "value": -1234.5,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "−1 234,50"
+  },
+  {
+    "locale": "sv",
+    "value": 0.125,
+    "opts": {},
+    "out": "0,1"
+  },
+  {
+    "locale": "sv",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "0"
+  },
+  {
+    "locale": "sv",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "sv",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "sv",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "0,1"
+  },
+  {
+    "locale": "sv",
+    "value": 0.125,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "0,125"
+  },
+  {
+    "locale": "sv",
+    "value": 0.125,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "0,13"
+  },
+  {
+    "locale": "sv",
+    "value": 21,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "sv",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "sv",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21"
+  },
+  {
+    "locale": "sv",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "sv",
+    "value": 21,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "sv",
+    "value": 21,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21"
+  },
+  {
+    "locale": "sv",
+    "value": 21,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,00"
+  },
+  {
+    "locale": "sv",
+    "value": 21.04,
+    "opts": {},
+    "out": "21"
+  },
+  {
+    "locale": "sv",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "21"
+  },
+  {
+    "locale": "sv",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "sv",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "sv",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "21,0"
+  },
+  {
+    "locale": "sv",
+    "value": 21.04,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "sv",
+    "value": 21.04,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "21,04"
+  },
+  {
+    "locale": "sv",
+    "value": 1000000000,
+    "opts": {},
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 0
+    },
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 2
+    },
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1
+    },
+    "out": "1 000 000 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 1,
+      "maxDecimals": 1
+    },
+    "out": "1 000 000 000,0"
+  },
+  {
+    "locale": "sv",
+    "value": 1000000000,
+    "opts": {
+      "maxDecimals": 3
+    },
+    "out": "1 000 000 000"
+  },
+  {
+    "locale": "sv",
+    "value": 1000000000,
+    "opts": {
+      "minDecimals": 2,
+      "maxDecimals": 2
+    },
+    "out": "1 000 000 000,00"
+  }
+]

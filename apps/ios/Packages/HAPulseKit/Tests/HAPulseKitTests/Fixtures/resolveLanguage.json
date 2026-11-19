@@ -1,0 +1,770 @@
+[
+  {
+    "pref": "auto",
+    "ha": null,
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "auto",
+    "ha": null,
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": null,
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "sv"
+  },
+  {
+    "pref": "auto",
+    "ha": null,
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "pt"
+  },
+  {
+    "pref": "auto",
+    "ha": "de",
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "de",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "de",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "de",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "de-AT",
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "de-AT",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "de-AT",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "de-AT",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "nl",
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "auto",
+    "ha": "nl",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "nl",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "sv"
+  },
+  {
+    "pref": "auto",
+    "ha": "nl",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "pt"
+  },
+  {
+    "pref": "auto",
+    "ha": "fr-CA",
+    "nav": [],
+    "out": "fr"
+  },
+  {
+    "pref": "auto",
+    "ha": "fr-CA",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "auto",
+    "ha": "fr-CA",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "auto",
+    "ha": "fr-CA",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "auto",
+    "ha": "",
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "auto",
+    "ha": "",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "auto",
+    "ha": "",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "sv"
+  },
+  {
+    "pref": "auto",
+    "ha": "",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "pt"
+  },
+  {
+    "pref": "de",
+    "ha": null,
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": null,
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": null,
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": null,
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de",
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de-AT",
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de-AT",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de-AT",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "de-AT",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "nl",
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "nl",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "nl",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "nl",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "fr-CA",
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "fr-CA",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "fr-CA",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "fr-CA",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "",
+    "nav": [],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "de",
+    "ha": "",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "de"
+  },
+  {
+    "pref": "fr",
+    "ha": null,
+    "nav": [],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": null,
+    "nav": [
+      "de-DE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": null,
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": null,
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de",
+    "nav": [],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de-AT",
+    "nav": [],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de-AT",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de-AT",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "de-AT",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "nl",
+    "nav": [],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "nl",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "nl",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "nl",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "fr-CA",
+    "nav": [],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "fr-CA",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "fr-CA",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "fr-CA",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "",
+    "nav": [],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "fr",
+    "ha": "",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "fr"
+  },
+  {
+    "pref": "en",
+    "ha": null,
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": null,
+    "nav": [
+      "de-DE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": null,
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": null,
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de",
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de-AT",
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de-AT",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de-AT",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "de-AT",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "nl",
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "nl",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "nl",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "nl",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "fr-CA",
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "fr-CA",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "fr-CA",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "fr-CA",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "",
+    "nav": [],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "",
+    "nav": [
+      "de-DE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "",
+    "nav": [
+      "nl-NL",
+      "sv-SE"
+    ],
+    "out": "en"
+  },
+  {
+    "pref": "en",
+    "ha": "",
+    "nav": [
+      "pt-BR",
+      "en"
+    ],
+    "out": "en"
+  }
+]
