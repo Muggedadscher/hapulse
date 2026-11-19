@@ -49,23 +49,43 @@ struct AppShell: View {
         .tabViewStyle(.sidebarAdaptable)
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(AccentStyle(.tabInk))
-        .inspector(isPresented: Binding(get: { nav.detailID != nil }, set: { if !$0 { nav.detailID = nil } })) {
-            if let device = model.device(nav.detailID) {
-                DeviceDetail(device: device)
-                    .presentationDetents([.medium, .large])
-                    .inspectorColumnWidth(min: 320, ideal: 380, max: 440)
-            }
-        }
     }
 }
 
 /// One page with its own navigation stack.
 struct PageStack: View {
     let page: NavPage
+    @Environment(WindowNav.self) private var nav
 
     var body: some View {
         NavigationStack {
             PageContent(page: page)
+        }
+        .detailInspector(active: nav.selection == page.rawValue)
+    }
+}
+
+extension View {
+    /// The entity detail as an inspector beside the page's navigation stack (a sheet on the phone). Only the visible
+    /// tab presents it: tabs stay loaded, and two presentations of one detail would clash. Checked on the iPad: on the
+    /// `TabView` the sidebar was pushed off screen in landscape; inside the stack the large title disappeared.
+    func detailInspector(active: Bool) -> some View {
+        modifier(DetailInspector(active: active))
+    }
+}
+
+struct DetailInspector: ViewModifier {
+    let active: Bool
+    @Environment(AppModel.self) private var model
+    @Environment(WindowNav.self) private var nav
+
+    func body(content: Content) -> some View {
+        content.inspector(isPresented: Binding(get: { active && nav.detailID != nil }, set: { if !$0 { nav.detailID = nil } })) {
+            if let device = model.device(nav.detailID) {
+                DeviceDetail(device: device)
+                    .presentationDetents([.medium, .large])
+                    .inspectorColumnWidth(min: 320, ideal: 380, max: 440)
+            }
         }
     }
 }
@@ -98,6 +118,7 @@ struct MoreStack: View {
     var body: some View {
         @Bindable var nav = nav
         NavigationStack(path: $nav.morePath) { MorePage() }
+            .detailInspector(active: nav.selection == moreTabID)
     }
 }
 

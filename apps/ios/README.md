@@ -11,7 +11,7 @@ Mindestversion iOS 26 (Liquid Glass, `glassEffect`). Bundle-ID `de.schleerag.hap
 |---|---|
 | `Packages/HAPulseKit` | Logik ohne UI (läuft auch unter Linux): Texte (`I18n`, Plural, Zahlenformat), Glas-Farben und Akzent (`RGBA`, `GlasAccent`), Symbole (`SVGPath`), Demo-Haus. `Sources/HAPulseKit/Data` und `Generated/` sind erzeugt. |
 | `Packages/HAPulseUI` | SwiftUI-Bausteine: Farben (`.glas(.card)`, `HPTone`), Schrift (`.hpText(.title)`), Glasflächen (`.hpGlass`), Symbole (`HPIcon`), Bewegung (`HPMotion`), Schatten (`.hpShadow`), Karte/Liste (`HPCard`, `HPSection`, `HPListGroup`), Chips (`HPStatusChip`, `HPChoicePill`, `HPStatusPill`), `HPSegment`, Schalter (`.hpSwitch()`), Regler (`HPTrackSlider`, `HPLightCapsule`), Stepper (`HPCapsuleStepper`, `HPRoundButton`), `HPSwipeRow`, Kacheln (`HPDeviceTile`, `HPRoomTile`), Detail (`HPDetailHeader`, `HPHistoryChart`, `HPOnOffBar`). Nur Darstellung, Daten kommen als einfache Werte. |
-| `App/` | App-Ziel (`HAPulseApp`, Startoptionen für Tests, Katalog-Szenen in `Sources/Catalog`). |
+| `App/` | App-Ziel: `HAPulseApp`, Startoptionen für Tests, Rahmen in `Sources/Shell` (TabView `sidebarAdaptable`: iPhone 4 Tabs + „Mehr“ wie im Web, iPad Seitenleiste; Detail als Inspector bzw. Sheet; Einstellungen Darstellung/Akzent/Sprache; `AppModel` für alle Fenster, `WindowNav` je Fenster), Katalog-Szenen in `Sources/Catalog`. |
 | `UITests/` | Bildschirmfotos je Szene × Sprache × Hell/Dunkel. |
 | `project.yml` | XcodeGen-Projekt; die `.xcodeproj` wird erzeugt, nie eingecheckt. |
 | `tools/export/` | Generator (vitest): kopiert Texte, Demo-Haus, Farben, Symbole aus dem Web und schreibt die Prüffälle. |
@@ -40,7 +40,9 @@ cd apps/ios && xcodegen generate
 open HAPulse.xcodeproj
 ```
 
-Startoptionen (für Tests und Bildschirmfotos): `-hp-scene catalog|controls|tiles|detail`, `-hp-locale de`, `-hp-scheme dark`, `-hp-accent 210`.
+Ohne `-hp-scene` startet der Rahmen. Bildschirmfoto-Szenen lesen keine gespeicherten Einstellungen. UI-Tests: `testScenes` (alle Szenen × de/en × hell/dunkel), `testLargeText` (größte Bedienhilfe-Schrift), `testIPadLandscape` (nur iPad).
+
+Startoptionen (für Tests und Bildschirmfotos): `-hp-scene catalog|controls|tiles|detail|shell|rooms|settings|sheet`, `-hp-locale de`, `-hp-scheme dark`, `-hp-accent 210`.
 
 ## CI
 
