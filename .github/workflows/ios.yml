@@ -101,8 +101,13 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p build
+          # boot first: a cold iPad simulator on the runner missed the launch timeout of the UI test (21:09 on 19.11)
+          UDID=$(scripts/sim-udid.sh 'iPhone 17 Pro')
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
           xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -retry-tests-on-failure -test-iterations 2 \
             -resultBundlePath build/iphone.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/iphone.log | tail -n 200
       - name: Screenshots on iPad (iPad Pro 13-inch (M5), newest iOS)
@@ -112,8 +117,13 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p build
+          # boot first: a cold iPad simulator on the runner missed the launch timeout of the UI test (21:09 on 19.11)
+          UDID=$(scripts/sim-udid.sh 'iPad Pro 13-inch (M5)')
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
           xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
-            -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest' \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -retry-tests-on-failure -test-iterations 2 \
             -resultBundlePath build/ipad.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/ipad.log | tail -n 100
       - name: Upload screenshots
