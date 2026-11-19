@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 77,
+    date: '2026-11-19',
+    title: { de: 'Energie: „Jetzt“ als Haus', en: 'Energy: “Now” as a house' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Im Stil Glas zeigt die Karte „Jetzt“ ein kleines Haus-Modell: Solarmodule auf dem Dach, Akku und Strommast daneben; die Leitungen leuchten in der Farbe, woher der Strom kommt, und Punkte laufen in seine Richtung',
+            en: 'In the Glas style the “Now” card shows a small house model: solar panels on the roof, battery and power pole beside it; the wires light up in the colour of where the power comes from, and dots move the way it flows',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 76,
     date: '2026-11-19',
     title: { de: 'Akku: Leistung auf der Karte', en: 'Battery: power on the card' },

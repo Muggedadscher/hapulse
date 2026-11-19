@@ -174,6 +174,7 @@ verbindlich `#A64B00` als Akzent-Ink. `#B25000` bleibt die Heizen-Ink.
 | `chartSolarEdge` | `#A67C00` als `inset 0 0 0 1px` (3,82:1) | transparent | **Pflicht im Hellen**, sonst ist Gelb auf Weiß unsichtbar |
 | `chartBattery` | `#34C759` (ok-Grün) | `#30D158` | Batterie in der Mitte (Netz unten, Solar oben); Klassisch `--positive` |
 | `chartBatteryEdge` | `#1F7A35` als `inset 0 0 0 1px` (5,39:1) | transparent | im Hellen Pflicht wie bei Solar (Grün allein 2,22:1 auf Weiß) |
+| `house*` (30) | Platte `#F4F4F8`, Wände `#FFFFFF`/`#E4E4EA`, Dach `#C9CAD2`, Module `#334055`, leuchtend `#FFE37A` | Platte `#323236`, Wände `#4A4A4F`/`#333337`, Dach `#5A5A60`, Module `#1E2735`, leuchtend `#FFE066` | „Jetzt“ als mattes Haus-Modell (Licht oben links); Leitungen in `chartSolar`/`chartBattery`/`chartNetz`, Netz ohne Schein; Werte vollständig in `glas-tokens.json` |
 | `chartGrid` | `sepStrong` | `sepStrong` | Grundlinie durchgezogen, weitere gestrichelt 2 px / 3 px Lücke |
 | `chartAvg` | `label`, Deckkraft .7 | `label` | Ø-Linie gestrichelt 4 px / 3 px |
 | Zukunft | `fill`, 3 px hoch | `fill` | noch nicht erreichte Stunden |

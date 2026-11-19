@@ -2204,9 +2204,16 @@ module.exports = function pages(h) {
                 grid: each('.en-chart__part--grid, .en-dot--grid', (e) => bg(e) === tok('--g-chart-netz')),
                 battery: each('.en-chart__part--battery, .en-dot--battery', (e) => bg(e) === tok('--g-chart-battery')),
                 solar: each('.en-chart__part--solar, .en-dot--solar', (e) => bg(e) === tok('--g-chart-solar')),
-                flow: each('.en-now__bar--solar', (e) => getComputedStyle(e).fill === tok('--g-chart-solar'))
-                  && each('.en-now__bar--battery', (e) => getComputedStyle(e).fill === tok('--g-chart-battery'))
-                  && each('.en-now__bar--grid', (e) => getComputedStyle(e).fill === tok('--g-chart-netz')),
+                // "Now" in Glas is the house (EnergyNowHouse.tsx): no bands, two wires in the colour of their source
+                // (12:30: solar into battery and grid), each with moving dots, four labels in the corners
+                house: !!document.querySelector('.energy-now .g-house[role="img"]')
+                  && document.querySelectorAll('.energy-now .en-now__band').length === 0
+                  && document.querySelectorAll('.energy-now .g-house__wire').length === 2
+                  && each('.energy-now .g-house__wire.g-house__line--solar', (e) => getComputedStyle(e).stroke === tok('--g-chart-solar', 'color'))
+                  && document.querySelectorAll('.energy-now .g-house__wire.g-house__line--solar').length === 2
+                  && [...document.querySelectorAll('.energy-now .g-house__dots')].filter((e) => getComputedStyle(e).animationName === 'g-house-flow').length === 2
+                  && document.querySelectorAll('.energy-now .g-house__lbl').length === 4
+                  && document.querySelectorAll('.energy-now .g-house__panel--lit').length === 8,
                 ring: each('.en-bat__ring-fill', (e) => getComputedStyle(e).stroke === tok('--g-chart-battery'))
                   && each('.en-bat__line', (e) => getComputedStyle(e).stroke === tok('--g-green-ink')),
                 bars: document.querySelectorAll('.en-card--usage .en-chart__bar').length,
@@ -2243,11 +2250,13 @@ module.exports = function pages(h) {
               });
               await page.mouse.move(0, 0);
             }
-            const same = JSON.stringify(glasTexts) === JSON.stringify(classicTexts);
+            // the house shows the same nodes as the bands, in its corners' order; it has no bands
+            const norm = (x) => ({ ...x, nowNodes: [...x.nowNodes].sort(), bands: null });
+            const same = JSON.stringify(norm(glasTexts)) === JSON.stringify(norm(classicTexts));
             const ok = same && glasTexts.sections.join() === 'hero,now,battery,usage,solar,devices,water' && glasTexts.usage.length === 24
               && glasTexts.compare !== null && glasTexts.pv !== null && glasTexts.bigs.length === 3
-              && glasTexts.nowSay.length === 1 && glasTexts.nowNodes.length === 4 && glasTexts.bands === 3 && glasTexts.batSub.length === 1
-              && look.grid && look.battery && look.solar && look.flow && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14 && look.hollow === 0
+              && glasTexts.nowSay.length === 1 && glasTexts.nowNodes.length === 4 && classicTexts.bands === 3 && glasTexts.bands === 0
+              && glasTexts.batSub.length === 1 && look.grid && look.battery && look.solar && look.house && look.ring && look.bars === 24 && look.widths.length === 1 && look.widths[0] <= 14 && look.hollow === 0
               && look.deviceBars && look.figure === '600 34px/41px' && look.figureColor && look.tiles && look.icons
               && look.cut.length === 0 && look.out.length === 0 && !look.wide && look.loading && hover !== false;
             res[`${device}-energy`] = { ok, same, ...(same ? {} : { glas: glasTexts, classic: classicTexts }), look, hover };

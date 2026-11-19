@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F77 — 2026-11-19
+
+**Energie: „Jetzt“ als Haus** · _Energy: “Now” as a house_
+
+### Geändert / Changed
+
+- Im Stil Glas zeigt die Karte „Jetzt“ ein kleines Haus-Modell: Solarmodule auf dem Dach, Akku und Strommast daneben; die Leitungen leuchten in der Farbe, woher der Strom kommt, und Punkte laufen in seine Richtung  
+  _In the Glas style the “Now” card shows a small house model: solar panels on the roof, battery and power pole beside it; the wires light up in the colour of where the power comes from, and dots move the way it flows_
+
 ## F76 — 2026-11-19
 
 **Akku: Leistung auf der Karte** · _Battery: power on the card_
