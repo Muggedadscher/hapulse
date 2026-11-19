@@ -95,6 +95,7 @@ jobs:
         working-directory: apps/ios
         run: xcodegen generate
       - name: Build and run the UI tests (iPhone 17 Pro, newest iOS)
+        timeout-minutes: 25 # a hung simulator fails here instead of using up the job's hour
         working-directory: apps/ios
         env:
           TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/apps/ios/screenshots/iphone
@@ -109,6 +110,7 @@ jobs:
             -resultBundlePath build/iphone.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/iphone.log | tail -n 200
       - name: Screenshots on iPad (iPad Pro 13-inch (M5), newest iOS)
+        timeout-minutes: 20
         working-directory: apps/ios
         env:
           TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/apps/ios/screenshots/ipad
