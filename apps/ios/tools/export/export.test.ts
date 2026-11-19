@@ -236,6 +236,63 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'glasAccent.json'), cases, false);
   });
 
+  it('golden: rooms', () => {
+    // the demo home, plus a small registry with every rule of buildRooms in it
+    const demo = core.buildRooms(core.DEMO_REGISTRIES, core.DEMO_ENTITIES);
+    const ent = (entity_id: string, extra: Record<string, unknown> = {}) => ({
+      entity_id, area_id: null, device_id: null, entity_category: null, hidden_by: null, disabled_by: null,
+      original_name: null, icon: null, ...extra,
+    });
+    const registries = {
+      areas: [
+        { area_id: 'kueche', name: 'Küche', icon: 'mdi:stove' },
+        { area_id: 'bad', name: 'bad', picture: '/api/image/bad.png' },
+        { area_id: 'arbeit', name: 'Arbeitszimmer' },
+        { area_id: 'zebra', name: 'Zimmer 10' },
+        { area_id: 'zebra2', name: 'Zimmer 9' },
+        { area_id: 'leer', name: 'Ärger' },
+      ],
+      devices: [
+        { id: 'd1', area_id: 'kueche', name: 'Hue' },
+        { id: 'd2', area_id: null, name: 'Zone' },
+      ],
+      entities: [
+        ent('light.a', { area_id: 'kueche' }),
+        ent('light.b', { device_id: 'd1' }),
+        ent('light.c', { device_id: 'd1', area_id: 'bad' }),
+        ent('light.d', { device_id: 'd2' }),
+        ent('light.hidden', { area_id: 'kueche', hidden_by: 'user' }),
+        ent('light.disabled', { area_id: 'kueche', disabled_by: 'integration' }),
+        ent('sensor.diag', { area_id: 'kueche', entity_category: 'diagnostic' }),
+        ent('sensor.t', { area_id: 'kueche' }),
+        ent('sensor.h', { area_id: 'kueche' }),
+        ent('climate.k', { area_id: 'kueche' }),
+        ent('automation.plan', { area_id: 'kueche', labels: ['heizplan'] }),
+        ent('switch.plan', { area_id: 'kueche', labels: ['heizplan'] }),
+        ent('media_player.m', { area_id: 'bad' }),
+        ent('binary_sensor.motion', { area_id: 'bad' }),
+        ent('sensor.nostate', { area_id: 'bad' }),
+        ent('light.ghost', { area_id: 'gone' }),
+      ],
+    };
+    const st = (state: string, attributes: Record<string, unknown> = {}) => ({ state, attributes });
+    const states: Record<string, unknown> = {
+      'light.a': st('on'), 'light.b': st('off'), 'light.c': st('on'), 'light.d': st('on'),
+      'light.hidden': st('on'), 'light.disabled': st('on'), 'sensor.diag': st('1'),
+      'sensor.t': st('21.5', { device_class: 'temperature' }), 'sensor.h': st('n/a', { device_class: 'humidity' }),
+      'climate.k': st('heat', { current_temperature: 19, hvac_action: 'heating' }),
+      'automation.plan': st('on'), 'switch.plan': st('on'),
+      'media_player.m': st('playing'), 'binary_sensor.motion': st('on', { device_class: 'motion' }),
+    };
+    const rooms = core.buildRooms(registries, states);
+    const summaries = (list: { id: string }[], map: Record<string, unknown>) =>
+      Object.fromEntries(list.map((r) => [r.id, core.roomSummary(r, map)]));
+    writeJson(join(FIX, 'rooms.json'), {
+      cases: { registries, states, rooms, summaries: summaries(rooms, states) },
+      demo: { rooms: demo, summaries: summaries(demo, core.DEMO_ENTITIES) },
+    });
+  });
+
   it('golden: sentinel', async () => {
     const api = await import('@sentinel-nvr/web/api');
     const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',

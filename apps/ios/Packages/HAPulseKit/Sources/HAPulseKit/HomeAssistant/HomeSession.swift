@@ -27,11 +27,20 @@ public final class HomeSession {
     public private(set) var managed = false
     /// false until the first full entity list has arrived (the UI shows its loading state until then).
     public private(set) var loaded = false
+    /// Areas, devices and entities of Home Assistant's registries, fetched after every connect (rooms, names).
+    public private(set) var registries: Registries?
+
+    /// The rooms (Home Assistant areas) sorted by name; empty until the registries have arrived.
+    public var rooms: [Room] {
+        guard let registries else { return [] }
+        return Rooms.build(registries, entities: entities)
+    }
 
     public let client: HAClient
     private let log = Log("session")
     private var tasks: [Task<Void, Never>] = []
     private var userTask: Task<Void, Never>?
+    private var registryTask: Task<Void, Never>?
     private var wired = false
 
     /// Everything the subscriptions deliver goes through ONE stream, drained by one task on the main actor: events
@@ -94,7 +103,13 @@ public final class HomeSession {
                 for await s in stream {
                     guard let self else { return }
                     self.status = s
-                    if case .connected = s { self.loadUser() } else { self.userTask?.cancel() }
+                    if case .connected = s {
+                        self.loadUser()
+                        self.loadRegistries()
+                    } else {
+                        self.userTask?.cancel()
+                        self.registryTask?.cancel()
+                    }
                 }
             })
             await subscribeAll()
@@ -105,6 +120,8 @@ public final class HomeSession {
     public func stop() async {
         userTask?.cancel()
         userTask = nil
+        registryTask?.cancel()
+        registryTask = nil
         await client.stop()
     }
 
@@ -161,6 +178,32 @@ public final class HomeSession {
                     return
                 } catch {
                     self?.log.error("auth/current_user failed: \(error)")
+                }
+                try? await Task.sleep(for: .seconds(pause))
+                pause = min(pause * 2, 30)
+            }
+        }
+    }
+
+    /// The three registry lists after every connect, retried while connected (like `fetchRegistries` of the web).
+    /// The last good lists stay while a new fetch fails.
+    private func loadRegistries() {
+        registryTask?.cancel()
+        registryTask = Task { [weak self] in
+            var pause = 1
+            while !Task.isCancelled {
+                guard let client = self?.client else { return }
+                do {
+                    async let areas = client.command(["type": "config/area_registry/list"])
+                    async let devices = client.command(["type": "config/device_registry/list"])
+                    async let list = client.command(["type": "config/entity_registry/list"])
+                    let r = Registries(areas: try await areas, devices: try await devices, entities: try await list)
+                    guard !Task.isCancelled, let self else { return }
+                    if self.registries != r { self.registries = r }
+                    self.log.info("registries loaded: \(r.areas.count) areas, \(r.entities.count) entities")
+                    return
+                } catch {
+                    self?.log.error("registries failed: \(error)")
                 }
                 try? await Task.sleep(for: .seconds(pause))
                 pause = min(pause * 2, 30)

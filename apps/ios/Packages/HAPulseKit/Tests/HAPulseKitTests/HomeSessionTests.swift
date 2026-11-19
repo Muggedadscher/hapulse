@@ -27,6 +27,19 @@ struct HomeSessionTests {
         await s.stop()
     }
 
+    @Test func roomsOfTheDemoAfterConnect() async throws {
+        let home = try DemoHome.load()
+        let s = try connectedDemo(DemoHA(home: home))
+        #expect(s.rooms.isEmpty)
+        await s.start()
+        try await eventuallyMain("registries") { s.loaded && s.registries != nil }
+        let golden = try Golden.load("rooms", as: JSONValue.self)
+        let want = (golden["demo"]?["rooms"]?.array ?? []).compactMap { $0["id"]?.string }
+        #expect(!want.isEmpty)
+        #expect(s.rooms.map(\.id) == want)
+        await s.stop()
+    }
+
     @Test func serviceCallsChangeTheDemo() async throws {
         let home = try DemoHome.load()
         let light = try #require(home.entities.keys.sorted().first { $0.hasPrefix("light.") })
