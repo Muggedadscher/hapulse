@@ -67,12 +67,15 @@ import Testing
         #expect(pairs.count > 3000)
         var bad = 0
         for p in pairs {
-            let v = p.array ?? [], a = v.first?.string ?? "", b = v.dropFirst().first?.string ?? "", want = Int(v.last?.number ?? 9)
-            let got = JSCompare.locale(a, b, Locale(identifier: "en"))
-            let sign = got == .orderedAscending ? -1 : got == .orderedSame ? 0 : 1
-            if sign != want {
-                bad += 1
-                if bad <= 8 { Issue.record("\(a) | \(b): \(sign), JavaScript \(want)") }
+            let v = p.array ?? []
+            let a = v.first?.string ?? "", b = v.dropFirst().first?.string ?? ""
+            for (lang, want) in [("en", v.dropFirst(2).first?.number), ("sv", v.dropFirst(3).first?.number)] {
+                let got = JSCompare.locale(a, b, Locale(identifier: lang))
+                let sign = got == .orderedAscending ? -1 : got == .orderedSame ? 0 : 1
+                if Double(sign) != want {
+                    bad += 1
+                    if bad <= 8 { Issue.record("\(lang): \(a) | \(b): \(sign), JavaScript \(String(describing: want))") }
+                }
             }
         }
         #expect(bad == 0)

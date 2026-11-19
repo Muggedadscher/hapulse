@@ -150,7 +150,7 @@ public actor HAClient {
         subs[key] = Sub(message: message, handler: handler, haId: nil)
         if let socket, case .connected = status {
             let conn = connection
-            do { try await sendSubscription(key, on: socket) } catch let e as HAError where e != .timeout && e != .notConnected {
+            do { try await sendSubscription(key, on: socket) } catch let e as HAError where e.code != HAError.timeout.code && e.code != HAError.notConnected.code {
                 subs[key] = nil
                 throw e
             } catch {
@@ -321,7 +321,7 @@ public actor HAClient {
         for key in Array(subs.keys) {
             guard connection == conn, socket != nil else { return }
             guard subs[key]?.haId == nil else { continue }
-            do { try await sendSubscription(key, on: s) } catch let e as HAError where e != .timeout && e != .notConnected {
+            do { try await sendSubscription(key, on: s) } catch let e as HAError where e.code != HAError.timeout.code && e.code != HAError.notConnected.code {
                 // Home Assistant refused this one (unknown command, no rights): reconnecting would not help
                 log.error("subscription \(subs[key]?.message["type"]?.string ?? "?") refused: \(e)")
             } catch {

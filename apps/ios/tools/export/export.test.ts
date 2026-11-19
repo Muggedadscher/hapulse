@@ -311,7 +311,7 @@ describe('iOS export', () => {
       '21.5', '  -3e2x', '.5', '5.', '1e', '1e+', '1e-2', '-.5', '+7', '--1', '.', '-', '', 'n/a', 'unavailable',
       'Infinity', '-Infinity', '+Infinity', 'Infinityx', 'infinity', '0x1A', '1,5', '12abc', '\u00a0 42', '\u3000 8',
       '\ufeff3', '\u200b5', '\n\t9.25', '1.2.3', '00012', '1e400', '-0', '5e-400', '٣', '１２', '3.14159265358979323846',
-      '.e1', '1.e2', '1_000',
+      '.e1', '1.e2', '1_000', '5\u0301', '5\u200d', '1.5\ufe0f', '\u20282',
     ];
     writeJson(join(FIX, 'parseFloat.json'), inputs.map((s) => {
       const v = parseFloat(s);
@@ -534,16 +534,18 @@ describe('iOS export', () => {
       seed = (seed * 1103515245 + 12345) % 2147483648;
       return seed % n;
     };
-    const alphabet = [...' _-,;:!?.\'"()[]{}@*/\\&#%`^+<=>|~$0123456789aAbBzZäÄöÖüÜßéÉèçñ', 'ss', 'ae'];
+    const alphabet = [...' _-,;:!?.\'"()[]{}@*/\\&#%`^+<=>|~$0123456789aAbBzZäÄöÖüÜßéÉèçñŁłØøÆæåÅ🙂🏠', 'ss', 'ae'];
     const word = () => Array.from({ length: 1 + r(6) }, () => alphabet[r(alphabet.length)]).join('');
-    const pairs: [string, string, number][] = [];
+    // [a, b, sign in the default language (en), sign in Swedish (Ä/Ö/Å after Z)]
+    const pairs: [string, string, number, number][] = [];
+    const sign = (a: string, b: string) => [Math.sign(a.localeCompare(b, 'en')), Math.sign(a.localeCompare(b, 'sv'))] as const;
     for (let i = 0; i < 3000; i++) {
       const a = word();
       const b = r(4) === 0 ? a.toUpperCase() : r(3) === 0 ? a + word() : word();
-      pairs.push([a, b, Math.sign(a.localeCompare(b))]);
+      pairs.push([a, b, ...sign(a, b)]);
     }
-    for (const [a, b] of [['sensor.temp_1', 'sensor.temp1'], ['Straße', 'Strasse'], ['a', 'A'], ['ä', 'a'], ['', 'a']]) {
-      pairs.push([a!, b!, Math.sign(a!.localeCompare(b!))]);
+    for (const [a, b] of [['sensor.temp_1', 'sensor.temp1'], ['Straße', 'Strasse'], ['a', 'A'], ['ä', 'a'], ['', 'a'], ['Zimmer', 'Äpfel'], ['Øl', 'Ol'], ['Łódź', 'Lodz']]) {
+      pairs.push([a!, b!, ...sign(a!, b!)]);
     }
     writeJson(join(FIX, 'localeCompare.json'), pairs, false);
   });

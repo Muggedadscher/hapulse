@@ -118,32 +118,39 @@ public enum Rooms {
 /// JavaScript behaviour the ported rules depend on.
 public enum JSCompare {
     /// `a.localeCompare(b)`: the browser compares with ICU in its own language (`navigator.language`), the app with
-    /// ICU in the device language. Same rules as Node for every pair of the golden file (`localeCompare.json`), also
-    /// for punctuation, Ł/Ø/Æ, ß and emoji, and for languages with their own order (Swedish: Ä after Z).
+    /// ICU in the device language. Same result as Node for every pair of `localeCompare.json` in English and Swedish
+    /// (punctuation, Ł/Ø/Æ, ß, emoji; Swedish puts Ä after Z). Known difference: an ignorable character at the end
+    /// ("a" + U+200B) and half-width kana compare differently; neither matters for room names.
     public static func locale(_ a: String, _ b: String, _ locale: Locale = .current) -> ComparisonResult {
         a.compare(b, options: [], range: nil, locale: locale)
     }
 
-    /// `parseFloat(s)`: the longest number at the start after white space; nil where JavaScript gives NaN.
+    /// `parseFloat(s)`: the longest number at the start after white space; nil where JavaScript gives NaN. Works on
+    /// UTF-16 units like JavaScript (a digit followed by a combining mark still counts).
     public static func parseFloat(_ s: String) -> Double? {
-        let t = s.drop { $0.utf16.allSatisfy(JSText.isSpace) }
-        if t.hasPrefix("Infinity") || t.hasPrefix("+Infinity") { return .infinity }
-        if t.hasPrefix("-Infinity") { return -.infinity }
-        var end = t.startIndex, i = t.startIndex, sawDigit = false, sawDot = false, sawExp = false
-        if i < t.endIndex, t[i] == "+" || t[i] == "-" { i = t.index(after: i) }
-        while i < t.endIndex {
-            let c = t[i]
-            if c.isASCII, c.isNumber { sawDigit = true; i = t.index(after: i); end = i; continue }
-            if c == ".", !sawDot, !sawExp { sawDot = true; i = t.index(after: i); if sawDigit { end = i }; continue }
-            if (c == "e" || c == "E"), sawDigit, !sawExp {
-                var j = t.index(after: i)
-                if j < t.endIndex, t[j] == "+" || t[j] == "-" { j = t.index(after: j) }
-                guard j < t.endIndex, t[j].isASCII, t[j].isNumber else { break }
+        let all = Array(s.utf16)
+        var start = 0
+        while start < all.count, JSText.isSpace(all[start]) { start += 1 }
+        let t = all[start...]
+        func has(_ prefix: String, at i: Int) -> Bool { t[i...].starts(with: prefix.utf16) }
+        if has("Infinity", at: start) || has("+Infinity", at: start) { return .infinity }
+        if has("-Infinity", at: start) { return -.infinity }
+        func digit(_ i: Int) -> Bool { i < all.count && all[i] >= 0x30 && all[i] <= 0x39 }
+        var i = start, end = start, sawDigit = false, sawDot = false, sawExp = false
+        if i < all.count, all[i] == 0x2B || all[i] == 0x2D { i += 1 }
+        while i < all.count {
+            let c = all[i]
+            if digit(i) { sawDigit = true; i += 1; end = i; continue }
+            if c == 0x2E, !sawDot, !sawExp { sawDot = true; i += 1; if sawDigit { end = i }; continue }
+            if c == 0x65 || c == 0x45, sawDigit, !sawExp {
+                var j = i + 1
+                if j < all.count, all[j] == 0x2B || all[j] == 0x2D { j += 1 }
+                guard digit(j) else { break }
                 sawExp = true; i = j; continue
             }
             break
         }
         guard sawDigit else { return nil }
-        return Double(String(t[t.startIndex..<end]))
+        return Double(String(decoding: all[start..<end], as: UTF16.self))
     }
 }

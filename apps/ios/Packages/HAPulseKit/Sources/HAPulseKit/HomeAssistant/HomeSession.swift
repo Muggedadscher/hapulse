@@ -153,6 +153,7 @@ public final class HomeSession {
         await stop()
         for t in tasks { t.cancel() }
         tasks = []
+        status = .idle // the status reader is gone before it could see the end of the connection
         inboxIn.finish()
     }
 
@@ -226,7 +227,7 @@ public final class HomeSession {
                     if self.registries != r { self.registries = r }
                     self.log.info("registries loaded: \(r.areas.count) areas, \(r.entities.count) entities")
                     return
-                } catch let e as HAError where e != .timeout && e != .notConnected {
+                } catch let e as HAError where e.code != HAError.timeout.code && e.code != HAError.notConnected.code {
                     // refused (unknown command, no rights): asking again would not help; the rooms stay as they were
                     self?.log.error("registries refused: \(e)")
                     return
@@ -242,7 +243,7 @@ public final class HomeSession {
 
     /// A failed command is asked again unless the connection is gone (the next `.connected` starts over anyway).
     nonisolated static func retryWorthy(_ error: any Error) -> Bool {
-        (error as? HAError) != .notConnected && !(error is CancellationError)
+        (error as? HAError)?.code != HAError.notConnected.code && !(error is CancellationError)
     }
 
     private func applyEntities(_ ev: JSONValue) {

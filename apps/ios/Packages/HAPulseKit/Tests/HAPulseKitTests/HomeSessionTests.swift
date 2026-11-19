@@ -74,6 +74,7 @@ struct HomeSessionTests {
         await s.start()
         try await eventuallyMainAsync("asked") { await self.registryCalls(ha) == 1 }
         await s.close()
+        #expect(s.status == .idle)
         let before = await ha.received.count
         try await Task.sleep(for: .milliseconds(300))
         #expect(await ha.received.count == before)
