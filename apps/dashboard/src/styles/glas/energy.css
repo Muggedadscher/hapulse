@@ -1012,3 +1012,226 @@
     box-shadow: none;
   }
 }
+
+/* ---- "Now" as a matte isometric house (components/energy/fork/EnergyNowHouse.tsx, draft glas/energie-neu/haus/3d):
+   lit from the top left, colour only where power flows (wires in the chart colours, the grey grid wire without glow),
+   the labels in the box's corners as the bands' nodes, idle ones in label3. The dots move slowly the way the power
+   flows; under reduced motion three still dots of rising strength say the direction. ---- */
+:root[data-style='glas'] .energy-page .g-house {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 480px;
+  min-height: 270px;
+  margin-inline: auto;
+}
+
+:root[data-style='glas'] .energy-page .g-house--narrow {
+  /* the compact text form fills the box (absolute), as in Klassisch's 220-px flow */
+  min-height: 220px;
+}
+
+:root[data-style='glas'] .energy-page .g-house__svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+:root[data-style='glas'] .energy-page .g-house__lbl--tl {
+  top: 0;
+  left: 0;
+}
+
+:root[data-style='glas'] .energy-page .g-house__lbl--tr {
+  top: 0;
+  right: 0;
+  align-items: flex-end;
+  text-align: right;
+}
+
+:root[data-style='glas'] .energy-page .g-house__lbl--bl {
+  bottom: 0;
+  left: 0;
+}
+
+:root[data-style='glas'] .energy-page .g-house__lbl--br {
+  right: 0;
+  bottom: 0;
+  align-items: flex-end;
+  text-align: right;
+}
+
+:root[data-style='glas'] .energy-page .g-house__lbl--off :is(.en-now__name, .en-now__kw, .en-now__does) {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .energy-page .g-house__lbl--off .en-now__kw {
+  font-weight: 500;
+}
+
+:root[data-style='glas'] .energy-page .g-house__lbl--off .en-now__name--solar svg {
+  color: var(--g-label-3);
+}
+
+:root[data-style='glas'] .energy-page .g-house__shadow {
+  fill: var(--g-house-shadow);
+}
+
+:root[data-style='glas'] .energy-page .g-house__shadow--contact {
+  opacity: 0.7;
+}
+
+:root[data-style='glas'] .energy-page .g-house__plate-side {
+  fill: var(--g-house-plate-side);
+}
+
+:root[data-style='glas'] .energy-page .g-house__stop--plate1 { stop-color: var(--g-house-plate-top-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--plate2 { stop-color: var(--g-house-plate-top-2); }
+:root[data-style='glas'] .energy-page .g-house__stop--wall-light1 { stop-color: var(--g-house-wall-light-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--wall-light2 { stop-color: var(--g-house-wall-light-2); }
+:root[data-style='glas'] .energy-page .g-house__stop--wall-shade1 { stop-color: var(--g-house-wall-shade-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--wall-shade2 { stop-color: var(--g-house-wall-shade-2); }
+:root[data-style='glas'] .energy-page .g-house__stop--panel1 { stop-color: var(--g-house-panel-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--panel2 { stop-color: var(--g-house-panel-2); }
+:root[data-style='glas'] .energy-page .g-house__stop--panel-lit1 { stop-color: var(--g-house-panel-lit-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--panel-lit2 { stop-color: var(--g-house-panel-lit-2); }
+:root[data-style='glas'] .energy-page .g-house__stop--window1 { stop-color: var(--g-house-window-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--window2 { stop-color: var(--g-house-window-2); }
+:root[data-style='glas'] .energy-page .g-house__stop--battery1 { stop-color: var(--g-house-battery-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--battery2 { stop-color: var(--g-house-battery-2); }
+:root[data-style='glas'] .energy-page .g-house__stop--mast1 { stop-color: var(--g-house-mast-1); }
+:root[data-style='glas'] .energy-page .g-house__stop--mast2 { stop-color: var(--g-house-mast-2); }
+
+:root[data-style='glas'] .energy-page :is(.g-house__groove, .g-house__groove-hi, .g-house__glow, .g-house__wire, .g-house__dots) {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:root[data-style='glas'] .energy-page .g-house__groove-hi {
+  stroke: var(--g-house-groove-hi);
+}
+
+:root[data-style='glas'] .energy-page .g-house__groove {
+  stroke: var(--g-house-groove);
+}
+
+:root[data-style='glas'] .energy-page .g-house__glow {
+  opacity: 0.65;
+}
+
+:root[data-style='glas'] .energy-page .g-house__line--solar {
+  stroke: var(--g-chart-solar);
+}
+
+:root[data-style='glas'] .energy-page .g-house__line--battery {
+  stroke: var(--g-chart-battery);
+}
+
+:root[data-style='glas'] .energy-page .g-house__line--grid {
+  stroke: var(--g-chart-netz);
+}
+
+:root[data-style='glas'] .energy-page .g-house__dots {
+  stroke: var(--g-house-dot);
+  stroke-dasharray: 0.001px 11.999px;
+  animation: g-house-flow 1s linear infinite;
+}
+
+:root[data-style='glas'] .energy-page .g-house__dots--out {
+  animation-direction: reverse;
+}
+
+:root[data-style='glas'] .energy-page .g-house--paused .g-house__dots {
+  animation-play-state: paused;
+}
+
+:root[data-style='glas'] .energy-page .g-house__still {
+  display: none;
+  fill: var(--g-house-dot);
+}
+
+@keyframes g-house-flow {
+  from {
+    stroke-dashoffset: 12px;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style='glas'] .energy-page .g-house__moving {
+    display: none;
+  }
+
+  :root[data-style='glas'] .energy-page .g-house__still {
+    display: inline;
+  }
+}
+
+:root[data-style='glas'] .energy-page .g-house__arm {
+  stroke: var(--g-house-mast-2);
+  stroke-linecap: round;
+}
+
+:root[data-style='glas'] .energy-page .g-house__knob {
+  fill: var(--g-house-mast-1);
+}
+
+:root[data-style='glas'] .energy-page .g-house__door {
+  fill: var(--g-house-door);
+}
+
+:root[data-style='glas'] .energy-page .g-house__window {
+  stroke: var(--g-house-wall-light-1);
+  stroke-width: 1px;
+}
+
+:root[data-style='glas'] .energy-page .g-house__roof-back {
+  fill: var(--g-house-roof-back);
+}
+
+:root[data-style='glas'] .energy-page .g-house__roof-edge {
+  fill: var(--g-house-roof-edge);
+}
+
+:root[data-style='glas'] .energy-page .g-house__roof-top {
+  fill: var(--g-house-roof-top);
+}
+
+:root[data-style='glas'] .energy-page .g-house__panel--lit {
+  stroke: var(--g-chart-solar-edge);
+  stroke-width: 0.8px;
+  stroke-linejoin: round;
+}
+
+:root[data-style='glas'] .energy-page .g-house__cells {
+  stroke: var(--g-house-panel-line);
+  stroke-width: 0.6px;
+}
+
+:root[data-style='glas'] .energy-page .g-house__cells--lit {
+  stroke: var(--g-house-panel-lit-line);
+}
+
+:root[data-style='glas'] .energy-page .g-house__sheen {
+  fill: var(--g-house-panel-sheen);
+}
+
+:root[data-style='glas'] .energy-page .g-house__battery-top {
+  fill: var(--g-house-battery-top);
+}
+
+:root[data-style='glas'] .energy-page .g-house__slot {
+  fill: var(--g-house-slot);
+}
+
+:root[data-style='glas'] .energy-page .g-house__soc {
+  fill: var(--g-chart-battery);
+}
+
+:root[data-style='glas'] .energy-page .g-house__soc--glow {
+  opacity: 0.65;
+}

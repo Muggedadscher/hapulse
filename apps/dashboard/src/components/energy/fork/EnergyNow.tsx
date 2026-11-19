@@ -4,19 +4,30 @@
  * right where it goes (home, battery, grid); a band's width is its power. The scale stays fixed for the session until
  * a new highest total (a cloud does not make the bands jump), with a minimum width so small flows stay visible. Every
  * node says its name, its power and what it does. The power comes from the `stat_rate` sensors of Home Assistant's
- * energy settings (core `energyPowerIds`, `energyPowerNow`), read only here (a narrow store selector). Both styles; the
- * look in EnergyNow.css and styles/glas/energy.css.
+ * energy settings (core `energyPowerIds`, `energyPowerNow`), read only here (a narrow store selector). Klassisch draws
+ * the bands; Glas the house model of EnergyNowHouse.tsx (same links, plus the batteries' charge for its slot). The look
+ * in EnergyNow.css and styles/glas/energy.css.
  */
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Battery, Gauge, House, Sun, UtilityPole } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { energyNowSentence, energyPowerIds, energyPowerNow, formatNumber, POWER_FLOW_MIN } from '@hapulse/core';
+import {
+  combinedSoc,
+  energyBatteryIds,
+  energyNowSentence,
+  energyPowerIds,
+  energyPowerNow,
+  formatNumber,
+  POWER_FLOW_MIN,
+} from '@hapulse/core';
 import type { EnergyAllocation, EnergyPreferences, HassEntityMap } from '@hapulse/core';
 import { Card } from '../../ui/Card';
 import { useEntityStore } from '../../../stores/entityStore';
 import { useLocale, useT, type TKey } from '../../../i18n/useT';
+import { useIsGlas } from '../../../app/glas/useUiStyle';
 import { CardHead } from './EnergyOrigin';
+import { EnergyNowHouse } from './EnergyNowHouse';
 import './EnergyNow.css';
 
 type Source = 'solar' | 'battery' | 'grid';
@@ -172,9 +183,44 @@ const DOES_KEY: Record<string, TKey> = {
   'r:grid': 'energy.now.exports',
 };
 
-function Flow({ links }: { links: Link[] }) {
+function useNode() {
   const t = useT();
   const locale = useLocale();
+  const kw = (w: number) => `${formatNumber(w / 1000, locale, { minDecimals: 1, maxDecimals: 1 })} kW`;
+  return (side: 'l' | 'r', key: Source | Sink, w: number, style?: React.CSSProperties) => {
+    const Icon = ICON[key];
+    return (
+      <div key={`${side}${key}`} className={`en-now__node en-now__node--${side}`} style={style}>
+        <span className={`en-now__name en-now__name--${key}`}>
+          <Icon size={15} strokeWidth={2} />
+          {t(NAME_KEY[key])}
+        </span>
+        <span className="en-now__kw">{kw(w)}</span>
+        <span className="en-now__does">{t(DOES_KEY[`${side}:${key}`]!)}</span>
+      </div>
+    );
+  };
+}
+
+/** The nodes as two columns of text (a box too narrow for the bands or the house). */
+function Compact({ links }: { links: Link[] }) {
+  const node = useNode();
+  const sum = (key: Source | Sink, pick: (l: Link) => Source | Sink) =>
+    links.filter((l) => pick(l) === key).reduce((a, l) => a + l.w, 0);
+  return (
+    <div className="en-now__compact">
+      <div className="en-now__col">
+        {LEFT.filter((k) => sum(k, (l) => l.from) > 0).map((k) => node('l', k, sum(k, (l) => l.from)))}
+      </div>
+      <div className="en-now__col">
+        {RIGHT.filter((k) => sum(k, (l) => l.to) > 0).map((k) => node('r', k, sum(k, (l) => l.to)))}
+      </div>
+    </div>
+  );
+}
+
+function Flow({ links }: { links: Link[] }) {
+  const node = useNode();
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   useEffect(() => {
@@ -188,36 +234,11 @@ function Flow({ links }: { links: Link[] }) {
   }, []);
   const total = links.reduce((s, l) => s + l.w, 0);
   const maxTotal = dayPeak(total);
-  const kw = (w: number) => `${formatNumber(w / 1000, locale, { minDecimals: 1, maxDecimals: 1 })} kW`;
   const ids = `en-now${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
 
   let body: React.ReactNode = null;
-  const node = (side: 'l' | 'r', key: Source | Sink, w: number, style?: React.CSSProperties) => {
-    const Icon = ICON[key];
-    return (
-      <div key={`${side}${key}`} className={`en-now__node en-now__node--${side}`} style={style}>
-        <span className={`en-now__name en-now__name--${key}`}>
-          <Icon size={15} strokeWidth={2} />
-          {t(NAME_KEY[key])}
-        </span>
-        <span className="en-now__kw">{kw(w)}</span>
-        <span className="en-now__does">{t(DOES_KEY[`${side}:${key}`]!)}</span>
-      </div>
-    );
-  };
   if (size && size.w < MIN_FLOW_W) {
-    const sum = (key: Source | Sink, pick: (l: Link) => Source | Sink) =>
-      links.filter((l) => pick(l) === key).reduce((a, l) => a + l.w, 0);
-    body = (
-      <div className="en-now__compact">
-        <div className="en-now__col">
-          {LEFT.filter((k) => sum(k, (l) => l.from) > 0).map((k) => node('l', k, sum(k, (l) => l.from)))}
-        </div>
-        <div className="en-now__col">
-          {RIGHT.filter((k) => sum(k, (l) => l.to) > 0).map((k) => node('r', k, sum(k, (l) => l.to)))}
-        </div>
-      </div>
-    );
+    body = <Compact links={links} />;
   } else if (size) {
     const { left, right, bands, xL, xR } = nowLayout(links, size.w, size.h, maxTotal);
     const x0 = xL + BAR_W;
@@ -284,8 +305,12 @@ function Flow({ links }: { links: Link[] }) {
 export function EnergyNowCard({ prefs }: { prefs: EnergyPreferences | null }) {
   const t = useT();
   const locale = useLocale();
+  const glas = useIsGlas();
   const ids = useMemo(() => energyPowerIds(prefs), [prefs]);
-  const all = useMemo(() => (ids ? [...ids.solar, ...ids.grid, ...ids.battery] : []), [ids]);
+  // Glas: the batteries' charge for the house's battery slot
+  const bat = useMemo(() => (glas ? energyBatteryIds(prefs) : null), [glas, prefs]);
+  const socIds = useMemo(() => bat?.soc ?? [], [bat]);
+  const all = useMemo(() => (ids ? [...ids.solar, ...ids.grid, ...ids.battery, ...socIds] : []), [ids, socIds]);
   const states = useEntityStore(useShallow((s) => all.map((id) => s.entities[id])));
   const now = useMinute();
   if (!ids) return null;
@@ -299,6 +324,8 @@ export function EnergyNowCard({ prefs }: { prefs: EnergyPreferences | null }) {
   const links = power ? nowLinks(power.flows) : [];
   const total = links.reduce((s, l) => s + l.w, 0);
   const sentence = power ? energyNowSentence(power.flows) : null;
+  const socStates = states.slice(all.length - socIds.length);
+  const soc = bat ? combinedSoc(socStates.map((e) => (e ? parseFloat(e.state) : null)), bat.capacities) : null;
   const label = links
     .map((l) => t('energy.now.linkAria', { from: t(NAME_KEY[l.from]), to: t(NAME_KEY[l.to]), value: formatNumber(l.w / 1000, locale, { minDecimals: 1, maxDecimals: 1 }) }))
     .join('; ');
@@ -310,10 +337,23 @@ export function EnergyNowCard({ prefs }: { prefs: EnergyPreferences | null }) {
       ) : (
         <>
           <p className="en-now__say">{t(`energy.now.say.${sentence}` as TKey)}</p>
-          {total > 0 && (
-            <div role="img" aria-label={label} className="en-now__wrap">
-              <Flow links={links} />
+          {glas ? (
+            // the house also when nothing flows (idle nodes dimmed); it names its nodes itself
+            <div className="en-now__wrap">
+              <EnergyNowHouse
+                links={links}
+                hasSolar={power.hasSolar}
+                hasBattery={power.hasBattery}
+                soc={soc}
+                fallback={<Compact links={links} />}
+              />
             </div>
+          ) : (
+            total > 0 && (
+              <div role="img" aria-label={label} className="en-now__wrap">
+                <Flow links={links} />
+              </div>
+            )
           )}
         </>
       )}
