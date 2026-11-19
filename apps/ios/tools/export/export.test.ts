@@ -363,6 +363,12 @@ describe('iOS export', () => {
       .map((input) => ({ input, out: core.migrateTheme(input) ?? null }));
 
     writeJson(join(FIX, 'settings.json'), { defaults: D, hydrate, imports, globals, users, shared, secrets, scope, themes });
+    // the tables the Swift port reads at run time (so defaults and scopes are never maintained twice)
+    writeJson(join(RES, 'settings.json'), {
+      customization: D, themes: core.THEME_NAMES, locales: core.LOCALES, navOrderV2Head: core.NAV_ORDER_V2_HEAD,
+      userKeys: core.USER_CUSTOMIZATION_KEYS, secretKeys: core.SECRET_CUSTOMIZATION_KEYS,
+      globalTop: core.GLOBAL_TOP_KEYS, userTop: core.USER_TOP_KEYS, deviceTop: core.DEVICE_TOP_KEYS,
+    });
   });
 });
 
