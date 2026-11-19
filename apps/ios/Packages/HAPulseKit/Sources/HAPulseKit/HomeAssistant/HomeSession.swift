@@ -120,19 +120,17 @@ public final class HomeSession {
 
     private func subscribeAll() async {
         let inbox = inboxIn
-        do {
-            _ = try await client.subscribe(["type": "subscribe_entities"]) { ev in inbox.yield(.entities(ev)) }
-            _ = try await client.subscribe(["type": "frontend/subscribe_system_data", "key": .string(Self.globalKey)]) { ev in
-                inbox.yield(.global(ev["value"]))
+        let subscriptions: [([String: JSONValue], @Sendable (JSONValue) -> Void)] = [
+            (["type": "subscribe_entities"], { ev in inbox.yield(.entities(ev)) }),
+            (["type": "frontend/subscribe_system_data", "key": .string(Self.globalKey)], { ev in inbox.yield(.global(ev["value"])) }),
+            (["type": "frontend/subscribe_user_data", "key": .string(Self.userKey)], { ev in inbox.yield(.user(ev["value"])) }),
+            (["type": "frontend/subscribe_user_data", "key": .string(Self.snapshotKey)], { ev in inbox.yield(.snapshot(ev["value"])) }),
+        ]
+        // each on its own: one refused subscription must not keep the others from being registered
+        for (message, handler) in subscriptions {
+            do { _ = try await client.subscribe(message, handler) } catch {
+                log.error("\(message["type"]?.string ?? "?") refused: \(error)")
             }
-            _ = try await client.subscribe(["type": "frontend/subscribe_user_data", "key": .string(Self.userKey)]) { ev in
-                inbox.yield(.user(ev["value"]))
-            }
-            _ = try await client.subscribe(["type": "frontend/subscribe_user_data", "key": .string(Self.snapshotKey)]) { ev in
-                inbox.yield(.snapshot(ev["value"]))
-            }
-        } catch {
-            log.error("subscribing failed: \(error)") // not connected yet: registered, sent on connect
         }
     }
 

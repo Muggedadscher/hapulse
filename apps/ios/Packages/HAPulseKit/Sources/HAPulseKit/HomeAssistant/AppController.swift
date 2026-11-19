@@ -24,6 +24,8 @@ public final class AppController {
         case tokenRejected
         /// Home Assistant could not be reached (message for `onboarding.connectionError`)
         case connection(String)
+        /// something on this device failed (Keychain, demo data)
+        case generic
     }
 
     public private(set) var phase: Phase = .starting
@@ -72,16 +74,22 @@ public final class AppController {
     // MARK: sign-in
 
     /// First step of the sign-in with Home Assistant's page: the address the app opens in the system sign-in window,
-    /// or nil (with `problem` set) when the typed address is no address.
+    /// or nil (with `problem` set) when the typed address is no address. nil without a problem while a sign-in runs.
     public func beginSignIn(address: String) async -> URL? {
+        guard !busy else { return nil }
         problem = nil
         guard let hass = HAURL.normalize(address) else {
             problem = .missingURL
             return nil
         }
-        pendingURL = hass
         busy = true
-        return await auth.authorizeURL(hassURL: hass)
+        guard let page = await auth.authorizeURL(hassURL: hass) else {
+            busy = false
+            problem = .missingURL
+            return nil
+        }
+        pendingURL = hass
+        return page
     }
 
     /// The sign-in window was closed without a result.
@@ -97,26 +105,30 @@ public final class AppController {
         problem = .connection(message)
     }
 
-    /// Second step: the callback `hapulse://auth-callback?code=…` from the sign-in window.
+    /// Second step: the callback `hapulse://auth-callback?code=…` from the sign-in window. Stays on the sign-in page
+    /// until Home Assistant has accepted the connection (or says why not), like the web.
     public func finishSignIn(callback: URL) async {
+        defer { busy = false }
         guard let hass = pendingURL else { return }
         pendingURL = nil
-        defer { busy = false }
         do {
             _ = try await auth.finish(callback: callback, hassURL: hass)
             log.info("signed in with the Home Assistant page")
-            await open(hass)
         } catch let e as HAError {
             log.error("sign-in failed: \(e.code)")
             problem = .signInFailed // refused code, wrong answer, callback of another sign-in
+            return
         } catch {
             log.error("sign-in failed: \(error)")
             problem = .connection(error.localizedDescription)
+            return
         }
+        await open(hass, verify: true)
     }
 
-    /// The advanced way: address plus a long-lived access token.
+    /// The advanced way: address plus a long-lived access token. Kept only when Home Assistant accepts it.
     public func signInWithToken(address: String, token: String) async {
+        guard !busy else { return }
         problem = nil
         guard let hass = HAURL.normalize(address) else {
             problem = .missingURL
@@ -131,28 +143,32 @@ public final class AppController {
         defer { busy = false }
         do {
             _ = try await auth.useLongLivedToken(t, hassURL: hass)
-            await open(hass)
         } catch {
             log.error("storing the token failed: \(error)")
-            problem = .connection("\(error)")
+            problem = .generic
+            return
         }
+        await open(hass, verify: true)
     }
 
     /// The demo home, without any Home Assistant.
     public func startDemo() async {
+        guard !busy else { return }
         problem = nil
         do {
             let s = try makeDemo()
-            await adopt(s, demo: true)
+            await closeSession()
+            install(s, demo: true)
+            await s.start()
         } catch {
             log.error("demo failed to load: \(error)")
-            problem = .connection("\(error)")
+            problem = .generic
         }
     }
 
     public func signOut() async {
         await closeSession()
-        if !isDemo { await auth.signOut() }
+        if !isDemo, await !auth.signOut() { problem = .generic }
         isDemo = false
         phase = .signedOut
         log.info("signed out")
@@ -171,39 +187,109 @@ public final class AppController {
     /// The `state` of the sign-in page that is open (tests only).
     func pendingStateForTests() async -> String? { await auth.pendingState() }
 
-    private func open(_ hass: URL) async {
+    /// `verify`: a fresh sign-in. The sign-in page stays until the first answer of Home Assistant; a refusal or no
+    /// connection forgets the new tokens and says why. Without it (app start with a stored sign-in) the session shows
+    /// at once and connects in the background.
+    private func open(_ hass: URL, verify: Bool = false) async {
+        let client: HAClient
         do {
             let auth = self.auth
-            let client = try HAClient(baseURL: hass, transport: transport, token: { try await auth.accessToken() }, options: clientOptions)
-            await adopt(HomeSession(client: client), demo: false)
+            client = try HAClient(baseURL: hass, transport: transport, token: { try await auth.accessToken() }, options: clientOptions)
         } catch {
             log.error("bad Home Assistant address")
             phase = .signedOut
             problem = .missingURL
+            return
+        }
+        let s = HomeSession(client: client)
+        await closeSession()
+        guard verify else {
+            install(s, demo: false)
+            await s.start()
+            return
+        }
+        await s.start()
+        let first = await Self.firstAnswer(client, timeout: verifyTimeout)
+        switch first {
+        case .connected:
+            install(s, demo: false)
+        case .authFailed:
+            let longLived = ((try? await auth.storedTokens()) ?? nil).map { $0.refreshToken == nil } ?? false
+            await s.close()
+            await auth.signOut()
+            phase = .signedOut
+            problem = longLived ? .tokenRejected : .signInFailed
+        case .disconnected(let reason):
+            await s.close()
+            await auth.signOut()
+            phase = .signedOut
+            problem = .connection(reason)
+        case .idle, .connecting:
+            await s.close()
+            await auth.signOut()
+            phase = .signedOut
+            problem = .connection("timeout")
         }
     }
 
-    private func adopt(_ s: HomeSession, demo: Bool) async {
-        await closeSession()
+    /// How long a fresh sign-in waits for Home Assistant.
+    var verifyTimeout: Duration = .seconds(20)
+
+    /// The first status that answers the question "does this work": connected, refused or failed (or the last one
+    /// seen when time runs out).
+    private static func firstAnswer(_ client: HAClient, timeout: Duration) async -> HAConnectionStatus {
+        await withTaskGroup(of: HAConnectionStatus?.self) { group in
+            group.addTask {
+                for await status in await client.statusUpdates() {
+                    switch status {
+                    case .connected, .authFailed, .disconnected: return status
+                    case .idle, .connecting: continue
+                    }
+                }
+                return nil
+            }
+            group.addTask {
+                try? await Task.sleep(for: timeout)
+                return nil
+            }
+            let first = await group.next() ?? nil
+            group.cancelAll()
+            return first ?? .connecting
+        }
+    }
+
+    private func install(_ s: HomeSession, demo: Bool) {
         session = s
         isDemo = demo
         phase = .signedIn
         let client = s.client
+        let auth = self.auth
         watcher = Task { [weak self] in
+            var retried = false
             for await status in await client.statusUpdates() {
-                if case .authFailed = status {
+                switch status {
+                case .connected:
+                    retried = false
+                case .authFailed:
+                    // one refused access token is not the end: refresh it once and connect again
+                    if !retried, await auth.expireAccessToken() {
+                        retried = true
+                        self?.log.error("access token refused, refreshing once")
+                        await client.start()
+                        continue
+                    }
                     await self?.refused()
                     return
+                default:
+                    break
                 }
             }
         }
-        await s.start()
     }
 
-    /// Home Assistant refused the token for good: back to the sign-in page with a message.
+    /// Home Assistant refused the sign-in for good: back to the sign-in page with a message.
     private func refused() async {
-        let stored = (try? await auth.storedTokens()) ?? nil
-        let longLived = stored.map { $0.refreshToken == nil } ?? false
+        let longLived = ((try? await auth.storedTokens()) ?? nil).map { $0.refreshToken == nil } ?? false
         await closeSession()
         await auth.signOut() // a refused token is useless; a revoked refresh token is already gone
         isDemo = false

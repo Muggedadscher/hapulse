@@ -146,15 +146,35 @@ public actor HAAuth {
         }
     }
 
-    /// Signs out: revokes the refresh token at Home Assistant (best effort) and forgets the tokens.
-    public func signOut() async {
+    /// Signs out: revokes the refresh token at Home Assistant (best effort) and forgets the tokens. false when the
+    /// tokens could not be removed from the store (the next start would sign in with them again).
+    @discardableResult
+    public func signOut() async -> Bool {
         epoch += 1
         refreshing?.cancel()
         refreshing = nil
         if let t = try? await store.load(), let rt = t.refreshToken {
             _ = try? await http.post(t.hassURL.appendingPathComponent("auth/revoke"), form: ["token": rt])
         }
-        do { try await store.save(nil) } catch { log.error("could not forget the tokens: \(error)") }
+        for attempt in 1...3 {
+            do {
+                try await store.save(nil)
+                return true
+            } catch {
+                log.error("could not forget the tokens (\(attempt)/3): \(error)")
+                try? await Task.sleep(for: .milliseconds(200))
+            }
+        }
+        return false
+    }
+
+    /// Home Assistant refused an access token that still looked valid here (clock jump, server restored from a
+    /// backup): the next `accessToken()` refreshes it first. Returns false without a refresh token.
+    public func expireAccessToken() async -> Bool {
+        guard var t = try? await store.load(), t.refreshToken != nil else { return false }
+        t.expires = .distantPast
+        do { try await store.save(t) } catch { return false }
+        return true
     }
 
     private func tokenCall(hassURL: URL, clientID: String, form: [String: String], keepRefresh: String?) async throws -> HATokens {

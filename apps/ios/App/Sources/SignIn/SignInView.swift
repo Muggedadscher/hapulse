@@ -40,7 +40,7 @@ struct SignInView: View {
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .submitLabel(.go)
-                            .onSubmit { Task { await signIn() } }
+                            .onSubmit { if !app.busy { Task { await signIn() } } }
                             .padding(12)
                             .background(.glas(.fill), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .accessibilityIdentifier("hp.signin.url")
@@ -98,6 +98,7 @@ struct SignInView: View {
                     Text(t("onboarding.demoButton")).hpText(.headline).frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
                 .buttonStyle(.glass)
+                .disabled(app.busy)
                 .accessibilityIdentifier("hp.signin.demo")
             }
             .padding(.horizontal, 20)
@@ -114,6 +115,7 @@ struct SignInView: View {
         case .signInFailed: t("onboarding.signInFailed")
         case .tokenRejected: t("onboarding.tokenRejected")
         case .connection(let message): t("onboarding.connectionError", ["message": .text(message)])
+        case .generic: t("onboarding.oauthGenericError")
         }
     }
 

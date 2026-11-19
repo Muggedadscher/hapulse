@@ -69,7 +69,7 @@ struct AppControllerTests {
         await again.signOut()
     }
 
-    @Test func refusedTokenGoesBackToSignIn() async throws {
+    @Test func refusedTokenStaysOnSignIn() async throws {
         let ha = FakeHA()
         let store = MemoryTokenStore()
         let app = make(ha, store: store)
@@ -77,12 +77,60 @@ struct AppControllerTests {
         await app.signInWithToken(address: "ha.example:8123", token: "  ")
         #expect(app.problem == .missingToken)
         await app.signInWithToken(address: "ha.example:8123", token: "wrong")
-        try await eventuallyMainAsync("back at sign-in") { app.phase == .signedOut }
+        #expect(app.phase == .signedOut)
         #expect(app.problem == .tokenRejected)
+        #expect(app.session == nil)
+        #expect(!app.busy)
         #expect(try await store.load() == nil)
         await app.signInWithToken(address: "ha.example:8123", token: "good")
-        try await eventuallyMainAsync("connected") { await connected(app) }
+        #expect(app.phase == .signedIn)
+        #expect(app.problem == nil)
+        #expect(await connected(app))
         #expect(try await store.load()?.hassURL.absoluteString == "http://ha.example:8123")
+        await app.signOut()
+    }
+
+    @Test func unreachableAddressStaysOnSignIn() async throws {
+        let ha = FakeHA()
+        await ha.setUnreachable(true)
+        let store = MemoryTokenStore()
+        let app = make(ha, store: store)
+        await app.launch()
+        await app.signInWithToken(address: "ha.typo.example", token: "good")
+        #expect(app.phase == .signedOut)
+        guard case .connection(let message)? = app.problem else {
+            Issue.record("expected a connection problem, got \(String(describing: app.problem))")
+            return
+        }
+        #expect(message.contains("Could not connect"))
+        #expect(try await store.load() == nil)
+    }
+
+    @Test func secondSignInWhileOneRunsIsIgnored() async throws {
+        let app = make(FakeHA())
+        await app.launch()
+        let first = await app.beginSignIn(address: "ha.example:8123")
+        #expect(first != nil && app.busy)
+        #expect(await app.beginSignIn(address: "other.example") == nil)
+        #expect(app.problem == nil)
+        await app.startDemo()
+        #expect(app.phase == .signedOut) // the demo waits too
+        app.cancelSignIn()
+        #expect(!app.busy)
+        await app.finishSignIn(callback: URL(string: "hapulse://auth-callback?code=abc&state=x")!)
+        #expect(!app.busy)
+    }
+
+    @Test func oneRefusedAccessTokenIsRefreshedOnce() async throws {
+        let ha = FakeHA()
+        await ha.setToken("A1") // the server only takes the refreshed token
+        let store = MemoryTokenStore(HATokens(hassURL: hass, clientID: HAAuth.defaultClientID, accessToken: "old",
+                                              refreshToken: "R", expires: Date().addingTimeInterval(1800)))
+        let app = make(ha, store: store)
+        await app.launch()
+        try await eventuallyMainAsync("connected after refresh") { await connected(app) }
+        #expect(app.phase == .signedIn)
+        #expect(try await store.load()?.accessToken == "A1")
         await app.signOut()
     }
 

@@ -76,7 +76,10 @@ public protocol SentinelHTTP: Sendable {
 
 public struct URLSessionSentinelHTTP: SentinelHTTP {
     private let session: URLSession
-    public init(session: URLSession = URLSessionSentinelHTTP.makeSession()) { self.session = session }
+    public init(session: URLSession = URLSessionSentinelHTTP.sharedSession) { self.session = session }
+
+    /// One session for all clients: connections are reused, nothing has to be invalidated.
+    public static let sharedSession = makeSession()
 
     /// The token rides in every URL: no disk cache, no cookies, nothing of it kept beyond the app run.
     public static func makeSession() -> URLSession {
@@ -207,7 +210,7 @@ public struct SentinelClient: Sendable {
 
     /// Number like JavaScript prints it in a template string (integers without `.0`).
     static func js(_ d: Double) -> String {
-        if d == d.rounded(), abs(d) < 1e21 { return SentinelURL.jsInteger(d) }
+        if !d.isFinite || (d == d.rounded() && abs(d) < 1e21) { return SentinelURL.jsInteger(d) }
         return String(d)
     }
 

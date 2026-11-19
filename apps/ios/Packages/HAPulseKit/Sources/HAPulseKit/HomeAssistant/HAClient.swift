@@ -110,10 +110,11 @@ public actor HAClient {
     /// by the next `start()`.
     public func stop() async {
         generation += 1
+        let g = generation
         loop?.cancel()
         loop = nil
         await dropSocket()
-        status = .idle
+        if g == generation { status = .idle } // a start() during the await owns the status now
     }
 
     private func isConnection(_ c: Int) -> Bool { c == connection }
@@ -140,15 +141,21 @@ public actor HAClient {
     }
 
     /// Subscribes (`subscribe_entities`, `subscribe_events`, `frontend/subscribe_user_data` …); the handler gets each
-    /// `event`. The subscription survives reconnects. When not connected it is registered and sent on connect.
+    /// `event`. The subscription survives reconnects. When not connected it is registered and sent on connect. Throws
+    /// only when Home Assistant refuses it (unknown command, no rights); lost on the way, it stays registered and the
+    /// connection starts over, which sends it again.
     @discardableResult
     public func subscribe(_ message: [String: JSONValue], _ handler: @escaping @Sendable (JSONValue) -> Void) async throws -> HASubscription {
         let key = UUID()
         subs[key] = Sub(message: message, handler: handler, haId: nil)
         if let socket, case .connected = status {
-            do { try await sendSubscription(key, on: socket) } catch {
+            let conn = connection
+            do { try await sendSubscription(key, on: socket) } catch let e as HAError where e != .timeout && e != .notConnected {
                 subs[key] = nil
-                throw error
+                throw e
+            } catch {
+                log.error("subscription \(message["type"]?.string ?? "?") lost on the way: \(error)")
+                if connection == conn { await socket.close() }
             }
         }
         return HASubscription(key: key)
@@ -206,6 +213,7 @@ public actor HAClient {
                 guard current(g) else { break }
                 await dropSocket()
                 if !adopted { await opened?.close() }
+                guard current(g) else { break }
                 status = .authFailed(reason: e.message)
                 log.error("sign-in refused by Home Assistant")
                 loop = nil
@@ -214,6 +222,7 @@ public actor HAClient {
                 guard current(g) else { break }
                 await dropSocket()
                 if !adopted { await opened?.close() }
+                guard current(g) else { break }
                 status = .disconnected(reason: "\(error)")
                 log.error("connection lost: \(error)")
             }

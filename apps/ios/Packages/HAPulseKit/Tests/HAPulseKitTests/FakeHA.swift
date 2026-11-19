@@ -34,9 +34,14 @@ actor FakeHA: HATransport {
     /// Accepts the socket but never says `auth_required` (a hanging proxy).
     var silent = false
     func setSilent(_ on: Bool) { silent = on }
+    /// Refuses to open sockets (no network, wrong address).
+    var unreachable = false
+    func setUnreachable(_ on: Bool) { unreachable = on }
+    private func checkReachable() throws { if unreachable { throw HAError("unreachable", "Could not connect to the server.") } }
     func pushRaw(_ text: String) async { await boxes[connections]?.put(text) }
 
     nonisolated func open(_ url: URL) async throws -> any HASocket {
+        try await checkReachable()
         let (n, box) = await connect()
         return FakeSocket(inbox: box, server: self, connection: n)
     }
