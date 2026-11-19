@@ -125,3 +125,14 @@ struct HAClientTests {
         watch.cancel()
     }
 }
+
+@MainActor
+func eventuallyMain(_ what: String = "", timeout: Duration = .seconds(3), _ check: @MainActor () -> Bool) async throws {
+    let clock = ContinuousClock()
+    let end = clock.now.advanced(by: timeout)
+    while clock.now < end {
+        if check() { return }
+        try await Task.sleep(for: .milliseconds(5))
+    }
+    Issue.record("timed out waiting: \(what)")
+}

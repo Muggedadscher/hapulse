@@ -312,7 +312,10 @@ public actor HAClient {
     }
 }
 
-extension JSONValue: ExpressibleByStringLiteral, ExpressibleByBooleanLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral {
+extension JSONValue: ExpressibleByStringLiteral, ExpressibleByBooleanLiteral, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral,
+    ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
+    public init(arrayLiteral elements: JSONValue...) { self = .array(elements) }
+    public init(dictionaryLiteral elements: (String, JSONValue)...) { self = .object(Dictionary(elements) { _, b in b }) }
     public init(stringLiteral value: String) { self = .string(value) }
     public init(booleanLiteral value: Bool) { self = .bool(value) }
     public init(floatLiteral value: Double) { self = .number(value) }
