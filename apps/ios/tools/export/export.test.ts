@@ -351,6 +351,105 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'roomSections.json'), { sections, strip });
   });
 
+  it('room look: tables and golden cases', () => {
+    // the tables the app reads (keyword order matters: first match wins)
+    writeJson(join(RES, 'roomIcons.json'), {
+      keywords: core.ROOM_KEYWORDS, mdi: core.MDI_TO_LUCIDE, iconByKind: core.ICON_BY_KIND,
+      canonical: core.CANONICAL_ROOM_ICONS,
+    });
+    const variants = (k: string) => [k, k.toUpperCase(), `Mein ${k}-Raum`, k.replace(/ /g, '-'), k.replace(/ /g, '’')];
+    const names = [
+      ...core.ROOM_KEYWORDS.flatMap((k) => variants(k.keyword)),
+      'Küche', 'Wohnzimmer', 'Schlafzimmer', 'Bad', 'Gäste-WC', 'Salle d’Eau', 'Séjour', 'Entrée', 'Chambre d’enfant',
+      'Sous-sol', 'Garde-manger', 'Dépendance', 'Living Room', 'STUDY', 'Kid’s room', 'Hallway 2', 'Büro', '', '   ',
+      'Ærøskøbing', 'ﬁtness', 'İstanbul', 'Straße', 'cafe\u0301', 'Wcfoo', 'Ötztal',
+    ];
+    const icons = [
+      undefined, null, '', ...Object.keys(core.MDI_TO_LUCIDE).flatMap((k) => [k, `mdi:${k}`]),
+      ...core.CANONICAL_ROOM_ICONS.flatMap((k) => [k, `mdi:${k}`]), 'mdi:unknown-thing', 'hass:sofa', 'MDI:sofa',
+    ];
+    const kinds = names.map((name) => ({ name, kind: core.roomKind(name) }));
+    const iconCases = [
+      ...icons.map((icon) => ({ name: 'Küche', icon, result: core.roomIconName({ name: 'Küche', icon }) })),
+      ...icons.slice(0, 8).map((icon) => ({ name: 'Kitchen', icon, result: core.roomIconName({ name: 'Kitchen', icon }) })),
+      ...names.map((name) => ({ name, icon: null, result: core.roomIconName({ name, icon: null }) })),
+    ];
+
+    // rooms with temperature/humidity sensors, thermostats, openings and garage doors
+    const st = (state: string, attributes: Record<string, unknown> = {}) => ({ state, attributes });
+    const entities: Record<string, unknown> = {
+      'sensor.oven': st('180', { device_class: 'temperature', unit_of_measurement: '°C' }),
+      'sensor.t': st('21.5', { device_class: 'temperature', unit_of_measurement: '°C' }),
+      'sensor.t_bad': st('unavailable', { device_class: 'temperature', unit_of_measurement: '°C' }),
+      'sensor.t_nounit': st('19.25abc', { device_class: 'temperature', unit_of_measurement: '' }),
+      'sensor.h': st('48', { device_class: 'humidity', unit_of_measurement: '%' }),
+      'sensor.h2': st('n/a', { device_class: 'humidity' }),
+      'sensor.h3': st('55.5', { device_class: 'humidity', unit_of_measurement: '%' }),
+      'sensor.power': st('12', { device_class: 'power' }),
+      'climate.a': st('heat', { current_temperature: 20.5, hvac_action: 'heating' }),
+      'climate.b': st('off', { current_temperature: null }),
+      'climate.c': st('auto', {}),
+      'climate.d': st('heat_cool', { hvac_action: 'cooling', current_temperature: 23 }),
+      'climate.e': st('unavailable', { hvac_action: 'idle' }),
+      'binary_sensor.door': st('on', { device_class: 'door' }),
+      'binary_sensor.door_off': st('off', { device_class: 'door' }),
+      'binary_sensor.gd': st('on', { device_class: 'garage_door' }),
+      'binary_sensor.win': st('on', { device_class: 'window' }),
+      'binary_sensor.opening': st('on', { device_class: 'opening' }),
+      'binary_sensor.wet': st('on', { device_class: 'moisture' }),
+      'binary_sensor.smoke': st('on', { device_class: 'smoke' }),
+      'cover.garage': st('opening', { device_class: 'garage' }),
+      'cover.gate': st('closed', { device_class: 'gate' }),
+      'cover.gate_unknown': st('unknown', { device_class: 'gate' }),
+      'cover.blind': st('open', { device_class: 'blind' }),
+      'light.dim': st('on', { brightness: 128 }),
+      'light.min': st('on', { brightness: 1 }),
+      'light.max': st('on', { brightness: 255 }),
+      'light.over': st('on', { brightness: 300 }),
+      'light.nob': st('on', {}),
+      'light.off': st('off', { brightness: 200 }),
+      'light.str': st('on', { brightness: '128' }),
+      'light.half': st('on', { brightness: 1.275 }),
+    };
+    for (const [id, e] of Object.entries(entities)) Object.assign(e as object, { entity_id: id });
+    const room = (id: string, domains: Record<string, string[]>, extra: string[] = []) => ({
+      id, name: id, icon: null, picture: null, entityIds: [...Object.values(domains).flat(), ...extra], domains,
+    });
+    const rooms = [
+      room('kitchen', { sensor: ['sensor.oven', 'sensor.t', 'sensor.h'], climate: ['climate.a'] }),
+      room('bad', { sensor: ['sensor.t_bad', 'sensor.h2', 'sensor.h3'], climate: ['climate.b', 'climate.a'] }),
+      room('nounit', { sensor: ['sensor.t_nounit', 'sensor.power'] }),
+      room('missing', { sensor: ['sensor.gone', 'sensor.t'], climate: ['climate.gone', 'climate.d'] }),
+      room('empty', {}),
+      room('open', { binary_sensor: ['binary_sensor.win', 'binary_sensor.wet', 'binary_sensor.door'] }),
+      room('garage', { binary_sensor: ['binary_sensor.smoke'], cover: ['cover.gate', 'cover.garage'] }),
+      room('quiet', { binary_sensor: ['binary_sensor.door_off', 'binary_sensor.opening', 'binary_sensor.smoke'],
+        cover: ['cover.blind', 'cover.gate_unknown'] }),
+      room('gd', { binary_sensor: ['binary_sensor.wet', 'binary_sensor.gd'] }),
+      room('diag', {}, ['binary_sensor.door', 'sensor.t']),
+    ];
+    const sources: unknown[] = [undefined, null, 42, 'sensor.oven', 'sensor.t', 'sensor.t_bad', 'sensor.h', 'sensor.power',
+      'climate.a', 'climate.b', 'climate.d', 'sensor.gone', 'climate.gone', 'sensor.elsewhere'];
+    const temps = rooms.map((r) => {
+      const summary = core.roomSummary(r, entities as never);
+      return {
+        room: r,
+        sources: core.roomTemperatureSources(r, entities as never),
+        status: core.roomStatusIconName(r, entities as never),
+        bySource: sources.map((source) => ({
+          source: source === undefined ? '__undefined__' : source,
+          temperature: core.roomTemperature(r, entities as never, source),
+          glances: core.roomGlances(r, entities as never, source),
+          summary: core.withRoomTemperature(summary, r, entities as never, source),
+        })),
+      };
+    });
+    const ids = Object.keys(entities);
+    const lights = ids.filter((id) => id.startsWith('light.')).map((id) => ({ id, percent: core.lightPercent(entities[id] as never) }));
+    const tones = ids.filter((id) => id.startsWith('climate.')).map((id) => ({ id, tone: core.climateTone(entities[id] as never) }));
+    writeJson(join(FIX, 'roomLook.json'), { kinds, icons: iconCases, entities, temps, lights, tones });
+  });
+
   it('golden: sentinel', async () => {
     const api = await import('@sentinel-nvr/web/api');
     const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',

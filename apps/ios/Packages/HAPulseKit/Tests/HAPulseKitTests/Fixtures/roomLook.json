@@ -1,0 +1,8648 @@
+{
+  "entities": {
+    "binary_sensor.door": {
+      "attributes": {
+        "device_class": "door"
+      },
+      "entity_id": "binary_sensor.door",
+      "state": "on"
+    },
+    "binary_sensor.door_off": {
+      "attributes": {
+        "device_class": "door"
+      },
+      "entity_id": "binary_sensor.door_off",
+      "state": "off"
+    },
+    "binary_sensor.gd": {
+      "attributes": {
+        "device_class": "garage_door"
+      },
+      "entity_id": "binary_sensor.gd",
+      "state": "on"
+    },
+    "binary_sensor.opening": {
+      "attributes": {
+        "device_class": "opening"
+      },
+      "entity_id": "binary_sensor.opening",
+      "state": "on"
+    },
+    "binary_sensor.smoke": {
+      "attributes": {
+        "device_class": "smoke"
+      },
+      "entity_id": "binary_sensor.smoke",
+      "state": "on"
+    },
+    "binary_sensor.wet": {
+      "attributes": {
+        "device_class": "moisture"
+      },
+      "entity_id": "binary_sensor.wet",
+      "state": "on"
+    },
+    "binary_sensor.win": {
+      "attributes": {
+        "device_class": "window"
+      },
+      "entity_id": "binary_sensor.win",
+      "state": "on"
+    },
+    "climate.a": {
+      "attributes": {
+        "current_temperature": 20.5,
+        "hvac_action": "heating"
+      },
+      "entity_id": "climate.a",
+      "state": "heat"
+    },
+    "climate.b": {
+      "attributes": {
+        "current_temperature": null
+      },
+      "entity_id": "climate.b",
+      "state": "off"
+    },
+    "climate.c": {
+      "attributes": {},
+      "entity_id": "climate.c",
+      "state": "auto"
+    },
+    "climate.d": {
+      "attributes": {
+        "current_temperature": 23,
+        "hvac_action": "cooling"
+      },
+      "entity_id": "climate.d",
+      "state": "heat_cool"
+    },
+    "climate.e": {
+      "attributes": {
+        "hvac_action": "idle"
+      },
+      "entity_id": "climate.e",
+      "state": "unavailable"
+    },
+    "cover.blind": {
+      "attributes": {
+        "device_class": "blind"
+      },
+      "entity_id": "cover.blind",
+      "state": "open"
+    },
+    "cover.garage": {
+      "attributes": {
+        "device_class": "garage"
+      },
+      "entity_id": "cover.garage",
+      "state": "opening"
+    },
+    "cover.gate": {
+      "attributes": {
+        "device_class": "gate"
+      },
+      "entity_id": "cover.gate",
+      "state": "closed"
+    },
+    "cover.gate_unknown": {
+      "attributes": {
+        "device_class": "gate"
+      },
+      "entity_id": "cover.gate_unknown",
+      "state": "unknown"
+    },
+    "light.dim": {
+      "attributes": {
+        "brightness": 128
+      },
+      "entity_id": "light.dim",
+      "state": "on"
+    },
+    "light.half": {
+      "attributes": {
+        "brightness": 1.275
+      },
+      "entity_id": "light.half",
+      "state": "on"
+    },
+    "light.max": {
+      "attributes": {
+        "brightness": 255
+      },
+      "entity_id": "light.max",
+      "state": "on"
+    },
+    "light.min": {
+      "attributes": {
+        "brightness": 1
+      },
+      "entity_id": "light.min",
+      "state": "on"
+    },
+    "light.nob": {
+      "attributes": {},
+      "entity_id": "light.nob",
+      "state": "on"
+    },
+    "light.off": {
+      "attributes": {
+        "brightness": 200
+      },
+      "entity_id": "light.off",
+      "state": "off"
+    },
+    "light.over": {
+      "attributes": {
+        "brightness": 300
+      },
+      "entity_id": "light.over",
+      "state": "on"
+    },
+    "light.str": {
+      "attributes": {
+        "brightness": "128"
+      },
+      "entity_id": "light.str",
+      "state": "on"
+    },
+    "sensor.h": {
+      "attributes": {
+        "device_class": "humidity",
+        "unit_of_measurement": "%"
+      },
+      "entity_id": "sensor.h",
+      "state": "48"
+    },
+    "sensor.h2": {
+      "attributes": {
+        "device_class": "humidity"
+      },
+      "entity_id": "sensor.h2",
+      "state": "n/a"
+    },
+    "sensor.h3": {
+      "attributes": {
+        "device_class": "humidity",
+        "unit_of_measurement": "%"
+      },
+      "entity_id": "sensor.h3",
+      "state": "55.5"
+    },
+    "sensor.oven": {
+      "attributes": {
+        "device_class": "temperature",
+        "unit_of_measurement": "°C"
+      },
+      "entity_id": "sensor.oven",
+      "state": "180"
+    },
+    "sensor.power": {
+      "attributes": {
+        "device_class": "power"
+      },
+      "entity_id": "sensor.power",
+      "state": "12"
+    },
+    "sensor.t": {
+      "attributes": {
+        "device_class": "temperature",
+        "unit_of_measurement": "°C"
+      },
+      "entity_id": "sensor.t",
+      "state": "21.5"
+    },
+    "sensor.t_bad": {
+      "attributes": {
+        "device_class": "temperature",
+        "unit_of_measurement": "°C"
+      },
+      "entity_id": "sensor.t_bad",
+      "state": "unavailable"
+    },
+    "sensor.t_nounit": {
+      "attributes": {
+        "device_class": "temperature",
+        "unit_of_measurement": ""
+      },
+      "entity_id": "sensor.t_nounit",
+      "state": "19.25abc"
+    }
+  },
+  "icons": [
+    {
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "sofa",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "mdi:sofa",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "sofa-single",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "mdi:sofa-single",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "couch",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "mdi:couch",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "silverware-fork-knife",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "mdi:silverware-fork-knife",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "silverware",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "mdi:silverware",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "fridge",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "mdi:fridge",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "fridge-outline",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "mdi:fridge-outline",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "stove",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "mdi:stove",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "bed",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "mdi:bed",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "bed-double",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "mdi:bed-double",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "bed-single",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "mdi:bed-single",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "shower",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "mdi:shower",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "bathtub",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "mdi:bathtub",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "toilet",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "mdi:toilet",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "shower-head",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "mdi:shower-head",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "desk",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "mdi:desk",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "monitor",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "mdi:monitor",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "desktop-mac",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "mdi:desktop-mac",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "desk-lamp",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "mdi:desk-lamp",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "garage",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "mdi:garage",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "garage-variant",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "mdi:garage-variant",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "garage-open",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "mdi:garage-open",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "car",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "mdi:car",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "car-side",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "mdi:car-side",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "stairs",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "mdi:stairs",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "door",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "mdi:door",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "door-open",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "mdi:door-open",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "washing-machine",
+      "name": "Küche",
+      "result": "washing-machine"
+    },
+    {
+      "icon": "mdi:washing-machine",
+      "name": "Küche",
+      "result": "washing-machine"
+    },
+    {
+      "icon": "tree",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "mdi:tree",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "flower",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "mdi:flower",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "flower-outline",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "mdi:flower-outline",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "pine-tree",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "mdi:pine-tree",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "forest",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "mdi:forest",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "television",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "mdi:television",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "television-play",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "mdi:television-play",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "bookshelf",
+      "name": "Küche",
+      "result": "box"
+    },
+    {
+      "icon": "mdi:bookshelf",
+      "name": "Küche",
+      "result": "box"
+    },
+    {
+      "icon": "baby",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "mdi:baby",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "baby-carriage",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "mdi:baby-carriage",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "baby-face",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "mdi:baby-face",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "dumbbell",
+      "name": "Küche",
+      "result": "dumbbell"
+    },
+    {
+      "icon": "mdi:dumbbell",
+      "name": "Küche",
+      "result": "dumbbell"
+    },
+    {
+      "icon": "weight-lifter",
+      "name": "Küche",
+      "result": "dumbbell"
+    },
+    {
+      "icon": "mdi:weight-lifter",
+      "name": "Küche",
+      "result": "dumbbell"
+    },
+    {
+      "icon": "pool",
+      "name": "Küche",
+      "result": "waves"
+    },
+    {
+      "icon": "mdi:pool",
+      "name": "Küche",
+      "result": "waves"
+    },
+    {
+      "icon": "home",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "mdi:home",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "home-outline",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "mdi:home-outline",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "attic",
+      "name": "Küche",
+      "result": "triangle"
+    },
+    {
+      "icon": "mdi:attic",
+      "name": "Küche",
+      "result": "triangle"
+    },
+    {
+      "icon": "basement",
+      "name": "Küche",
+      "result": "box"
+    },
+    {
+      "icon": "mdi:basement",
+      "name": "Küche",
+      "result": "box"
+    },
+    {
+      "icon": "wardrobe",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "mdi:wardrobe",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "hanger",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "mdi:hanger",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "coat-rack",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "mdi:coat-rack",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "sofa",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "mdi:sofa",
+      "name": "Küche",
+      "result": "sofa"
+    },
+    {
+      "icon": "utensils",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "mdi:utensils",
+      "name": "Küche",
+      "result": "utensils"
+    },
+    {
+      "icon": "bed",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "mdi:bed",
+      "name": "Küche",
+      "result": "bed"
+    },
+    {
+      "icon": "baby",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "mdi:baby",
+      "name": "Küche",
+      "result": "baby"
+    },
+    {
+      "icon": "bath",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "mdi:bath",
+      "name": "Küche",
+      "result": "bath"
+    },
+    {
+      "icon": "monitor",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "mdi:monitor",
+      "name": "Küche",
+      "result": "monitor"
+    },
+    {
+      "icon": "car",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "mdi:car",
+      "name": "Küche",
+      "result": "car"
+    },
+    {
+      "icon": "door-open",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "mdi:door-open",
+      "name": "Küche",
+      "result": "door-open"
+    },
+    {
+      "icon": "washing-machine",
+      "name": "Küche",
+      "result": "washing-machine"
+    },
+    {
+      "icon": "mdi:washing-machine",
+      "name": "Küche",
+      "result": "washing-machine"
+    },
+    {
+      "icon": "trees",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "mdi:trees",
+      "name": "Küche",
+      "result": "trees"
+    },
+    {
+      "icon": "box",
+      "name": "Küche",
+      "result": "box"
+    },
+    {
+      "icon": "mdi:box",
+      "name": "Küche",
+      "result": "box"
+    },
+    {
+      "icon": "triangle",
+      "name": "Küche",
+      "result": "triangle"
+    },
+    {
+      "icon": "mdi:triangle",
+      "name": "Küche",
+      "result": "triangle"
+    },
+    {
+      "icon": "dumbbell",
+      "name": "Küche",
+      "result": "dumbbell"
+    },
+    {
+      "icon": "mdi:dumbbell",
+      "name": "Küche",
+      "result": "dumbbell"
+    },
+    {
+      "icon": "shirt",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "mdi:shirt",
+      "name": "Küche",
+      "result": "shirt"
+    },
+    {
+      "icon": "waves",
+      "name": "Küche",
+      "result": "waves"
+    },
+    {
+      "icon": "mdi:waves",
+      "name": "Küche",
+      "result": "waves"
+    },
+    {
+      "icon": "clapperboard",
+      "name": "Küche",
+      "result": "clapperboard"
+    },
+    {
+      "icon": "mdi:clapperboard",
+      "name": "Küche",
+      "result": "clapperboard"
+    },
+    {
+      "icon": "gamepad-2",
+      "name": "Küche",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": "mdi:gamepad-2",
+      "name": "Küche",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": "house",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "mdi:house",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "grid-2x2",
+      "name": "Küche",
+      "result": "grid-2x2"
+    },
+    {
+      "icon": "mdi:grid-2x2",
+      "name": "Küche",
+      "result": "grid-2x2"
+    },
+    {
+      "icon": "droplets",
+      "name": "Küche",
+      "result": "droplets"
+    },
+    {
+      "icon": "mdi:droplets",
+      "name": "Küche",
+      "result": "droplets"
+    },
+    {
+      "icon": "flame",
+      "name": "Küche",
+      "result": "flame"
+    },
+    {
+      "icon": "mdi:flame",
+      "name": "Küche",
+      "result": "flame"
+    },
+    {
+      "icon": "mdi:unknown-thing",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "hass:sofa",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": "MDI:sofa",
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "name": "Kitchen",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "Kitchen",
+      "result": "utensils"
+    },
+    {
+      "icon": "",
+      "name": "Kitchen",
+      "result": "utensils"
+    },
+    {
+      "icon": "sofa",
+      "name": "Kitchen",
+      "result": "sofa"
+    },
+    {
+      "icon": "mdi:sofa",
+      "name": "Kitchen",
+      "result": "sofa"
+    },
+    {
+      "icon": "sofa-single",
+      "name": "Kitchen",
+      "result": "sofa"
+    },
+    {
+      "icon": "mdi:sofa-single",
+      "name": "Kitchen",
+      "result": "sofa"
+    },
+    {
+      "icon": "couch",
+      "name": "Kitchen",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "living",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "LIVING",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "Mein living-Raum",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "living",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "living",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "lounge",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "LOUNGE",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "Mein lounge-Raum",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "lounge",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "lounge",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "family",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "FAMILY",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "Mein family-Raum",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "family",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "family",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "sitting",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "SITTING",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "Mein sitting-Raum",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "sitting",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "sitting",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "kitchen",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "KITCHEN",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "Mein kitchen-Raum",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "kitchen",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "kitchen",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "dining",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "DINING",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "Mein dining-Raum",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "dining",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "dining",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "pantry",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "PANTRY",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein pantry-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "pantry",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "pantry",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "master",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "MASTER",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "Mein master-Raum",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "master",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "master",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "bedroom",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "BEDROOM",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "Mein bedroom-Raum",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "bedroom",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "bedroom",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "guest",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "GUEST",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "Mein guest-Raum",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "guest",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "guest",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "sleep",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "SLEEP",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "Mein sleep-Raum",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "sleep",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "sleep",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "nursery",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "NURSERY",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Mein nursery-Raum",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "nursery",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "nursery",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "child",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "CHILD",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Mein child-Raum",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "child",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "child",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "kid",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "KID",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Mein kid-Raum",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "kid",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "kid",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "baby",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "BABY",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Mein baby-Raum",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "baby",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "baby",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "bath",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "BATH",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein bath-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "bath",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "bath",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "shower",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "SHOWER",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein shower-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "shower",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "shower",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "toilet",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "TOILET",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein toilet-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "toilet",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "toilet",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "wc",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "WC",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein wc-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "wc",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "wc",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "ensuite",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "ENSUITE",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein ensuite-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "ensuite",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "ensuite",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "office",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "OFFICE",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "Mein office-Raum",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "office",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "office",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "study",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "STUDY",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "Mein study-Raum",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "study",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "study",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "work",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "WORK",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "Mein work-Raum",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "work",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "work",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "desk",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "DESK",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "Mein desk-Raum",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "desk",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "desk",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "garage",
+      "result": "car"
+    },
+    {
+      "icon": null,
+      "name": "GARAGE",
+      "result": "car"
+    },
+    {
+      "icon": null,
+      "name": "Mein garage-Raum",
+      "result": "car"
+    },
+    {
+      "icon": null,
+      "name": "garage",
+      "result": "car"
+    },
+    {
+      "icon": null,
+      "name": "garage",
+      "result": "car"
+    },
+    {
+      "icon": null,
+      "name": "hall",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "HALL",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein hall-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "hall",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "hall",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "entry",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "ENTRY",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein entry-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "entry",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "entry",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "foyer",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "FOYER",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein foyer-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "foyer",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "foyer",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "corridor",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "CORRIDOR",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein corridor-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "corridor",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "corridor",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "landing",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "LANDING",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein landing-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "landing",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "landing",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "stair",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "STAIR",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein stair-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "stair",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "stair",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "laundry",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "LAUNDRY",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "Mein laundry-Raum",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "laundry",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "laundry",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "utility",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "UTILITY",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "Mein utility-Raum",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "utility",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "utility",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "mud",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "MUD",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "Mein mud-Raum",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "mud",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "mud",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "garden",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "GARDEN",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein garden-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "garden",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "garden",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "yard",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "YARD",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein yard-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "yard",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "yard",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "patio",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "PATIO",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein patio-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "patio",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "patio",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "balcony",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "BALCONY",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein balcony-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "balcony",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "balcony",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "terrace",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "TERRACE",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein terrace-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "terrace",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "terrace",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "outdoor",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "OUTDOOR",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein outdoor-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "outdoor",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "outdoor",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "outside",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "OUTSIDE",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein outside-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "outside",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "outside",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "porch",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "PORCH",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein porch-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "porch",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "porch",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "deck",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "DECK",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein deck-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "deck",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "deck",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "basement",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "BASEMENT",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein basement-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "basement",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "basement",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cellar",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "CELLAR",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein cellar-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cellar",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cellar",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "storage",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "STORAGE",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein storage-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "storage",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "storage",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "shed",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "SHED",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein shed-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "shed",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "shed",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "attic",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "ATTIC",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "Mein attic-Raum",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "attic",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "attic",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "loft",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "LOFT",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "Mein loft-Raum",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "loft",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "loft",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "gym",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "GYM",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "Mein gym-Raum",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "gym",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "gym",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "fitness",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "FITNESS",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "Mein fitness-Raum",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "fitness",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "fitness",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "exercise",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "EXERCISE",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "Mein exercise-Raum",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "exercise",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "exercise",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "closet",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "CLOSET",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "Mein closet-Raum",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "closet",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "closet",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "wardrobe",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "WARDROBE",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "Mein wardrobe-Raum",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "wardrobe",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "wardrobe",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "dressing",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "DRESSING",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "Mein dressing-Raum",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "dressing",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "dressing",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "pool",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "POOL",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "Mein pool-Raum",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "pool",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "pool",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "theater",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "THEATER",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "Mein theater-Raum",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "theater",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "theater",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "theatre",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "THEATRE",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "Mein theatre-Raum",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "theatre",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "theatre",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "cinema",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "CINEMA",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "Mein cinema-Raum",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "cinema",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "cinema",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "media",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "MEDIA",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "Mein media-Raum",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "media",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "media",
+      "result": "clapperboard"
+    },
+    {
+      "icon": null,
+      "name": "play",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "PLAY",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "Mein play-Raum",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "play",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "play",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "game",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "GAME",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "Mein game-Raum",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "game",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "game",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "enfant",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "ENFANT",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Mein enfant-Raum",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "enfant",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "enfant",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "bebe",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "BEBE",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Mein bebe-Raum",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "bebe",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "bebe",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "nurserie",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "NURSERIE",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Mein nurserie-Raum",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "nurserie",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "nurserie",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "chambre",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "CHAMBRE",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "Mein chambre-Raum",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "chambre",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "chambre",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "parentale",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "PARENTALE",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "Mein parentale-Raum",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "parentale",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "parentale",
+      "result": "bed"
+    },
+    {
+      "icon": null,
+      "name": "salon",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "SALON",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "Mein salon-Raum",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "salon",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "salon",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "sejour",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "SEJOUR",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "Mein sejour-Raum",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "sejour",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "sejour",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "cuisine",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "CUISINE",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "Mein cuisine-Raum",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "cuisine",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "cuisine",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "salle a manger",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "SALLE A MANGER",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "Mein salle a manger-Raum",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "salle-a-manger",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "salle’a’manger",
+      "result": "utensils"
+    },
+    {
+      "icon": null,
+      "name": "garde manger",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "GARDE MANGER",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein garde manger-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "garde-manger",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "garde’manger",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "salle de bain",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "SALLE DE BAIN",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein salle de bain-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "salle-de-bain",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "salle’de’bain",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "salle d eau",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "SALLE D EAU",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein salle d eau-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "salle-d-eau",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "salle’d’eau",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "sdb",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "SDB",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein sdb-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "sdb",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "sdb",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "douche",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "DOUCHE",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein douche-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "douche",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "douche",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "toilette",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "TOILETTE",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Mein toilette-Raum",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "toilette",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "toilette",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "bureau",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "BUREAU",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "Mein bureau-Raum",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "bureau",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "bureau",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "entree",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "ENTREE",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein entree-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "entree",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "entree",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "couloir",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "COULOIR",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein couloir-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "couloir",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "couloir",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "palier",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "PALIER",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein palier-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "palier",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "palier",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "vestibule",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "VESTIBULE",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein vestibule-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "vestibule",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "vestibule",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "escalier",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "ESCALIER",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Mein escalier-Raum",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "escalier",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "escalier",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "buanderie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "BUANDERIE",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "Mein buanderie-Raum",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "buanderie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "buanderie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "lingerie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "LINGERIE",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "Mein lingerie-Raum",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "lingerie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "lingerie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "laverie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "LAVERIE",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "Mein laverie-Raum",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "laverie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "laverie",
+      "result": "washing-machine"
+    },
+    {
+      "icon": null,
+      "name": "jardin",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "JARDIN",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein jardin-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "jardin",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "jardin",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "terrasse",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "TERRASSE",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein terrasse-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "terrasse",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "terrasse",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "balcon",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "BALCON",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein balcon-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "balcon",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "balcon",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "veranda",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "VERANDA",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein veranda-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "veranda",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "veranda",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "exterieur",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "EXTERIEUR",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "Mein exterieur-Raum",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "exterieur",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "exterieur",
+      "result": "trees"
+    },
+    {
+      "icon": null,
+      "name": "sous sol",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "SOUS SOL",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein sous sol-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "sous-sol",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "sous’sol",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cave",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "CAVE",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein cave-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cave",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cave",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cellier",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "CELLIER",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein cellier-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cellier",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "cellier",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "debarras",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "DEBARRAS",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein debarras-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "debarras",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "debarras",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "rangement",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "RANGEMENT",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein rangement-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "rangement",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "rangement",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "remise",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "REMISE",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Mein remise-Raum",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "remise",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "remise",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "grenier",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "GRENIER",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "Mein grenier-Raum",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "grenier",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "grenier",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "combles",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "COMBLES",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "Mein combles-Raum",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "combles",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "combles",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "mansarde",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "MANSARDE",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "Mein mansarde-Raum",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "mansarde",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "mansarde",
+      "result": "triangle"
+    },
+    {
+      "icon": null,
+      "name": "salle de sport",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "SALLE DE SPORT",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "Mein salle de sport-Raum",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "salle-de-sport",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "salle’de’sport",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "musculation",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "MUSCULATION",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "Mein musculation-Raum",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "musculation",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "musculation",
+      "result": "dumbbell"
+    },
+    {
+      "icon": null,
+      "name": "placard",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "PLACARD",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "Mein placard-Raum",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "placard",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "placard",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "penderie",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "PENDERIE",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "Mein penderie-Raum",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "penderie",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "penderie",
+      "result": "shirt"
+    },
+    {
+      "icon": null,
+      "name": "piscine",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "PISCINE",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "Mein piscine-Raum",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "piscine",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "piscine",
+      "result": "waves"
+    },
+    {
+      "icon": null,
+      "name": "jeux",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "JEUX",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "Mein jeux-Raum",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "jeux",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "jeux",
+      "result": "gamepad-2"
+    },
+    {
+      "icon": null,
+      "name": "Küche",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Wohnzimmer",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Schlafzimmer",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Bad",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Gäste-WC",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Salle d’Eau",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Séjour",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "Entrée",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Chambre d’enfant",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Sous-sol",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Garde-manger",
+      "result": "box"
+    },
+    {
+      "icon": null,
+      "name": "Dépendance",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Living Room",
+      "result": "sofa"
+    },
+    {
+      "icon": null,
+      "name": "STUDY",
+      "result": "monitor"
+    },
+    {
+      "icon": null,
+      "name": "Kid’s room",
+      "result": "baby"
+    },
+    {
+      "icon": null,
+      "name": "Hallway 2",
+      "result": "door-open"
+    },
+    {
+      "icon": null,
+      "name": "Büro",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "   ",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Ærøskøbing",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "ﬁtness",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "İstanbul",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Straße",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "café",
+      "result": "house"
+    },
+    {
+      "icon": null,
+      "name": "Wcfoo",
+      "result": "bath"
+    },
+    {
+      "icon": null,
+      "name": "Ötztal",
+      "result": "house"
+    }
+  ],
+  "kinds": [
+    {
+      "kind": "living",
+      "name": "living"
+    },
+    {
+      "kind": "living",
+      "name": "LIVING"
+    },
+    {
+      "kind": "living",
+      "name": "Mein living-Raum"
+    },
+    {
+      "kind": "living",
+      "name": "living"
+    },
+    {
+      "kind": "living",
+      "name": "living"
+    },
+    {
+      "kind": "living",
+      "name": "lounge"
+    },
+    {
+      "kind": "living",
+      "name": "LOUNGE"
+    },
+    {
+      "kind": "living",
+      "name": "Mein lounge-Raum"
+    },
+    {
+      "kind": "living",
+      "name": "lounge"
+    },
+    {
+      "kind": "living",
+      "name": "lounge"
+    },
+    {
+      "kind": "living",
+      "name": "family"
+    },
+    {
+      "kind": "living",
+      "name": "FAMILY"
+    },
+    {
+      "kind": "living",
+      "name": "Mein family-Raum"
+    },
+    {
+      "kind": "living",
+      "name": "family"
+    },
+    {
+      "kind": "living",
+      "name": "family"
+    },
+    {
+      "kind": "living",
+      "name": "sitting"
+    },
+    {
+      "kind": "living",
+      "name": "SITTING"
+    },
+    {
+      "kind": "living",
+      "name": "Mein sitting-Raum"
+    },
+    {
+      "kind": "living",
+      "name": "sitting"
+    },
+    {
+      "kind": "living",
+      "name": "sitting"
+    },
+    {
+      "kind": "kitchen",
+      "name": "kitchen"
+    },
+    {
+      "kind": "kitchen",
+      "name": "KITCHEN"
+    },
+    {
+      "kind": "kitchen",
+      "name": "Mein kitchen-Raum"
+    },
+    {
+      "kind": "kitchen",
+      "name": "kitchen"
+    },
+    {
+      "kind": "kitchen",
+      "name": "kitchen"
+    },
+    {
+      "kind": "kitchen",
+      "name": "dining"
+    },
+    {
+      "kind": "kitchen",
+      "name": "DINING"
+    },
+    {
+      "kind": "kitchen",
+      "name": "Mein dining-Raum"
+    },
+    {
+      "kind": "kitchen",
+      "name": "dining"
+    },
+    {
+      "kind": "kitchen",
+      "name": "dining"
+    },
+    {
+      "kind": "storage",
+      "name": "pantry"
+    },
+    {
+      "kind": "storage",
+      "name": "PANTRY"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein pantry-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "pantry"
+    },
+    {
+      "kind": "storage",
+      "name": "pantry"
+    },
+    {
+      "kind": "bedroom",
+      "name": "master"
+    },
+    {
+      "kind": "bedroom",
+      "name": "MASTER"
+    },
+    {
+      "kind": "bedroom",
+      "name": "Mein master-Raum"
+    },
+    {
+      "kind": "bedroom",
+      "name": "master"
+    },
+    {
+      "kind": "bedroom",
+      "name": "master"
+    },
+    {
+      "kind": "bedroom",
+      "name": "bedroom"
+    },
+    {
+      "kind": "bedroom",
+      "name": "BEDROOM"
+    },
+    {
+      "kind": "bedroom",
+      "name": "Mein bedroom-Raum"
+    },
+    {
+      "kind": "bedroom",
+      "name": "bedroom"
+    },
+    {
+      "kind": "bedroom",
+      "name": "bedroom"
+    },
+    {
+      "kind": "bedroom",
+      "name": "guest"
+    },
+    {
+      "kind": "bedroom",
+      "name": "GUEST"
+    },
+    {
+      "kind": "bedroom",
+      "name": "Mein guest-Raum"
+    },
+    {
+      "kind": "bedroom",
+      "name": "guest"
+    },
+    {
+      "kind": "bedroom",
+      "name": "guest"
+    },
+    {
+      "kind": "bedroom",
+      "name": "sleep"
+    },
+    {
+      "kind": "bedroom",
+      "name": "SLEEP"
+    },
+    {
+      "kind": "bedroom",
+      "name": "Mein sleep-Raum"
+    },
+    {
+      "kind": "bedroom",
+      "name": "sleep"
+    },
+    {
+      "kind": "bedroom",
+      "name": "sleep"
+    },
+    {
+      "kind": "kids",
+      "name": "nursery"
+    },
+    {
+      "kind": "kids",
+      "name": "NURSERY"
+    },
+    {
+      "kind": "kids",
+      "name": "Mein nursery-Raum"
+    },
+    {
+      "kind": "kids",
+      "name": "nursery"
+    },
+    {
+      "kind": "kids",
+      "name": "nursery"
+    },
+    {
+      "kind": "kids",
+      "name": "child"
+    },
+    {
+      "kind": "kids",
+      "name": "CHILD"
+    },
+    {
+      "kind": "kids",
+      "name": "Mein child-Raum"
+    },
+    {
+      "kind": "kids",
+      "name": "child"
+    },
+    {
+      "kind": "kids",
+      "name": "child"
+    },
+    {
+      "kind": "kids",
+      "name": "kid"
+    },
+    {
+      "kind": "kids",
+      "name": "KID"
+    },
+    {
+      "kind": "kids",
+      "name": "Mein kid-Raum"
+    },
+    {
+      "kind": "kids",
+      "name": "kid"
+    },
+    {
+      "kind": "kids",
+      "name": "kid"
+    },
+    {
+      "kind": "kids",
+      "name": "baby"
+    },
+    {
+      "kind": "kids",
+      "name": "BABY"
+    },
+    {
+      "kind": "kids",
+      "name": "Mein baby-Raum"
+    },
+    {
+      "kind": "kids",
+      "name": "baby"
+    },
+    {
+      "kind": "kids",
+      "name": "baby"
+    },
+    {
+      "kind": "bathroom",
+      "name": "bath"
+    },
+    {
+      "kind": "bathroom",
+      "name": "BATH"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein bath-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "bath"
+    },
+    {
+      "kind": "bathroom",
+      "name": "bath"
+    },
+    {
+      "kind": "bathroom",
+      "name": "shower"
+    },
+    {
+      "kind": "bathroom",
+      "name": "SHOWER"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein shower-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "shower"
+    },
+    {
+      "kind": "bathroom",
+      "name": "shower"
+    },
+    {
+      "kind": "bathroom",
+      "name": "toilet"
+    },
+    {
+      "kind": "bathroom",
+      "name": "TOILET"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein toilet-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "toilet"
+    },
+    {
+      "kind": "bathroom",
+      "name": "toilet"
+    },
+    {
+      "kind": "bathroom",
+      "name": "wc"
+    },
+    {
+      "kind": "bathroom",
+      "name": "WC"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein wc-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "wc"
+    },
+    {
+      "kind": "bathroom",
+      "name": "wc"
+    },
+    {
+      "kind": "bathroom",
+      "name": "ensuite"
+    },
+    {
+      "kind": "bathroom",
+      "name": "ENSUITE"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein ensuite-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "ensuite"
+    },
+    {
+      "kind": "bathroom",
+      "name": "ensuite"
+    },
+    {
+      "kind": "office",
+      "name": "office"
+    },
+    {
+      "kind": "office",
+      "name": "OFFICE"
+    },
+    {
+      "kind": "office",
+      "name": "Mein office-Raum"
+    },
+    {
+      "kind": "office",
+      "name": "office"
+    },
+    {
+      "kind": "office",
+      "name": "office"
+    },
+    {
+      "kind": "office",
+      "name": "study"
+    },
+    {
+      "kind": "office",
+      "name": "STUDY"
+    },
+    {
+      "kind": "office",
+      "name": "Mein study-Raum"
+    },
+    {
+      "kind": "office",
+      "name": "study"
+    },
+    {
+      "kind": "office",
+      "name": "study"
+    },
+    {
+      "kind": "office",
+      "name": "work"
+    },
+    {
+      "kind": "office",
+      "name": "WORK"
+    },
+    {
+      "kind": "office",
+      "name": "Mein work-Raum"
+    },
+    {
+      "kind": "office",
+      "name": "work"
+    },
+    {
+      "kind": "office",
+      "name": "work"
+    },
+    {
+      "kind": "office",
+      "name": "desk"
+    },
+    {
+      "kind": "office",
+      "name": "DESK"
+    },
+    {
+      "kind": "office",
+      "name": "Mein desk-Raum"
+    },
+    {
+      "kind": "office",
+      "name": "desk"
+    },
+    {
+      "kind": "office",
+      "name": "desk"
+    },
+    {
+      "kind": "garage",
+      "name": "garage"
+    },
+    {
+      "kind": "garage",
+      "name": "GARAGE"
+    },
+    {
+      "kind": "garage",
+      "name": "Mein garage-Raum"
+    },
+    {
+      "kind": "garage",
+      "name": "garage"
+    },
+    {
+      "kind": "garage",
+      "name": "garage"
+    },
+    {
+      "kind": "hallway",
+      "name": "hall"
+    },
+    {
+      "kind": "hallway",
+      "name": "HALL"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein hall-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "hall"
+    },
+    {
+      "kind": "hallway",
+      "name": "hall"
+    },
+    {
+      "kind": "hallway",
+      "name": "entry"
+    },
+    {
+      "kind": "hallway",
+      "name": "ENTRY"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein entry-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "entry"
+    },
+    {
+      "kind": "hallway",
+      "name": "entry"
+    },
+    {
+      "kind": "hallway",
+      "name": "foyer"
+    },
+    {
+      "kind": "hallway",
+      "name": "FOYER"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein foyer-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "foyer"
+    },
+    {
+      "kind": "hallway",
+      "name": "foyer"
+    },
+    {
+      "kind": "hallway",
+      "name": "corridor"
+    },
+    {
+      "kind": "hallway",
+      "name": "CORRIDOR"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein corridor-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "corridor"
+    },
+    {
+      "kind": "hallway",
+      "name": "corridor"
+    },
+    {
+      "kind": "hallway",
+      "name": "landing"
+    },
+    {
+      "kind": "hallway",
+      "name": "LANDING"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein landing-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "landing"
+    },
+    {
+      "kind": "hallway",
+      "name": "landing"
+    },
+    {
+      "kind": "hallway",
+      "name": "stair"
+    },
+    {
+      "kind": "hallway",
+      "name": "STAIR"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein stair-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "stair"
+    },
+    {
+      "kind": "hallway",
+      "name": "stair"
+    },
+    {
+      "kind": "laundry",
+      "name": "laundry"
+    },
+    {
+      "kind": "laundry",
+      "name": "LAUNDRY"
+    },
+    {
+      "kind": "laundry",
+      "name": "Mein laundry-Raum"
+    },
+    {
+      "kind": "laundry",
+      "name": "laundry"
+    },
+    {
+      "kind": "laundry",
+      "name": "laundry"
+    },
+    {
+      "kind": "laundry",
+      "name": "utility"
+    },
+    {
+      "kind": "laundry",
+      "name": "UTILITY"
+    },
+    {
+      "kind": "laundry",
+      "name": "Mein utility-Raum"
+    },
+    {
+      "kind": "laundry",
+      "name": "utility"
+    },
+    {
+      "kind": "laundry",
+      "name": "utility"
+    },
+    {
+      "kind": "laundry",
+      "name": "mud"
+    },
+    {
+      "kind": "laundry",
+      "name": "MUD"
+    },
+    {
+      "kind": "laundry",
+      "name": "Mein mud-Raum"
+    },
+    {
+      "kind": "laundry",
+      "name": "mud"
+    },
+    {
+      "kind": "laundry",
+      "name": "mud"
+    },
+    {
+      "kind": "outdoor",
+      "name": "garden"
+    },
+    {
+      "kind": "outdoor",
+      "name": "GARDEN"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein garden-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "garden"
+    },
+    {
+      "kind": "outdoor",
+      "name": "garden"
+    },
+    {
+      "kind": "outdoor",
+      "name": "yard"
+    },
+    {
+      "kind": "outdoor",
+      "name": "YARD"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein yard-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "yard"
+    },
+    {
+      "kind": "outdoor",
+      "name": "yard"
+    },
+    {
+      "kind": "outdoor",
+      "name": "patio"
+    },
+    {
+      "kind": "outdoor",
+      "name": "PATIO"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein patio-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "patio"
+    },
+    {
+      "kind": "outdoor",
+      "name": "patio"
+    },
+    {
+      "kind": "outdoor",
+      "name": "balcony"
+    },
+    {
+      "kind": "outdoor",
+      "name": "BALCONY"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein balcony-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "balcony"
+    },
+    {
+      "kind": "outdoor",
+      "name": "balcony"
+    },
+    {
+      "kind": "outdoor",
+      "name": "terrace"
+    },
+    {
+      "kind": "outdoor",
+      "name": "TERRACE"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein terrace-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "terrace"
+    },
+    {
+      "kind": "outdoor",
+      "name": "terrace"
+    },
+    {
+      "kind": "outdoor",
+      "name": "outdoor"
+    },
+    {
+      "kind": "outdoor",
+      "name": "OUTDOOR"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein outdoor-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "outdoor"
+    },
+    {
+      "kind": "outdoor",
+      "name": "outdoor"
+    },
+    {
+      "kind": "outdoor",
+      "name": "outside"
+    },
+    {
+      "kind": "outdoor",
+      "name": "OUTSIDE"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein outside-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "outside"
+    },
+    {
+      "kind": "outdoor",
+      "name": "outside"
+    },
+    {
+      "kind": "outdoor",
+      "name": "porch"
+    },
+    {
+      "kind": "outdoor",
+      "name": "PORCH"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein porch-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "porch"
+    },
+    {
+      "kind": "outdoor",
+      "name": "porch"
+    },
+    {
+      "kind": "outdoor",
+      "name": "deck"
+    },
+    {
+      "kind": "outdoor",
+      "name": "DECK"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein deck-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "deck"
+    },
+    {
+      "kind": "outdoor",
+      "name": "deck"
+    },
+    {
+      "kind": "storage",
+      "name": "basement"
+    },
+    {
+      "kind": "storage",
+      "name": "BASEMENT"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein basement-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "basement"
+    },
+    {
+      "kind": "storage",
+      "name": "basement"
+    },
+    {
+      "kind": "storage",
+      "name": "cellar"
+    },
+    {
+      "kind": "storage",
+      "name": "CELLAR"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein cellar-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "cellar"
+    },
+    {
+      "kind": "storage",
+      "name": "cellar"
+    },
+    {
+      "kind": "storage",
+      "name": "storage"
+    },
+    {
+      "kind": "storage",
+      "name": "STORAGE"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein storage-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "storage"
+    },
+    {
+      "kind": "storage",
+      "name": "storage"
+    },
+    {
+      "kind": "storage",
+      "name": "shed"
+    },
+    {
+      "kind": "storage",
+      "name": "SHED"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein shed-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "shed"
+    },
+    {
+      "kind": "storage",
+      "name": "shed"
+    },
+    {
+      "kind": "attic",
+      "name": "attic"
+    },
+    {
+      "kind": "attic",
+      "name": "ATTIC"
+    },
+    {
+      "kind": "attic",
+      "name": "Mein attic-Raum"
+    },
+    {
+      "kind": "attic",
+      "name": "attic"
+    },
+    {
+      "kind": "attic",
+      "name": "attic"
+    },
+    {
+      "kind": "attic",
+      "name": "loft"
+    },
+    {
+      "kind": "attic",
+      "name": "LOFT"
+    },
+    {
+      "kind": "attic",
+      "name": "Mein loft-Raum"
+    },
+    {
+      "kind": "attic",
+      "name": "loft"
+    },
+    {
+      "kind": "attic",
+      "name": "loft"
+    },
+    {
+      "kind": "gym",
+      "name": "gym"
+    },
+    {
+      "kind": "gym",
+      "name": "GYM"
+    },
+    {
+      "kind": "gym",
+      "name": "Mein gym-Raum"
+    },
+    {
+      "kind": "gym",
+      "name": "gym"
+    },
+    {
+      "kind": "gym",
+      "name": "gym"
+    },
+    {
+      "kind": "gym",
+      "name": "fitness"
+    },
+    {
+      "kind": "gym",
+      "name": "FITNESS"
+    },
+    {
+      "kind": "gym",
+      "name": "Mein fitness-Raum"
+    },
+    {
+      "kind": "gym",
+      "name": "fitness"
+    },
+    {
+      "kind": "gym",
+      "name": "fitness"
+    },
+    {
+      "kind": "gym",
+      "name": "exercise"
+    },
+    {
+      "kind": "gym",
+      "name": "EXERCISE"
+    },
+    {
+      "kind": "gym",
+      "name": "Mein exercise-Raum"
+    },
+    {
+      "kind": "gym",
+      "name": "exercise"
+    },
+    {
+      "kind": "gym",
+      "name": "exercise"
+    },
+    {
+      "kind": "closet",
+      "name": "closet"
+    },
+    {
+      "kind": "closet",
+      "name": "CLOSET"
+    },
+    {
+      "kind": "closet",
+      "name": "Mein closet-Raum"
+    },
+    {
+      "kind": "closet",
+      "name": "closet"
+    },
+    {
+      "kind": "closet",
+      "name": "closet"
+    },
+    {
+      "kind": "closet",
+      "name": "wardrobe"
+    },
+    {
+      "kind": "closet",
+      "name": "WARDROBE"
+    },
+    {
+      "kind": "closet",
+      "name": "Mein wardrobe-Raum"
+    },
+    {
+      "kind": "closet",
+      "name": "wardrobe"
+    },
+    {
+      "kind": "closet",
+      "name": "wardrobe"
+    },
+    {
+      "kind": "closet",
+      "name": "dressing"
+    },
+    {
+      "kind": "closet",
+      "name": "DRESSING"
+    },
+    {
+      "kind": "closet",
+      "name": "Mein dressing-Raum"
+    },
+    {
+      "kind": "closet",
+      "name": "dressing"
+    },
+    {
+      "kind": "closet",
+      "name": "dressing"
+    },
+    {
+      "kind": "pool",
+      "name": "pool"
+    },
+    {
+      "kind": "pool",
+      "name": "POOL"
+    },
+    {
+      "kind": "pool",
+      "name": "Mein pool-Raum"
+    },
+    {
+      "kind": "pool",
+      "name": "pool"
+    },
+    {
+      "kind": "pool",
+      "name": "pool"
+    },
+    {
+      "kind": "media",
+      "name": "theater"
+    },
+    {
+      "kind": "media",
+      "name": "THEATER"
+    },
+    {
+      "kind": "media",
+      "name": "Mein theater-Raum"
+    },
+    {
+      "kind": "media",
+      "name": "theater"
+    },
+    {
+      "kind": "media",
+      "name": "theater"
+    },
+    {
+      "kind": "media",
+      "name": "theatre"
+    },
+    {
+      "kind": "media",
+      "name": "THEATRE"
+    },
+    {
+      "kind": "media",
+      "name": "Mein theatre-Raum"
+    },
+    {
+      "kind": "media",
+      "name": "theatre"
+    },
+    {
+      "kind": "media",
+      "name": "theatre"
+    },
+    {
+      "kind": "media",
+      "name": "cinema"
+    },
+    {
+      "kind": "media",
+      "name": "CINEMA"
+    },
+    {
+      "kind": "media",
+      "name": "Mein cinema-Raum"
+    },
+    {
+      "kind": "media",
+      "name": "cinema"
+    },
+    {
+      "kind": "media",
+      "name": "cinema"
+    },
+    {
+      "kind": "media",
+      "name": "media"
+    },
+    {
+      "kind": "media",
+      "name": "MEDIA"
+    },
+    {
+      "kind": "media",
+      "name": "Mein media-Raum"
+    },
+    {
+      "kind": "media",
+      "name": "media"
+    },
+    {
+      "kind": "media",
+      "name": "media"
+    },
+    {
+      "kind": "play",
+      "name": "play"
+    },
+    {
+      "kind": "play",
+      "name": "PLAY"
+    },
+    {
+      "kind": "play",
+      "name": "Mein play-Raum"
+    },
+    {
+      "kind": "play",
+      "name": "play"
+    },
+    {
+      "kind": "play",
+      "name": "play"
+    },
+    {
+      "kind": "play",
+      "name": "game"
+    },
+    {
+      "kind": "play",
+      "name": "GAME"
+    },
+    {
+      "kind": "play",
+      "name": "Mein game-Raum"
+    },
+    {
+      "kind": "play",
+      "name": "game"
+    },
+    {
+      "kind": "play",
+      "name": "game"
+    },
+    {
+      "kind": "kids",
+      "name": "enfant"
+    },
+    {
+      "kind": "kids",
+      "name": "ENFANT"
+    },
+    {
+      "kind": "kids",
+      "name": "Mein enfant-Raum"
+    },
+    {
+      "kind": "kids",
+      "name": "enfant"
+    },
+    {
+      "kind": "kids",
+      "name": "enfant"
+    },
+    {
+      "kind": "kids",
+      "name": "bebe"
+    },
+    {
+      "kind": "kids",
+      "name": "BEBE"
+    },
+    {
+      "kind": "kids",
+      "name": "Mein bebe-Raum"
+    },
+    {
+      "kind": "kids",
+      "name": "bebe"
+    },
+    {
+      "kind": "kids",
+      "name": "bebe"
+    },
+    {
+      "kind": "kids",
+      "name": "nurserie"
+    },
+    {
+      "kind": "kids",
+      "name": "NURSERIE"
+    },
+    {
+      "kind": "kids",
+      "name": "Mein nurserie-Raum"
+    },
+    {
+      "kind": "kids",
+      "name": "nurserie"
+    },
+    {
+      "kind": "kids",
+      "name": "nurserie"
+    },
+    {
+      "kind": "bedroom",
+      "name": "chambre"
+    },
+    {
+      "kind": "bedroom",
+      "name": "CHAMBRE"
+    },
+    {
+      "kind": "bedroom",
+      "name": "Mein chambre-Raum"
+    },
+    {
+      "kind": "bedroom",
+      "name": "chambre"
+    },
+    {
+      "kind": "bedroom",
+      "name": "chambre"
+    },
+    {
+      "kind": "bedroom",
+      "name": "parentale"
+    },
+    {
+      "kind": "bedroom",
+      "name": "PARENTALE"
+    },
+    {
+      "kind": "bedroom",
+      "name": "Mein parentale-Raum"
+    },
+    {
+      "kind": "bedroom",
+      "name": "parentale"
+    },
+    {
+      "kind": "bedroom",
+      "name": "parentale"
+    },
+    {
+      "kind": "living",
+      "name": "salon"
+    },
+    {
+      "kind": "living",
+      "name": "SALON"
+    },
+    {
+      "kind": "living",
+      "name": "Mein salon-Raum"
+    },
+    {
+      "kind": "living",
+      "name": "salon"
+    },
+    {
+      "kind": "living",
+      "name": "salon"
+    },
+    {
+      "kind": "living",
+      "name": "sejour"
+    },
+    {
+      "kind": "living",
+      "name": "SEJOUR"
+    },
+    {
+      "kind": "living",
+      "name": "Mein sejour-Raum"
+    },
+    {
+      "kind": "living",
+      "name": "sejour"
+    },
+    {
+      "kind": "living",
+      "name": "sejour"
+    },
+    {
+      "kind": "kitchen",
+      "name": "cuisine"
+    },
+    {
+      "kind": "kitchen",
+      "name": "CUISINE"
+    },
+    {
+      "kind": "kitchen",
+      "name": "Mein cuisine-Raum"
+    },
+    {
+      "kind": "kitchen",
+      "name": "cuisine"
+    },
+    {
+      "kind": "kitchen",
+      "name": "cuisine"
+    },
+    {
+      "kind": "kitchen",
+      "name": "salle a manger"
+    },
+    {
+      "kind": "kitchen",
+      "name": "SALLE A MANGER"
+    },
+    {
+      "kind": "kitchen",
+      "name": "Mein salle a manger-Raum"
+    },
+    {
+      "kind": "kitchen",
+      "name": "salle-a-manger"
+    },
+    {
+      "kind": "kitchen",
+      "name": "salle’a’manger"
+    },
+    {
+      "kind": "storage",
+      "name": "garde manger"
+    },
+    {
+      "kind": "storage",
+      "name": "GARDE MANGER"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein garde manger-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "garde-manger"
+    },
+    {
+      "kind": "storage",
+      "name": "garde’manger"
+    },
+    {
+      "kind": "bathroom",
+      "name": "salle de bain"
+    },
+    {
+      "kind": "bathroom",
+      "name": "SALLE DE BAIN"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein salle de bain-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "salle-de-bain"
+    },
+    {
+      "kind": "bathroom",
+      "name": "salle’de’bain"
+    },
+    {
+      "kind": "bathroom",
+      "name": "salle d eau"
+    },
+    {
+      "kind": "bathroom",
+      "name": "SALLE D EAU"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein salle d eau-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "salle-d-eau"
+    },
+    {
+      "kind": "bathroom",
+      "name": "salle’d’eau"
+    },
+    {
+      "kind": "bathroom",
+      "name": "sdb"
+    },
+    {
+      "kind": "bathroom",
+      "name": "SDB"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein sdb-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "sdb"
+    },
+    {
+      "kind": "bathroom",
+      "name": "sdb"
+    },
+    {
+      "kind": "bathroom",
+      "name": "douche"
+    },
+    {
+      "kind": "bathroom",
+      "name": "DOUCHE"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein douche-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "douche"
+    },
+    {
+      "kind": "bathroom",
+      "name": "douche"
+    },
+    {
+      "kind": "bathroom",
+      "name": "toilette"
+    },
+    {
+      "kind": "bathroom",
+      "name": "TOILETTE"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Mein toilette-Raum"
+    },
+    {
+      "kind": "bathroom",
+      "name": "toilette"
+    },
+    {
+      "kind": "bathroom",
+      "name": "toilette"
+    },
+    {
+      "kind": "office",
+      "name": "bureau"
+    },
+    {
+      "kind": "office",
+      "name": "BUREAU"
+    },
+    {
+      "kind": "office",
+      "name": "Mein bureau-Raum"
+    },
+    {
+      "kind": "office",
+      "name": "bureau"
+    },
+    {
+      "kind": "office",
+      "name": "bureau"
+    },
+    {
+      "kind": "hallway",
+      "name": "entree"
+    },
+    {
+      "kind": "hallway",
+      "name": "ENTREE"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein entree-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "entree"
+    },
+    {
+      "kind": "hallway",
+      "name": "entree"
+    },
+    {
+      "kind": "hallway",
+      "name": "couloir"
+    },
+    {
+      "kind": "hallway",
+      "name": "COULOIR"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein couloir-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "couloir"
+    },
+    {
+      "kind": "hallway",
+      "name": "couloir"
+    },
+    {
+      "kind": "hallway",
+      "name": "palier"
+    },
+    {
+      "kind": "hallway",
+      "name": "PALIER"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein palier-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "palier"
+    },
+    {
+      "kind": "hallway",
+      "name": "palier"
+    },
+    {
+      "kind": "hallway",
+      "name": "vestibule"
+    },
+    {
+      "kind": "hallway",
+      "name": "VESTIBULE"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein vestibule-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "vestibule"
+    },
+    {
+      "kind": "hallway",
+      "name": "vestibule"
+    },
+    {
+      "kind": "hallway",
+      "name": "escalier"
+    },
+    {
+      "kind": "hallway",
+      "name": "ESCALIER"
+    },
+    {
+      "kind": "hallway",
+      "name": "Mein escalier-Raum"
+    },
+    {
+      "kind": "hallway",
+      "name": "escalier"
+    },
+    {
+      "kind": "hallway",
+      "name": "escalier"
+    },
+    {
+      "kind": "laundry",
+      "name": "buanderie"
+    },
+    {
+      "kind": "laundry",
+      "name": "BUANDERIE"
+    },
+    {
+      "kind": "laundry",
+      "name": "Mein buanderie-Raum"
+    },
+    {
+      "kind": "laundry",
+      "name": "buanderie"
+    },
+    {
+      "kind": "laundry",
+      "name": "buanderie"
+    },
+    {
+      "kind": "laundry",
+      "name": "lingerie"
+    },
+    {
+      "kind": "laundry",
+      "name": "LINGERIE"
+    },
+    {
+      "kind": "laundry",
+      "name": "Mein lingerie-Raum"
+    },
+    {
+      "kind": "laundry",
+      "name": "lingerie"
+    },
+    {
+      "kind": "laundry",
+      "name": "lingerie"
+    },
+    {
+      "kind": "laundry",
+      "name": "laverie"
+    },
+    {
+      "kind": "laundry",
+      "name": "LAVERIE"
+    },
+    {
+      "kind": "laundry",
+      "name": "Mein laverie-Raum"
+    },
+    {
+      "kind": "laundry",
+      "name": "laverie"
+    },
+    {
+      "kind": "laundry",
+      "name": "laverie"
+    },
+    {
+      "kind": "outdoor",
+      "name": "jardin"
+    },
+    {
+      "kind": "outdoor",
+      "name": "JARDIN"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein jardin-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "jardin"
+    },
+    {
+      "kind": "outdoor",
+      "name": "jardin"
+    },
+    {
+      "kind": "outdoor",
+      "name": "terrasse"
+    },
+    {
+      "kind": "outdoor",
+      "name": "TERRASSE"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein terrasse-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "terrasse"
+    },
+    {
+      "kind": "outdoor",
+      "name": "terrasse"
+    },
+    {
+      "kind": "outdoor",
+      "name": "balcon"
+    },
+    {
+      "kind": "outdoor",
+      "name": "BALCON"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein balcon-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "balcon"
+    },
+    {
+      "kind": "outdoor",
+      "name": "balcon"
+    },
+    {
+      "kind": "outdoor",
+      "name": "veranda"
+    },
+    {
+      "kind": "outdoor",
+      "name": "VERANDA"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein veranda-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "veranda"
+    },
+    {
+      "kind": "outdoor",
+      "name": "veranda"
+    },
+    {
+      "kind": "outdoor",
+      "name": "exterieur"
+    },
+    {
+      "kind": "outdoor",
+      "name": "EXTERIEUR"
+    },
+    {
+      "kind": "outdoor",
+      "name": "Mein exterieur-Raum"
+    },
+    {
+      "kind": "outdoor",
+      "name": "exterieur"
+    },
+    {
+      "kind": "outdoor",
+      "name": "exterieur"
+    },
+    {
+      "kind": "storage",
+      "name": "sous sol"
+    },
+    {
+      "kind": "storage",
+      "name": "SOUS SOL"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein sous sol-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "sous-sol"
+    },
+    {
+      "kind": "storage",
+      "name": "sous’sol"
+    },
+    {
+      "kind": "storage",
+      "name": "cave"
+    },
+    {
+      "kind": "storage",
+      "name": "CAVE"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein cave-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "cave"
+    },
+    {
+      "kind": "storage",
+      "name": "cave"
+    },
+    {
+      "kind": "storage",
+      "name": "cellier"
+    },
+    {
+      "kind": "storage",
+      "name": "CELLIER"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein cellier-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "cellier"
+    },
+    {
+      "kind": "storage",
+      "name": "cellier"
+    },
+    {
+      "kind": "storage",
+      "name": "debarras"
+    },
+    {
+      "kind": "storage",
+      "name": "DEBARRAS"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein debarras-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "debarras"
+    },
+    {
+      "kind": "storage",
+      "name": "debarras"
+    },
+    {
+      "kind": "storage",
+      "name": "rangement"
+    },
+    {
+      "kind": "storage",
+      "name": "RANGEMENT"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein rangement-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "rangement"
+    },
+    {
+      "kind": "storage",
+      "name": "rangement"
+    },
+    {
+      "kind": "storage",
+      "name": "remise"
+    },
+    {
+      "kind": "storage",
+      "name": "REMISE"
+    },
+    {
+      "kind": "storage",
+      "name": "Mein remise-Raum"
+    },
+    {
+      "kind": "storage",
+      "name": "remise"
+    },
+    {
+      "kind": "storage",
+      "name": "remise"
+    },
+    {
+      "kind": "attic",
+      "name": "grenier"
+    },
+    {
+      "kind": "attic",
+      "name": "GRENIER"
+    },
+    {
+      "kind": "attic",
+      "name": "Mein grenier-Raum"
+    },
+    {
+      "kind": "attic",
+      "name": "grenier"
+    },
+    {
+      "kind": "attic",
+      "name": "grenier"
+    },
+    {
+      "kind": "attic",
+      "name": "combles"
+    },
+    {
+      "kind": "attic",
+      "name": "COMBLES"
+    },
+    {
+      "kind": "attic",
+      "name": "Mein combles-Raum"
+    },
+    {
+      "kind": "attic",
+      "name": "combles"
+    },
+    {
+      "kind": "attic",
+      "name": "combles"
+    },
+    {
+      "kind": "attic",
+      "name": "mansarde"
+    },
+    {
+      "kind": "attic",
+      "name": "MANSARDE"
+    },
+    {
+      "kind": "attic",
+      "name": "Mein mansarde-Raum"
+    },
+    {
+      "kind": "attic",
+      "name": "mansarde"
+    },
+    {
+      "kind": "attic",
+      "name": "mansarde"
+    },
+    {
+      "kind": "gym",
+      "name": "salle de sport"
+    },
+    {
+      "kind": "gym",
+      "name": "SALLE DE SPORT"
+    },
+    {
+      "kind": "gym",
+      "name": "Mein salle de sport-Raum"
+    },
+    {
+      "kind": "gym",
+      "name": "salle-de-sport"
+    },
+    {
+      "kind": "gym",
+      "name": "salle’de’sport"
+    },
+    {
+      "kind": "gym",
+      "name": "musculation"
+    },
+    {
+      "kind": "gym",
+      "name": "MUSCULATION"
+    },
+    {
+      "kind": "gym",
+      "name": "Mein musculation-Raum"
+    },
+    {
+      "kind": "gym",
+      "name": "musculation"
+    },
+    {
+      "kind": "gym",
+      "name": "musculation"
+    },
+    {
+      "kind": "closet",
+      "name": "placard"
+    },
+    {
+      "kind": "closet",
+      "name": "PLACARD"
+    },
+    {
+      "kind": "closet",
+      "name": "Mein placard-Raum"
+    },
+    {
+      "kind": "closet",
+      "name": "placard"
+    },
+    {
+      "kind": "closet",
+      "name": "placard"
+    },
+    {
+      "kind": "closet",
+      "name": "penderie"
+    },
+    {
+      "kind": "closet",
+      "name": "PENDERIE"
+    },
+    {
+      "kind": "closet",
+      "name": "Mein penderie-Raum"
+    },
+    {
+      "kind": "closet",
+      "name": "penderie"
+    },
+    {
+      "kind": "closet",
+      "name": "penderie"
+    },
+    {
+      "kind": "pool",
+      "name": "piscine"
+    },
+    {
+      "kind": "pool",
+      "name": "PISCINE"
+    },
+    {
+      "kind": "pool",
+      "name": "Mein piscine-Raum"
+    },
+    {
+      "kind": "pool",
+      "name": "piscine"
+    },
+    {
+      "kind": "pool",
+      "name": "piscine"
+    },
+    {
+      "kind": "play",
+      "name": "jeux"
+    },
+    {
+      "kind": "play",
+      "name": "JEUX"
+    },
+    {
+      "kind": "play",
+      "name": "Mein jeux-Raum"
+    },
+    {
+      "kind": "play",
+      "name": "jeux"
+    },
+    {
+      "kind": "play",
+      "name": "jeux"
+    },
+    {
+      "kind": "other",
+      "name": "Küche"
+    },
+    {
+      "kind": "other",
+      "name": "Wohnzimmer"
+    },
+    {
+      "kind": "other",
+      "name": "Schlafzimmer"
+    },
+    {
+      "kind": "other",
+      "name": "Bad"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Gäste-WC"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Salle d’Eau"
+    },
+    {
+      "kind": "living",
+      "name": "Séjour"
+    },
+    {
+      "kind": "hallway",
+      "name": "Entrée"
+    },
+    {
+      "kind": "kids",
+      "name": "Chambre d’enfant"
+    },
+    {
+      "kind": "storage",
+      "name": "Sous-sol"
+    },
+    {
+      "kind": "storage",
+      "name": "Garde-manger"
+    },
+    {
+      "kind": "other",
+      "name": "Dépendance"
+    },
+    {
+      "kind": "living",
+      "name": "Living Room"
+    },
+    {
+      "kind": "office",
+      "name": "STUDY"
+    },
+    {
+      "kind": "kids",
+      "name": "Kid’s room"
+    },
+    {
+      "kind": "hallway",
+      "name": "Hallway 2"
+    },
+    {
+      "kind": "other",
+      "name": "Büro"
+    },
+    {
+      "kind": "other",
+      "name": ""
+    },
+    {
+      "kind": "other",
+      "name": "   "
+    },
+    {
+      "kind": "other",
+      "name": "Ærøskøbing"
+    },
+    {
+      "kind": "other",
+      "name": "ﬁtness"
+    },
+    {
+      "kind": "other",
+      "name": "İstanbul"
+    },
+    {
+      "kind": "other",
+      "name": "Straße"
+    },
+    {
+      "kind": "other",
+      "name": "café"
+    },
+    {
+      "kind": "bathroom",
+      "name": "Wcfoo"
+    },
+    {
+      "kind": "other",
+      "name": "Ötztal"
+    }
+  ],
+  "lights": [
+    {
+      "id": "light.dim",
+      "percent": 50
+    },
+    {
+      "id": "light.min",
+      "percent": 1
+    },
+    {
+      "id": "light.max",
+      "percent": 100
+    },
+    {
+      "id": "light.over",
+      "percent": 100
+    },
+    {
+      "id": "light.nob",
+      "percent": null
+    },
+    {
+      "id": "light.off",
+      "percent": null
+    },
+    {
+      "id": "light.str",
+      "percent": null
+    },
+    {
+      "id": "light.half",
+      "percent": 1
+    }
+  ],
+  "temps": [
+    {
+      "bySource": [
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "climate.a",
+              "kind": "temperature",
+              "unit": null,
+              "value": 20.5
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 20.5
+          },
+          "temperature": {
+            "entityId": "climate.a",
+            "unit": null,
+            "value": 20.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.oven",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 180
+            },
+            {
+              "entityId": "sensor.h",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 48
+            }
+          ],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "heating",
+            "humidity": 48,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 180
+          },
+          "temperature": {
+            "entityId": "sensor.oven",
+            "unit": "°C",
+            "value": 180
+          }
+        }
+      ],
+      "room": {
+        "domains": {
+          "climate": [
+            "climate.a"
+          ],
+          "sensor": [
+            "sensor.oven",
+            "sensor.t",
+            "sensor.h"
+          ]
+        },
+        "entityIds": [
+          "sensor.oven",
+          "sensor.t",
+          "sensor.h",
+          "climate.a"
+        ],
+        "icon": null,
+        "id": "kitchen",
+        "name": "kitchen",
+        "picture": null
+      },
+      "sources": [
+        {
+          "entityId": "sensor.oven",
+          "kind": "sensor",
+          "unit": "°C",
+          "value": 180
+        },
+        {
+          "entityId": "sensor.t",
+          "kind": "sensor",
+          "unit": "°C",
+          "value": 21.5
+        },
+        {
+          "entityId": "climate.a",
+          "kind": "climate",
+          "unit": null,
+          "value": 20.5
+        }
+      ],
+      "status": null
+    },
+    {
+      "bySource": [
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "climate.a",
+              "kind": "temperature",
+              "unit": null,
+              "value": 20.5
+            },
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 20.5
+          },
+          "temperature": {
+            "entityId": "climate.a",
+            "unit": null,
+            "value": 20.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.h3",
+              "kind": "humidity",
+              "unit": "%",
+              "value": 55.5
+            }
+          ],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "off",
+            "humidity": 55.5,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        }
+      ],
+      "room": {
+        "domains": {
+          "climate": [
+            "climate.b",
+            "climate.a"
+          ],
+          "sensor": [
+            "sensor.t_bad",
+            "sensor.h2",
+            "sensor.h3"
+          ]
+        },
+        "entityIds": [
+          "sensor.t_bad",
+          "sensor.h2",
+          "sensor.h3",
+          "climate.b",
+          "climate.a"
+        ],
+        "icon": null,
+        "id": "bad",
+        "name": "bad",
+        "picture": null
+      },
+      "sources": [
+        {
+          "entityId": "sensor.t_bad",
+          "kind": "sensor",
+          "unit": "°C",
+          "value": null
+        },
+        {
+          "entityId": "climate.b",
+          "kind": "climate",
+          "unit": null,
+          "value": null
+        },
+        {
+          "entityId": "climate.a",
+          "kind": "climate",
+          "unit": null,
+          "value": 20.5
+        }
+      ],
+      "status": null
+    },
+    {
+      "bySource": [
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t_nounit",
+              "kind": "temperature",
+              "unit": null,
+              "value": 19.25
+            }
+          ],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 19.25
+          },
+          "temperature": {
+            "entityId": "sensor.t_nounit",
+            "unit": null,
+            "value": 19.25
+          }
+        }
+      ],
+      "room": {
+        "domains": {
+          "sensor": [
+            "sensor.t_nounit",
+            "sensor.power"
+          ]
+        },
+        "entityIds": [
+          "sensor.t_nounit",
+          "sensor.power"
+        ],
+        "icon": null,
+        "id": "nounit",
+        "name": "nounit",
+        "picture": null
+      },
+      "sources": [
+        {
+          "entityId": "sensor.t_nounit",
+          "kind": "sensor",
+          "unit": null,
+          "value": 19.25
+        }
+      ],
+      "status": null
+    },
+    {
+      "bySource": [
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        },
+        {
+          "glances": [
+            {
+              "entityId": "climate.d",
+              "kind": "temperature",
+              "unit": null,
+              "value": 23
+            }
+          ],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 23
+          },
+          "temperature": {
+            "entityId": "climate.d",
+            "unit": null,
+            "value": 23
+          }
+        },
+        {
+          "glances": [],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [
+            {
+              "entityId": "sensor.t",
+              "kind": "temperature",
+              "unit": "°C",
+              "value": 21.5
+            }
+          ],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "climateState": "cooling",
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false,
+            "temperature": 21.5
+          },
+          "temperature": {
+            "entityId": "sensor.t",
+            "unit": "°C",
+            "value": 21.5
+          }
+        }
+      ],
+      "room": {
+        "domains": {
+          "climate": [
+            "climate.gone",
+            "climate.d"
+          ],
+          "sensor": [
+            "sensor.gone",
+            "sensor.t"
+          ]
+        },
+        "entityIds": [
+          "sensor.gone",
+          "sensor.t",
+          "climate.gone",
+          "climate.d"
+        ],
+        "icon": null,
+        "id": "missing",
+        "name": "missing",
+        "picture": null
+      },
+      "sources": [
+        {
+          "entityId": "sensor.t",
+          "kind": "sensor",
+          "unit": "°C",
+          "value": 21.5
+        },
+        {
+          "entityId": "climate.d",
+          "kind": "climate",
+          "unit": null,
+          "value": 23
+        }
+      ],
+      "status": null
+    },
+    {
+      "bySource": [
+        {
+          "glances": [],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        }
+      ],
+      "room": {
+        "domains": {},
+        "entityIds": [],
+        "icon": null,
+        "id": "empty",
+        "name": "empty",
+        "picture": null
+      },
+      "sources": [],
+      "status": null
+    },
+    {
+      "bySource": [
+        {
+          "glances": [],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        }
+      ],
+      "room": {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.win",
+            "binary_sensor.wet",
+            "binary_sensor.door"
+          ]
+        },
+        "entityIds": [
+          "binary_sensor.win",
+          "binary_sensor.wet",
+          "binary_sensor.door"
+        ],
+        "icon": null,
+        "id": "open",
+        "name": "open",
+        "picture": null
+      },
+      "sources": [],
+      "status": "door-open"
+    },
+    {
+      "bySource": [
+        {
+          "glances": [],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        }
+      ],
+      "room": {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.smoke"
+          ],
+          "cover": [
+            "cover.gate",
+            "cover.garage"
+          ]
+        },
+        "entityIds": [
+          "binary_sensor.smoke",
+          "cover.gate",
+          "cover.garage"
+        ],
+        "icon": null,
+        "id": "garage",
+        "name": "garage",
+        "picture": null
+      },
+      "sources": [],
+      "status": "car"
+    },
+    {
+      "bySource": [
+        {
+          "glances": [],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        }
+      ],
+      "room": {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.door_off",
+            "binary_sensor.opening",
+            "binary_sensor.smoke"
+          ],
+          "cover": [
+            "cover.blind",
+            "cover.gate_unknown"
+          ]
+        },
+        "entityIds": [
+          "binary_sensor.door_off",
+          "binary_sensor.opening",
+          "binary_sensor.smoke",
+          "cover.blind",
+          "cover.gate_unknown"
+        ],
+        "icon": null,
+        "id": "quiet",
+        "name": "quiet",
+        "picture": null
+      },
+      "sources": [],
+      "status": "grid-2x2"
+    },
+    {
+      "bySource": [
+        {
+          "glances": [],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        }
+      ],
+      "room": {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.wet",
+            "binary_sensor.gd"
+          ]
+        },
+        "entityIds": [
+          "binary_sensor.wet",
+          "binary_sensor.gd"
+        ],
+        "icon": null,
+        "id": "gd",
+        "name": "gd",
+        "picture": null
+      },
+      "sources": [],
+      "status": "car"
+    },
+    {
+      "bySource": [
+        {
+          "glances": [],
+          "source": "__undefined__",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": null,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": 42,
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.oven",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.t_bad",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.h",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.power",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.a",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.b",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.d",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "climate.gone",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        },
+        {
+          "glances": [],
+          "source": "sensor.elsewhere",
+          "summary": {
+            "anyMotion": false,
+            "lightsOn": 0,
+            "lightsTotal": 0,
+            "mediaPlaying": false
+          },
+          "temperature": null
+        }
+      ],
+      "room": {
+        "domains": {},
+        "entityIds": [
+          "binary_sensor.door",
+          "sensor.t"
+        ],
+        "icon": null,
+        "id": "diag",
+        "name": "diag",
+        "picture": null
+      },
+      "sources": [],
+      "status": "door-open"
+    }
+  ],
+  "tones": [
+    {
+      "id": "climate.a",
+      "tone": "heat"
+    },
+    {
+      "id": "climate.b",
+      "tone": "idle"
+    },
+    {
+      "id": "climate.c",
+      "tone": "auto"
+    },
+    {
+      "id": "climate.d",
+      "tone": "cool"
+    },
+    {
+      "id": "climate.e",
+      "tone": "idle"
+    }
+  ]
+}

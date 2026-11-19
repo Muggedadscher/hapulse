@@ -99,7 +99,8 @@ public enum Rooms {
         let lights = room.domains["light"] ?? []
         s.lightsTotal = lights.count
         s.lightsOn = lights.filter { entity($0)?.state == "on" }.count
-        if let id = room.domains["climate"]?.first, let e = entity(id) {
+        // the first thermostat that exists (one without a state is skipped, like the web)
+        if let e = (room.domains["climate"] ?? []).lazy.compactMap(entity).first {
             if s.temperature == nil, let cur = e.attributes["current_temperature"]?.number { s.temperature = cur }
             if let action = e.attributes["hvac_action"]?.string { s.climateState = action }
             else if e.state != "unavailable" { s.climateState = e.state }
