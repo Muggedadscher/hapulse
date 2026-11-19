@@ -88,6 +88,8 @@ public actor DemoHA: HATransport {
             entitySubs.append(Int(id.number ?? 0))
             await ok()
             await send(["id": id, "type": "event", "event": .object(["a": .object(states.mapValues(compressed))])])
+        case "frontend/get_translations":
+            await ok(.object(["resources": .object([:])]))
         case "config/area_registry/list":
             await ok(registries["areas"] ?? .array([]))
         case "config/device_registry/list":

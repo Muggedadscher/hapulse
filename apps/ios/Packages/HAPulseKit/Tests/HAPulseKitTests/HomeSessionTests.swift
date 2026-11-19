@@ -40,6 +40,15 @@ struct HomeSessionTests {
         await s.stop()
     }
 
+    @Test func stateTranslationsLoadOncePerLanguage() async throws {
+        let s = try connectedDemo(DemoHA(home: try DemoHome.load()))
+        await s.start()
+        try await eventuallyMain("loaded") { s.loaded }
+        await s.loadStateTranslations(language: "de")
+        #expect(s.stateTranslations.isEmpty) // the demo has none; the call must not fail
+        await s.stop()
+    }
+
     @Test func serviceCallsChangeTheDemo() async throws {
         let home = try DemoHome.load()
         let light = try #require(home.entities.keys.sorted().first { $0.hasPrefix("light.") })

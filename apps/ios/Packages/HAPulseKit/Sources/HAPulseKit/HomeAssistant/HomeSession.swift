@@ -30,6 +30,26 @@ public final class HomeSession {
     /// Areas, devices and entities of Home Assistant's registries, fetched after every connect (rooms, names).
     public private(set) var registries: Registries?
 
+    /// Home Assistant's own state words in the UI language (`frontend/get_translations`), empty until loaded.
+    public private(set) var stateTranslations: EntityDisplay.StateTranslations = [:]
+    private var translationsLanguage: String?
+
+    /// Loads Home Assistant's state words for `language` (an `AppLocale` code). Once per language; a failure leaves
+    /// the words empty (the app's own words and the humanized state stand in, like the web).
+    public func loadStateTranslations(language: String) async {
+        guard translationsLanguage != language else { return }
+        translationsLanguage = language
+        do {
+            let r = try await client.command(["type": "frontend/get_translations", "language": .string(language),
+                                              "category": "entity_component"])
+            guard translationsLanguage == language else { return }
+            stateTranslations = (r["resources"]?.object ?? [:]).compactMapValues(\.string)
+        } catch {
+            if translationsLanguage == language { translationsLanguage = nil }
+            log.error("state translations failed: \(error)")
+        }
+    }
+
     /// The rooms (Home Assistant areas) sorted by name; empty until the registries have arrived.
     public var rooms: [Room] {
         guard let registries else { return [] }

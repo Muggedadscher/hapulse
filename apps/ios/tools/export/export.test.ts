@@ -450,6 +450,60 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'roomLook.json'), { kinds, icons: iconCases, entities, temps, lights, tones });
   });
 
+  it('golden: entity display', () => {
+    const st = (entity_id: string, state: string, attributes: Record<string, unknown> = {}) =>
+      ({ entity_id, state, attributes, last_changed: FIXED_NOW, last_updated: FIXED_NOW, context: { id: 'x', parent_id: null, user_id: null } });
+    const classes: Record<string, (string | undefined)[]> = {
+      binary_sensor: [undefined, 'door', 'window', 'motion', 'smoke', 'moisture', 'lock', 'presence', 'opening', 'garage_door', 'foo'],
+      sensor: [undefined, 'temperature', 'humidity', 'power', 'energy', 'illuminance', 'battery', 'pressure', 'timestamp',
+        'voltage', 'current', 'co2', 'carbon_dioxide', 'gas', 'foo'],
+      cover: [undefined, 'blind', 'curtain', 'garage', 'gate', 'shutter'],
+    };
+    const domains = ['light', 'switch', 'fan', 'climate', 'humidifier', 'cover', 'media_player', 'camera', 'lock',
+      'alarm_control_panel', 'weather', 'person', 'sun', 'input_boolean', 'script', 'automation', 'scene', 'binary_sensor',
+      'sensor', 'number', 'input_number', 'counter', 'siren', 'vacuum', 'select', 'update', 'xyz'];
+    const states = ['on', 'off', 'unavailable', 'unknown', 'open', 'closed', 'unlocked', 'locked', 'playing', 'paused',
+      'idle', 'standby', 'disarmed', 'armed_home', 'cleaning', 'returning', 'heat', 'fan_only', 'clear-night', '',
+      '21.5', '-3.5', ' 7 ', '1e3', '12abc', '-0.004', '1234567.891', '.5', '5.', '__x__', 'élan', 'ßtraße', '😀 smile',
+      '2026-06-15T09:41:00+00:00', '2026-06-15', 'not a date'];
+    const units: unknown[] = [undefined, null, '°C', '', 0, 'kWh'];
+    const entities = [];
+    let n = 0;
+    for (const d of domains) for (const dc of classes[d] ?? [undefined]) for (const s of states) {
+      const unit = units[n++ % units.length];
+      const attributes: Record<string, unknown> = {};
+      if (dc !== undefined) attributes['device_class'] = dc;
+      if (unit !== undefined) attributes['unit_of_measurement'] = unit;
+      entities.push(st(`${d}.e${n}`, s, attributes));
+    }
+    // a few of Home Assistant's own state words, and the web's fallback chain (`useStateLabel`)
+    const res: Record<string, string> = {
+      'component.light.entity_component._.state.on': 'An',
+      'component.binary_sensor.entity_component._.state.on': 'Ein',
+      'component.binary_sensor.entity_component.door.state.on': 'Offen',
+      'component.climate.entity_component._.state.fan_only': 'Nur Lüfter',
+      'component.climate.entity_component._.state_attributes.hvac_action.state.heating': 'Heizt',
+      'component.weather.entity_component._.state.clear-night': 'Klare Nacht',
+    };
+    const out: Record<string, unknown> = {};
+    for (const locale of core.LOCALES) {
+      const dict = JSON.parse(readFileSync(join(ROOT, 'packages/core/locales', `${locale}.json`), 'utf8')) as Record<string, string>;
+      const fallback = JSON.parse(readFileSync(join(ROOT, 'packages/core/locales', 'en.json'), 'utf8')) as Record<string, string>;
+      const label = (domain: string, state: string, opts?: { deviceClass?: string | undefined; attribute?: string | undefined }) => {
+        if (!state) return '';
+        const ha = core.lookupEntityState(res, domain, state, opts);
+        if (ha !== undefined) return ha;
+        return dict[`entityState.${state}`] ?? fallback[`entityState.${state}`] ?? core.humanizeState(state);
+      };
+      out[locale] = entities.map((e) => [core.formatEntityState(e as never, locale, label), core.formatEntityState(e as never, locale)]);
+    }
+    const meta = entities.map((e) => ({ icon: core.domainIcon(e as never), favorite: core.isFavoriteRelevant(e as never) }));
+    const humanize = states.map((s) => [s, core.humanizeState(s)]);
+    const attr = [['climate', 'heating', 'hvac_action'], ['climate', 'cooling', 'hvac_action'], ['light', 'on', undefined]]
+      .map(([d, s, a]) => [d, s, a ?? null, core.lookupEntityState(res, d!, s!, { attribute: a })]);
+    writeJson(join(FIX, 'entityDisplay.json'), { entities, res, formatted: out, meta, humanize, attr });
+  });
+
   it('golden: sentinel', async () => {
     const api = await import('@sentinel-nvr/web/api');
     const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',
