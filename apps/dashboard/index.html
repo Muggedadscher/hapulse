@@ -2,6 +2,10 @@
 <html lang="en" data-theme="aurora" data-mode="light">
   <head>
     <meta charset="UTF-8" />
+    <!-- [fork] Sign-in of the native iOS app (apps/ios): it uses this page's address as OAuth client_id, and Home
+         Assistant only redirects to an app URL that the client_id page lists here (IndieAuth redirect_uri). Kept
+         first and ASCII-only before it: Home Assistant reads just the start of the page, in small pieces. -->
+    <link rel="redirect_uri" href="hapulse://auth-callback" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f3f4f6" />
     <meta name="description" content="Your Home Assistant, beautifully simplified." />
@@ -15,10 +19,6 @@
     <link rel="icon" type="image/svg+xml" href="/icons/pulse.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/pulse-180.png" />
     <link rel="manifest" href="/icons/pulse.webmanifest" />
-
-    <!-- [fork] Sign-in of the native iOS app (apps/ios): it uses this page's address as OAuth client_id, and Home
-         Assistant only redirects to an app URL that the client_id page lists here (IndieAuth redirect_uri). -->
-    <link rel="redirect_uri" href="hapulse://auth-callback" />
 
     <title>HAPulse</title>
   </head>
