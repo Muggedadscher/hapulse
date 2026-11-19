@@ -658,6 +658,50 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'security.json'), { now: FIXED_NOW, garages, sets, homes, scenes: scenesCases });
   });
 
+  it('golden: waste', () => {
+    // detectWasteBins over random sensors of the waste_collection_schedule integration (generator runs in UTC)
+    let seed = 3;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return Math.floor(seed / 65536) % n;
+    };
+    const pick = <T,>(list: readonly T[]): T => list[r(list.length)]!;
+    const now = Date.parse(FIXED_NOW);
+    const dates = ['2026-06-14', '2026-06-15', '2026-06-16', '2026-06-20', '2026-07-01', '2026-06-15T05:00:00+02:00',
+      ' 2026-06-18 ', '2026-13-01', '2026-06-32', 'morgen', '2026-6-1', '2026-02-30'];
+    const typeNames = ['Graue Tonne', 'Graue Tonne (verlegt)', 'Gelber Sack', 'gelber  sack', 'Bio (x) (y)', 'Papier (a(b)',
+      'Glas ( )', ' (nur) ', 'Restmüll\t(moved) ', 'Christbaum'];
+    const daysVals: unknown[] = [undefined, null, 0, 1, 2, -1, 7, 7.5, '3', ' 4 ', '', 'x', '0x10', 'Infinity', false, [], '1e1'];
+    const homes = [];
+    for (let i = 0; i < 150; i++) {
+      const list = [];
+      for (let k = r(7); k > 0; k--) {
+        const id = `sensor.${pick(['grauetonne', 'gelber_sack', 'bio', 'papier', 'temp'])}${pick(['', '_komplett', '_verlegt'])}${r(3)}`;
+        if (list.some((e) => e.entity_id === id)) continue;
+        const attributes: Record<string, unknown> = {};
+        if (r(4) > 0) attributes['upcoming'] = Array.from({ length: r(4) }, () => (r(8) === 0 ? 'x' : r(8) === 0 ? { type: 'Bio' } : { date: pick(dates), ...(r(2) ? { type: pick(typeNames) } : {}) }));
+        if (r(3) > 0) attributes['types'] = Array.from({ length: r(3) }, () => (r(9) === 0 ? 5 : pick(typeNames)));
+        const d = pick(daysVals);
+        if (d !== undefined) attributes['daysTo'] = d;
+        if (r(2)) attributes['friendly_name'] = pick(['Waste Collection Schedule Graue_Tonne', 'waste collection schedule  bio', 'Papier', 'Waste Collection Schedule']);
+        if (r(2)) attributes['icon'] = pick(['mdi:trash-can', 'mdi:recycle']);
+        list.push({ entity_id: id, state: 'x', attributes, last_changed: FIXED_NOW, last_updated: FIXED_NOW, context: { id: 'x', parent_id: null, user_id: null } });
+      }
+      const map = Object.fromEntries(list.map((e) => [e.entity_id, e]));
+      const hidden = list.filter(() => r(9) === 0).map((e) => e.entity_id);
+      const withNow = r(3) > 0;
+      homes.push({ entities: list, hidden, withNow, bins: core.detectWasteBins(map, { hidden, nowMs: withNow ? now : undefined }) });
+    }
+    const numbers = ['7', ' 7 ', '+7', '-7', '.5', '5.', '1e3', '1e', '0x1A', '0X1a', '0o17', '0b101', '-0x10', 'Infinity', '-Infinity', 'inf',
+      'nan', '1_0', '1,5', '١', ' 7　', '00', '0x', '.e1', '1.e2', '+.5', '--1'];
+    writeJson(join(FIX, 'waste.json'), {
+      now: FIXED_NOW, homes,
+      typeNames: typeNames.map((t) => [t, core.wasteTypeName(t)]),
+      dates: dates.map((d) => [d, core.parseWasteDate(d)]),
+      numbers: numbers.map((n) => [n, Number.isNaN(Number(n)) ? null : Number.isFinite(Number(n)) ? Number(n) : String(Number(n))]),
+    });
+  });
+
   it('golden: sentinel', async () => {
     const api = await import('@sentinel-nvr/web/api');
     const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',

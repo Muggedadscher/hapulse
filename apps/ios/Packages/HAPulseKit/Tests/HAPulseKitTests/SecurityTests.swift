@@ -85,7 +85,9 @@ import Testing
             #expect(c.garages == Self.garageSummary(w["garages"]), "home \(i)")
             #expect(c.locks == Self.lockSummary(w["locks"]), "home \(i)")
 
-            let waste = (h["waste"]?.array ?? []).map { Hints.WasteBin(entityId: $0["entityId"]?.string ?? "", daysTo: $0["daysTo"]?.number.map { Int($0) }) }
+            let waste = (h["waste"]?.array ?? []).map {
+                Waste.Bin(entityId: $0["entityId"]?.string ?? "", name: "", daysTo: $0["daysTo"]?.number, upcoming: [])
+            }
             let missing = (h["heatingMissing"]?.array ?? []).map {
                 Hints.MissingPlan(areaId: $0["areaId"]?.string ?? "", name: $0["name"]?.string ?? "", thermostats: Self.ids($0["thermostats"]))
             }

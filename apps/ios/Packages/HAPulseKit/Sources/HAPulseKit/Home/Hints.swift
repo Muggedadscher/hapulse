@@ -64,13 +64,6 @@ public enum Hints {
         public static func < (a: Self, b: Self) -> Bool { a.rawValue < b.rawValue }
     }
 
-    /// The parts of a waste bin (`detectWasteBins`) the hints read.
-    public struct WasteBin: Equatable, Sendable {
-        public var entityId: String
-        public var daysTo: Int?
-        public init(entityId: String, daysTo: Int?) { self.entityId = entityId; self.daysTo = daysTo }
-    }
-
     /// A room with a thermostat but no heating plan.
     public struct MissingPlan: Equatable, Sendable {
         public var areaId: String
@@ -89,7 +82,7 @@ public enum Hints {
         public var count: Int
         /// the entities behind the hint, sorted; empty for cameras
         public var entityIds: [String]
-        public var bin: WasteBin?
+        public var bin: Waste.Bin?
         public var room: (areaId: String, name: String)? {
             get { roomId.map { ($0, roomName ?? "") } }
             set { roomId = newValue?.areaId; roomName = newValue?.name }
@@ -112,7 +105,7 @@ public enum Hints {
     /// The hints, critical → warning → info, inside one severity in a fixed order. `recheckAt`: when the list changes
     /// without an entity update (a door reaching its minutes).
     public static func collect(_ entities: [HAEntity], now: Date, hidden: Set<String> = [], doorOpenMinutes: Int? = nil,
-                               waste: [WasteBin] = [], camerasNotRecording: Int = 0, heatingMissing: [MissingPlan] = [],
+                               waste: [Waste.Bin] = [], camerasNotRecording: Int = 0, heatingMissing: [MissingPlan] = [],
                                locale: Locale = .current) -> (hints: [Hint], recheckAt: Date?) {
         let visible = entities.filter { !hidden.contains($0.entityId) }
         let nowMs = Int64((now.timeIntervalSince1970 * 1000).rounded(.down))
