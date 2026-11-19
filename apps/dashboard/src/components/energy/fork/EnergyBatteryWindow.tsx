@@ -47,7 +47,7 @@ import { useLocale, useT } from '../../../i18n/useT';
 import type { BatteryNow } from './EnergyBattery';
 import { BatteryControlSection } from './EnergyBatteryControl';
 import type { BatteryKeptControl } from './EnergyBatteryControl';
-import { BATTERY_STATE_KEY, BatteryRing, formatBatteryPower } from './EnergyBatteryParts';
+import { BATTERY_STATE_KEY, BatteryRing, formatBatteryPower, fullAtToday } from './EnergyBatteryParts';
 import { BatteryLimitSlider, BatteryRangeBar } from './EnergyBatteryRange';
 import { EnergyBatteryTimesPage } from './EnergyBatteryTimesPage';
 
@@ -294,6 +294,7 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
   // ---- now ----
   const stored = soc !== null && capacity !== null ? (soc / 100) * capacity : null;
   const moving = status && (status.state === 'charging' || status.state === 'discharging') && power !== null;
+  const fullAt = status ? fullAtToday(status.at, new Date()) : null;
 
   // ---- range ----
   const limitValue = draft.chargeLimit ?? chargeLimit?.value ?? null;
@@ -325,7 +326,7 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
                 <p className="en-bat-win__state">
                   <span className={`en-bat__state en-bat__state--${status.state}`}>{t(BATTERY_STATE_KEY[status.state]!)}</span>
                   {moving && <> · {formatBatteryPower(power, locale)}</>}
-                  {status.at !== null && <> · {t('energy.battery.fullAt', { time: time(status.at) })}</>}
+                  {fullAt !== null && <> · {t('energy.battery.fullAt', { time: time(fullAt) })}</>}
                   {status.until !== null && <> · {t('energy.battery.lastsUntil', { time: time(status.until) })}</>}
                 </p>
               )}
@@ -479,7 +480,7 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
         }
         footer={
           glas || !canSet ? undefined : (
-            <div className="g-confirm__actions">
+            <div className="g-confirm__actions en-bat-win__actions">
               <button type="button" className="btn btn--secondary" disabled={busy} onClick={close}>
                 {t('glas.sheet.cancel')}
               </button>
@@ -498,7 +499,7 @@ export function EnergyBatteryWindow({ open, battery, onClose }: EnergyBatteryWin
         title={t('energy.battery.modeConfirmTitle')}
         icon={<Battery size={18} strokeWidth={1.75} />}
         footer={
-          <div className="g-confirm__actions">
+          <div className="g-confirm__actions en-bat-win__actions">
             {/* the focus on the harmless choice */}
             <button type="button" className="btn btn--secondary" onClick={endAsk} data-autofocus>
               {t('glas.sheet.cancel')}

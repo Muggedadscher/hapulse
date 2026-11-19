@@ -1,6 +1,7 @@
 /**
  * [fork] Pieces the battery's card, its window and the overview's battery line share (EnergyBattery.tsx,
- * EnergyBatteryWindow.tsx, EnergyBatteryLine.tsx): the ring with the charge, the state words and the power as text.
+ * EnergyBatteryWindow.tsx, EnergyBatteryLine.tsx): the ring with the charge, the state words, the power as text and
+ * the "full at about" time.
  */
 
 import type { BatteryState } from '@hapulse/core';
@@ -45,4 +46,15 @@ export function BatteryRing({ value, size = 20, stroke = 3 }: { value: number; s
 export function formatBatteryPower(watts: number, locale: string): string {
   const w = Math.abs(watts);
   return Math.round(w) < 1000 ? `${formatNumber(Math.round(w), locale, { maxDecimals: 0 })} W` : `${formatNumber(w / 1000, locale, { minDecimals: 1, maxDecimals: 1 })} kW`;
+}
+
+/**
+ * "Full at about" only when that is still today: the forecast assumes the power stays as it is, and charging from the
+ * panels stops at dusk, so a time tomorrow would be a guess. Null otherwise (also when core gave no time).
+ */
+export function fullAtToday(at: number | null, now: Date): number | null {
+  if (at === null) return null;
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  return at < midnight.getTime() ? at : null;
 }

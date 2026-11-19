@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 76,
+    date: '2026-11-19',
+    title: { de: 'Akku: Leistung auf der Karte', en: 'Battery: power on the card' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Karte „Batterie“ zeigt beim Laden und Entladen auch die Leistung, z. B. „Lädt · 130 W“',
+            en: 'The “Battery” card also shows the power while charging or discharging, e.g. “Charging · 130 W”',
+          },
+          {
+            de: '„Voll um …“ steht nur noch, wenn der Akku heute noch voll wird; Solarstrom endet am Abend, eine Zeit für morgen wäre geraten',
+            en: '“Full at …” only shows when the battery fills up today; solar power stops in the evening, so a time tomorrow would be a guess',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 75,
     date: '2026-11-18',
     title: { de: 'Akku: Fenster mit Modus, Ladebereich und Steuerung', en: 'Battery: window with mode, charge range and control' },

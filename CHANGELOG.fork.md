@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F76 — 2026-11-19
+
+**Akku: Leistung auf der Karte** · _Battery: power on the card_
+
+### Geändert / Changed
+
+- Die Karte „Batterie“ zeigt beim Laden und Entladen auch die Leistung, z. B. „Lädt · 130 W“  
+  _The “Battery” card also shows the power while charging or discharging, e.g. “Charging · 130 W”_
+- „Voll um …“ steht nur noch, wenn der Akku heute noch voll wird; Solarstrom endet am Abend, eine Zeit für morgen wäre geraten  
+  _“Full at …” only shows when the battery fills up today; solar power stops in the evening, so a time tomorrow would be a guess_
+
 ## F75 — 2026-11-18
 
 **Akku: Fenster mit Modus, Ladebereich und Steuerung** · _Battery: window with mode, charge range and control_
