@@ -10,15 +10,18 @@ let package = Package(
     platforms: [.iOS(.v26), .macOS(.v26)],
     products: [
         .library(name: "HAPulseKit", targets: ["HAPulseKit"]),
+        .library(name: "SentinelKit", targets: ["SentinelKit"]),
     ],
     targets: [
         .target(
             name: "HAPulseKit",
             resources: [.copy("Data")]
         ),
+        // Sentinel NVR client without UI (models, URLs, requests); the player comes with the camera stages.
+        .target(name: "SentinelKit", dependencies: ["HAPulseKit"]),
         .testTarget(
             name: "HAPulseKitTests",
-            dependencies: ["HAPulseKit"],
+            dependencies: ["HAPulseKit", "SentinelKit"],
             resources: [.copy("Fixtures")]
         ),
     ]

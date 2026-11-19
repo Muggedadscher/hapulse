@@ -1,0 +1,173 @@
+{
+  "client": {
+    "base": "https://h:10443/p/endpoint/@local/sentinel-nvr/public/",
+    "entry": "https://h:10443/p/endpoint/@local/sentinel-nvr/public/",
+    "evframe": "https://h:10443/p/endpoint/@local/sentinel-nvr/public/api/evframe?camera=33&ts=17&token=t%2Fk%20n",
+    "evthumb": "https://h:10443/p/endpoint/@local/sentinel-nvr/public/api/evthumb?camera=33&ts=1781516460124&token=t%2Fk%20n",
+    "signaling": "wss://h:10443/p/endpoint/@local/sentinel-nvr/public/?token=t%2Fk+n&camera=33&signaling=1",
+    "signalingParams": "wss://h:10443/p/endpoint/@local/sentinel-nvr/public/?token=t%2Fk+n&camera=3+3&signaling=1&compat=1&noaudio=a%26b",
+    "snapshot": "https://h:10443/p/endpoint/@local/sentinel-nvr/public/api/snapshot?camera=33&token=t%2Fk%20n",
+    "snapshotW": "https://h:10443/p/endpoint/@local/sentinel-nvr/public/api/snapshot?camera=a%20b&token=t%2Fk%20n&w=640&_=1781516460123",
+    "thumb": "https://h:10443/p/endpoint/@local/sentinel-nvr/public/api/thumb?id=x%2Fy&token=t%2Fk%20n"
+  },
+  "setup": [
+    {
+      "input": "",
+      "out": null
+    },
+    {
+      "input": "   ",
+      "out": null
+    },
+    {
+      "input": "nvr.example.com",
+      "out": {
+        "origin": "https://nvr.example.com",
+        "prefix": "",
+        "token": null
+      }
+    },
+    {
+      "input": "https://NVR.Example.com:443/",
+      "out": {
+        "origin": "https://nvr.example.com",
+        "prefix": "",
+        "token": null
+      }
+    },
+    {
+      "input": "http://192.0.2.10:10443",
+      "out": {
+        "origin": "http://192.0.2.10:10443",
+        "prefix": "",
+        "token": null
+      }
+    },
+    {
+      "input": "https://192.0.2.10:10443/endpoint/@local/sentinel-nvr/public/?token=abc&embed=1",
+      "out": {
+        "origin": "https://192.0.2.10:10443",
+        "prefix": "",
+        "token": "abc"
+      }
+    },
+    {
+      "input": "https://proxy.example/scrypted/endpoint/@local/sentinel-nvr/",
+      "out": {
+        "origin": "https://proxy.example",
+        "prefix": "/scrypted",
+        "token": null
+      }
+    },
+    {
+      "input": "https://h/a//endpoint/x?token=%20t%2Fx%20",
+      "out": {
+        "origin": "https://h",
+        "prefix": "/a",
+        "token": "t/x"
+      }
+    },
+    {
+      "input": "https://h/?token=a+b",
+      "out": {
+        "origin": "https://h",
+        "prefix": "",
+        "token": "a b"
+      }
+    },
+    {
+      "input": "https://h/?token=",
+      "out": {
+        "origin": "https://h",
+        "prefix": "",
+        "token": null
+      }
+    },
+    {
+      "input": "not a url",
+      "out": null
+    },
+    {
+      "input": "ftp://x.example",
+      "out": {
+        "origin": "https://ftp",
+        "prefix": "",
+        "token": null
+      }
+    }
+  ],
+  "states": [
+    {
+      "cam": {
+        "online": true,
+        "recording": false
+      },
+      "out": "off"
+    },
+    {
+      "cam": {
+        "online": false,
+        "recording": true,
+        "stalled": true
+      },
+      "out": "stalled"
+    },
+    {
+      "cam": {
+        "online": false,
+        "recording": true
+      },
+      "out": "offline"
+    },
+    {
+      "cam": {
+        "online": true,
+        "recording": true
+      },
+      "out": "ok"
+    },
+    {
+      "cam": {
+        "online": true,
+        "recording": true,
+        "stalled": false
+      },
+      "out": "ok"
+    }
+  ],
+  "urls": [
+    {
+      "loginBase": "https://h:10443/endpoint/@local/sentinel-nvr/",
+      "origin": "https://h:10443",
+      "path": "api/cameras",
+      "prefix": "",
+      "publicBase": "https://h:10443/endpoint/@local/sentinel-nvr/public/",
+      "timeline": "https://h:10443/endpoint/@local/sentinel-nvr/public/#/timeline/cam%203%2F%C3%A4?at=1781516460124",
+      "timelineNow": "https://h:10443/endpoint/@local/sentinel-nvr/public/#/timeline/33",
+      "token": "tok",
+      "url": "https://h:10443/endpoint/@local/sentinel-nvr/public/api/cameras?token=tok"
+    },
+    {
+      "loginBase": "https://h:10443/scrypted/endpoint/@local/sentinel-nvr/",
+      "origin": "https://h:10443/",
+      "path": "api/snapshot?camera=33",
+      "prefix": "/scrypted/",
+      "publicBase": "https://h:10443/scrypted/endpoint/@local/sentinel-nvr/public/",
+      "timeline": "https://h:10443/scrypted/endpoint/@local/sentinel-nvr/public/#/timeline/cam%203%2F%C3%A4?at=1781516460124",
+      "timelineNow": "https://h:10443/scrypted/endpoint/@local/sentinel-nvr/public/#/timeline/33",
+      "token": "a b/ü+&",
+      "url": "https://h:10443/scrypted/endpoint/@local/sentinel-nvr/public/api/snapshot?camera=33&token=a%20b%2F%C3%BC%2B%26"
+    },
+    {
+      "loginBase": "https://h/endpoint/@local/sentinel-nvr/",
+      "origin": "https://h",
+      "path": "api/stats",
+      "prefix": "",
+      "publicBase": "https://h/endpoint/@local/sentinel-nvr/public/",
+      "timeline": "https://h/endpoint/@local/sentinel-nvr/public/#/timeline/cam%203%2F%C3%A4?at=1781516460124",
+      "timelineNow": "https://h/endpoint/@local/sentinel-nvr/public/#/timeline/33",
+      "token": "",
+      "url": "https://h/endpoint/@local/sentinel-nvr/public/api/stats"
+    }
+  ]
+}

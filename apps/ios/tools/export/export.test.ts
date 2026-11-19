@@ -236,6 +236,39 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'glasAccent.json'), cases, false);
   });
 
+  it('golden: sentinel', async () => {
+    const api = await import('@sentinel-nvr/web/api');
+    const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',
+      'https://192.0.2.10:10443/endpoint/@local/sentinel-nvr/public/?token=abc&embed=1',
+      'https://proxy.example/scrypted/endpoint/@local/sentinel-nvr/', 'https://h/a//endpoint/x?token=%20t%2Fx%20',
+      'https://h/?token=a+b', 'https://h/?token=', 'not a url', 'ftp://x.example'];
+    const setup = inputs.map((input) => ({ input, out: api.parseSentinelSetup(input) }));
+    const urls = [
+      { origin: 'https://h:10443', prefix: '', token: 'tok', path: 'api/cameras' },
+      { origin: 'https://h:10443/', prefix: '/scrypted/', token: 'a b/ü+&', path: 'api/snapshot?camera=33' },
+      { origin: 'https://h', prefix: '', token: '', path: 'api/stats' },
+    ].map((c) => ({
+      ...c,
+      publicBase: api.sentinelPublicBase(c.origin, c.prefix),
+      loginBase: api.sentinelLoginBase(c.origin, c.prefix),
+      url: api.sentinelUrl(api.sentinelPublicBase(c.origin, c.prefix), c.token, c.path),
+      timeline: api.sentinelTimelineLink(c.origin, 'cam 3/ä', 1781516460123.6, c.prefix),
+      timelineNow: api.sentinelTimelineLink(c.origin, '33', undefined, c.prefix),
+    }));
+    const client = new api.SentinelClient('https://h:10443', 't/k n', { prefix: '/p' });
+    const clientUrls = {
+      base: client.base, entry: client.entryUrl,
+      snapshot: client.snapshotUrl('33'), snapshotW: client.snapshotUrl('a b', 1781516460123, 640.4),
+      evthumb: client.eventThumbUrl('33', 1781516460123.5), evframe: client.eventFrameUrl('33', 17), thumb: client.segmentThumbUrl('x/y'),
+      signaling: client.signalingUrl('33'), signalingParams: client.signalingUrl('3 3', { compat: '1', noaudio: 'a&b' }),
+    };
+    const states = [
+      { recording: false, online: true }, { recording: true, online: false, stalled: true },
+      { recording: true, online: false }, { recording: true, online: true }, { recording: true, online: true, stalled: false },
+    ].map((cam) => ({ cam, out: api.sentinelRecordingState(cam) }));
+    writeJson(join(FIX, 'sentinel.json'), { setup, urls, client: clientUrls, states });
+  });
+
   it('golden: subscribe_entities', async () => {
     // The library's own reducer (home-assistant-js-websocket processEvent) behind a fake connection: the Swift
     // EntityStore must turn the same compressed messages into the same states.
