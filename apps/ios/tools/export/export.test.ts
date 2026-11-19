@@ -251,6 +251,9 @@ describe('iOS export', () => {
         { area_id: 'zebra', name: 'Zimmer 10' },
         { area_id: 'zebra2', name: 'Zimmer 9' },
         { area_id: 'leer', name: 'Ärger' },
+        // same name twice: the sort is stable, registry order decides
+        { area_id: 'dup2', name: 'Flur' },
+        { area_id: 'dup1', name: 'Flur' },
       ],
       devices: [
         { id: 'd1', area_id: 'kueche', name: 'Hue' },
@@ -273,6 +276,11 @@ describe('iOS export', () => {
         ent('binary_sensor.motion', { area_id: 'bad' }),
         ent('sensor.nostate', { area_id: 'bad' }),
         ent('light.ghost', { area_id: 'gone' }),
+        ent('switch.config', { area_id: 'dup2', entity_category: 'config' }),
+        ent('light.lost', { device_id: 'd-missing' }), // its device is not in the registry
+        ent('climate.nostate', { area_id: 'dup1' }), // first thermostat without a state: the next one counts
+        ent('climate.f', { area_id: 'dup1' }),
+        ent('light.f', { area_id: 'dup1' }),
       ],
     };
     const st = (state: string, attributes: Record<string, unknown> = {}) => ({ state, attributes });
@@ -283,6 +291,8 @@ describe('iOS export', () => {
       'climate.k': st('heat', { current_temperature: 19, hvac_action: 'heating' }),
       'automation.plan': st('on'), 'switch.plan': st('on'),
       'media_player.m': st('playing'), 'binary_sensor.motion': st('on', { device_class: 'motion' }),
+      'switch.config': st('on'), 'light.lost': st('on'), 'light.f': st('off'),
+      'climate.f': st('off', { current_temperature: 17.5 }),
     };
     const rooms = core.buildRooms(registries, states);
     const summaries = (list: { id: string }[], map: Record<string, unknown>) =>
@@ -294,6 +304,19 @@ describe('iOS export', () => {
       cases: { registries, states, rooms, summaries: summaries(rooms, states), domainOrders: domainOrders(rooms) },
       demo: { rooms: demo, summaries: summaries(demo, core.DEMO_ENTITIES), domainOrders: domainOrders(demo) },
     });
+  });
+
+  it('golden: parseFloat', () => {
+    const inputs = [
+      '21.5', '  -3e2x', '.5', '5.', '1e', '1e+', '1e-2', '-.5', '+7', '--1', '.', '-', '', 'n/a', 'unavailable',
+      'Infinity', '-Infinity', '+Infinity', 'Infinityx', 'infinity', '0x1A', '1,5', '12abc', '\u00a0 42', '\u3000 8',
+      '\ufeff3', '\u200b5', '\n\t9.25', '1.2.3', '00012', '1e400', '-0', '5e-400', '٣', '１２', '3.14159265358979323846',
+      '.e1', '1.e2', '1_000',
+    ];
+    writeJson(join(FIX, 'parseFloat.json'), inputs.map((s) => {
+      const v = parseFloat(s);
+      return [s, Number.isNaN(v) ? null : Number.isFinite(v) ? v : v > 0 ? 'Infinity' : '-Infinity', Object.is(v, -0)];
+    }));
   });
 
   it('golden: room sections', () => {

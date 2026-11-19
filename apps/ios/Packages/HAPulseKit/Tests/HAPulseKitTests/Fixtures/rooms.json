@@ -7,6 +7,11 @@
         "media_player",
         "binary_sensor"
       ],
+      "dup1": [
+        "climate",
+        "light"
+      ],
+      "dup2": [],
       "kueche": [
         "light",
         "sensor",
@@ -44,6 +49,14 @@
         {
           "area_id": "leer",
           "name": "Ärger"
+        },
+        {
+          "area_id": "dup2",
+          "name": "Flur"
+        },
+        {
+          "area_id": "dup1",
+          "name": "Flur"
         }
       ],
       "devices": [
@@ -224,6 +237,56 @@
           "hidden_by": null,
           "icon": null,
           "original_name": null
+        },
+        {
+          "area_id": "dup2",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": "config",
+          "entity_id": "switch.config",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": null,
+          "device_id": "d-missing",
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.lost",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "dup1",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "climate.nostate",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "dup1",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "climate.f",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "dup1",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.f",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
         }
       ]
     },
@@ -266,6 +329,35 @@
         "id": "bad",
         "name": "bad",
         "picture": "/api/image/bad.png"
+      },
+      {
+        "domains": {},
+        "entityIds": [
+          "switch.config"
+        ],
+        "icon": null,
+        "id": "dup2",
+        "name": "Flur",
+        "picture": null
+      },
+      {
+        "domains": {
+          "climate": [
+            "climate.f"
+          ],
+          "light": [
+            "light.f"
+          ]
+        },
+        "entityIds": [
+          "climate.nostate",
+          "climate.f",
+          "light.f"
+        ],
+        "icon": null,
+        "id": "dup1",
+        "name": "Flur",
+        "picture": null
       },
       {
         "domains": {
@@ -327,6 +419,12 @@
         },
         "state": "on"
       },
+      "climate.f": {
+        "attributes": {
+          "current_temperature": 17.5
+        },
+        "state": "off"
+      },
       "climate.k": {
         "attributes": {
           "current_temperature": 19,
@@ -354,7 +452,15 @@
         "attributes": {},
         "state": "on"
       },
+      "light.f": {
+        "attributes": {},
+        "state": "off"
+      },
       "light.hidden": {
+        "attributes": {},
+        "state": "on"
+      },
+      "light.lost": {
         "attributes": {},
         "state": "on"
       },
@@ -378,6 +484,10 @@
         },
         "state": "21.5"
       },
+      "switch.config": {
+        "attributes": {},
+        "state": "on"
+      },
       "switch.plan": {
         "attributes": {},
         "state": "on"
@@ -395,6 +505,20 @@
         "lightsOn": 1,
         "lightsTotal": 1,
         "mediaPlaying": true
+      },
+      "dup1": {
+        "anyMotion": false,
+        "climateState": "off",
+        "lightsOn": 0,
+        "lightsTotal": 1,
+        "mediaPlaying": false,
+        "temperature": 17.5
+      },
+      "dup2": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 0,
+        "mediaPlaying": false
       },
       "kueche": {
         "anyMotion": false,

@@ -78,6 +78,23 @@ import Testing
         #expect(bad == 0)
     }
 
+    @Test func parseFloatAgainstNode() throws {
+        let cases = try Golden.load("parseFloat", as: JSONValue.self).array ?? []
+        #expect(cases.count > 30)
+        for c in cases {
+            let v = c.array ?? []
+            let input = v.first?.string ?? ""
+            let got = JSCompare.parseFloat(input)
+            switch v.dropFirst().first {
+            case .string("Infinity")?: #expect(got == .infinity, "\(input)")
+            case .string("-Infinity")?: #expect(got == -.infinity, "\(input)")
+            case .number(let n)?: #expect(got == n, "\(input)")
+            default: #expect(got == nil, "\(input)")
+            }
+            if v.last?.bool == true { #expect(got?.sign == .minus, "\(input) is -0") }
+        }
+    }
+
     @Test func parseFloatLikeJavaScript() {
         #expect(JSCompare.parseFloat("21.5") == 21.5)
         #expect(JSCompare.parseFloat("  -3e2x") == -300)
