@@ -16,15 +16,17 @@ public struct HATokens: Codable, Equatable, Sendable {
 }
 
 /// Where tokens live: the Keychain in the app, memory in tests. Tokens never go into settings or logs.
+/// `load` returns nil only when nothing is stored; a store that cannot be read right now (Keychain locked) throws,
+/// which the connection treats as "try again", not as "signed out".
 public protocol HATokenStore: Sendable {
-    func load() async -> HATokens?
-    func save(_ tokens: HATokens?) async
+    func load() async throws -> HATokens?
+    func save(_ tokens: HATokens?) async throws
 }
 
 public actor MemoryTokenStore: HATokenStore {
     private var tokens: HATokens?
     public init(_ tokens: HATokens? = nil) { self.tokens = tokens }
-    public func load() -> HATokens? { tokens }
+    public func load() throws -> HATokens? { tokens }
     public func save(_ t: HATokens?) { tokens = t }
 }
 
@@ -58,6 +60,8 @@ public actor HAAuth {
     private let now: @Sendable () -> Date
     private var refreshing: Task<HATokens, Error>?
     private var expectedState: String?
+    /// Bumped by `signOut()`: a refresh that was already under way must not store its tokens afterwards.
+    private var epoch = 0
     private let log = Log("auth")
 
     public init(http: any HAHTTP = URLSessionHTTP(), store: any HATokenStore, now: @escaping @Sendable () -> Date = { Date() }) {
@@ -90,14 +94,14 @@ public actor HAAuth {
         let tokens = try await tokenCall(hassURL: hassURL, clientID: clientID, form: [
             "grant_type": "authorization_code", "code": code, "client_id": clientID,
         ], keepRefresh: nil)
-        await store.save(tokens)
+        try await store.save(tokens)
         log.info("signed in")
         return tokens
     }
 
     /// A valid access token; refreshes it shortly before it runs out. Several callers share one refresh.
     public func accessToken() async throws -> String {
-        guard let t = await store.load() else { throw HAError.authInvalid }
+        guard let t = try await store.load() else { throw HAError.authInvalid }
         if !t.expired(at: now()) { return t.accessToken }
         return try await refresh(t).accessToken
     }
@@ -105,41 +109,52 @@ public actor HAAuth {
     private func refresh(_ t: HATokens) async throws -> HATokens {
         if let refreshing { return try await refreshing.value }
         guard let rt = t.refreshToken else { throw HAError.authInvalid }
+        let started = epoch
         let task = Task { () throws -> HATokens in
             try await tokenCall(hassURL: t.hassURL, clientID: t.clientID, form: [
                 "grant_type": "refresh_token", "refresh_token": rt, "client_id": t.clientID,
             ], keepRefresh: rt)
         }
         refreshing = task
-        defer { refreshing = nil }
+        defer { if epoch == started { refreshing = nil } }
         do {
             let fresh = try await task.value
-            await store.save(fresh)
+            guard epoch == started else { throw HAError.authInvalid } // signed out meanwhile
+            try await store.save(fresh)
             log.info("access token refreshed")
             return fresh
         } catch let e as HAError where e == .authInvalid {
-            await store.save(nil) // refresh token revoked: the user signs in again
-            log.error("refresh token refused, signed out")
+            if epoch == started {
+                try? await store.save(nil) // refresh token revoked: the user signs in again
+                log.error("refresh token refused, signed out")
+            }
             throw e
         }
     }
 
     /// Signs out: revokes the refresh token at Home Assistant (best effort) and forgets the tokens.
     public func signOut() async {
-        if let t = await store.load(), let rt = t.refreshToken {
+        epoch += 1
+        refreshing?.cancel()
+        refreshing = nil
+        if let t = try? await store.load(), let rt = t.refreshToken {
             _ = try? await http.post(t.hassURL.appendingPathComponent("auth/revoke"), form: ["token": rt])
         }
-        await store.save(nil)
+        do { try await store.save(nil) } catch { log.error("could not forget the tokens: \(error)") }
     }
 
     private func tokenCall(hassURL: URL, clientID: String, form: [String: String], keepRefresh: String?) async throws -> HATokens {
         let start = now()
         let (status, body) = try await http.post(hassURL.appendingPathComponent("auth/token"), form: form)
-        // Home Assistant answers 400 invalid_grant for a used/unknown code or a revoked refresh token
-        if status == 400 || status == 401 || status == 403 { throw HAError.authInvalid }
+        // Home Assistant answers 400 invalid_grant for a used/unknown code or a revoked refresh token. Only that ends
+        // the sign-in: any other refusal (a proxy's 401/403, 5xx, captive portal) is passing and retried.
+        if status == 400, (try? JSONDecoder().decode(JSONValue.self, from: body))?["error"]?.string == "invalid_grant" {
+            throw HAError.authInvalid
+        }
         guard status == 200 else { throw HAError("http_\(status)", "Token request failed") }
         let j = try JSONDecoder().decode(JSONValue.self, from: body)
-        guard let access = j["access_token"]?.string, let expiresIn = j["expires_in"]?.number else { throw HAError.protocolError }
+        guard let access = j["access_token"]?.string, let expiresIn = j["expires_in"]?.number, expiresIn.isFinite, expiresIn > 0
+        else { throw HAError.protocolError }
         return HATokens(
             hassURL: hassURL, clientID: clientID, accessToken: access,
             refreshToken: j["refresh_token"]?.string ?? keepRefresh,

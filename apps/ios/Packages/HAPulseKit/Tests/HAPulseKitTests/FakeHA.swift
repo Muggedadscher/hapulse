@@ -31,6 +31,10 @@ actor FakeHA: HATransport {
 
     func setToken(_ t: String) { token = t }
     func setAnswerPings(_ on: Bool) { answerPings = on }
+    /// Accepts the socket but never says `auth_required` (a hanging proxy).
+    var silent = false
+    func setSilent(_ on: Bool) { silent = on }
+    func pushRaw(_ text: String) async { await boxes[connections]?.put(text) }
 
     nonisolated func open(_ url: URL) async throws -> any HASocket {
         let (n, box) = await connect()
@@ -42,7 +46,7 @@ actor FakeHA: HATransport {
         let box = Mailbox()
         boxes[connections] = box
         subscriptions = [:]
-        await box.put(#"{"type":"auth_required","ha_version":"2026.11.2"}"#)
+        if !silent { await box.put(#"{"type":"auth_required","ha_version":"2026.11.2"}"#) }
         return (connections, box)
     }
 

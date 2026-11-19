@@ -55,6 +55,14 @@ struct SentinelTests {
         #expect(cl.signalingURL(camera: "3 3", params: [("compat", "1"), ("noaudio", "a&b")]) == x["signalingParams"]?.string)
     }
 
+    @Test func roundingLikeJavaScript() {
+        #expect(SentinelURL.jsRound(2.5) == "3")
+        #expect(SentinelURL.jsRound(-2.5) == "-2")
+        #expect(SentinelURL.jsRound(1781516460123.4) == "1781516460123")
+        #expect(SentinelURL.jsRound(.nan) == "NaN")
+        #expect(SentinelURL.jsRound(1e300) == String(format: "%.0f", 1e300))
+    }
+
     @Test func recordingState() {
         for c in g["states"]?.array ?? [] {
             let cam = SentinelCamera(id: "1", name: "x", recording: c["cam"]?["recording"]?.bool ?? false,

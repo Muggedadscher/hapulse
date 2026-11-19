@@ -42,6 +42,8 @@ public actor HAClient {
         public var retryDelays: [Duration] = [.seconds(1), .seconds(2), .seconds(5), .seconds(10), .seconds(30)]
         public var commandTimeout: Duration = .seconds(30)
         public var pingInterval: Duration = .seconds(30)
+        /// From the open socket to `auth_ok`. A proxy that accepts the socket but never answers would hang otherwise.
+        public var handshakeTimeout: Duration = .seconds(10)
         public init() {}
     }
 
@@ -65,6 +67,10 @@ public actor HAClient {
     private var loop: Task<Void, Never>?
     private var pinger: Task<Void, Never>?
     private var watchers: [UUID: AsyncStream<HAConnectionStatus>.Continuation] = [:]
+    /// Bumped by `start()` and `stop()`: a connection loop of an older generation must not touch anything.
+    private var generation = 0
+    /// Bumped for every adopted socket: work for an older connection (renewal, ping) stops by itself.
+    private var connection = 0
 
     public private(set) var status: HAConnectionStatus = .idle {
         didSet { if status != oldValue { for w in watchers.values { w.yield(status) } } }
@@ -95,17 +101,24 @@ public actor HAClient {
     /// Connects and keeps the connection up until `stop()`. Calling it again while running does nothing.
     public func start() {
         guard loop == nil else { return }
-        loop = Task { await self.run() }
+        generation += 1
+        let g = generation
+        loop = Task { await self.run(g) }
     }
 
     /// Closes the connection and stops retrying (app in the background, sign-out). Subscriptions are kept and renewed
     /// by the next `start()`.
     public func stop() async {
+        generation += 1
         loop?.cancel()
         loop = nil
-        await dropSocket(reason: "stopped")
+        await dropSocket()
         status = .idle
     }
+
+    private func isConnection(_ c: Int) -> Bool { c == connection }
+
+    private func current(_ g: Int) -> Bool { g == generation && !Task.isCancelled }
 
     // MARK: commands
 
@@ -152,45 +165,71 @@ public actor HAClient {
 
     // MARK: connection loop
 
-    private func run() async {
+    private func run(_ g: Int) async {
         var attempt = 0
-        while !Task.isCancelled {
+        var opened: (any HASocket)?
+        var adopted = false
+        while current(g) {
             status = .connecting
+            opened = nil
+            adopted = false
             do {
+                // the token first: a refresh can take a while, and Home Assistant closes a socket that waits too long
+                let access = try await token()
+                guard current(g) else { break }
                 let s = try await transport.open(url)
+                opened = s
+                guard current(g) else { break }
                 socket = s
-                let version = try await handshake(s)
+                adopted = true
+                connection += 1
+                let conn = connection
+                let watchdog = Task { [handshakeTimeout = options.handshakeTimeout] in
+                    try? await Task.sleep(for: handshakeTimeout)
+                    if !Task.isCancelled { await s.close() }
+                }
+                let version: String
+                do { version = try await handshake(s, token: access) } catch {
+                    watchdog.cancel()
+                    throw error
+                }
+                watchdog.cancel()
+                guard current(g), connection == conn else { break }
                 haVersion = version
                 status = .connected(haVersion: version)
                 log.info("connected to Home Assistant \(version)")
                 attempt = 0
-                startPinger(s)
-                Task { await self.renewSubscriptions(on: s) }
+                startPinger(s, conn)
+                Task { await self.renewSubscriptions(on: s, conn) }
                 try await readLoop(s)
             } catch let e as HAError where e == .authInvalid {
-                await dropSocket(reason: e.message)
+                guard current(g) else { break }
+                await dropSocket()
+                if !adopted { await opened?.close() }
                 status = .authFailed(reason: e.message)
                 log.error("sign-in refused by Home Assistant")
                 loop = nil
                 return
             } catch {
-                if Task.isCancelled { break }
-                await dropSocket(reason: "\(error)")
+                guard current(g) else { break }
+                await dropSocket()
+                if !adopted { await opened?.close() }
                 status = .disconnected(reason: "\(error)")
                 log.error("connection lost: \(error)")
             }
-            if Task.isCancelled { break }
+            guard current(g) else { break }
             let delays = options.retryDelays
             let delay = delays.isEmpty ? Duration.seconds(5) : delays[min(attempt, delays.count - 1)]
             attempt += 1
             try? await Task.sleep(for: delay)
         }
+        // left because of stop() or a newer start(): a socket opened here but never adopted is closed here
+        if let opened, !adopted { await opened.close() }
     }
 
-    private func handshake(_ s: any HASocket) async throws -> String {
+    private func handshake(_ s: any HASocket, token access: String) async throws -> String {
         let first = try Self.decode(try await s.receive())
         guard first["type"]?.string == "auth_required" else { throw HAError.protocolError }
-        let access = try await token()
         try await s.send(Self.encode(["type": "auth", "access_token": .string(access)]))
         let answer = try Self.decode(try await s.receive())
         switch answer["type"]?.string {
@@ -203,13 +242,17 @@ public actor HAClient {
     private func readLoop(_ s: any HASocket) async throws {
         while !Task.isCancelled {
             let text = try await s.receive()
-            let value = try Self.decode(text)
+            // one broken frame is no reason to drop the connection and all subscriptions
+            guard let value = try? Self.decode(text) else {
+                log.error("undecodable message from Home Assistant (\(text.utf8.count) bytes)")
+                continue
+            }
             if case .array(let many) = value { for m in many { handle(m) } } else { handle(value) }
         }
     }
 
     private func handle(_ m: JSONValue) {
-        guard let idNum = m["id"]?.number else { return }
+        guard let idNum = m["id"]?.number, idNum.isFinite, abs(idNum) < 1e15 else { return }
         let id = Int(idNum)
         switch m["type"]?.string {
         case "event":
@@ -265,21 +308,30 @@ public actor HAClient {
         }
     }
 
-    private func renewSubscriptions(on s: any HASocket) async {
-        for key in subs.keys where subs[key]?.haId == nil {
-            do { try await sendSubscription(key, on: s) } catch {
+    private func renewSubscriptions(on s: any HASocket, _ conn: Int) async {
+        for key in Array(subs.keys) {
+            guard connection == conn, socket != nil else { return }
+            guard subs[key]?.haId == nil else { continue }
+            do { try await sendSubscription(key, on: s) } catch let e as HAError where e != .timeout && e != .notConnected {
+                // Home Assistant refused this one (unknown command, no rights): reconnecting would not help
+                log.error("subscription \(subs[key]?.message["type"]?.string ?? "?") refused: \(e)")
+            } catch {
+                // lost on the way: start over with a fresh connection, which renews everything again
                 log.error("subscription \(subs[key]?.message["type"]?.string ?? "?") failed: \(error)")
+                if connection == conn { await s.close() }
+                return
             }
         }
     }
 
-    private func startPinger(_ s: any HASocket) {
+    private func startPinger(_ s: any HASocket, _ conn: Int) {
         pinger?.cancel()
         let every = options.pingInterval
         pinger = Task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: every)
                 if Task.isCancelled { return }
+                guard self.isConnection(conn) else { return }
                 do { _ = try await self.send(["type": "ping"], on: s) } catch {
                     self.log.error("no pong: \(error)")
                     await s.close()
@@ -289,7 +341,7 @@ public actor HAClient {
         }
     }
 
-    private func dropSocket(reason: String) async {
+    private func dropSocket() async {
         pinger?.cancel()
         pinger = nil
         let s = socket

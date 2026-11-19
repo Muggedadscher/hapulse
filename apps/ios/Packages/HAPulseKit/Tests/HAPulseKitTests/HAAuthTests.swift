@@ -7,12 +7,14 @@ actor FakeTokenServer: HAHTTP {
     var refreshAnswer = 200
     var issued = 0
 
+    var delay = Duration.milliseconds(10)
     func setRefreshAnswer(_ s: Int) { refreshAnswer = s }
+    func setDelay(_ d: Duration) { delay = d }
 
     func post(_ url: URL, form: [String: String]) async throws -> (status: Int, body: Data) {
         calls.append((url, form))
         if url.path.hasSuffix("/auth/revoke") { return (200, Data()) }
-        try await Task.sleep(for: .milliseconds(10))
+        try await Task.sleep(for: delay)
         switch form["grant_type"] {
         case "authorization_code":
             guard form["code"] == "abc" else { return (400, Data(#"{"error":"invalid_request"}"#.utf8)) }
@@ -53,7 +55,7 @@ struct HAAuthTests {
         #expect(t.accessToken == "A1")
         #expect(t.refreshToken == "R")
         #expect(t.expires == clock.now.addingTimeInterval(1800))
-        #expect(await store.load() == t)
+        #expect(try await store.load() == t)
         let form = await server.calls.last?.1
         #expect(form == ["grant_type": "authorization_code", "code": "abc", "client_id": "https://hapulse.schleerag.de/"])
     }
@@ -71,7 +73,7 @@ struct HAAuthTests {
         let (x, y) = try await (a, b)
         #expect(x == "A1" && y == "A1")
         #expect(await server.calls.count == 1)
-        #expect(await store.load()?.refreshToken == "R") // kept: the refresh answer has none
+        #expect(try await store.load()?.refreshToken == "R") // kept: the refresh answer has none
     }
 
     @Test func revokedRefreshSignsOut() async throws {
@@ -82,7 +84,37 @@ struct HAAuthTests {
                                               refreshToken: "R", expires: clock.now))
         let auth = HAAuth(http: server, store: store, now: { clock.now })
         await #expect(throws: HAError.authInvalid) { try await auth.accessToken() }
-        #expect(await store.load() == nil)
+        #expect(try await store.load() == nil)
+    }
+
+    @Test func passingRefusalKeepsTheSignIn() async throws {
+        // a proxy's 401/403 or a server error is not "signed out": the tokens stay, the connection retries
+        for code in [401, 403, 502] {
+            let server = FakeTokenServer()
+            await server.setRefreshAnswer(code)
+            let clock = Clock()
+            let tokens = HATokens(hassURL: hass, clientID: HAAuth.defaultClientID, accessToken: "old", refreshToken: "R", expires: clock.now)
+            let store = MemoryTokenStore(tokens)
+            let auth = HAAuth(http: server, store: store, now: { clock.now })
+            await #expect(throws: HAError("http_\(code)", "Token request failed")) { try await auth.accessToken() }
+            #expect(try await store.load() == tokens)
+        }
+    }
+
+    @Test func signOutDuringRefreshStaysSignedOut() async throws {
+        let server = FakeTokenServer()
+        await server.setDelay(.milliseconds(300))
+        let clock = Clock()
+        let store = MemoryTokenStore(HATokens(hassURL: hass, clientID: HAAuth.defaultClientID, accessToken: "old",
+                                              refreshToken: "R", expires: clock.now))
+        let auth = HAAuth(http: server, store: store, now: { clock.now })
+        let pending = Task { try await auth.accessToken() }
+        try await Task.sleep(for: .milliseconds(50))
+        await auth.signOut()
+        _ = try? await pending.value
+        try await Task.sleep(for: .milliseconds(400))
+        #expect(try await store.load() == nil)
+        await #expect(throws: HAError.authInvalid) { try await auth.accessToken() }
     }
 
     @Test func formEncoding() {

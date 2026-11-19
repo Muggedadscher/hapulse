@@ -63,6 +63,19 @@ struct HomeSessionTests {
         #expect(s.settings.favorites == ["light.default"]) // admin's favorites are USER scope: defaults apply
         #expect(s.settings.language == "de")
         #expect(s.settings.sentinelToken == "own") // admin keeps the own token when nothing is shared
+        // the admin points Sentinel elsewhere: this device's token stays home instead of going to the other server
+        var moved = doc.object!
+        var ms = moved["settings"]!.object!
+        var mc = ms["customization"]!.object!
+        mc["scryptedUrl"] = "https://other.example/endpoint/@local/sentinel-nvr/public/"
+        ms["customization"] = .object(mc)
+        moved["settings"] = .object(ms)
+        moved["rev"] = 4
+        await ha.setSystemData(HomeSession.globalKey, .object(moved))
+        try await eventuallyMain("moved") { s.settings.sentinelURL.hasPrefix("https://other.example") }
+        #expect(s.settings.sentinelToken == "")
+        await ha.setSystemData(HomeSession.globalKey, doc)
+        try await eventuallyMain("back") { s.settings.sentinelToken == "own" }
         await ha.setUserData(HomeSession.userKey, .object(["v": 1, "favorites": ["light.mine"], "language": "en", "userName": "Jan"]))
         try await eventuallyMain("user doc") { s.settings.favorites == ["light.mine"] }
         #expect(s.settings.language == "en")

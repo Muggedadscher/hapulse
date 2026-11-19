@@ -10,20 +10,31 @@ public actor KeychainStore {
 
     public init() {}
 
-    public func read(_ account: String) -> Data? {
+    public struct Failure: Error, CustomStringConvertible {
+        public let status: OSStatus
+        public var description: String { "Keychain error \(status)" }
+    }
+
+    /// nil = nothing stored. Throws when the item exists but cannot be read now (e.g. before the first unlock).
+    public func read(_ account: String) throws -> Data? {
         var q = base(account)
         q[kSecReturnData as String] = true
         q[kSecMatchLimit as String] = kSecMatchLimitOne
         var out: CFTypeRef?
         let status = SecItemCopyMatching(q as CFDictionary, &out)
-        if status != errSecSuccess && status != errSecItemNotFound { log.error("read \(account): \(status)") }
+        if status == errSecItemNotFound { return nil }
+        guard status == errSecSuccess else {
+            log.error("read \(account): \(status)")
+            throw Failure(status: status)
+        }
         return out as? Data
     }
 
-    public func write(_ account: String, _ data: Data?) {
+    public func write(_ account: String, _ data: Data?) throws {
         let q = base(account)
         guard let data else {
-            SecItemDelete(q as CFDictionary)
+            let status = SecItemDelete(q as CFDictionary)
+            if status != errSecSuccess && status != errSecItemNotFound { throw Failure(status: status) }
             return
         }
         let update: [String: Any] = [kSecValueData as String: data]
@@ -34,7 +45,10 @@ public actor KeychainStore {
             add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
             status = SecItemAdd(add as CFDictionary, nil)
         }
-        if status != errSecSuccess { log.error("write \(account): \(status)") }
+        if status != errSecSuccess {
+            log.error("write \(account): \(status)")
+            throw Failure(status: status)
+        }
     }
 
     private func base(_ account: String) -> [String: Any] {
@@ -53,13 +67,13 @@ public struct KeychainTokenStore: HATokenStore {
         self.account = account
     }
 
-    public func load() async -> HATokens? {
-        guard let d = await keychain.read(account) else { return nil }
-        return try? JSONDecoder().decode(HATokens.self, from: d)
+    public func load() async throws -> HATokens? {
+        guard let d = try await keychain.read(account) else { return nil }
+        return try? JSONDecoder().decode(HATokens.self, from: d) // unreadable content = nothing usable stored
     }
 
-    public func save(_ tokens: HATokens?) async {
-        await keychain.write(account, tokens.flatMap { try? JSONEncoder().encode($0) })
+    public func save(_ tokens: HATokens?) async throws {
+        try await keychain.write(account, try tokens.map { try JSONEncoder().encode($0) })
     }
 }
 #endif

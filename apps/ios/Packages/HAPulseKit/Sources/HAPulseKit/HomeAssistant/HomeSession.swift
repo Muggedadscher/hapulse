@@ -31,6 +31,19 @@ public final class HomeSession {
     public let client: HAClient
     private let log = Log("session")
     private var tasks: [Task<Void, Never>] = []
+    private var userTask: Task<Void, Never>?
+    private var wired = false
+
+    /// Everything the subscriptions deliver goes through ONE stream, drained by one task on the main actor: events
+    /// arrive in the order Home Assistant sent them (separate tasks per event could swap two entity updates).
+    private enum Incoming: Sendable {
+        case entities(JSONValue)
+        case global(JSONValue?)
+        case user(JSONValue?)
+        case snapshot(JSONValue?)
+    }
+    private let inbox: AsyncStream<Incoming>
+    private let inboxIn: AsyncStream<Incoming>.Continuation
     private var userDoc: JSONObject?
     private var globalDoc: JSONObject?
 
@@ -50,7 +63,10 @@ public final class HomeSession {
 
     public var deviceSecrets = DeviceSecrets() { didSet { recompute() } }
 
-    public init(client: HAClient) { self.client = client }
+    public init(client: HAClient) {
+        self.client = client
+        (inbox, inboxIn) = AsyncStream<Incoming>.makeStream()
+    }
 
     /// A session against the built-in demo home.
     public static func demo() throws -> HomeSession {
@@ -61,56 +77,96 @@ public final class HomeSession {
 
     public var isAdmin: Bool { user?.isAdmin == true }
 
-    /// Starts the connection and the subscriptions; safe to call once per session.
+    /// Starts the connection. The subscriptions and the readers are set up on the first call only; after `stop()`
+    /// (app in the background) the next `start()` reconnects and the client renews the same subscriptions.
     public func start() async {
-        await subscribeAll()
-        tasks.append(Task { [weak self] in
-            guard let stream = await self?.client.statusUpdates() else { return }
-            for await s in stream {
-                guard let self else { return }
-                self.status = s
-                if case .connected = s { await self.afterConnect() }
-            }
-        })
+        if !wired {
+            wired = true
+            let stream = inbox
+            tasks.append(Task { [weak self] in
+                for await item in stream {
+                    guard let self else { return }
+                    self.receive(item)
+                }
+            })
+            tasks.append(Task { [weak self] in
+                guard let stream = await self?.client.statusUpdates() else { return }
+                for await s in stream {
+                    guard let self else { return }
+                    self.status = s
+                    if case .connected = s { self.loadUser() } else { self.userTask?.cancel() }
+                }
+            })
+            await subscribeAll()
+        }
         await client.start()
     }
 
     public func stop() async {
+        userTask?.cancel()
+        userTask = nil
+        await client.stop()
+    }
+
+    /// Ends the session for good (sign-out): the readers stop too.
+    public func close() async {
+        await stop()
         for t in tasks { t.cancel() }
         tasks = []
-        await client.stop()
+        inboxIn.finish()
     }
 
     // MARK: internals
 
     private func subscribeAll() async {
+        let inbox = inboxIn
         do {
-            _ = try await client.subscribe(["type": "subscribe_entities"]) { [weak self] ev in
-                Task { @MainActor in self?.applyEntities(ev) }
+            _ = try await client.subscribe(["type": "subscribe_entities"]) { ev in inbox.yield(.entities(ev)) }
+            _ = try await client.subscribe(["type": "frontend/subscribe_system_data", "key": .string(Self.globalKey)]) { ev in
+                inbox.yield(.global(ev["value"]))
             }
-            _ = try await client.subscribe(["type": "frontend/subscribe_system_data", "key": .string(Self.globalKey)]) { [weak self] ev in
-                Task { @MainActor in self?.applyGlobal(ev["value"]) }
+            _ = try await client.subscribe(["type": "frontend/subscribe_user_data", "key": .string(Self.userKey)]) { ev in
+                inbox.yield(.user(ev["value"]))
             }
-            _ = try await client.subscribe(["type": "frontend/subscribe_user_data", "key": .string(Self.userKey)]) { [weak self] ev in
-                Task { @MainActor in self?.applyUser(ev["value"]) }
-            }
-            _ = try await client.subscribe(["type": "frontend/subscribe_user_data", "key": .string(Self.snapshotKey)]) { [weak self] ev in
-                Task { @MainActor in self?.applySnapshot(ev["value"]) }
+            _ = try await client.subscribe(["type": "frontend/subscribe_user_data", "key": .string(Self.snapshotKey)]) { ev in
+                inbox.yield(.snapshot(ev["value"]))
             }
         } catch {
             log.error("subscribing failed: \(error)") // not connected yet: registered, sent on connect
         }
     }
 
-    private func afterConnect() async {
-        do {
-            let u = try await client.command(["type": "auth/current_user"])
-            user = HAUser(id: u["id"]?.string ?? "", name: u["name"]?.string ?? "",
-                          isAdmin: u["is_admin"]?.bool ?? false, isOwner: u["is_owner"]?.bool ?? false)
-            log.info("signed in as \(user?.isAdmin == true ? "admin" : "user")")
-            recompute() // admin rights decide which tokens stay
-        } catch {
-            log.error("auth/current_user failed: \(error)")
+    private func receive(_ item: Incoming) {
+        switch item {
+        case .entities(let ev): applyEntities(ev)
+        case .global(let v): applyGlobal(v)
+        case .user(let v): applyUser(v)
+        case .snapshot(let v): applySnapshot(v)
+        }
+    }
+
+    /// `auth/current_user` after every connect, retried while connected: without it an admin would lose the tokens
+    /// that only admins keep. Runs on its own so the status reader is never blocked.
+    private func loadUser() {
+        userTask?.cancel()
+        userTask = Task { [weak self] in
+            var pause = 1
+            while !Task.isCancelled {
+                guard let client = self?.client else { return }
+                do {
+                    let u = try await client.command(["type": "auth/current_user"])
+                    guard !Task.isCancelled, let self else { return }
+                    self.user = HAUser(id: u["id"]?.string ?? "", name: u["name"]?.string ?? "",
+                                       isAdmin: u["is_admin"]?.bool ?? false, isOwner: u["is_owner"]?.bool ?? false)
+                    self.log.info("signed in as \(self.user?.isAdmin == true ? "admin" : "user")")
+                    self.recompute() // admin rights decide which tokens stay
+                    return
+                } catch {
+                    self?.log.error("auth/current_user failed: \(error)")
+                }
+                try? await Task.sleep(for: .seconds(pause))
+                pause = min(pause * 2, 30)
+            }
         }
     }
 
@@ -148,6 +204,12 @@ public final class HomeSession {
         recompute()
     }
 
+    static func bindDeviceToken(_ c: inout JSONObject, url: String, token: String, own: String, origin: String?, empty: JSONValue) {
+        guard !own.isEmpty, c[token]?.string == own else { return } // not this device's token (shared or none)
+        let target = SettingsSecrets.originOf(c[url]?.string)
+        if target == nil || target != SettingsSecrets.originOf(origin) { c[token] = empty }
+    }
+
     /// Settings from scratch out of the documents we have: the same result whatever order they arrive in.
     private func recompute() {
         var s = SettingsState()
@@ -170,6 +232,14 @@ public final class HomeSession {
         } else if let snapshot {
             s.applySnapshot(snapshot)
         }
+        // A token this device keeps belongs to the server it was entered for. When the address from the documents
+        // points elsewhere, the token is not sent there (the web keeps no origin and would send it anyway).
+        var cc = s.customization
+        Self.bindDeviceToken(&cc, url: "scryptedUrl", token: "scryptedToken", own: deviceSecrets.sentinelToken,
+                             origin: deviceSecrets.sentinelOrigin, empty: .string(""))
+        Self.bindDeviceToken(&cc, url: "maServerUrl", token: "maToken", own: deviceSecrets.musicToken ?? "",
+                             origin: deviceSecrets.musicOrigin, empty: .null)
+        s.raw["customization"] = .object(cc)
         if s != settings { settings = s }
     }
 }

@@ -76,7 +76,17 @@ public protocol SentinelHTTP: Sendable {
 
 public struct URLSessionSentinelHTTP: SentinelHTTP {
     private let session: URLSession
-    public init(session: URLSession = .shared) { self.session = session }
+    public init(session: URLSession = URLSessionSentinelHTTP.makeSession()) { self.session = session }
+
+    /// The token rides in every URL: no disk cache, no cookies, nothing of it kept beyond the app run.
+    public static func makeSession() -> URLSession {
+        let c = URLSessionConfiguration.ephemeral
+        c.urlCache = nil
+        c.requestCachePolicy = .reloadIgnoringLocalCacheData
+        c.httpCookieStorage = nil
+        c.httpShouldSetCookies = false
+        return URLSession(configuration: c)
+    }
 
     public func send(_ request: URLRequest) async throws -> (status: Int, contentType: String?, body: Data) {
         let (data, resp) = try await session.data(for: request)
@@ -112,16 +122,16 @@ public struct SentinelClient: Sendable {
 
     public func snapshotURL(camera: String, bust: Double? = nil, width: Double? = nil) -> String {
         url("api/snapshot?camera=\(SentinelURL.encodeComponent(camera))")
-            + (width.map { $0 == 0 ? "" : "&w=\(Int64($0.rounded(.toNearestOrAwayFromZero)))" } ?? "")
+            + (width.map { $0 == 0 ? "" : "&w=\(SentinelURL.jsRound($0))" } ?? "")
             + (bust.map { "&_=\(Self.js($0))" } ?? "")
     }
 
     public func eventThumbURL(camera: String, ts: Double) -> String {
-        url("api/evthumb?camera=\(SentinelURL.encodeComponent(camera))&ts=\(Int64(ts.rounded(.toNearestOrAwayFromZero)))")
+        url("api/evthumb?camera=\(SentinelURL.encodeComponent(camera))&ts=\(SentinelURL.jsRound(ts))")
     }
 
     public func eventFrameURL(camera: String, ts: Double) -> String {
-        url("api/evframe?camera=\(SentinelURL.encodeComponent(camera))&ts=\(Int64(ts.rounded(.toNearestOrAwayFromZero)))")
+        url("api/evframe?camera=\(SentinelURL.encodeComponent(camera))&ts=\(SentinelURL.jsRound(ts))")
     }
 
     public func segmentThumbURL(_ id: String) -> String { url("api/thumb?id=\(SentinelURL.encodeComponent(id))") }
@@ -197,7 +207,7 @@ public struct SentinelClient: Sendable {
 
     /// Number like JavaScript prints it in a template string (integers without `.0`).
     static func js(_ d: Double) -> String {
-        if d == d.rounded(), abs(d) < 1e21 { return String(Int64(d)) }
+        if d == d.rounded(), abs(d) < 1e21 { return SentinelURL.jsInteger(d) }
         return String(d)
     }
 

@@ -124,6 +124,60 @@ struct HAClientTests {
         await c.stop()
         watch.cancel()
     }
+
+    @Test func stopDuringHandshakeLeavesNothingOpen() async throws {
+        let ha = FakeHA()
+        await ha.setSilent(true)
+        let c = try makeClient(ha)
+        await c.start()
+        try await eventually("socket opened") { await ha.connections == 1 }
+        await c.stop()
+        #expect(await c.status == .idle)
+        try await eventually("socket closed") { await !ha.isOpen(1) }
+        try await Task.sleep(for: .milliseconds(60))
+        #expect(await ha.connections == 1) // no retry after stop
+        // a quick stop/start pair runs ONE loop
+        await ha.setSilent(false)
+        await c.start()
+        await c.stop()
+        await c.start()
+        try await eventually("connected") { await connected(c) }
+        try await Task.sleep(for: .milliseconds(60))
+        let n = await ha.connections
+        #expect(n <= 3)
+        for k in 1..<n { #expect(await !ha.isOpen(k)) }
+        await c.stop()
+    }
+
+    @Test func silentServerTimesOut() async throws {
+        let ha = FakeHA()
+        await ha.setSilent(true)
+        var o = HAClient.Options()
+        o.retryDelays = [.milliseconds(10)]
+        o.handshakeTimeout = .milliseconds(50)
+        let c = try HAClient(baseURL: URL(string: "https://ha.example:8123/")!, transport: ha, token: { "good" }, options: o)
+        await c.start()
+        try await eventually("retried") { await ha.connections >= 3 }
+        await ha.setSilent(false)
+        try await eventually("connected") { await connected(c) }
+        await c.stop()
+    }
+
+    @Test func refusedSubscriptionAndBrokenFrameKeepTheConnection() async throws {
+        let ha = FakeHA()
+        let c = try makeClient(ha)
+        let got = Bag<JSONValue>()
+        try await c.subscribe(["type": "subscribe_nope"]) { _ in }
+        try await c.subscribe(["type": "subscribe_entities"]) { got.add($0) }
+        await c.start()
+        try await eventually("subscribed") { await ha.subscriptions["subscribe_entities"] != nil }
+        await ha.pushRaw("{not json")
+        await ha.push("subscribe_entities", ["a": .object([:])])
+        try await eventually("event after broken frame") { got.all.count == 1 }
+        try await Task.sleep(for: .milliseconds(60))
+        #expect(await ha.connections == 1)
+        await c.stop()
+    }
 }
 
 @MainActor

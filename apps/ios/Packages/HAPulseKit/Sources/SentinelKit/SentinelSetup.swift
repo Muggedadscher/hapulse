@@ -96,9 +96,25 @@ public enum SentinelURL {
         return "\(u)\(u.contains("?") ? "&" : "?")token=\(encodeComponent(token))"
     }
 
+    /// `${Math.round(d)}` in JavaScript: halves round up (−2.5 → −2), never traps (NaN stays "NaN").
+    public static func jsRound(_ d: Double) -> String {
+        guard d.isFinite else { return jsInteger(d) }
+        let down = d.rounded(.down)
+        return jsInteger(d - down >= 0.5 ? down + 1 : down)
+    }
+
+    /// A whole number as JavaScript prints it in a template string, without trapping on huge or invalid values.
+    public static func jsInteger(_ d: Double) -> String {
+        if d.isNaN { return "NaN" }
+        if d.isInfinite { return d > 0 ? "Infinity" : "-Infinity" }
+        if d == 0 { return "0" }
+        if abs(d) < 9.2e18 { return String(Int64(d)) }
+        return String(format: "%.0f", d)
+    }
+
     /// Deep link into Sentinel's own timeline (entry URL, `#/timeline/<cam>?at=`).
     public static func timelineLink(origin: String, cameraId: String, atMs: Double? = nil, prefix: String = "") -> String {
-        let q = atMs.flatMap { $0 == 0 ? nil : "?at=\(Int64(($0).rounded(.toNearestOrAwayFromZero)))" } ?? ""
+        let q = atMs.flatMap { $0 == 0 ? nil : "?at=\(jsRound($0))" } ?? ""
         return "\(entryURL(origin: origin, prefix: prefix))#/timeline/\(encodeComponent(cameraId))\(q)"
     }
 }
