@@ -101,10 +101,8 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p build
-          # boot first: a cold iPad simulator on the runner missed the launch timeout of the UI test (21:09 on 19.11)
-          UDID=$(scripts/sim-udid.sh 'iPhone 17 Pro')
-          xcrun simctl boot "$UDID" || true
-          xcrun simctl bootstatus "$UDID" -b
+          # a fresh simulator, booted before the test (a cold one missed the UI test's launch timeout, 19.11)
+          UDID=$(scripts/sim-boot.sh 'iPhone 17 Pro')
           xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
             -destination "platform=iOS Simulator,id=$UDID" \
             -retry-tests-on-failure -test-iterations 2 \
@@ -117,10 +115,8 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p build
-          # boot first: a cold iPad simulator on the runner missed the launch timeout of the UI test (21:09 on 19.11)
-          UDID=$(scripts/sim-udid.sh 'iPad Pro 13-inch (M5)')
-          xcrun simctl boot "$UDID" || true
-          xcrun simctl bootstatus "$UDID" -b
+          # a fresh simulator, booted before the test (a cold one missed the UI test's launch timeout, 19.11)
+          UDID=$(scripts/sim-boot.sh 'iPad Pro 13-inch (M5)')
           xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
             -destination "platform=iOS Simulator,id=$UDID" \
             -retry-tests-on-failure -test-iterations 2 \
