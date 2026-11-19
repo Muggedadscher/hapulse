@@ -65,6 +65,8 @@ public struct HPSection<Content: View>: View {
 public struct HPListGroup<Content: View>: View {
     let separatorInset: CGFloat
     let content: Content
+    /// At most one swipe row of this list is open.
+    @State private var swipeGroup = HPSwipeGroup()
 
     public init(separatorInset: CGFloat = 16, @ViewBuilder content: () -> Content) {
         self.separatorInset = separatorInset
@@ -90,6 +92,7 @@ public struct HPListGroup<Content: View>: View {
         }
         .background(.glas(.group), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .environment(swipeGroup)
     }
 }
 

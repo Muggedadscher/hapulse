@@ -37,6 +37,8 @@ struct AppShell: View {
                 .accessibilityIdentifier("hp.tab.more")
             }
         }
+        // another page closes the detail, as navigating does in the web
+        .onChange(of: nav.selection) { nav.detailID = nil }
         .onChange(of: compact) { _, isCompact in
             // keep the page when the width class changes (iPad split view, rotation)
             if isCompact, let page = NavPage(rawValue: nav.selection) {

@@ -34,6 +34,15 @@ public enum HPSwipeMath {
     }
 }
 
+/// Keeps at most one swipe row of a list open (web: opening one closes the other). `HPListGroup` provides one for
+/// its rows; rows outside a group are on their own.
+@MainActor
+@Observable
+public final class HPSwipeGroup {
+    var openID: UUID?
+    public init() {}
+}
+
 /// A row that reveals one action when swiped to the left (web `SwipeRow.tsx`): the action runs only on a tap on it,
 /// never by pulling through; a tap on the open row closes it. The action is also offered to VoiceOver as a custom
 /// action, so the row never depends on the gesture.
@@ -45,6 +54,8 @@ public struct HPSwipeRow<Content: View>: View {
     let content: Content
     @State private var offset: CGFloat = 0
     @State private var start: CGFloat?
+    @State private var id = UUID()
+    @Environment(HPSwipeGroup.self) private var group: HPSwipeGroup?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var settle: Animation? { reduceMotion ? nil : HPMotion.snappy }
 
@@ -89,6 +100,10 @@ public struct HPSwipeRow<Content: View>: View {
                 .hpHorizontalPan(pan)
         }
         .clipped()
+        .onChange(of: group?.openID) { _, open in
+            // another row of the list opened: close this one
+            if open != id, offset != 0 { withAnimation(settle) { offset = 0 } }
+        }
         .accessibilityElement(children: .combine)
         .accessibilityAction(named: actionTitle, onAction)
     }
@@ -102,6 +117,7 @@ public struct HPSwipeRow<Content: View>: View {
         case .ended:
             start = nil
             withAnimation(settle) { offset = HPSwipeMath.settle(offset: offset, width: width) }
+            if offset != 0 { group?.openID = id }
         }
     }
 }
