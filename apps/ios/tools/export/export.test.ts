@@ -550,6 +550,114 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'localeCompare.json'), pairs, false);
   });
 
+  it('golden: security, chips, hints and scenes', () => {
+    // garages, locks, alarm panels, the summary chips, the home hints and the "active" scene heuristic
+    let seed = 7;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return Math.floor(seed / 65536) % n; // the low bits of this generator repeat quickly
+    };
+    const pick = <T,>(list: readonly T[]): T => list[r(list.length)]!;
+    const now = Date.parse(FIXED_NOW);
+    const iso = (ms: number) => new Date(ms).toISOString();
+    const ent = (entity_id: string, state: string, attributes: Record<string, unknown> = {}, changedAgo = 0, updatedAgo = changedAgo) =>
+      ({ entity_id, state, attributes, last_changed: iso(now - changedAgo), last_updated: iso(now - updatedAgo), context: { id: 'x', parent_id: null, user_id: null } });
+
+    const coverStates = ['closed', 'open', 'opening', 'closing', 'stopped', 'unavailable', 'unknown', 'xyz'];
+    const features = [undefined, 0, 1, 2, 3, 8, 11, 15, '3'];
+    const garages = [];
+    let n = 0;
+    for (const dc of ['garage', 'gate', 'blind', undefined]) for (const st of coverStates) for (const f of features) {
+      const a: Record<string, unknown> = {};
+      if (dc !== undefined) a['device_class'] = dc;
+      if (f !== undefined) a['supported_features'] = f;
+      const e = ent(`cover.g${n++}`, st, a);
+      garages.push({
+        entity: e, isGarageDoor: core.isGarageDoor(e), status: core.garageStatus(st), isOpen: core.garageIsOpen(st),
+        canOpen: core.garageCanAct(e, 'open'), canClose: core.garageCanAct(e, 'close'), canStop: core.garageCanStop(e),
+        icon: core.garageMdiIcon(e),
+      });
+    }
+    const lockStates = ['locked', 'unlocked', 'open', 'opening', 'locking', 'unlocking', 'jammed', 'unavailable', 'unknown'];
+    const alarmStates = ['disarmed', 'armed_home', 'armed_away', 'armed_night', 'arming', 'pending', 'triggered', 'unavailable', 'unknown', 'weird'];
+    const sets = [];
+    for (let i = 0; i < 150; i++) {
+      const locks = Array.from({ length: r(5) }, (_, k) => ent(`lock.l${k}`, pick(lockStates)));
+      const doors = Array.from({ length: r(4) }, (_, k) => ent(`cover.d${k}`, pick(coverStates), { device_class: pick(['garage', 'gate']) }));
+      const alarms = Array.from({ length: r(4) }, (_, k) => ent(`alarm_control_panel.${pick(['a', 'b', 'c', 'master'])}${k}`, pick(alarmStates)));
+      const ls = core.lockSummary(locks);
+      sets.push({
+        locks, lockSummary: ls, lockTone: core.lockTone(ls), doors, garageSummary: core.garageSummary(doors),
+        alarms, alarmOrder: core.sortAlarmPanels(alarms).map((e: { entity_id: string }) => e.entity_id),
+        openTargets: core.garageTargets(doors, 'open').map((e: { entity_id: string }) => e.entity_id),
+        closeTargets: core.garageTargets(doors, 'close').map((e: { entity_id: string }) => e.entity_id),
+      });
+    }
+
+    // whole homes for the chips and the hints
+    const makers: (() => ReturnType<typeof ent>)[] = [
+      () => ent(`person.p${r(5)}`, pick(['home', 'not_home', 'work', 'unknown'])),
+      () => ent(`light.l${r(9)}`, pick(['on', 'off', 'unavailable'])),
+      () => ent(`binary_sensor.o${r(20)}`, pick(['on', 'off', 'unavailable']), { device_class: pick(['door', 'window', 'opening', 'garage_door', 'motion', 'moisture', 'smoke', 'gas', 'carbon_monoxide', 'lock']) }, pick([0, 60_000, 9 * 60_000 + 59_000, 10 * 60_000, 3_600_000])),
+      () => ent(`binary_sensor.n${r(5)}`, 'on'),
+      () => ent(`media_player.m${r(4)}`, pick(['playing', 'paused', 'idle', 'off'])),
+      () => ent(`cover.c${r(6)}`, pick(coverStates), { device_class: pick(['garage', 'gate', 'blind']) }),
+      () => ent(`lock.k${r(4)}`, pick(lockStates)),
+      () => ent(`alarm_control_panel.a${r(3)}`, pick(alarmStates)),
+      () => ent(`switch.pool_pump`, pick(['on', 'off'])),
+      () => ent(`sensor.pool_temp`, '24'),
+    ];
+    const homes = [];
+    for (let i = 0; i < 200; i++) {
+      const list: ReturnType<typeof ent>[] = [];
+      for (let k = r(14); k > 0; k--) {
+        const e = pick(makers)();
+        if (!list.some((x) => x.entity_id === e.entity_id)) list.push(e);
+      }
+      const map = Object.fromEntries(list.map((e) => [e.entity_id, e]));
+      const hidden = list.filter(() => r(8) === 0).map((e) => e.entity_id);
+      const waste = Array.from({ length: r(3) }, (_, k) => ({ entityId: `sensor.waste_${k}`, daysTo: pick([null, -1, 0, 1, 2]) }));
+      const heatingMissing = Array.from({ length: r(3) }, (_, k) => ({
+        areaId: `area${k}`, name: pick(['Küche', 'bad', 'Arbeitszimmer', 'Zimmer 2']),
+        thermostats: [`climate.t${k}`, `climate.u${k}`].filter(() => r(3) > 0),
+      }));
+      const opts = { now, hidden, doorOpenMinutes: pick([undefined, 0, 5, 10]), waste, camerasNotRecording: pick([0, 0, 1, 3]), heatingMissing };
+      const chips = core.chipCounts(map, { poolPump: 'switch.pool_pump', poolRequired: ['switch.pool_pump', 'sensor.pool_temp'] });
+      const result = core.collectHints(list, opts as never);
+      homes.push({
+        entities: list, hidden, doorOpenMinutes: opts.doorOpenMinutes ?? null, waste, camerasNotRecording: opts.camerasNotRecording, heatingMissing,
+        chips: {
+          // the app has no insertion order of the entity map: people sorted by entity id
+          peopleHome: chips.peopleHome.map((e: { entity_id: string }) => e.entity_id).sort(),
+          lightsOn: chips.lightsOn, openDoorWindow: chips.openDoorWindow, alarm: chips.alarm?.entity_id ?? null,
+          mediaPlaying: chips.mediaPlaying, pool: chips.pool, garages: chips.garages, locks: chips.locks,
+        },
+        hints: result.hints.map((h: { id: string; kind: string; severity: string; count: number; entityIds: string[]; room?: unknown }) =>
+          ({ id: h.id, kind: h.kind, severity: h.severity, count: h.count, entityIds: h.entityIds, room: h.room ?? null })),
+        recheckAt: result.recheckAt === null ? null : iso(result.recheckAt),
+      });
+    }
+
+    // scenes: activation times, members changed or not, covers, overruled, too old
+    const scenesCases = [];
+    for (let i = 0; i < 200; i++) {
+      const members = ['light.a', 'light.b', 'cover.c', 'switch.d', 'light.gone'];
+      const states: Record<string, ReturnType<typeof ent>> = {};
+      for (const m of members.slice(0, 4)) {
+        states[m] = ent(m, pick(['on', 'off', 'unavailable', 'open']), {}, 0, pick([0, 5_000, 30_000, 100_000, 200_000, 3_600_000, 20 * 3_600_000]));
+      }
+      const scenes = Array.from({ length: 1 + r(3) }, (_, k) => {
+        const at = pick([null, 'garbage', 10_000, 60_000, 150_000, 3_600_000, 13 * 3_600_000]);
+        const state = at === null ? 'unknown' : at === 'garbage' ? 'not a time' : iso(now - (at as number));
+        const mem = members.filter(() => r(2) === 0);
+        const attrs: Record<string, unknown> = r(6) === 0 ? {} : { entity_id: r(9) === 0 ? [...mem, 5, ''] : mem };
+        return ent(`scene.s${k}`, state, attrs);
+      });
+      scenesCases.push({ scenes, states, active: [...core.activeSceneIds(scenes, states, now)].sort() });
+    }
+    writeJson(join(FIX, 'security.json'), { now: FIXED_NOW, garages, sets, homes, scenes: scenesCases });
+  });
+
   it('golden: sentinel', async () => {
     const api = await import('@sentinel-nvr/web/api');
     const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',

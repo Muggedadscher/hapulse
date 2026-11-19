@@ -76,13 +76,6 @@ public enum RoomLook {
     }
 }
 
-extension Garage {
-    /// open, moving or anything unknown counts as open; closed, unavailable and unknown do not (`garageIsOpen`).
-    public static func isOpen(_ state: String) -> Bool {
-        !["closed", "unavailable", "unknown"].contains(state)
-    }
-}
-
 /// Where a room's temperature comes from (port of `roomTemperature.ts`) and the capsules of the room card
 /// (`roomGlance.ts`).
 public enum RoomClimate {

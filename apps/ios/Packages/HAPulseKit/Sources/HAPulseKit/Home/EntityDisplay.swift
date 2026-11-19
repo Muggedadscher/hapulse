@@ -171,6 +171,11 @@ public enum EntityDisplay {
 
 /// JavaScript string conversions the ported rules depend on.
 enum JSString {
+    /// `list.sort()` without a comparator: by UTF-16 code units.
+    static func sortUTF16(_ list: [String]) -> [String] {
+        list.sorted { $0.utf16.lexicographicallyPrecedes($1.utf16) }
+    }
+
     static func trim(_ s: String) -> String {
         let u = Array(s.utf16)
         var i = 0, j = u.count
