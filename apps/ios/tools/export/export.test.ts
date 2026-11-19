@@ -236,6 +236,47 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'glasAccent.json'), cases, false);
   });
 
+  it('golden: subscribe_entities', async () => {
+    // The library's own reducer (home-assistant-js-websocket processEvent) behind a fake connection: the Swift
+    // EntityStore must turn the same compressed messages into the same states.
+    const { subscribeEntities } = await import('home-assistant-js-websocket');
+    let push: ((ev: unknown) => void) | undefined;
+    const conn = {
+      haVersion: '2026.11.0',
+      connected: true,
+      addEventListener() {},
+      removeEventListener() {},
+      subscribeMessage: async (cb: (ev: unknown) => void) => {
+        push = cb;
+        return () => {};
+      },
+    };
+    let last: unknown = null;
+    subscribeEntities(conn as never, (e) => (last = e));
+    await Promise.resolve();
+    const events: unknown[] = [
+      {
+        a: {
+          'light.kitchen': { s: 'on', a: { brightness: 180, friendly_name: 'Küche' }, c: 'ctx1', lc: 1781516460.123456 },
+          'sensor.power': { s: '412.5', a: { unit_of_measurement: 'W' }, c: { id: 'ctx2', parent_id: 'p', user_id: null }, lc: 1781516400, lu: 1781516455.5 },
+          'switch.pump': { s: 'off', a: {}, c: 'ctx3', lc: 1781510000.999 },
+        },
+      },
+      { c: { 'light.kitchen': { '+': { s: 'off', lc: 1781516470.25, c: 'ctx4', a: { brightness: null } } } } },
+      { c: { 'sensor.power': { '+': { s: '415', lu: 1781516480.75 } } } },
+      { c: { 'light.kitchen': { '-': { a: ['brightness'] } }, 'switch.pump': { '+': { c: { user_id: 'u1' } } } } },
+      { c: { 'climate.unknown': { '+': { s: 'heat' } } } },
+      { r: ['switch.pump'], a: { 'cover.garage': { s: 'closed', a: { device_class: 'garage' }, c: 'ctx5', lc: 1781516490 } } },
+      { c: { 'cover.garage': { '+': { s: 'opening', a: { current_position: 10 }, lc: 1781516500.0005 }, '-': { a: ['device_class'] } } } },
+    ];
+    const cases = [];
+    for (const ev of events) {
+      push!(ev);
+      cases.push({ event: ev, state: JSON.parse(JSON.stringify(last)) });
+    }
+    writeJson(join(FIX, 'entities.json'), cases);
+  });
+
   it('golden: settings', () => {
     const D = core.DEFAULT_CUSTOMIZATION;
     const OLD_CHIPS = ['people', 'lights', 'doors', 'alarm', 'media'];

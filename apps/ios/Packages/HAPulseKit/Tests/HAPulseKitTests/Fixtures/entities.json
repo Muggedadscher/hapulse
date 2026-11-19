@@ -1,0 +1,433 @@
+[
+  {
+    "event": {
+      "a": {
+        "light.kitchen": {
+          "a": {
+            "brightness": 180,
+            "friendly_name": "Küche"
+          },
+          "c": "ctx1",
+          "lc": 1781516460.123456,
+          "s": "on"
+        },
+        "sensor.power": {
+          "a": {
+            "unit_of_measurement": "W"
+          },
+          "c": {
+            "id": "ctx2",
+            "parent_id": "p",
+            "user_id": null
+          },
+          "lc": 1781516400,
+          "lu": 1781516455.5,
+          "s": "412.5"
+        },
+        "switch.pump": {
+          "a": {},
+          "c": "ctx3",
+          "lc": 1781510000.999,
+          "s": "off"
+        }
+      }
+    },
+    "state": {
+      "light.kitchen": {
+        "attributes": {
+          "brightness": 180,
+          "friendly_name": "Küche"
+        },
+        "context": {
+          "id": "ctx1",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "light.kitchen",
+        "last_changed": "2026-06-15T09:41:00.123Z",
+        "last_updated": "2026-06-15T09:41:00.123Z",
+        "state": "on"
+      },
+      "sensor.power": {
+        "attributes": {
+          "unit_of_measurement": "W"
+        },
+        "context": {
+          "id": "ctx2",
+          "parent_id": "p",
+          "user_id": null
+        },
+        "entity_id": "sensor.power",
+        "last_changed": "2026-06-15T09:40:00.000Z",
+        "last_updated": "2026-06-15T09:40:55.500Z",
+        "state": "412.5"
+      },
+      "switch.pump": {
+        "attributes": {},
+        "context": {
+          "id": "ctx3",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "switch.pump",
+        "last_changed": "2026-06-15T07:53:20.999Z",
+        "last_updated": "2026-06-15T07:53:20.999Z",
+        "state": "off"
+      }
+    }
+  },
+  {
+    "event": {
+      "c": {
+        "light.kitchen": {
+          "+": {
+            "a": {
+              "brightness": null
+            },
+            "c": "ctx4",
+            "lc": 1781516470.25,
+            "s": "off"
+          }
+        }
+      }
+    },
+    "state": {
+      "light.kitchen": {
+        "attributes": {
+          "brightness": null,
+          "friendly_name": "Küche"
+        },
+        "context": {
+          "id": "ctx4",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "light.kitchen",
+        "last_changed": "2026-06-15T09:41:10.250Z",
+        "last_updated": "2026-06-15T09:41:10.250Z",
+        "state": "off"
+      },
+      "sensor.power": {
+        "attributes": {
+          "unit_of_measurement": "W"
+        },
+        "context": {
+          "id": "ctx2",
+          "parent_id": "p",
+          "user_id": null
+        },
+        "entity_id": "sensor.power",
+        "last_changed": "2026-06-15T09:40:00.000Z",
+        "last_updated": "2026-06-15T09:40:55.500Z",
+        "state": "412.5"
+      },
+      "switch.pump": {
+        "attributes": {},
+        "context": {
+          "id": "ctx3",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "switch.pump",
+        "last_changed": "2026-06-15T07:53:20.999Z",
+        "last_updated": "2026-06-15T07:53:20.999Z",
+        "state": "off"
+      }
+    }
+  },
+  {
+    "event": {
+      "c": {
+        "sensor.power": {
+          "+": {
+            "lu": 1781516480.75,
+            "s": "415"
+          }
+        }
+      }
+    },
+    "state": {
+      "light.kitchen": {
+        "attributes": {
+          "brightness": null,
+          "friendly_name": "Küche"
+        },
+        "context": {
+          "id": "ctx4",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "light.kitchen",
+        "last_changed": "2026-06-15T09:41:10.250Z",
+        "last_updated": "2026-06-15T09:41:10.250Z",
+        "state": "off"
+      },
+      "sensor.power": {
+        "attributes": {
+          "unit_of_measurement": "W"
+        },
+        "context": {
+          "id": "ctx2",
+          "parent_id": "p",
+          "user_id": null
+        },
+        "entity_id": "sensor.power",
+        "last_changed": "2026-06-15T09:40:00.000Z",
+        "last_updated": "2026-06-15T09:41:20.750Z",
+        "state": "415"
+      },
+      "switch.pump": {
+        "attributes": {},
+        "context": {
+          "id": "ctx3",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "switch.pump",
+        "last_changed": "2026-06-15T07:53:20.999Z",
+        "last_updated": "2026-06-15T07:53:20.999Z",
+        "state": "off"
+      }
+    }
+  },
+  {
+    "event": {
+      "c": {
+        "light.kitchen": {
+          "-": {
+            "a": [
+              "brightness"
+            ]
+          }
+        },
+        "switch.pump": {
+          "+": {
+            "c": {
+              "user_id": "u1"
+            }
+          }
+        }
+      }
+    },
+    "state": {
+      "light.kitchen": {
+        "attributes": {
+          "friendly_name": "Küche"
+        },
+        "context": {
+          "id": "ctx4",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "light.kitchen",
+        "last_changed": "2026-06-15T09:41:10.250Z",
+        "last_updated": "2026-06-15T09:41:10.250Z",
+        "state": "off"
+      },
+      "sensor.power": {
+        "attributes": {
+          "unit_of_measurement": "W"
+        },
+        "context": {
+          "id": "ctx2",
+          "parent_id": "p",
+          "user_id": null
+        },
+        "entity_id": "sensor.power",
+        "last_changed": "2026-06-15T09:40:00.000Z",
+        "last_updated": "2026-06-15T09:41:20.750Z",
+        "state": "415"
+      },
+      "switch.pump": {
+        "attributes": {},
+        "context": {
+          "id": "ctx3",
+          "parent_id": null,
+          "user_id": "u1"
+        },
+        "entity_id": "switch.pump",
+        "last_changed": "2026-06-15T07:53:20.999Z",
+        "last_updated": "2026-06-15T07:53:20.999Z",
+        "state": "off"
+      }
+    }
+  },
+  {
+    "event": {
+      "c": {
+        "climate.unknown": {
+          "+": {
+            "s": "heat"
+          }
+        }
+      }
+    },
+    "state": {
+      "light.kitchen": {
+        "attributes": {
+          "friendly_name": "Küche"
+        },
+        "context": {
+          "id": "ctx4",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "light.kitchen",
+        "last_changed": "2026-06-15T09:41:10.250Z",
+        "last_updated": "2026-06-15T09:41:10.250Z",
+        "state": "off"
+      },
+      "sensor.power": {
+        "attributes": {
+          "unit_of_measurement": "W"
+        },
+        "context": {
+          "id": "ctx2",
+          "parent_id": "p",
+          "user_id": null
+        },
+        "entity_id": "sensor.power",
+        "last_changed": "2026-06-15T09:40:00.000Z",
+        "last_updated": "2026-06-15T09:41:20.750Z",
+        "state": "415"
+      },
+      "switch.pump": {
+        "attributes": {},
+        "context": {
+          "id": "ctx3",
+          "parent_id": null,
+          "user_id": "u1"
+        },
+        "entity_id": "switch.pump",
+        "last_changed": "2026-06-15T07:53:20.999Z",
+        "last_updated": "2026-06-15T07:53:20.999Z",
+        "state": "off"
+      }
+    }
+  },
+  {
+    "event": {
+      "a": {
+        "cover.garage": {
+          "a": {
+            "device_class": "garage"
+          },
+          "c": "ctx5",
+          "lc": 1781516490,
+          "s": "closed"
+        }
+      },
+      "r": [
+        "switch.pump"
+      ]
+    },
+    "state": {
+      "cover.garage": {
+        "attributes": {
+          "device_class": "garage"
+        },
+        "context": {
+          "id": "ctx5",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "cover.garage",
+        "last_changed": "2026-06-15T09:41:30.000Z",
+        "last_updated": "2026-06-15T09:41:30.000Z",
+        "state": "closed"
+      },
+      "light.kitchen": {
+        "attributes": {
+          "friendly_name": "Küche"
+        },
+        "context": {
+          "id": "ctx4",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "light.kitchen",
+        "last_changed": "2026-06-15T09:41:10.250Z",
+        "last_updated": "2026-06-15T09:41:10.250Z",
+        "state": "off"
+      },
+      "sensor.power": {
+        "attributes": {
+          "unit_of_measurement": "W"
+        },
+        "context": {
+          "id": "ctx2",
+          "parent_id": "p",
+          "user_id": null
+        },
+        "entity_id": "sensor.power",
+        "last_changed": "2026-06-15T09:40:00.000Z",
+        "last_updated": "2026-06-15T09:41:20.750Z",
+        "state": "415"
+      }
+    }
+  },
+  {
+    "event": {
+      "c": {
+        "cover.garage": {
+          "+": {
+            "a": {
+              "current_position": 10
+            },
+            "lc": 1781516500.0005,
+            "s": "opening"
+          },
+          "-": {
+            "a": [
+              "device_class"
+            ]
+          }
+        }
+      }
+    },
+    "state": {
+      "cover.garage": {
+        "attributes": {
+          "current_position": 10
+        },
+        "context": {
+          "id": "ctx5",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "cover.garage",
+        "last_changed": "2026-06-15T09:41:40.000Z",
+        "last_updated": "2026-06-15T09:41:40.000Z",
+        "state": "opening"
+      },
+      "light.kitchen": {
+        "attributes": {
+          "friendly_name": "Küche"
+        },
+        "context": {
+          "id": "ctx4",
+          "parent_id": null,
+          "user_id": null
+        },
+        "entity_id": "light.kitchen",
+        "last_changed": "2026-06-15T09:41:10.250Z",
+        "last_updated": "2026-06-15T09:41:10.250Z",
+        "state": "off"
+      },
+      "sensor.power": {
+        "attributes": {
+          "unit_of_measurement": "W"
+        },
+        "context": {
+          "id": "ctx2",
+          "parent_id": "p",
+          "user_id": null
+        },
+        "entity_id": "sensor.power",
+        "last_changed": "2026-06-15T09:40:00.000Z",
+        "last_updated": "2026-06-15T09:41:20.750Z",
+        "state": "415"
+      }
+    }
+  }
+]
