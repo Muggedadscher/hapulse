@@ -1,0 +1,78 @@
+# [fork] HAPulse iOS app. The Xcode project is generated from this file (XcodeGen, version pinned in
+# .github/workflows/ios.yml), never edited by hand and not checked in: `xcodegen generate` in apps/ios.
+name: HAPulse
+options:
+  bundleIdPrefix: de.schleerag
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "26.6"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+packages:
+  HAPulseKit:
+    path: Packages/HAPulseKit
+  HAPulseUI:
+    path: Packages/HAPulseUI
+targets:
+  HAPulse:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+      - App/Resources
+    dependencies:
+      - package: HAPulseKit
+      - package: HAPulseUI
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: HAPulse
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CFBundleURLTypes:
+          - CFBundleURLName: de.schleerag.hapulse.auth
+            CFBundleURLSchemes: [hapulse]
+        # Home Assistant and Sentinel in the home network (http:// and WebRTC to LAN addresses)
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        NSLocalNetworkUsageDescription: HAPulse verbindet sich mit Home Assistant und Sentinel in deinem Heimnetz.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.schleerag.hapulse
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_USER_SCRIPT_SANDBOXING: YES
+  HAPulseUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - UITests
+    dependencies:
+      - target: HAPulse
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.schleerag.hapulse.uitests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  HAPulse:
+    build:
+      targets:
+        HAPulse: all
+        HAPulseUITests: [test]
+    test:
+      targets:
+        - HAPulseUITests

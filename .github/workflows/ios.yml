@@ -1,0 +1,143 @@
+# [fork] iOS app (apps/ios). Separate from ci.yml on purpose: the CT 210 autoupdate only looks at ci.yml, so the app
+# never blocks a web deploy. Runs only when the app or the core it takes texts/colours/rules from changes.
+name: iOS
+
+on:
+  push:
+    branches: [main]
+    paths: ["apps/ios/**", "packages/core/**", "package-lock.json", ".github/workflows/ios.yml"]
+  pull_request:
+    branches: ["**"]
+    paths: ["apps/ios/**", "packages/core/**", "package-lock.json", ".github/workflows/ios.yml"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kit-linux:
+    name: HAPulseKit tests (Linux)
+    runs-on: ubuntu-24.04
+    container: swift:6.3.3-noble
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: swift test
+        run: swift test --package-path apps/ios/Packages/HAPulseKit
+
+  generated:
+    name: Generated files up to date
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: "npm"
+      - run: npm ci
+      - name: Run the generator
+        run: npx vitest run --config apps/ios/tools/export/vitest.config.mts
+      # A change in the web code (texts, colours, demo) that the app has not taken over yet is reported, not failed:
+      # otherwise every web merge would turn this red until the app follows. A pull request that changes the app itself
+      # must bring its generated files up to date.
+      - name: Compare
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # status, not diff: a new locale or fixture is an untracked file
+          if [ -z "$(git status --porcelain -- apps/ios)" ]; then echo "Generated files are up to date."; exit 0; fi
+          git status --porcelain -- apps/ios
+          {
+            echo "### iOS: generated files differ from the web code"
+            echo '```'
+            git status --porcelain -- apps/ios
+            echo '```'
+            echo "Run \`npx vitest run --config apps/ios/tools/export/vitest.config.mts\` and commit, then adapt the Swift code if a test fails."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$EVENT" = "pull_request" ] && git diff --name-only "$BASE"...HEAD | grep -q '^apps/ios/'; then
+            echo "::error::This pull request changes apps/ios but its generated files are stale."
+            exit 1
+          fi
+          echo "::warning::The app has not taken over the latest web changes yet (see summary)."
+
+  app:
+    name: App build, UI tests, screenshots (macOS)
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      XCODEGEN_VERSION: "2.46.0"
+      XCODEGEN_SHA256: "4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # The newest installed Xcode 27 once the image has one (iOS 27 SDK), otherwise 26.6. Logged with the runtimes.
+      - name: Select Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -n 1)
+          [ -n "$XC" ] || XC=/Applications/Xcode_26.6.app
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+          xcrun simctl list runtimes
+      - name: Install XcodeGen (pinned)
+        run: |
+          curl -fsSL -o /tmp/xcodegen.zip "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          echo "${XCODEGEN_SHA256}  /tmp/xcodegen.zip" | shasum -a 256 -c -
+          unzip -q /tmp/xcodegen.zip -d /tmp/xcodegen
+          echo "/tmp/xcodegen/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: HAPulseKit tests (macOS)
+        run: swift test --package-path apps/ios/Packages/HAPulseKit
+      - name: Generate the Xcode project
+        working-directory: apps/ios
+        run: xcodegen generate
+      - name: Build and run the UI tests (iPhone 17 Pro, newest iOS)
+        timeout-minutes: 25 # a hung simulator fails here instead of using up the job's hour
+        working-directory: apps/ios
+        env:
+          TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/apps/ios/screenshots/iphone
+        run: |
+          set -o pipefail
+          mkdir -p build
+          # a fresh simulator, booted before the test (a cold one missed the UI test's launch timeout, 19.11)
+          UDID=$(scripts/sim-boot.sh 'iPhone 17 Pro')
+          xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -retry-tests-on-failure -test-iterations 2 \
+            -resultBundlePath build/iphone.xcresult \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/iphone.log | tail -n 200
+      - name: Screenshots on iPad (iPad Pro 13-inch (M5), newest iOS)
+        timeout-minutes: 20
+        working-directory: apps/ios
+        env:
+          TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/apps/ios/screenshots/ipad
+        run: |
+          set -o pipefail
+          mkdir -p build
+          # a fresh simulator, booted before the test (a cold one missed the UI test's launch timeout, 19.11)
+          UDID=$(scripts/sim-boot.sh 'iPad Pro 13-inch (M5)')
+          xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -retry-tests-on-failure -test-iterations 2 \
+            -resultBundlePath build/ipad.xcresult \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/ipad.log | tail -n 100
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-screenshots
+          path: apps/ios/screenshots
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-xcresult
+          path: |
+            apps/ios/build/*.xcresult
+            apps/ios/build/*.log
+          retention-days: 7

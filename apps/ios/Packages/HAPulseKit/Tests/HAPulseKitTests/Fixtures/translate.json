@@ -1,0 +1,9025 @@
+[
+  {
+    "locale": "en",
+    "key": "app.errorBody",
+    "out": "This page could not be displayed."
+  },
+  {
+    "locale": "en",
+    "key": "common.loading",
+    "out": "Loading…"
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.noData",
+    "out": "No charge data for today yet."
+  },
+  {
+    "locale": "en",
+    "key": "energy.section.hideMobile.consumption",
+    "out": "Hide Consumption on mobile"
+  },
+  {
+    "locale": "en",
+    "key": "glas.edit.card.blinds",
+    "out": "Blinds"
+  },
+  {
+    "locale": "en",
+    "key": "globalSettings.mode.hintGlobal",
+    "out": "For all users and devices"
+  },
+  {
+    "locale": "en",
+    "key": "home.activity.locked",
+    "out": "Locked"
+  },
+  {
+    "locale": "en",
+    "key": "home.energy.titleToday",
+    "out": "Energy Today"
+  },
+  {
+    "locale": "en",
+    "key": "home.security.windowsLabel",
+    "out": "Windows"
+  },
+  {
+    "locale": "en",
+    "key": "nav.pool",
+    "out": "Pool"
+  },
+  {
+    "locale": "en",
+    "key": "nvr.player.pause",
+    "out": "Pause"
+  },
+  {
+    "locale": "en",
+    "key": "onboarding.tokenSubmitLoading",
+    "out": "Connecting…"
+  },
+  {
+    "locale": "en",
+    "key": "room.section.label.vacuum",
+    "out": "Vacuums"
+  },
+  {
+    "locale": "en",
+    "key": "security.section.show.garage",
+    "out": "Show Garage doors"
+  },
+  {
+    "locale": "en",
+    "key": "settings.section.connection",
+    "out": "Connection"
+  },
+  {
+    "locale": "en",
+    "key": "automations.activity.ranAria",
+    "vars": {
+      "time": 2.5
+    },
+    "out": "Ran 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "automations.category.countAria",
+    "vars": {
+      "active": 2.5,
+      "total": 2.5
+    },
+    "out": "2.5 of 2.5 active"
+  },
+  {
+    "locale": "en",
+    "key": "automations.category.listAria",
+    "vars": {
+      "category": 2.5
+    },
+    "out": "2.5 automations"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.lastRanAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Last ran: 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "automations.row.disabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2.5: disabled"
+  },
+  {
+    "locale": "en",
+    "key": "automations.row.enabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2.5: enabled"
+  },
+  {
+    "locale": "en",
+    "key": "automations.section.hideCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Hide 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "automations.section.hideMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Hide 2.5 on mobile"
+  },
+  {
+    "locale": "en",
+    "key": "automations.section.showCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Show 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "automations.section.showMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Show 2.5 on mobile"
+  },
+  {
+    "locale": "en",
+    "key": "cameraSource.rooms.selectAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Room for 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "cards.button.pressAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Press 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "cards.cover.percentOpen",
+    "vars": {
+      "percent": 2.5
+    },
+    "out": "2.5% open"
+  },
+  {
+    "locale": "en",
+    "key": "cards.light.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Toggle 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "changelog.whatsNew.title",
+    "vars": {
+      "version": 2.5
+    },
+    "out": "What's new in 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "columnResize.ariaLabel",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Drag to resize — currently 2.5 of 2.5 columns"
+  },
+  {
+    "locale": "en",
+    "key": "columnResize.title",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Drag left / right to resize (2.5 of 2.5 columns)"
+  },
+  {
+    "locale": "en",
+    "key": "devices.row.favoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Favorite 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "devices.row.hideLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Hide 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "devices.row.lockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Lock 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "devices.row.showLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Show 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "devices.row.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Toggle 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "devices.row.unfavoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Unfavorite 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "devices.row.unlockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Unlock 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "editBadge.favorite",
+    "vars": {
+      "entity": 2.5
+    },
+    "out": "Favorite 2.5"
+  },
+  {
+    "locale": "en",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 ran today"
+  },
+  {
+    "locale": "en",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 ran today"
+  },
+  {
+    "locale": "en",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 ran today"
+  },
+  {
+    "locale": "en",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 ran today"
+  },
+  {
+    "locale": "en",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 ran today"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 0
+    },
+    "out": "Categories"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1
+    },
+    "out": "Category"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 2
+    },
+    "out": "Categories"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 5
+    },
+    "out": "Categories"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Categories"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 total automations"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 total automations"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 total automations"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 total automations"
+  },
+  {
+    "locale": "en",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 total automations"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0d ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1d ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2d ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5d ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000d ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0h ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1h ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2h ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5h ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000h ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0m ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1m ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2m ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5m ago"
+  },
+  {
+    "locale": "en",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000m ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0d ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1d ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2d ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5d ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000d ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0h ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1h ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2h ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5h ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000h ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0m ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1m ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2m ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5m ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000m ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0s ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1s ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2s ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5s ago"
+  },
+  {
+    "locale": "en",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000s ago"
+  },
+  {
+    "locale": "en",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 entities"
+  },
+  {
+    "locale": "en",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 entity"
+  },
+  {
+    "locale": "en",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 entities"
+  },
+  {
+    "locale": "en",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 entities"
+  },
+  {
+    "locale": "en",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 entities"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 devices"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 device"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 devices"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 devices"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 devices"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 rooms"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 room"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 rooms"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 rooms"
+  },
+  {
+    "locale": "en",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 rooms"
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 0
+    },
+    "out": "The schedules {names} steer the battery too."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1
+    },
+    "out": "The schedule {names} steers the battery too."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 2
+    },
+    "out": "The schedules {names} steer the battery too."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 5
+    },
+    "out": "The schedules {names} steer the battery too."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "The schedules {names} steer the battery too."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 0
+    },
+    "out": "The schedules {names} are on and switch the battery back to Manual at their times."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1
+    },
+    "out": "The schedule {names} is on and switches the battery back to Manual at its times."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 2
+    },
+    "out": "The schedules {names} are on and switch the battery back to Manual at their times."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 5
+    },
+    "out": "The schedules {names} are on and switch the battery back to Manual at their times."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "The schedules {names} are on and switch the battery back to Manual at their times."
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 times"
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 time"
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 times"
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 times"
+  },
+  {
+    "locale": "en",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 times"
+  },
+  {
+    "locale": "en",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 0
+    },
+    "out": "Open all 0 garage doors?"
+  },
+  {
+    "locale": "en",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1
+    },
+    "out": "Open 1 garage door?"
+  },
+  {
+    "locale": "en",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 2
+    },
+    "out": "Open all 2 garage doors?"
+  },
+  {
+    "locale": "en",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 5
+    },
+    "out": "Open all 5 garage doors?"
+  },
+  {
+    "locale": "en",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Open all 1000000 garage doors?"
+  },
+  {
+    "locale": "en",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 open"
+  },
+  {
+    "locale": "en",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 open"
+  },
+  {
+    "locale": "en",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 open"
+  },
+  {
+    "locale": "en",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 open"
+  },
+  {
+    "locale": "en",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 open"
+  },
+  {
+    "locale": "en",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 unavailable"
+  },
+  {
+    "locale": "en",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 unavailable"
+  },
+  {
+    "locale": "en",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 unavailable"
+  },
+  {
+    "locale": "en",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 unavailable"
+  },
+  {
+    "locale": "en",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 unavailable"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 0
+    },
+    "out": "{account}, 0 new notifications. Open menu"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1
+    },
+    "out": "{account}, 1 new notification. Open menu"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 2
+    },
+    "out": "{account}, 2 new notifications. Open menu"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 5
+    },
+    "out": "{account}, 5 new notifications. Open menu"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "{account}, 1000000 new notifications. Open menu"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "Notifications (0)"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "Notifications (1)"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "Notifications (2)"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "Notifications (5)"
+  },
+  {
+    "locale": "en",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Notifications (1000000)"
+  },
+  {
+    "locale": "en",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 lights on"
+  },
+  {
+    "locale": "en",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 light on"
+  },
+  {
+    "locale": "en",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 lights on"
+  },
+  {
+    "locale": "en",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 lights on"
+  },
+  {
+    "locale": "en",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 lights on"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 notifications"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 notification"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 notifications"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 notifications"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 notifications"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 unread"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 unread"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 unread"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 unread"
+  },
+  {
+    "locale": "en",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 unread"
+  },
+  {
+    "locale": "en",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 cameras not recording"
+  },
+  {
+    "locale": "en",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1
+    },
+    "out": "Camera not recording"
+  },
+  {
+    "locale": "en",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 cameras not recording"
+  },
+  {
+    "locale": "en",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 cameras not recording"
+  },
+  {
+    "locale": "en",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 cameras not recording"
+  },
+  {
+    "locale": "en",
+    "key": "ios.does.not.exist",
+    "out": "ios.does.not.exist"
+  },
+  {
+    "locale": "en",
+    "key": "automations.activity.ranAria",
+    "vars": {},
+    "out": "Ran {time}"
+  },
+  {
+    "locale": "de",
+    "key": "app.errorBody",
+    "out": "Diese Seite konnte nicht angezeigt werden."
+  },
+  {
+    "locale": "de",
+    "key": "common.loading",
+    "out": "Wird geladen…"
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.noData",
+    "out": "Noch kein Ladezustand für heute."
+  },
+  {
+    "locale": "de",
+    "key": "energy.section.hideMobile.consumption",
+    "out": "Verbrauch auf Mobilgeräten ausblenden"
+  },
+  {
+    "locale": "de",
+    "key": "glas.edit.card.blinds",
+    "out": "Rollläden"
+  },
+  {
+    "locale": "de",
+    "key": "globalSettings.mode.hintGlobal",
+    "out": "Für alle Nutzer und Geräte"
+  },
+  {
+    "locale": "de",
+    "key": "home.activity.locked",
+    "out": "Verriegelt"
+  },
+  {
+    "locale": "de",
+    "key": "home.energy.titleToday",
+    "out": "Energie heute"
+  },
+  {
+    "locale": "de",
+    "key": "home.security.windowsLabel",
+    "out": "Fenster"
+  },
+  {
+    "locale": "de",
+    "key": "nav.pool",
+    "out": "Pool"
+  },
+  {
+    "locale": "de",
+    "key": "nvr.player.pause",
+    "out": "Pause"
+  },
+  {
+    "locale": "de",
+    "key": "onboarding.tokenSubmitLoading",
+    "out": "Verbindung wird hergestellt…"
+  },
+  {
+    "locale": "de",
+    "key": "room.section.label.vacuum",
+    "out": "Sauger"
+  },
+  {
+    "locale": "de",
+    "key": "security.section.show.garage",
+    "out": "Garagentore einblenden"
+  },
+  {
+    "locale": "de",
+    "key": "settings.section.connection",
+    "out": "Verbindung"
+  },
+  {
+    "locale": "de",
+    "key": "automations.activity.ranAria",
+    "vars": {
+      "time": 2.5
+    },
+    "out": "Ausgeführt 2,5"
+  },
+  {
+    "locale": "de",
+    "key": "automations.category.countAria",
+    "vars": {
+      "active": 2.5,
+      "total": 2.5
+    },
+    "out": "2,5 von 2,5 aktiv"
+  },
+  {
+    "locale": "de",
+    "key": "automations.category.listAria",
+    "vars": {
+      "category": 2.5
+    },
+    "out": "Automationen: 2,5"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.lastRanAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Zuletzt ausgeführt: 2,5"
+  },
+  {
+    "locale": "de",
+    "key": "automations.row.disabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: deaktiviert"
+  },
+  {
+    "locale": "de",
+    "key": "automations.row.enabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: aktiviert"
+  },
+  {
+    "locale": "de",
+    "key": "automations.section.hideCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "2,5 ausblenden"
+  },
+  {
+    "locale": "de",
+    "key": "automations.section.hideMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "2,5 auf Mobilgeräten ausblenden"
+  },
+  {
+    "locale": "de",
+    "key": "automations.section.showCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "2,5 einblenden"
+  },
+  {
+    "locale": "de",
+    "key": "automations.section.showMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "2,5 auf Mobilgeräten einblenden"
+  },
+  {
+    "locale": "de",
+    "key": "cameraSource.rooms.selectAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Raum für 2,5"
+  },
+  {
+    "locale": "de",
+    "key": "cards.button.pressAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 drücken"
+  },
+  {
+    "locale": "de",
+    "key": "cards.cover.percentOpen",
+    "vars": {
+      "percent": 2.5
+    },
+    "out": "2,5% offen"
+  },
+  {
+    "locale": "de",
+    "key": "cards.light.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 umschalten"
+  },
+  {
+    "locale": "de",
+    "key": "changelog.whatsNew.title",
+    "vars": {
+      "version": 2.5
+    },
+    "out": "Neu in 2,5"
+  },
+  {
+    "locale": "de",
+    "key": "columnResize.ariaLabel",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Zum Anpassen ziehen — aktuell 2,5 von 2,5 Spalten"
+  },
+  {
+    "locale": "de",
+    "key": "columnResize.title",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Nach links / rechts ziehen, um die Größe zu ändern (2,5 von 2,5 Spalten)"
+  },
+  {
+    "locale": "de",
+    "key": "devices.row.favoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 zu Favoriten hinzufügen"
+  },
+  {
+    "locale": "de",
+    "key": "devices.row.hideLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 ausblenden"
+  },
+  {
+    "locale": "de",
+    "key": "devices.row.lockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 verriegeln"
+  },
+  {
+    "locale": "de",
+    "key": "devices.row.showLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 einblenden"
+  },
+  {
+    "locale": "de",
+    "key": "devices.row.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 umschalten"
+  },
+  {
+    "locale": "de",
+    "key": "devices.row.unfavoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 aus Favoriten entfernen"
+  },
+  {
+    "locale": "de",
+    "key": "devices.row.unlockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 entriegeln"
+  },
+  {
+    "locale": "de",
+    "key": "editBadge.favorite",
+    "vars": {
+      "entity": 2.5
+    },
+    "out": "2,5 zu Favoriten hinzufügen"
+  },
+  {
+    "locale": "de",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 heute ausgeführt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 heute ausgeführt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 heute ausgeführt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 heute ausgeführt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 heute ausgeführt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 0
+    },
+    "out": "Kategorien"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1
+    },
+    "out": "Kategorie"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 2
+    },
+    "out": "Kategorien"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 5
+    },
+    "out": "Kategorien"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Kategorien"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Automationen insgesamt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Automationen insgesamt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Automationen insgesamt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Automationen insgesamt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Automationen insgesamt"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Vor 0T"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Vor 1T"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Vor 2T"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Vor 5T"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Vor 1000000T"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Vor 0h"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Vor 1h"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Vor 2h"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Vor 5h"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Vor 1000000h"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Vor 0min"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Vor 1min"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Vor 2min"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Vor 5min"
+  },
+  {
+    "locale": "de",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Vor 1000000min"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Vor 0T"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Vor 1T"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Vor 2T"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Vor 5T"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Vor 1000000T"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Vor 0h"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Vor 1h"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Vor 2h"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Vor 5h"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Vor 1000000h"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Vor 0min"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Vor 1min"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Vor 2min"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Vor 5min"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Vor 1000000min"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Vor 0s"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Vor 1s"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Vor 2s"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Vor 5s"
+  },
+  {
+    "locale": "de",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Vor 1000000s"
+  },
+  {
+    "locale": "de",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Entitäten"
+  },
+  {
+    "locale": "de",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Entität"
+  },
+  {
+    "locale": "de",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Entitäten"
+  },
+  {
+    "locale": "de",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Entitäten"
+  },
+  {
+    "locale": "de",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Entitäten"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Geräte"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Gerät"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Geräte"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Geräte"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Geräte"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Räume"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Raum"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Räume"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Räume"
+  },
+  {
+    "locale": "de",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Räume"
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 0
+    },
+    "out": "Auch die Zeitpläne {names} steuern die Batterie."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1
+    },
+    "out": "Auch der Zeitplan {names} steuert die Batterie."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 2
+    },
+    "out": "Auch die Zeitpläne {names} steuern die Batterie."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 5
+    },
+    "out": "Auch die Zeitpläne {names} steuern die Batterie."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Auch die Zeitpläne {names} steuern die Batterie."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 0
+    },
+    "out": "Die Zeitpläne {names} sind eingeschaltet und schalten die Batterie zu ihren Zeiten wieder auf Manuell."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1
+    },
+    "out": "Der Zeitplan {names} ist eingeschaltet und schaltet die Batterie zu seinen Zeiten wieder auf Manuell."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 2
+    },
+    "out": "Die Zeitpläne {names} sind eingeschaltet und schalten die Batterie zu ihren Zeiten wieder auf Manuell."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 5
+    },
+    "out": "Die Zeitpläne {names} sind eingeschaltet und schalten die Batterie zu ihren Zeiten wieder auf Manuell."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Die Zeitpläne {names} sind eingeschaltet und schalten die Batterie zu ihren Zeiten wieder auf Manuell."
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Zeiten"
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Zeit"
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Zeiten"
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Zeiten"
+  },
+  {
+    "locale": "de",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Zeiten"
+  },
+  {
+    "locale": "de",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 0
+    },
+    "out": "Alle 0 Tore öffnen?"
+  },
+  {
+    "locale": "de",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Tor öffnen?"
+  },
+  {
+    "locale": "de",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 2
+    },
+    "out": "Alle 2 Tore öffnen?"
+  },
+  {
+    "locale": "de",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 5
+    },
+    "out": "Alle 5 Tore öffnen?"
+  },
+  {
+    "locale": "de",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Alle 1000000 Tore öffnen?"
+  },
+  {
+    "locale": "de",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 offen"
+  },
+  {
+    "locale": "de",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 offen"
+  },
+  {
+    "locale": "de",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 offen"
+  },
+  {
+    "locale": "de",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 offen"
+  },
+  {
+    "locale": "de",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 offen"
+  },
+  {
+    "locale": "de",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 nicht erreichbar"
+  },
+  {
+    "locale": "de",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 nicht erreichbar"
+  },
+  {
+    "locale": "de",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 nicht erreichbar"
+  },
+  {
+    "locale": "de",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 nicht erreichbar"
+  },
+  {
+    "locale": "de",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 nicht erreichbar"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 0
+    },
+    "out": "{account}, 0 neue Benachrichtigungen. Menü öffnen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1
+    },
+    "out": "{account}, 1 neue Benachrichtigung. Menü öffnen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 2
+    },
+    "out": "{account}, 2 neue Benachrichtigungen. Menü öffnen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 5
+    },
+    "out": "{account}, 5 neue Benachrichtigungen. Menü öffnen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "{account}, 1000000 neue Benachrichtigungen. Menü öffnen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "Benachrichtigungen (0)"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "Benachrichtigungen (1)"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "Benachrichtigungen (2)"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "Benachrichtigungen (5)"
+  },
+  {
+    "locale": "de",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Benachrichtigungen (1000000)"
+  },
+  {
+    "locale": "de",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Lichter an"
+  },
+  {
+    "locale": "de",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Licht an"
+  },
+  {
+    "locale": "de",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Lichter an"
+  },
+  {
+    "locale": "de",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Lichter an"
+  },
+  {
+    "locale": "de",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Lichter an"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Benachrichtigungen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 Benachrichtigung"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Benachrichtigungen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Benachrichtigungen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Benachrichtigungen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 ungelesen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 ungelesen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 ungelesen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 ungelesen"
+  },
+  {
+    "locale": "de",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 ungelesen"
+  },
+  {
+    "locale": "de",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 Kameras nehmen nicht auf"
+  },
+  {
+    "locale": "de",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1
+    },
+    "out": "Kamera nimmt nicht auf"
+  },
+  {
+    "locale": "de",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 Kameras nehmen nicht auf"
+  },
+  {
+    "locale": "de",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 Kameras nehmen nicht auf"
+  },
+  {
+    "locale": "de",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 Kameras nehmen nicht auf"
+  },
+  {
+    "locale": "de",
+    "key": "ios.does.not.exist",
+    "out": "ios.does.not.exist"
+  },
+  {
+    "locale": "de",
+    "key": "automations.activity.ranAria",
+    "vars": {},
+    "out": "Ausgeführt {time}"
+  },
+  {
+    "locale": "es",
+    "key": "app.errorBody",
+    "out": "No se pudo mostrar esta página."
+  },
+  {
+    "locale": "es",
+    "key": "common.loading",
+    "out": "Cargando…"
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.noData",
+    "out": "Aún no hay datos de carga de hoy."
+  },
+  {
+    "locale": "es",
+    "key": "energy.section.hideMobile.consumption",
+    "out": "Ocultar Consumo en móvil"
+  },
+  {
+    "locale": "es",
+    "key": "glas.edit.card.blinds",
+    "out": "Persianas"
+  },
+  {
+    "locale": "es",
+    "key": "globalSettings.mode.hintGlobal",
+    "out": "Para todos los usuarios y dispositivos"
+  },
+  {
+    "locale": "es",
+    "key": "home.activity.locked",
+    "out": "Bloqueada"
+  },
+  {
+    "locale": "es",
+    "key": "home.energy.titleToday",
+    "out": "Energía de hoy"
+  },
+  {
+    "locale": "es",
+    "key": "home.security.windowsLabel",
+    "out": "Ventanas"
+  },
+  {
+    "locale": "es",
+    "key": "nav.pool",
+    "out": "Piscina"
+  },
+  {
+    "locale": "es",
+    "key": "nvr.player.pause",
+    "out": "Pausa"
+  },
+  {
+    "locale": "es",
+    "key": "onboarding.tokenSubmitLoading",
+    "out": "Conectando…"
+  },
+  {
+    "locale": "es",
+    "key": "room.section.label.vacuum",
+    "out": "Aspiradoras"
+  },
+  {
+    "locale": "es",
+    "key": "security.section.show.garage",
+    "out": "Mostrar Puertas de garaje"
+  },
+  {
+    "locale": "es",
+    "key": "settings.section.connection",
+    "out": "Conexión"
+  },
+  {
+    "locale": "es",
+    "key": "automations.activity.ranAria",
+    "vars": {
+      "time": 2.5
+    },
+    "out": "Ejecutada 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "automations.category.countAria",
+    "vars": {
+      "active": 2.5,
+      "total": 2.5
+    },
+    "out": "2,5 de 2,5 activas"
+  },
+  {
+    "locale": "es",
+    "key": "automations.category.listAria",
+    "vars": {
+      "category": 2.5
+    },
+    "out": "Automatizaciones de 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.lastRanAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Última ejecución: 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "automations.row.disabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: desactivada"
+  },
+  {
+    "locale": "es",
+    "key": "automations.row.enabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: activada"
+  },
+  {
+    "locale": "es",
+    "key": "automations.section.hideCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Ocultar 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "automations.section.hideMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Ocultar 2,5 en móvil"
+  },
+  {
+    "locale": "es",
+    "key": "automations.section.showCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Mostrar 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "automations.section.showMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Mostrar 2,5 en móvil"
+  },
+  {
+    "locale": "es",
+    "key": "cameraSource.rooms.selectAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Habitación para 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "cards.button.pressAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Pulsar 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "cards.cover.percentOpen",
+    "vars": {
+      "percent": 2.5
+    },
+    "out": "2,5% abierta"
+  },
+  {
+    "locale": "es",
+    "key": "cards.light.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Alternar 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "changelog.whatsNew.title",
+    "vars": {
+      "version": 2.5
+    },
+    "out": "Novedades de 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "columnResize.ariaLabel",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Arrastra para redimensionar — actualmente 2,5 de 2,5 columnas"
+  },
+  {
+    "locale": "es",
+    "key": "columnResize.title",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Arrastra a izquierda / derecha para redimensionar (2,5 de 2,5 columnas)"
+  },
+  {
+    "locale": "es",
+    "key": "devices.row.favoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Añadir 2,5 a favoritos"
+  },
+  {
+    "locale": "es",
+    "key": "devices.row.hideLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Ocultar 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "devices.row.lockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Bloquear 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "devices.row.showLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Mostrar 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "devices.row.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Alternar 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "devices.row.unfavoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Quitar 2,5 de favoritos"
+  },
+  {
+    "locale": "es",
+    "key": "devices.row.unlockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Desbloquear 2,5"
+  },
+  {
+    "locale": "es",
+    "key": "editBadge.favorite",
+    "vars": {
+      "entity": 2.5
+    },
+    "out": "Añadir 2,5 a favoritos"
+  },
+  {
+    "locale": "es",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 ejecutadas hoy"
+  },
+  {
+    "locale": "es",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 ejecutada hoy"
+  },
+  {
+    "locale": "es",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 ejecutadas hoy"
+  },
+  {
+    "locale": "es",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 ejecutadas hoy"
+  },
+  {
+    "locale": "es",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 ejecutadas hoy"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 0
+    },
+    "out": "Categorías"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1
+    },
+    "out": "Categoría"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 2
+    },
+    "out": "Categorías"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 5
+    },
+    "out": "Categorías"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Categorías"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 automatizaciones en total"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 automatizaciones en total"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 automatizaciones en total"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 automatizaciones en total"
+  },
+  {
+    "locale": "es",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 automatizaciones en total"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Hace 0d"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Hace 1d"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Hace 2d"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Hace 5d"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Hace 1000000d"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Hace 0h"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Hace 1h"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Hace 2h"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Hace 5h"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Hace 1000000h"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Hace 0min"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Hace 1min"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Hace 2min"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Hace 5min"
+  },
+  {
+    "locale": "es",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Hace 1000000min"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Hace 0d"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Hace 1d"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Hace 2d"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Hace 5d"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Hace 1000000d"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Hace 0h"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Hace 1h"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Hace 2h"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Hace 5h"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Hace 1000000h"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Hace 0min"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Hace 1min"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Hace 2min"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Hace 5min"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Hace 1000000min"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Hace 0s"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Hace 1s"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Hace 2s"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Hace 5s"
+  },
+  {
+    "locale": "es",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Hace 1000000s"
+  },
+  {
+    "locale": "es",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 entidades"
+  },
+  {
+    "locale": "es",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 entidad"
+  },
+  {
+    "locale": "es",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 entidades"
+  },
+  {
+    "locale": "es",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 entidades"
+  },
+  {
+    "locale": "es",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 entidades"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 dispositivos"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 dispositivo"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 dispositivos"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 dispositivos"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 dispositivos"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 estancias"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 estancia"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 estancias"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 estancias"
+  },
+  {
+    "locale": "es",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 estancias"
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 0
+    },
+    "out": "Las programaciones {names} también controlan la batería."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1
+    },
+    "out": "La programación {names} también controla la batería."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 2
+    },
+    "out": "Las programaciones {names} también controlan la batería."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 5
+    },
+    "out": "Las programaciones {names} también controlan la batería."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Las programaciones {names} también controlan la batería."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 0
+    },
+    "out": "Las programaciones {names} están activas y vuelven a poner la batería en Manual en sus horarios."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1
+    },
+    "out": "La programación {names} está activa y vuelve a poner la batería en Manual en sus horarios."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 2
+    },
+    "out": "Las programaciones {names} están activas y vuelven a poner la batería en Manual en sus horarios."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 5
+    },
+    "out": "Las programaciones {names} están activas y vuelven a poner la batería en Manual en sus horarios."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Las programaciones {names} están activas y vuelven a poner la batería en Manual en sus horarios."
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 horarios"
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 horario"
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 horarios"
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 horarios"
+  },
+  {
+    "locale": "es",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 horarios"
+  },
+  {
+    "locale": "es",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 0
+    },
+    "out": "¿Abrir las 0 puertas de garaje?"
+  },
+  {
+    "locale": "es",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1
+    },
+    "out": "¿Abrir 1 puerta de garaje?"
+  },
+  {
+    "locale": "es",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 2
+    },
+    "out": "¿Abrir las 2 puertas de garaje?"
+  },
+  {
+    "locale": "es",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 5
+    },
+    "out": "¿Abrir las 5 puertas de garaje?"
+  },
+  {
+    "locale": "es",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "¿Abrir las 1000000 puertas de garaje?"
+  },
+  {
+    "locale": "es",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 abiertas"
+  },
+  {
+    "locale": "es",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 abierta"
+  },
+  {
+    "locale": "es",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 abiertas"
+  },
+  {
+    "locale": "es",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 abiertas"
+  },
+  {
+    "locale": "es",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 abiertas"
+  },
+  {
+    "locale": "es",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 no disponibles"
+  },
+  {
+    "locale": "es",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 no disponible"
+  },
+  {
+    "locale": "es",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 no disponibles"
+  },
+  {
+    "locale": "es",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 no disponibles"
+  },
+  {
+    "locale": "es",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 no disponibles"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 0
+    },
+    "out": "{account}, 0 notificaciones nuevas. Abrir menú"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1
+    },
+    "out": "{account}, 1 notificación nueva. Abrir menú"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 2
+    },
+    "out": "{account}, 2 notificaciones nuevas. Abrir menú"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 5
+    },
+    "out": "{account}, 5 notificaciones nuevas. Abrir menú"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "{account}, 1000000 notificaciones nuevas. Abrir menú"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "Notificaciones (0)"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "Notificaciones (1)"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "Notificaciones (2)"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "Notificaciones (5)"
+  },
+  {
+    "locale": "es",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Notificaciones (1000000)"
+  },
+  {
+    "locale": "es",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 luces encendidas"
+  },
+  {
+    "locale": "es",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 luz encendida"
+  },
+  {
+    "locale": "es",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 luces encendidas"
+  },
+  {
+    "locale": "es",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 luces encendidas"
+  },
+  {
+    "locale": "es",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 luces encendidas"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 notificaciones"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 notificación"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 notificaciones"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 notificaciones"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 notificaciones"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 sin leer"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 sin leer"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 sin leer"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 sin leer"
+  },
+  {
+    "locale": "es",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 sin leer"
+  },
+  {
+    "locale": "es",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 cámaras sin grabar"
+  },
+  {
+    "locale": "es",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1
+    },
+    "out": "Cámara sin grabar"
+  },
+  {
+    "locale": "es",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 cámaras sin grabar"
+  },
+  {
+    "locale": "es",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 cámaras sin grabar"
+  },
+  {
+    "locale": "es",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 cámaras sin grabar"
+  },
+  {
+    "locale": "es",
+    "key": "ios.does.not.exist",
+    "out": "ios.does.not.exist"
+  },
+  {
+    "locale": "es",
+    "key": "automations.activity.ranAria",
+    "vars": {},
+    "out": "Ejecutada {time}"
+  },
+  {
+    "locale": "fr",
+    "key": "app.errorBody",
+    "out": "Impossible d'afficher cette page."
+  },
+  {
+    "locale": "fr",
+    "key": "common.loading",
+    "out": "Chargement…"
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.noData",
+    "out": "Pas encore de données de charge pour aujourd'hui."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.section.hideMobile.consumption",
+    "out": "Masquer Consommation sur mobile"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.edit.card.blinds",
+    "out": "Volets"
+  },
+  {
+    "locale": "fr",
+    "key": "globalSettings.mode.hintGlobal",
+    "out": "Pour tous les utilisateurs et appareils"
+  },
+  {
+    "locale": "fr",
+    "key": "home.activity.locked",
+    "out": "Verrouillé"
+  },
+  {
+    "locale": "fr",
+    "key": "home.energy.titleToday",
+    "out": "Énergie du jour"
+  },
+  {
+    "locale": "fr",
+    "key": "home.security.windowsLabel",
+    "out": "Fenêtres"
+  },
+  {
+    "locale": "fr",
+    "key": "nav.pool",
+    "out": "Piscine"
+  },
+  {
+    "locale": "fr",
+    "key": "nvr.player.pause",
+    "out": "Pause"
+  },
+  {
+    "locale": "fr",
+    "key": "onboarding.tokenSubmitLoading",
+    "out": "Connexion…"
+  },
+  {
+    "locale": "fr",
+    "key": "room.section.label.vacuum",
+    "out": "Aspirateurs"
+  },
+  {
+    "locale": "fr",
+    "key": "security.section.show.garage",
+    "out": "Afficher Portes de garage"
+  },
+  {
+    "locale": "fr",
+    "key": "settings.section.connection",
+    "out": "Connexion"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.activity.ranAria",
+    "vars": {
+      "time": 2.5
+    },
+    "out": "Exécutée 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.category.countAria",
+    "vars": {
+      "active": 2.5,
+      "total": 2.5
+    },
+    "out": "2,5 actives sur 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.category.listAria",
+    "vars": {
+      "category": 2.5
+    },
+    "out": "Automatisations 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.lastRanAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Dernière exécution : 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.row.disabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 : désactivée"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.row.enabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5 : activée"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.section.hideCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Masquer 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.section.hideMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Masquer 2,5 sur mobile"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.section.showCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Afficher 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.section.showMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Afficher 2,5 sur mobile"
+  },
+  {
+    "locale": "fr",
+    "key": "cameraSource.rooms.selectAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Pièce pour 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "cards.button.pressAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Appuyer sur 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "cards.cover.percentOpen",
+    "vars": {
+      "percent": 2.5
+    },
+    "out": "2,5 % ouvert"
+  },
+  {
+    "locale": "fr",
+    "key": "cards.light.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Basculer 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "changelog.whatsNew.title",
+    "vars": {
+      "version": 2.5
+    },
+    "out": "Nouveautés de la version 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "columnResize.ariaLabel",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Glissez pour redimensionner — actuellement 2,5 colonnes sur 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "columnResize.title",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Glisser vers la gauche / droite pour redimensionner (2,5 colonnes sur 2,5)"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.row.favoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Ajouter 2,5 aux favoris"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.row.hideLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Masquer 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.row.lockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Verrouiller 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.row.showLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Afficher 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.row.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Basculer 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.row.unfavoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Retirer 2,5 des favoris"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.row.unlockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Déverrouiller 2,5"
+  },
+  {
+    "locale": "fr",
+    "key": "editBadge.favorite",
+    "vars": {
+      "entity": 2.5
+    },
+    "out": "Ajouter 2,5 aux favoris"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 exécution aujourd’hui"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 exécution aujourd’hui"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 exécutions aujourd’hui"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 exécutions aujourd’hui"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 exécutions aujourd’hui"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 0
+    },
+    "out": "Catégorie"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1
+    },
+    "out": "Catégorie"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 2
+    },
+    "out": "Catégories"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 5
+    },
+    "out": "Catégories"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Catégories"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 automatisation au total"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 automatisation au total"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 automatisations au total"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 automatisations au total"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 automatisations au total"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Il y a 0 j"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il y a 1 j"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Il y a 2 j"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Il y a 5 j"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Il y a 1000000 j"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Il y a 0 h"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il y a 1 h"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Il y a 2 h"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Il y a 5 h"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Il y a 1000000 h"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Il y a 0 min"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il y a 1 min"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Il y a 2 min"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Il y a 5 min"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Il y a 1000000 min"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Il y a 0 j"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il y a 1 j"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Il y a 2 j"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Il y a 5 j"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Il y a 1000000 j"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Il y a 0 h"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il y a 1 h"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Il y a 2 h"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Il y a 5 h"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Il y a 1000000 h"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Il y a 0 min"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il y a 1 min"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Il y a 2 min"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Il y a 5 min"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Il y a 1000000 min"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Il y a 0 s"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il y a 1 s"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Il y a 2 s"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Il y a 5 s"
+  },
+  {
+    "locale": "fr",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Il y a 1000000 s"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 entité"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 entité"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 entités"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 entités"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 entités"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 appareil"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 appareil"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 appareils"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 appareils"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 appareils"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 pièce"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 pièce"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 pièces"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 pièces"
+  },
+  {
+    "locale": "fr",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 pièces"
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 0
+    },
+    "out": "Le planning {names} pilote aussi la batterie."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1
+    },
+    "out": "Le planning {names} pilote aussi la batterie."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 2
+    },
+    "out": "Les plannings {names} pilotent aussi la batterie."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 5
+    },
+    "out": "Les plannings {names} pilotent aussi la batterie."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Les plannings {names} pilotent aussi la batterie."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 0
+    },
+    "out": "Le planning {names} est actif et repasse la batterie en Manuel à ses horaires."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1
+    },
+    "out": "Le planning {names} est actif et repasse la batterie en Manuel à ses horaires."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 2
+    },
+    "out": "Les plannings {names} sont actifs et repassent la batterie en Manuel à leurs horaires."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 5
+    },
+    "out": "Les plannings {names} sont actifs et repassent la batterie en Manuel à leurs horaires."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Les plannings {names} sont actifs et repassent la batterie en Manuel à leurs horaires."
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 horaire"
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 horaire"
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 horaires"
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 horaires"
+  },
+  {
+    "locale": "fr",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 horaires"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 0
+    },
+    "out": "Ouvrir 0 porte de garage ?"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1
+    },
+    "out": "Ouvrir 1 porte de garage ?"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 2
+    },
+    "out": "Ouvrir les 2 portes de garage ?"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 5
+    },
+    "out": "Ouvrir les 5 portes de garage ?"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Ouvrir les 1000000 portes de garage ?"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 ouverte"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 ouverte"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 ouvertes"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 ouvertes"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 ouvertes"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 indisponible"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 indisponible"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 indisponibles"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 indisponibles"
+  },
+  {
+    "locale": "fr",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 indisponibles"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 0
+    },
+    "out": "{account}, 0 nouvelle notification. Ouvrir le menu"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1
+    },
+    "out": "{account}, 1 nouvelle notification. Ouvrir le menu"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 2
+    },
+    "out": "{account}, 2 nouvelles notifications. Ouvrir le menu"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 5
+    },
+    "out": "{account}, 5 nouvelles notifications. Ouvrir le menu"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "{account}, 1000000 nouvelles notifications. Ouvrir le menu"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "Notifications (0)"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "Notifications (1)"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "Notifications (2)"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "Notifications (5)"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Notifications (1000000)"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 lumière allumée"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 lumière allumée"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 lumières allumées"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 lumières allumées"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 lumières allumées"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 notification"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 notification"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 notifications"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 notifications"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 notifications"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 non lue"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 non lue"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 non lues"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 non lues"
+  },
+  {
+    "locale": "fr",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 non lues"
+  },
+  {
+    "locale": "fr",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 0
+    },
+    "out": "Caméra n'enregistre pas"
+  },
+  {
+    "locale": "fr",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1
+    },
+    "out": "Caméra n'enregistre pas"
+  },
+  {
+    "locale": "fr",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 caméras n'enregistrent pas"
+  },
+  {
+    "locale": "fr",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 caméras n'enregistrent pas"
+  },
+  {
+    "locale": "fr",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 caméras n'enregistrent pas"
+  },
+  {
+    "locale": "fr",
+    "key": "ios.does.not.exist",
+    "out": "ios.does.not.exist"
+  },
+  {
+    "locale": "fr",
+    "key": "automations.activity.ranAria",
+    "vars": {},
+    "out": "Exécutée {time}"
+  },
+  {
+    "locale": "it",
+    "key": "app.errorBody",
+    "out": "Impossibile visualizzare questa pagina."
+  },
+  {
+    "locale": "it",
+    "key": "common.loading",
+    "out": "Caricamento…"
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.noData",
+    "out": "Ancora nessun dato di carica per oggi."
+  },
+  {
+    "locale": "it",
+    "key": "energy.section.hideMobile.consumption",
+    "out": "Nascondi Consumo su mobile"
+  },
+  {
+    "locale": "it",
+    "key": "glas.edit.card.blinds",
+    "out": "Tapparelle"
+  },
+  {
+    "locale": "it",
+    "key": "globalSettings.mode.hintGlobal",
+    "out": "Per tutti gli utenti e i dispositivi"
+  },
+  {
+    "locale": "it",
+    "key": "home.activity.locked",
+    "out": "Bloccata"
+  },
+  {
+    "locale": "it",
+    "key": "home.energy.titleToday",
+    "out": "Energia di oggi"
+  },
+  {
+    "locale": "it",
+    "key": "home.security.windowsLabel",
+    "out": "Finestre"
+  },
+  {
+    "locale": "it",
+    "key": "nav.pool",
+    "out": "Piscina"
+  },
+  {
+    "locale": "it",
+    "key": "nvr.player.pause",
+    "out": "Pausa"
+  },
+  {
+    "locale": "it",
+    "key": "onboarding.tokenSubmitLoading",
+    "out": "Connessione…"
+  },
+  {
+    "locale": "it",
+    "key": "room.section.label.vacuum",
+    "out": "Aspirapolvere"
+  },
+  {
+    "locale": "it",
+    "key": "security.section.show.garage",
+    "out": "Mostra Porte del garage"
+  },
+  {
+    "locale": "it",
+    "key": "settings.section.connection",
+    "out": "Connessione"
+  },
+  {
+    "locale": "it",
+    "key": "automations.activity.ranAria",
+    "vars": {
+      "time": 2.5
+    },
+    "out": "Eseguita 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "automations.category.countAria",
+    "vars": {
+      "active": 2.5,
+      "total": 2.5
+    },
+    "out": "2,5 di 2,5 attive"
+  },
+  {
+    "locale": "it",
+    "key": "automations.category.listAria",
+    "vars": {
+      "category": 2.5
+    },
+    "out": "Automazioni di 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.lastRanAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Ultima esecuzione: 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "automations.row.disabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: disattivata"
+  },
+  {
+    "locale": "it",
+    "key": "automations.row.enabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: attivata"
+  },
+  {
+    "locale": "it",
+    "key": "automations.section.hideCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Nascondi 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "automations.section.hideMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Nascondi 2,5 su mobile"
+  },
+  {
+    "locale": "it",
+    "key": "automations.section.showCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Mostra 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "automations.section.showMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Mostra 2,5 su mobile"
+  },
+  {
+    "locale": "it",
+    "key": "cameraSource.rooms.selectAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Stanza per 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "cards.button.pressAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Premi 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "cards.cover.percentOpen",
+    "vars": {
+      "percent": 2.5
+    },
+    "out": "2,5% aperta"
+  },
+  {
+    "locale": "it",
+    "key": "cards.light.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Attiva/disattiva 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "changelog.whatsNew.title",
+    "vars": {
+      "version": 2.5
+    },
+    "out": "Novità della versione 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "columnResize.ariaLabel",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Trascina per ridimensionare — attualmente 2,5 di 2,5 colonne"
+  },
+  {
+    "locale": "it",
+    "key": "columnResize.title",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Trascina a sinistra / destra per ridimensionare (2,5 di 2,5 colonne)"
+  },
+  {
+    "locale": "it",
+    "key": "devices.row.favoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Aggiungi 2,5 ai preferiti"
+  },
+  {
+    "locale": "it",
+    "key": "devices.row.hideLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Nascondi 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "devices.row.lockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Blocca 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "devices.row.showLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Mostra 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "devices.row.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Attiva/disattiva 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "devices.row.unfavoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Rimuovi 2,5 dai preferiti"
+  },
+  {
+    "locale": "it",
+    "key": "devices.row.unlockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Sblocca 2,5"
+  },
+  {
+    "locale": "it",
+    "key": "editBadge.favorite",
+    "vars": {
+      "entity": 2.5
+    },
+    "out": "Aggiungi 2,5 ai preferiti"
+  },
+  {
+    "locale": "it",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 eseguite oggi"
+  },
+  {
+    "locale": "it",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 eseguita oggi"
+  },
+  {
+    "locale": "it",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 eseguite oggi"
+  },
+  {
+    "locale": "it",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 eseguite oggi"
+  },
+  {
+    "locale": "it",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 eseguite oggi"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 0
+    },
+    "out": "Categorie"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1
+    },
+    "out": "Categoria"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 2
+    },
+    "out": "Categorie"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 5
+    },
+    "out": "Categorie"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Categorie"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 automazioni in totale"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 automazioni in totale"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 automazioni in totale"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 automazioni in totale"
+  },
+  {
+    "locale": "it",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 automazioni in totale"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0g fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1g fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2g fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5g fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000g fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0h fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1h fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2h fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5h fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000h fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0min fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1min fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2min fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5min fa"
+  },
+  {
+    "locale": "it",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000min fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0g fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1g fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2g fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5g fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000g fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0h fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1h fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2h fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5h fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000h fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0min fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1min fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2min fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5min fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000min fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0s fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1s fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2s fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5s fa"
+  },
+  {
+    "locale": "it",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000s fa"
+  },
+  {
+    "locale": "it",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 entità"
+  },
+  {
+    "locale": "it",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 entità"
+  },
+  {
+    "locale": "it",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 entità"
+  },
+  {
+    "locale": "it",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 entità"
+  },
+  {
+    "locale": "it",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 entità"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 dispositivi"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 dispositivo"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 dispositivi"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 dispositivi"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 dispositivi"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 stanze"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 stanza"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 stanze"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 stanze"
+  },
+  {
+    "locale": "it",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 stanze"
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 0
+    },
+    "out": "Anche i programmi {names} controllano la batteria."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1
+    },
+    "out": "Anche il programma {names} controlla la batteria."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 2
+    },
+    "out": "Anche i programmi {names} controllano la batteria."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 5
+    },
+    "out": "Anche i programmi {names} controllano la batteria."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Anche i programmi {names} controllano la batteria."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 0
+    },
+    "out": "I programmi {names} sono attivi e riportano la batteria su Manuale ai loro orari."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1
+    },
+    "out": "Il programma {names} è attivo e riporta la batteria su Manuale ai suoi orari."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 2
+    },
+    "out": "I programmi {names} sono attivi e riportano la batteria su Manuale ai loro orari."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 5
+    },
+    "out": "I programmi {names} sono attivi e riportano la batteria su Manuale ai loro orari."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "I programmi {names} sono attivi e riportano la batteria su Manuale ai loro orari."
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 orari"
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 orario"
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 orari"
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 orari"
+  },
+  {
+    "locale": "it",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 orari"
+  },
+  {
+    "locale": "it",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 0
+    },
+    "out": "Aprire tutte le 0 porte del garage?"
+  },
+  {
+    "locale": "it",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1
+    },
+    "out": "Aprire 1 porta del garage?"
+  },
+  {
+    "locale": "it",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 2
+    },
+    "out": "Aprire tutte le 2 porte del garage?"
+  },
+  {
+    "locale": "it",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 5
+    },
+    "out": "Aprire tutte le 5 porte del garage?"
+  },
+  {
+    "locale": "it",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Aprire tutte le 1000000 porte del garage?"
+  },
+  {
+    "locale": "it",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 aperte"
+  },
+  {
+    "locale": "it",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 aperta"
+  },
+  {
+    "locale": "it",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 aperte"
+  },
+  {
+    "locale": "it",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 aperte"
+  },
+  {
+    "locale": "it",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 aperte"
+  },
+  {
+    "locale": "it",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 non disponibili"
+  },
+  {
+    "locale": "it",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 non disponibile"
+  },
+  {
+    "locale": "it",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 non disponibili"
+  },
+  {
+    "locale": "it",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 non disponibili"
+  },
+  {
+    "locale": "it",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 non disponibili"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 0
+    },
+    "out": "{account}, 0 nuove notifiche. Apri menu"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1
+    },
+    "out": "{account}, 1 nuova notifica. Apri menu"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 2
+    },
+    "out": "{account}, 2 nuove notifiche. Apri menu"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 5
+    },
+    "out": "{account}, 5 nuove notifiche. Apri menu"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "{account}, 1000000 nuove notifiche. Apri menu"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "Notifiche (0)"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "Notifiche (1)"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "Notifiche (2)"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "Notifiche (5)"
+  },
+  {
+    "locale": "it",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Notifiche (1000000)"
+  },
+  {
+    "locale": "it",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 luci accese"
+  },
+  {
+    "locale": "it",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 luce accesa"
+  },
+  {
+    "locale": "it",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 luci accese"
+  },
+  {
+    "locale": "it",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 luci accese"
+  },
+  {
+    "locale": "it",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 luci accese"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 notifiche"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 notifica"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 notifiche"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 notifiche"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 notifiche"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 non lette"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 non letta"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 non lette"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 non lette"
+  },
+  {
+    "locale": "it",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 non lette"
+  },
+  {
+    "locale": "it",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 telecamere non registrano"
+  },
+  {
+    "locale": "it",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1
+    },
+    "out": "Telecamera non registra"
+  },
+  {
+    "locale": "it",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 telecamere non registrano"
+  },
+  {
+    "locale": "it",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 telecamere non registrano"
+  },
+  {
+    "locale": "it",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 telecamere non registrano"
+  },
+  {
+    "locale": "it",
+    "key": "ios.does.not.exist",
+    "out": "ios.does.not.exist"
+  },
+  {
+    "locale": "it",
+    "key": "automations.activity.ranAria",
+    "vars": {},
+    "out": "Eseguita {time}"
+  },
+  {
+    "locale": "pt",
+    "key": "app.errorBody",
+    "out": "Não foi possível apresentar esta página."
+  },
+  {
+    "locale": "pt",
+    "key": "common.loading",
+    "out": "A carregar…"
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.noData",
+    "out": "Ainda não há dados de carga de hoje."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.section.hideMobile.consumption",
+    "out": "Ocultar Consumo em dispositivos móveis"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.edit.card.blinds",
+    "out": "Estores"
+  },
+  {
+    "locale": "pt",
+    "key": "globalSettings.mode.hintGlobal",
+    "out": "Para todos os utilizadores e dispositivos"
+  },
+  {
+    "locale": "pt",
+    "key": "home.activity.locked",
+    "out": "Trancada"
+  },
+  {
+    "locale": "pt",
+    "key": "home.energy.titleToday",
+    "out": "Energia de hoje"
+  },
+  {
+    "locale": "pt",
+    "key": "home.security.windowsLabel",
+    "out": "Janelas"
+  },
+  {
+    "locale": "pt",
+    "key": "nav.pool",
+    "out": "Piscina"
+  },
+  {
+    "locale": "pt",
+    "key": "nvr.player.pause",
+    "out": "Pausa"
+  },
+  {
+    "locale": "pt",
+    "key": "onboarding.tokenSubmitLoading",
+    "out": "A ligar…"
+  },
+  {
+    "locale": "pt",
+    "key": "room.section.label.vacuum",
+    "out": "Aspiradores"
+  },
+  {
+    "locale": "pt",
+    "key": "security.section.show.garage",
+    "out": "Mostrar Portões de garagem"
+  },
+  {
+    "locale": "pt",
+    "key": "settings.section.connection",
+    "out": "Ligação"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.activity.ranAria",
+    "vars": {
+      "time": 2.5
+    },
+    "out": "Executada 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.category.countAria",
+    "vars": {
+      "active": 2.5,
+      "total": 2.5
+    },
+    "out": "2,5 de 2,5 ativas"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.category.listAria",
+    "vars": {
+      "category": 2.5
+    },
+    "out": "Automações de 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.lastRanAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Última execução: 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.row.disabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: desativada"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.row.enabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: ativada"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.section.hideCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Ocultar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.section.hideMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Ocultar 2,5 em dispositivos móveis"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.section.showCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Mostrar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.section.showMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Mostrar 2,5 em dispositivos móveis"
+  },
+  {
+    "locale": "pt",
+    "key": "cameraSource.rooms.selectAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Divisão para 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "cards.button.pressAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Premir 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "cards.cover.percentOpen",
+    "vars": {
+      "percent": 2.5
+    },
+    "out": "2,5% aberto"
+  },
+  {
+    "locale": "pt",
+    "key": "cards.light.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Alternar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "changelog.whatsNew.title",
+    "vars": {
+      "version": 2.5
+    },
+    "out": "Novidades da versão 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "columnResize.ariaLabel",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Arrasta para redimensionar — atualmente 2,5 de 2,5 colunas"
+  },
+  {
+    "locale": "pt",
+    "key": "columnResize.title",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Arrasta para a esquerda / direita para redimensionar (2,5 de 2,5 colunas)"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.row.favoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Adicionar 2,5 aos favoritos"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.row.hideLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Ocultar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.row.lockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Trancar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.row.showLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Mostrar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.row.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Alternar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.row.unfavoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Remover 2,5 dos favoritos"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.row.unlockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Destrancar 2,5"
+  },
+  {
+    "locale": "pt",
+    "key": "editBadge.favorite",
+    "vars": {
+      "entity": 2.5
+    },
+    "out": "Adicionar 2,5 aos favoritos"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 executada hoje"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 executada hoje"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 executadas hoje"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 executadas hoje"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 executadas hoje"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 0
+    },
+    "out": "Categoria"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1
+    },
+    "out": "Categoria"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 2
+    },
+    "out": "Categorias"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 5
+    },
+    "out": "Categorias"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Categorias"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 automações no total"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 automações no total"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 automações no total"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 automações no total"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 automações no total"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Há 0d"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Há 1d"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Há 2d"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Há 5d"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Há 1000000d"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Há 0h"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Há 1h"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Há 2h"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Há 5h"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Há 1000000h"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Há 0min"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Há 1min"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Há 2min"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Há 5min"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Há 1000000min"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Há 0d"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Há 1d"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Há 2d"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Há 5d"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Há 1000000d"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Há 0h"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Há 1h"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Há 2h"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Há 5h"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Há 1000000h"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Há 0min"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Há 1min"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Há 2min"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Há 5min"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Há 1000000min"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "Há 0s"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "Há 1s"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "Há 2s"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "Há 5s"
+  },
+  {
+    "locale": "pt",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Há 1000000s"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 entidade"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 entidade"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 entidades"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 entidades"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 entidades"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 dispositivo"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 dispositivo"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 dispositivos"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 dispositivos"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 dispositivos"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 divisão"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 divisão"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 divisões"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 divisões"
+  },
+  {
+    "locale": "pt",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 divisões"
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 0
+    },
+    "out": "O agendamento {names} também controla a bateria."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1
+    },
+    "out": "O agendamento {names} também controla a bateria."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 2
+    },
+    "out": "Os agendamentos {names} também controlam a bateria."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 5
+    },
+    "out": "Os agendamentos {names} também controlam a bateria."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Os agendamentos {names} também controlam a bateria."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 0
+    },
+    "out": "O agendamento {names} está ligado e volta a pôr a bateria em Manual nos seus horários."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1
+    },
+    "out": "O agendamento {names} está ligado e volta a pôr a bateria em Manual nos seus horários."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 2
+    },
+    "out": "Os agendamentos {names} estão ligados e voltam a pôr a bateria em Manual nos seus horários."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 5
+    },
+    "out": "Os agendamentos {names} estão ligados e voltam a pôr a bateria em Manual nos seus horários."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Os agendamentos {names} estão ligados e voltam a pôr a bateria em Manual nos seus horários."
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 horário"
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 horário"
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 horários"
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 horários"
+  },
+  {
+    "locale": "pt",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 horários"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 0
+    },
+    "out": "Abrir 0 portão de garagem?"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1
+    },
+    "out": "Abrir 1 portão de garagem?"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 2
+    },
+    "out": "Abrir os 2 portões de garagem?"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 5
+    },
+    "out": "Abrir os 5 portões de garagem?"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Abrir os 1000000 portões de garagem?"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 aberto"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 aberto"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 abertos"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 abertos"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 abertos"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 indisponível"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 indisponível"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 indisponíveis"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 indisponíveis"
+  },
+  {
+    "locale": "pt",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 indisponíveis"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 0
+    },
+    "out": "{account}, 0 notificação nova. Abrir menu"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1
+    },
+    "out": "{account}, 1 notificação nova. Abrir menu"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 2
+    },
+    "out": "{account}, 2 notificações novas. Abrir menu"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 5
+    },
+    "out": "{account}, 5 notificações novas. Abrir menu"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "{account}, 1000000 notificações novas. Abrir menu"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "Notificações (0)"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "Notificações (1)"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "Notificações (2)"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "Notificações (5)"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Notificações (1000000)"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 luz acesa"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 luz acesa"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 luzes acesas"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 luzes acesas"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 luzes acesas"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 notificação"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 notificação"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 notificações"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 notificações"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 notificações"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 por ler"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 por ler"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 por ler"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 por ler"
+  },
+  {
+    "locale": "pt",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 por ler"
+  },
+  {
+    "locale": "pt",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 0
+    },
+    "out": "Câmara não está a gravar"
+  },
+  {
+    "locale": "pt",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1
+    },
+    "out": "Câmara não está a gravar"
+  },
+  {
+    "locale": "pt",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 câmaras não estão a gravar"
+  },
+  {
+    "locale": "pt",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 câmaras não estão a gravar"
+  },
+  {
+    "locale": "pt",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 câmaras não estão a gravar"
+  },
+  {
+    "locale": "pt",
+    "key": "ios.does.not.exist",
+    "out": "ios.does.not.exist"
+  },
+  {
+    "locale": "pt",
+    "key": "automations.activity.ranAria",
+    "vars": {},
+    "out": "Executada {time}"
+  },
+  {
+    "locale": "sv",
+    "key": "app.errorBody",
+    "out": "Sidan kunde inte visas."
+  },
+  {
+    "locale": "sv",
+    "key": "common.loading",
+    "out": "Laddar…"
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.noData",
+    "out": "Inga laddningsdata för i dag ännu."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.section.hideMobile.consumption",
+    "out": "Dölj Förbrukning på mobil"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.edit.card.blinds",
+    "out": "Persienner"
+  },
+  {
+    "locale": "sv",
+    "key": "globalSettings.mode.hintGlobal",
+    "out": "För alla användare och enheter"
+  },
+  {
+    "locale": "sv",
+    "key": "home.activity.locked",
+    "out": "Låst"
+  },
+  {
+    "locale": "sv",
+    "key": "home.energy.titleToday",
+    "out": "Energi idag"
+  },
+  {
+    "locale": "sv",
+    "key": "home.security.windowsLabel",
+    "out": "Fönster"
+  },
+  {
+    "locale": "sv",
+    "key": "nav.pool",
+    "out": "Pool"
+  },
+  {
+    "locale": "sv",
+    "key": "nvr.player.pause",
+    "out": "Paus"
+  },
+  {
+    "locale": "sv",
+    "key": "onboarding.tokenSubmitLoading",
+    "out": "Ansluter…"
+  },
+  {
+    "locale": "sv",
+    "key": "room.section.label.vacuum",
+    "out": "Dammsugare"
+  },
+  {
+    "locale": "sv",
+    "key": "security.section.show.garage",
+    "out": "Visa Garageportar"
+  },
+  {
+    "locale": "sv",
+    "key": "settings.section.connection",
+    "out": "Anslutning"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.activity.ranAria",
+    "vars": {
+      "time": 2.5
+    },
+    "out": "Kördes 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.category.countAria",
+    "vars": {
+      "active": 2.5,
+      "total": 2.5
+    },
+    "out": "2,5 av 2,5 aktiva"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.category.listAria",
+    "vars": {
+      "category": 2.5
+    },
+    "out": "2,5-automatiseringar"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.lastRanAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Senast körd: 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.row.disabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: inaktiverad"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.row.enabledAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "2,5: aktiverad"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.section.hideCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Dölj 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.section.hideMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Dölj 2,5 på mobil"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.section.showCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Visa 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.section.showMobileCategory",
+    "vars": {
+      "label": 2.5
+    },
+    "out": "Visa 2,5 på mobil"
+  },
+  {
+    "locale": "sv",
+    "key": "cameraSource.rooms.selectAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Rum för 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "cards.button.pressAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Tryck 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "cards.cover.percentOpen",
+    "vars": {
+      "percent": 2.5
+    },
+    "out": "2,5% öppen"
+  },
+  {
+    "locale": "sv",
+    "key": "cards.light.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Växla 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "changelog.whatsNew.title",
+    "vars": {
+      "version": 2.5
+    },
+    "out": "Nyheter i 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "columnResize.ariaLabel",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Dra för att ändra storlek — just nu 2,5 av 2,5 kolumner"
+  },
+  {
+    "locale": "sv",
+    "key": "columnResize.title",
+    "vars": {
+      "span": 2.5,
+      "max": 2.5
+    },
+    "out": "Dra vänster/höger för att ändra storlek (2,5 av 2,5 kolumner)"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.row.favoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Favoritmarkera 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.row.hideLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Dölj 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.row.lockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Lås 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.row.showLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Visa 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.row.toggleAria",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Växla 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.row.unfavoriteLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Ta bort favoritmarkering för 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.row.unlockLabel",
+    "vars": {
+      "name": 2.5
+    },
+    "out": "Lås upp 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "editBadge.favorite",
+    "vars": {
+      "entity": 2.5
+    },
+    "out": "Favoritmarkera 2,5"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 kördes idag"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 kördes idag"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 kördes idag"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 kördes idag"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.activity.ranToday",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 kördes idag"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 0
+    },
+    "out": "Kategorier"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1
+    },
+    "out": "Kategori"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 2
+    },
+    "out": "Kategorier"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 5
+    },
+    "out": "Kategorier"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.categoryLabel",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Kategorier"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 automatiseringar totalt"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 automatisering totalt"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 automatiseringar totalt"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 automatiseringar totalt"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.hero.totalAria",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 automatiseringar totalt"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.daysAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000d sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.hoursAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000h sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.minutesAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000m sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 0
+    },
+    "out": "0s sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1
+    },
+    "out": "1s sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 2
+    },
+    "out": "2s sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 5
+    },
+    "out": "5s sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "common.time.secondsAgo",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000s sedan"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 entiteter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 entitet"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 entiteter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 entiteter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.card.entityCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 entiteter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 enheter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 enhet"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 enheter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 enheter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.deviceCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 enheter"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 rum"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 rum"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 rum"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 rum"
+  },
+  {
+    "locale": "sv",
+    "key": "devices.hero.roomCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 rum"
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 0
+    },
+    "out": "Schemana {names} styr också batteriet."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1
+    },
+    "out": "Schemat {names} styr också batteriet."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 2
+    },
+    "out": "Schemana {names} styr också batteriet."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 5
+    },
+    "out": "Schemana {names} styr också batteriet."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivals",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Schemana {names} styr också batteriet."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 0
+    },
+    "out": "Schemana {names} är på och ställer batteriet på Manuellt igen vid sina tider."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1
+    },
+    "out": "Schemat {names} är på och ställer batteriet på Manuellt igen vid sina tider."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 2
+    },
+    "out": "Schemana {names} är på och ställer batteriet på Manuellt igen vid sina tider."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 5
+    },
+    "out": "Schemana {names} är på och ställer batteriet på Manuellt igen vid sina tider."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.rivalsAuto",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Schemana {names} är på och ställer batteriet på Manuellt igen vid sina tider."
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 tider"
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 tid"
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 tider"
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 tider"
+  },
+  {
+    "locale": "sv",
+    "key": "energy.battery.timesCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 tider"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 0
+    },
+    "out": "Öppna alla 0 garageportar?"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1
+    },
+    "out": "Öppna 1 garageport?"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 2
+    },
+    "out": "Öppna alla 2 garageportar?"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 5
+    },
+    "out": "Öppna alla 5 garageportar?"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.confirmOpenAll",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Öppna alla 1000000 garageportar?"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 öppna"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 öppen"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 öppna"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 öppna"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.openCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 öppna"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 otillgängliga"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 otillgänglig"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 otillgängliga"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 otillgängliga"
+  },
+  {
+    "locale": "sv",
+    "key": "garage.unavailableCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 otillgängliga"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 0
+    },
+    "out": "{account}, 0 nya aviseringar. Öppna menyn"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1
+    },
+    "out": "{account}, 1 ny avisering. Öppna menyn"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 2
+    },
+    "out": "{account}, 2 nya aviseringar. Öppna menyn"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 5
+    },
+    "out": "{account}, 5 nya aviseringar. Öppna menyn"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.labelUnread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "{account}, 1000000 nya aviseringar. Öppna menyn"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 0
+    },
+    "out": "Aviseringar (0)"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1
+    },
+    "out": "Aviseringar (1)"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 2
+    },
+    "out": "Aviseringar (2)"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 5
+    },
+    "out": "Aviseringar (5)"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.avatar.notificationsCount",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "Aviseringar (1000000)"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 lampor tända"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 lampa tänd"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 lampor tända"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 lampor tända"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.hero.lightsOn",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 lampor tända"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 aviseringar"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 avisering"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 aviseringar"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 aviseringar"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.count",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 aviseringar"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 olästa"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1
+    },
+    "out": "1 oläst"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 olästa"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 olästa"
+  },
+  {
+    "locale": "sv",
+    "key": "glas.notifications.unread",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 olästa"
+  },
+  {
+    "locale": "sv",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 0
+    },
+    "out": "0 kameror spelar inte in"
+  },
+  {
+    "locale": "sv",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1
+    },
+    "out": "Kamera spelar inte in"
+  },
+  {
+    "locale": "sv",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 2
+    },
+    "out": "2 kameror spelar inte in"
+  },
+  {
+    "locale": "sv",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 5
+    },
+    "out": "5 kameror spelar inte in"
+  },
+  {
+    "locale": "sv",
+    "key": "hints.cameraNotRecording",
+    "vars": {
+      "count": 1000000
+    },
+    "out": "1000000 kameror spelar inte in"
+  },
+  {
+    "locale": "sv",
+    "key": "ios.does.not.exist",
+    "out": "ios.does.not.exist"
+  },
+  {
+    "locale": "sv",
+    "key": "automations.activity.ranAria",
+    "vars": {},
+    "out": "Kördes {time}"
+  }
+]
