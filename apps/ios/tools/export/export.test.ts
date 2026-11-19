@@ -235,6 +235,94 @@ describe('iOS export', () => {
     }
     writeJson(join(FIX, 'glasAccent.json'), cases, false);
   });
+
+  it('golden: settings', () => {
+    const D = core.DEFAULT_CUSTOMIZATION;
+    const OLD_CHIPS = ['people', 'lights', 'doors', 'alarm', 'media'];
+    const OLD_ORDER = ['hero', 'scenes', 'security', 'rooms'];
+    const base: core.ScopedState = {
+      theme: 'aurora', mode: 'light', appIconHidden: false, language: 'auto', customization: D,
+    };
+    const synced = { ...D, scryptedUrl: 'https://nvr.example.com', scryptedToken: 'tok-device', maServerUrl: 'http://ma.local:8095', maToken: 'ma-device' };
+    const migrated = { ...D, poolChipMigrated: true, garageChipMigrated: true, locksChipMigrated: true, wasteSectionMigrated: true,
+      nvrSectionMigrated: true, hintsSectionMigrated: true, navOrderV2Migrated: true };
+
+    const hydrate = [
+      undefined,
+      {},
+      { homeChips: OLD_CHIPS, homeSectionOrder: OLD_ORDER, navOrder: ['energy', 'pool', 'overview', 'music'] },
+      { homeChips: [], homeSectionOrder: [], navOrder: [] },
+      { scryptedUrl: 'https://nvr.example.com/endpoint/x/public/?token=abc&x=1', scryptedToken: '' },
+      { ...migrated, homeChips: ['people'], homeSectionOrder: ['rooms'] },
+      { favorites: ['light.a'], uiStyle: 'glas', unknownKey: 5 },
+    ].map((input) => ({ input: input ?? null, out: core.hydrateCustomization(input) }));
+
+    const imports = [
+      { cur: synced, raw: { scryptedUrl: 'https://nvr.example.com/', maServerUrl: 'http://ma.local:8095' } },
+      { cur: synced, raw: { scryptedUrl: 'https://other.example.com', maServerUrl: 'http://other:8095' } },
+      { cur: synced, raw: { scryptedUrl: 'https://other.example.com?token=fromurl', maToken: 'ma-explicit' } },
+      { cur: D, raw: { favorites: ['a', 2], entityOrder: { k: ['x', 'y'], bad: [1], worse: 'no' }, roomOrder: 'nope', hiddenRooms: ['r1'] } },
+      { cur: D, raw: { scryptedUrl: 123, weatherEntity: null, libraryPlayerId: 7, uiStyle: ['glas'], reduceTransparency: 'yes' } },
+      { cur: D, raw: { homeChips: OLD_CHIPS, homeSectionOrder: ['hero', 'security'], navOrder: ['music', 'rooms'] } },
+      { cur: D, raw: null },
+    ].map((c) => ({ ...c, out: core.importedCustomization(c.cur, c.raw) }));
+
+    const g = (customization: Record<string, unknown>, top: Partial<core.GlobalSettingsPayload> = {}): core.GlobalSettingsPayload => ({
+      theme: 'ocean', mode: 'dark', accentHue: 210, appName: 'Haus', appIcon: 'zap', appIconHidden: false,
+      customization: customization as core.GlobalSettingsPayload['customization'], ...top,
+    });
+    const curMigrated: core.ScopedState = { ...base, accentHue: 40, appName: 'Alt', customization: { ...migrated, favorites: ['light.mine'], scryptedToken: 'tok' } };
+    const globals = [
+      { cur: base, payload: g({ uiStyle: 'glas', glassStrength: 'tinted' }) },
+      { cur: curMigrated, payload: g({ homeChips: OLD_CHIPS, homeSectionOrder: OLD_ORDER }) },
+      { cur: curMigrated, payload: g({ favorites: ['light.admin'], scryptedToken: 'leak', maToken: 'leak', hiddenRooms: ['x'] }) },
+      { cur: curMigrated, payload: g({}, { theme: 'dusk' as never, mode: 'bogus' as never, accentHue: null, appName: null, appIcon: null }) },
+      { cur: { ...curMigrated, customization: { ...curMigrated.customization, uiStyle: 'glas' } }, payload: g({ roomOrder: 'bad', navOrder: ['pool'] }) },
+    ].map((c) => ({ ...c, out: core.applyGlobalSettings(c.cur, c.payload) }));
+
+    const users = [
+      { cur: base, payload: { v: 1, language: 'de', userName: 'Jan', favorites: ['light.a'], libraryPlayerId: 'media_player.k', detailHistoryRange: '7d', editingEnabled: false } },
+      { cur: { ...base, userName: 'Alt', language: 'fr' as const }, payload: { language: 'xx', userName: null, favorites: [1, 2] } },
+      { cur: { ...base, userName: 'Alt' }, payload: { favorites: 'nope', detailHistoryRange: 30 } },
+    ].map((c) => ({ ...c, out: core.applyUserSettings(c.cur, c.payload as Partial<core.UserSettingsPayload>) }));
+
+    const secretsCur = { scryptedToken: 'own', maToken: 'ownma' };
+    const shared = [
+      { secrets: { scryptedToken: 'shared', maToken: null }, keepOwn: false },
+      { secrets: { scryptedToken: 5, maToken: 'm' }, keepOwn: true },
+      { secrets: null, keepOwn: true },
+      { secrets: null, keepOwn: false },
+    ].map((c) => ({ cur: secretsCur, ...c, out: core.sharedSecretsFor(secretsCur, c.secrets as core.SharedSecrets | null, c.keepOwn) }));
+
+    const urls = ['', 'nvr.example.com', 'https://NVR.Example.com:10443/x?token=a', 'http://192.0.2.4:8095', 'not a url', '  https://a.b  ',
+      'https://h/p?token=abc', 'https://h/p?x=1&token=a%20b&y=2#frag', 'https://h/p?token=&y=1', 'https://h/?a=1&token=t'];
+    const secrets = urls.map((u) => ({ input: u, origin: core.originOf(u), split: core.splitUrlToken(u) }));
+
+    const st: core.ScopedState = { ...curMigrated, userName: 'Jan', language: 'de', customization: { ...curMigrated.customization, maToken: 'm' } };
+    const ex = core.extractGlobal(st);
+    const changed = { ...ex, accentHue: 300, customization: { ...ex.customization, uiStyle: 'glas', hiddenRooms: ['a'] } };
+    const diff = core.diffGlobal(ex, changed);
+    const scope = {
+      userKeys: core.USER_CUSTOMIZATION_KEYS, secretKeys: core.SECRET_CUSTOMIZATION_KEYS,
+      globalTop: core.GLOBAL_TOP_KEYS, userTop: core.USER_TOP_KEYS, deviceTop: core.DEVICE_TOP_KEYS,
+      state: st, extractGlobal: ex, extractUser: core.extractUser(st), extractSecrets: core.extractSecrets(st),
+      changed, diff, hasChanges: core.hasChanges(diff), noChanges: core.hasChanges(core.diffGlobal(ex, ex)),
+      merged: core.mergeGlobal({ ...ex, mode: 'auto' }, diff),
+      validDoc: [
+        { doc: { v: 1, rev: 3, activatedAt: 'a', updatedAt: 'b', activatedBy: { id: 'i', name: 'n' }, updatedBy: { id: 'i', name: 'n' },
+          settings: ex, userDefaults: { favorites: [], language: 'auto' }, shareSecrets: false }, ok: true },
+        { doc: { v: 2 }, ok: false },
+        { doc: { v: 1, rev: '3' }, ok: false },
+      ].map((c) => ({ doc: c.doc, out: core.isValidGlobalDoc(c.doc) })),
+      validUser: [{ v: 1, favorites: [], language: 'de' }, { v: 1, favorites: 'x', language: 'de' }, null]
+        .map((doc) => ({ doc, out: core.isValidUserPayload(doc) })),
+    };
+
+    const themes = ['aurora', 'sunset', 'ocean', 'forest', 'dusk', 'dawn', 'midnight', 'sage', 'nope', 5, null]
+      .map((input) => ({ input, out: core.migrateTheme(input) ?? null }));
+
+    writeJson(join(FIX, 'settings.json'), { defaults: D, hydrate, imports, globals, users, shared, secrets, scope, themes });
+  });
 });
 
 // ---------------------------------------------------------------------------------------------------------------

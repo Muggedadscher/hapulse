@@ -87,7 +87,7 @@ export { systemMetricNamer, dataSizeBytes, formatDataSize } from './systemMetric
 export { domainOf, isToggleable, formatEntityState, domainIcon, isFavoriteRelevant } from './domain.js';
 
 // Room icon utilities
-export { roomIconName, roomStatusIconName, roomKind, CANONICAL_ROOM_ICONS, ROOM_KINDS } from './roomIcons.js';
+export { roomIconName, roomStatusIconName, roomKind, CANONICAL_ROOM_ICONS, ROOM_KINDS, ROOM_KEYWORDS, MDI_TO_LUCIDE, ICON_BY_KIND } from './roomIcons.js'; // [fork] tables exported for the iOS app
 export type { RoomIconName, RoomKind } from './roomIcons.js';
 
 // HA icon string → @mdi/js export name converter
@@ -527,3 +527,63 @@ export type { TimePeriod, PeriodEdge, AddPeriodOptions } from './timePeriods.js'
 export { humidifierTone, humiditySetpoint, stepHumidity, currentHumidity } from './humidifier.js';
 export type { HumidifierTone, HumiditySetpoint } from './humidifier.js';
 export { DEMO_DEHUMIDIFIER } from './humidifierDemo.js';
+// [fork] Settings model, scope rules and connection secrets, shared by the web store and the iOS app (moved from the dashboard, iOS W1)
+export {
+  DEFAULT_CUSTOMIZATION,
+  migrateTheme,
+  isThemeMode,
+  parseLanguagePref,
+  sanitizeCustomization,
+  migratePoolChip,
+  migrateGarageChip,
+  migrateLocksChip,
+  migrateWasteSection,
+  migrateHintsSection,
+  migrateNvrSection,
+  NAV_ORDER_V2_HEAD,
+  migrateNavOrderV2,
+  migrateCustomization,
+  hydrateCustomization,
+  importedCustomization,
+} from './settingsModel.js';
+export type { CustomizationSettings, ScopedState } from './settingsModel.js';
+export {
+  USER_CUSTOMIZATION_KEYS,
+  SECRET_CUSTOMIZATION_KEYS,
+  GLOBAL_TOP_KEYS,
+  USER_TOP_KEYS,
+  DEVICE_TOP_KEYS,
+  isGlobalCustomizationKey,
+  extractGlobal,
+  extractUser,
+  extractSecrets,
+  diffGlobal,
+  hasChanges,
+  mergeGlobal,
+  isValidGlobalDoc,
+  isValidUserPayload,
+  applyGlobalSettings,
+  applyUserSettings,
+  sharedSecretsFor,
+} from './settingsScope.js';
+export type {
+  GlobalCustomization,
+  GlobalSettingsPayload,
+  UserSettingsPayload,
+  SharedSecrets,
+  GlobalUserRef,
+  GlobalSettingsDoc,
+  ScopedPatch,
+} from './settingsScope.js';
+export { originOf, splitUrlToken, migrateUrlToken, keepDeviceSecrets } from './settingsSecrets.js';
+export type { DeviceSecretsFields } from './settingsSecrets.js';
+// [fork] room page sections (moved from apps/dashboard Room.tsx, lib/order.ts, lib/defaultSlot.ts)
+export {
+  applyStoredOrder,
+  withDefaultSlot,
+  stripRoomName,
+  ROOM_SECTION_ORDER,
+  roomSections,
+  combinedEntityOrder,
+} from './roomSections.js';
+export type { RoomSectionKey, RoomSection, RoomSectionsInput, RoomSections } from './roomSections.js';

@@ -62,7 +62,7 @@ export type RoomIconName = (typeof CANONICAL_ROOM_ICONS)[number];
 // Only lucide names confirmed present in lucide-react@0.469 are listed.
 // ---------------------------------------------------------------------------
 
-const MDI_TO_LUCIDE: Record<string, string> = {
+export const MDI_TO_LUCIDE: Record<string, string> = { // [fork] exported: the iOS app reads the table (apps/ios/tools/export)
   // Seating / living
   'sofa': 'sofa',
   'sofa-single': 'sofa',
@@ -147,7 +147,7 @@ export const ROOM_KINDS = [
 
 export type RoomKind = (typeof ROOM_KINDS)[number];
 
-const ICON_BY_KIND: Record<RoomKind, RoomIconName> = {
+export const ICON_BY_KIND: Record<RoomKind, RoomIconName> = { // [fork] exported for the iOS app
   living: 'sofa',
   kitchen: 'utensils',
   bedroom: 'bed',
@@ -186,7 +186,7 @@ const ICON_BY_KIND: Record<RoomKind, RoomIconName> = {
 // Avoid keywords short enough to appear inside an unrelated word.
 // ---------------------------------------------------------------------------
 
-const ROOM_KEYWORDS: Array<{ keyword: string; kind: RoomKind }> = [
+export const ROOM_KEYWORDS: Array<{ keyword: string; kind: RoomKind }> = [ // [fork] exported for the iOS app
   // -- English ------------------------------------------------------------
   // Living areas
   { keyword: 'living', kind: 'living' },
