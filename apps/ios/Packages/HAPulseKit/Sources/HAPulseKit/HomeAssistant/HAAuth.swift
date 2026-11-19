@@ -99,6 +99,20 @@ public actor HAAuth {
         return tokens
     }
 
+    /// Connects with a long-lived access token (Profile → Security in Home Assistant) instead of the sign-in page.
+    /// It never runs out and has no refresh token.
+    public func useLongLivedToken(_ token: String, hassURL: URL) async throws -> HATokens {
+        let t = HATokens(hassURL: hassURL, clientID: "", accessToken: token, refreshToken: nil, expires: .distantFuture)
+        try await store.save(t)
+        log.info("long-lived token stored")
+        return t
+    }
+
+    func pendingState() -> String? { expectedState }
+
+    /// What is stored (nil = signed out). Throws when the store cannot be read right now.
+    public func storedTokens() async throws -> HATokens? { try await store.load() }
+
     /// A valid access token; refreshes it shortly before it runs out. Several callers share one refresh.
     public func accessToken() async throws -> String {
         guard let t = try await store.load() else { throw HAError.authInvalid }

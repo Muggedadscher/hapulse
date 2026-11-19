@@ -14,6 +14,24 @@ public protocol HATransport: Sendable {
 }
 
 public enum HAURL {
+    /// The address as the user typed it → the base URL of Home Assistant, or nil when it is none. Spaces and trailing
+    /// slashes go (like the web's sign-in page). Without a scheme: `http://` for a local name (`.local`, an IP
+    /// address, port 8123), `https://` for everything else (Nabu Casa, own domain behind a proxy).
+    public static func normalize(_ input: String) -> URL? {
+        var raw = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        while raw.hasSuffix("/") && !raw.hasSuffix("://") { raw.removeLast() }
+        guard !raw.isEmpty else { return nil }
+        if raw.range(of: "^[a-zA-Z][a-zA-Z0-9+.-]*://", options: .regularExpression) == nil {
+            let host = String(raw.prefix { $0 != "/" && $0 != ":" }).lowercased()
+            let port = raw.dropFirst(host.count).hasPrefix(":8123")
+            let ip = host.range(of: #"^\d{1,3}(\.\d{1,3}){3}$"#, options: .regularExpression) != nil
+            raw = (ip || port || host.hasSuffix(".local") || host == "localhost" ? "http://" : "https://") + raw
+        }
+        guard let c = URLComponents(string: raw), let scheme = c.scheme?.lowercased(), scheme == "http" || scheme == "https",
+              let host = c.host, !host.isEmpty, c.query == nil, c.fragment == nil else { return nil }
+        return c.url
+    }
+
     /// `https://ha.example:8123/` → `wss://ha.example:8123/api/websocket` (http → ws).
     public static func websocket(_ base: URL) -> URL? {
         guard var c = URLComponents(url: base, resolvingAgainstBaseURL: false) else { return nil }

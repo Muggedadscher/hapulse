@@ -190,3 +190,14 @@ func eventuallyMain(_ what: String = "", timeout: Duration = .seconds(3), _ chec
     }
     Issue.record("timed out waiting: \(what)")
 }
+
+@MainActor
+func eventuallyMainAsync(_ what: String = "", timeout: Duration = .seconds(3), _ check: @MainActor () async -> Bool) async throws {
+    let clock = ContinuousClock()
+    let end = clock.now.advanced(by: timeout)
+    while clock.now < end {
+        if await check() { return }
+        try await Task.sleep(for: .milliseconds(5))
+    }
+    Issue.record("timed out waiting: \(what)")
+}
