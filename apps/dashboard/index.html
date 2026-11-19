@@ -16,6 +16,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/pulse-180.png" />
     <link rel="manifest" href="/icons/pulse.webmanifest" />
 
+    <!-- [fork] Sign-in of the native iOS app (apps/ios): it uses this page's address as OAuth client_id, and Home
+         Assistant only redirects to an app URL that the client_id page lists here (IndieAuth redirect_uri). -->
+    <link rel="redirect_uri" href="hapulse://auth-callback" />
+
     <title>HAPulse</title>
   </head>
   <body>
