@@ -287,10 +287,68 @@ describe('iOS export', () => {
     const rooms = core.buildRooms(registries, states);
     const summaries = (list: { id: string }[], map: Record<string, unknown>) =>
       Object.fromEntries(list.map((r) => [r.id, core.roomSummary(r, map)]));
+    // the fixture's keys get sorted: keep the order the room page iterates the domains in
+    const domainOrders = (list: { id: string; domains: Record<string, string[]> }[]) =>
+      Object.fromEntries(list.map((r) => [r.id, Object.keys(r.domains)]));
     writeJson(join(FIX, 'rooms.json'), {
-      cases: { registries, states, rooms, summaries: summaries(rooms, states) },
-      demo: { rooms: demo, summaries: summaries(demo, core.DEMO_ENTITIES) },
+      cases: { registries, states, rooms, summaries: summaries(rooms, states), domainOrders: domainOrders(rooms) },
+      demo: { rooms: demo, summaries: summaries(demo, core.DEMO_ENTITIES), domainOrders: domainOrders(demo) },
     });
+  });
+
+  it('golden: room sections', () => {
+    // random rooms with every domain the page groups, hidden/stored/edit variants, garage covers
+    let seed = 7;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed % n;
+    };
+    const DOM = ['scene', 'light', 'climate', 'humidifier', 'media_player', 'cover', 'switch', 'fan', 'input_boolean',
+      'button', 'vacuum', 'sensor', 'binary_sensor', 'camera', 'lock', 'weather', 'number'];
+    const KEYS = [...core.ROOM_SECTION_ORDER, 'bogus'];
+    const sections = [];
+    for (let t = 0; t < 300; t++) {
+      const domains: Record<string, string[]> = {};
+      const entities: Record<string, unknown> = {};
+      const all: string[] = [];
+      const nd = r(8);
+      for (let d = 0; d < nd; d++) {
+        const dom = DOM[r(DOM.length)]!;
+        const ids: string[] = [];
+        for (let k = 0; k < 1 + r(4); k++) {
+          const id = `${dom}.e${r(6)}`;
+          if (ids.includes(id)) continue;
+          ids.push(id);
+          all.push(id);
+          const attributes = dom === 'cover' && r(2) ? { device_class: ['garage', 'gate', 'blind'][r(3)] } : {};
+          if (r(5)) entities[id] = { entity_id: id, state: 'on', attributes };
+        }
+        domains[dom] = ids;
+      }
+      const pick = () => all.filter(() => r(3) === 0).sort(() => r(3) - 1);
+      const input = {
+        domains, entities, hiddenEntities: pick(), editMode: !!r(2), sentinel: !!r(2),
+        cameraIds: r(2) ? ['cam1', 'cam2'].slice(0, r(3)) : [],
+        storedEntityOrder: r(3) ? pick() : undefined,
+        storedSectionOrder: r(3) ? KEYS.filter(() => r(2)).sort(() => r(3) - 1) : undefined,
+        heatingPlan: !!r(2),
+      };
+      const out = core.roomSections(input as Parameters<typeof core.roomSections>[0]);
+      // the fixture's keys get sorted: keep the order the page iterates the domains in
+      Object.assign(input, { domainOrder: Object.keys(domains) });
+      const key = KEYS[r(KEYS.length)]!;
+      const moved = pick();
+      sections.push({ input, out, combined: { key, ids: moved, result: core.combinedEntityOrder(key, moved, out.snapshot) } });
+    }
+    const names: [string, string][] = [
+      ['Küche Decke', 'Küche'], ['Küche', 'Küche'], ['Deckenlicht Küche links', 'küche'], ['Bad Spiegel (bad)', 'bad'],
+      ['Ärger Lampe', 'Ärger'], ['Lampe Ärger', 'Ärger'], ['Badezimmer Licht', 'Bad'], ['Licht', ''],
+      ['Zimmer 9 Licht', 'Zimmer 9'], ['A.B Licht', 'A.B'], ['AxB Licht', 'A.B'], ['Wohnzimmer  Stehlampe  Wohnzimmer', 'Wohnzimmer'],
+      ['Tür (Flur)', 'Flur'], ['Flur-Licht', 'Flur'], ['Flur_Licht', 'Flur'], ['Café Licht', 'Café'], ['Licht Café', 'Café'],
+      ['STUDIO lamp', 'studio'], ['Kinderzimmer Nachtlicht', 'Kinder'], ['Licht (x)', '(x)'], ['Licht x)', 'x)'],
+    ];
+    const strip = names.map(([name, room]) => ({ name, room, result: core.stripRoomName(name, room) }));
+    writeJson(join(FIX, 'roomSections.json'), { sections, strip });
   });
 
   it('golden: sentinel', async () => {

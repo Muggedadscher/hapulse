@@ -34,6 +34,7 @@ import Testing
         #expect(rooms.map(\.id) == (golden["rooms"]?.array ?? []).compactMap { $0["id"]?.string })
         for (room, want) in zip(rooms, golden["rooms"]?.array ?? []) {
             #expect(json(room) == want, "room \(room.id)")
+            #expect(room.domainOrder == golden["domainOrders"]?[room.id]?.array?.compactMap(\.string), "order \(room.id)")
             let s = Rooms.summary(room) { id in states[id].map { entity(id, $0) } }
             #expect(json(s) == golden["summaries"]?[room.id], "summary \(room.id)")
         }
@@ -70,5 +71,47 @@ import Testing
         #expect(JSCompare.parseFloat("n/a") == nil)
         #expect(JSCompare.parseFloat("unavailable") == nil)
         #expect(JSCompare.parseFloat("Infinity") == .infinity)
+    }
+
+    // MARK: room page sections
+
+    @Test func sectionsLikeTheRoomPage() throws {
+        let g = try Golden.load("roomSections", as: JSONValue.self)
+        let cases = try #require(g["sections"]?.array)
+        #expect(cases.count == 300)
+        func strings(_ v: JSONValue?) -> [String]? { v?.array?.compactMap(\.string) }
+        for (n, c) in cases.enumerated() {
+            let i = try #require(c["input"])
+            let entities = i["entities"]?.object ?? [:]
+            let input = RoomSections.Input(
+                domains: (i["domains"]?.object ?? [:]).mapValues { strings($0) ?? [] },
+                domainOrder: strings(i["domainOrder"]) ?? [],
+                entity: { id in entities[id].map { Self.entity(id, $0) } },
+                hiddenEntities: strings(i["hiddenEntities"]) ?? [], editMode: i["editMode"]?.bool ?? false,
+                sentinel: i["sentinel"]?.bool ?? false, cameraIds: strings(i["cameraIds"]) ?? [],
+                storedEntityOrder: strings(i["storedEntityOrder"]), storedSectionOrder: strings(i["storedSectionOrder"]),
+                heatingPlan: i["heatingPlan"]?.bool ?? false)
+            let (sections, snapshot) = RoomSections.build(input)
+            let want = c["out"]?["sections"]?.array ?? []
+            #expect(sections.map(\.key.rawValue) == want.compactMap { $0["key"]?.string }, "case \(n)")
+            for (s, w) in zip(sections, want) {
+                #expect(s.ids == strings(w["ids"]), "case \(n) \(s.key)")
+                #expect(s.isSensor == (w["isSensor"]?.bool ?? false), "case \(n) \(s.key)")
+            }
+            let wantSnap = c["out"]?["snapshot"]?.object ?? [:]
+            #expect(Set(snapshot.keys.map(\.rawValue)) == Set(wantSnap.keys), "case \(n)")
+            for (k, v) in snapshot { #expect(v == strings(wantSnap[k.rawValue]), "case \(n) snapshot \(k)") }
+            let comb = try #require(c["combined"])
+            #expect(RoomSections.combinedEntityOrder(comb["key"]?.string ?? "", strings(comb["ids"]) ?? [], snapshot)
+                    == strings(comb["result"]), "case \(n) combined")
+        }
+    }
+
+    @Test func roomNameLeftOutLikeTheWeb() throws {
+        let g = try Golden.load("roomSections", as: JSONValue.self)
+        for c in g["strip"]?.array ?? [] {
+            let name = c["name"]?.string ?? "", room = c["room"]?.string ?? ""
+            #expect(RoomSections.stripRoomName(name, room) == c["result"]?.string, "\(name) / \(room)")
+        }
     }
 }

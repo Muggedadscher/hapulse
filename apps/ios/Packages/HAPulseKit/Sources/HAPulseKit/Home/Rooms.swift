@@ -10,6 +10,8 @@ public struct Room: Equatable, Sendable, Identifiable {
     public var entityIds: [String]
     /// domain → entity ids, without diagnostic/config entities, heating plan entries and entities without a state
     public var domains: [String: [String]]
+    /// the keys of `domains` in the order they were added (the web iterates them in that order)
+    public var domainOrder: [String]
 }
 
 /// Quick figures for a room card (port of `RoomSummary`).
@@ -48,7 +50,7 @@ public enum Rooms {
         var rooms: [String: Room] = [:]
         var order: [String] = []
         for a in registries.areas where rooms[a.areaId] == nil {
-            rooms[a.areaId] = Room(id: a.areaId, name: a.name, icon: a.icon, picture: a.picture, entityIds: [], domains: [:])
+            rooms[a.areaId] = Room(id: a.areaId, name: a.name, icon: a.icon, picture: a.picture, entityIds: [], domains: [:], domainOrder: [])
             order.append(a.areaId)
         }
         for e in registries.entities {
@@ -56,7 +58,9 @@ public enum Rooms {
             guard let area = areaId(of: e, deviceAreas: deviceAreas), rooms[area] != nil else { continue }
             rooms[area]!.entityIds.append(e.entityId)
             if e.entityCategory != nil || isHeatingPlanEntry(e) || !hasState(e.entityId) { continue }
-            rooms[area]!.domains[domainOf(e.entityId), default: []].append(e.entityId)
+            let domain = domainOf(e.entityId)
+            if rooms[area]!.domains[domain] == nil { rooms[area]!.domainOrder.append(domain) }
+            rooms[area]!.domains[domain, default: []].append(e.entityId)
         }
         // JavaScript's sort is stable: equal names keep the registry order
         return order.enumerated().map { ($0.offset, rooms[$0.element]!) }
@@ -69,6 +73,19 @@ public enum Rooms {
 
     public static func build(_ registries: Registries, entities: EntityStore) -> [Room] {
         build(registries) { entities[$0] != nil }
+    }
+
+    /// The sections of the room's page (`roomSections`).
+    public static func sections(_ room: Room, entities: EntityStore, settings: SettingsState, editMode: Bool = false,
+                                sentinel: Bool = false, cameraIds: [String] = [], heatingPlan: Bool = false)
+        -> (sections: [RoomSection], snapshot: [RoomSectionKey: [String]]) {
+        let c = settings.customization
+        let entityOrder = c["entityOrder"]?[room.id]?.array?.compactMap(\.string)
+        let sectionOrder = c["roomSectionOrder"]?[room.id]?.array?.compactMap(\.string)
+        return RoomSections.build(.init(
+            domains: room.domains, domainOrder: room.domainOrder, entity: { entities[$0] },
+            hiddenEntities: settings.hiddenEntities, editMode: editMode, sentinel: sentinel, cameraIds: cameraIds,
+            storedEntityOrder: entityOrder, storedSectionOrder: sectionOrder, heatingPlan: heatingPlan))
     }
 
     public static func summary(_ room: Room, entity: (String) -> HAEntity?) -> RoomSummary {

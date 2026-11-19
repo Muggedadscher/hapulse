@@ -1,5 +1,22 @@
 {
   "cases": {
+    "domainOrders": {
+      "arbeit": [],
+      "bad": [
+        "light",
+        "media_player",
+        "binary_sensor"
+      ],
+      "kueche": [
+        "light",
+        "sensor",
+        "climate",
+        "switch"
+      ],
+      "leer": [],
+      "zebra": [],
+      "zebra2": []
+    },
     "registries": {
       "areas": [
         {
@@ -408,6 +425,53 @@
     }
   },
   "demo": {
+    "domainOrders": {
+      "bathroom": [
+        "light",
+        "sensor",
+        "humidifier"
+      ],
+      "bedroom": [
+        "light",
+        "climate",
+        "cover",
+        "sensor",
+        "media_player",
+        "binary_sensor",
+        "scene"
+      ],
+      "garage": [
+        "cover"
+      ],
+      "hallway": [
+        "light",
+        "binary_sensor",
+        "lock",
+        "camera",
+        "scene"
+      ],
+      "kitchen": [
+        "light",
+        "sensor",
+        "switch",
+        "media_player",
+        "scene"
+      ],
+      "living_room": [
+        "light",
+        "climate",
+        "media_player",
+        "sensor",
+        "binary_sensor",
+        "scene"
+      ],
+      "office": [
+        "light",
+        "sensor",
+        "switch",
+        "scene"
+      ]
+    },
     "rooms": [
       {
         "domains": {
