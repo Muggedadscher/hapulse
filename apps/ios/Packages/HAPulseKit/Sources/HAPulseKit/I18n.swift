@@ -36,7 +36,8 @@ public enum PluralCategory: String, Sendable {
     case zero, one, two, few, many, other
 
     public static func of(_ n: Double, locale: String) -> PluralCategory {
-        let a = abs(n)
+        // Intl.PluralRules looks at the number rounded to 3 fraction digits (1.0000001 → "1" → one)
+        let a = (abs(n) * 1000).rounded(.toNearestOrAwayFromZero) / 1000
         let isInt = a == a.rounded(.down)
         let i = a.rounded(.down)
         let lang = String(locale.lowercased().prefix(while: { $0 != "-" && $0 != "_" }))

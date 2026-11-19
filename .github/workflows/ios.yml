@@ -4,11 +4,11 @@ name: iOS
 
 on:
   push:
-    branches: ["**"]
-    paths: ["apps/ios/**", "packages/core/**", ".github/workflows/ios.yml"]
+    branches: [main]
+    paths: ["apps/ios/**", "packages/core/**", "package-lock.json", ".github/workflows/ios.yml"]
   pull_request:
     branches: ["**"]
-    paths: ["apps/ios/**", "packages/core/**", ".github/workflows/ios.yml"]
+    paths: ["apps/ios/**", "packages/core/**", "package-lock.json", ".github/workflows/ios.yml"]
   workflow_dispatch: {}
 
 permissions:
@@ -50,12 +50,13 @@ jobs:
           EVENT: ${{ github.event_name }}
           BASE: ${{ github.event.pull_request.base.sha }}
         run: |
-          if git diff --quiet -- apps/ios; then echo "Generated files are up to date."; exit 0; fi
-          git diff --stat -- apps/ios
+          # status, not diff: a new locale or fixture is an untracked file
+          if [ -z "$(git status --porcelain -- apps/ios)" ]; then echo "Generated files are up to date."; exit 0; fi
+          git status --porcelain -- apps/ios
           {
             echo "### iOS: generated files differ from the web code"
             echo '```'
-            git diff --stat -- apps/ios
+            git status --porcelain -- apps/ios
             echo '```'
             echo "Run \`npx vitest run --config apps/ios/tools/export/vitest.config.mts\` and commit, then adapt the Swift code if a test fails."
           } >> "$GITHUB_STEP_SUMMARY"
@@ -74,8 +75,14 @@ jobs:
       XCODEGEN_SHA256: "4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Select Xcode 26.6
-        run: sudo xcode-select -s /Applications/Xcode_26.6.app && xcodebuild -version
+      # The newest installed Xcode 27 once the image has one (iOS 27 SDK), otherwise 26.6. Logged with the runtimes.
+      - name: Select Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -n 1)
+          [ -n "$XC" ] || XC=/Applications/Xcode_26.6.app
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+          xcrun simctl list runtimes
       - name: Install XcodeGen (pinned)
         run: |
           curl -fsSL -o /tmp/xcodegen.zip "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
@@ -87,26 +94,28 @@ jobs:
       - name: Generate the Xcode project
         working-directory: apps/ios
         run: xcodegen generate
-      - name: Build and run the UI tests (iPhone 17 Pro, iOS 26.5)
+      - name: Build and run the UI tests (iPhone 17 Pro, newest iOS)
         working-directory: apps/ios
         env:
           TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/apps/ios/screenshots/iphone
         run: |
           set -o pipefail
+          mkdir -p build
           xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
             -resultBundlePath build/iphone.xcresult \
-            CODE_SIGNING_ALLOWED=NO | tail -n 200
-      - name: Screenshots on iPad (iPad Pro 13-inch (M5), iOS 26.5)
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/iphone.log | tail -n 200
+      - name: Screenshots on iPad (iPad Pro 13-inch (M5), newest iOS)
         working-directory: apps/ios
         env:
           TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/apps/ios/screenshots/ipad
         run: |
           set -o pipefail
+          mkdir -p build
           xcodebuild test -project HAPulse.xcodeproj -scheme HAPulse \
-            -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=26.5' \
+            -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest' \
             -resultBundlePath build/ipad.xcresult \
-            CODE_SIGNING_ALLOWED=NO | tail -n 100
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/ipad.log | tail -n 100
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -120,5 +129,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-xcresult
-          path: apps/ios/build/*.xcresult
+          path: |
+            apps/ios/build/*.xcresult
+            apps/ios/build/*.log
           retention-days: 7

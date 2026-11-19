@@ -27,13 +27,52 @@ public enum HPText: Sendable, CaseIterable {
     }
 }
 
+extension HPText {
+    /// The system text style that scales like this one with the user's text size (Dynamic Type).
+    var relativeTo: Font.TextStyle {
+        switch self {
+        case .largeTitle, .figure, .weatherHero: .largeTitle
+        case .greetingPhone, .title1, .keypad: .title
+        case .title2: .title2
+        case .title3: .title3
+        case .headline: .headline
+        case .body: .body
+        case .callout: .callout
+        case .subhead: .subheadline
+        case .footnote: .footnote
+        case .caption1: .caption
+        case .caption2: .caption2
+        }
+    }
+}
+
+/// Size, line height and tracking scale with the user's text size; the token values are the default size.
+struct HPTextModifier: ViewModifier {
+    let weight: Font.Weight
+    let tracking: CGFloat
+    @ScaledMetric var size: CGFloat
+    @ScaledMetric var line: CGFloat
+
+    init(_ style: HPText, weight: Font.Weight?) {
+        let s = style.spec
+        self.weight = weight ?? s.weight
+        self.tracking = s.tracking
+        _size = ScaledMetric(wrappedValue: s.size, relativeTo: style.relativeTo)
+        _line = ScaledMetric(wrappedValue: s.line, relativeTo: style.relativeTo)
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: size, weight: weight).monospacedDigit())
+            .tracking(tracking)
+            .lineSpacing(max(0, line - size * 1.2))
+    }
+}
+
 extension View {
     /// Font, tracking and line height of a Glas text style; `weight` overrides the style's weight (e.g. 600 emphasis).
+    /// Scales with Dynamic Type.
     public func hpText(_ style: HPText, weight: Font.Weight? = nil) -> some View {
-        let s = style.spec
-        return self
-            .font(.system(size: s.size, weight: weight ?? s.weight).monospacedDigit())
-            .tracking(s.tracking)
-            .lineSpacing(max(0, s.line - s.size * 1.2))
+        modifier(HPTextModifier(style, weight: weight))
     }
 }

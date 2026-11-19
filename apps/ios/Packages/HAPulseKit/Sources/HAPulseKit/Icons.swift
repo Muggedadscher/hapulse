@@ -37,6 +37,18 @@ public enum IconLibrary {
     }()
 
     public static func icon(_ name: String) -> IconData? { all[name] }
+
+    /// The parsed commands of `name` (empty if unknown or broken), parsed once per name.
+    public static func commands(_ name: String) -> [PathCommand] {
+        cacheLock.lock(); defer { cacheLock.unlock() }
+        if let hit = cache[name] { return hit }
+        let parsed = (try? all[name]?.commands()) ?? []
+        cache[name] = parsed
+        return parsed
+    }
+
+    private static let cacheLock = NSLock()
+    nonisolated(unsafe) private static var cache: [String: [PathCommand]] = [:]
 }
 
 /// Parser for SVG path data (`d`), all commands incl. relative forms and elliptical arcs.

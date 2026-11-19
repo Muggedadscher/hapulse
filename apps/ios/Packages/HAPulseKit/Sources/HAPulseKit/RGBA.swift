@@ -40,6 +40,9 @@ public struct RGBA: Equatable, Hashable, Sendable {
         let body = s[s.index(after: open)..<s.index(before: s.endIndex)]
         let parts = body.split(whereSeparator: { $0 == "," || $0 == " " || $0 == "/" }).map(String.init)
         guard parts.count == 3 || parts.count == 4 else { return nil }
+        // like the web's pattern `[\d.]+`: no sign, no exponent
+        func plain(_ p: String) -> Bool { !p.isEmpty && p.allSatisfy { $0.isASCII && ($0.isNumber || $0 == ".") } }
+        guard parts.prefix(3).allSatisfy(plain), parts.count == 3 || plain(parts[3].hasSuffix("%") ? String(parts[3].dropLast()) : parts[3]) else { return nil }
         let nums = parts.prefix(3).compactMap(Double.init)
         guard nums.count == 3 else { return nil }
         var alpha = 1.0

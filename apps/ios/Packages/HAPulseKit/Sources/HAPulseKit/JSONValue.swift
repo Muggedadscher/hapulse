@@ -1,7 +1,8 @@
 import Foundation
 
 /// Any JSON value. Home Assistant attributes and settings documents carry fields the app does not model (yet); they
-/// are kept as they are, so writing a document back never drops another client's data.
+/// are kept as they are, so writing a document back keeps another client's data (numbers travel as Double, like in
+/// JavaScript: integers beyond 2^53 lose precision there too).
 public enum JSONValue: Equatable, Hashable, Sendable, Codable {
     case null
     case bool(Bool)

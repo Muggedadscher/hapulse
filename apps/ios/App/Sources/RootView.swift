@@ -6,9 +6,17 @@ import HAPulseUI
 /// stage by stage (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
 struct RootView: View {
     let options: LaunchOptions
+    /// Loaded once (four JSON files), not on every `body`.
+    @State private var localizer: Localizer
+
+    init(options: LaunchOptions) {
+        self.options = options
+        _localizer = State(initialValue: Localizer(locale: options.locale))
+    }
 
     var body: some View {
-        CatalogView(localizer: Localizer(locale: options.locale))
+        CatalogView(localizer: localizer)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("hp.root")
     }
 }

@@ -6,7 +6,7 @@ public struct IconShape: Shape {
     let commands: [PathCommand]
 
     public init(_ name: String) {
-        commands = (try? IconLibrary.icon(name)?.commands()) ?? []
+        commands = IconLibrary.commands(name)
     }
 
     public func path(in rect: CGRect) -> Path {

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import HAPulseKit
 
@@ -39,7 +40,7 @@ public struct AccentStyle: ShapeStyle {
     public init(_ part: AccentPart) { self.part = part }
 
     public func resolve(in environment: EnvironmentValues) -> Color {
-        let a = GlasAccent.make(hue: environment.glasAccentHue, mode: environment.colorScheme == .dark ? .dark : .light)
+        let a = AccentCache.shared.accent(hue: environment.glasAccentHue, dark: environment.colorScheme == .dark)
         let css: String
         switch part {
         case .accent: css = a.accent
@@ -58,4 +59,20 @@ public struct AccentStyle: ShapeStyle {
 extension ShapeStyle where Self == AccentStyle {
     /// `.foregroundStyle(.accentPart(.accentInk))`
     public static func accentPart(_ part: AccentPart) -> AccentStyle { AccentStyle(part) }
+}
+
+/// `GlasAccent.make` walks its contrast loops; a view resolves accent styles often, so each (hue, mode) is computed once.
+final class AccentCache: @unchecked Sendable {
+    static let shared = AccentCache()
+    private let lock = NSLock()
+    private var store: [String: GlasAccent] = [:]
+
+    func accent(hue: Double?, dark: Bool) -> GlasAccent {
+        let key = "\(hue.map { String($0) } ?? "-")|\(dark)"
+        lock.lock(); defer { lock.unlock() }
+        if let hit = store[key] { return hit }
+        let a = GlasAccent.make(hue: hue, mode: dark ? .dark : .light)
+        store[key] = a
+        return a
+    }
 }

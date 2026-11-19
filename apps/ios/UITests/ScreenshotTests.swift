@@ -19,8 +19,7 @@ final class ScreenshotTests: XCTestCase {
                     let app = XCUIApplication()
                     app.launchArguments = ["-hp-scene", scene, "-hp-locale", locale, "-hp-scheme", scheme]
                     app.launch()
-                    XCTAssertTrue(app.otherElements["hp.root"].waitForExistence(timeout: 20) || app.staticTexts["hp.greeting"].waitForExistence(timeout: 5),
-                                  "scene \(scene) did not appear")
+                    XCTAssertTrue(app.staticTexts["hp.greeting"].waitForExistence(timeout: 20), "scene \(scene) did not appear")
                     let name = "\(scene)-\(locale)-\(scheme)"
                     let shot = XCUIScreen.main.screenshot()
                     let attachment = XCTAttachment(screenshot: shot)
