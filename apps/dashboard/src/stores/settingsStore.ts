@@ -6,278 +6,28 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { THEME_NAMES } from '../theme/themes';
 import type { ThemeName, ThemeMode } from '../theme/themes';
 import { dynamicJSONStorage } from '../persistence/zustandStorage';
-import { LOCALES, CURRENT_VERSION } from '@hapulse/core';
+import { CURRENT_VERSION } from '@hapulse/core';
 import { CURRENT_FORK_VERSION } from '@hapulse/core'; // [fork]
 import type { Locale } from '@hapulse/core';
-import { keepDeviceSecrets, migrateUrlToken, splitUrlToken } from './settingsSecrets'; // [fork]
-import { sanitizeCustomization } from './settingsSanitize'; // [fork]
-import { migrateNavOrderV2 } from './navOrderMigration'; // [fork]
-import { isGlobalCustomizationKey, USER_CUSTOMIZATION_KEYS } from './settingsScope'; // [fork]
-import type { GlobalSettingsPayload, SharedSecrets, UserSettingsPayload } from './settingsScope'; // [fork]
-
-/**
- * Migrate a pre-v0.5 theme value (dusk/dawn/midnight/sage — which encoded both
- * identity AND light/dark) to the new { theme, mode } model. New-style values
- * pass through. Returns undefined for unknown input.
- */
-function migrateTheme(value: unknown): { theme: ThemeName; mode: ThemeMode } | undefined {
-  if (typeof value !== 'string') return undefined;
-  if ((THEME_NAMES as readonly string[]).includes(value)) {
-    return { theme: value as ThemeName, mode: 'light' };
-  }
-  switch (value) {
-    case 'dusk': return { theme: 'sunset', mode: 'dark' };
-    case 'dawn': return { theme: 'sunset', mode: 'light' };
-    case 'midnight': return { theme: 'ocean', mode: 'dark' };
-    case 'sage': return { theme: 'forest', mode: 'light' };
-    default: return undefined;
-  }
-}
-
-export interface CustomizationSettings {
-  roomOrder: string[];
-  hiddenRooms: string[];
-  hiddenEntities: string[];
-  entityOverrides: Record<string, { name?: string; icon?: string }>;
-  homeChips: string[];
-  /** areaId → ordered entity_ids within that room */
-  entityOrder: Record<string, string[]>;
-  /** Entity IDs pinned to the favorites strip on the Home page */
-  favorites: string[];
-  /** Music Assistant library: last chosen playback target (entity_id). */
-  libraryPlayerId: string | null;
-  /** Direct Music Assistant connection (full queue): server URL + API token.
-   *  Optional — without it the queue card shows HA's summary only. */
-  maServerUrl: string | null;
-  maToken: string | null;
-  /** Chosen weather.* entity id for the header glance + weather modal. Empty = auto (first weather entity). */
-  weatherEntity: string;
-  /** Ordered Home Overview section ids (e.g. scenes/hero/energy/...). */
-  homeSectionOrder: string[];
-  /** Home Overview section ids that are hidden. */
-  hiddenSections: string[];
-  /** Per-room section display order: areaId → ordered section keys */
-  roomSectionOrder: Record<string, string[]>;
-  /**
-   * Per-room section column span on the room page's 2-column grid, keyed by
-   * `${areaId}:${sectionKey}`. 1 = half width, 2 = full width (the default when
-   * unset). Lets a user narrow individual room sections like the other pages.
-   */
-  roomSectionSpans: Record<string, number>;
-  /** Ordered navigation item ids (sidebar + mobile tabs). */
-  navOrder: string[];
-  /** Navigation item ids that are hidden. */
-  hiddenNav: string[];
-  /** Per-section column span overrides on the home overview grid (1–4). */
-  homeSectionSpans: Record<string, number>;
-  /** Per-section max-height level on the home overview grid (0 = no cap, 1–4). */
-  homeSectionHeights: Record<string, number>;
-  /** Ordered Automations section ids (hero, activity, cat_*). */
-  automationSectionOrder: string[];
-  /** Automation section ids that are hidden. */
-  hiddenAutomationSections: string[];
-  /** Per-section column span overrides on the automations grid (1–4). */
-  automationSectionSpans: Record<string, number>;
-  /** Per-section max-height level on the automations grid (0 = no cap, 1–4). */
-  automationSectionHeights: Record<string, number>;
-  /** Ordered Scenes section ids (hero, activity, room_*). */
-  sceneSectionOrder: string[];
-  /** Scene section ids that are hidden. */
-  hiddenSceneSections: string[];
-  /** Per-section column span overrides on the scenes grid (1–4). */
-  sceneSectionSpans: Record<string, number>;
-  /** Per-section max-height level on the scenes grid (0 = no cap, 1–4). */
-  sceneSectionHeights: Record<string, number>;
-  /** Ordered Music page section ids (now_playing, other_players, zones). */
-  musicSectionOrder: string[];
-  /** Music section ids that are hidden. */
-  hiddenMusicSections: string[];
-  /** Per-section column span overrides on the music grid (1–4). */
-  musicSectionSpans: Record<string, number>;
-  /** Ordered Security page section ids. */
-  securitySectionOrder: string[];
-  /** Security section ids that are hidden. */
-  hiddenSecuritySections: string[];
-  /** Per-section column span overrides on the security grid (1–4). */
-  securitySectionSpans: Record<string, number>;
-  /** Per-section max-height level on the security grid (0 = no cap, 1–4). */
-  securitySectionHeights: Record<string, number>;
-  /** Whether admin editing controls (edit buttons on pages, rooms in settings) are shown. */
-  editingEnabled: boolean;
-  /** Ordered System page section ids. */
-  systemSectionOrder: string[];
-  /** System section ids that are hidden. */
-  hiddenSystemSections: string[];
-  /** Per-section column span overrides on the system grid (1–4). */
-  systemSectionSpans: Record<string, number>;
-  /** Per-section max-height level on the system grid (0 = no cap, 1–4). */
-  systemSectionHeights: Record<string, number>;
-  /** Ordered Energy page section ids (hero, usage, devices, solar, water, gas). */
-  energySectionOrder: string[];
-  /** Energy section ids that are hidden. */
-  hiddenEnergySections: string[];
-  /** Per-section column span overrides on the energy grid (1–4). */
-  energySectionSpans: Record<string, number>;
-  /** Per-section max-height level on the energy grid (0 = no cap, 1–4). */
-  energySectionHeights: Record<string, number>;
-  /**
-   * Section ids hidden on MOBILE ONLY (still shown on desktop/larger screens),
-   * one list per page. These are independent of the full hidden* lists above:
-   * a section in a mobile-hidden list renders on desktop but is suppressed on
-   * the mobile layout. (Edit mode always shows them so they stay togglable.)
-   */
-  mobileHiddenSections: string[];
-  mobileHiddenAutomationSections: string[];
-  mobileHiddenSceneSections: string[];
-  mobileHiddenMusicSections: string[];
-  mobileHiddenSecuritySections: string[];
-  mobileHiddenSystemSections: string[];
-  mobileHiddenEnergySections: string[];
-  /**
-   * [fork] Scrypted origin (e.g. `https://host:10443`) of the Sentinel NVR the
-   * native NVR pages talk to. Empty = not configured (the page shows a setup
-   * prompt). Any pasted Sentinel URL is normalised by `parseSentinelSetup`.
-   */
-  scryptedUrl: string;
-  /**
-   * [fork] Sentinel NVR access token (plugin settings → "Sicherheit"). Together
-   * with `scryptedUrl` this is the native NVR integration's connection; the
-   * browser talks to the plugin's `/public/` endpoint directly (HAPulse has no
-   * backend). Stored like `maToken` — per HA user, never sent anywhere else.
-   */
-  scryptedToken: string;
-  /**
-   * [fork] Last-selected time range in the entity detail modal's history
-   * chart (`24h`/`7d`/`30d`). Remembered across entities, per user.
-   */
-  detailHistoryRange: string;
-  /**
-   * [fork] One-time marker: the pool summary chip has been added to `homeChips`.
-   * Lets the chip default ON for existing installs (whose stored homeChips
-   * predate it) exactly once, while still allowing it to be hidden afterwards.
-   */
-  poolChipMigrated: boolean;
-  /** [fork] Same one-time marker for the garage summary chip (garage doors / gates). */
-  garageChipMigrated: boolean;
-  /** [fork] Same one-time marker for the locks summary chip. */
-  locksChipMigrated: boolean;
-  /**
-   * [fork] One-time marker: the waste-collection card has been slotted into a
-   * pre-existing `homeSectionOrder`. Gives it a sensible default position (after
-   * Security) for installs that had already reordered their Home sections,
-   * exactly once — a later manual move is preserved.
-   */
-  wasteSectionMigrated: boolean;
-  /** [fork] Same one-time placement for the Sentinel NVR home card (after Waste/Security). */
-  nvrSectionMigrated: boolean;
-  /** [fork] Same one-time placement for the home hints (first). */
-  hintsSectionMigrated: boolean;
-  /** [fork] Glas S/M/L: sections drawn "taller" (L), as `<page>:<section>` (core `tallKey`). Read in Glas ≥ 900 px only. */
-  tallSections: string[];
-  /** [fork] One-time sidebar reorder to Overview, Rooms, NVR, Pool, rest (see navOrderMigration.ts). */
-  navOrderV2Migrated: boolean;
-  /** [fork] Sentinel camera id → HA area id (null = no room): room pages show these cameras (nvr/cameraSource.ts). */
-  nvrCameraRooms: Record<string, string | null>;
-  /**
-   * [fork] HA area id → entity id the room's temperature comes from (a temperature sensor or a thermostat of the room;
-   * core `roomTemperature`). Missing = automatic (first temperature sensor, else the thermostat). GLOBAL.
-   */
-  roomTemperatureSource: Record<string, string>;
-  /**
-   * [fork] Second style "Glas" (docs/GLAS-PLAN.md): `'classic'` | `'glas'`. Only look and motion change.
-   * GLOBAL like every customization field: under admin management the admin sets it for everybody (E1).
-   * Read through `resolveAppearance` (theme/glasAppearance.ts), which maps unknown values to `'classic'`.
-   */
-  uiStyle: string;
-  /** [fork] Glas: `'clear'` | `'tinted'` | `'opaque'` (unknown → `'clear'`). GLOBAL (E2). */
-  glassStrength: string;
-  /** [fork] Glas: solid surfaces instead of glass, e.g. for older tablets. GLOBAL (E2). */
-  reduceTransparency: boolean;
-}
-
-/**
- * [fork] Ensure the pool summary chip is enabled by default the first time an
- * install with pre-existing homeChips is loaded. Idempotent via the marker, so
- * a user who later hides the chip keeps it hidden.
- */
-function migratePoolChip(cust: CustomizationSettings): CustomizationSettings {
-  if (cust.poolChipMigrated) return cust;
-  // [fork] An empty list means "all chips" — appending would leave ONLY this chip.
-  const homeChips = cust.homeChips.length === 0 || cust.homeChips.includes('pool') ? cust.homeChips : [...cust.homeChips, 'pool'];
-  return { ...cust, homeChips, poolChipMigrated: true };
-}
-
-/**
- * [fork] Same for the garage chip: stored homeChips predating it would otherwise
- * read as a subset (SummaryChipsBar compares against ALL_CHIPS.length) and hide
- * the new chip. Empty = "all" stays empty. Idempotent via the marker.
- */
-export function migrateGarageChip(cust: CustomizationSettings): CustomizationSettings {
-  if (cust.garageChipMigrated) return cust;
-  const homeChips =
-    cust.homeChips.length === 0 || cust.homeChips.includes('garage') ? cust.homeChips : [...cust.homeChips, 'garage'];
-  return { ...cust, homeChips, garageChipMigrated: true };
-}
-
-/** [fork] Same for the locks chip. Empty = "all" stays empty. Idempotent via the marker. */
-export function migrateLocksChip(cust: CustomizationSettings): CustomizationSettings {
-  if (cust.locksChipMigrated) return cust;
-  const homeChips =
-    cust.homeChips.length === 0 || cust.homeChips.includes('locks') ? cust.homeChips : [...cust.homeChips, 'locks'];
-  return { ...cust, homeChips, locksChipMigrated: true };
-}
-
-/**
- * [fork] Give the waste-collection card a good default slot (right after
- * Security) for installs that already have an explicit `homeSectionOrder`
- * predating it. An empty order needs no help — the natural SECTION_IDS position
- * already applies — so this only touches a non-empty, waste-less order.
- * Idempotent via the marker; a later manual reorder is respected.
- */
-function migrateWasteSection(cust: CustomizationSettings): CustomizationSettings {
-  if (cust.wasteSectionMigrated) return cust;
-  let homeSectionOrder = cust.homeSectionOrder;
-  if (homeSectionOrder.length > 0 && !homeSectionOrder.includes('waste')) {
-    const anchor = homeSectionOrder.indexOf('security');
-    const insertAt = anchor >= 0 ? anchor + 1 : homeSectionOrder.length;
-    homeSectionOrder = [
-      ...homeSectionOrder.slice(0, insertAt),
-      'waste',
-      ...homeSectionOrder.slice(insertAt),
-    ];
-  }
-  return { ...cust, homeSectionOrder, wasteSectionMigrated: true };
-}
-
-/**
- * [fork] Home hints (docs/glas/PLAN-ETAPPE-4.md K76): an explicit `homeSectionOrder` from before the section existed
- * would append it LAST; hints belong at the top, once. Idempotent via the marker; a later move is kept.
- */
-export function migrateHintsSection(cust: CustomizationSettings): CustomizationSettings {
-  if (cust.hintsSectionMigrated) return cust;
-  const homeSectionOrder =
-    cust.homeSectionOrder.length > 0 && !cust.homeSectionOrder.includes('hints') ? ['hints', ...cust.homeSectionOrder] : cust.homeSectionOrder;
-  return { ...cust, homeSectionOrder, hintsSectionMigrated: true };
-}
-
-/**
- * [fork] Same for the Sentinel NVR home card: an install with an explicit
- * `homeSectionOrder` from before the card existed would otherwise append it LAST
- * (below Rooms, especially visible on mobile). Place it right after Waste/Security once.
- */
-function migrateNvrSection(cust: CustomizationSettings): CustomizationSettings {
-  if (cust.nvrSectionMigrated) return cust;
-  let homeSectionOrder = cust.homeSectionOrder;
-  if (homeSectionOrder.length > 0 && !homeSectionOrder.includes('nvr')) {
-    const anchor = Math.max(homeSectionOrder.indexOf('waste'), homeSectionOrder.indexOf('security'));
-    const insertAt = anchor >= 0 ? anchor + 1 : homeSectionOrder.length;
-    homeSectionOrder = [...homeSectionOrder.slice(0, insertAt), 'nvr', ...homeSectionOrder.slice(insertAt)];
-  }
-  return { ...cust, homeSectionOrder, nvrSectionMigrated: true };
-}
+// [fork] The settings model (fields, defaults, migrations, type check, apply steps) lives in @hapulse/core since
+// 2026-11-19 so the iOS app reads snapshots and global documents the same way (iOS W1).
+import {
+  DEFAULT_CUSTOMIZATION,
+  applyGlobalSettings,
+  applyUserSettings,
+  hydrateCustomization,
+  importedCustomization,
+  isThemeMode,
+  migrateTheme,
+  parseLanguagePref,
+  sharedSecretsFor,
+  splitUrlToken,
+} from '@hapulse/core';
+import type { CustomizationSettings, GlobalSettingsPayload, SharedSecrets, UserSettingsPayload } from '@hapulse/core';
+export type { CustomizationSettings } from '@hapulse/core';
+export { migrateGarageChip, migrateLocksChip, migrateHintsSection } from '@hapulse/core';
 
 interface SettingsState {
   /** Color identity (aurora/sunset/ocean/forest). */
@@ -351,77 +101,6 @@ export function effectiveMode(s: { mode: ThemeMode; modeOverride?: ThemeMode | n
   return s.modeOverride ?? s.mode;
 }
 
-const isThemeMode = (v: unknown): v is ThemeMode => v === 'light' || v === 'dark' || v === 'auto'; // [fork]
-
-const DEFAULT_CUSTOMIZATION: CustomizationSettings = {
-  roomOrder: [],
-  hiddenRooms: [],
-  hiddenEntities: [],
-  entityOverrides: {},
-  homeChips: ['people', 'lights', 'doors', 'alarm', 'media', 'pool', 'garage', 'locks'], // [fork] pool + garage + locks chips
-  entityOrder: {},
-  favorites: [],
-  weatherEntity: '',
-  homeSectionOrder: [],
-  hiddenSections: ['blinds'],
-  roomSectionOrder: {},
-  roomSectionSpans: {},
-  navOrder: [],
-  hiddenNav: [],
-  homeSectionSpans: {},
-  homeSectionHeights: {},
-  automationSectionOrder: [],
-  hiddenAutomationSections: [],
-  automationSectionSpans: {},
-  automationSectionHeights: {},
-  sceneSectionOrder: [],
-  hiddenSceneSections: [],
-  sceneSectionSpans: {},
-  sceneSectionHeights: {},
-  musicSectionOrder: [],
-  hiddenMusicSections: [],
-  musicSectionSpans: {},
-  securitySectionOrder: [],
-  hiddenSecuritySections: [],
-  securitySectionSpans: {},
-  securitySectionHeights: {},
-  editingEnabled: true,
-  systemSectionOrder: [],
-  hiddenSystemSections: [],
-  systemSectionSpans: {},
-  systemSectionHeights: {},
-  energySectionOrder: [],
-  hiddenEnergySections: [],
-  energySectionSpans: {},
-  energySectionHeights: {},
-  mobileHiddenSections: [],
-  mobileHiddenAutomationSections: [],
-  mobileHiddenSceneSections: [],
-  mobileHiddenMusicSections: [],
-  mobileHiddenSecuritySections: [],
-  mobileHiddenSystemSections: [],
-  mobileHiddenEnergySections: [],
-  scryptedUrl: '', // [fork]
-  scryptedToken: '', // [fork]
-  detailHistoryRange: '24h', // [fork]
-  poolChipMigrated: false, // [fork]
-  garageChipMigrated: false, // [fork]
-  locksChipMigrated: false, // [fork]
-  wasteSectionMigrated: false, // [fork]
-  nvrSectionMigrated: false, // [fork]
-  hintsSectionMigrated: false, // [fork]
-  tallSections: [], // [fork] Glas S/M/L
-  navOrderV2Migrated: false, // [fork]
-  nvrCameraRooms: {}, // [fork]
-  roomTemperatureSource: {}, // [fork] room temperature source
-  uiStyle: 'classic', // [fork] Glas
-  glassStrength: 'clear', // [fork] Glas
-  reduceTransparency: false, // [fork] Glas
-  libraryPlayerId: null,
-  maServerUrl: null,
-  maToken: null,
-};
-
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
   persist(
     (set, get) => ({
@@ -461,69 +140,16 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       },
 
       applyGlobal(payload) {
-        const cur = get();
-        const picked: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(payload.customization ?? {})) {
-          if (isGlobalCustomizationKey(k)) picked[k] = v;
-        }
-        const incoming = sanitizeCustomization(picked, DEFAULT_CUSTOMIZATION);
-        // [fork] A chip marker belongs to the homeChips list it came with. A global document
-        // written before a chip existed carries its list but no marker — without this, the
-        // marker this device already set would skip the migration and the admin's older
-        // list would hide the new chip for everyone.
-        if (incoming.homeChips) {
-          incoming.poolChipMigrated ??= false;
-          incoming.garageChipMigrated ??= false;
-          incoming.locksChipMigrated ??= false;
-        }
-        // [fork] Same for the hints section marker and the section order it belongs to (Glas Etappe 4, K76).
-        if (incoming.homeSectionOrder) incoming.hintsSectionMigrated ??= false;
-        // [fork] Glas: a document written before the style existed carries none — the admin's choice is then
-        // Klassisch, not a style this device happened to keep (e.g. from an imported export).
-        incoming.uiStyle ??= DEFAULT_CUSTOMIZATION.uiStyle;
-        incoming.glassStrength ??= DEFAULT_CUSTOMIZATION.glassStrength;
-        incoming.reduceTransparency ??= DEFAULT_CUSTOMIZATION.reduceTransparency;
-        const migrated = migrateTheme(payload.theme);
-        set({
-          theme: migrated?.theme ?? cur.theme,
-          mode: isThemeMode(payload.mode) ? payload.mode : cur.mode,
-          accentHue: typeof payload.accentHue === 'number' ? payload.accentHue : undefined,
-          appName: typeof payload.appName === 'string' ? payload.appName : undefined,
-          appIcon: typeof payload.appIcon === 'string' ? payload.appIcon : undefined,
-          appIconHidden: typeof payload.appIconHidden === 'boolean' ? payload.appIconHidden : false,
-          customization: migrateNavOrderV2(migrateHintsSection(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({
-            ...cur.customization,
-            ...incoming,
-          }))))))), // [fork] + migrateLocksChip, migrateHintsSection
-        });
+        set(applyGlobalSettings(get(), payload)); // [fork] rules in core settingsScope.ts
       },
 
       applyUser(payload) {
-        const cur = get();
-        const picked: Record<string, unknown> = {};
-        for (const k of USER_CUSTOMIZATION_KEYS) {
-          if (payload[k] !== undefined) picked[k] = payload[k];
-        }
-        const incoming = sanitizeCustomization(picked, DEFAULT_CUSTOMIZATION);
-        const favorites = Array.isArray(incoming.favorites) && incoming.favorites.every((x) => typeof x === 'string')
-          ? incoming.favorites
-          : cur.customization.favorites;
-        const language: Locale | 'auto' =
-          payload.language === 'auto' || (LOCALES as readonly string[]).includes(payload.language as string)
-            ? (payload.language as Locale | 'auto')
-            : cur.language;
-        set({
-          language,
-          userName: typeof payload.userName === 'string' ? payload.userName : payload.userName === null ? undefined : cur.userName,
-          customization: { ...cur.customization, ...incoming, favorites },
-        });
+        set(applyUserSettings(get(), payload)); // [fork] rules in core settingsScope.ts
       },
 
       applySharedSecrets(secrets, keepOwn) {
         const c = get().customization;
-        const next = secrets
-          ? { scryptedToken: typeof secrets.scryptedToken === 'string' ? secrets.scryptedToken : '', maToken: typeof secrets.maToken === 'string' ? secrets.maToken : null }
-          : keepOwn ? { scryptedToken: c.scryptedToken, maToken: c.maToken } : { scryptedToken: '', maToken: null };
+        const next = sharedSecretsFor(c, secrets, keepOwn);
         if (next.scryptedToken === c.scryptedToken && next.maToken === c.maToken) return;
         set({ customization: { ...c, ...next } });
       },
@@ -577,40 +203,13 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       importSettings(json) {
         try {
           const data = JSON.parse(json) as Partial<SettingsState>;
-          // [fork] type-checked against the defaults (a wrong type crashed the app on every synced device)
-          const incoming: Partial<CustomizationSettings> = sanitizeCustomization(data.customization ?? {}, DEFAULT_CUSTOMIZATION);
-
-          // Validate entityOrder: must be an object whose values are string arrays
-          const entityOrder: Record<string, string[]> = {}; // [fork] const (lint)
-          if (
-            incoming.entityOrder != null &&
-            typeof incoming.entityOrder === 'object' &&
-            !Array.isArray(incoming.entityOrder)
-          ) {
-            for (const [k, v] of Object.entries(incoming.entityOrder)) {
-              if (Array.isArray(v) && v.every((x) => typeof x === 'string')) {
-                entityOrder[k] = v;
-              }
-            }
-          }
-
-          // Validate favorites: must be a string array
-          const favorites: string[] =
-            Array.isArray(incoming.favorites) &&
-            incoming.favorites.every((x) => typeof x === 'string')
-              ? (incoming.favorites as string[])
-              : [];
-
           const migrated = migrateTheme(data.theme) ?? { theme: 'aurora' as ThemeName, mode: 'light' as ThemeMode };
           const mode: ThemeMode =
             data.mode === 'light' || data.mode === 'dark' || data.mode === 'auto'
               ? data.mode
               : migrated.mode;
 
-          const language: Locale | 'auto' =
-            data.language === 'auto' || (LOCALES as readonly string[]).includes(data.language as string)
-              ? (data.language as Locale | 'auto')
-              : 'auto';
+          const language: Locale | 'auto' = parseLanguagePref(data.language, 'auto');
 
           // Adopted so dismissing What's New on one device settles it on the
           // others too (this same path applies snapshots arriving from Home
@@ -621,27 +220,12 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
               ? data.lastSeenVersion
               : get().lastSeenVersion;
 
-          // [fork] Connection secrets are device-local: exportSettings() strips them, so
-          // every snapshot (manual import, HA settings sync from this or another device)
-          // arrives without them. Keep what THIS device has unless the snapshot carries a
-          // value — otherwise the NVR / Music Assistant token was wiped on every HA connect.
-          // [fork] …but only while the server stays the same: a snapshot pointing at another host
-          // must not inherit this device's token (see settingsSecrets.ts).
-          const cur = get().customization;
-          const { scryptedToken, maToken } = keepDeviceSecrets(cur, incoming);
-
           set({
             theme: migrated.theme,
             mode,
             accentHue: data.accentHue,
-            customization: migrateNavOrderV2(migrateUrlToken(migrateHintsSection(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
-              ...DEFAULT_CUSTOMIZATION,
-              ...incoming,
-              scryptedToken,
-              maToken,
-              entityOrder,
-              favorites,
-            })))))))), // [fork] + migrateLocksChip, migrateHintsSection
+            // [fork] type check, entityOrder/favorites, device-local tokens and the migrations: core importedCustomization
+            customization: importedCustomization(get().customization, data.customization),
             userName: data.userName,
             appName: data.appName,
             appIcon: data.appIcon,
@@ -693,10 +277,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           lastSeenFork: persisted == null
             ? current.lastSeenFork
             : Number.isInteger(p.lastSeenFork) && (p.lastSeenFork as number) >= 0 ? (p.lastSeenFork as number) : 0,
-          customization: migrateNavOrderV2(migrateUrlToken(migrateHintsSection(migrateNvrSection(migrateWasteSection(migrateLocksChip(migrateGarageChip(migratePoolChip({ // [fork] migrateUrlToken, migrateNavOrderV2
-            ...DEFAULT_CUSTOMIZATION,
-            ...(p.customization ?? {}),
-          })))))))), // [fork] + migrateLocksChip, migrateHintsSection
+          customization: hydrateCustomization(p.customization), // [fork] defaults + migrations (core)
         };
       },
     }
