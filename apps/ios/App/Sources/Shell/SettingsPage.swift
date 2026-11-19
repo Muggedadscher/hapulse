@@ -22,6 +22,25 @@ struct SettingsPage: View {
             }
             .accessibilityIdentifier("hp.scene.settings")
 
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text(l.t("settings.appearance.accent.label")).hpText(.body).foregroundStyle(.glas(.label))
+                    Circle().fill(.accentPart(.accent)).frame(width: 12, height: 12).accessibilityHidden(true)
+                    Spacer()
+                    if model.accentHue != nil {
+                        Button(l.t("settings.appearance.accent.reset")) { model.accentHue = nil }
+                            .hpText(.subhead)
+                            .foregroundStyle(.accentPart(.accentInk))
+                            .frame(minHeight: 44)
+                    }
+                }
+                HPHueSlider(hue: Binding(get: { model.accentHue ?? 35 }, set: { model.accentHue = $0 }),
+                            label: l.t("settings.appearance.accent.hueAria"))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(.glas(.group), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+
             VStack(alignment: .leading, spacing: 8) {
                 Text(l.t("settings.language.label")).hpText(.subhead, weight: .semibold).foregroundStyle(.glas(.label2))
                     .padding(.horizontal, 16)

@@ -17,7 +17,7 @@ struct HAPulseApp: App {
             RootView(options: options)
                 .environment(model)
                 .preferredColorScheme(model.appearance.scheme)
-                .environment(\.glasAccentHue, options.accentHue)
+                .environment(\.glasAccentHue, model.accentHue)
         }
     }
 }

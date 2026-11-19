@@ -85,12 +85,19 @@ final class AppModel {
         }
     }
     private(set) var localizer: Localizer
+    /// The admin's accent hue (web setting `accentHue`); nil = the default iOS orange.
+    var accentHue: Double? {
+        didSet { UserDefaults.standard.set(accentHue, forKey: "hp.accentHue") }
+    }
     var devices: [DemoDevice] = DemoDevice.load()
     var favorites: Set<String> = []
 
     init(options: LaunchOptions) {
         let storedAppearance = UserDefaults.standard.string(forKey: "hp.appearance").flatMap(AppearanceMode.init(rawValue:)) ?? .auto
         appearance = options.scheme.map { $0 == .dark ? .dark : .light } ?? storedAppearance
+        // screenshot scenes (-hp-scene) use only the start options, so stored settings never change the pictures
+        let stored = options.scene == nil ? UserDefaults.standard.object(forKey: "hp.accentHue") as? Double : nil
+        accentHue = options.accentHue ?? stored
         let storedLanguage = UserDefaults.standard.string(forKey: "hp.language") ?? "auto"
         if options.localeGiven {
             languagePref = options.locale.rawValue

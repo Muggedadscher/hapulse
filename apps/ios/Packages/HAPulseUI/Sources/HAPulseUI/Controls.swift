@@ -1,4 +1,5 @@
 import SwiftUI
+import HAPulseKit
 
 // MARK: - Switch
 
@@ -275,5 +276,67 @@ public struct HPCapsuleStepper: View {
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.4)
         .accessibilityLabel(label)
+    }
+}
+
+// MARK: - Hue slider
+
+/// The accent hue slider of the settings (web `.accent-slider`): a track with the accent colours of the whole hue
+/// circle (computed by `GlasAccent` for light/dark, no colour values here), a knob 24 in `knob` with its shadow.
+/// A tap sets the hue, a sideways drag follows the finger; VoiceOver adjusts in steps of 10°.
+public struct HPHueSlider: View {
+    @Binding var hue: Double
+    let label: String
+    let onCommit: ((Double) -> Void)?
+    @Environment(\.colorScheme) private var scheme
+
+    /// - Parameter hue: 0…359
+    public init(hue: Binding<Double>, label: String, onCommit: ((Double) -> Void)? = nil) {
+        self._hue = hue
+        self.label = label
+        self.onCommit = onCommit
+    }
+
+    private var stops: [Color] {
+        stride(from: 0.0, through: 360.0, by: 30.0).map { h in
+            Color(RGBA(css: AccentCache.shared.accent(hue: h.truncatingRemainder(dividingBy: 360), dark: scheme == .dark).accent) ?? RGBA(0, 0, 0))
+        }
+    }
+
+    public var body: some View {
+        GeometryReader { geo in
+            let w = max(geo.size.width - 24, 1)
+            ZStack(alignment: .leading) {
+                Capsule().fill(LinearGradient(colors: stops, startPoint: .leading, endPoint: .trailing))
+                    .frame(height: 28)
+                Circle()
+                    .fill(.glas(.knob))
+                    .hpShadow(.knob)
+                    .frame(width: 24, height: 24)
+                    .offset(x: w * hue / 359)
+            }
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .onTapGesture { p in
+                hue = min(max((p.x - 12) / w * 359, 0), 359).rounded()
+                onCommit?(hue)
+            }
+            .hpHorizontalPan { v in
+                hue = min(max((v.location.x - 12) / w * 359, 0), 359).rounded()
+                if v.phase == .ended { onCommit?(hue) }
+            }
+        }
+        .frame(height: 44)
+        .accessibilityElement()
+        .accessibilityLabel(label)
+        .accessibilityValue("\(Int(hue))°")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: hue = min(hue + 10, 359)
+            case .decrement: hue = max(hue - 10, 0)
+            @unknown default: break
+            }
+            onCommit?(hue)
+        }
     }
 }
