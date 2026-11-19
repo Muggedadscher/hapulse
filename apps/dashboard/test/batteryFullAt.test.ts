@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { formatBatteryPower, fullAtToday } from '../src/components/energy/fork/EnergyBatteryParts';
 
 // [fork] The battery card's state line (EnergyBattery.tsx, EnergyBatteryWindow.tsx): "full at about" only while that is
-// still today, and the power as text. Local time, so the runs in other time zones check the midnight rule there too.
+// still today, and the power as text. Local time: run with another TZ (e.g. TZ=America/New_York) to check midnight there.
 
 describe('battery card: full at', () => {
   const now = new Date(2026, 10, 19, 12, 3);
