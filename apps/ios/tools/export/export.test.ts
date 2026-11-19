@@ -564,7 +564,7 @@ describe('iOS export', () => {
       ({ entity_id, state, attributes, last_changed: iso(now - changedAgo), last_updated: iso(now - updatedAgo), context: { id: 'x', parent_id: null, user_id: null } });
 
     const coverStates = ['closed', 'open', 'opening', 'closing', 'stopped', 'unavailable', 'unknown', 'xyz'];
-    const features = [undefined, 0, 1, 2, 3, 8, 11, 15, '3'];
+    const features = [undefined, 0, 1, 2, 3, 8, 11, 15, '3', -1, 1.9, 2147483649, 4294967297, -9, 1e300, -1e300];
     const garages = [];
     let n = 0;
     for (const dc of ['garage', 'gate', 'blind', undefined]) for (const st of coverStates) for (const f of features) {
@@ -648,7 +648,9 @@ describe('iOS export', () => {
       }
       const scenes = Array.from({ length: 1 + r(3) }, (_, k) => {
         const at = pick([null, 'garbage', 10_000, 60_000, 150_000, 3_600_000, 13 * 3_600_000]);
-        const state = at === null ? 'unknown' : at === 'garbage' ? 'not a time' : iso(now - (at as number));
+        // Home Assistant writes six fraction digits and +00:00; toISOString three and Z
+        const state = at === null ? 'unknown' : at === 'garbage' ? 'not a time'
+          : r(2) ? iso(now - (at as number)) : iso(now - (at as number)).replace(/\.(\d{3})Z$/, `.$1${pick(['000', '456', '999'])}+00:00`);
         const mem = members.filter(() => r(2) === 0);
         const attrs: Record<string, unknown> = r(6) === 0 ? {} : { entity_id: r(9) === 0 ? [...mem, 5, ''] : mem };
         return ent(`scene.s${k}`, state, attrs);

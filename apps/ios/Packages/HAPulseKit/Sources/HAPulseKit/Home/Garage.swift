@@ -49,8 +49,8 @@ public enum Garage {
     public static func supports(_ e: HAEntity, _ service: Service?) -> Bool {
         guard case .number(let f)? = e.attributes["supported_features"] else { return service != nil }
         let bit = service == .open ? 1 : service == .close ? 2 : 8
-        // JavaScript's `&` works on 32-bit integers
-        let v = f.isFinite ? Int32(truncatingIfNeeded: Int64(f.rounded(.towardZero))) : 0
+        // JavaScript's `&` works on 32-bit integers (ToInt32: truncate, modulo 2^32; never traps on huge values)
+        let v = f.isFinite ? Int32(truncatingIfNeeded: Int64(f.rounded(.towardZero).truncatingRemainder(dividingBy: 4_294_967_296))) : 0
         return v & Int32(bit) != 0
     }
 

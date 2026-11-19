@@ -135,8 +135,8 @@ public enum Waste {
         guard parts.count == 3 else { return nil }
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = tz
-        // like `new Date(y, m - 1, d)`: an out-of-range day rolls over
-        return cal.date(from: DateComponents(year: parts[0], month: parts[1], day: 1)).flatMap { cal.date(byAdding: .day, value: parts[2] - 1, to: $0) }
+        // like `new Date(y, m - 1, d)`: an out-of-range day rolls over (30.02. → 02.03.)
+        return cal.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
     }
 
     static func better(_ a: Candidate, _ b: Candidate) -> Bool {
@@ -152,13 +152,15 @@ public enum Waste {
     /// `detectWasteBins`. Bins without an upcoming date and without a countdown ≥ 0 are left out.
     public static func bins(_ entities: [HAEntity], hidden: Set<String> = [], now: Date? = nil, timeZone: TimeZone = .current,
                             locale: Locale = .current) -> [Bin] {
+        // groups in the order of the entities (like the web's Map), so the result never depends on hashing
         var groups: [String: Candidate] = [:]
+        var keys: [String] = []
         for e in entities where e.entityId.hasPrefix("sensor.") && !hidden.contains(e.entityId) {
             guard let c = parse(e, now: now, timeZone: timeZone) else { continue }
-            if let old = groups[c.key], !better(c, old) { continue }
+            if let old = groups[c.key] { if !better(c, old) { continue } } else { keys.append(c.key) }
             groups[c.key] = c
         }
-        return groups.values.map(\.bin)
+        return keys.compactMap { groups[$0]?.bin }
             .filter { $0.nextDate != nil || ($0.daysTo.map { $0 >= 0 } ?? false) }
             .sorted { a, b in
                 if let ad = a.daysTo, let bd = b.daysTo, ad != bd { return ad < bd }

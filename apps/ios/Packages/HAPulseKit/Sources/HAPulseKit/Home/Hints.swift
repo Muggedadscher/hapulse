@@ -21,9 +21,9 @@ public struct ChipCounts: Equatable, Sendable {
 
     /// `poolPump`: running = `on`; `poolRequired`: the pool chip shows only when all of them exist.
     public static func count(_ entities: [String: HAEntity], poolPump: String, poolRequired: [String]) -> ChipCounts {
-        let all = entities.values.sorted { $0.entityId < $1.entityId }
+        let all = Array(entities.values)
         var c = ChipCounts()
-        c.peopleHome = all.filter { $0.entityId.hasPrefix("person.") && $0.state == "home" }
+        c.peopleHome = all.filter { $0.entityId.hasPrefix("person.") && $0.state == "home" }.sorted { $0.entityId < $1.entityId }
         c.lightsOn = all.filter { $0.entityId.hasPrefix("light.") && $0.state == "on" }.count
         c.openDoorWindow = all.filter {
             $0.entityId.hasPrefix("binary_sensor.") && $0.state == "on"
@@ -185,13 +185,14 @@ public enum ActiveScenes {
         let coverGrace = max(grace, coverGrace)
         let nowMs = Int64((now.timeIntervalSince1970 * 1000).rounded(.down))
         let all = scenes.filter { $0.entityId.hasPrefix("scene.") }.map { s in
-            (id: s.entityId, at: JSDate.parse(s.state).map { Int64(($0.timeIntervalSince1970 * 1000).rounded(.down)) }, members: members(s))
+            (id: s.entityId, at: JSDate.parse(s.state).map { Int64(($0.timeIntervalSince1970 * 1000).rounded(.down)) },
+             members: members(s), set: Set(members(s)))
         }
         var active = Set<String>()
         for s in all {
             guard let at = s.at, !s.members.isEmpty, nowMs - at <= maxAge else { continue }
             let overruled = all.contains { o in
-                o.id != s.id && (o.at ?? .min) > at && o.members.contains { s.members.contains($0) }
+                o.id != s.id && (o.at ?? .min) > at && !o.set.isDisjoint(with: s.set)
             }
             if overruled { continue }
             var untouched = true, seen = 0

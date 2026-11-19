@@ -29,6 +29,23 @@ import Testing
         }
     }
 
+    /// Days to the pickup across the changes of summer time in Berlin (values from Node with TZ=Europe/Berlin).
+    @Test func daysAcrossSummerTime() throws {
+        let berlin = try #require(TimeZone(identifier: "Europe/Berlin"))
+        let cases: [(String, String, Double)] = [
+            ("2026-10-25T10:00:00Z", "2026-10-26", 1), ("2026-10-24T22:30:00Z", "2026-10-25", 0),
+            ("2026-10-24T22:30:00Z", "2026-10-27", 2), ("2026-03-29T10:00:00Z", "2026-03-30", 1),
+            ("2026-03-28T23:30:00Z", "2026-03-29", 0), ("2026-03-28T22:59:00Z", "2026-03-29", 1),
+            ("2026-03-28T10:00:00Z", "2026-04-02", 5),
+        ]
+        for (now, date, days) in cases {
+            let e = HAEntity(entityId: "sensor.w", state: "x", attributes: ["upcoming": [["date": .string(date)]]],
+                             context: [:], lastChangedMs: 0, lastUpdatedMs: 0)
+            let bins = Waste.bins([e], now: try #require(ISO8601.parse(now)), timeZone: berlin)
+            #expect(bins.first?.daysTo == days, "\(now) \(date)")
+        }
+    }
+
     @Test func binsLikeTheWeb() throws {
         let utc = try #require(TimeZone(identifier: "UTC"))
         let now = try #require(ISO8601.parse(g["now"]?.string ?? ""))

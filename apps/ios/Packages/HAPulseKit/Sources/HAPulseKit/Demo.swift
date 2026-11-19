@@ -22,12 +22,19 @@ enum CocoaErrorShim: Error { case missing(String) }
 
 /// ISO 8601 with and without fractional seconds (Home Assistant sends both).
 public enum ISO8601 {
+    // ISO8601DateFormatter is thread safe; made once (a formatter per call cost ~0.1 ms)
+    nonisolated(unsafe) private static let withFraction: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    nonisolated(unsafe) private static let plain: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
     public static func parse(_ s: String) -> Date? {
-        let withFraction = ISO8601DateFormatter()
-        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let d = withFraction.date(from: s) { return d }
-        let plain = ISO8601DateFormatter()
-        plain.formatOptions = [.withInternetDateTime]
-        return plain.date(from: s)
+        withFraction.date(from: s) ?? plain.date(from: s)
     }
 }
