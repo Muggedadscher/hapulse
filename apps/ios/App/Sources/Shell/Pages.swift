@@ -39,7 +39,7 @@ struct OverviewPage: View {
             .scrollClipDisabled()
             .accessibilityIdentifier("hp.scene.shell")
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
+            HPTileGrid {
                 ForEach(model.devices) { d in
                     DeviceTileCell(device: d)
                 }
@@ -52,6 +52,7 @@ struct OverviewPage: View {
 struct DeviceTileCell: View {
     let device: DemoDevice
     @Environment(AppModel.self) private var model
+    @Environment(WindowNav.self) private var nav
 
     var body: some View {
         let l = model.localizer
@@ -59,7 +60,7 @@ struct DeviceTileCell: View {
         HPDeviceTile(icon: d.icon, room: d.room, name: d.name, state: d.stateText(l), isOn: d.isOn, tone: d.tone,
                      toggleLabel: l.t("home.favorites.toggleAria", ["name": .text(d.name)]),
                      openLabel: l.t("glas.devices.detailAria", ["name": .text(d.name), "room": .text(d.room ?? ""), "state": .text(d.stateText(l))]),
-                     onToggle: { model.toggle(d.id) }, onOpen: { model.detail = d })
+                     onToggle: { model.toggle(d.id) }, onOpen: { nav.detailID = d.id })
             .contextMenu {
                 Button {
                     model.toggle(d.id)
@@ -73,7 +74,7 @@ struct DeviceTileCell: View {
                         icon: { HPIconImage.image("lucide.star") }
                 }
                 Button {
-                    model.detail = d
+                    nav.detailID = d.id
                 } label: {
                     Label { Text(l.t("home.favorites.detailsAria", ["name": .text(d.name)])) } icon: { HPIconImage.image("lucide.info") }
                 }
@@ -114,17 +115,18 @@ struct RoomsPage: View {
 struct RoomPage: View {
     let room: String
     @Environment(AppModel.self) private var model
+    @Environment(WindowNav.self) private var nav
 
     var body: some View {
         let l = model.localizer
         PageScroll {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
+            HPTileGrid {
                 ForEach(model.devices.filter { $0.room == room }) { d in
                     HPRoomTile(icon: d.icon, name: d.name, state: d.stateText(l), chip: d.isOn ? .lit(d.tone) : .neutral) {
                         model.toggle(d.id)
                     }
                     .contextMenu {
-                        Button(l.t("home.favorites.detailsAria", ["name": .text(d.name)])) { model.detail = d }
+                        Button(l.t("home.favorites.detailsAria", ["name": .text(d.name)])) { nav.detailID = d.id }
                     }
                 }
             }

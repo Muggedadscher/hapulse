@@ -47,14 +47,16 @@ enum AppearanceMode: String, CaseIterable, Hashable {
     }
 }
 
-/// The app's state for the frame (stage 2): navigation, appearance, language and the demo home. The live data come
-/// with the entity store of HAPulseKit (stage 1); until then the demo home stands in.
+/// Navigation of one window: chosen tab, pages pushed in "More", the open detail. Each window (iPad: several) has its
+/// own, so choosing a tab in one does not change the other.
 @MainActor
 @Observable
-final class AppModel {
+final class WindowNav {
     var selection: String = NavPage.overview.rawValue
     /// The pages pushed in the "More" tab (compact width).
     var morePath: [NavPage] = []
+    /// The entity whose detail is open (inspector on iPad, sheet on iPhone).
+    var detailID: String?
 
     /// Opens a page: as its tab where it is one, otherwise pushed in "More" (compact width).
     func open(_ page: NavPage, compact: Bool) {
@@ -65,6 +67,13 @@ final class AppModel {
             selection = page.rawValue
         }
     }
+}
+
+/// The app's shared state (stage 2): appearance, language and the demo home, the same in every window. The live data
+/// come with the entity store of HAPulseKit (stage 1); until then the demo home stands in.
+@MainActor
+@Observable
+final class AppModel {
     var appearance: AppearanceMode {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: "hp.appearance") }
     }
@@ -77,8 +86,6 @@ final class AppModel {
     }
     private(set) var localizer: Localizer
     var devices: [DemoDevice] = DemoDevice.load()
-    /// The device whose detail is open (inspector on iPad, sheet on iPhone).
-    var detail: DemoDevice?
     var favorites: Set<String> = []
 
     init(options: LaunchOptions) {
@@ -108,7 +115,18 @@ final class AppModel {
         let on = !d.isOn
         devices[i] = DemoDevice(id: d.id, name: d.name, room: d.room, isOn: on,
                                 level: on ? (d.tone == .yellow ? 100 : nil) : nil, icon: d.icon, tone: d.tone)
-        if detail?.id == id { detail = devices[i] }
+    }
+
+    /// Sets a light's brightness (0…100); below 3 counts as off, like the web.
+    func setLevel(_ id: String, _ level: Double) {
+        guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
+        let d = devices[i]
+        let on = level >= 3
+        devices[i] = DemoDevice(id: d.id, name: d.name, room: d.room, isOn: on, level: on ? level.rounded() : nil, icon: d.icon, tone: d.tone)
+    }
+
+    func device(_ id: String?) -> DemoDevice? {
+        devices.first { $0.id == id }
     }
 
     func toggleFavorite(_ id: String) {

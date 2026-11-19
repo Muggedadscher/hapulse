@@ -24,7 +24,8 @@ struct HPHorizontalPan: UIGestureRecognizerRepresentable {
     }
 
     func handleUIGestureRecognizerAction(_ recognizer: UIPanGestureRecognizer, context: Context) {
-        let location = recognizer.location(in: recognizer.view)
+        // in the SwiftUI view's own space (the recogniser's UIView may be a larger host view)
+        let location = context.converter.localLocation
         let dx = recognizer.translation(in: recognizer.view).x
         switch recognizer.state {
         case .began, .changed: action(HPPanValue(phase: .changed, location: location, translation: dx))

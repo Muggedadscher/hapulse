@@ -7,6 +7,7 @@ import HAPulseUI
 /// phone). The system draws the Liquid Glass of tab bar and sidebar; the tab bar shrinks while scrolling down.
 struct AppShell: View {
     @Environment(AppModel.self) private var model
+    @Environment(WindowNav.self) private var nav
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     /// Compact (phone, narrow iPad window): the first four pages and "More", like the web. Regular: all pages in the
@@ -15,10 +16,10 @@ struct AppShell: View {
     private var compact: Bool { sizeClass == .compact }
 
     var body: some View {
-        @Bindable var model = model
+        @Bindable var nav = nav
         let l = model.localizer
         let pages = compact ? Array(NavPage.allCases.prefix(NavPage.tabBarCount)) : NavPage.allCases
-        TabView(selection: $model.selection) {
+        TabView(selection: $nav.selection) {
             ForEach(pages) { page in
                 Tab(value: page.rawValue) {
                     PageStack(page: page)
@@ -38,18 +39,18 @@ struct AppShell: View {
         }
         .onChange(of: compact) { _, isCompact in
             // keep the page when the width class changes (iPad split view, rotation)
-            if isCompact, let page = NavPage(rawValue: model.selection) {
-                model.open(page, compact: true)
-            } else if !isCompact, model.selection == moreTabID {
-                model.selection = (model.morePath.last ?? .overview).rawValue
-                model.morePath = []
+            if isCompact, let page = NavPage(rawValue: nav.selection) {
+                nav.open(page, compact: true)
+            } else if !isCompact, nav.selection == moreTabID {
+                nav.selection = (nav.morePath.last ?? .overview).rawValue
+                nav.morePath = []
             }
         }
         .tabViewStyle(.sidebarAdaptable)
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(AccentStyle(.tabInk))
-        .inspector(isPresented: Binding(get: { model.detail != nil }, set: { if !$0 { model.detail = nil } })) {
-            if let device = model.detail {
+        .inspector(isPresented: Binding(get: { nav.detailID != nil }, set: { if !$0 { nav.detailID = nil } })) {
+            if let device = model.device(nav.detailID) {
                 DeviceDetail(device: device)
                     .presentationDetents([.medium, .large])
                     .inspectorColumnWidth(min: 320, ideal: 380, max: 440)
@@ -92,11 +93,11 @@ struct PageContent: View {
 /// The "More" tab's stack. A page that is no tab in compact width (selected from a link or a start option) opens
 /// pushed onto it.
 struct MoreStack: View {
-    @Environment(AppModel.self) private var model
+    @Environment(WindowNav.self) private var nav
 
     var body: some View {
-        @Bindable var model = model
-        NavigationStack(path: $model.morePath) { MorePage() }
+        @Bindable var nav = nav
+        NavigationStack(path: $nav.morePath) { MorePage() }
     }
 }
 

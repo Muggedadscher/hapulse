@@ -10,6 +10,8 @@ struct RootView: View {
     let options: LaunchOptions
     @Environment(AppModel.self) private var model
     @Environment(\.horizontalSizeClass) private var sizeClass
+    /// This window's navigation (each window its own).
+    @State private var nav = WindowNav()
 
     var body: some View {
         let localizer = model.localizer
@@ -19,7 +21,7 @@ struct RootView: View {
             case "controls": ControlsScene(l: localizer)
             case "tiles": TilesScene(l: localizer)
             case "detail": DetailScene(l: localizer)
-            default: AppShell().task { applyScene() }
+            default: AppShell().environment(nav).task { applyScene() }
             }
         }
         .accessibilityElement(children: .contain)
@@ -29,9 +31,9 @@ struct RootView: View {
     /// Puts the frame on the page a screenshot scene asks for.
     private func applyScene() {
         switch options.scene {
-        case "rooms": model.open(.rooms, compact: sizeClass == .compact)
-        case "settings": model.open(.settings, compact: sizeClass == .compact)
-        case "sheet": model.detail = model.devices.first { $0.isOn }
+        case "rooms": nav.open(.rooms, compact: sizeClass == .compact)
+        case "settings": nav.open(.settings, compact: sizeClass == .compact)
+        case "sheet": nav.detailID = model.devices.first { $0.isOn }?.id
         default: break
         }
     }

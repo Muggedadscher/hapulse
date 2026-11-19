@@ -19,6 +19,8 @@ struct CatalogPage<Content: View>: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text(title)
                     .hpText(.greetingPhone)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                     .foregroundStyle(.glas(.label))
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("hp.scene.\(scene)")
@@ -49,6 +51,9 @@ struct ControlsScene: View {
     @State private var level = 62.0
     @State private var pill = 1
     @State private var dismissed = false
+    /// Width of the range segment (web 168), grows with the text size.
+    @ScaledMetric(relativeTo: .footnote) private var rangeWidth: CGFloat = 168
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         CatalogPage(scene: "controls", title: l.t("nav.quickActions")) {
@@ -61,7 +66,7 @@ struct ControlsScene: View {
                                HPSegmentOption("off", title: l.t("home.summaryChips.poolIdle"))], selection: $quiet, size: .quiet)
                     HPSegment([HPSegmentOption(24, title: "24H"), HPSegmentOption(168, title: "7D"), HPSegmentOption(720, title: "30D")],
                               selection: $range, size: .detail)
-                        .frame(width: 168)
+                        .frame(width: min(rangeWidth, 240))
                 }
             }
 
@@ -155,7 +160,7 @@ struct TilesScene: View {
 
     var body: some View {
         CatalogPage(scene: "tiles", title: l.t("nav.devices")) {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
+            HPTileGrid {
                 ForEach(devices.prefix(10)) { d in
                     HPDeviceTile(icon: d.icon, room: d.room, name: d.name, state: d.stateText(l), isOn: d.isOn, tone: d.tone,
                                  toggleLabel: l.t("home.favorites.toggleAria", ["name": .text(d.name)]),
@@ -169,7 +174,7 @@ struct TilesScene: View {
                 Text(l.t("nav.systemStatus.healthy")).hpText(.subhead).foregroundStyle(.glas(.label2))
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
+            HPTileGrid {
                 HPRoomTile(icon: "lucide.lightbulb", name: "Ceiling Light", state: "78 %", chip: .lit(.yellow)) {}
                 HPRoomTile(icon: "lucide.lock", name: "Front Door", state: l.t("home.summaryChips.locksAllLocked"), chip: .soft(.green)) {}
                 HPRoomTile(icon: "lucide.blinds", name: "Bedroom Blinds", state: l.t("home.summaryChips.openCount", ["count": 1]), chip: .soft(.red)) {}
@@ -195,6 +200,8 @@ struct TilesScene: View {
 struct DetailScene: View {
     let l: Localizer
     @State private var range = 24
+    @ScaledMetric(relativeTo: .footnote) private var rangeWidth: CGFloat = 168
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     /// 24 h of a living room temperature, one point per 30 min, ending at the demo clock (09:41 UTC).
     private var points: [HPHistoryPoint] {
@@ -227,12 +234,16 @@ struct DetailScene: View {
                                tone: .orange, closeLabel: l.t("common.close"), onClose: {})
                 VStack(alignment: .leading, spacing: 24) {
                     HPDetailValue(l.number(21.4, minDecimals: 1) + " °C", when: l.t("common.time.minutesAgo", ["count": 4]))
-                    HStack {
+                    // title and range side by side; stacked with the accessibility text sizes
+                    let stacked = typeSize.isAccessibilitySize
+                    let layout = stacked ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12)) : AnyLayout(HStackLayout())
+                    layout {
                         Text(l.t("entityDetail.history")).hpText(.title3).foregroundStyle(.glas(.label))
-                        Spacer()
+                        if !stacked { Spacer() }
                         HPSegment([HPSegmentOption(24, title: "24H"), HPSegmentOption(168, title: "7D"), HPSegmentOption(720, title: "30D")],
                                   selection: $range, size: .detail)
-                            .frame(width: 168)
+                            .frame(width: stacked ? nil : min(rangeWidth, 240))
+                            .frame(maxWidth: stacked ? .infinity : nil)
                     }
                     HPHistoryChart(points: points, tone: .orange, locale: Locale(identifier: l.locale.rawValue),
                                    emptyText: l.t("entityDetail.historyEmpty")) { l.number($0, minDecimals: 1) + " °C" }

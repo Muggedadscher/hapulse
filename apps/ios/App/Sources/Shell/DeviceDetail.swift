@@ -7,7 +7,9 @@ import HAPulseUI
 struct DeviceDetail: View {
     let device: DemoDevice
     @Environment(AppModel.self) private var model
-    @State private var level: Double = 0
+    @Environment(WindowNav.self) private var nav
+    /// The level while the finger is on the slider; committed to the model on release.
+    @State private var dragLevel: Double?
 
     var body: some View {
         let l = model.localizer
@@ -15,7 +17,7 @@ struct DeviceDetail: View {
         ScrollView {
             VStack(spacing: 0) {
                 HPDetailHeader(icon: d.icon, title: d.name, subtitle: d.room, tone: d.isOn ? d.tone : nil,
-                               closeLabel: l.t("common.close")) { model.detail = nil }
+                               closeLabel: l.t("common.close")) { nav.detailID = nil }
                     .accessibilityIdentifier("hp.scene.sheet")
                 VStack(alignment: .leading, spacing: 24) {
                     HPDetailValue(d.stateText(l))
@@ -24,12 +26,16 @@ struct DeviceDetail: View {
                             Toggle(d.name, isOn: Binding(get: { d.isOn }, set: { _ in model.toggle(d.id) })).hpSwitch(showsLabel: false)
                         }
                     }
-                    if d.tone == .yellow {
+                    if d.id.hasPrefix("light.") {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(l.t("cards.light.brightness")).hpText(.title3).foregroundStyle(.glas(.label))
-                            HPTrackSlider(value: Binding(get: { level / 100 }, set: { level = ($0 * 100).rounded() }), height: 32,
-                                          label: l.t("cards.light.brightness"),
-                                          valueText: { l.number(($0 * 100).rounded(), maxDecimals: 0) + " %" })
+                            HPTrackSlider(value: Binding(get: { (dragLevel ?? d.level ?? 0) / 100 }, set: { dragLevel = ($0 * 100).rounded() }),
+                                          height: 32, label: l.t("cards.light.brightness"),
+                                          valueText: { l.number(($0 * 100).rounded(), maxDecimals: 0) + " %" },
+                                          onCommit: { v in
+                                              model.setLevel(d.id, (v * 100).rounded())
+                                              dragLevel = nil
+                                          })
                         }
                     }
                     Text(l.t("entityDetail.activity")).hpText(.title3).foregroundStyle(.glas(.label))
@@ -40,7 +46,6 @@ struct DeviceDetail: View {
             }
         }
         .background(.glas(.card))
-        .onAppear { level = d.level ?? (d.isOn ? 100 : 0) }
     }
 
     /// A fixed demo day; the history API comes with the HA client (stage 1).

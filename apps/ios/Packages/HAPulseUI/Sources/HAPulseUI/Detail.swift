@@ -67,10 +67,15 @@ public struct HPDetailValue: View {
         self.when = when
     }
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     public var body: some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(value).hpText(.title2).foregroundStyle(.glas(.label))
-            Spacer(minLength: 8)
+        let stacked = typeSize.isAccessibilitySize
+        let layout = stacked ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+                             : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+        layout {
+            Text(value).hpText(.title2).foregroundStyle(.glas(.label)).lineLimit(1).minimumScaleFactor(0.6)
+            if !stacked { Spacer(minLength: 8) }
             if let when {
                 Text(when).hpText(.footnote).foregroundStyle(.glas(.label2))
             }
@@ -121,10 +126,14 @@ public struct HPHistoryChart: View {
         return (lo - pad)...(hi + pad)
     }
 
-    /// 5 ticks spread evenly over the shown time (web: 5 ticks).
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// 5 ticks spread evenly over the shown time (web: 5 ticks); only start and end with the accessibility text
+    /// sizes, where five labels would overlap.
     private var ticks: [Date] {
         guard let a = points.first?.time else { return [] }
-        return (0...4).map { a.addingTimeInterval(span * Double($0) / 4) }
+        let parts = typeSize.isAccessibilitySize ? 1 : 4
+        return (0...parts).map { a.addingTimeInterval(span * Double($0) / Double(parts)) }
     }
 
     private var span: TimeInterval {
@@ -152,7 +161,10 @@ public struct HPHistoryChart: View {
     private var chart: some View {
         let lo = domain.lowerBound
         let values = points.map(\.value)
-        return HStack(alignment: .top, spacing: 8) {
+        // max/min beside the chart; below it with the accessibility text sizes, so the chart keeps its width
+        let stacked = typeSize.isAccessibilitySize
+        let layout = stacked ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8)) : AnyLayout(HStackLayout(alignment: .top, spacing: 8))
+        return layout {
             Chart(points) { p in
                 AreaMark(x: .value("t", p.time), yStart: .value("v", lo), yEnd: .value("v", p.value))
                     .foregroundStyle(tone.fill)
@@ -172,7 +184,7 @@ public struct HPHistoryChart: View {
                     AxisValueLabel(anchor: i == 0 ? .topLeading : i == v.count - 1 ? .topTrailing : .top) {
                         if let d = v.as(Date.self) {
                             Text(span > 48 * 3600 ? d.formatted(.dateTime.weekday(.abbreviated).locale(locale))
-                                                  : d.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits).locale(locale)))
+                                                  : d.formatted(.dateTime.hour().minute().locale(locale)))
                                 .hpText(.caption1)
                                 .foregroundStyle(.glas(.label2))
                                 .fixedSize()
@@ -181,14 +193,24 @@ public struct HPHistoryChart: View {
                 }
             }
             .frame(height: height + 24)
-            VStack(alignment: .trailing) {
-                Text(valueText(values.max() ?? 0))
-                Spacer()
-                Text(valueText(values.min() ?? 0))
+            Group {
+                if stacked {
+                    HStack {
+                        Text(valueText(values.min() ?? 0))
+                        Spacer()
+                        Text(valueText(values.max() ?? 0))
+                    }
+                } else {
+                    VStack(alignment: .trailing) {
+                        Text(valueText(values.max() ?? 0))
+                        Spacer()
+                        Text(valueText(values.min() ?? 0))
+                    }
+                    .frame(height: height)
+                }
             }
             .hpText(.caption1)
             .foregroundStyle(.glas(.label2))
-            .frame(height: height)
             .accessibilityHidden(true)
         }
     }
@@ -228,7 +250,8 @@ public struct HPOnOffBar: View {
 
     /// The on stretches as times, for VoiceOver; empty when it was never on.
     private var onRanges: String {
-        let time = Date.FormatStyle.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits).locale(locale)
+        // the locale's own clock (18:00 in German, 6:00 PM in English)
+        let time = Date.FormatStyle.dateTime.hour().minute().locale(locale)
         return segments.filter { $0.state == .on }
             .map { "\($0.start.formatted(time))–\($0.end.formatted(time))" }
             .joined(separator: ", ")

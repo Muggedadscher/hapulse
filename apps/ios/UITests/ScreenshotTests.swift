@@ -38,4 +38,29 @@ final class ScreenshotTests: XCTestCase {
             }
         }
     }
+
+    /// The frame and the building blocks with the largest accessibility text size (Dynamic Type), German, light:
+    /// layouts must stay usable (one tile column, segments grow, nothing cut mid-word).
+    @MainActor
+    func testLargeText() throws {
+        for scene in ["shell", "controls", "detail"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["-hp-scene", scene, "-hp-locale", "de", "-hp-scheme", "light",
+                                   "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+            app.launch()
+            XCTAssertTrue(app.descendants(matching: .any)["hp.scene.\(scene)"].waitForExistence(timeout: 20), "scene \(scene) did not appear")
+            let name = "\(scene)-de-light-a11y"
+            let shot = XCUIScreen.main.screenshot()
+            let attachment = XCTAttachment(screenshot: shot)
+            attachment.name = name
+            attachment.lifetime = .keepAlways
+            add(attachment)
+            if let dir = ProcessInfo.processInfo.environment["SCREENSHOT_DIR"], !dir.isEmpty {
+                let base = URL(fileURLWithPath: dir)
+                try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+                try shot.pngRepresentation.write(to: base.appendingPathComponent("\(name).png"))
+            }
+            app.terminate()
+        }
+    }
 }

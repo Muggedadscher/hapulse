@@ -16,6 +16,7 @@ public struct HPDeviceTile: View {
     let onOpen: () -> Void
     @State private var pulse = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     /// - Parameters:
     ///   - toggleLabel: VoiceOver name of the switch circle (web `home.favorites.toggleAria`)
@@ -66,7 +67,7 @@ public struct HPDeviceTile: View {
                     Text(name)
                         .hpText(.subhead, weight: .semibold)
                         .foregroundStyle(isOn ? AnyShapeStyle(.glas(.label)) : AnyShapeStyle(.glas(.tileOffLabel)))
-                        .lineLimit(1)
+                        .lineLimit(typeSize.isAccessibilitySize ? 2 : 1)
                     Text(state).hpText(.footnote).foregroundStyle(.glas(.label2)).lineLimit(1)
                 }
                 .padding(.leading, 6)
@@ -145,5 +146,21 @@ public struct HPRoomTile: View {
         }
         .buttonStyle(HPPressButtonStyle())
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// The grid of tiles: as many columns of at least 160 as fit (2 on the phone, more on the iPad), gap 10; with the
+/// accessibility text sizes one column, so names stay readable instead of being cut off.
+public struct HPTileGrid<Content: View>: View {
+    let content: Content
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    public init(@ViewBuilder content: () -> Content) { self.content = content() }
+
+    public var body: some View {
+        let columns = typeSize.isAccessibilitySize
+            ? [GridItem(.flexible())]
+            : [GridItem(.adaptive(minimum: 160), spacing: 10)]
+        LazyVGrid(columns: columns, spacing: 10) { content }
     }
 }

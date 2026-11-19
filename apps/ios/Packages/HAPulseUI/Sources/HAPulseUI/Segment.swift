@@ -38,6 +38,8 @@ public struct HPSegment<Value: Hashable>: View {
     let options: [HPSegmentOption<Value>]
     @Binding var selection: Value
     let size: HPSegmentSize
+    /// The track grows with the text size (Dynamic Type); 36/44 at the default size.
+    @ScaledMetric(relativeTo: .footnote) private var scale: CGFloat = 1
 
     public init(_ options: [HPSegmentOption<Value>], selection: Binding<Value>, size: HPSegmentSize = .regular) {
         self.options = options
@@ -67,7 +69,7 @@ public struct HPSegment<Value: Hashable>: View {
                 .padding(.horizontal, pad)
             }
         }
-        .frame(height: size.height)
+        .frame(height: size.height * max(scale, 1))
         .background(.glas(.fill), in: Capsule())
         .accessibilityElement(children: .contain)
     }
