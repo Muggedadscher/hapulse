@@ -19,32 +19,18 @@ import { callService } from '../ha/service';
 import { useRoom, useEntityMap, useCustomization } from '../ha/hooks';
 import { useUIStore } from '../stores/uiStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import { applyStoredOrder } from '../lib/order';
 import { useT, type TKey } from '../i18n/useT';
 import './Page.css';
 import './Room.css';
 import { useAreaCameraIds, useCameraSource } from '../nvr/cameraSource'; // [fork]
 import { NvrRoomCameras } from '../nvr/NvrRoomCameras'; // [fork]
-import { isGarageDoor } from '@hapulse/core'; // [fork]
-import { withDefaultSlot } from '../lib/defaultSlot'; // [fork]
+import { roomSections, combinedEntityOrder, stripRoomName, type RoomSectionKey } from '@hapulse/core'; // [fork] room page rules
 import { useIsGlas } from '../app/glas/useUiStyle'; // [fork] Glas: back as a glass circle 44 (docs/glas/PLAN-ETAPPE-2.md K41)
 import { glasSceneTone } from '../components/glas/home/sceneTone'; // [fork] Glas: scene tiles like the overview (K95)
 import { HeatingPlanCard } from '../components/heating/HeatingPlanCard'; // [fork] heating plan per room (docs/HEIZPLAN.md)
 import { useAreaHasHeatingPlan } from '../components/heating/useHeatingPlan'; // [fork]
 import { HeatingSetupCard } from '../components/heating/HeatingSetupCard'; // [fork] set up a plan with one button (docs/HEIZPLAN.md)
 import { RoomTemperatureSource } from '../components/room/RoomTemperatureSource'; // [fork] where the room's temperature comes from
-
-// ── Entity name helpers ───────────────────────────────────────────────────────
-
-function stripRoomName(name: string, roomName: string): string {
-  if (!roomName) return name;
-  const escaped = roomName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const stripped = name
-    .replace(new RegExp(`\\b${escaped}\\b`, 'ig'), ' ')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  return stripped.length > 0 ? stripped : name;
-}
 
 // ── Scene helpers ─────────────────────────────────────────────────────────────
 
@@ -238,23 +224,7 @@ function SortableSectionInner({
 
 // ── Section config ────────────────────────────────────────────────────────────
 
-const SECTION_ORDER = [
-  'scene',
-  'light',
-  'climate',
-  'media_player',
-  'cover',
-  'garage', // [fork] garage doors / gates, split off the blinds
-  'switches',
-  'button',
-  'vacuum',
-  'sensor',
-  'binary_sensor',
-  'other',
-  'nvrCameras', // [fork] Sentinel cameras assigned to this room
-] as const;
-
-type SectionKey = (typeof SECTION_ORDER)[number];
+type SectionKey = RoomSectionKey; // [fork] from @hapulse/core (roomSections.ts)
 
 const SECTION_LABEL_KEYS: Record<string, TKey> = {
   scene:        'room.section.label.scene',
@@ -270,15 +240,6 @@ const SECTION_LABEL_KEYS: Record<string, TKey> = {
   binary_sensor:'room.section.label.sensor',
   other:        'room.section.label.misc',
 };
-
-const SWITCH_DOMAINS = new Set(['switch', 'fan', 'input_boolean']);
-const CORE_DOMAINS = new Set([
-  'scene', 'light', 'climate', 'media_player', 'cover',
-  'switch', 'fan', 'input_boolean', 'button', 'vacuum',
-  'sensor', 'binary_sensor',
-  'humidifier', // [fork] in "Klima" (climateSectionIds)
-]);
-
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -355,40 +316,22 @@ export function Room() {
     sectionsSnap: Record<string, string[]>
   ) {
     if (!areaId) return;
-    const combined: string[] = [];
-    for (const key of SECTION_ORDER) {
-      if (key === sectionKey) {
-        combined.push(...newSectionIds);
-      } else if (sectionsSnap[key]) {
-        combined.push(...sectionsSnap[key]!);
-      }
-    }
-    updateCustomization({ entityOrder: { ...entityOrder, [areaId]: combined } });
+    // [fork] rule in @hapulse/core (combinedEntityOrder)
+    updateCustomization({ entityOrder: { ...entityOrder, [areaId]: combinedEntityOrder(sectionKey, newSectionIds, sectionsSnap) } });
   }
 
-  // Gather domain → ids
-  const domainMap: Record<string, string[]> = {};
-  for (const [domain, ids] of Object.entries(room.domains)) {
-    const filtered = editMode
-      ? ids.filter((id) => id in entities)
-      : ids.filter((id) => !hiddenEntities.includes(id) && id in entities);
-    if (filtered.length > 0) {
-      domainMap[domain] = filtered;
-    }
-  }
-
-  if (cameraSource === 'sentinel') delete domainMap['camera']; // [fork] cameras come from Sentinel
-
-  // Group switch and other ids
-  const switchIds: string[] = [];
-  const otherIds: string[] = [];
-  for (const domain of Object.keys(domainMap)) {
-    if (SWITCH_DOMAINS.has(domain)) {
-      switchIds.push(...(domainMap[domain] ?? []));
-    } else if (!CORE_DOMAINS.has(domain)) {
-      otherIds.push(...(domainMap[domain] ?? []));
-    }
-  }
+  // [fork] which entity stands in which section, and the order: @hapulse/core (roomSections.ts), shared with the iOS app
+  const { sections: coreSections, snapshot: sectionsSnap } = roomSections({
+    domains: room.domains,
+    entities,
+    hiddenEntities,
+    editMode,
+    sentinel: cameraSource === 'sentinel',
+    cameraIds: areaCameraIds,
+    storedEntityOrder: entityOrder[areaId],
+    storedSectionOrder: roomSectionOrder[areaId],
+    heatingPlan,
+  });
 
   function getEntityName(entityId: string): string {
     const override = entityOverrides[entityId];
@@ -397,41 +340,6 @@ export function Room() {
     if (friendly) return stripRoomName(friendly, room?.name ?? '');
     return entityId;
   }
-
-  const storedAreaOrder = entityOrder[areaId];
-  function orderedIds(raw: string[]): string[] {
-    return applyStoredOrder(raw, storedAreaOrder?.filter((id) => raw.includes(id)));
-  }
-
-  const sceneIds        = orderedIds(domainMap['scene']        ?? []);
-  const lightIds        = orderedIds(domainMap['light']        ?? []);
-  // [fork] was climateIds; dehumidifiers stand in "Klima": one stored order for the section, so dragging between the two works
-  const climateSectionIds = orderedIds([...(domainMap['climate'] ?? []), ...(domainMap['humidifier'] ?? [])]);
-  const mediaIds        = orderedIds(domainMap['media_player'] ?? []);
-  // [fork] garage doors / gates get their own section (handled like locks, not like blinds)
-  const coverIds        = orderedIds((domainMap['cover'] ?? []).filter((id) => !isGarageDoor(entities[id])));
-  const garageIds       = orderedIds((domainMap['cover'] ?? []).filter((id) => isGarageDoor(entities[id])));
-  const buttonIds       = orderedIds(domainMap['button']       ?? []);
-  const vacuumIds       = orderedIds(domainMap['vacuum']       ?? []);
-  const orderedSwitchIds = orderedIds(switchIds);
-  const rawSensorIds = [...(domainMap['sensor'] ?? []), ...(domainMap['binary_sensor'] ?? [])];
-  const sensorIds       = orderedIds(rawSensorIds);
-  const orderedOtherIds = orderedIds(otherIds);
-
-  const sectionsSnap: Record<string, string[]> = {
-    scene:        sceneIds,
-    light:        lightIds,
-    climate:      climateSectionIds, // [fork] humidifiers
-    media_player: mediaIds,
-    cover:        coverIds,
-    garage:       garageIds, // [fork]
-    switches:     orderedSwitchIds,
-    button:       buttonIds,
-    vacuum:       vacuumIds,
-    sensor:       sensorIds,
-    binary_sensor:[],
-    other:        orderedOtherIds,
-  };
 
   // ── Card renderer ───────────────────────────────────────────────────────────
 
@@ -514,33 +422,9 @@ export function Room() {
     isSensor?: boolean;
   };
 
-  const allSectionDefs: SectionDef[] = [
-    { key: 'scene',        label: t(SECTION_LABEL_KEYS['scene']!),        ids: sceneIds },
-    // [fork] Sentinel cameras the admin assigned to this room
-    { key: 'nvrCameras',   label: t('cameraSource.room.title'),           ids: cameraSource === 'sentinel' ? areaCameraIds : [] },
-    { key: 'light',        label: t(SECTION_LABEL_KEYS['light']!),        ids: lightIds },
-    { key: 'climate',      label: t(SECTION_LABEL_KEYS['climate']!),      ids: climateSectionIds }, // [fork] humidifiers
-    { key: 'media_player', label: t(SECTION_LABEL_KEYS['media_player']!), ids: mediaIds },
-    { key: 'cover',        label: t(SECTION_LABEL_KEYS['cover']!),        ids: coverIds },
-    { key: 'garage',       label: t(SECTION_LABEL_KEYS['garage']!),       ids: garageIds }, // [fork]
-    { key: 'switches',     label: t(SECTION_LABEL_KEYS['switches']!),     ids: orderedSwitchIds },
-    { key: 'button',       label: t(SECTION_LABEL_KEYS['button']!),       ids: buttonIds },
-    { key: 'vacuum',       label: t(SECTION_LABEL_KEYS['vacuum']!),       ids: vacuumIds },
-    { key: 'sensor',       label: t(SECTION_LABEL_KEYS['sensor']!),       ids: sensorIds, isSensor: true },
-    { key: 'other',        label: t(SECTION_LABEL_KEYS['other']!),        ids: orderedOtherIds },
-  ];
-
-  const activeSectionDefs = allSectionDefs.filter((s) => s.ids.length > 0 || (s.key === 'climate' && heatingPlan)); // [fork] "Klima" also for the plan alone, in edit mode too (keeps its place)
-
-  // [fork] a stored order predating the garage section: put it where the blinds were
-  const storedRoomSectionOrder = withDefaultSlot(roomSectionOrder[areaId], 'garage', 'cover');
-  const orderedSectionDefs = applyStoredOrder(
-    activeSectionDefs.map((s) => s.key),
-    storedRoomSectionOrder
-  )
-    .map((key) => activeSectionDefs.find((s) => s.key === key))
-    .filter((s): s is SectionDef => s != null);
-
+  const sectionLabel = (key: SectionKey): string =>
+    key === 'nvrCameras' ? t('cameraSource.room.title') : t(SECTION_LABEL_KEYS[key]!); // [fork]
+  const orderedSectionDefs: SectionDef[] = coreSections.map((s) => ({ ...s, label: sectionLabel(s.key) })); // [fork]
   // ── Section content renderer ────────────────────────────────────────────────
 
   function renderSectionContent(s: SectionDef): React.ReactNode {

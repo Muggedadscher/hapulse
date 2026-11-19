@@ -577,3 +577,13 @@ export type {
 } from './settingsScope.js';
 export { originOf, splitUrlToken, migrateUrlToken, keepDeviceSecrets } from './settingsSecrets.js';
 export type { DeviceSecretsFields } from './settingsSecrets.js';
+// [fork] room page sections (moved from apps/dashboard Room.tsx, lib/order.ts, lib/defaultSlot.ts)
+export {
+  applyStoredOrder,
+  withDefaultSlot,
+  stripRoomName,
+  ROOM_SECTION_ORDER,
+  roomSections,
+  combinedEntityOrder,
+} from './roomSections.js';
+export type { RoomSectionKey, RoomSection, RoomSectionsInput, RoomSections } from './roomSections.js';
