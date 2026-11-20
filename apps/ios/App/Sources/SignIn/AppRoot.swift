@@ -12,7 +12,7 @@ struct AppRoot: View {
     @Environment(AppController.self) private var app
 
     /// Scenes that show the frame on the demo home (`signin` and no scene start normally).
-    static let demoScenes: Set<String> = ["demo", "shell", "rooms", "settings", "sheet"]
+    static let demoScenes: Set<String> = ["demo", "shell", "rooms", "room", "settings", "sheet"]
 
     var body: some View {
         Group {
@@ -75,6 +75,14 @@ struct ShellRoot: View {
     private func applyScene() {
         switch scene {
         case "rooms": nav.open(.rooms, compact: sizeClass == .compact)
+        case "room":
+            // the first room (in the user's order) with a light on
+            nav.open(.rooms, compact: sizeClass == .compact)
+            let rooms = Rooms.ordered(session.rooms, roomOrder: session.settings.strings("roomOrder"),
+                                      hiddenRooms: session.settings.strings("hiddenRooms"))
+            if let room = rooms.first(where: { r in (r.domains["light"] ?? []).contains { session.entities[$0]?.state == "on" } }) ?? rooms.first {
+                nav.roomsPath = [room.id]
+            }
         case "settings": nav.open(.settings, compact: sizeClass == .compact)
         case "sheet": nav.detailID = ShellDevice.list(session).first { $0.isOn }?.id
         default: break

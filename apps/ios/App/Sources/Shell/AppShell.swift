@@ -60,8 +60,13 @@ struct PageStack: View {
     @Environment(WindowNav.self) private var nav
 
     var body: some View {
-        NavigationStack {
-            PageContent(page: page)
+        @Bindable var nav = nav
+        Group {
+            if page == .rooms {
+                NavigationStack(path: $nav.roomsPath) { PageContent(page: page) }
+            } else {
+                NavigationStack { PageContent(page: page) }
+            }
         }
         .detailInspector(active: nav.selection == page.rawValue)
     }

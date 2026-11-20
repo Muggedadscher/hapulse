@@ -76,6 +76,17 @@ public enum Rooms {
         build(registries, locale: locale) { entities[$0] != nil }
     }
 
+    /// The rooms in the user's order (`applyRoomOrder` of the rooms menu): hidden rooms left out, the stored order
+    /// first, the rest by name in `locale`.
+    public static func ordered(_ rooms: [Room], roomOrder: [String], hiddenRooms: [String], locale: Locale = .current) -> [Room] {
+        let visible = rooms.filter { !hiddenRooms.contains($0.id) }
+        let orderedIds = roomOrder.filter { id in visible.contains { $0.id == id } }
+        let rest = visible.filter { !orderedIds.contains($0.id) }
+            .sorted { JSCompare.locale($0.name, $1.name, locale) == .orderedAscending }
+        let first = orderedIds.compactMap { id in visible.first { $0.id == id } }
+        return first + rest
+    }
+
     /// The sections of the room's page (`roomSections`).
     public static func sections(_ room: Room, entities: EntityStore, settings: SettingsState, editMode: Bool = false,
                                 sentinel: Bool = false, cameraIds: [String] = [], heatingPlan: Bool = false)

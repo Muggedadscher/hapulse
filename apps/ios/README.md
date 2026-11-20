@@ -42,7 +42,7 @@ open HAPulse.xcodeproj
 
 Ohne `-hp-scene` startet die App mit der Anmeldung (bzw. der gespeicherten Sitzung); die Rahmen-Szenen starten im Demo-Haus. Szenen nutzen nie die gespeicherte Anmeldung im Schlüsselbund. Ein `AppController` für alle Fenster (`HAPulseApp`). Bildschirmfoto-Szenen lesen keine gespeicherten Einstellungen. UI-Tests: `testScenes` (alle Szenen × de/en × hell/dunkel), `testSignInToFrameAndBack` (Anmeldeseite → Demo → Übersicht; Einstellungen → Abmelden → Anmeldeseite), `testLargeText` (größte Bedienhilfe-Schrift), `testIPadLandscape` (nur iPad).
 
-Startoptionen (für Tests und Bildschirmfotos): `-hp-scene catalog|controls|tiles|detail|signin|shell|rooms|settings|sheet`, `-hp-locale de`, `-hp-scheme dark`, `-hp-accent 210`.
+Startoptionen (für Tests und Bildschirmfotos): `-hp-scene catalog|controls|tiles|detail|signin|shell|rooms|room|settings|sheet`, `-hp-locale de`, `-hp-scheme dark`, `-hp-accent 210`.
 
 ## CI
 

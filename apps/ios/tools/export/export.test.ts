@@ -149,7 +149,10 @@ describe('iOS export', () => {
     const mdi = (await import(join(dirname(require.resolve('@mdi/js/package.json')), 'mdi.js'))) as Record<string, string>;
     const icons: Record<string, { kind: 'stroke' | 'fill'; paths: string[] }> = {};
     for (const name of [...new Set(list.lucide)].sort()) {
-      const mod = (await import(join(lucideDir, `${name}.mjs`))) as { __iconData: { node: [string, Record<string, string>][] } };
+      // some names are aliases (`waves` → `waves-horizontal`): their module only re-exports the icon
+      const file = join(lucideDir, `${name}.mjs`);
+      const alias = /export \{ default \} from '\.\/([^']+)'/.exec(readFileSync(file, 'utf8'))?.[1];
+      const mod = (await import(alias ? join(lucideDir, alias) : file)) as { __iconData: { node: [string, Record<string, string>][] } };
       icons[`lucide.${name}`] = { kind: 'stroke', paths: mod.__iconData.node.map(([tag, a]) => toPath(tag, a)) };
     }
     for (const name of [...new Set(list.mdi)].sort()) {
