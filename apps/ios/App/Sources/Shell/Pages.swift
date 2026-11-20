@@ -20,8 +20,8 @@ struct PageScroll<Content: View>: View {
 }
 
 /// Overview (stage 5): the summary chips, then the sections in the user's order (`HomeSections`). Ported so far:
-/// notices, scenes, rooms; "devices" shows the frame's device tiles until the devices card follows; the other sections
-/// (hero, energy, climate, blinds, security, waste, NVR, activity) come with their stages.
+/// notices, scenes, rooms, waste; "devices" shows the frame's device tiles until the devices card follows; the other sections
+/// (hero, energy, climate, blinds, security, NVR, activity) come with their stages.
 /// A device tile's circle switches, the rest opens the detail; a long press shows the context menu.
 struct OverviewPage: View {
     @Environment(AppModel.self) private var model
@@ -38,17 +38,19 @@ struct OverviewPage: View {
                     let now = max(context.date, Date.now)
                     let hints = HintsSection.hints(session, model.localizer, now: now)
                     let rooms = RoomsQuickAccess.rooms(session)
+                    let bins = WasteCard.bins(session, model.localizer, now: now)
                     let c = session.settings
                     let sections = HomeSections.visible(order: c.strings("homeSectionOrder"), hidden: c.strings("hiddenSections"),
                                                         mobileHidden: c.strings("mobileHiddenSections"),
                                                         compact: sizeClass == .compact, hasRooms: !rooms.isEmpty,
-                                                        hasWaste: false, hasNvr: false, hasHints: !hints.isEmpty)
+                                                        hasWaste: !bins.isEmpty, hasNvr: false, hasHints: !hints.isEmpty)
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(sections, id: \.self) { id in
                             switch id {
                             case "hints": HintsCard(hints: hints)
                             case "scenes": ScenesCard()
                             case "rooms": RoomsQuickAccess()
+                            case "waste": WasteCard(bins: bins)
                             case "devices":
                                 HPTileGrid {
                                     ForEach(ShellDevice.list(session)) { d in
