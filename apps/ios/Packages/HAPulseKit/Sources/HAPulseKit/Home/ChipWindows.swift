@@ -146,3 +146,37 @@ extension ChipWindows {
         return "mdi.mdi" + parts.map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined()
     }
 }
+
+extension ChipWindows {
+    /// The people window (`PeopleModal.tsx`): every visible person (the web: Home Assistant's order; the app: entity id).
+    public static func people(_ entities: [String: HAEntity], hidden: [String]) -> [String] {
+        let hiddenSet = Set(hidden)
+        return entities.keys.filter { $0.hasPrefix("person.") && !hiddenSet.contains($0) }.sorted()
+    }
+
+    /// Where a person is: at home, away (`not_home`), else the zone name as Home Assistant sends it.
+    public static func zoneText(_ l: Localizer, state: String) -> String {
+        switch state {
+        case "home": l.t("home.chipmodals.people.homeLabel")
+        case "not_home": l.t("home.chipmodals.people.awayLabel")
+        default: state
+        }
+    }
+
+    /// The first letter of a name, upper case (`name.charAt(0).toUpperCase()`: one UTF-16 unit, like the web).
+    public static func initial(_ name: String) -> String {
+        guard let first = name.utf16.first else { return "" }
+        return JSString.upper(String(decoding: [first], as: UTF16.self))
+    }
+
+    /// `relativeTime` of the security page: just now, seconds, minutes, hours, days ago.
+    public static func relativeTime(_ l: Localizer, since: Date, now: Date) -> String {
+        let diff = now.timeIntervalSince(since)
+        func t(_ key: String, _ n: Double) -> String { l.t(key, ["count": .number(n)]) }
+        if diff < 30 { return l.t("common.time.justNow") }
+        if diff < 60 { return t("common.time.secondsAgo", diff.rounded(.toNearestOrAwayFromZero)) }
+        if diff < 3600 { return t("common.time.minutesAgo", (diff / 60).rounded(.down)) }
+        if diff < 86400 { return t("common.time.hoursAgo", (diff / 3600).rounded(.down)) }
+        return t("common.time.daysAgo", (diff / 86400).rounded(.down))
+    }
+}

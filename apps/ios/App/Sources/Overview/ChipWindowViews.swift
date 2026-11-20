@@ -15,9 +15,10 @@ extension HomeSession {
     }
 }
 
-/// The chips whose window exists so far (stage 5 part 2): lights, doors and windows, locks, garage. The others follow.
+/// The chips whose window exists so far (stage 5 part 2): people, lights, doors and windows, locks, garage. The
+/// others (alarm, media, pool) follow.
 extension SummaryChips.Chip {
-    var hasWindow: Bool { [.lights, .doors, .locks, .garage].contains(self) }
+    var hasWindow: Bool { [.people, .lights, .doors, .locks, .garage].contains(self) }
 
     /// The window's head: icon and title key.
     var windowHead: (icon: String, title: String) {
@@ -25,6 +26,7 @@ extension SummaryChips.Chip {
         case .lights: ("lucide.lightbulb", "home.chipmodals.lights.title")
         case .locks: ("lucide.lock", "security.locks.title")
         case .garage: ("mdi.mdiGarage", "garage.title")
+        case .people: ("lucide.users", "home.chipmodals.people.title")
         default: ("lucide.door-open", "home.chipmodals.doors.title")
         }
     }
@@ -53,6 +55,7 @@ struct ChipWindowSheet: View {
                     case .lights: LightsWindowBody()
                     case .locks: LocksWindowBody()
                     case .garage: GarageWindowBody()
+                    case .people: PeopleWindowBody()
                     default: DoorsWindowBody()
                     }
                 }
@@ -62,6 +65,20 @@ struct ChipWindowSheet: View {
         }
         .background(.glas(.card))
         .presentationDetents([.medium, .large])
+    }
+}
+
+extension View {
+    /// A row that swipes to the left to one action (web Glas `SwipeRow`), only while the action can run; never for
+    /// opening or unlocking.
+    @ViewBuilder
+    func chipSwipe(_ title: String, tone: HPSwipeTone, width: CGFloat, enabled: Bool,
+                   action: @escaping () -> Void) -> some View {
+        if enabled {
+            HPSwipeRow(actionTitle: title, tone: tone, width: width, onAction: action) { self }
+        } else {
+            self
+        }
     }
 }
 
@@ -106,7 +123,7 @@ private struct ChipWindowGroupTitle<Trailing: View>: View {
 }
 
 /// Lights by room in the user's order, then the rest; "turn all off" while one is on; a row's switch (or a tap on
-/// the row) toggles the light. Swiping a row off (web Glas `SwipeRow`) is not ported.
+/// the row) toggles the light; a light that is on swipes to "Off".
 private struct LightsWindowBody: View {
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
@@ -172,6 +189,9 @@ private struct LightRow: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(l.t(isOn ? "home.chipmodals.lights.rowAriaOn" : "home.chipmodals.lights.rowAriaOff",
                                 ["name": .text(name)]))
+        .chipSwipe(l.t("glas.swipe.off"), tone: .neutral, width: 88, enabled: isOn) {
+            session.run(entity.entityId, "light", "turn_off")
+        }
     }
 
     private func toggle(_ isOn: Bool) {
@@ -224,8 +244,8 @@ private struct DoorsWindowBody: View {
 
 /// Every visible lock, the ones not locked first (web `LocksModal` with `LocksList` in Glas): circle (locked green,
 /// otherwise red), name, room, state under the name, one button: "Unlock" while locked, else "Lock", disabled while
-/// the lock moves, is jammed or unreachable. Unlocking always asks; locking asks only for a code. Swiping a row to
-/// lock (web Glas `SwipeRow`) is not ported. The question is a system alert: it closes on confirm, and a refused call
+/// the lock moves, is jammed or unreachable. Unlocking always asks; locking asks only for a code. A lock that can be
+/// locked swipes to "Lock". The question is a system alert: it closes on confirm, and a refused call
 /// (wrong code) opens it again with an empty field (the web keeps its dialog open and shows a toast). Names sort in
 /// the UI language (the web: the browser's language).
 private struct LocksWindowBody: View {
@@ -317,6 +337,7 @@ private struct LocksWindowBody: View {
         .padding(.vertical, 12)
         .padding(.leading, 14)
         .padding(.trailing, 12)
+        .chipSwipe(l.t("security.locks.lock"), tone: .ok, width: 112, enabled: !locked && !busy) { request(.lock, e) }
     }
 
     private func request(_ service: Locks.Service, _ e: HAEntity) {
@@ -354,7 +375,7 @@ private struct LocksWindowBody: View {
 /// Every visible garage door and gate, open ones first (web `GarageModal` with `GarageList` in Glas): circle with the
 /// door's status icon (closed green, open or moving red, unreachable amber), name, room, the state in its colour on
 /// the right, then a row of buttons: Stop (only while it moves and when it can), Close, Open. Closing runs at once,
-/// opening always asks; only a door that can act right now gets the call. Swiping a row to close is not ported. A
+/// opening always asks; only a door that can act right now gets the call. A door that can close swipes to "Close". A
 /// refused opening asks again (the web keeps its dialog open); a refused close or stop is only logged (the web shows
 /// a toast; the app has no error banner yet).
 private struct GarageWindowBody: View {
@@ -432,6 +453,7 @@ private struct GarageWindowBody: View {
         .padding(.vertical, 12)
         .padding(.leading, 14)
         .padding(.trailing, 12)
+        .chipSwipe(l.t("garage.close"), tone: .ok, width: 104, enabled: Garage.canAct(e, .close)) { send(e, "close_cover") }
     }
 
     private func button(_ icon: String, _ title: String, _ name: String, enabled: Bool, iconSize: CGFloat = 15,
@@ -464,5 +486,64 @@ private struct GarageWindowBody: View {
                 }
             }
         }
+    }
+}
+
+/// Every visible person (web `PeopleModal` in Glas): avatar 40 with the initial (accent at home), a zone dot on its
+/// edge (green at home), name, zone (green at home), and how long ago it changed. The photo (`entity_picture`) is not
+/// shown yet: it needs the Home Assistant address, which the session does not hand out.
+private struct PeopleWindowBody: View {
+    @Environment(AppModel.self) private var model
+    @Environment(HomeSession.self) private var session
+
+    var body: some View {
+        let l = model.localizer
+        let entities = session.entities.entities
+        let ids = ChipWindows.people(entities, hidden: session.settings.hiddenEntities)
+        if ids.isEmpty {
+            ChipWindowEmpty(icon: "lucide.users", title: l.t("home.chipmodals.people.emptyTitle"),
+                            text: l.t("home.chipmodals.people.emptyDescription"))
+        } else {
+            TimelineView(.periodic(from: .now, by: 30)) { context in
+                let now = max(context.date, Date.now)
+                HPListGroup(separatorInset: 66) {
+                    ForEach(ids, id: \.self) { id in
+                        if let e = entities[id] { row(e, l, now: now) }
+                    }
+                }
+            }
+        }
+    }
+
+    private func row(_ e: HAEntity, _ l: Localizer, now: Date) -> some View {
+        let home = e.state == "home"
+        let name = ChipWindows.name(e)
+        let time = ChipWindows.relativeTime(l, since: e.lastChanged, now: now)
+        return HStack(spacing: 12) {
+            Text(ChipWindows.initial(name)).hpText(.headline)
+                .foregroundStyle(home ? AnyShapeStyle(.accentPart(.accentInk)) : AnyShapeStyle(.glas(.label2)))
+                .frame(width: 40, height: 40)
+                .background(home ? AnyShapeStyle(.accentPart(.accentSoft)) : AnyShapeStyle(.glas(.fill)), in: Circle())
+                .overlay(alignment: .bottomTrailing) {
+                    Circle().fill(home ? AnyShapeStyle(.glas(.green)) : AnyShapeStyle(.glas(.label3)))
+                        .frame(width: 12, height: 12)
+                        .overlay(Circle().stroke(.glas(.group), lineWidth: 2))
+                        .offset(x: 2, y: 2)
+                }
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(name).hpText(.body, weight: .semibold).foregroundStyle(.glas(.label)).lineLimit(1)
+                Text(ChipWindows.zoneText(l, state: e.state)).hpText(.subhead, weight: home ? .semibold : nil)
+                    .foregroundStyle(home ? AnyShapeStyle(.glas(.greenInk)) : AnyShapeStyle(.glas(.label2)))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Text(time).hpText(.footnote).foregroundStyle(.glas(.label2))
+                .accessibilityLabel(Text(verbatim: l.t("home.chipmodals.people.lastChangedAria", ["time": .text(time)])))
+        }
+        .frame(minHeight: 62)
+        .padding(.leading, 14)
+        .padding(.trailing, 16)
+        .accessibilityElement(children: .combine)
     }
 }

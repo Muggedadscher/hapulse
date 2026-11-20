@@ -118,3 +118,31 @@ import Testing
         }
     }
 }
+
+/// The people window (`PeopleModal.tsx`, `relativeTime` of `roomUtils.ts`).
+@Suite struct PeopleWindowTests {
+    @Test func peopleZonesInitials() {
+        let list = [ChipWindowsTests.e("person.b", "home"), ChipWindowsTests.e("person.a", "not_home"),
+                    ChipWindowsTests.e("person.c", "Work"), ChipWindowsTests.e("sensor.x", "1")]
+        let entities = Dictionary(uniqueKeysWithValues: list.map { ($0.entityId, $0) })
+        #expect(ChipWindows.people(entities, hidden: ["person.c"]) == ["person.a", "person.b"])
+        let de = Localizer(locale: .de)
+        #expect(ChipWindows.zoneText(de, state: "home") == de.t("home.chipmodals.people.homeLabel"))
+        #expect(ChipWindows.zoneText(de, state: "not_home") == de.t("home.chipmodals.people.awayLabel"))
+        #expect(ChipWindows.zoneText(de, state: "Work") == "Work")
+        #expect(ChipWindows.initial("ömer") == "Ö")
+        #expect(ChipWindows.initial("") == "")
+    }
+
+    @Test func relativeTimes() {
+        let en = Localizer(locale: .en)
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        func r(_ s: Double) -> String { ChipWindows.relativeTime(en, since: now.addingTimeInterval(-s), now: now) }
+        #expect(r(10) == en.t("common.time.justNow"))
+        #expect(r(44.5) == en.t("common.time.secondsAgo", ["count": 45]))
+        #expect(r(119) == en.t("common.time.minutesAgo", ["count": 1]))
+        #expect(r(7199) == en.t("common.time.hoursAgo", ["count": 1]))
+        #expect(r(3 * 86400 + 5) == en.t("common.time.daysAgo", ["count": 3]))
+        #expect(r(-5) == en.t("common.time.justNow"))
+    }
+}
