@@ -24,6 +24,7 @@ struct SummaryChipsRow: View {
         let c = ChipCounts.count(session.visibleEntities, poolPump: SummaryChips.poolPump, poolRequired: SummaryChips.poolRequired)
         let order = session.settings.customization["entityOrder"]?[SummaryChips.orderKey]?.array?.compactMap(\.string)
         let chips = SummaryChips.visible(c, homeChips: session.settings.strings("homeChips"), order: order)
+        @Bindable var nav = nav
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(chips, id: \.self) { chip in
@@ -34,7 +35,7 @@ struct SummaryChipsRow: View {
             }
         }
         .scrollClipDisabled()
-        .sheet(item: Binding(get: { nav.chipWindow }, set: { nav.chipWindow = $0 })) { chip in
+        .sheet(item: $nav.chipWindow) { chip in
             ChipWindowSheet(chip: chip) { nav.chipWindow = nil }
         }
     }

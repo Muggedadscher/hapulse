@@ -8,6 +8,8 @@ public enum ChipWindows {
     public struct LightGroup: Equatable, Sendable {
         public var room: Room?
         public var ids: [String]
+        /// A stable key for lists: the room's id, or "other".
+        public var key: String { room?.id ?? "other" }
     }
 
     /// The lights grouped by room in the user's room order, then the lights in no room. Rooms without lights are left out.

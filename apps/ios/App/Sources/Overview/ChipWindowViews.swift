@@ -120,7 +120,7 @@ private struct LightsWindowBody: View {
                     }
                     .buttonStyle(HPPressButtonStyle())
                 }
-                ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
+                ForEach(groups, id: \.key) { group in
                     VStack(alignment: .leading, spacing: 8) {
                         ChipWindowGroupTitle(group.room?.name ?? l.t("home.chipmodals.lights.otherLabel"))
                         HPListGroup(separatorInset: 60) {
@@ -154,6 +154,10 @@ private struct LightRow: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { toggle(isOn) }
+        // one label for the row, like the web (`rowAriaOn`/`rowAriaOff`); the switch keeps its value and action
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(l.t(isOn ? "home.chipmodals.lights.rowAriaOn" : "home.chipmodals.lights.rowAriaOff",
+                                ["name": .text(name)]))
     }
 
     private func toggle(_ isOn: Bool) {
@@ -185,7 +189,7 @@ private struct DoorsWindowBody: View {
         let open = ids.filter { entities[$0]?.state == "on" }.count
         return VStack(alignment: .leading, spacing: 8) {
             ChipWindowGroupTitle(title) {
-                Text("\(l.number(Double(open), maxDecimals: 0))/\(l.number(Double(ids.count), maxDecimals: 0))")
+                Text(verbatim: "\(l.number(Double(open), maxDecimals: 0))/\(l.number(Double(ids.count), maxDecimals: 0))")
                     .hpText(.subhead, weight: open > 0 ? .semibold : nil)
                     .foregroundStyle(open > 0 ? AnyShapeStyle(.glas(.redInk)) : AnyShapeStyle(.glas(.label2)))
             }
@@ -197,7 +201,6 @@ private struct DoorsWindowBody: View {
                             HPStatusPill(l.t(isOpen ? "home.chipmodals.doors.open" : "home.chipmodals.doors.closed"),
                                          kind: isOpen ? .danger : .quiet)
                         }
-                        .accessibilityElement(children: .combine)
                     }
                 }
             }
