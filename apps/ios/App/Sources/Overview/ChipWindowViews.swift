@@ -355,7 +355,8 @@ private struct LocksWindowBody: View {
 /// door's status icon (closed green, open or moving red, unreachable amber), name, room, the state in its colour on
 /// the right, then a row of buttons: Stop (only while it moves and when it can), Close, Open. Closing runs at once,
 /// opening always asks; only a door that can act right now gets the call. Swiping a row to close is not ported. A
-/// refused opening asks again (the web keeps its dialog open).
+/// refused opening asks again (the web keeps its dialog open); a refused close or stop is only logged (the web shows
+/// a toast; the app has no error banner yet).
 private struct GarageWindowBody: View {
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
@@ -417,7 +418,7 @@ private struct GarageWindowBody: View {
             .accessibilityElement(children: .combine)
             HStack(spacing: 8) {
                 if Garage.canStop(e) {
-                    button("lucide.square", l.t("garage.stop"), name, enabled: true) { send(e, "stop_cover") }
+                    button("lucide.square", l.t("garage.stop"), name, enabled: true, iconSize: 13) { send(e, "stop_cover") }
                 }
                 button("lucide.arrow-down", l.t("garage.close"), name, enabled: Garage.canAct(e, .close)) {
                     send(e, "close_cover")
@@ -433,11 +434,11 @@ private struct GarageWindowBody: View {
         .padding(.trailing, 12)
     }
 
-    private func button(_ icon: String, _ title: String, _ name: String, enabled: Bool,
+    private func button(_ icon: String, _ title: String, _ name: String, enabled: Bool, iconSize: CGFloat = 15,
                         action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                HPIcon(icon, size: 15, strokeWidth: 1.75)
+                HPIcon(icon, size: iconSize, strokeWidth: 1.75)
                 Text(title).hpText(.subhead, weight: .semibold)
             }
             .foregroundStyle(.glas(.label))

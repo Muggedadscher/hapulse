@@ -106,18 +106,8 @@ extension ChipWindows {
     /// language (the web: `localeCompare` in the browser language).
     public static func locks(_ entities: [String: HAEntity], hidden: [String], locale: Locale) -> [String] {
         let hiddenSet = Set(hidden)
-        let list = entities.values.filter { $0.entityId.hasPrefix("lock.") && !hiddenSet.contains($0.entityId) }
-            .sorted { $0.entityId < $1.entityId }
-        func name(_ e: HAEntity) -> String { e.friendlyName ?? e.entityId }
-        return list.enumerated().sorted { a, b in
-            let oa = a.element.state != "locked", ob = b.element.state != "locked"
-            if oa != ob { return oa }
-            switch JSCompare.locale(name(a.element), name(b.element), locale) {
-            case .orderedAscending: return true
-            case .orderedDescending: return false
-            case .orderedSame: return a.offset < b.offset
-            }
-        }.map(\.element.entityId)
+        return openFirstByName(entities.values.filter { $0.entityId.hasPrefix("lock.") && !hiddenSet.contains($0.entityId) },
+                               isOpen: { $0.state != "locked" }, locale: locale)
     }
 
     /// The room an entity belongs to (`getRoomName`).
@@ -131,11 +121,16 @@ extension ChipWindows {
     /// name in the UI language (the web: `localeCompare` in the browser language).
     public static func garages(_ entities: [String: HAEntity], hidden: [String], locale: Locale) -> [String] {
         let hiddenSet = Set(hidden)
-        let list = entities.values.filter { Garage.isGarageDoor($0) && !hiddenSet.contains($0.entityId) }
-            .sorted { $0.entityId < $1.entityId }
+        return openFirstByName(entities.values.filter { Garage.isGarageDoor($0) && !hiddenSet.contains($0.entityId) },
+                               isOpen: { Garage.isOpen($0.state) }, locale: locale)
+    }
+
+    /// `Number(open(b)) - Number(open(a)) || name(a).localeCompare(name(b))` over a list in entity id order (the
+    /// web's sort is stable over `Object.values`; the app's input order is the entity id).
+    static func openFirstByName(_ entities: [HAEntity], isOpen: (HAEntity) -> Bool, locale: Locale) -> [String] {
         func name(_ e: HAEntity) -> String { e.friendlyName ?? e.entityId }
-        return list.enumerated().sorted { a, b in
-            let oa = Garage.isOpen(a.element.state), ob = Garage.isOpen(b.element.state)
+        return entities.sorted { $0.entityId < $1.entityId }.enumerated().sorted { a, b in
+            let oa = isOpen(a.element), ob = isOpen(b.element)
             if oa != ob { return oa }
             switch JSCompare.locale(name(a.element), name(b.element), locale) {
             case .orderedAscending: return true
