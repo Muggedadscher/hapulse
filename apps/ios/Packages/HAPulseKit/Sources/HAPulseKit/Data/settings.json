@@ -1,0 +1,130 @@
+{
+  "customization": {
+    "automationSectionHeights": {},
+    "automationSectionOrder": [],
+    "automationSectionSpans": {},
+    "detailHistoryRange": "24h",
+    "editingEnabled": true,
+    "energySectionHeights": {},
+    "energySectionOrder": [],
+    "energySectionSpans": {},
+    "entityOrder": {},
+    "entityOverrides": {},
+    "favorites": [],
+    "garageChipMigrated": false,
+    "glassStrength": "clear",
+    "hiddenAutomationSections": [],
+    "hiddenEnergySections": [],
+    "hiddenEntities": [],
+    "hiddenMusicSections": [],
+    "hiddenNav": [],
+    "hiddenRooms": [],
+    "hiddenSceneSections": [],
+    "hiddenSections": [
+      "blinds"
+    ],
+    "hiddenSecuritySections": [],
+    "hiddenSystemSections": [],
+    "hintsSectionMigrated": false,
+    "homeChips": [
+      "people",
+      "lights",
+      "doors",
+      "alarm",
+      "media",
+      "pool",
+      "garage",
+      "locks"
+    ],
+    "homeSectionHeights": {},
+    "homeSectionOrder": [],
+    "homeSectionSpans": {},
+    "libraryPlayerId": null,
+    "locksChipMigrated": false,
+    "maServerUrl": null,
+    "maToken": null,
+    "mobileHiddenAutomationSections": [],
+    "mobileHiddenEnergySections": [],
+    "mobileHiddenMusicSections": [],
+    "mobileHiddenSceneSections": [],
+    "mobileHiddenSections": [],
+    "mobileHiddenSecuritySections": [],
+    "mobileHiddenSystemSections": [],
+    "musicSectionOrder": [],
+    "musicSectionSpans": {},
+    "navOrder": [],
+    "navOrderV2Migrated": false,
+    "nvrCameraRooms": {},
+    "nvrSectionMigrated": false,
+    "poolChipMigrated": false,
+    "reduceTransparency": false,
+    "roomOrder": [],
+    "roomSectionOrder": {},
+    "roomSectionSpans": {},
+    "roomTemperatureSource": {},
+    "sceneSectionHeights": {},
+    "sceneSectionOrder": [],
+    "sceneSectionSpans": {},
+    "scryptedToken": "",
+    "scryptedUrl": "",
+    "securitySectionHeights": {},
+    "securitySectionOrder": [],
+    "securitySectionSpans": {},
+    "systemSectionHeights": {},
+    "systemSectionOrder": [],
+    "systemSectionSpans": {},
+    "tallSections": [],
+    "uiStyle": "classic",
+    "wasteSectionMigrated": false,
+    "weatherEntity": ""
+  },
+  "deviceTop": [
+    "sidebarCollapsed",
+    "lastSeenVersion",
+    "modeOverride",
+    "lastSeenFork"
+  ],
+  "globalTop": [
+    "theme",
+    "mode",
+    "accentHue",
+    "appName",
+    "appIcon",
+    "appIconHidden"
+  ],
+  "locales": [
+    "en",
+    "de",
+    "es",
+    "fr",
+    "it",
+    "pt",
+    "sv"
+  ],
+  "navOrderV2Head": [
+    "overview",
+    "rooms",
+    "nvr",
+    "pool"
+  ],
+  "secretKeys": [
+    "scryptedToken",
+    "maToken"
+  ],
+  "themes": [
+    "aurora",
+    "sunset",
+    "ocean",
+    "forest"
+  ],
+  "userKeys": [
+    "favorites",
+    "libraryPlayerId",
+    "detailHistoryRange",
+    "editingEnabled"
+  ],
+  "userTop": [
+    "language",
+    "userName"
+  ]
+}

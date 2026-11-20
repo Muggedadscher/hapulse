@@ -46,9 +46,11 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: de.schleerag.hapulse.auth
             CFBundleURLSchemes: [hapulse]
-        # Home Assistant and Sentinel in the home network (http:// and WebRTC to LAN addresses)
+        # Home Assistant and Sentinel often run on plain http:// under a home-network name (ha.home.lan:8123) that
+        # NSAllowsLocalNetworking does not cover; the user chooses the address, like in the official Home Assistant app.
+        # (NSAllowsArbitraryLoads alone: next to NSAllowsLocalNetworking iOS would ignore it.)
         NSAppTransportSecurity:
-          NSAllowsLocalNetworking: true
+          NSAllowsArbitraryLoads: true
         NSLocalNetworkUsageDescription: HAPulse verbindet sich mit Home Assistant und Sentinel in deinem Heimnetz.
     settings:
       base:

@@ -2,8 +2,9 @@ import SwiftUI
 import HAPulseKit
 import HAPulseUI
 
-/// Stage 0: the app shows the catalogue of the building blocks (colours, type, icons, glass). The real pages follow
-/// stage by stage (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
+/// Without a start option the real app (sign-in, session). Start option `-hp-scene` shows one scene for screenshots
+/// and UI tests: `catalog` (building blocks), `signin`, `demo`. The pages follow stage by stage
+/// (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
 struct RootView: View {
     let options: LaunchOptions
     /// Loaded once (four JSON files), not on every `body`.
@@ -15,8 +16,15 @@ struct RootView: View {
     }
 
     var body: some View {
-        CatalogView(localizer: localizer)
-            .accessibilityElement(children: .contain)
+        Group {
+            switch options.scene {
+            case nil: AppRoot(localizer: localizer)
+            case "signin": AppRoot(localizer: localizer)
+            case "demo": AppRoot(localizer: localizer, startDemo: true)
+            default: CatalogView(localizer: localizer)
+            }
+        }
+        .accessibilityElement(children: .contain)
             .accessibilityIdentifier("hp.root")
     }
 }
@@ -36,7 +44,7 @@ struct CatalogView: View {
                     Text(localizer.t("home.greeting.morning"))
                         .hpText(.greetingPhone)
                         .foregroundStyle(.glas(.label))
-                        .accessibilityIdentifier("hp.greeting")
+                        .accessibilityIdentifier("hp.scene.catalog")
                     Text(localizer.t("nav.overview") + " · " + localizer.number(1250.5) + " kWh · " + localizer.number(21, minDecimals: 1) + " °C")
                         .hpText(.subhead)
                         .foregroundStyle(.glas(.label2))
