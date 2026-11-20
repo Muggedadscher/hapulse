@@ -19,27 +19,20 @@ struct PageScroll<Content: View>: View {
     }
 }
 
-/// Overview (stage 2 frame; the real overview is stage 5): summary chips and the device tiles of the session.
+/// Overview (stage 5, first part): the summary chips, the notices, then the device tiles of the frame (the overview's
+/// cards follow).
 /// A tile's circle switches, the rest opens the detail; a long press shows the context menu.
 struct OverviewPage: View {
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
 
     var body: some View {
-        let l = model.localizer
         let devices = ShellDevice.list(session)
-        let on = devices.filter { $0.isOn && $0.domain == "light" }.count
         PageScroll {
             if session.loaded {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        HPStatusChip(icon: "lucide.lightbulb",
-                                     text: on > 0 ? l.t("home.summaryChips.lightsCount", ["count": .number(Double(on))]) : l.t("home.summaryChips.allOff"),
-                                     state: on > 0 ? .active(.yellow) : .normal)
-                    }
-                }
-                .scrollClipDisabled()
-                .accessibilityIdentifier("hp.scene.shell")
+                SummaryChipsRow()
+                    .accessibilityIdentifier("hp.scene.shell")
+                HintsSection()
 
                 HPTileGrid {
                     ForEach(devices) { d in
