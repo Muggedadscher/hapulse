@@ -249,19 +249,35 @@ struct ScenesCard: View {
                 if scenes.isEmpty {
                     HPCard {
                         VStack(spacing: 6) {
-                            HPIcon("lucide.star", size: 28, strokeWidth: 1.5).foregroundStyle(.glas(.label3))
-                            Text(l.t("home.scenes.emptyTitle")).hpText(.subhead, weight: .semibold).foregroundStyle(.glas(.label))
-                            Text(l.t("home.scenes.emptyDescription")).hpText(.footnote).foregroundStyle(.glas(.label2))
+                            HPIcon("lucide.star", size: 28, strokeWidth: 1.5).foregroundStyle(.glas(.label2))
+                            Text(l.t("home.scenes.emptyTitle")).hpText(.body, weight: .semibold).foregroundStyle(.glas(.label))
+                            Text(l.t("home.scenes.emptyDescription")).hpText(.subhead).foregroundStyle(.glas(.label2))
                         }
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, minHeight: 120)
                     }
-                } else {
+                } else if scenes.count <= 4 {
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                         ForEach(Array(scenes.enumerated()), id: \.element.entityId) { i, scene in
                             SceneTileCell(scene: scene, index: i, isActive: active.contains(scene.entityId))
                         }
                     }
+                } else {
+                    // more than four: two rows that scroll sideways, filled column by column, a column half as wide
+                    // as the card (web `.scenes-card__scroll-track`)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 10) {
+                            ForEach(Array(stride(from: 0, to: scenes.count, by: 2)), id: \.self) { start in
+                                VStack(spacing: 10) {
+                                    ForEach(start..<min(start + 2, scenes.count), id: \.self) { i in
+                                        SceneTileCell(scene: scenes[i], index: i, isActive: active.contains(scenes[i].entityId))
+                                    }
+                                }
+                                .containerRelativeFrame(.horizontal, count: 2, spacing: 10)
+                            }
+                        }
+                    }
+                    .scrollClipDisabled()
                 }
             }
             .accessibilityElement(children: .contain)
@@ -280,6 +296,7 @@ struct SceneTileCell: View {
     var showsSubtitle = true
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
+    @Environment(WindowNav.self) private var nav
 
     var body: some View {
         let l = model.localizer
@@ -290,8 +307,21 @@ struct SceneTileCell: View {
             : members > 0 ? l.t("home.scenes.members", ["count": .number(Double(members))]) : nil
         HPSceneTile(icon: "lucide.\(SceneLook.icon(shown))", name: shown, subtitle: subtitle,
                     tone: HPSceneTone(rawValue: SceneLook.tone(shown, index: index)) ?? .yellow, isActive: isActive,
-                    label: l.t("home.scenes.activateAria", ["name": .text(shown)])) {
+                    // the room page words it as the web's room page does
+                    label: l.t(showsSubtitle ? "home.scenes.activateAria" : "room.scene.activate", ["name": .text(shown)])) {
             session.run(scene.entityId, "scene", "turn_on")
+        }
+        .contextMenu {
+            Button {
+                session.run(scene.entityId, "scene", "turn_on")
+            } label: {
+                Label { Text(l.t("glas.context.activate")) } icon: { HPIconImage.image("lucide.play") }
+            }
+            Button {
+                nav.detailID = scene.entityId
+            } label: {
+                Label { Text(l.t("glas.context.details")) } icon: { HPIconImage.image("lucide.info") }
+            }
         }
     }
 }
