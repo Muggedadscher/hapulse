@@ -82,24 +82,15 @@ struct SummaryChipsRow: View {
 /// The overview's "Notices" (web `HintsCard` with `useHints`): only what deviates from normal, critical first. Shown
 /// only while there is a hint. Recomputed every minute too, so a door counts once it is open long enough and a bin's
 /// "today"/"tomorrow" moves at midnight without an entity update.
-struct HintsSection: View {
-    @Environment(AppModel.self) private var model
-    @Environment(HomeSession.self) private var session
-
-    var body: some View {
-        TimelineView(.everyMinute) { context in
-            let now = max(context.date, Date.now)
-            let l = model.localizer
-            let locale = Locale(identifier: l.locale.rawValue)
-            let visible = session.visibleEntities
-            let list = visible.keys.sorted().compactMap { visible[$0] }
-            let waste = Waste.bins(list, now: now, locale: locale)
-            // cameras (Sentinel) and missing heating plans (admins) come with their stages
-            let hints = Hints.collect(list, now: now, waste: waste, locale: locale).hints
-            if !hints.isEmpty {
-                HintsCard(hints: hints)
-            }
-        }
+/// The hints of the overview, recomputed by the page's minute timeline (waste "today/tomorrow" and so on).
+enum HintsSection {
+    @MainActor static func hints(_ session: HomeSession, _ l: Localizer, now: Date) -> [Hints.Hint] {
+        let locale = Locale(identifier: l.locale.rawValue)
+        let visible = session.visibleEntities
+        let list = visible.keys.sorted().compactMap { visible[$0] }
+        let waste = Waste.bins(list, now: now, locale: locale)
+        // cameras (Sentinel) and missing heating plans (admins) come with their stages
+        return Hints.collect(list, now: now, waste: waste, locale: locale).hints
     }
 }
 
@@ -355,6 +346,7 @@ struct RoomsQuickAccess: View {
                     HPRoomCard(name: room.name, icon: "lucide.\(look.iconName)", line1: lines.line1, line2: lines.line2,
                                line2IsStatus: lines.isStatus, tone: look.tone.map(Self.cardTone),
                                label: lines.accessibilityLabel) {
+                        // with tabs, back from the room leads to the rooms list (the web goes back to the overview)
                         nav.open(.rooms, compact: sizeClass == .compact)
                         nav.roomsPath = [room.id]
                     }

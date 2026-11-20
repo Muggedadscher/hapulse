@@ -55,14 +55,21 @@ import Testing
     }
 
     @Test func percentLikeIntl() {
-        #expect(RoomTile.percent(45, locale: "en") == "45%")
-        #expect(RoomTile.percent(45, locale: "de") == "45\u{00A0}%")
-        #expect(RoomTile.percent(45.6, locale: "en") == "46%")
-        // the browser (Node 22 ICU) writes a no-break space in de, fr, sv and es
-        #expect(RoomTile.percent(46, locale: "fr") == "46\u{00A0}%")
-        #expect(RoomTile.percent(46, locale: "sv") == "46\u{00A0}%")
-        #expect(RoomTile.percent(46, locale: "es") == "46\u{00A0}%")
-        #expect(RoomTile.percent(46, locale: "it") == "46%")
-        #expect(RoomTile.percent(46, locale: "pt") == "46%")
+        // The space before "%" depends on the ICU data (Node 22 and swift-foundation write U+00A0, newer CLDR
+        // has U+202F in some languages), so both count as the same no-break space here.
+        func p(_ v: Double, _ locale: String) -> String {
+            RoomTile.percent(v, locale: locale).replacingOccurrences(of: "\u{202F}", with: "\u{00A0}")
+        }
+        #expect(p(45, "en") == "45%")
+        #expect(p(45, "de") == "45\u{00A0}%")
+        #expect(p(45.6, "en") == "46%")
+        // half away from zero, like Intl
+        #expect(p(44.5, "en") == "45%")
+        #expect(p(45.5, "en") == "46%")
+        #expect(p(46, "fr") == "46\u{00A0}%")
+        #expect(p(46, "sv") == "46\u{00A0}%")
+        #expect(p(46, "es") == "46\u{00A0}%")
+        #expect(p(46, "it") == "46%")
+        #expect(p(46, "pt") == "46%")
     }
 }

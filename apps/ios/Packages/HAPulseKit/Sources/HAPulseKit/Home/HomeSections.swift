@@ -81,7 +81,11 @@ public enum RoomTile {
     }
 
     /// `Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 })` of a value in percent.
+    /// Rounded first, half away from zero like `Intl` (`FormatStyle` alone rounds half to even, and 44.5 / 100
+    /// is not exact as a binary number).
     public static func percent(_ value: Double, locale: String) -> String {
-        (value / 100).formatted(.percent.precision(.fractionLength(0)).locale(Locale(identifier: locale)))
+        (value.rounded(.toNearestOrAwayFromZero) / 100)
+            .formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero)
+                .locale(Locale(identifier: locale)))
     }
 }

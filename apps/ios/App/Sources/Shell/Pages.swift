@@ -24,6 +24,7 @@ struct PageScroll<Content: View>: View {
 /// (hero, energy, climate, blinds, security, waste, NVR, activity) come with their stages.
 /// A device tile's circle switches, the rest opens the detail; a long press shows the context menu.
 struct OverviewPage: View {
+    @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
     @Environment(\.horizontalSizeClass) private var sizeClass
 
@@ -32,24 +33,31 @@ struct OverviewPage: View {
             if session.loaded {
                 SummaryChipsRow()
                     .accessibilityIdentifier("hp.scene.shell")
-                let c = session.settings
-                // hints: the section hides itself while nothing deviates
-                let sections = HomeSections.visible(order: c.strings("homeSectionOrder"), hidden: c.strings("hiddenSections"),
-                                                    mobileHidden: c.strings("mobileHiddenSections"), compact: sizeClass == .compact,
-                                                    hasRooms: !RoomsQuickAccess.rooms(session).isEmpty, hasWaste: false,
-                                                    hasNvr: false, hasHints: true)
-                ForEach(sections, id: \.self) { id in
-                    switch id {
-                    case "hints": HintsSection()
-                    case "scenes": ScenesCard()
-                    case "rooms": RoomsQuickAccess()
-                    case "devices":
-                        HPTileGrid {
-                            ForEach(ShellDevice.list(session)) { d in
-                                DeviceTileCell(device: d)
+                // every minute: hints depend on the time (waste "today", …)
+                TimelineView(.everyMinute) { context in
+                    let now = max(context.date, Date.now)
+                    let hints = HintsSection.hints(session, model.localizer, now: now)
+                    let rooms = RoomsQuickAccess.rooms(session)
+                    let c = session.settings
+                    let sections = HomeSections.visible(order: c.strings("homeSectionOrder"), hidden: c.strings("hiddenSections"),
+                                                        mobileHidden: c.strings("mobileHiddenSections"),
+                                                        compact: sizeClass == .compact, hasRooms: !rooms.isEmpty,
+                                                        hasWaste: false, hasNvr: false, hasHints: !hints.isEmpty)
+                    VStack(alignment: .leading, spacing: 20) {
+                        ForEach(sections, id: \.self) { id in
+                            switch id {
+                            case "hints": HintsCard(hints: hints)
+                            case "scenes": ScenesCard()
+                            case "rooms": RoomsQuickAccess()
+                            case "devices":
+                                HPTileGrid {
+                                    ForEach(ShellDevice.list(session)) { d in
+                                        DeviceTileCell(device: d)
+                                    }
+                                }
+                            default: EmptyView()
                             }
                         }
-                    default: EmptyView()
                     }
                 }
             } else {
