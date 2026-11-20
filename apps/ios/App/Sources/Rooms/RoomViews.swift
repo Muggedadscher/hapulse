@@ -7,7 +7,8 @@ import HAPulseUI
 struct RoomBadge {
     let icon: String
     let tone: HPTone?
-    let subtitle: String
+    /// nil: nothing to say (no status, no light on), like the web's rooms menu
+    let subtitle: String?
 
     /// How loud a status is (`STATUS_TONE`): window and door warn, gate, water and smoke alarm.
     private static let alarm: Set<String> = ["car", "droplets", "flame"]
@@ -30,7 +31,7 @@ struct RoomBadge {
         } else {
             icon = "lucide.\(RoomLook.iconName(name: room.name, icon: room.icon))"
             tone = lightsOn > 0 ? .yellow : nil
-            subtitle = lightsOn > 0 ? l.t("glas.hero.lightsOn", ["count": .number(Double(lightsOn))]) : l.t("home.summaryChips.allOff")
+            subtitle = lightsOn > 0 ? l.t("glas.hero.lightsOn", ["count": .number(Double(lightsOn))]) : nil
         }
     }
 }
@@ -45,7 +46,7 @@ struct RoomsPage: View {
         let l = model.localizer
         let c = session.settings.customization
         let rooms = Rooms.ordered(session.rooms, roomOrder: session.settings.strings("roomOrder"),
-                                  hiddenRooms: session.settings.strings("hiddenRooms"))
+                                  hiddenRooms: session.settings.strings("hiddenRooms"), locale: Locale(identifier: l.locale.rawValue))
         PageScroll {
             if session.registries == nil {
                 LoadingCard()
@@ -66,7 +67,7 @@ struct RoomsPage: View {
                             HPListRow(room.name, subtitle: badge.subtitle, icon: badge.icon, tone: badge.tone, minHeight: 60) {
                                 HStack(spacing: 6) {
                                     if let temperature {
-                                        Text(l.number(temperature.value, maxDecimals: 1) + " °C")
+                                        Text(l.number(temperature.value, maxDecimals: 1) + " " + (temperature.unit ?? "°C"))
                                             .hpText(.subhead).foregroundStyle(.glas(.label2))
                                     }
                                     HPIcon("lucide.chevron-right", size: 16, strokeWidth: 2).foregroundStyle(.glas(.label3))
@@ -153,12 +154,15 @@ struct EntityRoomTile: View {
         let l = model.localizer
         let e = entity
         let d = ShellDevice.make(e, room: nil)
-        let name = RoomSections.stripRoomName(d.name, roomName)
-        HPRoomTile(icon: d.icon, name: name, state: d.stateText(l, session), chip: chip(d)) {
+        // a scene or button tile shows only its name (its state is the time it last ran), like the web's scene tile
+        let runs = d.domain == "scene" || d.domain == "button" || d.domain == "input_button"
+        let stripped = RoomSections.stripRoomName(d.name, roomName)
+        let name = d.domain == "scene" ? stripped.replacingOccurrences(of: "_", with: " ") : stripped
+        HPRoomTile(icon: d.icon, name: name, state: runs ? "" : d.stateText(l, session), chip: chip(d)) {
             act(d)
         }
         .contextMenu {
-            if EntityDisplay.isToggleable(e.domain) {
+            if canSwitch(d) {
                 Button {
                     session.toggle(e.entityId)
                 } label: {
@@ -178,8 +182,13 @@ struct EntityRoomTile: View {
         return d.isOn ? .lit(d.tone) : .neutral
     }
 
+    /// Not while Home Assistant does not reach the device: a tap then opens the detail.
+    private func canSwitch(_ d: ShellDevice) -> Bool {
+        EntityDisplay.isToggleable(d.domain) && d.state != "unavailable" && d.state != "unknown"
+    }
+
     private func act(_ d: ShellDevice) {
-        if EntityDisplay.isToggleable(d.domain) {
+        if canSwitch(d) {
             session.toggle(d.id)
         } else if d.domain == "scene" {
             session.run(d.id, "scene", "turn_on")

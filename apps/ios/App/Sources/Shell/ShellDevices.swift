@@ -51,7 +51,8 @@ struct ShellDevice: Identifiable, Hashable {
         // a media player counts as on unless it is off (idle or paused players are on: toggling turns them off)
         let on: Bool = switch e.domain {
         case "media_player": !["off", "standby", "unavailable", "unknown"].contains(e.state)
-        case "sensor", "number", "input_number", "weather", "sun", "person", "binary_sensor": false
+        // a scene's or button's state is the time it last ran, not "on"
+        case "sensor", "number", "input_number", "weather", "sun", "person", "binary_sensor", "scene", "button", "input_button", "script": false
         default: EntityDisplay.isFavoriteRelevant(e)
         }
         let level = e.attributes["brightness"]?.number.map { ($0 / 255 * 100).rounded() }
