@@ -46,3 +46,47 @@ import Testing
         #expect(ChipWindows.openings([:], hidden: []).isEmpty)
     }
 }
+
+/// The locks window and the lock rules (`LocksModal.tsx`, `lockLogic.ts`).
+@Suite struct LocksWindowTests {
+    static func lock(_ id: String, _ state: String, name: String? = nil, code: String? = nil) -> HAEntity {
+        var a: [String: JSONValue] = [:]
+        if let name { a["friendly_name"] = .string(name) }
+        if let code { a["code_format"] = .string(code) }
+        return ChipWindowsTests.e(id, state, a)
+    }
+
+    @Test func notLockedFirstThenByName() {
+        let list = [Self.lock("lock.a", "locked", name: "Zaun"), Self.lock("lock.b", "unlocked", name: "Tür"),
+                    Self.lock("lock.c", "locked", name: "Äußere"), Self.lock("lock.d", "jammed", name: "Garten"),
+                    Self.lock("lock.e", "locked", name: "Hidden"), Self.lock("switch.x", "on")]
+        let entities = Dictionary(uniqueKeysWithValues: list.map { ($0.entityId, $0) })
+        let de = ChipWindows.locks(entities, hidden: ["lock.e"], locale: Locale(identifier: "de"))
+        #expect(de == ["lock.d", "lock.b", "lock.c", "lock.a"])
+        // Swedish puts Ä after Z
+        let sv = ChipWindows.locks(entities, hidden: ["lock.e"], locale: Locale(identifier: "sv"))
+        #expect(sv == ["lock.d", "lock.b", "lock.a", "lock.c"])
+    }
+
+    @Test func rules() {
+        #expect(Locks.busy("jammed") && Locks.busy("locking") && Locks.busy("unavailable"))
+        #expect(!Locks.busy("locked") && !Locks.busy("unlocked") && !Locks.busy("open"))
+        let plain = Self.lock("lock.a", "locked")
+        let digits = Self.lock("lock.b", "locked", code: "^\\d{4}$")
+        let digitsPlus = Self.lock("lock.c", "locked", code: "\\d+")
+        let text = Self.lock("lock.d", "locked", code: ".+")
+        #expect(!Locks.needsCode(plain) && Locks.needsCode(digits) && Locks.needsCode(text))
+        #expect(!Locks.needsCode(Self.lock("lock.e", "locked", code: "")))
+        #expect(Locks.codeIsNumeric(digits) && Locks.codeIsNumeric(digitsPlus))
+        #expect(!Locks.codeIsNumeric(text) && !Locks.codeIsNumeric(plain) && !Locks.codeIsNumeric(Self.lock("lock.f", "x", code: "\\d")))
+        #expect(Locks.needsDialog(.unlock, [plain]))
+        #expect(!Locks.needsDialog(.lock, [plain]))
+        #expect(Locks.needsDialog(.lock, [plain, digits]))
+    }
+
+    @Test func roomName() {
+        let room = Room(id: "hall", name: "Flur", icon: nil, picture: nil, entityIds: ["lock.a"], domains: [:], domainOrder: [])
+        #expect(ChipWindows.roomName("lock.a", rooms: [room]) == "Flur")
+        #expect(ChipWindows.roomName("lock.b", rooms: [room]) == nil)
+    }
+}

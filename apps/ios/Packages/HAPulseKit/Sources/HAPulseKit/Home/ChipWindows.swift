@@ -72,3 +72,56 @@ public enum ChipWindows {
         return Openings(doors: openFirst(doors), windows: openFirst(windows))
     }
 }
+
+/// Lock controls (port of `lockLogic.ts`): unlocking always asks, locking only when a code is needed; no action while
+/// a lock moves, is jammed or cannot be reached.
+extension Locks {
+    public enum Service: String, Sendable { case lock, unlock }
+
+    static let busyStates: Set<String> = ["locking", "unlocking", "opening", "jammed", "unavailable", "unknown"]
+
+    public static func busy(_ state: String) -> Bool { busyStates.contains(state) }
+
+    /// The lock expects a code (Home Assistant's `code_format` regex).
+    public static func needsCode(_ e: HAEntity) -> Bool {
+        if case .string(let f)? = e.attributes["code_format"] { return !f.isEmpty }
+        return false
+    }
+
+    /// Digits only (`/^\^?\\d[+*{]/` on the regex): the code field gets the number pad.
+    public static func codeIsNumeric(_ e: HAEntity) -> Bool {
+        guard case .string(var f)? = e.attributes["code_format"] else { return false }
+        if f.hasPrefix("^") { f.removeFirst() }
+        guard f.hasPrefix("\\d"), let next = f.dropFirst(2).first else { return false }
+        return "+*{".contains(next)
+    }
+
+    public static func needsDialog(_ service: Service, _ entities: [HAEntity]) -> Bool {
+        service == .unlock || entities.contains(where: needsCode)
+    }
+}
+
+extension ChipWindows {
+    /// The locks window (`LocksModal.tsx`): every visible lock, the ones not locked first, then by name in the UI
+    /// language (`localeCompare`).
+    public static func locks(_ entities: [String: HAEntity], hidden: [String], locale: Locale) -> [String] {
+        let hiddenSet = Set(hidden)
+        let list = entities.values.filter { $0.entityId.hasPrefix("lock.") && !hiddenSet.contains($0.entityId) }
+            .sorted { $0.entityId < $1.entityId }
+        func name(_ e: HAEntity) -> String { e.friendlyName ?? e.entityId }
+        return list.enumerated().sorted { a, b in
+            let oa = a.element.state != "locked", ob = b.element.state != "locked"
+            if oa != ob { return oa }
+            switch JSCompare.locale(name(a.element), name(b.element), locale) {
+            case .orderedAscending: return true
+            case .orderedDescending: return false
+            case .orderedSame: return a.offset < b.offset
+            }
+        }.map(\.element.entityId)
+    }
+
+    /// The room an entity belongs to (`getRoomName`).
+    public static func roomName(_ id: String, rooms: [Room]) -> String? {
+        rooms.first { $0.entityIds.contains(id) }?.name
+    }
+}

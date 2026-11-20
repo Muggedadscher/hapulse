@@ -15,9 +15,18 @@ extension HomeSession {
     }
 }
 
-/// The chips whose window exists so far (stage 5 part 2): lights, doors and windows. The others follow.
+/// The chips whose window exists so far (stage 5 part 2): lights, doors and windows, locks. The others follow.
 extension SummaryChips.Chip {
-    var hasWindow: Bool { self == .lights || self == .doors }
+    var hasWindow: Bool { [.lights, .doors, .locks].contains(self) }
+
+    /// The window's head: icon and title key.
+    var windowHead: (icon: String, title: String) {
+        switch self {
+        case .lights: ("lucide.lightbulb", "home.chipmodals.lights.title")
+        case .locks: ("lucide.lock", "security.locks.title")
+        default: ("lucide.door-open", "home.chipmodals.doors.title")
+        }
+    }
 }
 
 /// A chip's window as a sheet (web `LightsModal`/`DoorsModal` in Glas): head with the chip's label as subtitle, then
@@ -32,15 +41,18 @@ struct ChipWindowSheet: View {
         let l = model.localizer
         let c = ChipCounts.count(session.visibleEntities, poolPump: SummaryChips.poolPump, poolRequired: SummaryChips.poolRequired)
         let look = SummaryChipsRow.look(chip, c, l, session.stateTranslations)
-        let (icon, titleKey) = chip == .lights ? ("lucide.lightbulb", "home.chipmodals.lights.title")
-            : ("lucide.door-open", "home.chipmodals.doors.title")
+        let (icon, titleKey) = chip.windowHead
         ScrollView {
             VStack(spacing: 0) {
                 HPDetailHeader(icon: icon, title: l.t(titleKey), subtitle: look.text, tone: nil,
                                closeLabel: l.t("common.close"), onClose: onClose)
                     .accessibilityIdentifier("hp.scene.chip")
                 Group {
-                    if chip == .lights { LightsWindowBody() } else { DoorsWindowBody() }
+                    switch chip {
+                    case .lights: LightsWindowBody()
+                    case .locks: LocksWindowBody()
+                    default: DoorsWindowBody()
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
@@ -203,6 +215,121 @@ private struct DoorsWindowBody: View {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/// Every visible lock, the ones not locked first (web `LocksModal` with `LocksList` in Glas): circle (locked green,
+/// otherwise red), name, room, state under the name, one button: "Unlock" while locked, else "Lock", disabled while
+/// the lock moves, is jammed or unreachable. Unlocking always asks; locking asks only for a code. Swiping a row to
+/// lock (web Glas `SwipeRow`) is not ported. Unlike the web, the question closes on a wrong code (a system alert).
+private struct LocksWindowBody: View {
+    @Environment(AppModel.self) private var model
+    @Environment(HomeSession.self) private var session
+    @State private var pending: LockRequest?
+    @State private var code = ""
+
+    struct LockRequest: Identifiable {
+        let service: Locks.Service
+        let entity: HAEntity
+        var id: String { entity.entityId + service.rawValue }
+    }
+
+    var body: some View {
+        let l = model.localizer
+        let entities = session.entities.entities
+        let ids = ChipWindows.locks(entities, hidden: session.settings.hiddenEntities,
+                                    locale: Locale(identifier: l.locale.rawValue))
+        VStack(alignment: .leading, spacing: 10) {
+            if ids.isEmpty {
+                ChipWindowEmpty(icon: "lucide.lock", title: l.t("locks.emptyTitle"), text: l.t("locks.emptyDescription"))
+            } else {
+                HPListGroup(separatorInset: 66) {
+                    ForEach(ids, id: \.self) { id in
+                        if let e = entities[id] { row(e, l) }
+                    }
+                }
+            }
+        }
+        .alert(pending.map { l.t($0.service == .unlock ? "security.locks.unlock" : "security.locks.lock") } ?? "",
+               isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil; code = "" } }),
+               presenting: pending) { request in
+            if Locks.needsCode(request.entity) {
+                SecureField(l.t("security.locks.codePlaceholder"), text: $code)
+                    .keyboardType(Locks.codeIsNumeric(request.entity) ? .numberPad : .default)
+            }
+            Button(l.t("security.locks.cancel"), role: .cancel) { code = "" }
+            Button(l.t(request.service == .unlock ? "security.locks.unlock" : "security.locks.lock"),
+                   role: request.service == .unlock ? .destructive : nil) {
+                run(request.service, request.entity, code: code)
+                code = ""
+            }
+            .disabled(Locks.needsCode(request.entity) && code.isEmpty)
+        } message: { request in
+            Text(l.t(request.service == .unlock ? "security.locks.confirmUnlockOne" : "security.locks.confirmLockOne",
+                     ["name": .text(request.entity.friendlyName ?? request.entity.entityId)]))
+        }
+    }
+
+    private func row(_ e: HAEntity, _ l: Localizer) -> some View {
+        let locked = e.state == "locked"
+        let busy = Locks.busy(e.state)
+        let service: Locks.Service = locked ? .unlock : .lock
+        let name = e.friendlyName ?? e.entityId
+        let room = ChipWindows.roomName(e.entityId, rooms: session.rooms)
+        let state = EntityDisplay.label(l, session.stateTranslations, domain: "lock", state: e.state)
+        let tone: HPTone = locked ? .green : .red
+        return HStack(spacing: 12) {
+            HPIcon(locked ? "lucide.lock" : "lucide.lock-open", size: 18, strokeWidth: 1.75)
+                .foregroundStyle(tone.ink)
+                .frame(width: 40, height: 40)
+                .background(tone.soft, in: Circle())
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(name).hpText(.body, weight: .semibold).foregroundStyle(.glas(.label)).lineLimit(2)
+                if let room {
+                    Text(room).hpText(.footnote).foregroundStyle(.glas(.label2)).lineLimit(1)
+                }
+                Text(state).hpText(.footnote, weight: locked ? nil : .semibold)
+                    .foregroundStyle(locked ? AnyShapeStyle(.glas(.label2)) : AnyShapeStyle(.glas(.redInk)))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+            Button {
+                request(service, e)
+            } label: {
+                Text(l.t(locked ? "security.locks.unlock" : "security.locks.lock")).hpText(.subhead, weight: .semibold)
+                    .foregroundStyle(.glas(.label))
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 40)
+                    .background(.glas(.fill), in: Capsule())
+            }
+            .buttonStyle(HPPressButtonStyle())
+            .disabled(busy)
+            .opacity(busy ? 0.4 : 1)
+            .accessibilityHint(name)
+        }
+        .padding(.vertical, 12)
+        .padding(.leading, 14)
+        .padding(.trailing, 12)
+    }
+
+    private func request(_ service: Locks.Service, _ e: HAEntity) {
+        if Locks.needsDialog(service, [e]) {
+            code = ""
+            pending = LockRequest(service: service, entity: e)
+        } else {
+            run(service, e, code: "")
+        }
+    }
+
+    private func run(_ service: Locks.Service, _ e: HAEntity, code: String) {
+        let client = session.client
+        let data: [String: JSONValue]? = Locks.needsCode(e) ? ["code": .string(code)] : nil
+        Task {
+            do { _ = try await client.callService("lock", service.rawValue, data: data, target: ["entity_id": .string(e.entityId)]) } catch {
+                Log("shell").error("lock.\(service.rawValue) \(e.entityId) failed: \(error)")
             }
         }
     }
