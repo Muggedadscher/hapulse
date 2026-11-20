@@ -121,7 +121,7 @@ struct RoomsPage: View {
             } else {
                 HPListGroup(separatorInset: 60) {
                     ForEach(rooms) { room in
-                        let on = devices.filter { $0.roomId == room.id && $0.isOn }.count
+                        let on = devices.filter { $0.roomId == room.id && $0.isOn && $0.domain == "light" }.count
                         NavigationLink(value: room.id) {
                             HPListRow(room.name, subtitle: on > 0 ? l.t("home.summaryChips.lightsCount", ["count": .number(Double(on))])
                                                                   : l.t("home.summaryChips.allOff"),

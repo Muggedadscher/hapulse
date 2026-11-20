@@ -91,6 +91,10 @@ struct DetailInspector: ViewModifier {
                     .inspectorColumnWidth(min: 320, ideal: 380, max: 440)
             }
         }
+        // the entity went away: forget it, so it does not open again by itself when it comes back
+        .onChange(of: active && nav.detailID != nil && device == nil) { _, gone in
+            if gone { nav.detailID = nil }
+        }
     }
 }
 

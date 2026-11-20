@@ -14,6 +14,8 @@ struct DeviceDetail: View {
     @State private var dragLevel: Double?
     /// Gives the slider back to the device's state if Home Assistant does not answer.
     @State private var holdTask: Task<Void, Never>?
+    /// The finger is on the slider: a report from Home Assistant does not move it then.
+    @State private var dragging = false
 
     var body: some View {
         let l = model.localizer
@@ -33,11 +35,12 @@ struct DeviceDetail: View {
                     if d.dimmable {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(l.t("cards.light.brightness")).hpText(.title3).foregroundStyle(.glas(.label))
-                            HPTrackSlider(value: Binding(get: { (dragLevel ?? d.level ?? 0) / 100 }, set: { dragLevel = ($0 * 100).rounded() }),
+                            HPTrackSlider(value: Binding(get: { (dragLevel ?? d.level ?? 0) / 100 }, set: { dragging = true; dragLevel = ($0 * 100).rounded() }),
                                           height: 32, label: l.t("cards.light.brightness"),
                                           valueText: { l.number(($0 * 100).rounded(), maxDecimals: 0) + " %" },
                                           onCommit: { v in
                                               // the slider keeps the new value until Home Assistant reports it
+                                              dragging = false
                                               session.setLevel(d.id, (v * 100).rounded())
                                               holdTask?.cancel()
                                               holdTask = Task {
@@ -60,6 +63,7 @@ struct DeviceDetail: View {
         }
         .background(.glas(.card))
         .onChange(of: device.level) {
+            guard !dragging else { return }
             holdTask?.cancel()
             dragLevel = nil
         }
