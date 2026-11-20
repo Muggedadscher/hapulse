@@ -5,12 +5,19 @@ import HAPulseUI
 @main
 struct HAPulseApp: App {
     private let options = LaunchOptions.current
+    @State private var model: AppModel
+
+    init() {
+        let options = LaunchOptions.current
+        _model = State(initialValue: AppModel(options: options))
+    }
 
     var body: some Scene {
         WindowGroup {
             RootView(options: options)
-                .preferredColorScheme(options.scheme)
-                .environment(\.glasAccentHue, options.accentHue)
+                .environment(model)
+                .preferredColorScheme(model.appearance.scheme)
+                .environment(\.glasAccentHue, model.accentHue)
         }
     }
 }

@@ -2,26 +2,24 @@ import SwiftUI
 import HAPulseKit
 import HAPulseUI
 
-/// Without a start option the real app (sign-in, session). Start option `-hp-scene` shows one scene for screenshots
-/// and UI tests: `catalog` (building blocks), `signin`, `demo`. The pages follow stage by stage
+/// Without a start option the real app: sign-in, then the frame (`AppShell`) on the session of `AppController`.
+/// The start option `-hp-scene` shows a scene for screenshots and UI tests: the catalogue of the building blocks
+/// (`catalog`, `controls`, `tiles`, `detail`), the sign-in page (`signin`), or the frame on the demo home on a given
+/// page (`shell`, `rooms`, `settings`, `sheet` = overview with a detail open). The real pages follow stage by stage
 /// (plan /mnt/project-files/ios-app/PLAN-NATIV-2026-11-19.md).
 struct RootView: View {
     let options: LaunchOptions
-    /// Loaded once (four JSON files), not on every `body`.
-    @State private var localizer: Localizer
-
-    init(options: LaunchOptions) {
-        self.options = options
-        _localizer = State(initialValue: Localizer(locale: options.locale))
-    }
+    @Environment(AppModel.self) private var model
 
     var body: some View {
+        let localizer = model.localizer
         Group {
             switch options.scene {
-            case nil: AppRoot(localizer: localizer)
-            case "signin": AppRoot(localizer: localizer)
-            case "demo": AppRoot(localizer: localizer, startDemo: true)
-            default: CatalogView(localizer: localizer)
+            case "catalog": CatalogView(localizer: localizer)
+            case "controls": ControlsScene(l: localizer)
+            case "tiles": TilesScene(l: localizer)
+            case "detail": DetailScene(l: localizer)
+            default: AppRoot(localizer: localizer, scene: options.scene)
             }
         }
         .accessibilityElement(children: .contain)
