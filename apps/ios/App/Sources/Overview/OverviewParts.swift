@@ -325,3 +325,51 @@ struct SceneTileCell: View {
         }
     }
 }
+
+/// The overview's rooms (web `RoomsQuickAccess` with `GlasRoomTile`): the rooms with devices in the user's order, two
+/// columns of tiles; a tile opens the room.
+struct RoomsQuickAccess: View {
+    @Environment(AppModel.self) private var model
+    @Environment(HomeSession.self) private var session
+    @Environment(WindowNav.self) private var nav
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    /// The rooms with devices in the stored order (`roomsWithDevices`; hidden rooms stay, like the web's overview).
+    @MainActor
+    static func rooms(_ session: HomeSession) -> [Room] {
+        let withDevices = session.rooms.filter { !$0.domains.isEmpty }
+        return RoomSections.applyStoredOrder(withDevices.map(\.id), session.settings.strings("roomOrder"))
+            .compactMap { id in withDevices.first { $0.id == id } }
+    }
+
+    var body: some View {
+        let l = model.localizer
+        VStack(alignment: .leading, spacing: 6) {
+            HPCardHead(l.t("home.roomsQuickAccess.sectionLabel"), icon: "lucide.layout-grid")
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                ForEach(Self.rooms(session)) { room in
+                    let look = RoomTileLook(room, session: session)
+                    let lines = RoomTile.lines(l, name: room.name, iconName: look.iconName, isStatus: look.isStatus,
+                                               temperature: look.temperature, humidity: look.humidity,
+                                               lights: look.lights, lightsOn: look.lightsOn, devices: look.devices)
+                    HPRoomCard(name: room.name, icon: "lucide.\(look.iconName)", line1: lines.line1, line2: lines.line2,
+                               line2IsStatus: lines.isStatus, tone: look.tone.map(Self.cardTone),
+                               label: lines.accessibilityLabel) {
+                        nav.open(.rooms, compact: sizeClass == .compact)
+                        nav.roomsPath = [room.id]
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("hp.rooms")
+    }
+
+    static func cardTone(_ t: RoomTile.Tone) -> HPRoomCardTone {
+        switch t {
+        case .on: .on
+        case .warn: .warn
+        case .alarm: .alarm
+        }
+    }
+}

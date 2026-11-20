@@ -19,25 +19,37 @@ struct PageScroll<Content: View>: View {
     }
 }
 
-/// Overview (stage 5, first part): the summary chips, the notices, then the device tiles of the frame (the overview's
-/// cards follow).
-/// A tile's circle switches, the rest opens the detail; a long press shows the context menu.
+/// Overview (stage 5): the summary chips, then the sections in the user's order (`HomeSections`). Ported so far:
+/// notices, scenes, rooms; "devices" shows the frame's device tiles until the devices card follows; the other sections
+/// (hero, energy, climate, blinds, security, waste, NVR, activity) come with their stages.
+/// A device tile's circle switches, the rest opens the detail; a long press shows the context menu.
 struct OverviewPage: View {
-    @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        let devices = ShellDevice.list(session)
         PageScroll {
             if session.loaded {
                 SummaryChipsRow()
                     .accessibilityIdentifier("hp.scene.shell")
-                HintsSection()
-                ScenesCard()
-
-                HPTileGrid {
-                    ForEach(devices) { d in
-                        DeviceTileCell(device: d)
+                let c = session.settings
+                // hints: the section hides itself while nothing deviates
+                let sections = HomeSections.visible(order: c.strings("homeSectionOrder"), hidden: c.strings("hiddenSections"),
+                                                    mobileHidden: c.strings("mobileHiddenSections"), compact: sizeClass == .compact,
+                                                    hasRooms: !RoomsQuickAccess.rooms(session).isEmpty, hasWaste: false,
+                                                    hasNvr: false, hasHints: true)
+                ForEach(sections, id: \.self) { id in
+                    switch id {
+                    case "hints": HintsSection()
+                    case "scenes": ScenesCard()
+                    case "rooms": RoomsQuickAccess()
+                    case "devices":
+                        HPTileGrid {
+                            ForEach(ShellDevice.list(session)) { d in
+                                DeviceTileCell(device: d)
+                            }
+                        }
+                    default: EmptyView()
                     }
                 }
             } else {
