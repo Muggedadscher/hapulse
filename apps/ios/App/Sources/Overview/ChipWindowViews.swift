@@ -71,14 +71,12 @@ struct ChipWindowSheet: View {
 extension View {
     /// A row that swipes to the left to one action (web Glas `SwipeRow`), only while the action can run; never for
     /// opening or unlocking.
-    @ViewBuilder
+    /// The row is always wrapped (`disabled` instead of leaving it out), so it keeps its identity when that changes.
     func chipSwipe(_ title: String, tone: HPSwipeTone, width: CGFloat, enabled: Bool,
+                   children: AccessibilityChildBehavior = .combine, onTap: (() -> Void)? = nil,
                    action: @escaping () -> Void) -> some View {
-        if enabled {
-            HPSwipeRow(actionTitle: title, tone: tone, width: width, onAction: action) { self }
-        } else {
-            self
-        }
+        HPSwipeRow(actionTitle: title, tone: tone, width: width, disabled: !enabled, children: children, onTap: onTap,
+                   onAction: action) { self }
     }
 }
 
@@ -184,12 +182,12 @@ private struct LightRow: View {
                 .hpSwitch(showsLabel: false)
         }
         .contentShape(Rectangle())
-        .onTapGesture { toggle(isOn) }
         // one label for the row, like the web (`rowAriaOn`/`rowAriaOff`); the switch keeps its value and action
         .accessibilityElement(children: .combine)
         .accessibilityLabel(l.t(isOn ? "home.chipmodals.lights.rowAriaOn" : "home.chipmodals.lights.rowAriaOff",
                                 ["name": .text(name)]))
-        .chipSwipe(l.t("glas.swipe.off"), tone: .neutral, width: 88, enabled: isOn) {
+        // a tap on the row toggles; on an open row it only closes it (web `SwipeRow`)
+        .chipSwipe(l.t("glas.swipe.off"), tone: .neutral, width: 88, enabled: isOn, onTap: { toggle(isOn) }) {
             session.run(entity.entityId, "light", "turn_off")
         }
     }
@@ -337,7 +335,9 @@ private struct LocksWindowBody: View {
         .padding(.vertical, 12)
         .padding(.leading, 14)
         .padding(.trailing, 12)
-        .chipSwipe(l.t("security.locks.lock"), tone: .ok, width: 112, enabled: !locked && !busy) { request(.lock, e) }
+        .chipSwipe(l.t("security.locks.lock"), tone: .ok, width: 112, enabled: !locked && !busy, children: .contain) {
+            request(.lock, e)
+        }
     }
 
     private func request(_ service: Locks.Service, _ e: HAEntity) {
@@ -453,7 +453,9 @@ private struct GarageWindowBody: View {
         .padding(.vertical, 12)
         .padding(.leading, 14)
         .padding(.trailing, 12)
-        .chipSwipe(l.t("garage.close"), tone: .ok, width: 104, enabled: Garage.canAct(e, .close)) { send(e, "close_cover") }
+        .chipSwipe(l.t("garage.close"), tone: .ok, width: 104, enabled: Garage.canAct(e, .close), children: .contain) {
+            send(e, "close_cover")
+        }
     }
 
     private func button(_ icon: String, _ title: String, _ name: String, enabled: Bool, iconSize: CGFloat = 15,
