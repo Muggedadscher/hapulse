@@ -26,7 +26,9 @@ struct DeviceDetail: View {
                                closeLabel: l.t("common.close")) { nav.detailID = nil }
                     .accessibilityIdentifier("hp.scene.sheet")
                 VStack(alignment: .leading, spacing: 24) {
-                    HPDetailValue(d.stateText(l, session))
+                    if !ShellDevice.runnable.contains(d.domain) {
+                        HPDetailValue(d.stateText(l, session))
+                    }
                     if EntityDisplay.isToggleable(d.domain) {
                         HPListGroup {
                             HPListRow(d.name, subtitle: d.room) {

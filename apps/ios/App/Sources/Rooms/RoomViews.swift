@@ -155,7 +155,7 @@ struct EntityRoomTile: View {
         let e = entity
         let d = ShellDevice.make(e, room: nil)
         // a scene or button tile shows only its name (its state is the time it last ran), like the web's scene tile
-        let runs = d.domain == "scene" || d.domain == "button" || d.domain == "input_button"
+        let runs = ShellDevice.runnable.contains(d.domain)
         let stripped = RoomSections.stripRoomName(d.name, roomName)
         let name = d.domain == "scene" ? stripped.replacingOccurrences(of: "_", with: " ") : stripped
         HPRoomTile(icon: d.icon, name: name, state: runs ? "" : d.stateText(l, session), chip: chip(d)) {
@@ -192,8 +192,10 @@ struct EntityRoomTile: View {
             session.toggle(d.id)
         } else if d.domain == "scene" {
             session.run(d.id, "scene", "turn_on")
-        } else if d.domain == "button" {
-            session.run(d.id, "button", "press")
+        } else if d.domain == "button" || d.domain == "input_button" {
+            session.run(d.id, d.domain, "press")
+        } else if d.domain == "script" {
+            session.run(d.id, "script", "turn_on")
         } else {
             nav.detailID = d.id
         }

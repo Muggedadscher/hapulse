@@ -21,6 +21,8 @@ struct ShellDevice: Identifiable, Hashable {
     let tone: HPTone
 
     static let domains: Set<String> = ["light", "switch", "fan", "media_player"]
+    /// What a tap runs (scene, button, script): their state is the time they last ran, not a state to show.
+    static let runnable: Set<String> = ["scene", "button", "input_button", "script"]
 
     /// The session's devices, sorted by entity id, each with its room (Home Assistant area). Like the web, only what
     /// a user should see and switch: no hidden or disabled entities and no configuration or diagnostic ones (a
