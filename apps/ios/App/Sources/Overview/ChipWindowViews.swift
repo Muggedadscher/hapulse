@@ -223,11 +223,15 @@ private struct DoorsWindowBody: View {
 /// Every visible lock, the ones not locked first (web `LocksModal` with `LocksList` in Glas): circle (locked green,
 /// otherwise red), name, room, state under the name, one button: "Unlock" while locked, else "Lock", disabled while
 /// the lock moves, is jammed or unreachable. Unlocking always asks; locking asks only for a code. Swiping a row to
-/// lock (web Glas `SwipeRow`) is not ported. Unlike the web, the question closes on a wrong code (a system alert).
+/// lock (web Glas `SwipeRow`) is not ported. The question is a system alert: it closes on confirm, and a refused call
+/// (wrong code) opens it again with an empty field (the web keeps its dialog open and shows a toast). Names sort in
+/// the UI language (the web: the browser's language).
 private struct LocksWindowBody: View {
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
+    /// The last request; kept while the alert closes, so its title and buttons stay.
     @State private var pending: LockRequest?
+    @State private var asking = false
     @State private var code = ""
 
     struct LockRequest: Identifiable {
@@ -253,17 +257,15 @@ private struct LocksWindowBody: View {
             }
         }
         .alert(pending.map { l.t($0.service == .unlock ? "security.locks.unlock" : "security.locks.lock") } ?? "",
-               isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil; code = "" } }),
-               presenting: pending) { request in
+               isPresented: $asking, presenting: pending) { request in
             if Locks.needsCode(request.entity) {
                 SecureField(l.t("security.locks.codePlaceholder"), text: $code)
                     .keyboardType(Locks.codeIsNumeric(request.entity) ? .numberPad : .default)
             }
-            Button(l.t("security.locks.cancel"), role: .cancel) { code = "" }
+            Button(l.t("security.locks.cancel"), role: .cancel) {}
             Button(l.t(request.service == .unlock ? "security.locks.unlock" : "security.locks.lock"),
                    role: request.service == .unlock ? .destructive : nil) {
                 run(request.service, request.entity, code: code)
-                code = ""
             }
             .disabled(Locks.needsCode(request.entity) && code.isEmpty)
         } message: { request in
@@ -308,7 +310,7 @@ private struct LocksWindowBody: View {
             .buttonStyle(HPPressButtonStyle())
             .disabled(busy)
             .opacity(busy ? 0.4 : 1)
-            .accessibilityHint(name)
+            .accessibilityLabel("\(l.t(locked ? "security.locks.unlock" : "security.locks.lock")), \(name)")
         }
         .padding(.vertical, 12)
         .padding(.leading, 14)
@@ -317,19 +319,27 @@ private struct LocksWindowBody: View {
 
     private func request(_ service: Locks.Service, _ e: HAEntity) {
         if Locks.needsDialog(service, [e]) {
-            code = ""
-            pending = LockRequest(service: service, entity: e)
+            ask(LockRequest(service: service, entity: e))
         } else {
             run(service, e, code: "")
         }
     }
 
+    private func ask(_ request: LockRequest) {
+        code = ""
+        pending = request
+        asking = true
+    }
+
+    /// Sends the call; refused (wrong code, Home Assistant error) → the question again with an empty field.
     private func run(_ service: Locks.Service, _ e: HAEntity, code: String) {
         let client = session.client
         let data: [String: JSONValue]? = Locks.needsCode(e) ? ["code": .string(code)] : nil
-        Task {
+        let again = Locks.needsDialog(service, [e]) ? LockRequest(service: service, entity: e) : nil
+        Task { @MainActor in
             do { _ = try await client.callService("lock", service.rawValue, data: data, target: ["entity_id": .string(e.entityId)]) } catch {
                 Log("shell").error("lock.\(service.rawValue) \(e.entityId) failed: \(error)")
+                if let again { ask(again) }
             }
         }
     }

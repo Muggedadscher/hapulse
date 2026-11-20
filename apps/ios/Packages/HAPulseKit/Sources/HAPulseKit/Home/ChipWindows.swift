@@ -103,7 +103,7 @@ extension Locks {
 
 extension ChipWindows {
     /// The locks window (`LocksModal.tsx`): every visible lock, the ones not locked first, then by name in the UI
-    /// language (`localeCompare`).
+    /// language (the web: `localeCompare` in the browser language).
     public static func locks(_ entities: [String: HAEntity], hidden: [String], locale: Locale) -> [String] {
         let hiddenSet = Set(hidden)
         let list = entities.values.filter { $0.entityId.hasPrefix("lock.") && !hiddenSet.contains($0.entityId) }
