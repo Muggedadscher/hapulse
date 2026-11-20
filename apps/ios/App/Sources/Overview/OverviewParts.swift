@@ -12,11 +12,12 @@ extension HomeSession {
 
 /// The summary chips of the overview (web `SummaryChips` in Glas): the user's chips in the user's order, each with
 /// its count and state; the colour tells the kind (lights yellow, media blue, pool teal, armed alarm green), a warning
-/// or danger also the weight. Their windows (people, lights, doors …) come with a later stage; until then a chip
-/// does nothing on a tap.
+/// or danger also the weight. The lights and doors chips open their window; the other windows (people, alarm,
+/// media, pool, garage, locks) come with a later stage, until then those chips do nothing on a tap.
 struct SummaryChipsRow: View {
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
+    @Environment(WindowNav.self) private var nav
 
     var body: some View {
         let l = model.localizer
@@ -27,11 +28,15 @@ struct SummaryChipsRow: View {
             HStack(spacing: 8) {
                 ForEach(chips, id: \.self) { chip in
                     let look = Self.look(chip, c, l, session.stateTranslations)
-                    HPStatusChip(icon: look.icon, text: look.text, state: look.state)
+                    HPStatusChip(icon: look.icon, text: look.text, state: look.state,
+                                 action: chip.hasWindow ? { nav.chipWindow = chip } : nil)
                 }
             }
         }
         .scrollClipDisabled()
+        .sheet(item: Binding(get: { nav.chipWindow }, set: { nav.chipWindow = $0 })) { chip in
+            ChipWindowSheet(chip: chip) { nav.chipWindow = nil }
+        }
     }
 
     /// Icon, words (`chipLabels`) and state of one chip.
