@@ -45,6 +45,7 @@ struct WasteCard: View {
                             Circle()
                                 .fill(.glas(Self.dot(Waste.tone(name: bin.name, icon: bin.icon))))
                                 .frame(width: 14, height: 14)
+                                .overlay(Circle().strokeBorder(.glas(.sep), lineWidth: 0.5))
                                 .padding(.leading, 21)
                                 .padding(.trailing, 21)
                             HStack(spacing: 8) {
@@ -60,6 +61,7 @@ struct WasteCard: View {
                                 if let countdown {
                                     Text(verbatim: countdown).hpText(.body, weight: first ? .semibold : nil)
                                         .foregroundStyle(.glas(first ? .label : .label2)).lineLimit(1)
+                                        .layoutPriority(1) // web `.g-waste__when`: flex none, the name shrinks
                                 }
                                 HPIcon("lucide.chevron-right", size: 16, strokeWidth: 2.25).foregroundStyle(.glas(.label3))
                             }
@@ -70,8 +72,6 @@ struct WasteCard: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityElement(children: .combine)
-                    .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("hp.waste.\(bin.entityId)")
                 }
             }
@@ -117,7 +117,6 @@ struct WasteBinSheet: View {
                 HPDetailHeader(icon: Self.headerIcon(bin.icon), title: bin.name, subtitle: nil,
                                tone: Self.tone(Waste.tone(name: bin.name, icon: bin.icon)),
                                closeLabel: l.t("common.close"), onClose: onClose)
-                    .accessibilityIdentifier("hp.scene.waste")
                 VStack(alignment: .leading, spacing: 0) {
                     if let countdown = Waste.countdown(bin.daysTo, l) {
                         VStack(alignment: .leading, spacing: 0) {
@@ -143,13 +142,13 @@ struct WasteBinSheet: View {
                             .padding(.horizontal, 4)
                     } else {
                         HPListGroup(separatorInset: 43) {
-                            ForEach(bin.upcoming, id: \.date) { c in
+                            ForEach(Array(bin.upcoming.enumerated()), id: \.offset) { _, c in
                                 HStack(spacing: 12) {
                                     HPIcon("lucide.calendar-clock", size: 15, strokeWidth: 1.75).foregroundStyle(.glas(.label2))
                                     Text(verbatim: HintsCard.wasteDate(c.date, locale: locale)).hpText(.body)
                                         .foregroundStyle(.glas(.label))
                                     if let type = Waste.shownType(c, binName: bin.name) {
-                                        Text(verbatim: type).hpText(.subhead).foregroundStyle(.glas(.warnInk)).lineLimit(1)
+                                        Text(verbatim: type).hpText(.subhead, weight: .semibold).foregroundStyle(.glas(.warnInk)).lineLimit(1)
                                     }
                                     Spacer(minLength: 0)
                                 }
