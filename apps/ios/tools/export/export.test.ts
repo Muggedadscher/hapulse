@@ -236,6 +236,474 @@ describe('iOS export', () => {
     writeJson(join(FIX, 'glasAccent.json'), cases, false);
   });
 
+  it('golden: rooms', () => {
+    // the demo home, plus a small registry with every rule of buildRooms in it
+    const demo = core.buildRooms(core.DEMO_REGISTRIES, core.DEMO_ENTITIES);
+    const ent = (entity_id: string, extra: Record<string, unknown> = {}) => ({
+      entity_id, area_id: null, device_id: null, entity_category: null, hidden_by: null, disabled_by: null,
+      original_name: null, icon: null, ...extra,
+    });
+    const registries = {
+      areas: [
+        { area_id: 'kueche', name: 'Küche', icon: 'mdi:stove' },
+        { area_id: 'bad', name: 'bad', picture: '/api/image/bad.png' },
+        { area_id: 'arbeit', name: 'Arbeitszimmer' },
+        { area_id: 'zebra', name: 'Zimmer 10' },
+        { area_id: 'zebra2', name: 'Zimmer 9' },
+        { area_id: 'leer', name: 'Ärger' },
+        // same name twice: the sort is stable, registry order decides
+        { area_id: 'dup2', name: 'Flur' },
+        { area_id: 'dup1', name: 'Flur' },
+      ],
+      devices: [
+        { id: 'd1', area_id: 'kueche', name: 'Hue' },
+        { id: 'd2', area_id: null, name: 'Zone' },
+      ],
+      entities: [
+        ent('light.a', { area_id: 'kueche' }),
+        ent('light.b', { device_id: 'd1' }),
+        ent('light.c', { device_id: 'd1', area_id: 'bad' }),
+        ent('light.d', { device_id: 'd2' }),
+        ent('light.hidden', { area_id: 'kueche', hidden_by: 'user' }),
+        ent('light.disabled', { area_id: 'kueche', disabled_by: 'integration' }),
+        ent('sensor.diag', { area_id: 'kueche', entity_category: 'diagnostic' }),
+        ent('sensor.t', { area_id: 'kueche' }),
+        ent('sensor.h', { area_id: 'kueche' }),
+        ent('climate.k', { area_id: 'kueche' }),
+        ent('automation.plan', { area_id: 'kueche', labels: ['heizplan'] }),
+        ent('switch.plan', { area_id: 'kueche', labels: ['heizplan'] }),
+        ent('media_player.m', { area_id: 'bad' }),
+        ent('binary_sensor.motion', { area_id: 'bad' }),
+        ent('sensor.nostate', { area_id: 'bad' }),
+        ent('light.ghost', { area_id: 'gone' }),
+        ent('switch.config', { area_id: 'dup2', entity_category: 'config' }),
+        ent('light.lost', { device_id: 'd-missing' }), // its device is not in the registry
+        ent('climate.nostate', { area_id: 'dup1' }), // first thermostat without a state: the next one counts
+        ent('climate.f', { area_id: 'dup1' }),
+        ent('light.f', { area_id: 'dup1' }),
+      ],
+    };
+    const st = (state: string, attributes: Record<string, unknown> = {}) => ({ state, attributes });
+    const states: Record<string, unknown> = {
+      'light.a': st('on'), 'light.b': st('off'), 'light.c': st('on'), 'light.d': st('on'),
+      'light.hidden': st('on'), 'light.disabled': st('on'), 'sensor.diag': st('1'),
+      'sensor.t': st('21.5', { device_class: 'temperature' }), 'sensor.h': st('n/a', { device_class: 'humidity' }),
+      'climate.k': st('heat', { current_temperature: 19, hvac_action: 'heating' }),
+      'automation.plan': st('on'), 'switch.plan': st('on'),
+      'media_player.m': st('playing'), 'binary_sensor.motion': st('on', { device_class: 'motion' }),
+      'switch.config': st('on'), 'light.lost': st('on'), 'light.f': st('off'),
+      'climate.f': st('off', { current_temperature: 17.5 }),
+    };
+    const rooms = core.buildRooms(registries, states);
+    const summaries = (list: { id: string }[], map: Record<string, unknown>) =>
+      Object.fromEntries(list.map((r) => [r.id, core.roomSummary(r, map)]));
+    // the fixture's keys get sorted: keep the order the room page iterates the domains in
+    const domainOrders = (list: { id: string; domains: Record<string, string[]> }[]) =>
+      Object.fromEntries(list.map((r) => [r.id, Object.keys(r.domains)]));
+    writeJson(join(FIX, 'rooms.json'), {
+      cases: { registries, states, rooms, summaries: summaries(rooms, states), domainOrders: domainOrders(rooms) },
+      demo: { rooms: demo, summaries: summaries(demo, core.DEMO_ENTITIES), domainOrders: domainOrders(demo) },
+    });
+  });
+
+  it('golden: parseFloat', () => {
+    const inputs = [
+      '21.5', '  -3e2x', '.5', '5.', '1e', '1e+', '1e-2', '-.5', '+7', '--1', '.', '-', '', 'n/a', 'unavailable',
+      'Infinity', '-Infinity', '+Infinity', 'Infinityx', 'infinity', '0x1A', '1,5', '12abc', '\u00a0 42', '\u3000 8',
+      '\ufeff3', '\u200b5', '\n\t9.25', '1.2.3', '00012', '1e400', '-0', '5e-400', '٣', '１２', '3.14159265358979323846',
+      '.e1', '1.e2', '1_000', '5\u0301', '5\u200d', '1.5\ufe0f', '\u20282',
+    ];
+    writeJson(join(FIX, 'parseFloat.json'), inputs.map((s) => {
+      const v = parseFloat(s);
+      return [s, Number.isNaN(v) ? null : Number.isFinite(v) ? v : v > 0 ? 'Infinity' : '-Infinity', Object.is(v, -0)];
+    }));
+  });
+
+  it('golden: room sections', () => {
+    // random rooms with every domain the page groups, hidden/stored/edit variants, garage covers
+    let seed = 7;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed % n;
+    };
+    const DOM = ['scene', 'light', 'climate', 'humidifier', 'media_player', 'cover', 'switch', 'fan', 'input_boolean',
+      'button', 'vacuum', 'sensor', 'binary_sensor', 'camera', 'lock', 'weather', 'number'];
+    const KEYS = [...core.ROOM_SECTION_ORDER, 'bogus'];
+    const sections = [];
+    for (let t = 0; t < 300; t++) {
+      const domains: Record<string, string[]> = {};
+      const entities: Record<string, unknown> = {};
+      const all: string[] = [];
+      const nd = r(8);
+      for (let d = 0; d < nd; d++) {
+        const dom = DOM[r(DOM.length)]!;
+        const ids: string[] = [];
+        for (let k = 0; k < 1 + r(4); k++) {
+          const id = `${dom}.e${r(6)}`;
+          if (ids.includes(id)) continue;
+          ids.push(id);
+          all.push(id);
+          const attributes = dom === 'cover' && r(2) ? { device_class: ['garage', 'gate', 'blind'][r(3)] } : {};
+          if (r(5)) entities[id] = { entity_id: id, state: 'on', attributes };
+        }
+        domains[dom] = ids;
+      }
+      const pick = () => all.filter(() => r(3) === 0).sort(() => r(3) - 1);
+      const input = {
+        domains, entities, hiddenEntities: pick(), editMode: !!r(2), sentinel: !!r(2),
+        cameraIds: r(2) ? ['cam1', 'cam2'].slice(0, r(3)) : [],
+        storedEntityOrder: r(3) ? pick() : undefined,
+        storedSectionOrder: r(3) ? KEYS.filter(() => r(2)).sort(() => r(3) - 1) : undefined,
+        heatingPlan: !!r(2),
+      };
+      const out = core.roomSections(input as Parameters<typeof core.roomSections>[0]);
+      // the fixture's keys get sorted: keep the order the page iterates the domains in
+      Object.assign(input, { domainOrder: Object.keys(domains) });
+      const key = KEYS[r(KEYS.length)]!;
+      const moved = pick();
+      sections.push({ input, out, combined: { key, ids: moved, result: core.combinedEntityOrder(key, moved, out.snapshot) } });
+    }
+    const names: [string, string][] = [
+      ['Küche Decke', 'Küche'], ['Küche', 'Küche'], ['Deckenlicht Küche links', 'küche'], ['Bad Spiegel (bad)', 'bad'],
+      ['Ärger Lampe', 'Ärger'], ['Lampe Ärger', 'Ärger'], ['Badezimmer Licht', 'Bad'], ['Licht', ''],
+      ['Zimmer 9 Licht', 'Zimmer 9'], ['A.B Licht', 'A.B'], ['AxB Licht', 'A.B'], ['Wohnzimmer  Stehlampe  Wohnzimmer', 'Wohnzimmer'],
+      ['Tür (Flur)', 'Flur'], ['Flur-Licht', 'Flur'], ['Flur_Licht', 'Flur'], ['Café Licht', 'Café'], ['Licht Café', 'Café'],
+      ['STUDIO lamp', 'studio'], ['Kinderzimmer Nachtlicht', 'Kinder'], ['Licht (x)', '(x)'], ['Licht x)', 'x)'],
+    ];
+    const strip = names.map(([name, room]) => ({ name, room, result: core.stripRoomName(name, room) }));
+    writeJson(join(FIX, 'roomSections.json'), { sections, strip });
+  });
+
+  it('room look: tables and golden cases', () => {
+    // the tables the app reads (keyword order matters: first match wins)
+    writeJson(join(RES, 'roomIcons.json'), {
+      keywords: core.ROOM_KEYWORDS, mdi: core.MDI_TO_LUCIDE, iconByKind: core.ICON_BY_KIND,
+      canonical: core.CANONICAL_ROOM_ICONS,
+    });
+    const variants = (k: string) => [k, k.toUpperCase(), `Mein ${k}-Raum`, k.replace(/ /g, '-'), k.replace(/ /g, '’')];
+    const names = [
+      ...core.ROOM_KEYWORDS.flatMap((k) => variants(k.keyword)),
+      'Küche', 'Wohnzimmer', 'Schlafzimmer', 'Bad', 'Gäste-WC', 'Salle d’Eau', 'Séjour', 'Entrée', 'Chambre d’enfant',
+      'Sous-sol', 'Garde-manger', 'Dépendance', 'Living Room', 'STUDY', 'Kid’s room', 'Hallway 2', 'Büro', '', '   ',
+      'Ærøskøbing', 'ﬁtness', 'İstanbul', 'Straße', 'cafe\u0301', 'Wcfoo', 'Ötztal',
+    ];
+    const icons = [
+      undefined, null, '', ...Object.keys(core.MDI_TO_LUCIDE).flatMap((k) => [k, `mdi:${k}`]),
+      ...core.CANONICAL_ROOM_ICONS.flatMap((k) => [k, `mdi:${k}`]), 'mdi:unknown-thing', 'hass:sofa', 'MDI:sofa',
+    ];
+    const kinds = names.map((name) => ({ name, kind: core.roomKind(name) }));
+    const iconCases = [
+      ...icons.map((icon) => ({ name: 'Küche', icon, result: core.roomIconName({ name: 'Küche', icon }) })),
+      ...icons.slice(0, 8).map((icon) => ({ name: 'Kitchen', icon, result: core.roomIconName({ name: 'Kitchen', icon }) })),
+      ...names.map((name) => ({ name, icon: null, result: core.roomIconName({ name, icon: null }) })),
+    ];
+
+    // rooms with temperature/humidity sensors, thermostats, openings and garage doors
+    const st = (state: string, attributes: Record<string, unknown> = {}) => ({ state, attributes });
+    const entities: Record<string, unknown> = {
+      'sensor.oven': st('180', { device_class: 'temperature', unit_of_measurement: '°C' }),
+      'sensor.t': st('21.5', { device_class: 'temperature', unit_of_measurement: '°C' }),
+      'sensor.t_bad': st('unavailable', { device_class: 'temperature', unit_of_measurement: '°C' }),
+      'sensor.t_nounit': st('19.25abc', { device_class: 'temperature', unit_of_measurement: '' }),
+      'sensor.h': st('48', { device_class: 'humidity', unit_of_measurement: '%' }),
+      'sensor.h2': st('n/a', { device_class: 'humidity' }),
+      'sensor.h3': st('55.5', { device_class: 'humidity', unit_of_measurement: '%' }),
+      'sensor.power': st('12', { device_class: 'power' }),
+      'climate.a': st('heat', { current_temperature: 20.5, hvac_action: 'heating' }),
+      'climate.b': st('off', { current_temperature: null }),
+      'climate.c': st('auto', {}),
+      'climate.d': st('heat_cool', { hvac_action: 'cooling', current_temperature: 23 }),
+      'climate.e': st('unavailable', { hvac_action: 'idle' }),
+      'binary_sensor.door': st('on', { device_class: 'door' }),
+      'binary_sensor.door_off': st('off', { device_class: 'door' }),
+      'binary_sensor.gd': st('on', { device_class: 'garage_door' }),
+      'binary_sensor.win': st('on', { device_class: 'window' }),
+      'binary_sensor.opening': st('on', { device_class: 'opening' }),
+      'binary_sensor.wet': st('on', { device_class: 'moisture' }),
+      'binary_sensor.smoke': st('on', { device_class: 'smoke' }),
+      'cover.garage': st('opening', { device_class: 'garage' }),
+      'cover.gate': st('closed', { device_class: 'gate' }),
+      'cover.gate_unknown': st('unknown', { device_class: 'gate' }),
+      'cover.blind': st('open', { device_class: 'blind' }),
+      'light.dim': st('on', { brightness: 128 }),
+      'light.min': st('on', { brightness: 1 }),
+      'light.max': st('on', { brightness: 255 }),
+      'light.over': st('on', { brightness: 300 }),
+      'light.nob': st('on', {}),
+      'light.off': st('off', { brightness: 200 }),
+      'light.str': st('on', { brightness: '128' }),
+      'light.half': st('on', { brightness: 1.275 }),
+    };
+    for (const [id, e] of Object.entries(entities)) Object.assign(e as object, { entity_id: id });
+    const room = (id: string, domains: Record<string, string[]>, extra: string[] = []) => ({
+      id, name: id, icon: null, picture: null, entityIds: [...Object.values(domains).flat(), ...extra], domains,
+    });
+    const rooms = [
+      room('kitchen', { sensor: ['sensor.oven', 'sensor.t', 'sensor.h'], climate: ['climate.a'] }),
+      room('bad', { sensor: ['sensor.t_bad', 'sensor.h2', 'sensor.h3'], climate: ['climate.b', 'climate.a'] }),
+      room('nounit', { sensor: ['sensor.t_nounit', 'sensor.power'] }),
+      room('missing', { sensor: ['sensor.gone', 'sensor.t'], climate: ['climate.gone', 'climate.d'] }),
+      room('empty', {}),
+      room('open', { binary_sensor: ['binary_sensor.win', 'binary_sensor.wet', 'binary_sensor.door'] }),
+      room('garage', { binary_sensor: ['binary_sensor.smoke'], cover: ['cover.gate', 'cover.garage'] }),
+      room('quiet', { binary_sensor: ['binary_sensor.door_off', 'binary_sensor.opening', 'binary_sensor.smoke'],
+        cover: ['cover.blind', 'cover.gate_unknown'] }),
+      room('gd', { binary_sensor: ['binary_sensor.wet', 'binary_sensor.gd'] }),
+      room('diag', {}, ['binary_sensor.door', 'sensor.t']),
+    ];
+    const sources: unknown[] = [undefined, null, 42, 'sensor.oven', 'sensor.t', 'sensor.t_bad', 'sensor.h', 'sensor.power',
+      'climate.a', 'climate.b', 'climate.d', 'sensor.gone', 'climate.gone', 'sensor.elsewhere'];
+    const temps = rooms.map((r) => {
+      const summary = core.roomSummary(r, entities as never);
+      return {
+        room: r,
+        sources: core.roomTemperatureSources(r, entities as never),
+        status: core.roomStatusIconName(r, entities as never),
+        bySource: sources.map((source) => ({
+          source: source === undefined ? '__undefined__' : source,
+          temperature: core.roomTemperature(r, entities as never, source),
+          glances: core.roomGlances(r, entities as never, source),
+          summary: core.withRoomTemperature(summary, r, entities as never, source),
+        })),
+      };
+    });
+    const ids = Object.keys(entities);
+    const lights = ids.filter((id) => id.startsWith('light.')).map((id) => ({ id, percent: core.lightPercent(entities[id] as never) }));
+    const tones = ids.filter((id) => id.startsWith('climate.')).map((id) => ({ id, tone: core.climateTone(entities[id] as never) }));
+    writeJson(join(FIX, 'roomLook.json'), { kinds, icons: iconCases, entities, temps, lights, tones });
+  });
+
+  it('golden: entity display', () => {
+    const st = (entity_id: string, state: string, attributes: Record<string, unknown> = {}) =>
+      ({ entity_id, state, attributes, last_changed: FIXED_NOW, last_updated: FIXED_NOW, context: { id: 'x', parent_id: null, user_id: null } });
+    const classes: Record<string, (string | undefined)[]> = {
+      binary_sensor: [undefined, 'door', 'window', 'motion', 'smoke', 'moisture', 'lock', 'presence', 'opening', 'garage_door', 'foo'],
+      sensor: [undefined, 'temperature', 'humidity', 'power', 'energy', 'illuminance', 'battery', 'pressure', 'timestamp',
+        'voltage', 'current', 'co2', 'carbon_dioxide', 'gas', 'foo'],
+      cover: [undefined, 'blind', 'curtain', 'garage', 'gate', 'shutter'],
+    };
+    const domains = ['light', 'switch', 'fan', 'climate', 'humidifier', 'cover', 'media_player', 'camera', 'lock',
+      'alarm_control_panel', 'weather', 'person', 'sun', 'input_boolean', 'script', 'automation', 'scene', 'binary_sensor',
+      'sensor', 'number', 'input_number', 'counter', 'siren', 'vacuum', 'select', 'update', 'xyz'];
+    const states = ['on', 'off', 'unavailable', 'unknown', 'open', 'closed', 'unlocked', 'locked', 'playing', 'paused',
+      'idle', 'standby', 'disarmed', 'armed_home', 'cleaning', 'returning', 'heat', 'fan_only', 'clear-night', '',
+      '21.5', '-3.5', ' 7 ', '1e3', '12abc', '-0.004', '1234567.891', '.5', '5.', '__x__', 'élan', 'ßtraße', '😀 smile',
+      '2026-06-15T09:41:00+00:00', '2026-06-15', 'not a date'];
+    const units: unknown[] = [undefined, null, '°C', '', 0, 'kWh'];
+    const entities = [];
+    let n = 0;
+    for (const d of domains) for (const dc of classes[d] ?? [undefined]) for (const s of states) {
+      const unit = units[n++ % units.length];
+      const attributes: Record<string, unknown> = {};
+      if (dc !== undefined) attributes['device_class'] = dc;
+      if (unit !== undefined) attributes['unit_of_measurement'] = unit;
+      entities.push(st(`${d}.e${n}`, s, attributes));
+    }
+    // a few of Home Assistant's own state words, and the web's fallback chain (`useStateLabel`)
+    const res: Record<string, string> = {
+      'component.light.entity_component._.state.on': 'An',
+      'component.binary_sensor.entity_component._.state.on': 'Ein',
+      'component.binary_sensor.entity_component.door.state.on': 'Offen',
+      'component.climate.entity_component._.state.fan_only': 'Nur Lüfter',
+      'component.climate.entity_component._.state_attributes.hvac_action.state.heating': 'Heizt',
+      'component.weather.entity_component._.state.clear-night': 'Klare Nacht',
+    };
+    const out: Record<string, unknown> = {};
+    for (const locale of core.LOCALES) {
+      const dict = JSON.parse(readFileSync(join(ROOT, 'packages/core/locales', `${locale}.json`), 'utf8')) as Record<string, string>;
+      const fallback = JSON.parse(readFileSync(join(ROOT, 'packages/core/locales', 'en.json'), 'utf8')) as Record<string, string>;
+      const label = (domain: string, state: string, opts?: { deviceClass?: string | undefined; attribute?: string | undefined }) => {
+        if (!state) return '';
+        const ha = core.lookupEntityState(res, domain, state, opts);
+        if (ha !== undefined) return ha;
+        return dict[`entityState.${state}`] ?? fallback[`entityState.${state}`] ?? core.humanizeState(state);
+      };
+      out[locale] = entities.map((e) => [core.formatEntityState(e as never, locale, label), core.formatEntityState(e as never, locale)]);
+    }
+    const meta = entities.map((e) => ({ icon: core.domainIcon(e as never), favorite: core.isFavoriteRelevant(e as never) }));
+    const humanize = states.map((s) => [s, core.humanizeState(s)]);
+    const attr = [['climate', 'heating', 'hvac_action'], ['climate', 'cooling', 'hvac_action'], ['light', 'on', undefined]]
+      .map(([d, s, a]) => [d, s, a ?? null, core.lookupEntityState(res, d!, s!, { attribute: a })]);
+    writeJson(join(FIX, 'entityDisplay.json'), { entities, res, formatted: out, meta, humanize, attr });
+  });
+
+  it('golden: localeCompare', () => {
+    // String.prototype.localeCompare as the web sorts names and entity ids with it
+    let seed = 11;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed % n;
+    };
+    const alphabet = [...' _-,;:!?.\'"()[]{}@*/\\&#%`^+<=>|~$0123456789aAbBzZäÄöÖüÜßéÉèçñŁłØøÆæåÅ🙂🏠', 'ss', 'ae'];
+    const word = () => Array.from({ length: 1 + r(6) }, () => alphabet[r(alphabet.length)]).join('');
+    // [a, b, sign in the default language (en), sign in Swedish (Ä/Ö/Å after Z)]
+    const pairs: [string, string, number, number][] = [];
+    const sign = (a: string, b: string) => [Math.sign(a.localeCompare(b, 'en')), Math.sign(a.localeCompare(b, 'sv'))] as const;
+    for (let i = 0; i < 3000; i++) {
+      const a = word();
+      const b = r(4) === 0 ? a.toUpperCase() : r(3) === 0 ? a + word() : word();
+      pairs.push([a, b, ...sign(a, b)]);
+    }
+    for (const [a, b] of [['sensor.temp_1', 'sensor.temp1'], ['Straße', 'Strasse'], ['a', 'A'], ['ä', 'a'], ['', 'a'], ['Zimmer', 'Äpfel'], ['Øl', 'Ol'], ['Łódź', 'Lodz']]) {
+      pairs.push([a!, b!, ...sign(a!, b!)]);
+    }
+    writeJson(join(FIX, 'localeCompare.json'), pairs, false);
+  });
+
+  it('golden: security, chips, hints and scenes', () => {
+    // garages, locks, alarm panels, the summary chips, the home hints and the "active" scene heuristic
+    let seed = 7;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return Math.floor(seed / 65536) % n; // the low bits of this generator repeat quickly
+    };
+    const pick = <T,>(list: readonly T[]): T => list[r(list.length)]!;
+    const now = Date.parse(FIXED_NOW);
+    const iso = (ms: number) => new Date(ms).toISOString();
+    const ent = (entity_id: string, state: string, attributes: Record<string, unknown> = {}, changedAgo = 0, updatedAgo = changedAgo) =>
+      ({ entity_id, state, attributes, last_changed: iso(now - changedAgo), last_updated: iso(now - updatedAgo), context: { id: 'x', parent_id: null, user_id: null } });
+
+    const coverStates = ['closed', 'open', 'opening', 'closing', 'stopped', 'unavailable', 'unknown', 'xyz'];
+    const features = [undefined, 0, 1, 2, 3, 8, 11, 15, '3', -1, 1.9, 2147483649, 4294967297, -9, 1e300, -1e300];
+    const garages = [];
+    let n = 0;
+    for (const dc of ['garage', 'gate', 'blind', undefined]) for (const st of coverStates) for (const f of features) {
+      const a: Record<string, unknown> = {};
+      if (dc !== undefined) a['device_class'] = dc;
+      if (f !== undefined) a['supported_features'] = f;
+      const e = ent(`cover.g${n++}`, st, a);
+      garages.push({
+        entity: e, isGarageDoor: core.isGarageDoor(e), status: core.garageStatus(st), isOpen: core.garageIsOpen(st),
+        canOpen: core.garageCanAct(e, 'open'), canClose: core.garageCanAct(e, 'close'), canStop: core.garageCanStop(e),
+        icon: core.garageMdiIcon(e),
+      });
+    }
+    const lockStates = ['locked', 'unlocked', 'open', 'opening', 'locking', 'unlocking', 'jammed', 'unavailable', 'unknown'];
+    const alarmStates = ['disarmed', 'armed_home', 'armed_away', 'armed_night', 'arming', 'pending', 'triggered', 'unavailable', 'unknown', 'weird'];
+    const sets = [];
+    for (let i = 0; i < 150; i++) {
+      const locks = Array.from({ length: r(5) }, (_, k) => ent(`lock.l${k}`, pick(lockStates)));
+      const doors = Array.from({ length: r(4) }, (_, k) => ent(`cover.d${k}`, pick(coverStates), { device_class: pick(['garage', 'gate']) }));
+      const alarms = Array.from({ length: r(4) }, (_, k) => ent(`alarm_control_panel.${pick(['a', 'b', 'c', 'master'])}${k}`, pick(alarmStates)));
+      const ls = core.lockSummary(locks);
+      sets.push({
+        locks, lockSummary: ls, lockTone: core.lockTone(ls), doors, garageSummary: core.garageSummary(doors),
+        alarms, alarmOrder: core.sortAlarmPanels(alarms).map((e: { entity_id: string }) => e.entity_id),
+        openTargets: core.garageTargets(doors, 'open').map((e: { entity_id: string }) => e.entity_id),
+        closeTargets: core.garageTargets(doors, 'close').map((e: { entity_id: string }) => e.entity_id),
+      });
+    }
+
+    // whole homes for the chips and the hints
+    const makers: (() => ReturnType<typeof ent>)[] = [
+      () => ent(`person.p${r(5)}`, pick(['home', 'not_home', 'work', 'unknown'])),
+      () => ent(`light.l${r(9)}`, pick(['on', 'off', 'unavailable'])),
+      () => ent(`binary_sensor.o${r(20)}`, pick(['on', 'off', 'unavailable']), { device_class: pick(['door', 'window', 'opening', 'garage_door', 'motion', 'moisture', 'smoke', 'gas', 'carbon_monoxide', 'lock']) }, pick([0, 60_000, 9 * 60_000 + 59_000, 10 * 60_000, 3_600_000])),
+      () => ent(`binary_sensor.n${r(5)}`, 'on'),
+      () => ent(`media_player.m${r(4)}`, pick(['playing', 'paused', 'idle', 'off'])),
+      () => ent(`cover.c${r(6)}`, pick(coverStates), { device_class: pick(['garage', 'gate', 'blind']) }),
+      () => ent(`lock.k${r(4)}`, pick(lockStates)),
+      () => ent(`alarm_control_panel.a${r(3)}`, pick(alarmStates)),
+      () => ent(`switch.pool_pump`, pick(['on', 'off'])),
+      () => ent(`sensor.pool_temp`, '24'),
+    ];
+    const homes = [];
+    for (let i = 0; i < 200; i++) {
+      const list: ReturnType<typeof ent>[] = [];
+      for (let k = r(14); k > 0; k--) {
+        const e = pick(makers)();
+        if (!list.some((x) => x.entity_id === e.entity_id)) list.push(e);
+      }
+      const map = Object.fromEntries(list.map((e) => [e.entity_id, e]));
+      const hidden = list.filter(() => r(8) === 0).map((e) => e.entity_id);
+      const waste = Array.from({ length: r(3) }, (_, k) => ({ entityId: `sensor.waste_${k}`, daysTo: pick([null, -1, 0, 1, 2]) }));
+      const heatingMissing = Array.from({ length: r(3) }, (_, k) => ({
+        areaId: `area${k}`, name: pick(['Küche', 'bad', 'Arbeitszimmer', 'Zimmer 2']),
+        thermostats: [`climate.t${k}`, `climate.u${k}`].filter(() => r(3) > 0),
+      }));
+      const opts = { now, hidden, doorOpenMinutes: pick([undefined, 0, 5, 10]), waste, camerasNotRecording: pick([0, 0, 1, 3]), heatingMissing };
+      const chips = core.chipCounts(map, { poolPump: 'switch.pool_pump', poolRequired: ['switch.pool_pump', 'sensor.pool_temp'] });
+      const result = core.collectHints(list, opts as never);
+      homes.push({
+        entities: list, hidden, doorOpenMinutes: opts.doorOpenMinutes ?? null, waste, camerasNotRecording: opts.camerasNotRecording, heatingMissing,
+        chips: {
+          // the app has no insertion order of the entity map: people sorted by entity id
+          peopleHome: chips.peopleHome.map((e: { entity_id: string }) => e.entity_id).sort(),
+          lightsOn: chips.lightsOn, openDoorWindow: chips.openDoorWindow, alarm: chips.alarm?.entity_id ?? null,
+          mediaPlaying: chips.mediaPlaying, pool: chips.pool, garages: chips.garages, locks: chips.locks,
+        },
+        hints: result.hints.map((h: { id: string; kind: string; severity: string; count: number; entityIds: string[]; room?: unknown }) =>
+          ({ id: h.id, kind: h.kind, severity: h.severity, count: h.count, entityIds: h.entityIds, room: h.room ?? null })),
+        recheckAt: result.recheckAt === null ? null : iso(result.recheckAt),
+      });
+    }
+
+    // scenes: activation times, members changed or not, covers, overruled, too old
+    const scenesCases = [];
+    for (let i = 0; i < 200; i++) {
+      const members = ['light.a', 'light.b', 'cover.c', 'switch.d', 'light.gone'];
+      const states: Record<string, ReturnType<typeof ent>> = {};
+      for (const m of members.slice(0, 4)) {
+        states[m] = ent(m, pick(['on', 'off', 'unavailable', 'open']), {}, 0, pick([0, 5_000, 30_000, 100_000, 200_000, 3_600_000, 20 * 3_600_000]));
+      }
+      const scenes = Array.from({ length: 1 + r(3) }, (_, k) => {
+        const at = pick([null, 'garbage', 10_000, 60_000, 150_000, 3_600_000, 13 * 3_600_000]);
+        // Home Assistant writes six fraction digits and +00:00; toISOString three and Z
+        const state = at === null ? 'unknown' : at === 'garbage' ? 'not a time'
+          : r(2) ? iso(now - (at as number)) : iso(now - (at as number)).replace(/\.(\d{3})Z$/, `.$1${pick(['000', '456', '999'])}+00:00`);
+        const mem = members.filter(() => r(2) === 0);
+        const attrs: Record<string, unknown> = r(6) === 0 ? {} : { entity_id: r(9) === 0 ? [...mem, 5, ''] : mem };
+        return ent(`scene.s${k}`, state, attrs);
+      });
+      scenesCases.push({ scenes, states, active: [...core.activeSceneIds(scenes, states, now)].sort() });
+    }
+    writeJson(join(FIX, 'security.json'), { now: FIXED_NOW, garages, sets, homes, scenes: scenesCases });
+  });
+
+  it('golden: waste', () => {
+    // detectWasteBins over random sensors of the waste_collection_schedule integration (generator runs in UTC)
+    let seed = 3;
+    const r = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return Math.floor(seed / 65536) % n;
+    };
+    const pick = <T,>(list: readonly T[]): T => list[r(list.length)]!;
+    const now = Date.parse(FIXED_NOW);
+    const dates = ['2026-06-14', '2026-06-15', '2026-06-16', '2026-06-20', '2026-07-01', '2026-06-15T05:00:00+02:00',
+      ' 2026-06-18 ', '2026-13-01', '2026-06-32', 'morgen', '2026-6-1', '2026-02-30'];
+    const typeNames = ['Graue Tonne', 'Graue Tonne (verlegt)', 'Gelber Sack', 'gelber  sack', 'Bio (x) (y)', 'Papier (a(b)',
+      'Glas ( )', ' (nur) ', 'Restmüll\t(moved) ', 'Christbaum'];
+    const daysVals: unknown[] = [undefined, null, 0, 1, 2, -1, 7, 7.5, '3', ' 4 ', '', 'x', '0x10', 'Infinity', false, [], '1e1'];
+    const homes = [];
+    for (let i = 0; i < 150; i++) {
+      const list = [];
+      for (let k = r(7); k > 0; k--) {
+        const id = `sensor.${pick(['grauetonne', 'gelber_sack', 'bio', 'papier', 'temp'])}${pick(['', '_komplett', '_verlegt'])}${r(3)}`;
+        if (list.some((e) => e.entity_id === id)) continue;
+        const attributes: Record<string, unknown> = {};
+        if (r(4) > 0) attributes['upcoming'] = Array.from({ length: r(4) }, () => (r(8) === 0 ? 'x' : r(8) === 0 ? { type: 'Bio' } : { date: pick(dates), ...(r(2) ? { type: pick(typeNames) } : {}) }));
+        if (r(3) > 0) attributes['types'] = Array.from({ length: r(3) }, () => (r(9) === 0 ? 5 : pick(typeNames)));
+        const d = pick(daysVals);
+        if (d !== undefined) attributes['daysTo'] = d;
+        if (r(2)) attributes['friendly_name'] = pick(['Waste Collection Schedule Graue_Tonne', 'waste collection schedule  bio', 'Papier', 'Waste Collection Schedule']);
+        if (r(2)) attributes['icon'] = pick(['mdi:trash-can', 'mdi:recycle']);
+        list.push({ entity_id: id, state: 'x', attributes, last_changed: FIXED_NOW, last_updated: FIXED_NOW, context: { id: 'x', parent_id: null, user_id: null } });
+      }
+      const map = Object.fromEntries(list.map((e) => [e.entity_id, e]));
+      const hidden = list.filter(() => r(9) === 0).map((e) => e.entity_id);
+      const withNow = r(3) > 0;
+      homes.push({ entities: list, hidden, withNow, bins: core.detectWasteBins(map, { hidden, nowMs: withNow ? now : undefined }) });
+    }
+    const numbers = ['7', ' 7 ', '+7', '-7', '.5', '5.', '1e3', '1e', '0x1A', '0X1a', '0o17', '0b101', '-0x10', 'Infinity', '-Infinity', 'inf',
+      'nan', '1_0', '1,5', '١', ' 7　', '00', '0x', '.e1', '1.e2', '+.5', '--1'];
+    writeJson(join(FIX, 'waste.json'), {
+      now: FIXED_NOW, homes,
+      typeNames: typeNames.map((t) => [t, core.wasteTypeName(t)]),
+      dates: dates.map((d) => [d, core.parseWasteDate(d)]),
+      numbers: numbers.map((n) => [n, Number.isNaN(Number(n)) ? null : Number.isFinite(Number(n)) ? Number(n) : String(Number(n))]),
+    });
+  });
+
   it('golden: sentinel', async () => {
     const api = await import('@sentinel-nvr/web/api');
     const inputs = ['', '   ', 'nvr.example.com', 'https://NVR.Example.com:443/', 'http://192.0.2.10:10443',

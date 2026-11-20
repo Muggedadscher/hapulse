@@ -27,12 +27,43 @@ public final class HomeSession {
     public private(set) var managed = false
     /// false until the first full entity list has arrived (the UI shows its loading state until then).
     public private(set) var loaded = false
+    /// Areas, devices and entities of Home Assistant's registries, fetched after every connect (rooms, names).
+    public private(set) var registries: Registries?
+
+    /// Home Assistant's own state words in the UI language (`frontend/get_translations`), empty until loaded.
+    public private(set) var stateTranslations: EntityDisplay.StateTranslations = [:]
+    private var translationsLanguage: String?
+
+    /// Loads Home Assistant's state words for `language` (an `AppLocale` code). Once per language; a failure leaves
+    /// the words empty (the app's own words and the humanized state stand in, like the web).
+    public func loadStateTranslations(language: String) async {
+        guard translationsLanguage != language else { return }
+        translationsLanguage = language
+        do {
+            let r = try await client.command(["type": "frontend/get_translations", "language": .string(language),
+                                              "category": "entity_component"])
+            guard translationsLanguage == language else { return }
+            stateTranslations = (r["resources"]?.object ?? [:]).compactMapValues(\.string)
+        } catch {
+            if translationsLanguage == language { translationsLanguage = nil }
+            log.error("state translations failed: \(error)")
+        }
+    }
+
+    /// The rooms (Home Assistant areas) sorted by name; empty until the registries have arrived.
+    public var rooms: [Room] {
+        guard let registries else { return [] }
+        return Rooms.build(registries, entities: entities)
+    }
 
     public let client: HAClient
     private let log = Log("session")
     private var tasks: [Task<Void, Never>] = []
     private var userTask: Task<Void, Never>?
+    private var registryTask: Task<Void, Never>?
     private var wired = false
+    /// set by `close()`: a `.connected` still buffered in the status stream starts nothing any more
+    private var closed = false
 
     /// Everything the subscriptions deliver goes through ONE stream, drained by one task on the main actor: events
     /// arrive in the order Home Assistant sent them (separate tasks per event could swap two entity updates).
@@ -94,7 +125,13 @@ public final class HomeSession {
                 for await s in stream {
                     guard let self else { return }
                     self.status = s
-                    if case .connected = s { self.loadUser() } else { self.userTask?.cancel() }
+                    if case .connected = s, !self.closed {
+                        self.loadUser()
+                        self.loadRegistries()
+                    } else {
+                        self.userTask?.cancel()
+                        self.registryTask?.cancel()
+                    }
                 }
             })
             await subscribeAll()
@@ -105,14 +142,18 @@ public final class HomeSession {
     public func stop() async {
         userTask?.cancel()
         userTask = nil
+        registryTask?.cancel()
+        registryTask = nil
         await client.stop()
     }
 
     /// Ends the session for good (sign-out): the readers stop too.
     public func close() async {
+        closed = true
         await stop()
         for t in tasks { t.cancel() }
         tasks = []
+        status = .idle // the status reader is gone before it could see the end of the connection
         inboxIn.finish()
     }
 
@@ -160,12 +201,49 @@ public final class HomeSession {
                     self.recompute() // admin rights decide which tokens stay
                     return
                 } catch {
+                    guard Self.retryWorthy(error) else { return } // disconnected: the next connect asks again
                     self?.log.error("auth/current_user failed: \(error)")
                 }
                 try? await Task.sleep(for: .seconds(pause))
                 pause = min(pause * 2, 30)
             }
         }
+    }
+
+    /// The three registry lists after every connect, retried while connected (like `fetchRegistries` of the web).
+    /// The last good lists stay while a new fetch fails.
+    private func loadRegistries() {
+        registryTask?.cancel()
+        registryTask = Task { [weak self] in
+            var pause = 1
+            while !Task.isCancelled {
+                guard let client = self?.client else { return }
+                do {
+                    async let areas = client.command(["type": "config/area_registry/list"])
+                    async let devices = client.command(["type": "config/device_registry/list"])
+                    async let list = client.command(["type": "config/entity_registry/list"])
+                    let r = Registries(areas: try await areas, devices: try await devices, entities: try await list)
+                    guard !Task.isCancelled, let self else { return }
+                    if self.registries != r { self.registries = r }
+                    self.log.info("registries loaded: \(r.areas.count) areas, \(r.entities.count) entities")
+                    return
+                } catch let e as HAError where e.code != HAError.timeout.code && e.code != HAError.notConnected.code {
+                    // refused (unknown command, no rights): asking again would not help; the rooms stay as they were
+                    self?.log.error("registries refused: \(e)")
+                    return
+                } catch {
+                    guard Self.retryWorthy(error) else { return } // disconnected: the next connect loads them again
+                    self?.log.error("registries failed: \(error)")
+                }
+                try? await Task.sleep(for: .seconds(pause))
+                pause = min(pause * 2, 30)
+            }
+        }
+    }
+
+    /// A failed command is asked again unless the connection is gone (the next `.connected` starts over anyway).
+    nonisolated static func retryWorthy(_ error: any Error) -> Bool {
+        (error as? HAError)?.code != HAError.notConnected.code && !(error is CancellationError)
     }
 
     private func applyEntities(_ ev: JSONValue) {

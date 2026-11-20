@@ -8,6 +8,7 @@ public actor DemoHA: HATransport {
     public static let token = "demo"
 
     private var states: [String: JSONValue]
+    private let registries: JSONValue
     private let now: Date
     private var box: Mailbox?
     private var entitySubs: [Int] = []
@@ -18,6 +19,7 @@ public actor DemoHA: HATransport {
 
     public init(home: DemoHome) {
         states = home.entities
+        registries = home.registries
         now = home.now
     }
 
@@ -86,6 +88,14 @@ public actor DemoHA: HATransport {
             entitySubs.append(Int(id.number ?? 0))
             await ok()
             await send(["id": id, "type": "event", "event": .object(["a": .object(states.mapValues(compressed))])])
+        case "frontend/get_translations":
+            await ok(.object(["resources": .object([:])]))
+        case "config/area_registry/list":
+            await ok(registries["areas"] ?? .array([]))
+        case "config/device_registry/list":
+            await ok(registries["devices"] ?? .array([]))
+        case "config/entity_registry/list":
+            await ok(registries["entities"] ?? .array([]))
         case "frontend/subscribe_system_data", "frontend/subscribe_user_data":
             let scope = m["type"]?.string == "frontend/subscribe_system_data" ? "system" : "user"
             let key = m["key"]?.string ?? ""

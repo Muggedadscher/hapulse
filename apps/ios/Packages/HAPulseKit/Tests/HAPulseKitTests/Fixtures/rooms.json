@@ -1,0 +1,895 @@
+{
+  "cases": {
+    "domainOrders": {
+      "arbeit": [],
+      "bad": [
+        "light",
+        "media_player",
+        "binary_sensor"
+      ],
+      "dup1": [
+        "climate",
+        "light"
+      ],
+      "dup2": [],
+      "kueche": [
+        "light",
+        "sensor",
+        "climate",
+        "switch"
+      ],
+      "leer": [],
+      "zebra": [],
+      "zebra2": []
+    },
+    "registries": {
+      "areas": [
+        {
+          "area_id": "kueche",
+          "icon": "mdi:stove",
+          "name": "Küche"
+        },
+        {
+          "area_id": "bad",
+          "name": "bad",
+          "picture": "/api/image/bad.png"
+        },
+        {
+          "area_id": "arbeit",
+          "name": "Arbeitszimmer"
+        },
+        {
+          "area_id": "zebra",
+          "name": "Zimmer 10"
+        },
+        {
+          "area_id": "zebra2",
+          "name": "Zimmer 9"
+        },
+        {
+          "area_id": "leer",
+          "name": "Ärger"
+        },
+        {
+          "area_id": "dup2",
+          "name": "Flur"
+        },
+        {
+          "area_id": "dup1",
+          "name": "Flur"
+        }
+      ],
+      "devices": [
+        {
+          "area_id": "kueche",
+          "id": "d1",
+          "name": "Hue"
+        },
+        {
+          "area_id": null,
+          "id": "d2",
+          "name": "Zone"
+        }
+      ],
+      "entities": [
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.a",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": null,
+          "device_id": "d1",
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.b",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "bad",
+          "device_id": "d1",
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.c",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": null,
+          "device_id": "d2",
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.d",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.hidden",
+          "hidden_by": "user",
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": "integration",
+          "entity_category": null,
+          "entity_id": "light.disabled",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": "diagnostic",
+          "entity_id": "sensor.diag",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "sensor.t",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "sensor.h",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "climate.k",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "automation.plan",
+          "hidden_by": null,
+          "icon": null,
+          "labels": [
+            "heizplan"
+          ],
+          "original_name": null
+        },
+        {
+          "area_id": "kueche",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "switch.plan",
+          "hidden_by": null,
+          "icon": null,
+          "labels": [
+            "heizplan"
+          ],
+          "original_name": null
+        },
+        {
+          "area_id": "bad",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "media_player.m",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "bad",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "binary_sensor.motion",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "bad",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "sensor.nostate",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "gone",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.ghost",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "dup2",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": "config",
+          "entity_id": "switch.config",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": null,
+          "device_id": "d-missing",
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.lost",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "dup1",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "climate.nostate",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "dup1",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "climate.f",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        },
+        {
+          "area_id": "dup1",
+          "device_id": null,
+          "disabled_by": null,
+          "entity_category": null,
+          "entity_id": "light.f",
+          "hidden_by": null,
+          "icon": null,
+          "original_name": null
+        }
+      ]
+    },
+    "rooms": [
+      {
+        "domains": {},
+        "entityIds": [],
+        "icon": null,
+        "id": "arbeit",
+        "name": "Arbeitszimmer",
+        "picture": null
+      },
+      {
+        "domains": {},
+        "entityIds": [],
+        "icon": null,
+        "id": "leer",
+        "name": "Ärger",
+        "picture": null
+      },
+      {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.motion"
+          ],
+          "light": [
+            "light.c"
+          ],
+          "media_player": [
+            "media_player.m"
+          ]
+        },
+        "entityIds": [
+          "light.c",
+          "media_player.m",
+          "binary_sensor.motion",
+          "sensor.nostate"
+        ],
+        "icon": null,
+        "id": "bad",
+        "name": "bad",
+        "picture": "/api/image/bad.png"
+      },
+      {
+        "domains": {},
+        "entityIds": [
+          "switch.config"
+        ],
+        "icon": null,
+        "id": "dup2",
+        "name": "Flur",
+        "picture": null
+      },
+      {
+        "domains": {
+          "climate": [
+            "climate.f"
+          ],
+          "light": [
+            "light.f"
+          ]
+        },
+        "entityIds": [
+          "climate.nostate",
+          "climate.f",
+          "light.f"
+        ],
+        "icon": null,
+        "id": "dup1",
+        "name": "Flur",
+        "picture": null
+      },
+      {
+        "domains": {
+          "climate": [
+            "climate.k"
+          ],
+          "light": [
+            "light.a",
+            "light.b"
+          ],
+          "sensor": [
+            "sensor.t",
+            "sensor.h"
+          ],
+          "switch": [
+            "switch.plan"
+          ]
+        },
+        "entityIds": [
+          "light.a",
+          "light.b",
+          "sensor.diag",
+          "sensor.t",
+          "sensor.h",
+          "climate.k",
+          "automation.plan",
+          "switch.plan"
+        ],
+        "icon": "mdi:stove",
+        "id": "kueche",
+        "name": "Küche",
+        "picture": null
+      },
+      {
+        "domains": {},
+        "entityIds": [],
+        "icon": null,
+        "id": "zebra",
+        "name": "Zimmer 10",
+        "picture": null
+      },
+      {
+        "domains": {},
+        "entityIds": [],
+        "icon": null,
+        "id": "zebra2",
+        "name": "Zimmer 9",
+        "picture": null
+      }
+    ],
+    "states": {
+      "automation.plan": {
+        "attributes": {},
+        "state": "on"
+      },
+      "binary_sensor.motion": {
+        "attributes": {
+          "device_class": "motion"
+        },
+        "state": "on"
+      },
+      "climate.f": {
+        "attributes": {
+          "current_temperature": 17.5
+        },
+        "state": "off"
+      },
+      "climate.k": {
+        "attributes": {
+          "current_temperature": 19,
+          "hvac_action": "heating"
+        },
+        "state": "heat"
+      },
+      "light.a": {
+        "attributes": {},
+        "state": "on"
+      },
+      "light.b": {
+        "attributes": {},
+        "state": "off"
+      },
+      "light.c": {
+        "attributes": {},
+        "state": "on"
+      },
+      "light.d": {
+        "attributes": {},
+        "state": "on"
+      },
+      "light.disabled": {
+        "attributes": {},
+        "state": "on"
+      },
+      "light.f": {
+        "attributes": {},
+        "state": "off"
+      },
+      "light.hidden": {
+        "attributes": {},
+        "state": "on"
+      },
+      "light.lost": {
+        "attributes": {},
+        "state": "on"
+      },
+      "media_player.m": {
+        "attributes": {},
+        "state": "playing"
+      },
+      "sensor.diag": {
+        "attributes": {},
+        "state": "1"
+      },
+      "sensor.h": {
+        "attributes": {
+          "device_class": "humidity"
+        },
+        "state": "n/a"
+      },
+      "sensor.t": {
+        "attributes": {
+          "device_class": "temperature"
+        },
+        "state": "21.5"
+      },
+      "switch.config": {
+        "attributes": {},
+        "state": "on"
+      },
+      "switch.plan": {
+        "attributes": {},
+        "state": "on"
+      }
+    },
+    "summaries": {
+      "arbeit": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 0,
+        "mediaPlaying": false
+      },
+      "bad": {
+        "anyMotion": true,
+        "lightsOn": 1,
+        "lightsTotal": 1,
+        "mediaPlaying": true
+      },
+      "dup1": {
+        "anyMotion": false,
+        "climateState": "off",
+        "lightsOn": 0,
+        "lightsTotal": 1,
+        "mediaPlaying": false,
+        "temperature": 17.5
+      },
+      "dup2": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 0,
+        "mediaPlaying": false
+      },
+      "kueche": {
+        "anyMotion": false,
+        "climateState": "heating",
+        "lightsOn": 1,
+        "lightsTotal": 2,
+        "mediaPlaying": false,
+        "temperature": 21.5
+      },
+      "leer": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 0,
+        "mediaPlaying": false
+      },
+      "zebra": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 0,
+        "mediaPlaying": false
+      },
+      "zebra2": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 0,
+        "mediaPlaying": false
+      }
+    }
+  },
+  "demo": {
+    "domainOrders": {
+      "bathroom": [
+        "light",
+        "sensor",
+        "humidifier"
+      ],
+      "bedroom": [
+        "light",
+        "climate",
+        "cover",
+        "sensor",
+        "media_player",
+        "binary_sensor",
+        "scene"
+      ],
+      "garage": [
+        "cover"
+      ],
+      "hallway": [
+        "light",
+        "binary_sensor",
+        "lock",
+        "camera",
+        "scene"
+      ],
+      "kitchen": [
+        "light",
+        "sensor",
+        "switch",
+        "media_player",
+        "scene"
+      ],
+      "living_room": [
+        "light",
+        "climate",
+        "media_player",
+        "sensor",
+        "binary_sensor",
+        "scene"
+      ],
+      "office": [
+        "light",
+        "sensor",
+        "switch",
+        "scene"
+      ]
+    },
+    "rooms": [
+      {
+        "domains": {
+          "humidifier": [
+            "humidifier.bathroom_dehumidifier"
+          ],
+          "light": [
+            "light.bathroom_ceiling",
+            "light.bathroom_mirror"
+          ],
+          "sensor": [
+            "sensor.bathroom_temperature",
+            "sensor.bathroom_humidity"
+          ]
+        },
+        "entityIds": [
+          "light.bathroom_ceiling",
+          "light.bathroom_mirror",
+          "sensor.bathroom_temperature",
+          "sensor.bathroom_humidity",
+          "humidifier.bathroom_dehumidifier"
+        ],
+        "icon": "mdi:shower",
+        "id": "bathroom",
+        "name": "Bathroom",
+        "picture": null
+      },
+      {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.bedroom_window"
+          ],
+          "climate": [
+            "climate.bedroom"
+          ],
+          "cover": [
+            "cover.bedroom_blinds"
+          ],
+          "light": [
+            "light.bedroom_ceiling",
+            "light.bedroom_nightstand"
+          ],
+          "media_player": [
+            "media_player.bedroom_speaker"
+          ],
+          "scene": [
+            "scene.bedroom_sleep",
+            "scene.bedroom_wake"
+          ],
+          "sensor": [
+            "sensor.bedroom_temperature",
+            "sensor.bedroom_humidity"
+          ]
+        },
+        "entityIds": [
+          "light.bedroom_ceiling",
+          "light.bedroom_nightstand",
+          "climate.bedroom",
+          "cover.bedroom_blinds",
+          "sensor.bedroom_temperature",
+          "sensor.bedroom_humidity",
+          "media_player.bedroom_speaker",
+          "binary_sensor.bedroom_window",
+          "scene.bedroom_sleep",
+          "scene.bedroom_wake",
+          "sensor.bedroom_sensor_battery"
+        ],
+        "icon": "mdi:bed",
+        "id": "bedroom",
+        "name": "Bedroom",
+        "picture": null
+      },
+      {
+        "domains": {
+          "cover": [
+            "cover.garage_door"
+          ]
+        },
+        "entityIds": [
+          "cover.garage_door"
+        ],
+        "icon": "mdi:garage",
+        "id": "garage",
+        "name": "Garage",
+        "picture": null
+      },
+      {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.hallway_motion",
+            "binary_sensor.front_door"
+          ],
+          "camera": [
+            "camera.hallway"
+          ],
+          "light": [
+            "light.hallway"
+          ],
+          "lock": [
+            "lock.front_door"
+          ],
+          "scene": [
+            "scene.hallway_away",
+            "scene.hallway_welcome"
+          ]
+        },
+        "entityIds": [
+          "light.hallway",
+          "binary_sensor.hallway_motion",
+          "binary_sensor.front_door",
+          "lock.front_door",
+          "camera.hallway",
+          "scene.hallway_away",
+          "scene.hallway_welcome",
+          "sensor.front_door_lock_battery",
+          "sensor.hallway_motion_battery"
+        ],
+        "icon": "mdi:door",
+        "id": "hallway",
+        "name": "Hallway",
+        "picture": null
+      },
+      {
+        "domains": {
+          "light": [
+            "light.kitchen_ceiling",
+            "light.kitchen_counter"
+          ],
+          "media_player": [
+            "media_player.kitchen_speaker"
+          ],
+          "scene": [
+            "scene.kitchen_cooking",
+            "scene.kitchen_morning"
+          ],
+          "sensor": [
+            "sensor.kitchen_temperature",
+            "sensor.kitchen_humidity"
+          ],
+          "switch": [
+            "switch.coffee_machine"
+          ]
+        },
+        "entityIds": [
+          "light.kitchen_ceiling",
+          "light.kitchen_counter",
+          "sensor.kitchen_temperature",
+          "sensor.kitchen_humidity",
+          "switch.coffee_machine",
+          "media_player.kitchen_speaker",
+          "scene.kitchen_cooking",
+          "scene.kitchen_morning"
+        ],
+        "icon": "mdi:silverware-fork-knife",
+        "id": "kitchen",
+        "name": "Kitchen",
+        "picture": null
+      },
+      {
+        "domains": {
+          "binary_sensor": [
+            "binary_sensor.living_room_motion"
+          ],
+          "climate": [
+            "climate.living_room"
+          ],
+          "light": [
+            "light.living_room_ceiling",
+            "light.living_room_floor_lamp",
+            "light.living_room_shelf"
+          ],
+          "media_player": [
+            "media_player.living_room_tv"
+          ],
+          "scene": [
+            "scene.living_room_movie",
+            "scene.living_room_bright",
+            "scene.living_room_relax"
+          ],
+          "sensor": [
+            "sensor.living_room_temperature",
+            "sensor.living_room_humidity"
+          ]
+        },
+        "entityIds": [
+          "light.living_room_ceiling",
+          "light.living_room_floor_lamp",
+          "light.living_room_shelf",
+          "climate.living_room",
+          "media_player.living_room_tv",
+          "sensor.living_room_temperature",
+          "sensor.living_room_humidity",
+          "binary_sensor.living_room_motion",
+          "scene.living_room_movie",
+          "scene.living_room_bright",
+          "scene.living_room_relax",
+          "automation.advanced_heating_living_room",
+          "schedule.heating_living_room",
+          "input_number.heating_plan_living_room_comfort",
+          "input_number.heating_plan_living_room_eco"
+        ],
+        "icon": "mdi:sofa",
+        "id": "living_room",
+        "name": "Living Room",
+        "picture": null
+      },
+      {
+        "domains": {
+          "light": [
+            "light.office_ceiling",
+            "light.office_desk"
+          ],
+          "scene": [
+            "scene.office_focus",
+            "scene.office_meeting"
+          ],
+          "sensor": [
+            "sensor.office_temperature",
+            "sensor.office_humidity"
+          ],
+          "switch": [
+            "switch.office_desk"
+          ]
+        },
+        "entityIds": [
+          "light.office_ceiling",
+          "light.office_desk",
+          "sensor.office_temperature",
+          "sensor.office_humidity",
+          "switch.office_desk",
+          "scene.office_focus",
+          "scene.office_meeting"
+        ],
+        "icon": "mdi:desk",
+        "id": "office",
+        "name": "Office",
+        "picture": null
+      }
+    ],
+    "summaries": {
+      "bathroom": {
+        "anyMotion": false,
+        "humidity": 70,
+        "lightsOn": 0,
+        "lightsTotal": 2,
+        "mediaPlaying": false,
+        "temperature": 20.5
+      },
+      "bedroom": {
+        "anyMotion": false,
+        "climateState": "idle",
+        "humidity": 55,
+        "lightsOn": 1,
+        "lightsTotal": 2,
+        "mediaPlaying": false,
+        "temperature": 19.8
+      },
+      "garage": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 0,
+        "mediaPlaying": false
+      },
+      "hallway": {
+        "anyMotion": false,
+        "lightsOn": 0,
+        "lightsTotal": 1,
+        "mediaPlaying": false
+      },
+      "kitchen": {
+        "anyMotion": false,
+        "humidity": 52,
+        "lightsOn": 1,
+        "lightsTotal": 2,
+        "mediaPlaying": false,
+        "temperature": 22.1
+      },
+      "living_room": {
+        "anyMotion": true,
+        "climateState": "heating",
+        "humidity": 48,
+        "lightsOn": 2,
+        "lightsTotal": 3,
+        "mediaPlaying": true,
+        "temperature": 21.4
+      },
+      "office": {
+        "anyMotion": false,
+        "humidity": 45,
+        "lightsOn": 2,
+        "lightsTotal": 2,
+        "mediaPlaying": false,
+        "temperature": 23
+      }
+    }
+  }
+}

@@ -1,0 +1,522 @@
+{
+  "canonical": [
+    "sofa",
+    "utensils",
+    "bed",
+    "baby",
+    "bath",
+    "monitor",
+    "car",
+    "door-open",
+    "washing-machine",
+    "trees",
+    "box",
+    "triangle",
+    "dumbbell",
+    "shirt",
+    "waves",
+    "clapperboard",
+    "gamepad-2",
+    "house",
+    "grid-2x2",
+    "droplets",
+    "flame"
+  ],
+  "iconByKind": {
+    "attic": "triangle",
+    "bathroom": "bath",
+    "bedroom": "bed",
+    "closet": "shirt",
+    "garage": "car",
+    "gym": "dumbbell",
+    "hallway": "door-open",
+    "kids": "baby",
+    "kitchen": "utensils",
+    "laundry": "washing-machine",
+    "living": "sofa",
+    "media": "clapperboard",
+    "office": "monitor",
+    "other": "house",
+    "outdoor": "trees",
+    "play": "gamepad-2",
+    "pool": "waves",
+    "storage": "box"
+  },
+  "keywords": [
+    {
+      "keyword": "living",
+      "kind": "living"
+    },
+    {
+      "keyword": "lounge",
+      "kind": "living"
+    },
+    {
+      "keyword": "family",
+      "kind": "living"
+    },
+    {
+      "keyword": "sitting",
+      "kind": "living"
+    },
+    {
+      "keyword": "kitchen",
+      "kind": "kitchen"
+    },
+    {
+      "keyword": "dining",
+      "kind": "kitchen"
+    },
+    {
+      "keyword": "pantry",
+      "kind": "storage"
+    },
+    {
+      "keyword": "master",
+      "kind": "bedroom"
+    },
+    {
+      "keyword": "bedroom",
+      "kind": "bedroom"
+    },
+    {
+      "keyword": "guest",
+      "kind": "bedroom"
+    },
+    {
+      "keyword": "sleep",
+      "kind": "bedroom"
+    },
+    {
+      "keyword": "nursery",
+      "kind": "kids"
+    },
+    {
+      "keyword": "child",
+      "kind": "kids"
+    },
+    {
+      "keyword": "kid",
+      "kind": "kids"
+    },
+    {
+      "keyword": "baby",
+      "kind": "kids"
+    },
+    {
+      "keyword": "bath",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "shower",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "toilet",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "wc",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "ensuite",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "office",
+      "kind": "office"
+    },
+    {
+      "keyword": "study",
+      "kind": "office"
+    },
+    {
+      "keyword": "work",
+      "kind": "office"
+    },
+    {
+      "keyword": "desk",
+      "kind": "office"
+    },
+    {
+      "keyword": "garage",
+      "kind": "garage"
+    },
+    {
+      "keyword": "hall",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "entry",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "foyer",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "corridor",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "landing",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "stair",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "laundry",
+      "kind": "laundry"
+    },
+    {
+      "keyword": "utility",
+      "kind": "laundry"
+    },
+    {
+      "keyword": "mud",
+      "kind": "laundry"
+    },
+    {
+      "keyword": "garden",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "yard",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "patio",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "balcony",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "terrace",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "outdoor",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "outside",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "porch",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "deck",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "basement",
+      "kind": "storage"
+    },
+    {
+      "keyword": "cellar",
+      "kind": "storage"
+    },
+    {
+      "keyword": "storage",
+      "kind": "storage"
+    },
+    {
+      "keyword": "shed",
+      "kind": "storage"
+    },
+    {
+      "keyword": "attic",
+      "kind": "attic"
+    },
+    {
+      "keyword": "loft",
+      "kind": "attic"
+    },
+    {
+      "keyword": "gym",
+      "kind": "gym"
+    },
+    {
+      "keyword": "fitness",
+      "kind": "gym"
+    },
+    {
+      "keyword": "exercise",
+      "kind": "gym"
+    },
+    {
+      "keyword": "closet",
+      "kind": "closet"
+    },
+    {
+      "keyword": "wardrobe",
+      "kind": "closet"
+    },
+    {
+      "keyword": "dressing",
+      "kind": "closet"
+    },
+    {
+      "keyword": "pool",
+      "kind": "pool"
+    },
+    {
+      "keyword": "theater",
+      "kind": "media"
+    },
+    {
+      "keyword": "theatre",
+      "kind": "media"
+    },
+    {
+      "keyword": "cinema",
+      "kind": "media"
+    },
+    {
+      "keyword": "media",
+      "kind": "media"
+    },
+    {
+      "keyword": "play",
+      "kind": "play"
+    },
+    {
+      "keyword": "game",
+      "kind": "play"
+    },
+    {
+      "keyword": "enfant",
+      "kind": "kids"
+    },
+    {
+      "keyword": "bebe",
+      "kind": "kids"
+    },
+    {
+      "keyword": "nurserie",
+      "kind": "kids"
+    },
+    {
+      "keyword": "chambre",
+      "kind": "bedroom"
+    },
+    {
+      "keyword": "parentale",
+      "kind": "bedroom"
+    },
+    {
+      "keyword": "salon",
+      "kind": "living"
+    },
+    {
+      "keyword": "sejour",
+      "kind": "living"
+    },
+    {
+      "keyword": "cuisine",
+      "kind": "kitchen"
+    },
+    {
+      "keyword": "salle a manger",
+      "kind": "kitchen"
+    },
+    {
+      "keyword": "garde manger",
+      "kind": "storage"
+    },
+    {
+      "keyword": "salle de bain",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "salle d eau",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "sdb",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "douche",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "toilette",
+      "kind": "bathroom"
+    },
+    {
+      "keyword": "bureau",
+      "kind": "office"
+    },
+    {
+      "keyword": "entree",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "couloir",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "palier",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "vestibule",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "escalier",
+      "kind": "hallway"
+    },
+    {
+      "keyword": "buanderie",
+      "kind": "laundry"
+    },
+    {
+      "keyword": "lingerie",
+      "kind": "laundry"
+    },
+    {
+      "keyword": "laverie",
+      "kind": "laundry"
+    },
+    {
+      "keyword": "jardin",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "terrasse",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "balcon",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "veranda",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "exterieur",
+      "kind": "outdoor"
+    },
+    {
+      "keyword": "sous sol",
+      "kind": "storage"
+    },
+    {
+      "keyword": "cave",
+      "kind": "storage"
+    },
+    {
+      "keyword": "cellier",
+      "kind": "storage"
+    },
+    {
+      "keyword": "debarras",
+      "kind": "storage"
+    },
+    {
+      "keyword": "rangement",
+      "kind": "storage"
+    },
+    {
+      "keyword": "remise",
+      "kind": "storage"
+    },
+    {
+      "keyword": "grenier",
+      "kind": "attic"
+    },
+    {
+      "keyword": "combles",
+      "kind": "attic"
+    },
+    {
+      "keyword": "mansarde",
+      "kind": "attic"
+    },
+    {
+      "keyword": "salle de sport",
+      "kind": "gym"
+    },
+    {
+      "keyword": "musculation",
+      "kind": "gym"
+    },
+    {
+      "keyword": "placard",
+      "kind": "closet"
+    },
+    {
+      "keyword": "penderie",
+      "kind": "closet"
+    },
+    {
+      "keyword": "piscine",
+      "kind": "pool"
+    },
+    {
+      "keyword": "jeux",
+      "kind": "play"
+    }
+  ],
+  "mdi": {
+    "attic": "triangle",
+    "baby": "baby",
+    "baby-carriage": "baby",
+    "baby-face": "baby",
+    "basement": "box",
+    "bathtub": "bath",
+    "bed": "bed",
+    "bed-double": "bed",
+    "bed-single": "bed",
+    "bookshelf": "box",
+    "car": "car",
+    "car-side": "car",
+    "coat-rack": "shirt",
+    "couch": "sofa",
+    "desk": "monitor",
+    "desk-lamp": "monitor",
+    "desktop-mac": "monitor",
+    "door": "door-open",
+    "door-open": "door-open",
+    "dumbbell": "dumbbell",
+    "flower": "trees",
+    "flower-outline": "trees",
+    "forest": "trees",
+    "fridge": "utensils",
+    "fridge-outline": "utensils",
+    "garage": "car",
+    "garage-open": "car",
+    "garage-variant": "car",
+    "hanger": "shirt",
+    "home": "house",
+    "home-outline": "house",
+    "monitor": "monitor",
+    "pine-tree": "trees",
+    "pool": "waves",
+    "shower": "bath",
+    "shower-head": "bath",
+    "silverware": "utensils",
+    "silverware-fork-knife": "utensils",
+    "sofa": "sofa",
+    "sofa-single": "sofa",
+    "stairs": "door-open",
+    "stove": "utensils",
+    "television": "monitor",
+    "television-play": "monitor",
+    "toilet": "bath",
+    "tree": "trees",
+    "wardrobe": "shirt",
+    "washing-machine": "washing-machine",
+    "weight-lifter": "dumbbell"
+  }
+}
