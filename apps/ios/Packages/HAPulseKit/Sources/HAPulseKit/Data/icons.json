@@ -669,6 +669,18 @@
       "M19,20H17V11H7V20H5V9L12,5L19,9V20M8,12H16V14H8V12M8,15H16V17H8V15M16,18V20H8V18H16Z"
     ]
   },
+  "mdi.mdiGarageAlert": {
+    "kind": "fill",
+    "paths": [
+      "M17,20H15V11H5V20H3V9L10,5L17,9V20M6,12H14V14H6V12M6,15H14V17H6V15M19,15V10H21V15H19M19,19V17H21V19H19Z"
+    ]
+  },
+  "mdi.mdiGarageOpen": {
+    "kind": "fill",
+    "paths": [
+      "M19,20H17V11H7V20H5V9L12,5L19,9V20M8,12H16V14H8V12Z"
+    ]
+  },
   "mdi.mdiLightbulb": {
     "kind": "fill",
     "paths": [

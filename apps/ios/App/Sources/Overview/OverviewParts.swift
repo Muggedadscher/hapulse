@@ -12,7 +12,8 @@ extension HomeSession {
 
 /// The summary chips of the overview (web `SummaryChips` in Glas): the user's chips in the user's order, each with
 /// its count and state; the colour tells the kind (lights yellow, media blue, pool teal, armed alarm green), a warning
-/// or danger also the weight.
+/// or danger also the weight. Their windows (people, lights, doors …) come with a later stage; until then a chip
+/// does nothing on a tap.
 struct SummaryChipsRow: View {
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
@@ -66,8 +67,8 @@ struct SummaryChipsRow: View {
                     c.poolRunning ? .active(.teal) : .normal)
         case .garage:
             let g = c.garages
-            if g.open > 0 { return ("mdi.mdiGarage", count("garage.openCount", g.open), .danger) }
-            if g.unavailable > 0 { return ("mdi.mdiGarage", count("garage.unavailableCount", g.unavailable), .alert) }
+            if g.open > 0 { return ("mdi.mdiGarageOpen", count("garage.openCount", g.open), .danger) }
+            if g.unavailable > 0 { return ("mdi.mdiGarageAlert", count("garage.unavailableCount", g.unavailable), .alert) }
             return ("mdi.mdiGarage", l.t("home.summaryChips.allClosed"), .normal)
         case .locks:
             let s = c.locks
@@ -87,13 +88,14 @@ struct HintsSection: View {
 
     var body: some View {
         TimelineView(.everyMinute) { context in
+            let now = max(context.date, Date.now)
             let l = model.localizer
             let locale = Locale(identifier: l.locale.rawValue)
             let visible = session.visibleEntities
             let list = visible.keys.sorted().compactMap { visible[$0] }
-            let waste = Waste.bins(list, now: context.date, locale: locale)
+            let waste = Waste.bins(list, now: now, locale: locale)
             // cameras (Sentinel) and missing heating plans (admins) come with their stages
-            let hints = Hints.collect(list, now: context.date, waste: waste, locale: locale).hints
+            let hints = Hints.collect(list, now: now, waste: waste, locale: locale).hints
             if !hints.isEmpty {
                 HintsCard(hints: hints)
             }
@@ -114,11 +116,11 @@ struct HintsCard: View {
             HPCardHead(l.t("hints.title"), icon: "lucide.bell")
             HPListGroup(separatorInset: 60) {
                 ForEach(hints) { h in
-                    let text = text(h, l)
+                    let words = self.text(h, l)
                     Button {
                         act(h)
                     } label: {
-                        HPListRow(text.title, subtitle: text.sub.isEmpty ? nil : text.sub, icon: Self.icon(h.kind),
+                        HPListRow(words.title, subtitle: words.sub.isEmpty ? nil : words.sub, icon: Self.icon(h.kind),
                                   tone: Self.tone(h.severity), minHeight: 60) {
                             HPIcon("lucide.chevron-right", size: 16, strokeWidth: 2).foregroundStyle(.glas(.label3))
                         }
@@ -137,7 +139,8 @@ struct HintsCard: View {
         case .alarmTriggered, .alarmPending: "lucide.shield-alert"
         case .leak: "lucide.droplets"
         case .smoke: "lucide.flame"
-        case .garageOpen, .garageFault: "mdi.mdiGarage"
+        case .garageOpen: "mdi.mdiGarageOpen"
+        case .garageFault: "mdi.mdiGarageAlert"
         case .lockOpen: "lucide.lock-open"
         case .lockFault: "lucide.lock"
         case .windowOpen: "lucide.grid-2x2"
@@ -177,7 +180,7 @@ struct HintsCard: View {
     private func text(_ h: Hints.Hint, _ l: Localizer) -> (title: String, sub: String) {
         var roomOf: [String: String] = [:]
         for room in session.rooms {
-            for ids in room.domains.values { for id in ids { roomOf[id] = room.name } }
+            for id in room.entityIds { roomOf[id] = room.name }
         }
         func name(_ id: String) -> String { session.entities[id]?.friendlyName ?? String(id.split(separator: ".").last ?? Substring(id)) }
         let places = Self.nameList(h.entityIds.map { roomOf[$0] ?? name($0) }, l)
@@ -190,9 +193,10 @@ struct HintsCard: View {
             return (l.t("hints.alarm", ["state": .text(state)]), name(id))
         case .leak: return (l.t("hints.leak"), places)
         case .smoke: return (l.t("hints.smoke"), places)
-        case .garageOpen: return (count("hints.garageOpen"), l.t("hints.tapToClose"))
+        // "Tap to close/lock" comes with the garage and locks windows; until then a tap opens the detail
+        case .garageOpen: return (count("hints.garageOpen"), names)
         case .garageFault: return (count("hints.garageFault"), names)
-        case .lockOpen: return (count("hints.lockOpen"), l.t("hints.tapToLock"))
+        case .lockOpen: return (count("hints.lockOpen"), names)
         case .lockFault: return (count("hints.lockFault"), names)
         case .windowOpen: return (count("hints.windowOpen"), places)
         case .doorOpen: return (count("hints.doorOpen"), places)
