@@ -125,3 +125,29 @@ extension ChipWindows {
         rooms.first { $0.entityIds.contains(id) }?.name
     }
 }
+
+extension ChipWindows {
+    /// The garage window (`GarageModal.tsx`): every visible garage door and gate, open (or moving) ones first, then by
+    /// name in the UI language (the web: `localeCompare` in the browser language).
+    public static func garages(_ entities: [String: HAEntity], hidden: [String], locale: Locale) -> [String] {
+        let hiddenSet = Set(hidden)
+        let list = entities.values.filter { Garage.isGarageDoor($0) && !hiddenSet.contains($0.entityId) }
+            .sorted { $0.entityId < $1.entityId }
+        func name(_ e: HAEntity) -> String { e.friendlyName ?? e.entityId }
+        return list.enumerated().sorted { a, b in
+            let oa = Garage.isOpen(a.element.state), ob = Garage.isOpen(b.element.state)
+            if oa != ob { return oa }
+            switch JSCompare.locale(name(a.element), name(b.element), locale) {
+            case .orderedAscending: return true
+            case .orderedDescending: return false
+            case .orderedSame: return a.offset < b.offset
+            }
+        }.map(\.element.entityId)
+    }
+
+    /// An MDI name as the web writes it ("mdi:gate-open") as the app's icon name ("mdi.mdiGateOpen").
+    public static func appIcon(mdi name: String) -> String {
+        let parts = name.replacingOccurrences(of: "mdi:", with: "").split(separator: "-")
+        return "mdi.mdi" + parts.map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined()
+    }
+}

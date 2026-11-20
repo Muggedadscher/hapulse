@@ -15,15 +15,16 @@ extension HomeSession {
     }
 }
 
-/// The chips whose window exists so far (stage 5 part 2): lights, doors and windows, locks. The others follow.
+/// The chips whose window exists so far (stage 5 part 2): lights, doors and windows, locks, garage. The others follow.
 extension SummaryChips.Chip {
-    var hasWindow: Bool { [.lights, .doors, .locks].contains(self) }
+    var hasWindow: Bool { [.lights, .doors, .locks, .garage].contains(self) }
 
     /// The window's head: icon and title key.
     var windowHead: (icon: String, title: String) {
         switch self {
         case .lights: ("lucide.lightbulb", "home.chipmodals.lights.title")
         case .locks: ("lucide.lock", "security.locks.title")
+        case .garage: ("mdi.mdiGarage", "garage.title")
         default: ("lucide.door-open", "home.chipmodals.doors.title")
         }
     }
@@ -51,6 +52,7 @@ struct ChipWindowSheet: View {
                     switch chip {
                     case .lights: LightsWindowBody()
                     case .locks: LocksWindowBody()
+                    case .garage: GarageWindowBody()
                     default: DoorsWindowBody()
                     }
                 }
@@ -343,6 +345,121 @@ private struct LocksWindowBody: View {
                 if let again {
                     try? await Task.sleep(for: .milliseconds(400))
                     ask(again)
+                }
+            }
+        }
+    }
+}
+
+/// Every visible garage door and gate, open ones first (web `GarageModal` with `GarageList` in Glas): circle with the
+/// door's status icon (closed green, open or moving red, unreachable amber), name, room, the state in its colour on
+/// the right, then a row of buttons: Stop (only while it moves and when it can), Close, Open. Closing runs at once,
+/// opening always asks; only a door that can act right now gets the call. Swiping a row to close is not ported. A
+/// refused opening asks again (the web keeps its dialog open).
+private struct GarageWindowBody: View {
+    @Environment(AppModel.self) private var model
+    @Environment(HomeSession.self) private var session
+    /// The door to open; kept while the alert closes.
+    @State private var pending: HAEntity?
+    @State private var asking = false
+
+    var body: some View {
+        let l = model.localizer
+        let entities = session.entities.entities
+        let ids = ChipWindows.garages(entities, hidden: session.settings.hiddenEntities,
+                                      locale: Locale(identifier: l.locale.rawValue))
+        VStack(alignment: .leading, spacing: 10) {
+            if ids.isEmpty {
+                ChipWindowEmpty(icon: "mdi.mdiGarage", title: l.t("garage.emptyTitle"), text: l.t("garage.emptyDescription"))
+            } else {
+                HPListGroup(separatorInset: 66) {
+                    ForEach(ids, id: \.self) { id in
+                        if let e = entities[id] { row(e, l) }
+                    }
+                }
+            }
+        }
+        .alert(l.t("garage.open"), isPresented: $asking, presenting: pending) { door in
+            Button(l.t("garage.cancel"), role: .cancel) {}
+            Button(l.t("garage.open"), role: .destructive) { send(door, "open_cover", askAgain: true) }
+        } message: { door in
+            Text(l.t("garage.confirmOpenOne", ["name": .text(door.friendlyName ?? door.entityId)]))
+        }
+    }
+
+    private func row(_ e: HAEntity, _ l: Localizer) -> some View {
+        let status = Garage.status(e.state)
+        let (soft, ink): (AnyShapeStyle, AnyShapeStyle) = switch status {
+        case .closed: (AnyShapeStyle(.glas(.greenSoft)), AnyShapeStyle(.glas(.greenInk)))
+        case .unavailable: (AnyShapeStyle(.glas(.warnSoft)), AnyShapeStyle(.glas(.warnInk)))
+        case .open, .moving: (AnyShapeStyle(.glas(.redSoft)), AnyShapeStyle(.glas(.redInk)))
+        }
+        let name = e.friendlyName ?? e.entityId
+        let room = ChipWindows.roomName(e.entityId, rooms: session.rooms)
+        let state = EntityDisplay.label(l, session.stateTranslations, domain: "cover", state: e.state,
+                                        deviceClass: e.attributes["device_class"]?.string)
+        return VStack(spacing: 10) {
+            HStack(spacing: 12) {
+                HPIcon(ChipWindows.appIcon(mdi: Garage.mdiIcon(e)), size: 18, strokeWidth: 1.75)
+                    .foregroundStyle(ink)
+                    .frame(width: 40, height: 40)
+                    .background(soft, in: Circle())
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(name).hpText(.body, weight: .semibold).foregroundStyle(.glas(.label)).lineLimit(2)
+                    if let room {
+                        Text(room).hpText(.footnote).foregroundStyle(.glas(.label2)).lineLimit(1)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(state).hpText(.subhead, weight: .semibold).foregroundStyle(ink)
+            }
+            .accessibilityElement(children: .combine)
+            HStack(spacing: 8) {
+                if Garage.canStop(e) {
+                    button("lucide.square", l.t("garage.stop"), name, enabled: true) { send(e, "stop_cover") }
+                }
+                button("lucide.arrow-down", l.t("garage.close"), name, enabled: Garage.canAct(e, .close)) {
+                    send(e, "close_cover")
+                }
+                button("lucide.arrow-up", l.t("garage.open"), name, enabled: Garage.canAct(e, .open)) {
+                    pending = e
+                    asking = true
+                }
+            }
+        }
+        .padding(.vertical, 12)
+        .padding(.leading, 14)
+        .padding(.trailing, 12)
+    }
+
+    private func button(_ icon: String, _ title: String, _ name: String, enabled: Bool,
+                        action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                HPIcon(icon, size: 15, strokeWidth: 1.75)
+                Text(title).hpText(.subhead, weight: .semibold)
+            }
+            .foregroundStyle(.glas(.label))
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(.glas(.fill), in: Capsule())
+        }
+        .buttonStyle(HPPressButtonStyle())
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
+        .accessibilityLabel(Text(verbatim: "\(title): \(name)"))
+    }
+
+    /// Sends a cover service to one door; a refused opening asks again once the alert has closed.
+    private func send(_ e: HAEntity, _ service: String, askAgain: Bool = false) {
+        let client = session.client
+        Task { @MainActor in
+            do { _ = try await client.callService("cover", service, target: ["entity_id": .string(e.entityId)]) } catch {
+                Log("shell").error("cover.\(service) \(e.entityId) failed: \(error)")
+                if askAgain {
+                    try? await Task.sleep(for: .milliseconds(400))
+                    pending = e
+                    asking = true
                 }
             }
         }

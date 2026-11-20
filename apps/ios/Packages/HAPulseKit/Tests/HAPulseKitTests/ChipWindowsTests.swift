@@ -90,3 +90,31 @@ import Testing
         #expect(ChipWindows.roomName("lock.b", rooms: [room]) == nil)
     }
 }
+
+/// The garage window (`GarageModal.tsx`).
+@Suite struct GarageWindowTests {
+    static func door(_ id: String, _ state: String, name: String, dc: String = "garage") -> HAEntity {
+        ChipWindowsTests.e(id, state, ["friendly_name": .string(name), "device_class": .string(dc)])
+    }
+
+    @Test func openFirstThenByName() {
+        let list = [Self.door("cover.a", "closed", name: "Zufahrt", dc: "gate"), Self.door("cover.b", "closing", name: "Werkstatt"),
+                    Self.door("cover.c", "closed", name: "Carport"), Self.door("cover.d", "unavailable", name: "Alt"),
+                    Self.door("cover.e", "open", name: "Hidden"), Self.door("cover.f", "open", name: "Rollo", dc: "shutter")]
+        let entities = Dictionary(uniqueKeysWithValues: list.map { ($0.entityId, $0) })
+        #expect(ChipWindows.garages(entities, hidden: ["cover.e"], locale: Locale(identifier: "de"))
+            == ["cover.b", "cover.d", "cover.c", "cover.a"])
+    }
+
+    @Test func iconNames() {
+        #expect(ChipWindows.appIcon(mdi: "mdi:gate-open") == "mdi.mdiGateOpen")
+        #expect(ChipWindows.appIcon(mdi: "mdi:garage") == "mdi.mdiGarage")
+        #expect(ChipWindows.appIcon(mdi: "mdi:garage-alert") == "mdi.mdiGarageAlert")
+        for s in ["closed", "open", "unavailable"] {
+            for dc in ["garage", "gate"] {
+                let name = ChipWindows.appIcon(mdi: Garage.mdiIcon(Self.door("cover.x", s, name: "x", dc: dc)))
+                #expect(IconLibrary.icon(name) != nil, "\(name) is missing in icons.json")
+            }
+        }
+    }
+}
