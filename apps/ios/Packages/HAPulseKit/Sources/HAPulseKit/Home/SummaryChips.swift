@@ -3,8 +3,9 @@ import Foundation
 /// The summary chips of the home page (port of `SummaryChipsBar.tsx`/`SummaryChips.tsx`): which chips show and in
 /// which order. The counts are `ChipCounts`, over the entities without the hidden ones.
 public enum SummaryChips {
-    public enum Chip: String, CaseIterable, Sendable {
+    public enum Chip: String, CaseIterable, Sendable, Identifiable {
         case people, lights, doors, alarm, media, pool, garage, locks
+        public var id: String { rawValue }
     }
 
     /// Where the chips' order is stored (`customization.entityOrder[...]`).

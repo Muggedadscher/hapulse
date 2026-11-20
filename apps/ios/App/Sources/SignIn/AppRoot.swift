@@ -12,7 +12,7 @@ struct AppRoot: View {
     @Environment(AppController.self) private var app
 
     /// Scenes that show the frame on the demo home (`signin` and no scene start normally).
-    static let demoScenes: Set<String> = ["demo", "shell", "rooms", "room", "settings", "sheet"]
+    static let demoScenes: Set<String> = ["demo", "shell", "rooms", "room", "settings", "sheet", "chip"]
 
     var body: some View {
         Group {
@@ -95,6 +95,7 @@ struct ShellRoot: View {
             pushSceneRoom()
         case "settings": nav.open(.settings, compact: sizeClass == .compact)
         case "sheet": nav.detailID = ShellDevice.list(session).first { $0.isOn }?.id
+        case "chip": nav.chipWindow = .lights
         default: break
         }
     }

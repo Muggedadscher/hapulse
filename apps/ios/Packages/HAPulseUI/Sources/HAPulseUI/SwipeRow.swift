@@ -45,11 +45,16 @@ public final class HPSwipeGroup {
 
 /// A row that reveals one action when swiped to the left (web `SwipeRow.tsx`): the action runs only on a tap on it,
 /// never by pulling through; a tap on the open row closes it. The action is also offered to VoiceOver as a custom
-/// action, so the row never depends on the gesture.
+/// action, so the row never depends on the gesture. `disabled` keeps the row closed and drops the action (web
+/// `SwipeRow disabled`); `onTap` is the row's own tap, which a tap on the open row replaces by closing it;
+/// `children` is `.contain` for rows with their own buttons.
 public struct HPSwipeRow<Content: View>: View {
     let actionTitle: String
     let tone: HPSwipeTone
     let width: CGFloat
+    let disabled: Bool
+    let children: AccessibilityChildBehavior
+    let onTap: (() -> Void)?
     let onAction: () -> Void
     let content: Content
     @State private var offset: CGFloat = 0
@@ -59,11 +64,15 @@ public struct HPSwipeRow<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var settle: Animation? { reduceMotion ? nil : HPMotion.snappy }
 
-    public init(actionTitle: String, tone: HPSwipeTone = .delete, width: CGFloat = 104, onAction: @escaping () -> Void,
-                @ViewBuilder content: () -> Content) {
+    public init(actionTitle: String, tone: HPSwipeTone = .delete, width: CGFloat = 104, disabled: Bool = false,
+                children: AccessibilityChildBehavior = .combine, onTap: (() -> Void)? = nil,
+                onAction: @escaping () -> Void, @ViewBuilder content: () -> Content) {
         self.actionTitle = actionTitle
         self.tone = tone
         self.width = width
+        self.disabled = disabled
+        self.children = children
+        self.onTap = onTap
         self.onAction = onAction
         self.content = content()
     }
@@ -94,7 +103,7 @@ public struct HPSwipeRow<Content: View>: View {
                 .contentShape(Rectangle())
                 .offset(x: offset)
                 .onTapGesture {
-                    if offset != 0 { withAnimation(settle) { offset = 0 } }
+                    if offset != 0 { withAnimation(settle) { offset = 0 } } else { onTap?() }
                 }
                 // only a sideways drag moves the row; a vertical one keeps scrolling the page
                 .hpHorizontalPan(pan)
@@ -104,11 +113,17 @@ public struct HPSwipeRow<Content: View>: View {
             // another row of the list opened: close this one
             if open != id, offset != 0 { withAnimation(settle) { offset = 0 } }
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityAction(named: actionTitle, onAction)
+        .onChange(of: disabled) { _, off in
+            if off, offset != 0 { withAnimation(settle) { offset = 0 } }
+        }
+        .accessibilityElement(children: children)
+        .accessibilityActions {
+            if !disabled { Button(actionTitle, action: onAction) }
+        }
     }
 
     private func pan(_ v: HPPanValue) {
+        guard !disabled else { start = nil; return }
         switch v.phase {
         case .changed:
             let base = start ?? offset

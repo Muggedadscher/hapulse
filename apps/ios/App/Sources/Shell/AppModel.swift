@@ -59,6 +59,8 @@ final class WindowNav {
     var roomsPath: [String] = []
     /// The entity whose detail is open (inspector on iPad, sheet on iPhone).
     var detailID: String?
+    /// The summary chip whose window is open (a sheet over the overview).
+    var chipWindow: SummaryChips.Chip?
 
     /// Opens a page: as its tab where it is one, otherwise pushed in "More" (compact width).
     func open(_ page: NavPage, compact: Bool) {
