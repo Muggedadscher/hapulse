@@ -310,7 +310,7 @@ private struct LocksWindowBody: View {
             .buttonStyle(HPPressButtonStyle())
             .disabled(busy)
             .opacity(busy ? 0.4 : 1)
-            .accessibilityLabel("\(l.t(locked ? "security.locks.unlock" : "security.locks.lock")), \(name)")
+            .accessibilityLabel(Text(verbatim: "\(l.t(locked ? "security.locks.unlock" : "security.locks.lock")), \(name)"))
         }
         .padding(.vertical, 12)
         .padding(.leading, 14)
@@ -339,7 +339,11 @@ private struct LocksWindowBody: View {
         Task { @MainActor in
             do { _ = try await client.callService("lock", service.rawValue, data: data, target: ["entity_id": .string(e.entityId)]) } catch {
                 Log("shell").error("lock.\(service.rawValue) \(e.entityId) failed: \(error)")
-                if let again { ask(again) }
+                // a quick refusal can land while the alert still closes; wait for that first
+                if let again {
+                    try? await Task.sleep(for: .milliseconds(400))
+                    ask(again)
+                }
             }
         }
     }
