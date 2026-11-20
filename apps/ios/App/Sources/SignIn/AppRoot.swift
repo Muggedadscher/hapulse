@@ -2,45 +2,82 @@ import SwiftUI
 import HAPulseKit
 import HAPulseUI
 
-/// The real app: start → sign-in → connected (or demo) session. The decisions live in `AppController`
-/// (HAPulseKit, tested on Linux); this file only renders them.
+/// The real app: start → sign-in → the frame on the connected (or demo) session. The decisions live in
+/// `AppController` (HAPulseKit, tested on Linux; one for all windows, held by `HAPulseApp`); this file only renders
+/// them.
 struct AppRoot: View {
     let localizer: Localizer
-    /// screenshot scene `demo`: straight into the demo home
-    var startDemo = false
-    @State private var app: AppController
-    @Environment(\.scenePhase) private var scenePhase
+    /// screenshot scene (`-hp-scene`); the frame scenes start straight in the demo home
+    let scene: String?
+    @Environment(AppController.self) private var app
 
-    init(localizer: Localizer, startDemo: Bool = false, controller: AppController? = nil) {
-        self.localizer = localizer
-        self.startDemo = startDemo
-        _app = State(initialValue: controller ?? AppController(auth: HAAuth(store: KeychainTokenStore()), transport: URLSessionHATransport()))
-    }
+    /// Scenes that show the frame on the demo home (`signin` and no scene start normally).
+    static let demoScenes: Set<String> = ["demo", "shell", "rooms", "settings", "sheet"]
 
     var body: some View {
         Group {
             switch app.phase {
             case .starting:
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.glas(.bg))
+                waiting
             case .signedOut:
                 SignInView(app: app, localizer: localizer)
             case .signedIn:
                 if let session = app.session {
-                    SessionView(app: app, session: session, localizer: localizer)
+                    ShellRoot(scene: scene)
+                        .environment(session)
+                        // a new session (sign-in again, demo) starts with a fresh navigation
+                        .id(ObjectIdentifier(session))
+                } else {
+                    // signing out: the session is closed, the sign-in page follows once Home Assistant was told
+                    waiting
                 }
             }
         }
         .task {
-            if startDemo { await app.startDemo() } else { await app.launch() }
+            await app.launchIfNeeded(demo: scene.map(Self.demoScenes.contains) ?? false)
         }
-        .onChange(of: scenePhase) { _, phase in
-            switch phase {
-            case .background: Task { await app.pause() }
-            case .active: Task { await app.resume() }
-            default: break
+    }
+
+    private var waiting: some View {
+        ProgressView()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.glas(.bg))
+    }
+}
+
+/// The frame of one window on the session, with this window's own navigation. A screenshot scene puts it on its
+/// page once the entities are in.
+struct ShellRoot: View {
+    let scene: String?
+    @Environment(HomeSession.self) private var session
+    @Environment(AppModel.self) private var model
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var nav = WindowNav()
+    @State private var sceneApplied = false
+
+    var body: some View {
+        AppShell()
+            .environment(nav)
+            .onChange(of: session.loaded, initial: true) { _, loaded in
+                guard loaded, !sceneApplied else { return }
+                sceneApplied = true
+                applyScene()
             }
+            // Home Assistant's words for states in the UI language, once connected (none in the demo: the app's own
+            // words stand in)
+            .task(id: "\(model.localizer.locale.rawValue)|\(session.loaded)") {
+                guard session.loaded else { return }
+                await session.loadStateTranslations(language: model.localizer.locale.rawValue)
+            }
+    }
+
+    /// Puts the frame on the page a screenshot scene asks for.
+    private func applyScene() {
+        switch scene {
+        case "rooms": nav.open(.rooms, compact: sizeClass == .compact)
+        case "settings": nav.open(.settings, compact: sizeClass == .compact)
+        case "sheet": nav.detailID = ShellDevice.list(session).first { $0.isOn }?.id
+        default: break
         }
     }
 }

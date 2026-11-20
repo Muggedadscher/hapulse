@@ -147,4 +147,28 @@ struct AppControllerTests {
         #expect(!app.isDemo)
         #expect(app.session == nil)
     }
+
+    @Test func launchOnceForAllWindows() async throws {
+        let app = make(FakeHA())
+        await app.launchIfNeeded(demo: true)
+        let first = try #require(app.session)
+        #expect(app.isDemo)
+        // a second window asks again: same session, no second connection
+        await app.launchIfNeeded(demo: true)
+        await app.launchIfNeeded()
+        #expect(app.session === first)
+        #expect(app.phase == .signedIn)
+        await app.signOut()
+    }
+
+    @Test func brokenDemoShowsTheSignInPage() async {
+        struct Broken: Error {}
+        var o = HAClient.Options()
+        o.pingInterval = .seconds(3600)
+        let app = AppController(auth: HAAuth(http: FakeTokenServer(), store: MemoryTokenStore()), transport: FakeHA(), clientOptions: o,
+                                makeDemo: { throw Broken() })
+        await app.launchIfNeeded(demo: true)
+        #expect(app.phase == .signedOut)
+        #expect(app.problem == .generic)
+    }
 }

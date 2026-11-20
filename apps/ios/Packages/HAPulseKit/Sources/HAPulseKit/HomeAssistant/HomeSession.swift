@@ -50,10 +50,13 @@ public final class HomeSession {
         }
     }
 
-    /// The rooms (Home Assistant areas) sorted by name; empty until the registries have arrived.
-    public var rooms: [Room] {
-        guard let registries else { return [] }
-        return Rooms.build(registries, entities: entities)
+    /// The rooms (Home Assistant areas) sorted by name; empty until the registries have arrived. Built once per
+    /// change of the registries or of the set of entities (a room lists only entities with a state), not on every
+    /// state change: views read it on every update.
+    public private(set) var rooms: [Room] = []
+
+    private func rebuildRooms() {
+        rooms = registries.map { Rooms.build($0, entities: entities) } ?? []
     }
 
     public let client: HAClient
@@ -224,7 +227,10 @@ public final class HomeSession {
                     async let list = client.command(["type": "config/entity_registry/list"])
                     let r = Registries(areas: try await areas, devices: try await devices, entities: try await list)
                     guard !Task.isCancelled, let self else { return }
-                    if self.registries != r { self.registries = r }
+                    if self.registries != r {
+                        self.registries = r
+                        self.rebuildRooms()
+                    }
                     self.log.info("registries loaded: \(r.areas.count) areas, \(r.entities.count) entities")
                     return
                 } catch let e as HAError where e.code != HAError.timeout.code && e.code != HAError.notConnected.code {
@@ -248,6 +254,8 @@ public final class HomeSession {
 
     private func applyEntities(_ ev: JSONValue) {
         entities.apply(ev)
+        // added or removed entities can change the rooms; a plain state change cannot
+        if registries != nil, ev["a"] != nil || ev["r"] != nil { rebuildRooms() }
         if !loaded, ev["a"] != nil {
             loaded = true
             log.info("entities loaded: \(entities.entities.count)")
