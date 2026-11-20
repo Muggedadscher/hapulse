@@ -10,28 +10,58 @@ struct RoomBadge {
     /// nil: nothing to say (no status, no light on), like the web's rooms menu
     let subtitle: String?
 
-    /// How loud a status is (`STATUS_TONE`): window and door warn, gate, water and smoke alarm.
-    private static let alarm: Set<String> = ["car", "droplets", "flame"]
-
     @MainActor
     init(_ room: Room, session: HomeSession, l: Localizer) {
+        let look = RoomTileLook(room, session: session)
+        icon = "lucide.\(look.iconName)"
+        tone = look.tone.map(\.hpTone)
+        subtitle = RoomTile.statusText(l, iconName: look.iconName, isStatus: look.isStatus)
+            ?? (look.lightsOn > 0 ? l.t("glas.hero.lightsOn", ["count": .number(Double(look.lightsOn))]) : nil)
+    }
+}
+
+/// What the room tiles and the rooms list read from a room: its symbol (status or own), its visible lights, its
+/// temperature and humidity (the chosen temperature source), its device count.
+struct RoomTileLook {
+    let iconName: String
+    let isStatus: Bool
+    let lights: Int
+    let lightsOn: Int
+    let devices: Int
+    let temperature: Double?
+    let humidity: Double?
+    var tone: RoomTile.Tone? { RoomTile.tone(iconName: iconName, isStatus: isStatus, lightsOn: lightsOn) }
+
+    @MainActor
+    init(_ room: Room, session: HomeSession) {
         let hidden = Set(session.settings.hiddenEntities)
-        let entity: (String) -> HAEntity? = { hidden.contains($0) ? nil : session.entities[$0] }
-        let lightsOn = (room.domains["light"] ?? []).filter { entity($0)?.state == "on" }.count
-        if let status = RoomLook.statusIconName(room, entity: entity) {
-            icon = "lucide.\(status)"
-            tone = Self.alarm.contains(status) ? .red : .orange
-            subtitle = switch status {
-            case "grid-2x2": l.t("hints.windowOpen", ["count": .number(1)])
-            case "door-open": l.t("hints.doorOpen", ["count": .number(1)])
-            case "car": l.t("hints.garageOpen", ["count": .number(1)])
-            case "droplets": l.t("hints.leak")
-            default: l.t("hints.smoke")
-            }
+        let entity: (String) -> HAEntity? = { session.entities[$0] }
+        let visible: (String) -> HAEntity? = { hidden.contains($0) ? nil : session.entities[$0] }
+        if let status = RoomLook.statusIconName(room, entity: visible) {
+            iconName = status
+            isStatus = true
         } else {
-            icon = "lucide.\(RoomLook.iconName(name: room.name, icon: room.icon))"
-            tone = lightsOn > 0 ? .yellow : nil
-            subtitle = lightsOn > 0 ? l.t("glas.hero.lightsOn", ["count": .number(Double(lightsOn))]) : nil
+            iconName = RoomLook.iconName(name: room.name, icon: room.icon)
+            isStatus = false
+        }
+        let visibleLights = (room.domains["light"] ?? []).filter { !hidden.contains($0) }
+        lights = visibleLights.count
+        lightsOn = visibleLights.filter { session.entities[$0]?.state == "on" }.count
+        devices = room.domains.values.reduce(0) { $0 + $1.count }
+        let source = session.settings.customization["roomTemperatureSource"]?[room.id]
+        let summary = RoomClimate.withTemperature(Rooms.summary(room, entity: entity), room, entity: entity, source: source)
+        temperature = summary.temperature
+        humidity = summary.humidity
+    }
+}
+
+extension RoomTile.Tone {
+    /// The circle's colour: yellow while a light is on; a status warns (orange) or alarms (red).
+    var hpTone: HPTone {
+        switch self {
+        case .on: .yellow
+        case .warn: .orange
+        case .alarm: .red
         }
     }
 }
@@ -123,10 +153,23 @@ struct RoomPage: View {
                         if let key = Self.titleKey(section.key) {
                             VStack(alignment: .leading, spacing: 6) {
                                 HPCardHead(l.t(key))
-                                HPTileGrid {
-                                    ForEach(section.ids, id: \.self) { id in
-                                        if let e = session.entities[id] {
-                                            EntityRoomTile(entity: e, roomName: room.name)
+                                if section.key == .scene {
+                                    // scene tiles like the overview's, name only (web room page)
+                                    let scenes = section.ids.compactMap { session.entities[$0] }
+                                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                                        ForEach(Array(scenes.enumerated()), id: \.element.entityId) { i, scene in
+                                            SceneTileCell(scene: scene, index: i,
+                                                          name: RoomSections.stripRoomName(scene.friendlyName ?? scene.entityId, room.name)
+                                                              .replacingOccurrences(of: "_", with: " "),
+                                                          showsSubtitle: false)
+                                        }
+                                    }
+                                } else {
+                                    HPTileGrid {
+                                        ForEach(section.ids, id: \.self) { id in
+                                            if let e = session.entities[id] {
+                                                EntityRoomTile(entity: e, roomName: room.name)
+                                            }
                                         }
                                     }
                                 }

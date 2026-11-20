@@ -19,31 +19,45 @@ struct PageScroll<Content: View>: View {
     }
 }
 
-/// Overview (stage 2 frame; the real overview is stage 5): summary chips and the device tiles of the session.
-/// A tile's circle switches, the rest opens the detail; a long press shows the context menu.
+/// Overview (stage 5): the summary chips, then the sections in the user's order (`HomeSections`). Ported so far:
+/// notices, scenes, rooms; "devices" shows the frame's device tiles until the devices card follows; the other sections
+/// (hero, energy, climate, blinds, security, waste, NVR, activity) come with their stages.
+/// A device tile's circle switches, the rest opens the detail; a long press shows the context menu.
 struct OverviewPage: View {
     @Environment(AppModel.self) private var model
     @Environment(HomeSession.self) private var session
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        let l = model.localizer
-        let devices = ShellDevice.list(session)
-        let on = devices.filter { $0.isOn && $0.domain == "light" }.count
         PageScroll {
             if session.loaded {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        HPStatusChip(icon: "lucide.lightbulb",
-                                     text: on > 0 ? l.t("home.summaryChips.lightsCount", ["count": .number(Double(on))]) : l.t("home.summaryChips.allOff"),
-                                     state: on > 0 ? .active(.yellow) : .normal)
-                    }
-                }
-                .scrollClipDisabled()
-                .accessibilityIdentifier("hp.scene.shell")
-
-                HPTileGrid {
-                    ForEach(devices) { d in
-                        DeviceTileCell(device: d)
+                SummaryChipsRow()
+                    .accessibilityIdentifier("hp.scene.shell")
+                // every minute: hints depend on the time (waste "today", …)
+                TimelineView(.everyMinute) { context in
+                    let now = max(context.date, Date.now)
+                    let hints = HintsSection.hints(session, model.localizer, now: now)
+                    let rooms = RoomsQuickAccess.rooms(session)
+                    let c = session.settings
+                    let sections = HomeSections.visible(order: c.strings("homeSectionOrder"), hidden: c.strings("hiddenSections"),
+                                                        mobileHidden: c.strings("mobileHiddenSections"),
+                                                        compact: sizeClass == .compact, hasRooms: !rooms.isEmpty,
+                                                        hasWaste: false, hasNvr: false, hasHints: !hints.isEmpty)
+                    VStack(alignment: .leading, spacing: 20) {
+                        ForEach(sections, id: \.self) { id in
+                            switch id {
+                            case "hints": HintsCard(hints: hints)
+                            case "scenes": ScenesCard()
+                            case "rooms": RoomsQuickAccess()
+                            case "devices":
+                                HPTileGrid {
+                                    ForEach(ShellDevice.list(session)) { d in
+                                        DeviceTileCell(device: d)
+                                    }
+                                }
+                            default: EmptyView()
+                            }
+                        }
                     }
                 }
             } else {

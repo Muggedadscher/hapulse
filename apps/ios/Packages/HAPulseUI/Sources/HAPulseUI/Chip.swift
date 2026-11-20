@@ -6,9 +6,9 @@ public enum HPChipState: Sendable, Hashable {
     case normal
     /// Something is on: icon (and only the icon) in the tone's ink, e.g. lights yellow.
     case active(HPTone)
-    /// Needs attention: text and icon `warnInk`, count 600.
+    /// Needs attention: icon `warnInk`, text 600 (the colour stays on the icon, like the web's Glas chips).
     case alert
-    /// Danger: text and icon `redInk`, count 600.
+    /// Danger: icon `redInk`, text 600.
     case danger
 }
 
@@ -35,14 +35,6 @@ public struct HPStatusChip: View {
         }
     }
 
-    private var textStyle: AnyShapeStyle {
-        switch state {
-        case .normal, .active: AnyShapeStyle(.glas(.label))
-        case .alert: AnyShapeStyle(.glas(.warnInk))
-        case .danger: AnyShapeStyle(.glas(.redInk))
-        }
-    }
-
     private var emphasised: Bool {
         switch state {
         case .alert, .danger: true
@@ -55,7 +47,7 @@ public struct HPStatusChip: View {
             HPIcon(icon, size: 18, strokeWidth: 2).foregroundStyle(iconStyle)
             Text(text)
                 .hpText(.subhead, weight: emphasised ? .semibold : nil)
-                .foregroundStyle(textStyle)
+                .foregroundStyle(.glas(.label))
                 .lineLimit(1)
         }
         .padding(.leading, 13)
