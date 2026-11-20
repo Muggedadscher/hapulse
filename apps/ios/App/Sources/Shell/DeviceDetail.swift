@@ -26,10 +26,14 @@ struct DeviceDetail: View {
                                closeLabel: l.t("common.close")) { nav.detailID = nil }
                     .accessibilityIdentifier("hp.scene.sheet")
                 VStack(alignment: .leading, spacing: 24) {
-                    HPDetailValue(d.stateText(l, session))
-                    HPListGroup {
-                        HPListRow(d.name, subtitle: d.room) {
-                            Toggle(d.name, isOn: Binding(get: { d.isOn }, set: { _ in session.toggle(d.id) })).hpSwitch(showsLabel: false)
+                    if !ShellDevice.runnable.contains(d.domain) {
+                        HPDetailValue(d.stateText(l, session))
+                    }
+                    if EntityDisplay.isToggleable(d.domain) {
+                        HPListGroup {
+                            HPListRow(d.name, subtitle: d.room) {
+                                Toggle(d.name, isOn: Binding(get: { d.isOn }, set: { _ in session.toggle(d.id) })).hpSwitch(showsLabel: false)
+                            }
                         }
                     }
                     if d.dimmable {
@@ -52,7 +56,7 @@ struct DeviceDetail: View {
                     }
                     // the day's history needs Home Assistant's history API (detail stage); until then only the demo
                     // shows a fixed day, a real device shows none rather than a made-up one
-                    if app.isDemo {
+                    if app.isDemo, EntityDisplay.isToggleable(d.domain) {
                         Text(l.t("entityDetail.activity")).hpText(.title3).foregroundStyle(.glas(.label))
                         HPOnOffBar(segments: demoDay, onLabel: l.t("cards.sensor.on"), tone: d.tone, locale: Locale(identifier: l.locale.rawValue))
                     }

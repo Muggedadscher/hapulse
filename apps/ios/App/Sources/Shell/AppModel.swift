@@ -55,6 +55,8 @@ final class WindowNav {
     var selection: String = NavPage.overview.rawValue
     /// The pages pushed in the "More" tab (compact width).
     var morePath: [NavPage] = []
+    /// The room pages pushed in the "Rooms" tab (area ids).
+    var roomsPath: [String] = []
     /// The entity whose detail is open (inspector on iPad, sheet on iPhone).
     var detailID: String?
 

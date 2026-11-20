@@ -40,6 +40,19 @@ import Testing
         }
     }
 
+    @Test func roomOrderLikeTheRoomsMenu() {
+        func room(_ id: String, _ name: String) -> Room {
+            Room(id: id, name: name, icon: nil, picture: nil, entityIds: [], domains: [:], domainOrder: [])
+        }
+        let rooms = [room("k", "Küche"), room("b", "Bad"), room("a", "Arbeitszimmer"), room("z", "Zimmer"), room("o", "Öl")]
+        let de = Locale(identifier: "de")
+        // stored ids first (unknown and hidden ones skipped), the rest by name; Ö sorts with O in German
+        #expect(Rooms.ordered(rooms, roomOrder: ["z", "gone", "b", "a"], hiddenRooms: ["a"], locale: de).map(\.id) == ["z", "b", "k", "o"])
+        #expect(Rooms.ordered(rooms, roomOrder: [], hiddenRooms: [], locale: de).map(\.id) == ["a", "b", "k", "o", "z"])
+        // Swedish puts Ö after Z, like the browser in Swedish
+        #expect(Rooms.ordered(rooms, roomOrder: [], hiddenRooms: [], locale: Locale(identifier: "sv")).map(\.id) == ["a", "b", "k", "z", "o"])
+    }
+
     @Test func rulesOfBuildRooms() throws {
         let g = try Golden.load("rooms", as: JSONValue.self)
         let c = try #require(g["cases"])
