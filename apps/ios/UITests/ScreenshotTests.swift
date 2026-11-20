@@ -40,27 +40,30 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
-    /// The way through the app: sign-in page → demo home → overview with tiles → settings → sign out → sign-in page
-    /// again (German, light). Proves that the frame runs on the session of the sign-in.
+    /// The way through the app, German, light: sign-in page → demo home → overview with tiles; then settings → sign
+    /// out → sign-in page again. Proves that the frame runs on the session of the sign-in. (Two launches, so the test
+    /// does not depend on where iPhone and iPad put the settings tab.)
     @MainActor
     func testSignInToFrameAndBack() throws {
         let app = XCUIApplication()
         app.launchArguments = ["-hp-scene", "signin", "-hp-locale", "de", "-hp-scheme", "light"]
         app.launch()
-        let any = app.descendants(matching: .any)
+        var any = app.descendants(matching: .any)
         XCTAssertTrue(any["hp.scene.signin"].waitForExistence(timeout: 20), "sign-in page did not appear")
-        any["hp.signin.demo"].tap()
+        let demo = any["hp.signin.demo"]
+        for _ in 0..<6 where !demo.isHittable { app.swipeUp() }
+        demo.tap()
         XCTAssertTrue(any["hp.scene.shell"].waitForExistence(timeout: 20), "overview did not appear after the demo sign-in")
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            any["hp.tab.more"].tap()
-            XCTAssertTrue(any["hp.scene.more"].waitForExistence(timeout: 10), "More page did not appear")
-            app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Einstellungen")).firstMatch.tap()
-        } else {
-            any["hp.tab.settings"].tap()
-        }
-        XCTAssertTrue(any["hp.scene.settings"].waitForExistence(timeout: 10), "settings did not appear")
+        try save(app, "flow-demo-de-light")
+        app.terminate()
+
+        app.launchArguments = ["-hp-scene", "settings", "-hp-locale", "de", "-hp-scheme", "light"]
+        app.launch()
+        any = app.descendants(matching: .any)
+        XCTAssertTrue(any["hp.scene.settings"].waitForExistence(timeout: 20), "settings did not appear")
         let signOut = any["hp.session.signout"]
-        for _ in 0..<6 where !signOut.isHittable { app.swipeUp() }
+        XCTAssertTrue(signOut.waitForExistence(timeout: 10), "sign-out button missing")
+        for _ in 0..<8 where !signOut.isHittable { app.swipeUp() }
         signOut.tap()
         XCTAssertTrue(any["hp.scene.signin"].waitForExistence(timeout: 20), "sign-in page did not come back after signing out")
         try save(app, "flow-signout-de-light")

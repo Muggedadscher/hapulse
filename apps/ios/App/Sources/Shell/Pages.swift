@@ -92,7 +92,7 @@ struct DeviceTileCell: View {
                 Button {
                     nav.detailID = d.id
                 } label: {
-                    Label { Text(l.t("home.favorites.detailsAria", ["name": .text(d.name)])) } icon: { HPIconImage.image("lucide.info") }
+                    Label { Text(l.t("glas.context.details")) } icon: { HPIconImage.image("lucide.info") }
                 }
             }
     }
@@ -109,8 +109,15 @@ struct RoomsPage: View {
         let rooms = session.rooms
         let devices = ShellDevice.list(session)
         PageScroll {
-            if rooms.isEmpty {
+            if session.registries == nil {
                 LoadingCard()
+            } else if rooms.isEmpty {
+                HPCard {
+                    Text(l.t("rooms.empty")).hpText(.body).foregroundStyle(.glas(.label2))
+                        .frame(maxWidth: .infinity, minHeight: 120)
+                        .multilineTextAlignment(.center)
+                }
+                .accessibilityIdentifier("hp.scene.rooms")
             } else {
                 HPListGroup(separatorInset: 60) {
                     ForEach(rooms) { room in
@@ -143,14 +150,15 @@ struct RoomPage: View {
 
     var body: some View {
         let l = model.localizer
+        let devices = ShellDevice.list(session).filter { $0.roomId == roomId }
         PageScroll {
             HPTileGrid {
-                ForEach(ShellDevice.list(session).filter { $0.roomId == roomId }) { d in
+                ForEach(devices) { d in
                     HPRoomTile(icon: d.icon, name: d.name, state: d.stateText(l, session), chip: d.isOn ? .lit(d.tone) : .neutral) {
                         session.toggle(d.id)
                     }
                     .contextMenu {
-                        Button(l.t("home.favorites.detailsAria", ["name": .text(d.name)])) { nav.detailID = d.id }
+                        Button(l.t("glas.context.details")) { nav.detailID = d.id }
                     }
                 }
             }

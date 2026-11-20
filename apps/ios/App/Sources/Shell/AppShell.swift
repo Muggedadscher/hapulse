@@ -82,8 +82,10 @@ struct DetailInspector: ViewModifier {
     @Environment(WindowNav.self) private var nav
 
     func body(content: Content) -> some View {
-        content.inspector(isPresented: Binding(get: { active && nav.detailID != nil }, set: { if !$0 { nav.detailID = nil } })) {
-            if let device = session.device(nav.detailID) {
+        // only the visible tab looks the device up; an id without a device (entity gone) presents nothing
+        let device = active ? session.device(nav.detailID) : nil
+        content.inspector(isPresented: Binding(get: { device != nil }, set: { if !$0 { nav.detailID = nil } })) {
+            if let device {
                 DeviceDetail(device: device)
                     .presentationDetents([.medium, .large])
                     .inspectorColumnWidth(min: 320, ideal: 380, max: 440)

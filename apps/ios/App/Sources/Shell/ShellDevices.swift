@@ -22,17 +22,30 @@ struct ShellDevice: Identifiable, Hashable {
 
     static let domains: Set<String> = ["light", "switch", "fan", "media_player"]
 
-    /// The session's devices, sorted by entity id, each with its room (Home Assistant area).
+    /// The session's devices, sorted by entity id, each with its room (Home Assistant area). Like the web, only what
+    /// a user should see and switch: no hidden or disabled entities and no configuration or diagnostic ones (a
+    /// child lock or auto-update switch); in a room, exactly the room's entities (`Room.domains`).
     @MainActor
     static func list(_ session: HomeSession) -> [ShellDevice] {
         var roomOf: [String: Room] = [:]
         for room in session.rooms {
-            for id in room.entityIds { roomOf[id] = room }
+            for (domain, ids) in room.domains where domains.contains(domain) {
+                for id in ids { roomOf[id] = room }
+            }
         }
+        var entries: [String: EntityEntry] = [:]
+        for entry in session.registries?.entities ?? [] { entries[entry.entityId] = entry }
         let all = session.entities.entities
-        return all.keys.sorted().compactMap { id -> ShellDevice? in
-            guard let e = all[id], domains.contains(e.domain) else { return nil }
-            let on = e.state == "on" || e.state == "playing"
+        let ids = all.keys.filter { id in
+            guard domains.contains(Rooms.domainOf(id)) else { return false }
+            if roomOf[id] != nil { return true }
+            guard let entry = entries[id] else { return true } // no registry entry (or none loaded): nothing hides it
+            return entry.entityCategory == nil && entry.hiddenBy == nil && entry.disabledBy == nil
+        }
+        return ids.sorted().compactMap { id -> ShellDevice? in
+            guard let e = all[id] else { return nil }
+            // a media player counts as on unless it is off (idle or paused players are on: toggling turns them off)
+            let on = e.domain == "media_player" ? !["off", "standby", "unavailable", "unknown"].contains(e.state) : e.state == "on"
             let level = e.attributes["brightness"]?.number.map { ($0 / 255 * 100).rounded() }
             let (icon, tone): (String, HPTone) = switch e.domain {
             case "fan": ("lucide.fan", .teal)

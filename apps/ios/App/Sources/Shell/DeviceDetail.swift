@@ -12,6 +12,8 @@ struct DeviceDetail: View {
     @Environment(WindowNav.self) private var nav
     /// The level while the finger is on the slider; committed to the model on release.
     @State private var dragLevel: Double?
+    /// Gives the slider back to the device's state if Home Assistant does not answer.
+    @State private var holdTask: Task<Void, Never>?
 
     var body: some View {
         let l = model.localizer
@@ -35,8 +37,13 @@ struct DeviceDetail: View {
                                           height: 32, label: l.t("cards.light.brightness"),
                                           valueText: { l.number(($0 * 100).rounded(), maxDecimals: 0) + " %" },
                                           onCommit: { v in
+                                              // the slider keeps the new value until Home Assistant reports it
                                               session.setLevel(d.id, (v * 100).rounded())
-                                              dragLevel = nil
+                                              holdTask?.cancel()
+                                              holdTask = Task {
+                                                  try? await Task.sleep(for: .seconds(4))
+                                                  if !Task.isCancelled { dragLevel = nil }
+                                              }
                                           })
                         }
                     }
@@ -52,11 +59,17 @@ struct DeviceDetail: View {
             }
         }
         .background(.glas(.card))
+        .onChange(of: device.level) {
+            holdTask?.cancel()
+            dragLevel = nil
+        }
     }
 
     /// A fixed day of the demo home.
+    private static let demoNow = (try? DemoHome.load().now) ?? .now
+
     private var demoDay: [HPOnOffSegment] {
-        let end = (try? DemoHome.load().now) ?? .now
+        let end = Self.demoNow
         let start = end.addingTimeInterval(-24 * 3600)
         func at(_ h: Double) -> Date { start.addingTimeInterval(h * 3600) }
         return [HPOnOffSegment(start: at(0), end: at(7), state: .off),

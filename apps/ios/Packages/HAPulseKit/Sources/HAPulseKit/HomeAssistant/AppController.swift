@@ -71,6 +71,21 @@ public final class AppController {
         problem = .signInFailed
     }
 
+    /// Starts the app once, however many windows ask (each iPad window shows the same session): a stored sign-in or
+    /// the sign-in page, or with `demo` the demo home (screenshot scenes).
+    public func launchIfNeeded(demo: Bool = false) async {
+        guard !launched else { return }
+        launched = true
+        if demo {
+            await startDemo()
+            if session == nil { phase = .signedOut }
+        } else {
+            await launch()
+        }
+    }
+
+    private var launched = false
+
     // MARK: sign-in
 
     /// First step of the sign-in with Home Assistant's page: the address the app opens in the system sign-in window,

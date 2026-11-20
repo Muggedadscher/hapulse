@@ -3,52 +3,45 @@ import HAPulseKit
 import HAPulseUI
 
 /// The real app: start → sign-in → the frame on the connected (or demo) session. The decisions live in
-/// `AppController` (HAPulseKit, tested on Linux); this file only renders them.
+/// `AppController` (HAPulseKit, tested on Linux; one for all windows, held by `HAPulseApp`); this file only renders
+/// them.
 struct AppRoot: View {
     let localizer: Localizer
     /// screenshot scene (`-hp-scene`); the frame scenes start straight in the demo home
     let scene: String?
-    @State private var app: AppController
-    @Environment(\.scenePhase) private var scenePhase
+    @Environment(AppController.self) private var app
 
     /// Scenes that show the frame on the demo home (`signin` and no scene start normally).
     static let demoScenes: Set<String> = ["demo", "shell", "rooms", "settings", "sheet"]
-
-    init(localizer: Localizer, scene: String? = nil, controller: AppController? = nil) {
-        self.localizer = localizer
-        self.scene = scene
-        _app = State(initialValue: controller ?? AppController(auth: HAAuth(store: KeychainTokenStore()), transport: URLSessionHATransport()))
-    }
 
     var body: some View {
         Group {
             switch app.phase {
             case .starting:
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.glas(.bg))
+                waiting
             case .signedOut:
                 SignInView(app: app, localizer: localizer)
             case .signedIn:
                 if let session = app.session {
                     ShellRoot(scene: scene)
-                        .environment(app)
                         .environment(session)
                         // a new session (sign-in again, demo) starts with a fresh navigation
                         .id(ObjectIdentifier(session))
+                } else {
+                    // signing out: the session is closed, the sign-in page follows once Home Assistant was told
+                    waiting
                 }
             }
         }
         .task {
-            if let scene, Self.demoScenes.contains(scene) { await app.startDemo() } else { await app.launch() }
+            await app.launchIfNeeded(demo: scene.map(Self.demoScenes.contains) ?? false)
         }
-        .onChange(of: scenePhase) { _, phase in
-            switch phase {
-            case .background: Task { await app.pause() }
-            case .active: Task { await app.resume() }
-            default: break
-            }
-        }
+    }
+
+    private var waiting: some View {
+        ProgressView()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.glas(.bg))
     }
 }
 
@@ -57,6 +50,7 @@ struct AppRoot: View {
 struct ShellRoot: View {
     let scene: String?
     @Environment(HomeSession.self) private var session
+    @Environment(AppModel.self) private var model
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var nav = WindowNav()
     @State private var sceneApplied = false
@@ -68,6 +62,12 @@ struct ShellRoot: View {
                 guard loaded, !sceneApplied else { return }
                 sceneApplied = true
                 applyScene()
+            }
+            // Home Assistant's words for states in the UI language, once connected (none in the demo: the app's own
+            // words stand in)
+            .task(id: "\(model.localizer.locale.rawValue)|\(session.loaded)") {
+                guard session.loaded else { return }
+                await session.loadStateTranslations(language: model.localizer.locale.rawValue)
             }
     }
 
