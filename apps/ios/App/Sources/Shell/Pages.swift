@@ -33,6 +33,7 @@ struct OverviewPage: View {
                 SummaryChipsRow()
                     .accessibilityIdentifier("hp.scene.shell")
                 HintsSection()
+                ScenesCard()
 
                 HPTileGrid {
                     ForEach(devices) { d in

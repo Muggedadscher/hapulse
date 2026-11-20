@@ -123,10 +123,23 @@ struct RoomPage: View {
                         if let key = Self.titleKey(section.key) {
                             VStack(alignment: .leading, spacing: 6) {
                                 HPCardHead(l.t(key))
-                                HPTileGrid {
-                                    ForEach(section.ids, id: \.self) { id in
-                                        if let e = session.entities[id] {
-                                            EntityRoomTile(entity: e, roomName: room.name)
+                                if section.key == .scene {
+                                    // scene tiles like the overview's, name only (web room page)
+                                    let scenes = section.ids.compactMap { session.entities[$0] }
+                                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                                        ForEach(Array(scenes.enumerated()), id: \.element.entityId) { i, scene in
+                                            SceneTileCell(scene: scene, index: i,
+                                                          name: RoomSections.stripRoomName(scene.friendlyName ?? scene.entityId, room.name)
+                                                              .replacingOccurrences(of: "_", with: " "),
+                                                          showsSubtitle: false)
+                                        }
+                                    }
+                                } else {
+                                    HPTileGrid {
+                                        ForEach(section.ids, id: \.self) { id in
+                                            if let e = session.entities[id] {
+                                                EntityRoomTile(entity: e, roomName: room.name)
+                                            }
                                         }
                                     }
                                 }

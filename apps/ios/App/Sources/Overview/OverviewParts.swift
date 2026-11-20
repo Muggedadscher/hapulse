@@ -224,3 +224,74 @@ struct HintsCard: View {
         }
     }
 }
+
+/// The overview's favourite scenes (web `ScenesCard` in Glas): two columns of scene tiles, "Active" while the scene
+/// still holds (`ActiveScenes`), otherwise how many devices it sets; "All scenes" opens the scenes page. Without
+/// favourite scenes it says how to pin one. The web keeps Home Assistant's order of the entities; the app has none
+/// and sorts by entity id.
+struct ScenesCard: View {
+    @Environment(AppModel.self) private var model
+    @Environment(HomeSession.self) private var session
+    @Environment(WindowNav.self) private var nav
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    var body: some View {
+        let l = model.localizer
+        let favorites = Set(session.settings.favorites)
+        let all = session.entities.entities
+        let scenes = favorites.filter { $0.hasPrefix("scene.") }.sorted().compactMap { all[$0] }
+        TimelineView(.everyMinute) { context in
+            let active = ActiveScenes.ids(scenes, states: { all[$0] }, now: max(context.date, Date.now))
+            VStack(alignment: .leading, spacing: 6) {
+                HPCardHead(l.t("home.scenes.title"), icon: "lucide.sparkles", link: l.t("home.scenes.allScenes")) {
+                    nav.open(.scenes, compact: sizeClass == .compact)
+                }
+                if scenes.isEmpty {
+                    HPCard {
+                        VStack(spacing: 6) {
+                            HPIcon("lucide.star", size: 28, strokeWidth: 1.5).foregroundStyle(.glas(.label3))
+                            Text(l.t("home.scenes.emptyTitle")).hpText(.subhead, weight: .semibold).foregroundStyle(.glas(.label))
+                            Text(l.t("home.scenes.emptyDescription")).hpText(.footnote).foregroundStyle(.glas(.label2))
+                        }
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, minHeight: 120)
+                    }
+                } else {
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                        ForEach(Array(scenes.enumerated()), id: \.element.entityId) { i, scene in
+                            SceneTileCell(scene: scene, index: i, isActive: active.contains(scene.entityId))
+                        }
+                    }
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("hp.scenes")
+        }
+    }
+}
+
+/// One scene tile: runs the scene; the subtitle says "Active" or how many devices it sets (`members`).
+struct SceneTileCell: View {
+    let scene: HAEntity
+    let index: Int
+    var isActive = false
+    /// The room page shows only the name (web room page), the overview also the subtitle.
+    var name: String? = nil
+    var showsSubtitle = true
+    @Environment(AppModel.self) private var model
+    @Environment(HomeSession.self) private var session
+
+    var body: some View {
+        let l = model.localizer
+        let shown = name ?? SceneLook.name(scene)
+        let members = ActiveScenes.members(scene).count
+        let subtitle: String? = !showsSubtitle ? nil
+            : isActive ? l.t("home.scenes.active")
+            : members > 0 ? l.t("home.scenes.members", ["count": .number(Double(members))]) : nil
+        HPSceneTile(icon: "lucide.\(SceneLook.icon(shown))", name: shown, subtitle: subtitle,
+                    tone: HPSceneTone(rawValue: SceneLook.tone(shown, index: index)) ?? .yellow, isActive: isActive,
+                    label: l.t("home.scenes.activateAria", ["name": .text(shown)])) {
+            session.run(scene.entityId, "scene", "turn_on")
+        }
+    }
+}
