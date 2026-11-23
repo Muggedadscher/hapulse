@@ -2,7 +2,8 @@
  * [fork] Pool page — native, HAPulse-styled pool-pump control.
  *
  * A fixed layout: a full-width pump status hero, then a grid of cards that flow
- * and wrap at their natural height (solar automation, manual timer, schedule,
+ * and wrap at their natural height (daily filter time, sun & battery — or the solar automation on older HA setups —
+ * manual timer, schedule,
  * usage tiles, a runtime-per-day chart, and admin controls for HA admins).
  * Falls back to a friendly empty state when the pool entities aren't present.
  */
@@ -17,12 +18,14 @@ import { useEntityStore } from '../stores/entityStore';
 import { useT } from '../i18n/useT';
 import { PumpHeroCard } from '../components/pool/PumpHeroCard';
 import { SolarCard } from '../components/pool/SolarCard';
+import { PoolTargetCard } from '../components/pool/PoolTargetCard';
+import { PoolBatteryCard } from '../components/pool/PoolBatteryCard';
 import { ManualTimerCard } from '../components/pool/ManualTimerCard';
 import { ScheduleCard } from '../components/pool/ScheduleCard';
 import { PoolDataCard } from '../components/pool/PoolDataCard';
 import { PoolChartCard } from '../components/pool/PoolChartCard';
 import { PoolAdminCard } from '../components/pool/PoolAdminCard';
-import { POOL_ENTITIES, POOL_REQUIRED_ENTITIES } from '../components/pool/poolConfig';
+import { POOL_BATTERY_ENTITIES, POOL_ENTITIES, POOL_REQUIRED_ENTITIES, POOL_TARGET_ENTITIES } from '../components/pool/poolConfig';
 import './Page.css';
 import './Pool.css';
 
@@ -31,10 +34,13 @@ export function Pool() {
   const canEdit = useCanEdit();
 
   // only the two presence checks — not the whole entity map (every state change re-rendered the page)
-  const { present, hasRuntime } = useEntityStore(
+  const { present, hasRuntime, hasTarget, hasBattery } = useEntityStore(
     useShallow((s) => ({
       present: POOL_REQUIRED_ENTITIES.every((id) => s.entities[id] != null),
       hasRuntime: s.entities[POOL_ENTITIES.runtimeToday] != null,
+      // the daily filter time and the battery surplus (HA helpers since 23.11.2026); without them the old solar card
+      hasTarget: POOL_TARGET_ENTITIES.every((id) => s.entities[id] != null),
+      hasBattery: POOL_BATTERY_ENTITIES.every((id) => s.entities[id] != null),
     })),
   );
 
@@ -55,7 +61,8 @@ export function Pool() {
         <div className="pool-layout">
           <PumpHeroCard />
           <div className="pool-grid">
-            <SolarCard />
+            {hasTarget && <PoolTargetCard />}
+            {hasBattery ? <PoolBatteryCard /> : <SolarCard />}
             <ManualTimerCard />
             <ScheduleCard />
             <PoolDataCard />

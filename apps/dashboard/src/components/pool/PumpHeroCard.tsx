@@ -12,11 +12,19 @@ import { Card } from '../ui/Card';
 import { formatEntityState } from '@hapulse/core';
 import { useEntity } from '../../ha/hooks';
 import { useLocale, useT } from '../../i18n/useT';
+import type { TKey } from '../../i18n/useT';
 import { setPoolMode } from '../../ha/pool';
 import { POOL_ENTITIES, poolModeTone } from './poolConfig';
 import { PumpManualModal } from './PumpManualModal';
+import { poolReason } from './poolPlan';
+import type { PoolReasonKey } from './poolPlan';
 import { useIsGlas } from '../../app/glas/useUiStyle';
 import { POOL_SEGMENT_MAX, PoolModeSegment } from '../glas/PoolModeSegment';
+
+const REASON_KEYS: Record<PoolReasonKey, TKey> = {
+  battery: 'pool.reason.battery', sun: 'pool.reason.sun', target: 'pool.reason.target',
+  schedule: 'pool.reason.schedule', minRun: 'pool.reason.minRun',
+};
 
 function ModeIcon({ option }: { option: string }) {
   const tone = poolModeTone(option);
@@ -34,12 +42,15 @@ export function PumpHeroCard() {
   const pump = useEntity(POOL_ENTITIES.pump);
   const mode = useEntity(POOL_ENTITIES.mode);
   const runtime = useEntity(POOL_ENTITIES.runtimeToday);
+  const reasonE = useEntity(POOL_ENTITIES.reason);
   const [manualOpen, setManualOpen] = useState(false);
   const glas = useIsGlas(); // Glas: the mode as a segment with a lens (plan docs/glas/PLAN-ETAPPE-5.md K92)
 
   const running = pump?.state === 'on';
   const options = (mode?.attributes['options'] as string[] | undefined) ?? [];
   const activeOption = mode?.state;
+  // why Automatik runs the pump (HA's input_select.poolpumpe_grund) — only then, the other modes say it themselves
+  const reason = running && activeOption != null && poolModeTone(activeOption) === 'auto' ? poolReason(reasonE?.state) : null;
 
   return (
     <Card className={`pool-hero${running ? ' pool-hero--running' : ''}`}>
@@ -52,6 +63,11 @@ export function PumpHeroCard() {
           <span className="pool-hero__status">
             {running ? t('pool.pump.running') : t('pool.pump.idle')}
           </span>
+          {reason && (
+            <span className="pool-hero__reason">
+              {t('pool.reason.label', { reason: 'key' in reason ? t(REASON_KEYS[reason.key]) : reason.raw })}
+            </span>
+          )}
         </div>
         {runtime && !isNaN(parseFloat(runtime.state)) && (
           <div className="pool-hero__glance">

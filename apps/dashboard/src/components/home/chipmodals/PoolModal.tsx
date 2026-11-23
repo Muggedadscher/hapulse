@@ -7,7 +7,7 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { Waves, ArrowRight, Sun, Clock, Timer } from 'lucide-react';
+import { Waves, ArrowRight, Sun, Clock, Timer, Hourglass, BatteryCharging } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { Modal } from '../../ui/Modal';
 import { formatEntityState, formatNumber } from '@hapulse/core';
@@ -40,6 +40,14 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
   const threshold = useEntity(POOL_ENTITIES.solarThreshold);
   const exceeded = useEntity(POOL_ENTITIES.solarExceeded);
   const timerEntity = useEntity(POOL_ENTITIES.manualTimer);
+  // with the daily filter time and the battery (HA helpers since 23.11.2026) those replace runtime and solar
+  const target = useEntity(POOL_ENTITIES.dailyTarget);
+  const soc = useEntity(POOL_ENTITIES.batterySoc);
+  const targetH = target ? parseFloat(target.state) : NaN;
+  const runtimeH = runtime ? parseFloat(runtime.state) : NaN;
+  const socPct = soc ? parseFloat(soc.state) : NaN;
+  const showTarget = !isNaN(targetH) && !isNaN(runtimeH);
+  const showSoc = !isNaN(socPct);
   const timer = usePoolTimer(timerEntity);
 
   const running = pump?.state === 'on';
@@ -119,7 +127,23 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
         )}
 
         <div className="pool-modal__glances">
-          {solarPower && (
+          {showTarget && (
+            <div className="pool-modal__glance">
+              <span className="pool-modal__glance-icon" aria-hidden="true"><Hourglass size={15} strokeWidth={1.75} /></span>
+              <span className="pool-modal__glance-label">{t('pool.target.title')}</span>
+              <span className={`pool-modal__glance-value data-font${targetH > 0 && runtimeH >= targetH ? ' pool-modal__glance-value--positive' : ''}`}>
+                {formatNumber(runtimeH, locale, { maxDecimals: 1 })} / {formatNumber(targetH, locale, { maxDecimals: 1 })} h
+              </span>
+            </div>
+          )}
+          {showSoc && (
+            <div className="pool-modal__glance">
+              <span className="pool-modal__glance-icon" aria-hidden="true"><BatteryCharging size={15} strokeWidth={1.75} /></span>
+              <span className="pool-modal__glance-label">{t('pool.battery.glance')}</span>
+              <span className="pool-modal__glance-value data-font">{formatNumber(socPct, locale, { maxDecimals: 0 })} %</span>
+            </div>
+          )}
+          {!showSoc && solarPower && (
             <div className="pool-modal__glance">
               <span className="pool-modal__glance-icon" aria-hidden="true"><Sun size={15} strokeWidth={1.75} /></span>
               <span className="pool-modal__glance-label">{t('pool.solar.current')}</span>
@@ -129,7 +153,7 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
               </span>
             </div>
           )}
-          {runtime && !isNaN(parseFloat(runtime.state)) && (
+          {!showTarget && runtime && !isNaN(parseFloat(runtime.state)) && (
             <div className="pool-modal__glance">
               <span className="pool-modal__glance-icon" aria-hidden="true"><Clock size={15} strokeWidth={1.75} /></span>
               <span className="pool-modal__glance-label">{t('pool.data.runtimeToday')}</span>

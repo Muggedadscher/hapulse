@@ -35,8 +35,8 @@ export const POOL_ENTITIES = {
   manualRestartScript: 'script.pool_manuell_timer_starten',
   /** Configurable duration (minutes) for a start via Siri / the Apple-Home switch. */
   siriDuration: 'input_number.poolpumpe_siri_dauer',
-  /** Live solar production feeding the solar automation. */
-  solarPower: 'sensor.balkonkraftwerk_power',
+  /** Live solar production feeding the solar automation (the balcony panels on the home battery's PV input). */
+  solarPower: 'sensor.batteriespeicher_pv_power',
   /** Editable switch-on threshold for the solar automation. */
   solarThreshold: 'input_number.schwellwert_poolpumpe_solarleistung',
   /** Binary sensor: is solar production above the threshold. */
@@ -51,6 +51,23 @@ export const POOL_ENTITIES = {
   consumptionToday: 'sensor.geschatzter_verbrauch_poolpumpe_energy_daily',
   consumptionWeek: 'sensor.geschatzter_verbrauch_poolpumpe_energy_weekly',
   consumptionMonth: 'sensor.geschatzter_verbrauch_poolpumpe_energy_monthly',
+  /** Home battery: state of charge (%) and its charge limit (the surplus' "on from" above it is never reached). */
+  batterySoc: 'sensor.batteriespeicher_battery_soc',
+  batteryChargeLimit: 'number.batteriespeicher_charge_limit',
+  /** Battery surplus: the pump may run from this charge on (%), and stops below the other one (%). */
+  surplusOn: 'input_number.poolpumpe_akku_uberschuss_ab',
+  surplusOff: 'input_number.poolpumpe_akku_uberschuss_aus_unter',
+  /** HA's memory of the surplus between the two limits (the hysteresis), set by automation.pool_akku_uberschuss_merken. */
+  surplusActive: 'input_boolean.poolpumpe_akku_uberschuss_aktiv',
+  /** Off until a grid meter makes the battery feed the house (zero feed-in): without it the pump would run from the grid. */
+  zeroFeedIn: 'input_boolean.poolpumpe_nulleinspeisung_aktiv',
+  /** Daily filter time (h) and the time of day it should be reached by (input_datetime, time only). */
+  dailyTarget: 'input_number.poolpumpe_tagesziel',
+  finishBy: 'input_datetime.poolpumpe_tagesziel_fertig_bis',
+  /** Timestamp sensor: the latest start that still reaches the target (`unknown` once HA gave up for the day). */
+  mustRunFrom: 'sensor.poolpumpe_pflichtlauf_ab',
+  /** input_select: why Automatik runs the pump right now (Akku voll, Sonne, Tagesziel, Zeitplan, Mindestlaufzeit, Keiner). */
+  reason: 'input_select.poolpumpe_grund',
   /** Button that reboots the pump controller. */
   restartButton: 'button.poolpumpe_esppoolpumpe_geraeteneustart',
 } as const;
@@ -60,6 +77,12 @@ export const POOL_REQUIRED_ENTITIES: string[] = [
   POOL_ENTITIES.mode,
   POOL_ENTITIES.pump,
 ];
+
+/** The daily filter-time card needs these (the runtime sensor and the target helper). */
+export const POOL_TARGET_ENTITIES: string[] = [POOL_ENTITIES.dailyTarget, POOL_ENTITIES.runtimeToday];
+
+/** The sun & battery card needs these; without them the page shows the older solar card. */
+export const POOL_BATTERY_ENTITIES: string[] = [POOL_ENTITIES.batterySoc, POOL_ENTITIES.surplusOn, POOL_ENTITIES.surplusOff];
 
 export type PoolModeTone = 'off' | 'auto' | 'manual' | 'neutral';
 

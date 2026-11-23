@@ -15,6 +15,7 @@
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
   align-items: start;
+  grid-auto-flow: row dense; /* a later card fills the hole the wide chart leaves at a row's end */
 }
 
 /* The runtime chart takes two columns as soon as there are two (14 days need the room), from four columns on the rest
@@ -23,6 +24,13 @@
 @container pool-grid (min-width: 620px) {
   .pool-chart {
     grid-column: span 2;
+  }
+}
+
+/* Three columns (940 = three of 300 with Glas's gap 20): the chart takes the whole row — with two it left a hole */
+@container pool-grid (min-width: 940px) and (max-width: 1259.98px) {
+  .pool-chart {
+    grid-column: span 3;
   }
 }
 
@@ -243,6 +251,11 @@
   color: var(--text);
 }
 
+.pool-hero__reason {
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
 .pool-hero--running .pool-hero__status {
   color: var(--accent);
 }
@@ -382,14 +395,16 @@
 
 /* ---- Solar ---- */
 
-.pool-solar__body {
+.pool-solar__body,
+.pool-split {
   display: flex;
   align-items: center;
   gap: 18px;
   flex-wrap: wrap;
 }
 
-.pool-solar__side {
+.pool-solar__side,
+.pool-split__side {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -402,30 +417,51 @@
    card's edge). 320 = ring 132 + gap 18 + the stepper row 170 (40 + 10 + 70 + 10 + 40). Glas's row is 178 (buttons
    44): from 320 to 326 its "+" reaches up to 6 px into the 16 px padding, still on the surface, so the phone (325 inside
    at 390) keeps the ring and the side next to each other. The query measures the card's content box. */
-.pool-solar {
+.pool-solar,
+.pool-card--split {
   container: pool-solar / inline-size;
 }
 
 @container pool-solar (max-width: 319.98px) {
-  .pool-solar__body {
+  .pool-solar__body,
+  .pool-split {
     flex-direction: column;
   }
 
-  .pool-solar__side {
+  .pool-solar__side,
+  .pool-split__side {
     flex: none;
     align-items: center;
     min-width: 0;
     text-align: center;
   }
 
-  .pool-solar__side .pool-chip {
+  .pool-solar__side .pool-chip,
+  .pool-split__side .pool-chip {
     align-self: center;
   }
 
-  .pool-solar__side .pool-stepper {
+  .pool-solar__side .pool-stepper,
+  .pool-split__side .pool-stepper {
     align-items: center;
   }
 }
+
+/* The filter time's and the battery's line under the chip, the settings row below the ring (like the Siri duration)
+   and the notes at the card's foot */
+.pool-split__line {
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.pool-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
+.pool-hint--warn { color: var(--warning); }
 
 .pool-chip {
   display: inline-flex;
@@ -579,8 +615,9 @@
 
 .pool-manual__action { width: 100%; margin-top: 2px; }
 
-/* Siri / Apple-Home start duration — its own persistent setting */
-.pool-manual__siri {
+/* Siri / Apple-Home start duration — its own persistent setting (and the filter time's / battery's settings rows) */
+.pool-manual__siri,
+.pool-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -591,20 +628,23 @@
   border-top: 1px solid var(--line);
 }
 
-.pool-manual__siri-text {
+.pool-manual__siri-text,
+.pool-row__text {
   display: flex;
   flex-direction: column;
   gap: 1px;
   min-width: 0;
 }
 
-.pool-manual__siri-label {
+.pool-manual__siri-label,
+.pool-row__label {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-dim);
 }
 
-.pool-manual__siri-desc {
+.pool-manual__siri-desc,
+.pool-row__desc {
   font-size: 0.75rem;
   color: var(--text-faint);
 }
