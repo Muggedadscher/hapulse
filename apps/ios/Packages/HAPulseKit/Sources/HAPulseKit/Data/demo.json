@@ -1525,7 +1525,7 @@
         "editable": true,
         "friendly_name": "Heating Living Room",
         "icon": "mdi:calendar-clock",
-        "next_event": "2026-06-15T14:30:00.000Z"
+        "next_event": "2026-06-15T16:30:00.000Z"
       },
       "context": {
         "id": "demo",
