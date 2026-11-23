@@ -78,7 +78,7 @@ export function PoolTargetCard() {
   const fraction = targetH > 0 && !isNaN(runtimeH) ? runtimeH / targetH : 0;
 
   return (
-    <Card className="pool-card pool-card--split pool-target">
+    <Card className="pool-card pool-target">
       <div className="pool-card__head">
         <span className="pool-card__icon" aria-hidden="true">
           <Hourglass size={16} strokeWidth={1.75} />

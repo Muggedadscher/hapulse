@@ -72,7 +72,7 @@ export function PoolBatteryCard() {
   };
 
   return (
-    <Card className="pool-card pool-card--split pool-battery">
+    <Card className="pool-card pool-battery">
       <div className="pool-card__head">
         <span className="pool-card__icon" aria-hidden="true">
           <BatteryCharging size={16} strokeWidth={1.75} />

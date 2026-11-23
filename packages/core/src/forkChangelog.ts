@@ -38,6 +38,39 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 78,
+    date: '2026-11-23',
+    title: { de: 'Pool: Filterzeit und Akku', en: 'Pool: filter time and battery' },
+    sections: [
+      {
+        kind: 'added',
+        items: [
+          {
+            de: 'Neue Karte „Filterzeit“ auf der Pool-Seite: Laufzeit heute gegen das Tagesziel, was noch fehlt und wann die Pumpe spätestens startet; Ziel und „Fertig bis“ lassen sich einstellen',
+            en: 'New “Filter time” card on the pool page: today’s runtime against the daily target, what is left and when the pump starts at the latest; the target and “Done by” can be set',
+          },
+          {
+            de: 'Neue Karte „Sonne & Akku“: Ladestand des Akkus, ab wann die Pumpe bei vollem Akku läuft und wann sie wieder aufhört, dazu die Sonnenschwelle',
+            en: 'New “Sun & battery” card: the battery’s charge, from when the pump runs on a full battery and when it stops again, plus the sun threshold',
+          },
+          {
+            de: 'Läuft die Pumpe im Modus Automatik, zeigt die Kopfkarte den Grund, z. B. „Grund: Akku voll“',
+            en: 'When the pump runs in automatic mode, the header card shows why, e.g. “Reason: Battery full”',
+          },
+        ],
+      },
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Das Pool-Fenster zeigt Filterzeit und Ladestand statt Solarleistung und Laufzeit; die Sonnenleistung kommt vom Akku',
+            en: 'The pool window shows the filter time and the battery’s charge instead of solar power and runtime; the sun power comes from the battery',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 77,
     date: '2026-11-19',
     title: { de: 'Energie: „Jetzt“ als Haus', en: 'Energy: “Now” as a house' },

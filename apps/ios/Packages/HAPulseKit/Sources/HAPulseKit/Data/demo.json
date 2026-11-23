@@ -533,6 +533,34 @@
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "on"
     },
+    "input_boolean.poolpumpe_akku_uberschuss_aktiv": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Akku-Überschuss aktiv"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_boolean.poolpumpe_akku_uberschuss_aktiv",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "on"
+    },
+    "input_boolean.poolpumpe_nulleinspeisung_aktiv": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Nulleinspeisung aktiv"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_boolean.poolpumpe_nulleinspeisung_aktiv",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "off"
+    },
     "input_boolean.poolpumpe_zeitplan": {
       "attributes": {
         "friendly_name": "Poolpumpe Zeitplan",
@@ -547,6 +575,26 @@
       "last_changed": "2026-06-15T09:41:00.000Z",
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "off"
+    },
+    "input_datetime.poolpumpe_tagesziel_fertig_bis": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Tagesziel fertig bis",
+        "has_date": false,
+        "has_time": true,
+        "hour": 20,
+        "minute": 0,
+        "second": 0,
+        "timestamp": 72000
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_datetime.poolpumpe_tagesziel_fertig_bis",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "20:00:00"
     },
     "input_number.heating_plan_living_room_comfort": {
       "attributes": {
@@ -588,6 +636,44 @@
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "18.0"
     },
+    "input_number.poolpumpe_akku_uberschuss_ab": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Akku-Überschuss ab",
+        "max": 100,
+        "min": 50,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.poolpumpe_akku_uberschuss_ab",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "90.0"
+    },
+    "input_number.poolpumpe_akku_uberschuss_aus_unter": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Akku-Überschuss aus unter",
+        "max": 95,
+        "min": 30,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.poolpumpe_akku_uberschuss_aus_unter",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "80.0"
+    },
     "input_number.poolpumpe_manuell_dauer": {
       "attributes": {
         "friendly_name": "Poolpumpe Manuell Dauer",
@@ -625,6 +711,25 @@
       "last_changed": "2026-06-15T09:41:00.000Z",
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "30.0"
+    },
+    "input_number.poolpumpe_tagesziel": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Tagesziel",
+        "max": 12,
+        "min": 0,
+        "mode": "box",
+        "step": 0.5,
+        "unit_of_measurement": "h"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_number.poolpumpe_tagesziel",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "8.0"
     },
     "input_number.schwellwert_poolpumpe_solarleistung": {
       "attributes": {
@@ -664,6 +769,28 @@
       "last_changed": "2026-06-15T09:41:00.000Z",
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "Manuell"
+    },
+    "input_select.poolpumpe_grund": {
+      "attributes": {
+        "friendly_name": "Poolpumpe Grund",
+        "options": [
+          "Keiner",
+          "Akku voll",
+          "Sonne",
+          "Tagesziel",
+          "Zeitplan",
+          "Mindestlaufzeit"
+        ]
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "input_select.poolpumpe_grund",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "Keiner"
     },
     "light.bathroom_ceiling": {
       "attributes": {
@@ -1013,6 +1140,25 @@
       "last_changed": "2026-06-15T09:41:00.000Z",
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "playing"
+    },
+    "number.batteriespeicher_charge_limit": {
+      "attributes": {
+        "friendly_name": "Batteriespeicher Charge limit",
+        "max": 100,
+        "min": 50,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "number.batteriespeicher_charge_limit",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "98"
     },
     "number.demo_battery_charge_limit": {
       "attributes": {
@@ -1379,7 +1525,7 @@
         "editable": true,
         "friendly_name": "Heating Living Room",
         "icon": "mdi:calendar-clock",
-        "next_event": "2026-06-15T16:30:00.000Z"
+        "next_event": "2026-06-15T14:30:00.000Z"
       },
       "context": {
         "id": "demo",
@@ -1424,23 +1570,6 @@
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "Self-Consumption (AI)"
     },
-    "sensor.balkonkraftwerk_power": {
-      "attributes": {
-        "device_class": "power",
-        "friendly_name": "Balkonkraftwerk Leistung",
-        "state_class": "measurement",
-        "unit_of_measurement": "W"
-      },
-      "context": {
-        "id": "demo",
-        "parent_id": null,
-        "user_id": null
-      },
-      "entity_id": "sensor.balkonkraftwerk_power",
-      "last_changed": "2026-06-15T09:41:00.000Z",
-      "last_updated": "2026-06-15T09:41:00.000Z",
-      "state": "403"
-    },
     "sensor.bathroom_humidity": {
       "attributes": {
         "device_class": "humidity",
@@ -1474,6 +1603,39 @@
       "last_changed": "2026-06-15T09:41:00.000Z",
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "20.5"
+    },
+    "sensor.batteriespeicher_battery_soc": {
+      "attributes": {
+        "friendly_name": "Batteriespeicher Battery SOC",
+        "state_class": "measurement",
+        "unit_of_measurement": "%"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.batteriespeicher_battery_soc",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "92"
+    },
+    "sensor.batteriespeicher_pv_power": {
+      "attributes": {
+        "device_class": "power",
+        "friendly_name": "Batteriespeicher PV Power",
+        "state_class": "measurement",
+        "unit_of_measurement": "W"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.batteriespeicher_pv_power",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "403"
     },
     "sensor.bedroom_humidity": {
       "attributes": {
@@ -2033,6 +2195,21 @@
       "last_changed": "2026-06-15T09:41:00.000Z",
       "last_updated": "2026-06-15T09:41:00.000Z",
       "state": "Papiertonne in 27 days"
+    },
+    "sensor.poolpumpe_pflichtlauf_ab": {
+      "attributes": {
+        "device_class": "timestamp",
+        "friendly_name": "Poolpumpe Pflichtlauf ab"
+      },
+      "context": {
+        "id": "demo",
+        "parent_id": null,
+        "user_id": null
+      },
+      "entity_id": "sensor.poolpumpe_pflichtlauf_ab",
+      "last_changed": "2026-06-15T09:41:00.000Z",
+      "last_updated": "2026-06-15T09:41:00.000Z",
+      "state": "2026-06-15T13:41:00.000Z"
     },
     "sensor.processor_temperature": {
       "attributes": {

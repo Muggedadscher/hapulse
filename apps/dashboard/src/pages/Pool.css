@@ -418,7 +418,8 @@
    44): from 320 to 326 its "+" reaches up to 6 px into the 16 px padding, still on the surface, so the phone (325 inside
    at 390) keeps the ring and the side next to each other. The query measures the card's content box. */
 .pool-solar,
-.pool-card--split {
+.pool-target,
+.pool-battery {
   container: pool-solar / inline-size;
 }
 
