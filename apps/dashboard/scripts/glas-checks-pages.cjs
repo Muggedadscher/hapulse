@@ -24,7 +24,7 @@ module.exports = function pages(h) {
       path: '/automations', box: '.auto-row-toggle', capsule: '.auto-row-toggle__track', knob: '.auto-row-toggle__knob',
     },
     poolSchedule: {
-      path: '/pool', box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
+      path: '/pool', open: (page) => click(page, '.pool-more'), box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
     },
     settings: {
       path: '/settings', box: `.admin-toggle[aria-label="${DE['glas.reduceTransparency.label']}"]`, capsule: null,
@@ -1994,6 +1994,10 @@ module.exports = function pages(h) {
               d.remove();
               return v;
             }, n);
+            // sun & battery and the schedule sit under "Erweitert" (folded by default, F78): open it first
+            await page.locator('.pool-more').click();
+            await sleep(200);
+            const folded = await ev(page, () => document.querySelector('.pool-more').getAttribute('aria-expanded'));
             const look = await ev(page, () => {
               const cs = (sel, prop) => {
                 const e = document.querySelector(sel);
@@ -2016,7 +2020,7 @@ module.exports = function pages(h) {
             });
             const [tealInk, fill2, yellow, yellowInk, teal] = [await tok('--g-teal-ink'), await tok('--g-fill-2'), await tok('--g-yellow'),
               await tok('--g-yellow-ink'), await tok('--g-teal')];
-            const colours = look.running && look.status === tealInk && look.track === fill2 && look.manualTrack === fill2 && !look.freeRun
+            const colours = folded === 'true' && look.running && look.status === tealInk && look.track === fill2 && look.manualTrack === fill2 && !look.freeRun
               && look.noMeter && look.solar === yellow && look.solarText === yellowInk && look.target === teal && look.targetText === tealInk
               && look.manual === teal && look.manualText === tealInk;
 

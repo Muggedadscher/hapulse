@@ -133,7 +133,7 @@ export function PoolTargetCard() {
         </div>
       )}
 
-      {!auto && <p className="pool-hint">{t('pool.target.onlyAuto')}</p>}
+      <p className="pool-hint">{auto ? t('pool.target.how', { time: finishText }) : t('pool.target.onlyAuto')}</p>
     </Card>
   );
 }

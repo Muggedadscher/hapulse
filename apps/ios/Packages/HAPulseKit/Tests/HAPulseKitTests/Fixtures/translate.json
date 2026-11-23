@@ -61,18 +61,18 @@
   },
   {
     "locale": "en",
-    "key": "room.backToHome",
-    "out": "← Back to home"
+    "key": "pool.weekday.tue",
+    "out": "Tue"
   },
   {
     "locale": "en",
-    "key": "security.section.hide.doors",
-    "out": "Hide Doors"
+    "key": "security.section.hide.alarmPanel",
+    "out": "Hide Alarm Panel"
   },
   {
     "locale": "en",
-    "key": "settings.connection.role.user",
-    "out": "User"
+    "key": "settings.connection.entities",
+    "out": "entities"
   },
   {
     "locale": "en",
@@ -1350,18 +1350,18 @@
   },
   {
     "locale": "de",
-    "key": "room.backToHome",
-    "out": "← Zurück zur Startseite"
+    "key": "pool.weekday.tue",
+    "out": "Di"
   },
   {
     "locale": "de",
-    "key": "security.section.hide.doors",
-    "out": "Türen ausblenden"
+    "key": "security.section.hide.alarmPanel",
+    "out": "Alarmzentrale ausblenden"
   },
   {
     "locale": "de",
-    "key": "settings.connection.role.user",
-    "out": "Benutzer"
+    "key": "settings.connection.entities",
+    "out": "Entitäten"
   },
   {
     "locale": "de",
@@ -2639,18 +2639,18 @@
   },
   {
     "locale": "es",
-    "key": "room.backToHome",
-    "out": "← Volver al inicio"
+    "key": "pool.weekday.tue",
+    "out": "Mar"
   },
   {
     "locale": "es",
-    "key": "security.section.hide.doors",
-    "out": "Ocultar Puertas"
+    "key": "security.section.hide.alarmPanel",
+    "out": "Ocultar Panel de alarma"
   },
   {
     "locale": "es",
-    "key": "settings.connection.role.user",
-    "out": "Usuario"
+    "key": "settings.connection.entities",
+    "out": "entidades"
   },
   {
     "locale": "es",
@@ -3928,18 +3928,18 @@
   },
   {
     "locale": "fr",
-    "key": "room.backToHome",
-    "out": "← Retour à l’accueil"
+    "key": "pool.weekday.tue",
+    "out": "Mar"
   },
   {
     "locale": "fr",
-    "key": "security.section.hide.doors",
-    "out": "Masquer Portes"
+    "key": "security.section.hide.alarmPanel",
+    "out": "Masquer Centrale d’alarme"
   },
   {
     "locale": "fr",
-    "key": "settings.connection.role.user",
-    "out": "Utilisateur"
+    "key": "settings.connection.entities",
+    "out": "entités"
   },
   {
     "locale": "fr",
@@ -5217,18 +5217,18 @@
   },
   {
     "locale": "it",
-    "key": "room.backToHome",
-    "out": "← Torna alla home"
+    "key": "pool.weekday.tue",
+    "out": "Mar"
   },
   {
     "locale": "it",
-    "key": "security.section.hide.doors",
-    "out": "Nascondi Porte"
+    "key": "security.section.hide.alarmPanel",
+    "out": "Nascondi Centrale allarme"
   },
   {
     "locale": "it",
-    "key": "settings.connection.role.user",
-    "out": "Utente"
+    "key": "settings.connection.entities",
+    "out": "entità"
   },
   {
     "locale": "it",
@@ -6506,18 +6506,18 @@
   },
   {
     "locale": "pt",
-    "key": "room.backToHome",
-    "out": "← Voltar ao início"
+    "key": "pool.weekday.tue",
+    "out": "Ter"
   },
   {
     "locale": "pt",
-    "key": "security.section.hide.doors",
-    "out": "Ocultar Portas"
+    "key": "security.section.hide.alarmPanel",
+    "out": "Ocultar Painel de alarme"
   },
   {
     "locale": "pt",
-    "key": "settings.connection.role.user",
-    "out": "Utilizador"
+    "key": "settings.connection.entities",
+    "out": "entidades"
   },
   {
     "locale": "pt",
@@ -7795,18 +7795,18 @@
   },
   {
     "locale": "sv",
-    "key": "room.backToHome",
-    "out": "← Tillbaka till start"
+    "key": "pool.weekday.tue",
+    "out": "Tis"
   },
   {
     "locale": "sv",
-    "key": "security.section.hide.doors",
-    "out": "Dölj Dörrar"
+    "key": "security.section.hide.alarmPanel",
+    "out": "Dölj Larmpanel"
   },
   {
     "locale": "sv",
-    "key": "settings.connection.role.user",
-    "out": "Användare"
+    "key": "settings.connection.entities",
+    "out": "entiteter"
   },
   {
     "locale": "sv",
