@@ -49,7 +49,8 @@ export interface SurplusLimits {
   onMax: number;
   offMin: number;
   offMax: number;
-  step: number;
+  onStep: number;
+  offStep: number;
 }
 
 /** Whether each of the four stepper buttons may act: "off" stays at least {@link POOL_SURPLUS_GAP} under "on". */
@@ -57,10 +58,10 @@ export function surplusSteps(l: SurplusLimits): { onDown: boolean; onUp: boolean
   const ok = (v: number) => Number.isFinite(v);
   if (!ok(l.on) || !ok(l.off)) return { onDown: false, onUp: false, offDown: false, offUp: false };
   return {
-    onDown: l.on - l.step >= Math.max(l.onMin, l.off + POOL_SURPLUS_GAP),
-    onUp: l.on + l.step <= l.onMax,
-    offDown: l.off - l.step >= l.offMin,
-    offUp: l.off + l.step <= Math.min(l.offMax, l.on - POOL_SURPLUS_GAP),
+    onDown: l.on - l.onStep >= Math.max(l.onMin, l.off + POOL_SURPLUS_GAP),
+    onUp: l.on + l.onStep <= l.onMax,
+    offDown: l.off - l.offStep >= l.offMin,
+    offUp: l.off + l.offStep <= Math.min(l.offMax, l.on - POOL_SURPLUS_GAP),
   };
 }
 
@@ -87,9 +88,12 @@ export function clockState(minutes: number): string {
 
 /** The next "finished by" one step away, inside {@link POOL_FINISH_MIN}–{@link POOL_FINISH_MAX}; null at the edge. */
 export function shiftFinishBy(minutes: number, delta: number): number | null {
-  if (!Number.isFinite(minutes)) return null;
-  const next = Math.min(POOL_FINISH_MAX, Math.max(POOL_FINISH_MIN, minutes + delta));
-  return next === minutes ? null : next;
+  if (!Number.isFinite(minutes) || delta === 0) return null;
+  // onto the step grid (20:15 + 30 → 20:30), then into the window; a button never moves the other way (09:00 − 30)
+  const snapped = delta > 0 ? Math.floor(minutes / POOL_FINISH_STEP) * POOL_FINISH_STEP + delta
+    : Math.ceil(minutes / POOL_FINISH_STEP) * POOL_FINISH_STEP + delta;
+  const next = Math.min(POOL_FINISH_MAX, Math.max(POOL_FINISH_MIN, snapped));
+  return (delta > 0 ? next > minutes : next < minutes) ? next : null;
 }
 
 /** The reason options of `input_select.poolpumpe_grund` that name a running pump, with their text key's suffix. */

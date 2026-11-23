@@ -51,11 +51,19 @@ describe('pool daily filter time', () => {
     expect(shiftFinishBy(POOL_FINISH_MIN, -30)).toBeNull();
     expect(shiftFinishBy(POOL_FINISH_MAX - 10, 30)).toBe(POOL_FINISH_MAX);
     expect(shiftFinishBy(NaN, 30)).toBeNull();
+    // off the grid: onto the next step in the button's direction
+    expect(shiftFinishBy(1215, 30)).toBe(1230);
+    expect(shiftFinishBy(1215, -30)).toBe(1200);
+    // outside the window (set in HA): a button never moves the other way
+    expect(shiftFinishBy(540, -30)).toBeNull();
+    expect(shiftFinishBy(540, 30)).toBe(600);
+    expect(shiftFinishBy(1410, 30)).toBeNull();
+    expect(shiftFinishBy(1410, -30)).toBe(1380);
   });
 });
 
 describe('pool battery surplus limits', () => {
-  const base = { on: 90, off: 80, onMin: 50, onMax: 100, offMin: 30, offMax: 95, step: 5 };
+  const base = { on: 90, off: 80, onMin: 50, onMax: 100, offMin: 30, offMax: 95, onStep: 5, offStep: 5 };
 
   it('all four buttons work in the middle', () => {
     expect(surplusSteps(base)).toEqual({ onDown: true, onUp: true, offDown: true, offUp: true });
@@ -64,6 +72,11 @@ describe('pool battery surplus limits', () => {
   it('"off" stays at least 5 % under "on"', () => {
     expect(surplusSteps({ ...base, on: 85, off: 80 })).toMatchObject({ onDown: false, offUp: false });
     expect(surplusSteps({ ...base, on: 90, off: 85 })).toMatchObject({ onDown: false, offUp: false, onUp: true, offDown: true });
+  });
+
+  it('each limit moves by its own helper\'s step', () => {
+    expect(surplusSteps({ ...base, on: 90, off: 84, offStep: 1 })).toMatchObject({ offUp: true, onDown: false });
+    expect(surplusSteps({ ...base, on: 90, off: 85, offStep: 1 })).toMatchObject({ offUp: false });
   });
 
   it('the helpers\' own bounds', () => {

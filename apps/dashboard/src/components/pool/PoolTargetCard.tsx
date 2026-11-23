@@ -34,6 +34,7 @@ export function PoolTargetCard() {
   const finishBy = useEntity(POOL_ENTITIES.finishBy);
   const mustRunFrom = useEntity(POOL_ENTITIES.mustRunFrom);
   const mode = useEntity(POOL_ENTITIES.mode);
+  const pump = useEntity(POOL_ENTITIES.pump);
 
   const targetH = target ? parseFloat(target.state) : NaN;
   const runtimeH = runtime ? parseFloat(runtime.state) : NaN;
@@ -41,14 +42,15 @@ export function PoolTargetCard() {
   const max = (target?.attributes['max'] as number | undefined) ?? 12;
   const step = (target?.attributes['step'] as number | undefined) ?? 0.5;
 
-  // the latest start passes without a state change: a minute tick turns "starts by 15:50" into "runs now"
-  const [now, setNow] = useState(() => new Date());
+  // the latest start passes without a state change: a minute tick re-renders ("starts by 15:50" → "runs now"); the
+  // status reads the clock on every render, so a page waking up after throttled timers is right at once
+  const [, setTick] = useState(0);
   useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 60_000);
+    const id = window.setInterval(() => setTick((n) => n + 1), 60_000);
     return () => window.clearInterval(id);
   }, []);
 
-  const status = poolTargetStatus(runtimeH, targetH, mustRunFrom?.state, now);
+  const status = poolTargetStatus(runtimeH, targetH, mustRunFrom?.state, new Date());
   const reached = status.kind === 'reached';
   const hours = (h: number) => `${formatNumber(h, locale, { maxDecimals: 1 })} h`;
   const clock = (d: Date) => new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d);
@@ -56,10 +58,14 @@ export function PoolTargetCard() {
   const chip = status.kind === 'none' ? t('pool.target.none')
     : reached ? t('pool.target.reached')
       : t('pool.target.rest', { duration: formatManualDuration(restMinutes(status.restH), locale) });
-  const line = status.kind === 'startsBy' ? t('pool.target.startsBy', { time: clock(status.at) })
-    : status.kind === 'runningNow' ? t('pool.target.runningNow')
-      : status.kind === 'missed' ? t('pool.target.missed')
-        : null;
+  // only Automatik acts on the target: the other modes get the note at the foot instead of a start time
+  const auto = mode ? poolModeTone(mode.state) === 'auto' : true;
+  const running = pump?.state === 'on';
+  const line = !auto ? null
+    : status.kind === 'startsBy' ? t('pool.target.startsBy', { time: clock(status.at) })
+      : status.kind === 'runningNow' ? (running ? t('pool.target.runningNow') : null)
+        : status.kind === 'missed' ? t('pool.target.missed')
+          : null;
 
   const finishMin = clockMinutes(finishBy?.state);
   const finishText = Number.isFinite(finishMin) ? clock(new Date(2000, 0, 1, Math.floor(finishMin / 60), finishMin % 60)) : '—';
@@ -74,7 +80,6 @@ export function PoolTargetCard() {
     if (next !== targetH) void setPoolNumber(POOL_ENTITIES.dailyTarget, next);
   };
 
-  const auto = mode ? poolModeTone(mode.state) === 'auto' : true;
   const fraction = targetH > 0 && !isNaN(runtimeH) ? runtimeH / targetH : 0;
 
   return (
@@ -119,7 +124,7 @@ export function PoolTargetCard() {
             bare
             label={t('pool.target.finishBy')}
             value={finishText}
-            stepText={`${POOL_FINISH_STEP} min`}
+            stepText={formatManualDuration(POOL_FINISH_STEP, locale)}
             canDown={shiftFinishBy(finishMin, -POOL_FINISH_STEP) != null}
             canUp={shiftFinishBy(finishMin, POOL_FINISH_STEP) != null}
             onDown={() => moveFinish(-POOL_FINISH_STEP)}

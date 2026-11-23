@@ -15,7 +15,9 @@ import { useEntity } from '../../../ha/hooks';
 import { useLocale, useT } from '../../../i18n/useT';
 import { useChipWindow } from '../chipLabels';
 import { setPoolMode } from '../../../ha/pool';
-import { POOL_ENTITIES, poolModeTone } from '../../pool/poolConfig';
+import { POOL_BATTERY_ENTITIES, POOL_ENTITIES, POOL_TARGET_ENTITIES, poolModeTone } from '../../pool/poolConfig';
+import { useShallow } from 'zustand/react/shallow';
+import { useEntityStore } from '../../../stores/entityStore';
 import { usePoolTimer, formatCountdown } from '../../pool/usePoolTimer';
 import { PumpManualModal } from '../../pool/PumpManualModal';
 import { useIsGlas } from '../../../app/glas/useUiStyle';
@@ -41,13 +43,20 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
   const exceeded = useEntity(POOL_ENTITIES.solarExceeded);
   const timerEntity = useEntity(POOL_ENTITIES.manualTimer);
   // with the daily filter time and the battery (HA helpers since 23.11.2026) those replace runtime and solar
+  // (the same presence rule as the page's cards)
+  const { hasTarget, hasBattery } = useEntityStore(
+    useShallow((s) => ({
+      hasTarget: POOL_TARGET_ENTITIES.every((id) => s.entities[id] != null),
+      hasBattery: POOL_BATTERY_ENTITIES.every((id) => s.entities[id] != null),
+    })),
+  );
   const target = useEntity(POOL_ENTITIES.dailyTarget);
   const soc = useEntity(POOL_ENTITIES.batterySoc);
   const targetH = target ? parseFloat(target.state) : NaN;
   const runtimeH = runtime ? parseFloat(runtime.state) : NaN;
   const socPct = soc ? parseFloat(soc.state) : NaN;
-  const showTarget = !isNaN(targetH) && !isNaN(runtimeH);
-  const showSoc = !isNaN(socPct);
+  const showTarget = hasTarget && !isNaN(targetH) && !isNaN(runtimeH);
+  const showSoc = hasBattery;
   const timer = usePoolTimer(timerEntity);
 
   const running = pump?.state === 'on';
@@ -140,7 +149,7 @@ export function PoolModal({ open, onClose }: PoolModalProps) {
             <div className="pool-modal__glance">
               <span className="pool-modal__glance-icon" aria-hidden="true"><BatteryCharging size={15} strokeWidth={1.75} /></span>
               <span className="pool-modal__glance-label">{t('pool.battery.glance')}</span>
-              <span className="pool-modal__glance-value data-font">{formatNumber(socPct, locale, { maxDecimals: 0 })} %</span>
+              <span className="pool-modal__glance-value data-font">{isNaN(socPct) ? '—' : `${formatNumber(socPct, locale, { maxDecimals: 0 })} %`}</span>
             </div>
           )}
           {!showSoc && solarPower && (

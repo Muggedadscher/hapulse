@@ -40,11 +40,13 @@ export function PoolBatteryCard() {
   const socPct = soc ? parseFloat(soc.state) : NaN;
   const on = onE ? parseFloat(onE.state) : NaN;
   const off = offE ? parseFloat(offE.state) : NaN;
-  const step = num(onE?.attributes['step'], 5);
+  const onStep = num(onE?.attributes['step'], 5);
+  const offStep = num(offE?.attributes['step'], 5);
   const steps = surplusSteps({
     on,
     off,
-    step,
+    onStep,
+    offStep,
     onMin: num(onE?.attributes['min'], 0),
     onMax: num(onE?.attributes['max'], 100),
     offMin: num(offE?.attributes['min'], 0),
@@ -53,8 +55,10 @@ export function PoolBatteryCard() {
   const pct = (v: number) => (isNaN(v) ? '—' : `${formatNumber(v, locale, { maxDecimals: 0 })} %`);
 
   // "the pump may run from the battery" needs both: the surplus state and the zero feed-in (no meter → grid)
+  // (a setup without the zero-feed-in helper does not gate the surplus: no hint, the chip says it as HA runs it)
+  const meterOk = !zeroFeedIn || zeroFeedIn.state === 'on';
   const surplus = active?.state === 'on';
-  const freeRun = surplus && zeroFeedIn?.state === 'on';
+  const freeRun = surplus && meterOk;
   const limitPct = limit ? parseFloat(limit.state) : NaN;
   const overLimit = !isNaN(limitPct) && !isNaN(on) && on > limitPct;
 
@@ -95,20 +99,20 @@ export function PoolBatteryCard() {
           <PoolStepper
             label={t('pool.battery.on')}
             value={pct(on)}
-            stepText={`${step} %`}
+            stepText={pct(onStep)}
             canDown={steps.onDown}
             canUp={steps.onUp}
-            onDown={() => void setPoolNumber(POOL_ENTITIES.surplusOn, on - step)}
-            onUp={() => void setPoolNumber(POOL_ENTITIES.surplusOn, on + step)}
+            onDown={() => void setPoolNumber(POOL_ENTITIES.surplusOn, on - onStep)}
+            onUp={() => void setPoolNumber(POOL_ENTITIES.surplusOn, on + onStep)}
           />
           <PoolStepper
             label={t('pool.battery.off')}
             value={pct(off)}
-            stepText={`${step} %`}
+            stepText={pct(offStep)}
             canDown={steps.offDown}
             canUp={steps.offUp}
-            onDown={() => void setPoolNumber(POOL_ENTITIES.surplusOff, off - step)}
-            onUp={() => void setPoolNumber(POOL_ENTITIES.surplusOff, off + step)}
+            onDown={() => void setPoolNumber(POOL_ENTITIES.surplusOff, off - offStep)}
+            onUp={() => void setPoolNumber(POOL_ENTITIES.surplusOff, off + offStep)}
           />
         </div>
       </div>
@@ -123,7 +127,7 @@ export function PoolBatteryCard() {
             bare
             label={t('pool.battery.sun')}
             value={watts(thresholdW)}
-            stepText={`${tStep} ${unit}`}
+            stepText={watts(tStep)}
             canDown={!isNaN(thresholdW) && thresholdW > tMin}
             canUp={!isNaN(thresholdW) && thresholdW < tMax}
             onDown={() => moveThreshold(-tStep)}
@@ -132,7 +136,7 @@ export function PoolBatteryCard() {
         </div>
       )}
 
-      {zeroFeedIn && zeroFeedIn.state !== 'on' && <p className="pool-hint">{t('pool.battery.noMeter')}</p>}
+      {!meterOk && <p className="pool-hint">{t('pool.battery.noMeter')}</p>}
       {overLimit && <p className="pool-hint pool-hint--warn">{t('pool.battery.overLimit', { limit: pct(limitPct) })}</p>}
     </Card>
   );
