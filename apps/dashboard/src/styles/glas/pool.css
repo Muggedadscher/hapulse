@@ -165,12 +165,12 @@
   stroke: var(--g-fill-2);
 }
 
-:root[data-style='glas'] :is(.pool-solar__body, .pool-battery .pool-split) .pool-gauge__value {
+:root[data-style='glas'] .pool-battery .pool-split .pool-gauge__value {
   --accent: var(--g-yellow);
   --positive: var(--g-green);
 }
 
-:root[data-style='glas'] :is(.pool-solar__body, .pool-battery .pool-split) .pool-gauge__primary {
+:root[data-style='glas'] .pool-battery .pool-split .pool-gauge__primary {
   --accent: var(--g-yellow-ink);
   --positive: var(--g-green-ink);
 }
@@ -209,7 +209,7 @@
 
 /* ---- Solar: the state as a capsule 28 (above the threshold greenSoft with greenInk, below fill with label2), the
    threshold's stepper with round 44 buttons (controls.css) and its value 20/25 600 ---- */
-:root[data-style='glas'] :is(.pool-solar__body, .pool-split) {
+:root[data-style='glas'] .pool-split {
   gap: 16px;
 }
 
@@ -271,12 +271,12 @@
    side, the row 178): the row fills the side up to its own 178, its value takes what is left (at least 64), so "+" ends
    on the card's edge like the separator below and never reaches into the padding; a wider side keeps the row as it
    was. Stacked under the ring the row keeps its own width. */
-:root[data-style='glas'] :is(.pool-split__side, .pool-solar__side) .pool-stepper__controls {
+:root[data-style='glas'] .pool-split__side .pool-stepper__controls {
   justify-content: space-between;
   max-width: 178px;
 }
 
-:root[data-style='glas'] :is(.pool-split__side, .pool-solar__side) .pool-stepper__value {
+:root[data-style='glas'] .pool-split__side .pool-stepper__value {
   flex: 1 1 auto;
   min-width: 64px;
 }

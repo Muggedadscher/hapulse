@@ -1,8 +1,8 @@
 /**
  * [fork] PoolGauge — a small radial progress ring (inline SVG, no deps).
  *
- * Shared by the solar card (current vs threshold) and the manual-timer card
- * (remaining vs duration). Colour comes in as a CSS token so it themes with the
+ * Shared by the filter time, sun & battery and manual-timer cards
+ * (runtime vs target, charge, remaining vs duration). Colour comes in as a CSS token so it themes with the
  * rest of the app; the sweep animates via CSS (disabled under reduced motion).
  */
 

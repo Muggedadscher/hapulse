@@ -35,9 +35,9 @@ export const POOL_ENTITIES = {
   manualRestartScript: 'script.pool_manuell_timer_starten',
   /** Configurable duration (minutes) for a start via Siri / the Apple-Home switch. */
   siriDuration: 'input_number.poolpumpe_siri_dauer',
-  /** Live solar production feeding the solar automation (the balcony panels on the home battery's PV input). */
+  /** Live solar production (the balcony panels on the home battery's PV input), shown with the sun threshold. */
   solarPower: 'sensor.batteriespeicher_pv_power',
-  /** Editable switch-on threshold for the solar automation. */
+  /** Editable sun threshold: from it on the pump may run on sun while the daily filter time is not met yet. */
   solarThreshold: 'input_number.schwellwert_poolpumpe_solarleistung',
   /** Binary sensor: is solar production above the threshold. */
   solarExceeded: 'binary_sensor.schwellwert_poolpumpe_solarleistung',
@@ -78,10 +78,10 @@ export const POOL_REQUIRED_ENTITIES: string[] = [
   POOL_ENTITIES.pump,
 ];
 
-/** The daily filter-time card needs these (the runtime sensor and the target helper). */
+/** The pool chip window shows the daily filter time when these exist (the runtime sensor and the target helper). */
 export const POOL_TARGET_ENTITIES: string[] = [POOL_ENTITIES.dailyTarget, POOL_ENTITIES.runtimeToday];
 
-/** The sun & battery card needs these; without them the page shows the older solar card. */
+/** The pool chip window shows the battery's charge when these exist. */
 export const POOL_BATTERY_ENTITIES: string[] = [POOL_ENTITIES.batterySoc, POOL_ENTITIES.surplusOn, POOL_ENTITIES.surplusOff];
 
 export type PoolModeTone = 'off' | 'auto' | 'manual' | 'neutral';
