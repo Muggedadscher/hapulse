@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 79,
+    date: '2026-11-24',
+    title: { de: 'Pool: Feinschliff am Handy', en: 'Pool: phone polish' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Glas am Handy: Die Plus-Knöpfe neben dem Ring der Karten „Filterzeit“ und „Sonne & Akku“ ragen nicht mehr über den Rand',
+            en: 'Glas on phones: the plus buttons next to the ring of the “Filter time” and “Sun & battery” cards no longer reach past the edge',
+          },
+          {
+            de: 'Uhrzeiten der Filterzeit stehen in einer Zeile und ohne führende Null bei 12-Stunden-Uhr, z. B. „8:00 PM“',
+            en: 'Filter time clock times stay on one line and drop the leading zero on a 12-hour clock, e.g. “8:00 PM”',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 78,
     date: '2026-11-23',
     title: { de: 'Pool: Filterzeit und Akku', en: 'Pool: filter time and battery' },

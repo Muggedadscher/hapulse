@@ -267,6 +267,18 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Beside the ring the side is narrower than the row of 44 buttons with a 70 value (325 inside at 390: 177 for the side,
+   the row 178): the row fills the side, its value takes what is left (at least 64), so "+" ends on the card's edge
+   like the separator below and never reaches into the padding. Stacked under the ring the row keeps its own width. */
+:root[data-style='glas'] .pool-split__side .pool-stepper__controls {
+  justify-content: space-between;
+}
+
+:root[data-style='glas'] .pool-split__side .pool-stepper__value {
+  flex: 1 1 auto;
+  min-width: 64px;
+}
+
 :root[data-style='glas'] .pool-stepper__unit {
   color: var(--g-label-2);
   font-size: 13px;

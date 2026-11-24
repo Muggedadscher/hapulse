@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F79 — 2026-11-24
+
+**Pool: Feinschliff am Handy** · _Pool: phone polish_
+
+### Behoben / Fixed
+
+- Glas am Handy: Die Plus-Knöpfe neben dem Ring der Karten „Filterzeit“ und „Sonne & Akku“ ragen nicht mehr über den Rand  
+  _Glas on phones: the plus buttons next to the ring of the “Filter time” and “Sun & battery” cards no longer reach past the edge_
+- Uhrzeiten der Filterzeit stehen in einer Zeile und ohne führende Null bei 12-Stunden-Uhr, z. B. „8:00 PM“  
+  _Filter time clock times stay on one line and drop the leading zero on a 12-hour clock, e.g. “8:00 PM”_
+
 ## F78 — 2026-11-23
 
 **Pool: Filterzeit und Akku** · _Pool: filter time and battery_

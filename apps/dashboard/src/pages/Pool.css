@@ -553,6 +553,7 @@
   color: var(--text);
   min-width: 70px;
   text-align: center;
+  white-space: nowrap; /* "8:00 PM" stays on one line */
 }
 
 .pool-stepper__unit { font-size: 0.8125rem; color: var(--text-faint); }
