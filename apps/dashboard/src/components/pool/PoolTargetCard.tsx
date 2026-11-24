@@ -8,7 +8,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Hourglass } from 'lucide-react';
+import { Hourglass, ChevronRight } from 'lucide-react';
+import { Modal } from '../ui/Modal';
 import { formatManualDuration, formatNumber } from '@hapulse/core';
 import { Card } from '../ui/Card';
 import { useEntity } from '../../ha/hooks';
@@ -26,7 +27,12 @@ import {
   shiftFinishBy,
 } from './poolPlan';
 
-export function PoolTargetCard() {
+interface PoolTargetCardProps {
+  /** The settings that rarely change (sun & battery, the schedule): a "Details" row opens them in a window. */
+  details?: React.ReactNode;
+}
+
+export function PoolTargetCard({ details }: PoolTargetCardProps) {
   const t = useT();
   const locale = useLocale();
   const target = useEntity(POOL_ENTITIES.dailyTarget);
@@ -45,6 +51,7 @@ export function PoolTargetCard() {
   // the latest start passes without a state change: a minute tick re-renders ("starts by 15:50" → "runs now"); the
   // status reads the clock on every render, so a page waking up after throttled timers is right at once
   const [, setTick] = useState(0);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   useEffect(() => {
     const id = window.setInterval(() => setTick((n) => n + 1), 60_000);
     return () => window.clearInterval(id);
@@ -134,6 +141,27 @@ export function PoolTargetCard() {
       )}
 
       <p className="pool-hint">{auto ? t('pool.target.how', { time: finishText }) : t('pool.target.onlyAuto')}</p>
+
+      {details != null && (
+        <>
+          <button type="button" className="pool-details-row" aria-haspopup="dialog" onClick={() => setDetailsOpen(true)}>
+            <span className="pool-row__text">
+              <span className="pool-row__label">{t('pool.details.title')}</span>
+              <span className="pool-row__desc">{t('pool.details.desc')}</span>
+            </span>
+            <ChevronRight className="pool-details-row__chevron" size={20} strokeWidth={1.75} aria-hidden="true" />
+          </button>
+          <Modal
+            open={detailsOpen}
+            onClose={() => setDetailsOpen(false)}
+            title={t('pool.details.window')}
+            icon={<Hourglass size={20} strokeWidth={1.75} />}
+            className="pool-details"
+          >
+            <div className="pool-details__cards">{details}</div>
+          </Modal>
+        </>
+      )}
     </Card>
   );
 }

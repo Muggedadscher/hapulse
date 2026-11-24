@@ -61,18 +61,18 @@
   },
   {
     "locale": "en",
-    "key": "pool.weekday.tue",
-    "out": "Tue"
+    "key": "pool.weekday.thu",
+    "out": "Thu"
   },
   {
     "locale": "en",
-    "key": "security.section.hide.alarmPanel",
-    "out": "Hide Alarm Panel"
+    "key": "security.people.title",
+    "out": "People"
   },
   {
     "locale": "en",
-    "key": "settings.connection.entities",
-    "out": "entities"
+    "key": "settings.connection.disconnect",
+    "out": "Disconnect"
   },
   {
     "locale": "en",
@@ -1350,18 +1350,18 @@
   },
   {
     "locale": "de",
-    "key": "pool.weekday.tue",
-    "out": "Di"
+    "key": "pool.weekday.thu",
+    "out": "Do"
   },
   {
     "locale": "de",
-    "key": "security.section.hide.alarmPanel",
-    "out": "Alarmzentrale ausblenden"
+    "key": "security.people.title",
+    "out": "Personen"
   },
   {
     "locale": "de",
-    "key": "settings.connection.entities",
-    "out": "Entitäten"
+    "key": "settings.connection.disconnect",
+    "out": "Trennen"
   },
   {
     "locale": "de",
@@ -2639,18 +2639,18 @@
   },
   {
     "locale": "es",
-    "key": "pool.weekday.tue",
-    "out": "Mar"
+    "key": "pool.weekday.thu",
+    "out": "Jue"
   },
   {
     "locale": "es",
-    "key": "security.section.hide.alarmPanel",
-    "out": "Ocultar Panel de alarma"
+    "key": "security.people.title",
+    "out": "Personas"
   },
   {
     "locale": "es",
-    "key": "settings.connection.entities",
-    "out": "entidades"
+    "key": "settings.connection.disconnect",
+    "out": "Desconectar"
   },
   {
     "locale": "es",
@@ -3928,18 +3928,18 @@
   },
   {
     "locale": "fr",
-    "key": "pool.weekday.tue",
-    "out": "Mar"
+    "key": "pool.weekday.thu",
+    "out": "Jeu"
   },
   {
     "locale": "fr",
-    "key": "security.section.hide.alarmPanel",
-    "out": "Masquer Centrale d’alarme"
+    "key": "security.people.title",
+    "out": "Personnes"
   },
   {
     "locale": "fr",
-    "key": "settings.connection.entities",
-    "out": "entités"
+    "key": "settings.connection.disconnect",
+    "out": "Déconnecter"
   },
   {
     "locale": "fr",
@@ -5217,18 +5217,18 @@
   },
   {
     "locale": "it",
-    "key": "pool.weekday.tue",
-    "out": "Mar"
+    "key": "pool.weekday.thu",
+    "out": "Gio"
   },
   {
     "locale": "it",
-    "key": "security.section.hide.alarmPanel",
-    "out": "Nascondi Centrale allarme"
+    "key": "security.people.title",
+    "out": "Persone"
   },
   {
     "locale": "it",
-    "key": "settings.connection.entities",
-    "out": "entità"
+    "key": "settings.connection.disconnect",
+    "out": "Disconnetti"
   },
   {
     "locale": "it",
@@ -6506,18 +6506,18 @@
   },
   {
     "locale": "pt",
-    "key": "pool.weekday.tue",
-    "out": "Ter"
+    "key": "pool.weekday.thu",
+    "out": "Qui"
   },
   {
     "locale": "pt",
-    "key": "security.section.hide.alarmPanel",
-    "out": "Ocultar Painel de alarme"
+    "key": "security.people.title",
+    "out": "Pessoas"
   },
   {
     "locale": "pt",
-    "key": "settings.connection.entities",
-    "out": "entidades"
+    "key": "settings.connection.disconnect",
+    "out": "Desligar"
   },
   {
     "locale": "pt",
@@ -7795,18 +7795,18 @@
   },
   {
     "locale": "sv",
-    "key": "pool.weekday.tue",
-    "out": "Tis"
+    "key": "pool.weekday.thu",
+    "out": "Tor"
   },
   {
     "locale": "sv",
-    "key": "security.section.hide.alarmPanel",
-    "out": "Dölj Larmpanel"
+    "key": "security.people.title",
+    "out": "Personer"
   },
   {
     "locale": "sv",
-    "key": "settings.connection.entities",
-    "out": "entiteter"
+    "key": "settings.connection.disconnect",
+    "out": "Koppla från"
   },
   {
     "locale": "sv",

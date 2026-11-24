@@ -24,7 +24,7 @@ module.exports = function pages(h) {
       path: '/automations', box: '.auto-row-toggle', capsule: '.auto-row-toggle__track', knob: '.auto-row-toggle__knob',
     },
     poolSchedule: {
-      path: '/pool', open: (page) => click(page, '.pool-more'), box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
+      path: '/pool', open: (page) => click(page, '.pool-details-row'), box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
     },
     settings: {
       path: '/settings', box: `.admin-toggle[aria-label="${DE['glas.reduceTransparency.label']}"]`, capsule: null,
@@ -1994,10 +1994,21 @@ module.exports = function pages(h) {
               d.remove();
               return v;
             }, n);
-            // sun & battery and the schedule sit under "Erweitert" (folded by default, F78): open it first
-            await page.locator('.pool-more').click();
-            await sleep(200);
-            const folded = await ev(page, () => document.querySelector('.pool-more').getAttribute('aria-expanded'));
+            // sun & battery and the schedule open from the filter time card's "Details" (a window, F78)
+            const openDetails = async () => {
+              const row = page.locator('.pool-details-row');
+              await row.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await row.click();
+              await sleep(400);
+              await settleAnimations(page);
+            };
+            const closeDetails = async () => {
+              await page.keyboard.press('Escape');
+              await sleep(400);
+              await settleAnimations(page);
+            };
+            await openDetails();
+            const folded = (await page.locator('[role="dialog"] .pool-battery').count()) === 1 ? 'true' : 'false';
             const look = await ev(page, () => {
               const cs = (sel, prop) => {
                 const e = document.querySelector(sel);
@@ -2035,9 +2046,10 @@ module.exports = function pages(h) {
               return c.length === 1 ? c[0] : { count: c.length };
             };
             const sun = await press('.pool-battery .pool-row .pool-stepper__btn', 1);
+            const onFrom = await press('.pool-battery .pool-split .pool-stepper__btn', 0);
+            await closeDetails();
             const goal = await press('.pool-target .pool-split .pool-stepper__btn', 1);
             const finish = await press('.pool-target .pool-row .pool-stepper__btn', 1);
-            const onFrom = await press('.pool-battery .pool-split .pool-stepper__btn', 0);
             const set = (c, domain, service, key, value, entity) => !!c && c.domain === domain && c.service === service
               && !!c.data && c.data[key] === value && !!c.target && c.target.entity_id === entity;
             const stepperOk = set(sun, 'input_number', 'set_value', 'value', 450, 'input_number.schwellwert_poolpumpe_solarleistung')
@@ -2056,6 +2068,7 @@ module.exports = function pages(h) {
 
             // the schedule (the shared period editor, glas/pool-zeiten/PLAN.md): the ring's start knob at 12:00 moved
             // to 12:05 with a key and saved with ✓ sends scheduler.edit with the new switch point and closes the window
+            await openDetails();
             await page.locator('.pool-schedule__edit').click();
             await sleep(400);
             await settleAnimations(page);
@@ -2083,6 +2096,8 @@ module.exports = function pages(h) {
               && edit.domain === 'scheduler' && edit.service === 'edit' && edit.data.entity_id === 'switch.schedule_zeitplan_poolpumpe'
               && !!slot && slot.actions[0].service === 'input_boolean.turn_on' && Array.isArray(edit.data.weekdays) && edit.data.weekdays.length > 0
               && (await page.locator('[role="dialog"] .sched').count()) === 0;
+
+            await closeDetails();
 
             // a figure opens its detail (the inspector from 1100 px, the sheet on the phone)
             const tile = page.locator('.pool-data .pool-tile--clickable').first();

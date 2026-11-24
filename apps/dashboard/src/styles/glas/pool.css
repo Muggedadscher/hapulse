@@ -118,32 +118,27 @@
   outline-offset: -2px;
 }
 
-/* ---- "Erweitert": a plain row on the page like an iOS disclosure — the name 17/22 600, the line 13 label2, the
-   chevron label2; a 0.5 px separator above ---- */
-:root[data-style='glas'] .pool-more {
-  min-height: 56px;
-  padding: 10px 4px;
+/* ---- The filter time's "Details" row: like the settings rows below a 0.5 px separator, the chevron label2; its window
+   stacks the cards of sun & battery and the schedule with the page's card gap ---- */
+:root[data-style='glas'] .pool-details-row {
+  min-height: 44px;
+  padding-top: 12px;
   border-top: 0.5px solid var(--g-sep);
   color: var(--g-label);
 }
 
-:root[data-style='glas'] .pool-more__title {
-  font: 600 17px / 22px var(--g-font);
-}
-
-:root[data-style='glas'] .pool-more__desc {
-  color: var(--g-label-2);
-  font: 400 13px / 18px var(--g-font);
-}
-
-:root[data-style='glas'] .pool-more__chevron {
+:root[data-style='glas'] .pool-details-row__chevron {
   color: var(--g-label-2);
 }
 
-:root[data-style='glas'] .pool-more:focus-visible {
+:root[data-style='glas'] .pool-details-row:focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
-  border-radius: 12px;
+  border-radius: 8px;
+}
+
+:root[data-style='glas'] .pool-details__cards {
+  gap: 20px;
 }
 
 /* ---- Rings (K99): the track fill2 like the climate ring on the desktop, the arc in the colour of what it shows — the
