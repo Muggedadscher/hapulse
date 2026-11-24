@@ -36,6 +36,11 @@ describe('battery card: lasts until', () => {
     expect(lastsUntilText(at(8, 0, 25), now, 'de')).toEqual({ key: 'energy.battery.lastsUntilTomorrow', time: '8:00' });
   });
 
+  it('says nothing for the day after tomorrow (rounding, DST)', () => {
+    expect(lastsUntilText(at(0, 0, 26), new Date(2026, 10, 24, 23, 56), 'de')).toBeNull();
+    expect(lastsUntilText(at(23, 45, 25), now, 'de')).not.toBeNull();
+  });
+
   it('formats the time in the UI language', () => {
     expect(formatBatteryTime(at(8, 0, 25), 'de')).toBe('8:00');
     expect(formatBatteryTime(at(8, 0, 25), 'en')).toMatch(/^8:00\sAM$/);

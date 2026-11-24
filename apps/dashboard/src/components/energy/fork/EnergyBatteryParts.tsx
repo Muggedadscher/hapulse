@@ -65,12 +65,16 @@ export function formatBatteryTime(at: number, locale: string): string {
 }
 
 /**
- * "Lasts until about", with "tomorrow" when the time is on the next calendar day (core's forecast reaches at most 24 h,
- * so never further). The key and its time, for `t`.
+ * "Lasts until about", with "tomorrow" when the time is on the next calendar day. Core's forecast reaches up to 24 h
+ * plus the rounding to the quarter hour, which on a short day (DST) or just before midnight can land on the day after
+ * tomorrow; that edge gets no text (null) rather than a wrong "tomorrow". The key and its time, for `t`.
  */
-export function lastsUntilText(until: number, now: Date, locale: string): { key: TKey; time: string } {
+export function lastsUntilText(until: number, now: Date, locale: string): { key: TKey; time: string } | null {
   const midnight = new Date(now);
   midnight.setHours(24, 0, 0, 0);
+  const nextMidnight = new Date(now);
+  nextMidnight.setHours(48, 0, 0, 0);
+  if (until >= nextMidnight.getTime()) return null;
   const key: TKey = until < midnight.getTime() ? 'energy.battery.lastsUntil' : 'energy.battery.lastsUntilTomorrow';
   return { key, time: formatBatteryTime(until, locale) };
 }
