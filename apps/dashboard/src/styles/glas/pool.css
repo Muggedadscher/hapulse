@@ -207,8 +207,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ---- Solar: the state as a capsule 28 (above the threshold greenSoft with greenInk, below fill with label2), the
-   threshold's stepper with round 44 buttons (controls.css) and its value 20/25 600 ---- */
+/* ---- Ring with a side (filter time, sun & battery): the steppers with round 44 buttons (controls.css) ---- */
 :root[data-style='glas'] .pool-split {
   gap: 16px;
 }

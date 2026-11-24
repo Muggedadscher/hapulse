@@ -39,8 +39,6 @@ export const POOL_ENTITIES = {
   solarPower: 'sensor.batteriespeicher_pv_power',
   /** Editable sun threshold: from it on the pump may run on sun while the daily filter time is not met yet. */
   solarThreshold: 'input_number.schwellwert_poolpumpe_solarleistung',
-  /** Binary sensor: is solar production above the threshold. */
-  solarExceeded: 'binary_sensor.schwellwert_poolpumpe_solarleistung',
   /** The scheduler-component switch entity behind the schedule editor. */
   scheduleSwitch: 'switch.schedule_zeitplan_poolpumpe',
   /** The input_boolean the schedule toggles on/off. */
