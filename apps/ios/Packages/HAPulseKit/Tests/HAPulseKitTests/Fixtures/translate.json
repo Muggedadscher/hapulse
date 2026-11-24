@@ -61,18 +61,18 @@
   },
   {
     "locale": "en",
-    "key": "room.section.label.vacuum",
-    "out": "Vacuums"
+    "key": "pool.weekday.thu",
+    "out": "Thu"
   },
   {
     "locale": "en",
-    "key": "security.section.show.garage",
-    "out": "Show Garage doors"
+    "key": "security.people.title",
+    "out": "People"
   },
   {
     "locale": "en",
-    "key": "settings.section.connection",
-    "out": "Connection"
+    "key": "settings.connection.disconnect",
+    "out": "Disconnect"
   },
   {
     "locale": "en",
@@ -1350,18 +1350,18 @@
   },
   {
     "locale": "de",
-    "key": "room.section.label.vacuum",
-    "out": "Sauger"
+    "key": "pool.weekday.thu",
+    "out": "Do"
   },
   {
     "locale": "de",
-    "key": "security.section.show.garage",
-    "out": "Garagentore einblenden"
+    "key": "security.people.title",
+    "out": "Personen"
   },
   {
     "locale": "de",
-    "key": "settings.section.connection",
-    "out": "Verbindung"
+    "key": "settings.connection.disconnect",
+    "out": "Trennen"
   },
   {
     "locale": "de",
@@ -2639,18 +2639,18 @@
   },
   {
     "locale": "es",
-    "key": "room.section.label.vacuum",
-    "out": "Aspiradoras"
+    "key": "pool.weekday.thu",
+    "out": "Jue"
   },
   {
     "locale": "es",
-    "key": "security.section.show.garage",
-    "out": "Mostrar Puertas de garaje"
+    "key": "security.people.title",
+    "out": "Personas"
   },
   {
     "locale": "es",
-    "key": "settings.section.connection",
-    "out": "Conexión"
+    "key": "settings.connection.disconnect",
+    "out": "Desconectar"
   },
   {
     "locale": "es",
@@ -3928,18 +3928,18 @@
   },
   {
     "locale": "fr",
-    "key": "room.section.label.vacuum",
-    "out": "Aspirateurs"
+    "key": "pool.weekday.thu",
+    "out": "Jeu"
   },
   {
     "locale": "fr",
-    "key": "security.section.show.garage",
-    "out": "Afficher Portes de garage"
+    "key": "security.people.title",
+    "out": "Personnes"
   },
   {
     "locale": "fr",
-    "key": "settings.section.connection",
-    "out": "Connexion"
+    "key": "settings.connection.disconnect",
+    "out": "Déconnecter"
   },
   {
     "locale": "fr",
@@ -5217,18 +5217,18 @@
   },
   {
     "locale": "it",
-    "key": "room.section.label.vacuum",
-    "out": "Aspirapolvere"
+    "key": "pool.weekday.thu",
+    "out": "Gio"
   },
   {
     "locale": "it",
-    "key": "security.section.show.garage",
-    "out": "Mostra Porte del garage"
+    "key": "security.people.title",
+    "out": "Persone"
   },
   {
     "locale": "it",
-    "key": "settings.section.connection",
-    "out": "Connessione"
+    "key": "settings.connection.disconnect",
+    "out": "Disconnetti"
   },
   {
     "locale": "it",
@@ -6506,18 +6506,18 @@
   },
   {
     "locale": "pt",
-    "key": "room.section.label.vacuum",
-    "out": "Aspiradores"
+    "key": "pool.weekday.thu",
+    "out": "Qui"
   },
   {
     "locale": "pt",
-    "key": "security.section.show.garage",
-    "out": "Mostrar Portões de garagem"
+    "key": "security.people.title",
+    "out": "Pessoas"
   },
   {
     "locale": "pt",
-    "key": "settings.section.connection",
-    "out": "Ligação"
+    "key": "settings.connection.disconnect",
+    "out": "Desligar"
   },
   {
     "locale": "pt",
@@ -7795,18 +7795,18 @@
   },
   {
     "locale": "sv",
-    "key": "room.section.label.vacuum",
-    "out": "Dammsugare"
+    "key": "pool.weekday.thu",
+    "out": "Tor"
   },
   {
     "locale": "sv",
-    "key": "security.section.show.garage",
-    "out": "Visa Garageportar"
+    "key": "security.people.title",
+    "out": "Personer"
   },
   {
     "locale": "sv",
-    "key": "settings.section.connection",
-    "out": "Anslutning"
+    "key": "settings.connection.disconnect",
+    "out": "Koppla från"
   },
   {
     "locale": "sv",

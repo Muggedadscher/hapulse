@@ -815,6 +815,8 @@ function demoEnergyEntities(): HassEntityMap {
 /** [fork] Demo pool pump (entity ids as in the fork's poolConfig.ts). */
 function demoPoolEntities(): HassEntityMap {
   const finishes = new Date(Date.now() + 90 * 60_000).toISOString();
+  // relative to now, not to 20:00 local: the iOS export (demo.json) must not depend on the time zone it runs in
+  const mustRunFrom = new Date(Date.now() + 4 * 3_600_000).toISOString();
   const e = (id: string, state: string, attributes: HassEntityAttributes) => ({ [id]: makeEntity(id, state, attributes) });
   return {
     ...e('input_select.modus_poolpumpe', 'Manuell', { options: ['Ausgeschalten', 'Automatik', 'Manuell'], friendly_name: 'Modus Poolpumpe', icon: 'mdi:auto-mode' }),
@@ -824,7 +826,7 @@ function demoPoolEntities(): HassEntityMap {
     ...e('input_number.poolpumpe_manuell_dauer', '120.0', { min: 5, max: 1440, step: 5, mode: 'box', unit_of_measurement: 'min', friendly_name: 'Poolpumpe Manuell Dauer' }),
     ...e('script.pool_manuell_timer_starten', 'off', { friendly_name: 'Pool – Manuell-Timer starten', mode: 'restart' }),
     ...e('input_number.poolpumpe_siri_dauer', '30.0', { min: 5, max: 1440, step: 5, mode: 'box', unit_of_measurement: 'min', friendly_name: 'Poolpumpe Siri Dauer' }),
-    ...e('sensor.balkonkraftwerk_power', '403', { unit_of_measurement: 'W', device_class: 'power', state_class: 'measurement', friendly_name: 'Balkonkraftwerk Leistung' }),
+    ...e('sensor.batteriespeicher_pv_power', '403', { unit_of_measurement: 'W', device_class: 'power', state_class: 'measurement', friendly_name: 'Batteriespeicher PV Power' }),
     ...e('input_number.schwellwert_poolpumpe_solarleistung', '400.0', { min: 0, max: 800, step: 50, mode: 'slider', unit_of_measurement: 'W', friendly_name: 'Schwellwert Poolpumpe Solarleistung' }),
     ...e('binary_sensor.schwellwert_poolpumpe_solarleistung', 'on', { friendly_name: 'Schwellwert Poolpumpe Solarleistung' }),
     ...e('switch.schedule_zeitplan_poolpumpe', 'on', {
@@ -838,6 +840,18 @@ function demoPoolEntities(): HassEntityMap {
     ...e('sensor.geschatzter_verbrauch_poolpumpe_energy_weekly', '14.7138', { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing', friendly_name: 'Verbrauch Poolpumpe Woche' }),
     ...e('sensor.geschatzter_verbrauch_poolpumpe_energy_monthly', '67.1248', { unit_of_measurement: 'kWh', device_class: 'energy', state_class: 'total_increasing', friendly_name: 'Verbrauch Poolpumpe Monat' }),
     ...e('button.poolpumpe_esppoolpumpe_geraeteneustart', 'unknown', { device_class: 'restart', friendly_name: 'ESPPoolpumpe Geräteneustart' }),
+    // the daily filter time (8 h by 20:00, 5.47 h run, the latest start in 4 h) and the battery surplus
+    // (the battery full, no grid meter yet), as the pool automation's helpers in Home Assistant
+    ...e('input_number.poolpumpe_tagesziel', '8.0', { min: 0, max: 12, step: 0.5, mode: 'box', unit_of_measurement: 'h', friendly_name: 'Poolpumpe Tagesziel' }),
+    ...e('input_datetime.poolpumpe_tagesziel_fertig_bis', '20:00:00', { has_date: false, has_time: true, hour: 20, minute: 0, second: 0, timestamp: 72000, friendly_name: 'Poolpumpe Tagesziel fertig bis' }),
+    ...e('sensor.poolpumpe_pflichtlauf_ab', mustRunFrom, { device_class: 'timestamp', friendly_name: 'Poolpumpe Pflichtlauf ab' }),
+    ...e('input_select.poolpumpe_grund', 'Keiner', { options: ['Keiner', 'Akku voll', 'Sonne', 'Tagesziel', 'Zeitplan', 'Mindestlaufzeit'], friendly_name: 'Poolpumpe Grund' }),
+    ...e('sensor.batteriespeicher_battery_soc', '92', { unit_of_measurement: '%', state_class: 'measurement', friendly_name: 'Batteriespeicher Battery SOC' }),
+    ...e('number.batteriespeicher_charge_limit', '98', { unit_of_measurement: '%', min: 50, max: 100, step: 5, mode: 'box', friendly_name: 'Batteriespeicher Charge limit' }),
+    ...e('input_number.poolpumpe_akku_uberschuss_ab', '90.0', { min: 50, max: 100, step: 5, mode: 'box', unit_of_measurement: '%', friendly_name: 'Poolpumpe Akku-Überschuss ab' }),
+    ...e('input_number.poolpumpe_akku_uberschuss_aus_unter', '80.0', { min: 30, max: 95, step: 5, mode: 'box', unit_of_measurement: '%', friendly_name: 'Poolpumpe Akku-Überschuss aus unter' }),
+    ...e('input_boolean.poolpumpe_akku_uberschuss_aktiv', 'on', { friendly_name: 'Poolpumpe Akku-Überschuss aktiv' }),
+    ...e('input_boolean.poolpumpe_nulleinspeisung_aktiv', 'off', { friendly_name: 'Poolpumpe Nulleinspeisung aktiv' }),
   };
 }
 

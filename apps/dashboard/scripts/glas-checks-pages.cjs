@@ -24,7 +24,7 @@ module.exports = function pages(h) {
       path: '/automations', box: '.auto-row-toggle', capsule: '.auto-row-toggle__track', knob: '.auto-row-toggle__knob',
     },
     poolSchedule: {
-      path: '/pool', box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
+      path: '/pool', open: (page) => click(page, '.pool-card__link'), box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
     },
     settings: {
       path: '/settings', box: `.admin-toggle[aria-label="${DE['glas.reduceTransparency.label']}"]`, capsule: null,
@@ -1975,7 +1975,9 @@ module.exports = function pages(h) {
           await close();
         }
 
-        // Pool K: the hero's word and the rings in their Glas colours (K99); the solar stepper writes the threshold,
+        // Pool K: the hero's word and the rings in their Glas colours (K99; the battery yellow while it gives no free run —
+        // the demo has no grid meter —, the filter time teal before its target); the sun row's stepper writes the
+        // threshold, the filter time's steppers the target and "done by", the battery's "on from" its helper (F78),
         // "Stopp" the automatic mode; the schedule: the ring's start knob moved by 5 min and saved sends scheduler.edit with the new
         // switch point; a figure opens its detail; the restart asks first (Escape: nothing is sent, the danger button
         // presses). The demo applies none of these calls: they are read from its call log (demoCalls.ts).
@@ -1992,6 +1994,21 @@ module.exports = function pages(h) {
               d.remove();
               return v;
             }, n);
+            // sun & battery and the schedule open from the filter time card's "Details" (a window, F78)
+            const openDetails = async () => {
+              const row = page.locator('.pool-card__link');
+              await row.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await row.click();
+              await sleep(400);
+              await settleAnimations(page);
+            };
+            const closeDetails = async () => {
+              await page.keyboard.press('Escape');
+              await sleep(400);
+              await settleAnimations(page);
+            };
+            await openDetails();
+            const folded = (await page.locator('[role="dialog"] .pool-battery').count()) === 1 ? 'true' : 'false';
             const look = await ev(page, () => {
               const cs = (sel, prop) => {
                 const e = document.querySelector(sel);
@@ -2000,29 +2017,46 @@ module.exports = function pages(h) {
               return {
                 running: !!document.querySelector('.pool-hero--running'),
                 status: cs('.pool-hero__status', 'color'),
-                track: cs('.pool-solar .pool-gauge__track', 'stroke'),
+                track: cs('.pool-battery .pool-gauge__track', 'stroke'),
                 manualTrack: cs('.pool-manual .pool-gauge__track', 'stroke'),
-                solar: cs('.pool-solar .pool-gauge__value', 'stroke'),
-                solarText: cs('.pool-solar .pool-gauge__primary', 'color'),
-                exceeded: !!document.querySelector('.pool-solar .pool-chip--positive'),
+                solar: cs('.pool-battery .pool-gauge__value', 'stroke'),
+                solarText: cs('.pool-battery .pool-gauge__primary', 'color'),
+                freeRun: !!document.querySelector('.pool-battery .pool-chip--positive'),
+                target: cs('.pool-target .pool-gauge__value', 'stroke'),
+                targetText: cs('.pool-target .pool-gauge__primary', 'color'),
+                noMeter: !!document.querySelector('.pool-battery .pool-hint'),
                 manual: cs('.pool-manual .pool-gauge__value', 'stroke'),
                 manualText: cs('.pool-manual .pool-gauge__primary', 'color'),
               };
             });
-            const [tealInk, fill2, green, greenInk, teal] = [await tok('--g-teal-ink'), await tok('--g-fill-2'), await tok('--g-green'),
-              await tok('--g-green-ink'), await tok('--g-teal')];
-            const colours = look.running && look.status === tealInk && look.track === fill2 && look.manualTrack === fill2 && look.exceeded
-              && look.solar === green && look.solarText === greenInk && look.manual === teal && look.manualText === tealInk;
+            const [tealInk, fill2, yellow, yellowInk, teal] = [await tok('--g-teal-ink'), await tok('--g-fill-2'), await tok('--g-yellow'),
+              await tok('--g-yellow-ink'), await tok('--g-teal')];
+            const colours = folded === 'true' && look.running && look.status === tealInk && look.track === fill2 && look.manualTrack === fill2 && !look.freeRun
+              && look.noMeter && look.solar === yellow && look.solarText === yellowInk && look.target === teal && look.targetText === tealInk
+              && look.manual === teal && look.manualText === tealInk;
 
-            // the solar stepper: + writes threshold + step
-            await clear();
-            const plus = page.locator('.pool-solar .pool-stepper__btn').nth(1);
-            await plus.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
-            await plus.click();
-            await sleep(200);
-            const stepper = await calls();
-            const stepperOk = stepper.length === 1 && stepper[0].domain === 'input_number' && stepper[0].service === 'set_value'
-              && stepper[0].data.value === 450 && stepper[0].target.entity_id === 'input_number.schwellwert_poolpumpe_solarleistung';
+            // a stepper's button writes its helper (the demo applies none: one call each in its log)
+            const press = async (sel, n) => {
+              await clear();
+              const b = page.locator(sel).nth(n);
+              await b.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+              await b.click();
+              await sleep(200);
+              const c = await calls();
+              return c.length === 1 ? c[0] : { count: c.length };
+            };
+            const sun = await press('.pool-battery .pool-row .pool-stepper__btn', 1);
+            const onFrom = await press('.pool-battery .pool-split .pool-stepper__btn', 0);
+            await closeDetails();
+            const goal = await press('.pool-target .pool-split .pool-stepper__btn', 1);
+            const finish = await press('.pool-target .pool-row .pool-stepper__btn', 1);
+            const set = (c, domain, service, key, value, entity) => !!c && c.domain === domain && c.service === service
+              && !!c.data && c.data[key] === value && !!c.target && c.target.entity_id === entity;
+            const stepperOk = set(sun, 'input_number', 'set_value', 'value', 450, 'input_number.schwellwert_poolpumpe_solarleistung')
+              && set(goal, 'input_number', 'set_value', 'value', 8.5, 'input_number.poolpumpe_tagesziel')
+              && set(finish, 'input_datetime', 'set_datetime', 'time', '20:30:00', 'input_datetime.poolpumpe_tagesziel_fertig_bis')
+              && set(onFrom, 'input_number', 'set_value', 'value', 85, 'input_number.poolpumpe_akku_uberschuss_ab');
+            const stepper = { sun, goal, finish, onFrom };
 
             // "Stopp" while the manual run is on: back to Automatik
             await clear();
@@ -2034,6 +2068,7 @@ module.exports = function pages(h) {
 
             // the schedule (the shared period editor, glas/pool-zeiten/PLAN.md): the ring's start knob at 12:00 moved
             // to 12:05 with a key and saved with ✓ sends scheduler.edit with the new switch point and closes the window
+            await openDetails();
             await page.locator('.pool-schedule__edit').click();
             await sleep(400);
             await settleAnimations(page);
@@ -2061,6 +2096,8 @@ module.exports = function pages(h) {
               && edit.domain === 'scheduler' && edit.service === 'edit' && edit.data.entity_id === 'switch.schedule_zeitplan_poolpumpe'
               && !!slot && slot.actions[0].service === 'input_boolean.turn_on' && Array.isArray(edit.data.weekdays) && edit.data.weekdays.length > 0
               && (await page.locator('[role="dialog"] .sched').count()) === 0;
+
+            await closeDetails();
 
             // a figure opens its detail (the inspector from 1100 px, the sheet on the phone)
             const tile = page.locator('.pool-data .pool-tile--clickable').first();

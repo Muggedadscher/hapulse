@@ -21,6 +21,16 @@ export function setSolarThreshold(entityId: string, value: number): Promise<void
   return callService('input_number', 'set_value', { value }, { entity_id: entityId });
 }
 
+/** Set a plain input_number (the daily target, the battery-surplus limits). */
+export function setPoolNumber(entityId: string, value: number): Promise<void> {
+  return callService('input_number', 'set_value', { value }, { entity_id: entityId });
+}
+
+/** Set a time-only input_datetime ("20:30:00"). */
+export function setPoolTime(entityId: string, time: string): Promise<void> {
+  return callService('input_datetime', 'set_datetime', { time }, { entity_id: entityId });
+}
+
 /**
  * Set a duration input_number (minutes) — used for both the manual-run and the
  * Siri/Apple-Home durations. The HA automation reads the value when a manual

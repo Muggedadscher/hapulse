@@ -118,6 +118,45 @@
   outline-offset: -2px;
 }
 
+/* ---- The filter time's "Details" next to its title: like "Details" on the energy page's battery card and the
+   overview's card heads (label2 15, chevron 2.25, 44 high); its window stacks the cards of sun & battery and the schedule
+   with the page's card gap ---- */
+:root[data-style='glas'] .pool-card__link {
+  flex: none;
+  gap: 2px;
+  padding: 0 0 0 12px;
+  border-radius: 999px;
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  :root[data-style='glas'] .pool-card__link:hover {
+    opacity: 1;
+  }
+}
+
+:root[data-style='glas'] .pool-card__link:active {
+  opacity: 0.55;
+}
+
+:root[data-style='glas'] .pool-card__link > svg {
+  flex: none;
+  stroke-width: 2.25;
+}
+
+:root[data-style='glas'] .pool-card__link:focus-visible {
+  outline: 2px solid var(--g-focus);
+  outline-offset: 2px;
+}
+
+:root[data-style='glas'] .pool-details__cards {
+  gap: 20px;
+}
+
 /* ---- Rings (K99): the track fill2 like the climate ring on the desktop, the arc in the colour of what it shows — the
    sun yellow, above the threshold green, the manual run teal (the pool's colour) — and the value in that colour's ink.
    PoolGauge paints both inline with the token it is given; Glas re-scopes that token on the two elements. The value
@@ -126,22 +165,25 @@
   stroke: var(--g-fill-2);
 }
 
-:root[data-style='glas'] .pool-solar__body .pool-gauge__value {
+:root[data-style='glas'] :is(.pool-solar__body, .pool-battery .pool-split) .pool-gauge__value {
   --accent: var(--g-yellow);
   --positive: var(--g-green);
 }
 
-:root[data-style='glas'] .pool-solar__body .pool-gauge__primary {
+:root[data-style='glas'] :is(.pool-solar__body, .pool-battery .pool-split) .pool-gauge__primary {
   --accent: var(--g-yellow-ink);
   --positive: var(--g-green-ink);
 }
 
-:root[data-style='glas'] .pool-manual__body .pool-gauge__value {
+/* the filter time teal like the manual run (the pool's colour), green once the target is met */
+:root[data-style='glas'] :is(.pool-manual__body, .pool-target .pool-split) .pool-gauge__value {
   --info: var(--g-teal);
+  --positive: var(--g-green);
 }
 
-:root[data-style='glas'] .pool-manual__body .pool-gauge__primary {
+:root[data-style='glas'] :is(.pool-manual__body, .pool-target .pool-split) .pool-gauge__primary {
   --info: var(--g-teal-ink);
+  --positive: var(--g-green-ink);
 }
 
 :root[data-style='glas'] .pool-gauge__center {
@@ -167,8 +209,29 @@
 
 /* ---- Solar: the state as a capsule 28 (above the threshold greenSoft with greenInk, below fill with label2), the
    threshold's stepper with round 44 buttons (controls.css) and its value 20/25 600 ---- */
-:root[data-style='glas'] .pool-solar__body {
+:root[data-style='glas'] :is(.pool-solar__body, .pool-split) {
   gap: 16px;
+}
+
+/* the filter time's line under the chip 15 label2, the notes at the card's foot 13 label2 (a warning in orangeInk), the
+   pump's reason in the hero 15 label2 */
+:root[data-style='glas'] .pool-split__line {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+}
+
+:root[data-style='glas'] .pool-hint {
+  color: var(--g-label-2);
+  font: 400 13px / 18px var(--g-font);
+}
+
+:root[data-style='glas'] .pool-hint--warn {
+  color: var(--g-orange-ink);
+}
+
+:root[data-style='glas'] .pool-hero__reason {
+  color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
 }
 
 :root[data-style='glas'] .pool-chip {
@@ -284,28 +347,28 @@
   outline-offset: 2px;
 }
 
-:root[data-style='glas'] .pool-manual__siri {
+:root[data-style='glas'] :is(.pool-manual__siri, .pool-row) {
   gap: 12px;
   margin-top: 4px;
   padding-top: 12px;
   border-top: 0.5px solid var(--g-sep);
 }
 
-:root[data-style='glas'] .pool-manual__siri-text {
+:root[data-style='glas'] :is(.pool-manual__siri-text, .pool-row__text) {
   gap: 0;
 }
 
-:root[data-style='glas'] .pool-manual__siri-label {
+:root[data-style='glas'] :is(.pool-manual__siri-label, .pool-row__label) {
   color: var(--g-label);
   font: 600 15px / 20px var(--g-font);
 }
 
-:root[data-style='glas'] .pool-manual__siri-desc {
+:root[data-style='glas'] :is(.pool-manual__siri-desc, .pool-row__desc) {
   color: var(--g-label-2);
   font: 400 13px / 18px var(--g-font);
 }
 
-:root[data-style='glas'] .pool-manual__siri .pool-stepper__value {
+:root[data-style='glas'] :is(.pool-manual__siri, .pool-row) .pool-stepper__value {
   min-width: 64px;
   font-size: 17px;
   line-height: 22px;
