@@ -1,7 +1,7 @@
 /**
  * [fork] Pieces the battery's card, its window and the overview's battery line share (EnergyBattery.tsx,
  * EnergyBatteryWindow.tsx, EnergyBatteryLine.tsx): the ring with the charge, the state words, the power as text and
- * the "full at about" time.
+ * the "full at about" and "lasts until about" times.
  */
 
 import type { BatteryState } from '@hapulse/core';
@@ -57,4 +57,20 @@ export function fullAtToday(at: number | null, now: Date): number | null {
   const midnight = new Date(now);
   midnight.setHours(24, 0, 0, 0);
   return at < midnight.getTime() ? at : null;
+}
+
+/** A forecast's clock time in the UI language ("8:00", "8:00 AM"); German adds "Uhr" in its texts. */
+export function formatBatteryTime(at: number, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(at);
+}
+
+/**
+ * "Lasts until about", with "tomorrow" when the time is on the next calendar day (core's forecast reaches at most 24 h,
+ * so never further). The key and its time, for `t`.
+ */
+export function lastsUntilText(until: number, now: Date, locale: string): { key: TKey; time: string } {
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const key: TKey = until < midnight.getTime() ? 'energy.battery.lastsUntil' : 'energy.battery.lastsUntilTomorrow';
+  return { key, time: formatBatteryTime(until, locale) };
 }

@@ -133,11 +133,15 @@
   },
   "energy.battery.fullAt": {
     "langs": "all",
-    "reason": "follows the battery's state on the same line (\"Lädt · voll um ca. 16:30\")"
+    "reason": "follows the battery's state on the same line (\"Lädt · voll um ca. 16:30 Uhr\")"
   },
   "energy.battery.lastsUntil": {
     "langs": "all",
-    "reason": "follows the battery's state on the same line (\"Entlädt · reicht bis ca. 6:45\")"
+    "reason": "follows the battery's state on the same line (\"Entlädt · reicht bis ca. 6:45 Uhr\")"
+  },
+  "energy.battery.lastsUntilTomorrow": {
+    "langs": "all",
+    "reason": "follows the battery's state on the same line (\"Entlädt · reicht bis morgen ca. 8:00 Uhr\")"
   },
   "energy.battery.planNowIdle": {
     "langs": "all",

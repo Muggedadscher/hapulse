@@ -1621,6 +1621,7 @@
   "energy.battery.unavailable": "Non raggiungibile",
   "energy.battery.reserve": "Riserva raggiunta",
   "energy.battery.lastsUntil": "dura fino alle {time} circa",
+  "energy.battery.lastsUntilTomorrow": "dura fino a domani alle {time} circa",
   "energy.battery.modeAuto": "Automatico",
   "energy.battery.modeManual": "Manuale",
   "energy.battery.reserveLine": "Riserva",
