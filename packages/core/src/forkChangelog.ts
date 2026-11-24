@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 79,
+    date: '2026-11-24',
+    title: { de: 'Pool: Feinschliff am Handy', en: 'Pool: phone polish' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Glas am Handy: Die Plus-Knöpfe neben dem Ring der Pool-Karten ragen nicht mehr über den Rand',
+            en: 'Glas on phones: the plus buttons next to the ring of the pool cards no longer reach past the edge',
+          },
+          {
+            de: 'Die Uhrzeit bei „Fertig bis“ bricht nicht mehr in zwei Zeilen um, z. B. „08:00 PM“',
+            en: 'The “Done by” time no longer wraps onto two lines, e.g. “08:00 PM”',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 78,
     date: '2026-11-23',
     title: { de: 'Pool: Filterzeit und Akku', en: 'Pool: filter time and battery' },

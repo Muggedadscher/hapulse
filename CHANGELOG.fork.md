@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F79 — 2026-11-24
+
+**Pool: Feinschliff am Handy** · _Pool: phone polish_
+
+### Behoben / Fixed
+
+- Glas am Handy: Die Plus-Knöpfe neben dem Ring der Pool-Karten ragen nicht mehr über den Rand  
+  _Glas on phones: the plus buttons next to the ring of the pool cards no longer reach past the edge_
+- Die Uhrzeit bei „Fertig bis“ bricht nicht mehr in zwei Zeilen um, z. B. „08:00 PM“  
+  _The “Done by” time no longer wraps onto two lines, e.g. “08:00 PM”_
+
 ## F78 — 2026-11-23
 
 **Pool: Filterzeit und Akku** · _Pool: filter time and battery_
