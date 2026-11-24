@@ -23,8 +23,8 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 - Das Pool-Fenster zeigt Filterzeit und Ladestand statt Solarleistung und Laufzeit; die Sonnenleistung kommt vom Akku  
   _The pool window shows the filter time and the battery’s charge instead of solar power and runtime; the sun power comes from the battery_
-- Die Pool-Seite zeigt vorn nur noch, was man im Alltag einstellt: „Sonne & Akku“ und der Zeitplan öffnen sich über „Details“ in der Karte „Filterzeit“  
-  _The pool page now shows up front only what you set day to day: “Sun & battery” and the schedule open from “Details” in the “Filter time” card_
+- Die Pool-Seite zeigt vorn nur noch, was man im Alltag einstellt: „Sonne & Akku“ und der Zeitplan öffnen sich über „Details“ oben in der Karte „Filterzeit“  
+  _The pool page now shows up front only what you set day to day: “Sun & battery” and the schedule open from “Details” at the top of the “Filter time” card_
 
 ## F77 — 2026-11-19
 

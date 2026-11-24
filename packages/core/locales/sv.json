@@ -969,7 +969,7 @@
   "pool.target.onlyAuto": "Filtertiden gäller bara i automatiskt läge.",
   "pool.target.how": "Pumpen går helst när batteriet är fullt eller solen skiner. Det som fortfarande saknas tar den igen till {time}.",
   "pool.details.title": "Detaljer",
-  "pool.details.desc": "Sol och batteri samt schema. Startvärdena passar oftast.",
+  "pool.details.aria": "Filtertid, detaljer: sol och batteri samt schema",
   "pool.details.window": "Filtertid: detaljer",
   "pool.battery.title": "Sol och batteri",
   "pool.battery.soc": "Batteri",

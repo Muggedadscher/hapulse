@@ -1364,7 +1364,7 @@
   "pool.data.consumptionWeek": "Diese Woche",
   "pool.data.runtimeToday": "Laufzeit heute",
   "pool.data.title": "Verbrauch & Laufzeit",
-  "pool.details.desc": "Sonne & Akku und Zeitplan. Die Startwerte passen meist.",
+  "pool.details.aria": "Details zur Filterzeit: Sonne & Akku und Zeitplan",
   "pool.details.title": "Details",
   "pool.details.window": "Filterzeit: Details",
   "pool.manual.durationTitle": "Laufzeit wählen",

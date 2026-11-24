@@ -24,7 +24,7 @@ module.exports = function pages(h) {
       path: '/automations', box: '.auto-row-toggle', capsule: '.auto-row-toggle__track', knob: '.auto-row-toggle__knob',
     },
     poolSchedule: {
-      path: '/pool', open: (page) => click(page, '.pool-details-row'), box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
+      path: '/pool', open: (page) => click(page, '.pool-card__link'), box: '.pool-schedule .pool-switch', capsule: '.pool-switch__track', knob: '.pool-switch__thumb',
     },
     settings: {
       path: '/settings', box: `.admin-toggle[aria-label="${DE['glas.reduceTransparency.label']}"]`, capsule: null,
@@ -1996,7 +1996,7 @@ module.exports = function pages(h) {
             }, n);
             // sun & battery and the schedule open from the filter time card's "Details" (a window, F78)
             const openDetails = async () => {
-              const row = page.locator('.pool-details-row');
+              const row = page.locator('.pool-card__link');
               await row.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
               await row.click();
               await sleep(400);

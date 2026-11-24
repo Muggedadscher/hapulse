@@ -969,7 +969,7 @@
   "pool.target.onlyAuto": "Il tempo di filtrazione vale solo in modalità automatica.",
   "pool.target.how": "La pompa funziona di preferenza quando la batteria è piena o c’è il sole. Ciò che manca ancora lo recupera entro le {time}.",
   "pool.details.title": "Dettagli",
-  "pool.details.desc": "Sole e batteria e programma. I valori iniziali di solito vanno bene.",
+  "pool.details.aria": "Dettagli del tempo di filtrazione: sole e batteria e programma",
   "pool.details.window": "Tempo di filtrazione: dettagli",
   "pool.battery.title": "Sole e batteria",
   "pool.battery.soc": "Batteria",

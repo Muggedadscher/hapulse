@@ -28,7 +28,7 @@ import {
 } from './poolPlan';
 
 interface PoolTargetCardProps {
-  /** The settings that rarely change (sun & battery, the schedule): a "Details" row opens them in a window. */
+  /** The settings that rarely change (sun & battery, the schedule): "Details" next to the title opens them in a window, as on the energy page. */
   details?: React.ReactNode;
 }
 
@@ -96,6 +96,18 @@ export function PoolTargetCard({ details }: PoolTargetCardProps) {
           <Hourglass size={16} strokeWidth={1.75} />
         </span>
         <h2 className="pool-card__title">{t('pool.target.title')}</h2>
+        {details != null && (
+          <button
+            type="button"
+            className="pool-card__link"
+            aria-haspopup="dialog"
+            aria-label={t('pool.details.aria')}
+            onClick={() => setDetailsOpen(true)}
+          >
+            {t('pool.details.title')}
+            <ChevronRight size={14} strokeWidth={2} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       <div className="pool-split">
@@ -143,24 +155,15 @@ export function PoolTargetCard({ details }: PoolTargetCardProps) {
       <p className="pool-hint">{auto ? t('pool.target.how', { time: finishText }) : t('pool.target.onlyAuto')}</p>
 
       {details != null && (
-        <>
-          <button type="button" className="pool-details-row" aria-haspopup="dialog" onClick={() => setDetailsOpen(true)}>
-            <span className="pool-row__text">
-              <span className="pool-row__label">{t('pool.details.title')}</span>
-              <span className="pool-row__desc">{t('pool.details.desc')}</span>
-            </span>
-            <ChevronRight className="pool-details-row__chevron" size={20} strokeWidth={1.75} aria-hidden="true" />
-          </button>
-          <Modal
-            open={detailsOpen}
-            onClose={() => setDetailsOpen(false)}
-            title={t('pool.details.window')}
-            icon={<Hourglass size={20} strokeWidth={1.75} />}
-            className="pool-details"
-          >
-            <div className="pool-details__cards">{details}</div>
-          </Modal>
-        </>
+        <Modal
+          open={detailsOpen}
+          onClose={() => setDetailsOpen(false)}
+          title={t('pool.details.window')}
+          icon={<Hourglass size={20} strokeWidth={1.75} />}
+          className="pool-details"
+        >
+          <div className="pool-details__cards">{details}</div>
+        </Modal>
       )}
     </Card>
   );

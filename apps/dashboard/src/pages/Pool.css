@@ -44,25 +44,29 @@
   }
 }
 
-/* The filter time's "Details" row (a button like the settings rows, chevron right) and its window: the cards of sun &
-   battery and the schedule stacked */
-.pool-details-row {
-  display: flex;
+/* The filter time's "Details" next to its title (like the energy page's battery card, `.en-bat__more`) and its window:
+   the cards of sun & battery and the schedule stacked */
+.pool-card__link {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 0 0;
-  border: 0;
-  border-top: 1px solid var(--line);
+  gap: 0.125rem;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0.25rem 0;
+  border: none;
   background: none;
-  color: var(--text);
-  font: inherit;
-  text-align: left;
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: opacity 160ms ease-out;
 }
 
-.pool-details-row__chevron { flex-shrink: 0; color: var(--text-dim); }
+@media (hover: hover) {
+  .pool-card__link:hover {
+    opacity: 0.75;
+  }
+}
 
 .pool-details__cards {
   display: flex;

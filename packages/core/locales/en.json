@@ -969,7 +969,7 @@
   "pool.target.onlyAuto": "The filter time only applies in automatic mode.",
   "pool.target.how": "The pump prefers to run when the battery is full or the sun is shining. Whatever is still missing, it makes up by {time}.",
   "pool.details.title": "Details",
-  "pool.details.desc": "Sun & battery and schedule. The start values usually fit.",
+  "pool.details.aria": "Filter time details: sun & battery and schedule",
   "pool.details.window": "Filter time: details",
   "pool.battery.title": "Sun & battery",
   "pool.battery.soc": "Battery",

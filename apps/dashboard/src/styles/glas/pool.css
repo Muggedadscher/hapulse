@@ -118,23 +118,39 @@
   outline-offset: -2px;
 }
 
-/* ---- The filter time's "Details" row: like the settings rows below a 0.5 px separator, the chevron label2; its window
-   stacks the cards of sun & battery and the schedule with the page's card gap ---- */
-:root[data-style='glas'] .pool-details-row {
-  min-height: 44px;
-  padding-top: 12px;
-  border-top: 0.5px solid var(--g-sep);
-  color: var(--g-label);
-}
-
-:root[data-style='glas'] .pool-details-row__chevron {
+/* ---- The filter time's "Details" next to its title: like "Details" on the energy page's battery card and the
+   overview's card heads (label2 15, chevron 2.25, 44 high); its window stacks the cards of sun & battery and the schedule
+   with the page's card gap ---- */
+:root[data-style='glas'] .pool-card__link {
+  flex: none;
+  gap: 2px;
+  padding: 0 0 0 12px;
+  border-radius: 999px;
   color: var(--g-label-2);
+  font: 400 15px / 20px var(--g-font);
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-:root[data-style='glas'] .pool-details-row:focus-visible {
+@media (hover: hover) {
+  :root[data-style='glas'] .pool-card__link:hover {
+    opacity: 1;
+  }
+}
+
+:root[data-style='glas'] .pool-card__link:active {
+  opacity: 0.55;
+}
+
+:root[data-style='glas'] .pool-card__link > svg {
+  flex: none;
+  stroke-width: 2.25;
+}
+
+:root[data-style='glas'] .pool-card__link:focus-visible {
   outline: 2px solid var(--g-focus);
   outline-offset: 2px;
-  border-radius: 8px;
 }
 
 :root[data-style='glas'] .pool-details__cards {

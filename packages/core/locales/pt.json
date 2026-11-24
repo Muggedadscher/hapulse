@@ -969,7 +969,7 @@
   "pool.target.onlyAuto": "O tempo de filtragem só se aplica no modo automático.",
   "pool.target.how": "A bomba funciona de preferência quando a bateria está cheia ou há sol. O que ainda faltar, recupera até às {time}.",
   "pool.details.title": "Detalhes",
-  "pool.details.desc": "Sol e bateria e horário. Os valores iniciais costumam servir.",
+  "pool.details.aria": "Detalhes do tempo de filtragem: sol e bateria e horário",
   "pool.details.window": "Tempo de filtragem: detalhes",
   "pool.battery.title": "Sol e bateria",
   "pool.battery.soc": "Bateria",

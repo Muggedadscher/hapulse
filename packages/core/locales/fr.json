@@ -969,7 +969,7 @@
   "pool.target.onlyAuto": "La durée de filtration ne s’applique qu’en mode automatique.",
   "pool.target.how": "La pompe tourne de préférence quand la batterie est pleine ou que le soleil brille. Ce qui manque encore, elle le rattrape avant {time}.",
   "pool.details.title": "Détails",
-  "pool.details.desc": "Soleil et batterie, programme. Les valeurs de départ conviennent en général.",
+  "pool.details.aria": "Détails de la durée de filtration : soleil et batterie, programme",
   "pool.details.window": "Durée de filtration : détails",
   "pool.battery.title": "Soleil et batterie",
   "pool.battery.soc": "Batterie",

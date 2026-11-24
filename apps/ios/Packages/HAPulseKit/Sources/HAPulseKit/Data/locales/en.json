@@ -1364,7 +1364,7 @@
   "pool.data.consumptionWeek": "This week",
   "pool.data.runtimeToday": "Runtime today",
   "pool.data.title": "Usage & runtime",
-  "pool.details.desc": "Sun & battery and schedule. The start values usually fit.",
+  "pool.details.aria": "Filter time details: sun & battery and schedule",
   "pool.details.title": "Details",
   "pool.details.window": "Filter time: details",
   "pool.manual.durationTitle": "Choose duration",

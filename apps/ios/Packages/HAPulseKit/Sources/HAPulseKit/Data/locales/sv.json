@@ -1364,7 +1364,7 @@
   "pool.data.consumptionWeek": "Denna vecka",
   "pool.data.runtimeToday": "Drifttid idag",
   "pool.data.title": "Förbrukning och drifttid",
-  "pool.details.desc": "Sol och batteri samt schema. Startvärdena passar oftast.",
+  "pool.details.aria": "Filtertid, detaljer: sol och batteri samt schema",
   "pool.details.title": "Detaljer",
   "pool.details.window": "Filtertid: detaljer",
   "pool.manual.durationTitle": "Välj körtid",

@@ -1364,7 +1364,7 @@
   "pool.data.consumptionWeek": "Esta semana",
   "pool.data.runtimeToday": "Funcionamento hoje",
   "pool.data.title": "Consumo e tempo de funcionamento",
-  "pool.details.desc": "Sol e bateria e horário. Os valores iniciais costumam servir.",
+  "pool.details.aria": "Detalhes do tempo de filtragem: sol e bateria e horário",
   "pool.details.title": "Detalhes",
   "pool.details.window": "Tempo de filtragem: detalhes",
   "pool.manual.durationTitle": "Escolher duração",
