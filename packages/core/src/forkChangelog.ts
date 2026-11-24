@@ -46,12 +46,12 @@ export const FORK_RELEASES: ForkRelease[] = [
         kind: 'fixed',
         items: [
           {
-            de: 'Glas am Handy: Die Plus-Knöpfe neben dem Ring der Karten „Filterzeit“ und „Sonne & Akku“ ragen nicht mehr über den Rand',
-            en: 'Glas on phones: the plus buttons next to the ring of the “Filter time” and “Sun & battery” cards no longer reach past the edge',
+            de: 'Glas am Handy: Die Plus-Knöpfe neben dem Ring der Pool-Karten ragen nicht mehr über den Rand',
+            en: 'Glas on phones: the plus buttons next to the ring of the pool cards no longer reach past the edge',
           },
           {
-            de: 'Uhrzeiten der Filterzeit stehen in einer Zeile und ohne führende Null bei 12-Stunden-Uhr, z. B. „8:00 PM“',
-            en: 'Filter time clock times stay on one line and drop the leading zero on a 12-hour clock, e.g. “8:00 PM”',
+            de: 'Die Uhrzeit bei „Fertig bis“ bricht nicht mehr in zwei Zeilen um, z. B. „08:00 PM“',
+            en: 'The “Done by” time no longer wraps onto two lines, e.g. “08:00 PM”',
           },
         ],
       },

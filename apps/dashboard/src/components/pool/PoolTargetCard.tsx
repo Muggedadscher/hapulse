@@ -60,7 +60,7 @@ export function PoolTargetCard({ details }: PoolTargetCardProps) {
   const status = poolTargetStatus(runtimeH, targetH, mustRunFrom?.state, new Date());
   const reached = status.kind === 'reached';
   const hours = (h: number) => `${formatNumber(h, locale, { maxDecimals: 1 })} h`;
-  const clock = (d: Date) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(d);
+  const clock = (d: Date) => new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d);
 
   const chip = status.kind === 'none' ? t('pool.target.none')
     : reached ? t('pool.target.reached')

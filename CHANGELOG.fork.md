@@ -12,10 +12,10 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 
 ### Behoben / Fixed
 
-- Glas am Handy: Die Plus-Knöpfe neben dem Ring der Karten „Filterzeit“ und „Sonne & Akku“ ragen nicht mehr über den Rand  
-  _Glas on phones: the plus buttons next to the ring of the “Filter time” and “Sun & battery” cards no longer reach past the edge_
-- Uhrzeiten der Filterzeit stehen in einer Zeile und ohne führende Null bei 12-Stunden-Uhr, z. B. „8:00 PM“  
-  _Filter time clock times stay on one line and drop the leading zero on a 12-hour clock, e.g. “8:00 PM”_
+- Glas am Handy: Die Plus-Knöpfe neben dem Ring der Pool-Karten ragen nicht mehr über den Rand  
+  _Glas on phones: the plus buttons next to the ring of the pool cards no longer reach past the edge_
+- Die Uhrzeit bei „Fertig bis“ bricht nicht mehr in zwei Zeilen um, z. B. „08:00 PM“  
+  _The “Done by” time no longer wraps onto two lines, e.g. “08:00 PM”_
 
 ## F78 — 2026-11-23
 
