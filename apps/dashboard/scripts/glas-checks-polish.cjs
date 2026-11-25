@@ -1425,10 +1425,8 @@ module.exports = function polish(h) {
       };
       const tabLink = (page, key) => page.locator('.app-tabs a.app-tabs__item').filter({ hasText: DE[key] });
       const sideLink = (page, key) => page.locator('.app-sidebar a.sidebar-nav__item').filter({ hasText: DE[key] });
-      const tileReady = (page, sel) => page.waitForFunction((s) => {
-        const img = document.querySelector(s);
-        return img && img.complete && img.naturalWidth > 0;
-      }, sel, { timeout: 15000 });
+      // any of the tile's pictures (from @sentinel-nvr/web 0.22.1 the next snapshot loads in a second <img> behind)
+      const tileReady = (page, sel) => page.waitForFunction((s) => [...document.querySelectorAll(s)].some((img) => img.complete && img.naturalWidth > 0), sel, { timeout: 15000 });
       /** A page change: the new page at `ready`, no names, nothing left behind; `link`: the pressed link stays on screen
        *  (tab bar, sidebar), so it keeps the focus. */
       const pageOk = (s, path, msg, link = false) => {
