@@ -72,7 +72,7 @@ brauche upstream nicht mehr“); Regeln, die nur Upstream-Merges erleichtern (`[
   Lovelace-`dashboard-pool`). Route `/pool`, `apps/dashboard/src/pages/Pool.{tsx,css}`,
   Karten unter `apps/dashboard/src/components/pool/*`, Entity-Wiring in
   `poolConfig.ts`, Service-Facade `apps/dashboard/src/ha/pool.ts`. Enthält
-  Hero-Pumpenstatus + Modus-Umschalter, Solar-Gauge mit editierbarer Schwelle,
+  Hero-Pumpenstatus + Modus-Umschalter, Filterzeit-Karte (Tagesziel, „Details ›“ öffnet Sonne & Akku und den Zeitplan),
   Manuell-Timer-Ring, Laufzeit/Verbrauch (Kacheln öffnen Upstreams
   Entity-Detail-Modal), einen
   **Zeitplan-Editor** (`PoolTimesPage.tsx`: Tages-Chips, 24-h-Ring und Zeitfelder aus dem gemeinsamen Bauteil

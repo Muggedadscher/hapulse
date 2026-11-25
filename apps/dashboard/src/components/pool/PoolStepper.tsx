@@ -1,6 +1,6 @@
 /**
  * [fork] PoolStepper — the pool page's − value + control (classes `pool-stepper*`, Glas: round 44 buttons in
- * controls.css). With `label` it is the labelled column of the solar card, without it the bare row for a settings row
+ * controls.css). With `label` it is the labelled column beside a card's ring, without it the bare row for a settings row
  * (`pool-row`, like the Siri duration).
  */
 

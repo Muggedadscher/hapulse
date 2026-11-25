@@ -423,9 +423,8 @@
   color: var(--text-faint);
 }
 
-/* ---- Solar ---- */
+/* ---- Ring with a side (filter time, sun & battery) ---- */
 
-.pool-solar__body,
 .pool-split {
   display: flex;
   align-items: center;
@@ -433,7 +432,6 @@
   flex-wrap: wrap;
 }
 
-.pool-solar__side,
 .pool-split__side {
   display: flex;
   flex-direction: column;
@@ -447,19 +445,16 @@
    card's edge). 320 = ring 132 + gap 18 + the stepper row 170 (40 + 10 + 70 + 10 + 40). Glas's row is 178 (buttons
    44): from 320 to 326 its "+" reaches up to 6 px into the 16 px padding, still on the surface, so the phone (325 inside
    at 390) keeps the ring and the side next to each other. The query measures the card's content box. */
-.pool-solar,
 .pool-target,
 .pool-battery {
-  container: pool-solar / inline-size;
+  container: pool-ring / inline-size;
 }
 
-@container pool-solar (max-width: 319.98px) {
-  .pool-solar__body,
+@container pool-ring (max-width: 319.98px) {
   .pool-split {
     flex-direction: column;
   }
 
-  .pool-solar__side,
   .pool-split__side {
     flex: none;
     align-items: center;
@@ -467,12 +462,10 @@
     text-align: center;
   }
 
-  .pool-solar__side .pool-chip,
   .pool-split__side .pool-chip {
     align-self: center;
   }
 
-  .pool-solar__side .pool-stepper,
   .pool-split__side .pool-stepper {
     align-items: center;
   }

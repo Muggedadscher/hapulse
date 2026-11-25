@@ -61,18 +61,18 @@
   },
   {
     "locale": "en",
-    "key": "pool.weekday.thu",
-    "out": "Thu"
+    "key": "room.notFound.title",
+    "out": "Room not found"
   },
   {
     "locale": "en",
-    "key": "security.people.title",
-    "out": "People"
+    "key": "security.section.hide.locks",
+    "out": "Hide Locks"
   },
   {
     "locale": "en",
-    "key": "settings.connection.disconnect",
-    "out": "Disconnect"
+    "key": "settings.connection.row.data",
+    "out": "Data"
   },
   {
     "locale": "en",
@@ -1350,18 +1350,18 @@
   },
   {
     "locale": "de",
-    "key": "pool.weekday.thu",
-    "out": "Do"
+    "key": "room.notFound.title",
+    "out": "Raum nicht gefunden"
   },
   {
     "locale": "de",
-    "key": "security.people.title",
-    "out": "Personen"
+    "key": "security.section.hide.locks",
+    "out": "Schlösser ausblenden"
   },
   {
     "locale": "de",
-    "key": "settings.connection.disconnect",
-    "out": "Trennen"
+    "key": "settings.connection.row.data",
+    "out": "Daten"
   },
   {
     "locale": "de",
@@ -2639,18 +2639,18 @@
   },
   {
     "locale": "es",
-    "key": "pool.weekday.thu",
-    "out": "Jue"
+    "key": "room.notFound.title",
+    "out": "Estancia no encontrada"
   },
   {
     "locale": "es",
-    "key": "security.people.title",
-    "out": "Personas"
+    "key": "security.section.hide.locks",
+    "out": "Ocultar Cerraduras"
   },
   {
     "locale": "es",
-    "key": "settings.connection.disconnect",
-    "out": "Desconectar"
+    "key": "settings.connection.row.data",
+    "out": "Datos"
   },
   {
     "locale": "es",
@@ -3928,18 +3928,18 @@
   },
   {
     "locale": "fr",
-    "key": "pool.weekday.thu",
-    "out": "Jeu"
+    "key": "room.notFound.title",
+    "out": "Pièce introuvable"
   },
   {
     "locale": "fr",
-    "key": "security.people.title",
-    "out": "Personnes"
+    "key": "security.section.hide.locks",
+    "out": "Masquer Serrures"
   },
   {
     "locale": "fr",
-    "key": "settings.connection.disconnect",
-    "out": "Déconnecter"
+    "key": "settings.connection.row.data",
+    "out": "Données"
   },
   {
     "locale": "fr",
@@ -5217,18 +5217,18 @@
   },
   {
     "locale": "it",
-    "key": "pool.weekday.thu",
-    "out": "Gio"
+    "key": "room.notFound.title",
+    "out": "Stanza non trovata"
   },
   {
     "locale": "it",
-    "key": "security.people.title",
-    "out": "Persone"
+    "key": "security.section.hide.locks",
+    "out": "Nascondi Serrature"
   },
   {
     "locale": "it",
-    "key": "settings.connection.disconnect",
-    "out": "Disconnetti"
+    "key": "settings.connection.row.data",
+    "out": "Dati"
   },
   {
     "locale": "it",
@@ -6506,18 +6506,18 @@
   },
   {
     "locale": "pt",
-    "key": "pool.weekday.thu",
-    "out": "Qui"
+    "key": "room.notFound.title",
+    "out": "Divisão não encontrada"
   },
   {
     "locale": "pt",
-    "key": "security.people.title",
-    "out": "Pessoas"
+    "key": "security.section.hide.locks",
+    "out": "Ocultar Fechaduras"
   },
   {
     "locale": "pt",
-    "key": "settings.connection.disconnect",
-    "out": "Desligar"
+    "key": "settings.connection.row.data",
+    "out": "Dados"
   },
   {
     "locale": "pt",
@@ -7795,18 +7795,18 @@
   },
   {
     "locale": "sv",
-    "key": "pool.weekday.thu",
-    "out": "Tor"
+    "key": "room.notFound.title",
+    "out": "Rummet hittades inte"
   },
   {
     "locale": "sv",
-    "key": "security.people.title",
-    "out": "Personer"
+    "key": "security.section.hide.locks",
+    "out": "Dölj Lås"
   },
   {
     "locale": "sv",
-    "key": "settings.connection.disconnect",
-    "out": "Koppla från"
+    "key": "settings.connection.row.data",
+    "out": "Data"
   },
   {
     "locale": "sv",
