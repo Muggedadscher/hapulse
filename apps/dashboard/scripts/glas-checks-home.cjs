@@ -1111,6 +1111,40 @@ module.exports = function home(h) {
           // resizing the window (columns change, the 900 px edge crossed both ways) must not end in a "ResizeObserver loop"
           // error (an observer on an ancestor, e.g. GlasRuntime's on .app-content, would miss a size changed inside a
           // ResizeObserver callback), and the layout is right again at the old width
+          // a card that grows (live update) never covers the next one in a painted frame: sampled after each paint
+          r.grow = await ev(page, async () => {
+            const st = { frames: 0, bad: 0, max: 0, on: true };
+            const mc = new MessageChannel();
+            mc.port1.onmessage = () => {
+              const g = document.querySelector('.home-page .overview-grid');
+              const rs = [...g.children].filter((c) => c.getClientRects().length).map((c) => c.getBoundingClientRect());
+              let m = 0;
+              for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) {
+                const a = rs[i], b = rs[j];
+                const ox = Math.min(a.right, b.right) - Math.max(a.left, b.left), oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+                if (ox > 1 && oy > 1) m = Math.max(m, oy);
+              }
+              st.frames++;
+              if (m > 1) { st.bad++; st.max = Math.max(st.max, Math.round(m)); }
+              if (st.on) requestAnimationFrame(() => mc.port2.postMessage(0));
+            };
+            requestAnimationFrame(() => mc.port2.postMessage(0));
+            const cells = [...document.querySelectorAll('.home-page .overview-grid > *')].filter((c) => c.getClientRects().length);
+            for (let i = 0; i < 6; i++) {
+              const cell = cells[1 + (i % 3)];
+              let d = document.getElementById('g-mas-grow');
+              if (d) d.remove();
+              else {
+                d = document.createElement('div');
+                d.id = 'g-mas-grow';
+                d.style.height = '80px';
+                (cell.querySelector('[data-section] > *') || cell).appendChild(d);
+              }
+              await new Promise((res) => setTimeout(res, 250));
+            }
+            st.on = false;
+            return st;
+          });
           const vp = page.viewportSize();
           await ev(page, () => { window.__roLoop = 0; window.addEventListener('error', (e) => { if (/ResizeObserver/.test(e.message)) window.__roLoop++; }); });
           for (const width of [1300, 1180, 1020, 950, 880, 905, 1100, vp.width]) {
@@ -1130,7 +1164,7 @@ module.exports = function home(h) {
         r.ok = laid(r.view) && laid(r.after)
           && (style === 'glas' ? hidden(r.view) && hidden(r.after) : !hidden(r.view))
           && r.edit.overlap === 0 && r.edit.ids.includes('scenes') && r.edit.ids.includes('devices') && !r.edit.masonry
-          && r.edit.spans === 0 && (device !== 'desktop' || (r.roLoop === 0 && laid(r.resized)));
+          && r.edit.spans === 0 && (device !== 'desktop' || (r.roLoop === 0 && laid(r.resized) && (!masonry || (r.grow.frames > 20 && r.grow.bad === 0))));
         res[`${device}-${style}${spans.energy ? '-energy4' : ''}`] = r;
       }
       out.homeMasonry = res;
