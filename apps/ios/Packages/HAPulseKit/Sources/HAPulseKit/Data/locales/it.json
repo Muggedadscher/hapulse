@@ -241,6 +241,7 @@
   "energy.battery.hintModeSteer": "Home Assistant controlla la batteria: in modo permanente o secondo un programma.",
   "energy.battery.idle": "A riposo",
   "energy.battery.lastsUntil": "dura fino alle {time} circa",
+  "energy.battery.lastsUntilTomorrow": "dura fino a domani alle {time} circa",
   "energy.battery.limitLabel": "Carica fino a",
   "energy.battery.mismatch": "La batteria non ha applicato l’orario in corso.",
   "energy.battery.modeAuto": "Automatico",
