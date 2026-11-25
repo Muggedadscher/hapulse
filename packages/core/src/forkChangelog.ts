@@ -38,6 +38,26 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 81,
+    date: '2026-11-25',
+    title: { de: 'Übersicht ohne Leerraum', en: 'Overview without empty space' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Glas, ab 900 px: Jede Karte der Übersicht ist so hoch wie ihr Inhalt, die nächste rückt direkt darunter nach; Reihenfolge und Breiten bleiben',
+            en: 'Glas, from 900 px: every overview card is as tall as its content and the next one closes up below it; order and widths stay',
+          },
+          {
+            de: 'Glas: Leere Bereiche (keine Lieblingsszenen, keine aktiven Geräte) sind ausgeblendet, im Bearbeiten-Modus bleiben sie sichtbar',
+            en: 'Glas: empty sections (no favourite scenes, no active devices) are hidden; they stay visible in edit mode',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 80,
     date: '2026-11-24',
     title: { de: 'Akku: Uhrzeit mit Tag', en: 'Battery: time with its day' },

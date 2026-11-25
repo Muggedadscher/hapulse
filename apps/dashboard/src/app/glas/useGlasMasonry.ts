@@ -6,6 +6,11 @@ import { useLayoutEffect, type RefObject } from 'react';
 
 const ROW = 4; // px, must match --g-mas-row in styles/glas/home.css
 
+/** Rows of `row` px a cell of height `h` covers, its gap to the next card included; an empty cell (0) takes one row. */
+export function masonrySpan(h: number, gap: number, row = ROW): number {
+  return h > 0 ? Math.max(1, Math.ceil((h + gap) / row)) : 1;
+}
+
 export function useGlasMasonry(root: RefObject<HTMLElement | null>, on: boolean, deps: unknown[]): void {
   useLayoutEffect(() => {
     const host = root.current;
@@ -24,9 +29,8 @@ export function useGlasMasonry(root: RefObject<HTMLElement | null>, on: boolean,
       grid.setAttribute('data-g-masonry', '');
       const gap = parseFloat(getComputedStyle(grid).getPropertyValue('--g-mas-gap')) || 0;
       for (const c of cells()) {
-        const h = c.getBoundingClientRect().height;
-        const span = h > 0 ? Math.max(1, Math.ceil((h + gap) / ROW)) : 1;
-        const v = `span ${span}`;
+        const h = c.offsetHeight; // layout height: the entrance animation's transform must not count
+        const v = `span ${masonrySpan(h, gap)}`;
         if (c.style.gridRowEnd !== v) c.style.gridRowEnd = v;
       }
     };

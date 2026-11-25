@@ -1055,6 +1055,71 @@ module.exports = function home(h) {
       out.homePictureOk = res.classic.photo && res.classic.var && !res.glas.photo && !res.glas.var;
     });
 
+    // 11. Glas from 900 px (F81): every card keeps its own height (masonry: no card is stretched beyond its content, no
+    //     two cards overlap, the gap below a card is the grid's gap); empty scenes and devices are hidden and come back
+    //     in edit mode, where the grid is the classic one again. Klassisch keeps rows of equal height; the phone has no
+    //     masonry but hides the empty sections too.
+    await block('homeMasonry', async () => {
+      const res = {};
+      for (const [device, style] of [['desktop', 'glas'], ['desktop', 'classic'], ['phone', 'glas']]) {
+        const w = await open(device, style, '/', { customization: { favorites: [] } });
+        const page = w.page;
+        await sleep(300);
+        const read = () => ev(page, () => {
+          const grid = document.querySelector('.home-page .overview-grid');
+          const cells = [...grid.children].filter((c) => c.getClientRects().length > 0);
+          const boxes = cells.map((c) => {
+            const card = c.firstElementChild;
+            return { id: c.getAttribute('data-section') || (c.querySelector('[data-section]') || {}).getAttribute?.('data-section'),
+              cell: __h.rect(c), card: card ? __h.rect(card) : null, span: c.style.gridRowEnd || '' };
+          });
+          let overlap = 0;
+          for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+            const a = boxes[i].cell, b = boxes[j].cell;
+            if (a.x < b.right - 1 && b.x < a.right - 1 && a.y < b.bottom - 1 && b.y < a.bottom - 1) overlap++;
+          }
+          const ids = boxes.map((b) => b.id);
+          return { masonry: grid.hasAttribute('data-g-masonry'), ids, overlap,
+            spans: boxes.filter((b) => b.span).length, n: boxes.length };
+        });
+        const r = { view: await read() };
+        // the natural height: a card's content is not stretched (the scroll body of the tallest card decides nothing)
+        r.stretch = await ev(page, () => {
+          const grid = document.querySelector('.home-page .overview-grid');
+          return [...grid.children].filter((c) => c.getClientRects().length > 0).map((c) => {
+            const before = c.offsetHeight;
+            c.style.alignSelf = 'start';
+            c.style.gridRowEnd = 'span 1';
+            const natural = c.offsetHeight;
+            c.style.alignSelf = '';
+            c.style.gridRowEnd = '';
+            return before - natural;
+          });
+        });
+        await sleep(200);
+        await editMode(page);
+        r.edit = await read();
+        await editMode(page);
+        await sleep(300);
+        r.after = await read();
+        await w.close();
+        const hidden = (v) => !v.ids.includes('scenes') && !v.ids.includes('devices');
+        const glas = style === 'glas';
+        const wide = device === 'desktop';
+        r.ok = r.view.overlap === 0 && r.edit.overlap === 0
+          && r.view.masonry === (glas && wide) && (glas && wide ? r.view.spans === r.view.n : r.view.spans === 0)
+          && (glas ? hidden(r.view) && hidden(r.after) : !hidden(r.view))
+          && r.edit.ids.includes('scenes') && r.edit.ids.includes('devices') && !r.edit.masonry && r.edit.spans === 0
+          && r.after.masonry === r.view.masonry
+          // in Glas on the desktop no card is taller than its content (one grid row of rounding); Klassisch stretches
+          && (glas && wide ? r.stretch.every((d) => d >= 0 && d < 30) : true)
+          && (style === 'classic' ? r.stretch.some((d) => d > 30) : true);
+        res[`${device}-${style}`] = r;
+      }
+      out.homeMasonry = res;
+      out.homeMasonryOk = Object.values(res).every((r) => r.ok);
+    });
+
     out.homePageErrors = pageErrors;
     return ran.every((k) => out[k + 'Ok']) && pageErrors.length === 0;
   }
