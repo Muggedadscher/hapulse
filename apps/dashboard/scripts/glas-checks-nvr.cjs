@@ -1217,7 +1217,8 @@ module.exports = function nvr(h) {
         })() : null,
         // Glas: the NVR card's tiles and events (`.nvr-gl-page`), read as the same facts as the package's
         tiles: q('.nvr-layout .nvr-gl-page') ? all('.nvr-layout .nvr-gl__cam').map((t) => {
-          const img = t.querySelector('img.nvr-camtile__img');
+          // the picture in front (@sentinel-nvr/web ≥ 0.22.1 loads the next snapshot in a second <img> behind it, z-index 0)
+          const img = [...t.querySelectorAll('img.nvr-camtile__img')].find((i) => i.style.zIndex !== '0');
           const state = t.getAttribute('data-state');
           return { name: txt(t.querySelector('.nvr-gl__name')),
             badge: state === 'offline' || state === 'stalled' ? txt(t.querySelector('.nvr-gl__badge')) : null,
@@ -1225,7 +1226,7 @@ module.exports = function nvr(h) {
             img: img ? ((/api\/(snapshot|thumb)/.exec(img.src) || [])[1] || 'other') + (img.complete && img.naturalWidth > 0 ? '' : ' (not loaded)') : 'placeholder',
             meta: txt(t.querySelector('.nvr-gl__today')), radius: cs(t).borderTopLeftRadius };
         }) : all('.nvr-layout .nvr-camtile').map((t) => {
-          const img = t.querySelector('.nvr-camtile__img');
+          const img = [...t.querySelectorAll('img.nvr-camtile__img')].find((i) => i.style.zIndex !== '0');
           return { name: t.getAttribute('aria-label'), badge: txt(t.querySelector('.nvr-camtile__offline')),
             dot: t.querySelector('.nvr-camtile__dot') ? (t.querySelector('.nvr-camtile__dot--off') ? 'off' : 'rec') : null,
             img: img ? ((/api\/(snapshot|thumb)/.exec(img.src) || [])[1] || 'other') + (img.complete && img.naturalWidth > 0 ? '' : ' (not loaded)') : 'placeholder',
@@ -1302,7 +1303,7 @@ module.exports = function nvr(h) {
         try {
           await until(o.page, () => {
             const tiles = [...document.querySelectorAll('.nvr-layout :is(.nvr-camtile, .nvr-gl__cam)')];
-            return tiles.length === 4 && tiles.every((t) => { const i = t.querySelector('img.nvr-camtile__img'); return i && i.complete && i.naturalWidth > 0; });
+            return tiles.length === 4 && tiles.every((t) => { const i = [...t.querySelectorAll('img.nvr-camtile__img')].find((x) => x.style.zIndex !== '0'); return i && i.complete && i.naturalWidth > 0; });
           }, null, 12000);
           await settleAnimations(o.page); // Glas: the page rises in (g-rise, opacity)
           r.overview = await overview(o.page);
