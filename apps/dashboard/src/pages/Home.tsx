@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Scaling } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { GreetingBlock } from '../components/home/GreetingBlock';
@@ -20,6 +20,7 @@ import type { HintWindow } from '../components/home/HintsCard'; // [fork]
 import { useHints } from '../components/home/useHints'; // [fork]
 import { EnergyGlas } from '../components/glas/home/EnergyGlas'; // [fork] Glas Etappe 4, K75
 import { useIsGlas } from '../app/glas/useUiStyle'; // [fork]
+import { useGlasMasonry } from '../app/glas/useGlasMasonry'; // [fork] Glas: cards keep their own height
 import { useGlasSectionEdit } from '../components/glas/edit/useGlasSectionEdit'; // [fork] Glas edit bar (K78, K96)
 import { SummaryChipsBar } from '../components/home/SummaryChipsBar';
 import { ClimateAllModal, BlindsAllModal } from '../components/home/chipmodals';
@@ -494,8 +495,12 @@ export function Home() {
     />
   );
 
+  // [fork] Glas: masonry outside edit mode (cards keep their own height, the next one closes up)
+  const pageRef = useRef<HTMLDivElement>(null);
+  useGlasMasonry(pageRef, isGlas && !editMode, [visibleIds.join(',')]);
+
   return (
-    <div className="page home-page stagger-rise">
+    <div ref={pageRef} className="page home-page stagger-rise">
       {/* Summary chips: mobile-only normally; --edit makes it visible on desktop in edit mode
           (HeaderCluster suppresses its own chips when editMode is true to avoid duplication). */}
       {!isGlas && chipsBar}{/* [fork] */}
