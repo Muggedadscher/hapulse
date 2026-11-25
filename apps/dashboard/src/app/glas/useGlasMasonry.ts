@@ -38,17 +38,18 @@ export function useGlasMasonry(root: RefObject<HTMLElement | null>, on: boolean,
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(layout);
     };
-    // Only the cells, at once (before paint, no frame with an old span). Not the grid: its height changes with the spans,
-    // and an ancestor resized inside the callback would end in a "ResizeObserver loop" error. A column change resizes
-    // the cells' widths, so it arrives here too; a span never changes a cell's own size (align-self: start).
-    const ro = new ResizeObserver(() => layout());
+    // Only the cells (a column change resizes their widths, so it arrives here too; a span never changes a cell's own
+    // size, align-self: start). Laid out in the next frame, not inside the callback: new spans change the grid's height
+    // and so its ancestors', and other observers on an ancestor (GlasRuntime on .app-content) would then end in a
+    // "ResizeObserver loop" error. The first layout and a changed set of cells still apply at once.
+    const ro = new ResizeObserver(schedule);
     const watch = () => {
       ro.disconnect();
       for (const c of cells()) ro.observe(c);
     };
     const mo = new MutationObserver(() => {
       watch();
-      schedule();
+      layout();
     });
     mo.observe(grid, { childList: true });
     watch();

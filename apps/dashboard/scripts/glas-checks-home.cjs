@@ -1107,6 +1107,20 @@ module.exports = function home(h) {
         await sleep(300);
         await settleAnimations(page);
         r.after = await read();
+        if (device === 'desktop') {
+          // resizing the window (columns change, the 900 px edge crossed both ways) must not end in a "ResizeObserver loop"
+          // error (an observer on an ancestor, e.g. GlasRuntime's on .app-content, would miss a size changed inside a
+          // ResizeObserver callback), and the layout is right again at the old width
+          const vp = page.viewportSize();
+          await ev(page, () => { window.__roLoop = 0; window.addEventListener('error', (e) => { if (/ResizeObserver/.test(e.message)) window.__roLoop++; }); });
+          for (const width of [1300, 1180, 1020, 950, 880, 905, 1100, vp.width]) {
+            await page.setViewportSize({ width, height: vp.height });
+            await sleep(200);
+          }
+          await sleep(300);
+          r.roLoop = await ev(page, () => window.__roLoop);
+          r.resized = await read();
+        }
         await w.close();
         const hidden = (v) => !v.ids.includes('scenes') && !v.ids.includes('devices');
         const masonry = style === 'glas' && device === 'desktop';
@@ -1116,7 +1130,7 @@ module.exports = function home(h) {
         r.ok = laid(r.view) && laid(r.after)
           && (style === 'glas' ? hidden(r.view) && hidden(r.after) : !hidden(r.view))
           && r.edit.overlap === 0 && r.edit.ids.includes('scenes') && r.edit.ids.includes('devices') && !r.edit.masonry
-          && r.edit.spans === 0;
+          && r.edit.spans === 0 && (device !== 'desktop' || (r.roLoop === 0 && laid(r.resized)));
         res[`${device}-${style}${spans.energy ? '-energy4' : ''}`] = r;
       }
       out.homeMasonry = res;
