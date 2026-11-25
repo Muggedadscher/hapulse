@@ -68,6 +68,9 @@
     --g-mas-row: 4px;
     --g-mas-gap: 26px;
     grid-auto-rows: var(--g-mas-row);
+    /* sparse, not Page.css's dense: each card goes to the first free place AFTER the previous one, so it never lands
+       above a card that comes before it (e.g. above a full-width card) */
+    grid-auto-flow: row;
     row-gap: 0;
     align-items: start;
   }

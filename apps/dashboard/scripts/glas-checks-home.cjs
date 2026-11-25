@@ -1055,66 +1055,69 @@ module.exports = function home(h) {
       out.homePictureOk = res.classic.photo && res.classic.var && !res.glas.photo && !res.glas.var;
     });
 
-    // 11. Glas from 900 px (F81): every card keeps its own height (masonry: no card is stretched beyond its content, no
-    //     two cards overlap, the gap below a card is the grid's gap); empty scenes and devices are hidden and come back
-    //     in edit mode, where the grid is the classic one again. Klassisch keeps rows of equal height; the phone has no
-    //     masonry but hides the empty sections too.
+    // 11. Glas from 900 px (F81): every card keeps its own height (masonry). Checked on the page: the card fills its cell
+    //     (no stretch), cards never overlap, the gap between two cards of one column is the grid's gap (26 px, plus at
+    //     most one 4-px row of rounding; above a wider card a column may end earlier), and no card lies above a card that comes before it (with energy as a full row
+    //     in the middle). Empty scenes and devices are hidden and come back in edit mode (classic grid again), and after
+    //     edit mode the masonry is back. Klassisch: no masonry, empty cards shown; the phone: no masonry, empties hidden.
     await block('homeMasonry', async () => {
       const res = {};
-      for (const [device, style] of [['desktop', 'glas'], ['desktop', 'classic'], ['phone', 'glas']]) {
-        const w = await open(device, style, '/', { customization: { favorites: [] } });
+      const cases = [
+        ['desktop', 'glas', {}], ['desktop', 'glas', { energy: 4 }], ['desktop', 'classic', {}], ['phone', 'glas', {}],
+      ];
+      for (const [device, style, spans] of cases) {
+        const w = await open(device, style, '/', { customization: { favorites: [], homeSectionSpans: { hints: 4, hero: 2, rooms: 4, ...spans } } });
         const page = w.page;
         await sleep(300);
         const read = () => ev(page, () => {
           const grid = document.querySelector('.home-page .overview-grid');
           const cells = [...grid.children].filter((c) => c.getClientRects().length > 0);
           const boxes = cells.map((c) => {
-            const card = c.firstElementChild;
-            return { id: c.getAttribute('data-section') || (c.querySelector('[data-section]') || {}).getAttribute?.('data-section'),
-              cell: __h.rect(c), card: card ? __h.rect(card) : null, span: c.style.gridRowEnd || '' };
+            const inner = c.matches('[data-section]') ? c : c.querySelector('[data-section]');
+            const card = inner && inner.firstElementChild;
+            return { id: inner ? inner.getAttribute('data-section') : null, cell: __h.rect(c), card: card ? __h.rect(card) : null,
+              span: c.style.gridRowEnd || '' };
           });
           let overlap = 0;
-          for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
-            const a = boxes[i].cell, b = boxes[j].cell;
-            if (a.x < b.right - 1 && b.x < a.right - 1 && a.y < b.bottom - 1 && b.y < a.bottom - 1) overlap++;
+          const gaps = [];
+          let above = 0;
+          for (let i = 0; i < boxes.length; i++) {
+            for (let j = 0; j < boxes.length; j++) {
+              if (i === j) continue;
+              const a = boxes[i].cell, b = boxes[j].cell;
+              const xs = a.x < b.right - 1 && b.x < a.right - 1;
+              if (j > i && xs && a.y < b.bottom - 1 && b.y < a.bottom - 1) overlap++;
+              // b comes after a: it may sit beside a, never wholly above it
+              if (j > i && b.bottom <= a.y + 1) above++;
+              // b is the next card below a in a shared column
+              if (xs && b.y >= a.bottom - 1 && !boxes.some((c, k) => k !== i && k !== j && c.cell.x < Math.min(a.right, b.right) - 1
+                && Math.max(a.x, b.x) < c.cell.right - 1 && c.cell.y >= a.bottom - 1 && c.cell.bottom <= b.y + 1)) {
+                gaps.push({ g: Math.round(b.y - a.bottom), same: Math.abs(a.x - b.x) < 2 && Math.abs(a.w - b.w) < 2 });
+              }
+            }
           }
-          const ids = boxes.map((b) => b.id);
-          return { masonry: grid.hasAttribute('data-g-masonry'), ids, overlap,
+          const fill = boxes.filter((b) => b.card).map((b) => Math.round(b.cell.bottom - b.card.bottom));
+          return { masonry: grid.hasAttribute('data-g-masonry'), ids: boxes.map((b) => b.id), overlap, above, gaps, fill,
             spans: boxes.filter((b) => b.span).length, n: boxes.length };
         });
         const r = { view: await read() };
-        // the natural height: a card's content is not stretched (the scroll body of the tallest card decides nothing)
-        r.stretch = await ev(page, () => {
-          const grid = document.querySelector('.home-page .overview-grid');
-          return [...grid.children].filter((c) => c.getClientRects().length > 0).map((c) => {
-            const before = c.offsetHeight;
-            c.style.alignSelf = 'start';
-            c.style.gridRowEnd = 'span 1';
-            const natural = c.offsetHeight;
-            c.style.alignSelf = '';
-            c.style.gridRowEnd = '';
-            return before - natural;
-          });
-        });
-        await sleep(200);
         await editMode(page);
         r.edit = await read();
         await editMode(page);
         await sleep(300);
+        await settleAnimations(page);
         r.after = await read();
         await w.close();
         const hidden = (v) => !v.ids.includes('scenes') && !v.ids.includes('devices');
-        const glas = style === 'glas';
-        const wide = device === 'desktop';
-        r.ok = r.view.overlap === 0 && r.edit.overlap === 0
-          && r.view.masonry === (glas && wide) && (glas && wide ? r.view.spans === r.view.n : r.view.spans === 0)
-          && (glas ? hidden(r.view) && hidden(r.after) : !hidden(r.view))
-          && r.edit.ids.includes('scenes') && r.edit.ids.includes('devices') && !r.edit.masonry && r.edit.spans === 0
-          && r.after.masonry === r.view.masonry
-          // in Glas on the desktop no card is taller than its content (one grid row of rounding); Klassisch stretches
-          && (glas && wide ? r.stretch.every((d) => d >= 0 && d < 30) : true)
-          && (style === 'classic' ? r.stretch.some((d) => d > 30) : true);
-        res[`${device}-${style}`] = r;
+        const masonry = style === 'glas' && device === 'desktop';
+        const laid = (v) => v.overlap === 0 && v.masonry === masonry && (masonry ? v.spans === v.n : v.spans === 0)
+          && (!masonry || (v.above === 0 && v.gaps.some((x) => x.same) && v.gaps.every((x) => x.g >= 26 && (!x.same || x.g < 31))
+            && v.fill.every((f) => Math.abs(f) <= 1)));
+        r.ok = laid(r.view) && laid(r.after)
+          && (style === 'glas' ? hidden(r.view) && hidden(r.after) : !hidden(r.view))
+          && r.edit.overlap === 0 && r.edit.ids.includes('scenes') && r.edit.ids.includes('devices') && !r.edit.masonry
+          && r.edit.spans === 0;
+        res[`${device}-${style}${spans.energy ? '-energy4' : ''}`] = r;
       }
       out.homeMasonry = res;
       out.homeMasonryOk = Object.values(res).every((r) => r.ok);
