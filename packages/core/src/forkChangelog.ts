@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 82,
+    date: '2026-11-25',
+    title: { de: 'Kamerabilder ohne Flackern', en: 'Camera pictures without flicker' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Die Kamerakacheln wechseln ihr Standbild ohne schwarzes Aufblitzen: Das nächste Bild lädt verdeckt und erscheint erst, wenn es fertig ist (Safari)',
+            en: 'Camera tiles change their snapshot without a black flash: the next picture loads hidden and shows only once it is ready (Safari)',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 81,
     date: '2026-11-25',
     title: { de: 'Übersicht ohne Leerraum', en: 'Overview without empty space' },

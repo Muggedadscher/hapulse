@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F82 — 2026-11-25
+
+**Kamerabilder ohne Flackern** · _Camera pictures without flicker_
+
+### Behoben / Fixed
+
+- Die Kamerakacheln wechseln ihr Standbild ohne schwarzes Aufblitzen: Das nächste Bild lädt verdeckt und erscheint erst, wenn es fertig ist (Safari)  
+  _Camera tiles change their snapshot without a black flash: the next picture loads hidden and shows only once it is ready (Safari)_
+
 ## F81 — 2026-11-25
 
 **Übersicht ohne Leerraum** · _Overview without empty space_
