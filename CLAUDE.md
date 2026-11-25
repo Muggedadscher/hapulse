@@ -204,7 +204,12 @@ brauche upstream nicht mehr“); Regeln, die nur Upstream-Merges erleichtern (`[
   Bearbeiten ab 900 px mit `SizeBar` (S/M/L, Feld `tallSections`, „⋯“ = `SizeSheet`, beide in `components/glas/edit/`
   über den Hook `useGlasSectionEdit`), Kontextmenü auch an Szenen und Geräten (`GlasMenuTarget`). CSS in
   `styles/glas/{home,home-cards,home-lists,controls,detail,edit,nvr}.css`. Prüfungen `checks --part home`
-  (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus `ha/demoControl.ts`). **Übrige
+  (`scripts/glas-checks-home.cjs`, steuert die Demo über `window.__hapulseDemo` aus `ha/demoControl.ts`). Seit F81
+  (25.11.2026, User: „zu viel Leerraum“) ist die Übersicht ab 900 px außerhalb von Bearbeiten ein Masonry: kleine
+  Grid-Zeilen (`--g-mas-row` 4 px, `styles/glas/home.css`), `app/glas/useGlasMasonry.ts` setzt je Zelle `grid-row-end:
+  span n` aus ihrer gemessenen Höhe (ResizeObserver), Reihenfolge und Breiten wie vorher, Platzierung ohne `dense` (keine Karte rutscht über eine frühere); leere Szenen/Geräte sind
+  in Glas ausgeblendet (CSS `:has(…__empty)`, nicht im Bearbeiten-Modus). Gleich hohe Karten hat der User am 12.10.
+  abgelehnt, nicht wieder einführen. **Übrige
   Seiten (Etappe 5, `docs/glas/PLAN-ETAPPE-5.md`):** nur Glas, fast nur CSS an den klassischen Klassen: Kartentitel über
   der Fläche, ruhige Heroes, Spalten nach Inhaltsbreite (`pages.css`), iOS-Schalter, Stepper, Pillen, Regler und Play
   (`controls.css`), Listen und Felder (`lists.css`), Karten im Raum und in „Klima/Rollläden alle“ (`cards.css`), je Seite

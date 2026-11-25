@@ -61,6 +61,30 @@
   }
 }
 
+/* ---- Masonry from 900 px outside edit mode (app/glas/useGlasMasonry.ts): every card keeps its own height and the next
+   one closes up below it; the hook sets each cell's row span from its measured height. Order and widths as before. ---- */
+@media (min-width: 900px) {
+  :root[data-style='glas'] .home-page .overview-grid[data-g-masonry] {
+    --g-mas-row: 4px;
+    --g-mas-gap: 26px;
+    grid-auto-rows: var(--g-mas-row);
+    /* sparse, not Page.css's dense: each card goes to the first free place AFTER the previous one, so it never lands
+       above a card that comes before it (e.g. above a full-width card) */
+    grid-auto-flow: row;
+    row-gap: 0;
+    align-items: start;
+  }
+
+  :root[data-style='glas'] .home-page .overview-grid[data-g-masonry] > .overview-grid__cell {
+    align-self: start;
+  }
+}
+
+/* ---- Empty sections are not shown (like Apple Home); in edit mode they stay, so they can be found ---- */
+:root[data-style='glas'] .home-page .overview-grid__cell:not(.overview-grid__cell--editing):has(.scenes-card__empty, .devices-card__empty) {
+  display: none;
+}
+
 /* ---- Title above the card ---- */
 
 :root[data-style='glas']

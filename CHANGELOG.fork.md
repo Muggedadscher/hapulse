@@ -6,6 +6,17 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F81 — 2026-11-25
+
+**Übersicht ohne Leerraum** · _Overview without empty space_
+
+### Geändert / Changed
+
+- Glas, ab 900 px: Jede Karte der Übersicht ist so hoch wie ihr Inhalt, die nächste rückt direkt darunter nach; Reihenfolge und Breiten bleiben  
+  _Glas, from 900 px: every overview card is as tall as its content and the next one closes up below it; order and widths stay_
+- Glas: Leere Bereiche (keine Lieblingsszenen, keine aktiven Geräte) sind ausgeblendet, im Bearbeiten-Modus bleiben sie sichtbar  
+  _Glas: empty sections (no favourite scenes, no active devices) are hidden; they stay visible in edit mode_
+
 ## F80 — 2026-11-24
 
 **Akku: Uhrzeit mit Tag** · _Battery: time with its day_
