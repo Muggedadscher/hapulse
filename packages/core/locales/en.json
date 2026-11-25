@@ -1616,6 +1616,7 @@
   "energy.battery.unavailable": "Not reachable",
   "energy.battery.reserve": "Reserve reached",
   "energy.battery.lastsUntil": "lasts until about {time}",
+  "energy.battery.lastsUntilTomorrow": "lasts until about {time} tomorrow",
   "energy.battery.modeAuto": "Automatic",
   "energy.battery.modeManual": "Manual",
   "energy.battery.reserveLine": "Reserve",

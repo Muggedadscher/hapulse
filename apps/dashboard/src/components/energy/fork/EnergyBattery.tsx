@@ -46,7 +46,7 @@ import { useConnectionStore } from '../../../stores/connectionStore';
 import { getHistory } from '../../../ha/history';
 import { useLocale, useT } from '../../../i18n/useT';
 import { CardHead } from './EnergyOrigin';
-import { BATTERY_STATE_KEY, BatteryRing, formatBatteryPower, fullAtToday } from './EnergyBatteryParts';
+import { BATTERY_STATE_KEY, BatteryRing, formatBatteryPower, formatBatteryTime, fullAtToday, lastsUntilText } from './EnergyBatteryParts';
 import { EnergyBatteryWindow } from './EnergyBatteryWindow';
 import './EnergyNow.css';
 import './EnergyBattery.css';
@@ -316,7 +316,7 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
   const now = new Date();
   const moving = status && (status.state === 'charging' || status.state === 'discharging') && power !== null;
   const fullAt = status ? fullAtToday(status.at, now) : null;
-  const time = (ms: number) => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(ms);
+  const until = status && status.until !== null ? lastsUntilText(status.until, now, locale) : null;
   const hasDetails = !!(controls.mode || controls.chargeLimit || controls.reserve || steer);
   const openWindow = () => setWin((w) => ({ key: w.key + 1, open: true }));
 
@@ -355,8 +355,8 @@ export function EnergyBatteryCard({ prefs }: { prefs: EnergyPreferences | null }
                   <span className={`en-bat__state en-bat__state--${status.state}`}>{t(BATTERY_STATE_KEY[status.state]!)}</span>
                   {/* [fork] the power and "full at" only today (19.11: "Lädt" alone said too little) */}
                   {moving && <> · {formatBatteryPower(power, locale)}</>}
-                  {fullAt !== null && <> · {t('energy.battery.fullAt', { time: time(fullAt) })}</>}
-                  {status.until !== null && <> · {t('energy.battery.lastsUntil', { time: time(status.until) })}</>}
+                  {fullAt !== null && <> · {t('energy.battery.fullAt', { time: formatBatteryTime(fullAt, locale) })}</>}
+                  {until && <> · {t(until.key, { time: until.time })}</>}
                 </p>
               )}
             </>

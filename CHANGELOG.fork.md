@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F80 — 2026-11-24
+
+**Akku: Uhrzeit mit Tag** · _Battery: time with its day_
+
+### Geändert / Changed
+
+- Die Akku-Karte und das Akku-Fenster schreiben „Uhr“ hinter die Zeit und sagen „morgen“, wenn der Akku erst am nächsten Tag die Reserve erreicht, z. B. „reicht bis morgen ca. 8:00 Uhr“  
+  _The battery card and window say “tomorrow” when the battery reaches its reserve only on the next day, e.g. “lasts until about 8:00 AM tomorrow”_
+
 ## F79 — 2026-11-24
 
 **Pool: Feinschliff am Handy** · _Pool: phone polish_

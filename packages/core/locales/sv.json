@@ -1616,6 +1616,7 @@
   "energy.battery.unavailable": "Går inte att nå",
   "energy.battery.reserve": "Reserv nådd",
   "energy.battery.lastsUntil": "räcker till cirka {time}",
+  "energy.battery.lastsUntilTomorrow": "räcker till i morgon cirka {time}",
   "energy.battery.modeAuto": "Automatiskt",
   "energy.battery.modeManual": "Manuellt",
   "energy.battery.reserveLine": "Reserv",

@@ -1616,6 +1616,7 @@
   "energy.battery.unavailable": "Injoignable",
   "energy.battery.reserve": "Réserve atteinte",
   "energy.battery.lastsUntil": "tient jusque vers {time}",
+  "energy.battery.lastsUntilTomorrow": "tient jusqu’à demain vers {time}",
   "energy.battery.modeAuto": "Automatique",
   "energy.battery.modeManual": "Manuel",
   "energy.battery.reserveLine": "Réserve",

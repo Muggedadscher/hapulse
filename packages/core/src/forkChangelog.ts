@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 80,
+    date: '2026-11-24',
+    title: { de: 'Akku: Uhrzeit mit Tag', en: 'Battery: time with its day' },
+    sections: [
+      {
+        kind: 'changed',
+        items: [
+          {
+            de: 'Die Akku-Karte und das Akku-Fenster schreiben „Uhr“ hinter die Zeit und sagen „morgen“, wenn der Akku erst am nächsten Tag die Reserve erreicht, z. B. „reicht bis morgen ca. 8:00 Uhr“',
+            en: 'The battery card and window say “tomorrow” when the battery reaches its reserve only on the next day, e.g. “lasts until about 8:00 AM tomorrow”',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 79,
     date: '2026-11-24',
     title: { de: 'Pool: Feinschliff am Handy', en: 'Pool: phone polish' },

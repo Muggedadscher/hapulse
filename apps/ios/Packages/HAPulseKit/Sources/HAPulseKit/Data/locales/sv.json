@@ -241,6 +241,7 @@
   "energy.battery.hintModeSteer": "Home Assistant styr batteriet: permanent eller enligt ett schema.",
   "energy.battery.idle": "Vilar",
   "energy.battery.lastsUntil": "räcker till cirka {time}",
+  "energy.battery.lastsUntilTomorrow": "räcker till i morgon cirka {time}",
   "energy.battery.limitLabel": "Ladda till",
   "energy.battery.mismatch": "Batteriet har inte tagit emot den aktuella tiden.",
   "energy.battery.modeAuto": "Automatiskt",
