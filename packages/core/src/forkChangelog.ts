@@ -38,6 +38,22 @@ export interface ForkRelease {
 /** Newest first. */
 export const FORK_RELEASES: ForkRelease[] = [
   {
+    version: 83,
+    date: '2026-11-28',
+    title: { de: 'Ereignisse starten am Anfang', en: 'Events start at the beginning' },
+    sections: [
+      {
+        kind: 'fixed',
+        items: [
+          {
+            de: 'Kameras: Beim Öffnen eines Ereignisses steht die Zeit, bis das Bild da ist, und das Ereignis beginnt am Anfang statt mittendrin (langsame Verbindung)',
+            en: 'Cameras: when an event is opened the time stands until the picture is there, and the event starts at its beginning instead of in the middle (slow connection)',
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: 82,
     date: '2026-11-25',
     title: { de: 'Kamerabilder ohne Flackern', en: 'Camera pictures without flicker' },

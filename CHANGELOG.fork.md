@@ -6,6 +6,15 @@ In der App: „Was ist neu“ nach einem Update und Einstellungen → Über.
 <!-- Generiert aus packages/core/src/forkChangelog.ts: `npm run build -w @hapulse/core && node packages/core/scripts/gen-fork-changelog.mjs`.
      Nicht von Hand ändern — die Datei wird überschrieben. -->
 
+## F83 — 2026-11-28
+
+**Ereignisse starten am Anfang** · _Events start at the beginning_
+
+### Behoben / Fixed
+
+- Kameras: Beim Öffnen eines Ereignisses steht die Zeit, bis das Bild da ist, und das Ereignis beginnt am Anfang statt mittendrin (langsame Verbindung)  
+  _Cameras: when an event is opened the time stands until the picture is there, and the event starts at its beginning instead of in the middle (slow connection)_
+
 ## F82 — 2026-11-25
 
 **Kamerabilder ohne Flackern** · _Camera pictures without flicker_
